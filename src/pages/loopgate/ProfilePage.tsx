@@ -1,4 +1,4 @@
-import { ExternalLink, Trophy, Calendar } from "lucide-react";
+import { ExternalLink, Trophy, Calendar, TrendingUp } from "lucide-react";
 import { currentUser, mockEvents } from "@/data/loopgateData";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
@@ -13,7 +13,7 @@ function formatFollowers(count: number): string {
   return String(count);
 }
 
-const platformLabels = {
+const platformLabels: Record<string, string> = {
   tiktok: "TikTok",
   instagram: "Instagram",
   youtube: "YouTube",
@@ -27,7 +27,7 @@ export default function ProfilePage() {
     currentUser.recentEvents.includes(e.id)
   );
 
-  const leagueColors = {
+  const leagueColors: Record<string, string> = {
     elite: "text-gold",
     pro: "text-blue-400",
     open: "text-muted-foreground",
@@ -45,77 +45,94 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* Profile Card */}
+      {/* Profile Hero */}
       <div className="p-4">
-        <div className="bg-surface-1 border border-border rounded-lg p-5">
-          {/* Alias + Region */}
+        <div className="bg-surface-1 border border-border rounded-xl p-6">
+          {/* Alias + League */}
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-xl font-bold">{currentUser.alias}</h2>
+              <h2 className="text-2xl font-black">{currentUser.alias}</h2>
               <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-1">
                 {currentUser.region}
               </p>
             </div>
             <span className={`text-xs font-bold uppercase tracking-[0.15em] ${leagueColors[currentUser.league]}`}>
-              {currentUser.league} League
+              {currentUser.league}
             </span>
           </div>
 
-          {/* Global Rank */}
-          <div className="flex items-baseline gap-2 mb-5">
-            <span className="text-4xl font-bold text-gold">#{currentUser.rank}</span>
-            <span className="text-sm text-muted-foreground">Global Rank</span>
+          {/* Global Rank - Large */}
+          <div className="mb-5">
+            <span className="text-4xl font-black text-gold">#{currentUser.rank}</span>
+            <span className="text-sm text-muted-foreground ml-2">Global Rank</span>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-5">
-            <div className="bg-surface-2 rounded-lg p-3">
-              <p className="text-2xl font-bold">{currentUser.indexScore.toFixed(1)}</p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-[0.1em] mt-1">
-                Index Score
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <div className="text-center p-3 bg-background rounded-lg">
+              <p className="text-xl font-bold">{currentUser.indexScore.toFixed(1)}</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+                Index
               </p>
             </div>
-            <div className="bg-surface-2 rounded-lg p-3">
-              <p className="text-2xl font-bold">{currentUser.winRate}%</p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-[0.1em] mt-1">
+            <div className="text-center p-3 bg-background rounded-lg">
+              <p className="text-xl font-bold">{currentUser.winRate}%</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
                 Win Rate
               </p>
             </div>
+            <div className="text-center p-3 bg-background rounded-lg">
+              <p className="text-xl font-bold">{currentUser.recentEvents.length}</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+                Finals
+              </p>
+            </div>
           </div>
 
-          {/* Qualification Status */}
-          <div className="pt-4 border-t border-border">
+          {/* Status */}
+          <div className="pt-5 border-t border-border">
             <p className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] mb-2">
-              Qualification
+              Status
             </p>
             <StatusBadge
               status={currentUser.qualificationStatus === "qualified" ? "qualified" : "pending"}
             />
           </div>
+
+          {/* Peak + Last Active */}
+          <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <TrendingUp size={12} />
+              Peak: #32
+            </span>
+            <span>Last Active: {currentUser.lastActive}</span>
+          </div>
         </div>
       </div>
 
       {/* Platforms */}
-      <section className="px-4 py-4">
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
-          <ExternalLink size={12} />
-          Platforms
-        </h3>
-        <div className="space-y-2">
-          {currentUser.platforms.map((platform, index) => (
-            <div
-              key={index}
-              className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between"
-            >
-              <div>
-                <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
-                <p className="text-xs text-muted-foreground">{platform.handle}</p>
+      {currentUser.platforms.length > 0 && (
+        <section className="px-4 py-4">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+            <ExternalLink size={12} />
+            Platforms
+          </h3>
+          <div className="space-y-2">
+            {currentUser.platforms.map((platform, index) => (
+              <div
+                key={index}
+                className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between"
+              >
+                <div>
+                  <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
+                  <p className="text-xs text-muted-foreground">{platform.handle}</p>
+                </div>
+                <p className="font-bold text-gold">{formatFollowers(platform.followers)}</p>
               </div>
-              <p className="font-bold text-gold">{formatFollowers(platform.followers)}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Active Events */}
       <section className="px-4 py-4">
@@ -176,7 +193,7 @@ export default function ProfilePage() {
             {currentUser.achievements.map((achievement, index) => (
               <span
                 key={index}
-                className="bg-gold/10 text-gold border border-gold/20 px-3 py-1.5 rounded text-[10px] font-semibold uppercase tracking-[0.1em]"
+                className="bg-gold/10 text-gold border border-gold/20 px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-[0.1em]"
               >
                 {achievement}
               </span>
