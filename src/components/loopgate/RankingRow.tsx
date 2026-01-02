@@ -30,7 +30,7 @@ export default function RankingRow({ editor }: RankingRowProps) {
         </h3>
         <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground uppercase tracking-wider">
           <span>{editor.winRate}% Win</span>
-          <span>{editor.finalsReached} Finals</span>
+          <span>{editor.region}</span>
         </div>
       </div>
 

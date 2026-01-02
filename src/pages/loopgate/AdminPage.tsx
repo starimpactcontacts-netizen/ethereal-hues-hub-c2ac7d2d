@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, X, Check, Lock, Unlock, Download } from "lucide-react";
-import { mockEvents, generateRankings } from "@/data/loopgateData";
+import { mockEvents, generateEditors } from "@/data/loopgateData";
 
 export default function AdminPage() {
   const [events, setEvents] = useState(mockEvents);
-  const rankings = generateRankings(20);
+  const editors = generateEditors(20);
 
   const handleToggleEvent = (id: string) => {
     setEvents((prev) =>
@@ -118,7 +118,7 @@ export default function AdminPage() {
             Pending Qualifications
           </h2>
           <div className="space-y-2">
-            {rankings.slice(0, 5).map((editor) => (
+            {editors.slice(0, 5).map((editor) => (
               <div
                 key={editor.id}
                 className="bg-card border border-border rounded-lg p-4 flex items-center justify-between"
