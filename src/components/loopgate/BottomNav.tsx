@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Home, Trophy, Shield, Crown, User } from "lucide-react";
+import { Home, Trophy, Shield, Search, User } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Events" },
   { to: "/rankings", icon: Trophy, label: "Rankings" },
   { to: "/leagues", icon: Shield, label: "Leagues" },
-  { to: "/championship", icon: Crown, label: "Finals" },
+  { to: "/index", icon: Search, label: "Index" },
   { to: "/profile", icon: User, label: "Lofile" },
 ];
 
