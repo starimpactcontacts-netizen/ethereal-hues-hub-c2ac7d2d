@@ -1,20 +1,26 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Events from "./pages/Events";
-import Index from "./pages/Index";
-import Loopgate from "./pages/Loopgate";
-import Rankings from "./pages/Rankings";
+import MobileLayout from "./components/loopgate/MobileLayout";
+import HomePage from "./pages/loopgate/HomePage";
+import EventDetailPage from "./pages/loopgate/EventDetailPage";
+import RankingsPage from "./pages/loopgate/RankingsPage";
+import ProfilePage from "./pages/loopgate/ProfilePage";
+import LeaguesPage from "./pages/loopgate/LeaguesPage";
+import ChampionshipPage from "./pages/loopgate/ChampionshipPage";
+import AdminPage from "./pages/loopgate/AdminPage";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Events />} />
-        <Route path="/demo" element={<Index />} />
-        <Route path="/loopgate" element={<Loopgate />} />
-        <Route path="/arena" element={<Loopgate />} />
-        <Route path="/leaderboard" element={<Loopgate />} />
-        <Route path="/entry" element={<Loopgate />} />
-        <Route path="/rankings" element={<Rankings />} />
+        <Route element={<MobileLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/event/:id" element={<EventDetailPage />} />
+          <Route path="/rankings" element={<RankingsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/leagues" element={<LeaguesPage />} />
+          <Route path="/championship" element={<ChampionshipPage />} />
+        </Route>
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   );
