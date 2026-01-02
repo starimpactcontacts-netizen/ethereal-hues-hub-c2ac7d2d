@@ -1,0 +1,17 @@
+import { Outlet, useLocation } from "react-router-dom";
+import BottomNav from "./BottomNav";
+
+export default function MobileLayout() {
+  const location = useLocation();
+  const hideNavPaths = ["/admin"];
+  const showNav = !hideNavPaths.includes(location.pathname);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <main className="flex-1 pb-20">
+        <Outlet />
+      </main>
+      {showNav && <BottomNav />}
+    </div>
+  );
+}
