@@ -1,0 +1,167 @@
+import { useState } from "react";
+import { X, ExternalLink, Loader2 } from "lucide-react";
+
+interface SubmissionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  eventId: string;
+  eventTitle: string;
+}
+
+export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }: SubmissionModalProps) {
+  const [alias, setAlias] = useState("");
+  const [platform, setPlatform] = useState<"tiktok" | "instagram" | "youtube">("tiktok");
+  const [platformLink, setPlatformLink] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate submission (replace with real API call)
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    setIsSubmitting(false);
+    setSubmitted(true);
+  };
+
+  const platformPlaceholders = {
+    tiktok: "https://tiktok.com/@handle/video/...",
+    instagram: "https://instagram.com/reel/...",
+    youtube: "https://youtube.com/shorts/..."
+  };
+
+  if (submitted) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="w-full max-w-md bg-card border border-border rounded-lg p-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">✓</span>
+          </div>
+          <h2 className="text-xl font-bold mb-2">Submission Received</h2>
+          <p className="text-muted-foreground text-sm mb-4">
+            Your edit has been indexed and is pending review by judges.
+          </p>
+          <div className="bg-surface-1 rounded-lg p-4 mb-6">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Status</p>
+            <p className="text-gold font-bold">PENDING REVIEW</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-foreground text-background font-bold rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="w-full max-w-md bg-card border border-border rounded-lg overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div>
+            <h2 className="font-bold">Submit Edit</h2>
+            <p className="text-xs text-muted-foreground">{eventTitle}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-surface-1 rounded-lg">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {/* Alias */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              Editor Alias
+            </label>
+            <input
+              type="text"
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+              placeholder="YOUR_ALIAS"
+              className="w-full bg-surface-1 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-gold"
+              required
+            />
+          </div>
+
+          {/* Platform Selection */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              Platform
+            </label>
+            <div className="flex gap-2">
+              {(["tiktok", "instagram", "youtube"] as const).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPlatform(p)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
+                    platform === p
+                      ? "bg-gold text-black"
+                      : "bg-surface-1 border border-border text-muted-foreground"
+                  }`}
+                >
+                  {p === "tiktok" ? "TikTok" : p === "instagram" ? "IG" : "YT"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Platform Link */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              Edit Link
+            </label>
+            <div className="relative">
+              <input
+                type="url"
+                value={platformLink}
+                onChange={(e) => setPlatformLink(e.target.value)}
+                placeholder={platformPlaceholders[platform]}
+                className="w-full bg-surface-1 border border-border rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:border-gold"
+                required
+              />
+              <ExternalLink size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Direct link to your published edit
+            </p>
+          </div>
+
+          {/* Event ID (hidden) */}
+          <input type="hidden" value={eventId} />
+
+          {/* Rules reminder */}
+          <div className="bg-surface-1 rounded-lg p-3">
+            <p className="text-[10px] text-muted-foreground">
+              By submitting, you confirm your edit follows all event rules and is original work.
+            </p>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isSubmitting || !alias || !platformLink}
+            className="w-full py-4 bg-gold text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit Edit"
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
