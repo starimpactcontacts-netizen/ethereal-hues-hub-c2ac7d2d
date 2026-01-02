@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { generateRankings } from "@/data/loopgateData";
 import RankingRow from "@/components/loopgate/RankingRow";
+import loopgateLogo from "@/assets/loopgate-logo.png";
 
 type TabType = "global" | "league" | "region" | "history";
 
@@ -17,31 +18,31 @@ export default function RankingsPage() {
 
   const filteredRankings = rankings.filter((editor) => {
     if (activeTab === "league") return editor.league === "elite" || editor.league === "pro";
-    if (activeTab === "region") return editor.rank <= 20; // Mock regional filter
+    if (activeTab === "region") return editor.rank <= 20;
     return true;
   });
 
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="px-4 py-4">
-          <h1 className="text-lg font-bold tracking-tight">RANKINGS</h1>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-widest mt-0.5">
-            Global Competitive Index
-          </p>
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
+          <span className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
+            Rankings
+          </span>
         </div>
 
         {/* Tabs */}
-        <div className="px-4 pb-3 flex gap-1 overflow-x-auto scrollbar-hide">
+        <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors whitespace-nowrap ${
+              className={`px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.15em] rounded transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "bg-gold text-black"
-                  : "bg-card text-muted-foreground"
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground"
               }`}
             >
               {tab.label}
@@ -51,33 +52,27 @@ export default function RankingsPage() {
       </header>
 
       {/* Rankings List */}
-      <div className="px-4 py-4">
+      <div className="p-4">
         {activeTab === "history" ? (
-          <div className="space-y-4">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Winter 2024 Champion
-              </p>
-              <p className="text-lg font-bold">VELOCITY_X</p>
-              <p className="text-sm text-gold">98.7 Index Score</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Fall 2024 Champion
-              </p>
-              <p className="text-lg font-bold">FRAME_HUNTER</p>
-              <p className="text-sm text-gold">97.2 Index Score</p>
-            </div>
-            <div className="bg-card border border-border rounded-lg p-4">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Summer 2024 Champion
-              </p>
-              <p className="text-lg font-bold">CUT_MASTER</p>
-              <p className="text-sm text-gold">96.8 Index Score</p>
-            </div>
+          <div className="space-y-3">
+            {[
+              { season: "Winter 2024", alias: "VELOCITY_X", score: 98.7 },
+              { season: "Fall 2024", alias: "FRAME_HUNTER", score: 97.2 },
+              { season: "Summer 2024", alias: "CUT_MASTER", score: 96.8 },
+            ].map((champ) => (
+              <div key={champ.season} className="bg-surface-1 border border-border rounded-lg p-4">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">
+                  {champ.season}
+                </p>
+                <div className="flex items-baseline justify-between">
+                  <p className="text-lg font-bold">{champ.alias}</p>
+                  <p className="text-lg font-bold text-gold">{champ.score}</p>
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1">
             {filteredRankings.map((editor) => (
               <RankingRow key={editor.id} editor={editor} />
             ))}
@@ -85,10 +80,10 @@ export default function RankingsPage() {
         )}
       </div>
 
-      {/* Footer note */}
-      <div className="px-4 py-6 text-center">
-        <p className="text-xs text-muted-foreground">
-          Rankings are final. Index updated daily.
+      {/* Footer */}
+      <div className="px-4 py-8 text-center border-t border-border">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
+          Rankings are final
         </p>
       </div>
     </div>

@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 interface CountdownTimerProps {
   endDate: string;
   label: string;
+  large?: boolean;
 }
 
-export default function CountdownTimer({ endDate, label }: CountdownTimerProps) {
+export default function CountdownTimer({ endDate, label, large = false }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   function calculateTimeLeft() {
@@ -30,6 +31,39 @@ export default function CountdownTimer({ endDate, label }: CountdownTimerProps) 
 
     return () => clearInterval(timer);
   }, [endDate]);
+
+  if (large) {
+    return (
+      <div className="text-center">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3">
+          {label}
+        </p>
+        <div className="flex items-center justify-center gap-3 font-mono">
+          {timeLeft.days > 0 && (
+            <div className="text-center">
+              <p className="text-2xl font-bold">{String(timeLeft.days).padStart(2, "0")}</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Days</p>
+            </div>
+          )}
+          <span className="text-xl text-muted-foreground">:</span>
+          <div className="text-center">
+            <p className="text-2xl font-bold">{String(timeLeft.hours).padStart(2, "0")}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Hrs</p>
+          </div>
+          <span className="text-xl text-muted-foreground">:</span>
+          <div className="text-center">
+            <p className="text-2xl font-bold">{String(timeLeft.minutes).padStart(2, "0")}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Min</p>
+          </div>
+          <span className="text-xl text-muted-foreground">:</span>
+          <div className="text-center">
+            <p className="text-2xl font-bold">{String(timeLeft.seconds).padStart(2, "0")}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Sec</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
