@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,10 +7,12 @@
 
 :root {
   --font-size: 16px;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
   
-  /* Loopgate Dark Authority Theme */
-  --background: 0 0% 4%;
-  --foreground: 45 10% 92%;
+  /* Loopgate Dark Authority Theme - Pure Black */
+  --background: 0 0% 2%;
+  --foreground: 0 0% 95%;
   --card: 0 0% 7%;
   --card-foreground: 45 10% 92%;
   --popover: 0 0% 7%;
@@ -121,7 +123,7 @@
 
   body {
     @apply bg-background text-foreground overflow-x-hidden;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-body);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     width: 100%;
     max-width: 100vw;
@@ -133,32 +135,45 @@
     box-sizing: border-box;
   }
 
-  /* Heavy Typography System */
-  h1 {
-    font-size: 2rem;
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+  /* Fortnite-Style Typography - Aggressive & Condensed */
+  h1, .font-display {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
 
   h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
 
   h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
 
   p {
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.5;
+  }
+  
+  /* Display font utility */
+  .display-font {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
   
   /* Utility classes */

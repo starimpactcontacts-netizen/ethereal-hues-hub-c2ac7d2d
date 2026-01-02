@@ -6,7 +6,7 @@ const navItems = [
   { to: "/rankings", icon: Trophy, label: "Rankings" },
   { to: "/leagues", icon: Shield, label: "Leagues" },
   { to: "/index", icon: Search, label: "Index" },
-  { to: "/profile", icon: User, label: "Lofile" },
+  { to: "/profile", icon: User, label: "Profile" },
 ];
 
 export default function BottomNav() {
@@ -20,14 +20,14 @@ export default function BottomNav() {
             end={item.to === "/"}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
-                isActive ? "text-foreground" : "text-muted-foreground"
+                isActive ? "text-gold" : "text-muted-foreground"
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <item.icon size={18} strokeWidth={isActive ? 2 : 1.5} />
-                <span className="text-[9px] font-medium uppercase tracking-[0.1em]">
+                <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.5} />
+                <span className="text-[9px] font-semibold uppercase tracking-[0.1em]">
                   {item.label}
                 </span>
               </>
