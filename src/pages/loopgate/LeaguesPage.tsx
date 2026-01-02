@@ -1,29 +1,44 @@
-import { Lock } from "lucide-react";
+import { Shield, Star, Crown, Lock, ChevronRight } from "lucide-react";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 const leagues = [
   {
     id: "open",
-    name: "Open",
-    tagline: "Anyone can compete",
-    description: "Entry-level competitive tier. Build your index here.",
+    name: "Open League",
+    icon: Shield,
+    description: "Anyone can compete. Entry-level competitive tier.",
     status: "Open to all",
+    statusColor: "text-green-500",
+    color: "text-foreground",
+    bgColor: "bg-surface-1",
+    borderColor: "border-border",
+    cta: "Open to all",
     locked: false,
   },
   {
     id: "pro",
-    name: "Pro",
-    tagline: "Performance-based entry",
-    description: "Reserved for top performers from Open League.",
-    status: "Top 15%",
-    locked: false,
+    name: "Pro League",
+    icon: Star,
+    description: "Top 15% from Open League. Performance-based qualification.",
+    status: "Top 15% of Open",
+    statusColor: "text-blue-400",
+    color: "text-blue-400",
+    bgColor: "bg-blue-950/20",
+    borderColor: "border-blue-900/40",
+    cta: "Performance-based",
+    locked: true,
   },
   {
     id: "elite",
-    name: "Elite",
-    tagline: "The apex tier",
-    description: "Invite-only. Capped roster of 50 editors. The final level.",
-    status: "Invite Only",
+    name: "Elite League",
+    icon: Crown,
+    description: "Invite-only. Capped roster of 50. The apex tier.",
+    status: "Invite Only • 50 Roster",
+    statusColor: "text-gold",
+    color: "text-gold",
+    bgColor: "bg-gold/5",
+    borderColor: "border-gold/30",
+    cta: "Invite Only",
     locked: true,
   },
 ];
@@ -43,74 +58,82 @@ export default function LeaguesPage() {
 
       {/* League Cards */}
       <div className="p-4 space-y-4">
-        {leagues.map((league, index) => (
+        {leagues.map((league) => (
           <div
             key={league.id}
-            className={`rounded-lg p-6 ${
-              league.id === "elite"
-                ? "bg-surface-1 border border-gold/20"
-                : "bg-surface-1 border border-border"
-            }`}
+            className={`${league.bgColor} border ${league.borderColor} rounded-xl p-5 relative overflow-hidden`}
           >
-            {/* League Level Indicator */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
-                Tier {index + 1}
-              </span>
-              {league.locked && (
-                <Lock size={14} className="text-gold" />
-              )}
-            </div>
+            {/* Background decoration for Elite */}
+            {league.id === "elite" && (
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,hsl(43_74%_49%/0.1),transparent_50%)]" />
+            )}
 
-            {/* League Name */}
-            <h2 className={`text-2xl font-black tracking-tight ${
-              league.id === "elite" ? "text-gold" : ""
-            }`}>
-              {league.name}
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {league.tagline}
-            </p>
+            <div className="relative z-10">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div className={`p-3 rounded-xl bg-background/50 ${league.color}`}>
+                  <league.icon size={28} strokeWidth={2} />
+                </div>
+                {league.locked && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-background/30 rounded-full text-[10px] text-muted-foreground">
+                    <Lock size={10} />
+                    <span>Locked</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Description */}
-            <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-              {league.description}
-            </p>
+              {/* Content */}
+              <h2 className={`text-xl font-black ${league.color}`}>
+                {league.name}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                {league.description}
+              </p>
 
-            {/* Status Badge */}
-            <div className="mt-6">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
-                league.id === "elite"
-                  ? "bg-gold/10 text-gold border border-gold/20"
-                  : "bg-surface-2 text-muted-foreground"
-              }`}>
-                {league.locked && <Lock size={10} />}
-                {league.status}
-              </span>
+              {/* Status Badge */}
+              <div className="mt-4">
+                <span className={`inline-flex items-center px-3 py-1.5 bg-background/50 rounded-lg text-xs font-semibold ${league.statusColor}`}>
+                  {league.status}
+                </span>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-4 flex items-center justify-between pt-4 border-t border-border/50">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em]">
+                  {league.cta}
+                </span>
+                {!league.locked && (
+                  <ChevronRight size={16} className="text-muted-foreground" />
+                )}
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* System Info */}
-      <section className="px-4 py-8 border-t border-border">
-        <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
-          League System
-        </h3>
-        <div className="space-y-2 text-xs text-muted-foreground">
-          <p>• Leagues prevent dominance fatigue</p>
-          <p>• Movement is performance-based</p>
-          <p>• Elite roster capped at 50</p>
-        </div>
+      {/* Aspirational Quote */}
+      <section className="px-4 py-8 text-center">
+        <p className="text-sm text-muted-foreground italic">
+          "Climb the ranks. Prove your craft. Join the elite."
+        </p>
       </section>
 
-      {/* Your Status */}
-      <section className="px-4 pb-8">
-        <div className="bg-surface-1 border border-border rounded-lg p-4">
+      {/* Current Status */}
+      <section className="px-4 pb-6">
+        <div className="bg-surface-1 border border-border rounded-xl p-5">
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-2">
             Your League
           </p>
-          <p className="text-xl font-bold">Open</p>
+          <p className="text-xl font-black">Open League</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Compete in Open activations to advance.
+          </p>
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em]">
+              Next: Pro League
+            </span>
+            <span className="text-xs text-gold font-semibold">Top 15% required</span>
+          </div>
         </div>
       </section>
     </div>
