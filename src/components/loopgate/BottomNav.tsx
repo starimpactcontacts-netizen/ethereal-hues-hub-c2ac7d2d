@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Trophy, User, Shield, Crown } from "lucide-react";
+import { Home, Trophy, Shield, Crown, User } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Events" },
@@ -11,25 +11,23 @@ const navItems = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-surface-1 border-t border-border safe-bottom">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-bottom">
+      <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === "/"}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg transition-colors ${
-                isActive
-                  ? "text-gold"
-                  : "text-muted-foreground"
+              `flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
+                isActive ? "text-foreground" : "text-muted-foreground"
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium tracking-wide uppercase">
+                <item.icon size={18} strokeWidth={isActive ? 2 : 1.5} />
+                <span className="text-[9px] font-medium uppercase tracking-[0.1em]">
                   {item.label}
                 </span>
               </>

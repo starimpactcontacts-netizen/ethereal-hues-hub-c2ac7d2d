@@ -1,32 +1,54 @@
 interface StatusBadgeProps {
   status: "live" | "pending" | "closed" | "qualified" | "eliminated";
+  small?: boolean;
 }
 
-export default function StatusBadge({ status }: StatusBadgeProps) {
-  const styles = {
-    live: "bg-green-600 text-white",
-    pending: "bg-gold text-black",
-    closed: "bg-muted text-muted-foreground",
-    qualified: "bg-green-600 text-white",
-    eliminated: "bg-destructive text-white",
+export default function StatusBadge({ status, small = false }: StatusBadgeProps) {
+  const config = {
+    live: {
+      bg: "bg-green-600",
+      text: "text-white",
+      label: "LIVE",
+      dot: true,
+    },
+    pending: {
+      bg: "bg-surface-2",
+      text: "text-muted-foreground",
+      label: "PENDING",
+      dot: false,
+    },
+    closed: {
+      bg: "bg-surface-2",
+      text: "text-muted-foreground",
+      label: "CLOSED",
+      dot: false,
+    },
+    qualified: {
+      bg: "bg-gold/10",
+      text: "text-gold",
+      label: "QUALIFIED",
+      dot: false,
+    },
+    eliminated: {
+      bg: "bg-destructive/10",
+      text: "text-destructive",
+      label: "ELIMINATED",
+      dot: false,
+    },
   };
 
-  const labels = {
-    live: "LIVE",
-    pending: "PENDING",
-    closed: "CLOSED",
-    qualified: "QUALIFIED",
-    eliminated: "ELIMINATED",
-  };
+  const { bg, text, label, dot } = config[status];
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded ${styles[status]}`}
+      className={`inline-flex items-center gap-1 rounded ${bg} ${text} ${
+        small ? "px-1.5 py-0.5 text-[8px]" : "px-2 py-0.5 text-[10px]"
+      } font-semibold uppercase tracking-wider`}
     >
-      {status === "live" && (
-        <span className="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-pulse" />
+      {dot && (
+        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
       )}
-      {labels[status]}
+      {label}
     </span>
   );
 }
