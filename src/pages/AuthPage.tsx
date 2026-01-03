@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Mail, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
-import loopgateLogo from '@/assets/loopgate-logo-white.png';
+
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
@@ -283,7 +283,7 @@ export default function AuthPage() {
       >
         {/* Logo */}
         <div className="text-center mb-10">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-10 mx-auto mb-4" />
+          <span className="font-display text-4xl text-white tracking-tight block mb-4">LOOPGATE</span>
           <p className="text-muted-foreground">The Global Competitive Editing Index</p>
         </div>
 

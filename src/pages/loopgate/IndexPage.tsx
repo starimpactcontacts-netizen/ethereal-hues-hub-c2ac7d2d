@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { useRealRankings } from "@/hooks/useRealData";
 import EditorCard from "@/components/loopgate/EditorCard";
-import loopgateLogo from "@/assets/loopgate-logo-white.png";
+
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
@@ -35,7 +35,7 @@ export default function IndexPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
+          <span className="font-display text-xl text-white tracking-tight">LOOPGATE</span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">
             Index
           </span>
