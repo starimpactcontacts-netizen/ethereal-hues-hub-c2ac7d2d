@@ -14,7 +14,7 @@ import RankingsPage from "./pages/loopgate/RankingsPage";
 import ProfilePage from "./pages/loopgate/ProfilePage";
 import LeaguesPage from "./pages/loopgate/LeaguesPage";
 import IndexPage from "./pages/loopgate/IndexPage";
-import AdminPage from "./pages/loopgate/AdminPage";
+
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import SupportPage from "./pages/SupportPage";
 import RulesPage from "./pages/RulesPage";
@@ -132,12 +132,6 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
             </Route>
             
-            {/* Admin routes - requires admin role */}
-            <Route path="/admin" element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminPage />
-              </ProtectedRoute>
-            } />
             
             {/* Hidden secure ops panel - requires admin role */}
             <Route path="/ops-panel/a7c92ff31b" element={

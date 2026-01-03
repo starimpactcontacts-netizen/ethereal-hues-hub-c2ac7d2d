@@ -6,8 +6,8 @@ export default function DevModeBadge() {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 z-50 bg-amber-500/90 text-black px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-sm shadow-lg">
-      DEV MODE (Auth Bypassed)
+    <div className="fixed top-4 right-4 z-[100] bg-amber-500/90 text-black px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-sm shadow-lg pointer-events-none">
+      DEV MODE — Auth Bypassed
     </div>
   );
 }
