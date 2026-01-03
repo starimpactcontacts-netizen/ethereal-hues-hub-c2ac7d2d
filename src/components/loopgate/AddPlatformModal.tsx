@@ -23,6 +23,13 @@ const usernameSchema = z.string()
   .max(50, "Username too long")
   .regex(/^[a-zA-Z0-9._]+$/, "Only letters, numbers, dots and underscores");
 
+const urlSchema = z.string()
+  .min(1, "Profile URL is required")
+  .url("Must be a valid URL")
+  .refine((url) => {
+    return url.includes("tiktok.com") || url.includes("instagram.com") || url.includes("youtube.com");
+  }, "Must be a TikTok, Instagram, or YouTube link");
+
 export default function AddPlatformModal({
   isOpen,
   onClose,
@@ -32,6 +39,7 @@ export default function AddPlatformModal({
 }: AddPlatformModalProps) {
   const [platform, setPlatform] = useState<"tiktok" | "instagram" | "youtube" | "">("");
   const [username, setUsername] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -47,15 +55,33 @@ export default function AddPlatformModal({
       return;
     }
 
-    const result = usernameSchema.safeParse(username.trim());
-    if (!result.success) {
-      setError(result.error.errors[0].message);
+    const usernameResult = usernameSchema.safeParse(username.trim());
+    if (!usernameResult.success) {
+      setError(usernameResult.error.errors[0].message);
+      return;
+    }
+
+    const urlResult = urlSchema.safeParse(profileUrl.trim());
+    if (!urlResult.success) {
+      setError(urlResult.error.errors[0].message);
+      return;
+    }
+
+    // Validate URL matches selected platform
+    const platformConfig = platformOptions.find((p) => p.value === platform);
+    if (!platformConfig) return;
+
+    const urlLower = profileUrl.toLowerCase();
+    if (
+      (platform === "tiktok" && !urlLower.includes("tiktok.com")) ||
+      (platform === "instagram" && !urlLower.includes("instagram.com")) ||
+      (platform === "youtube" && !urlLower.includes("youtube.com"))
+    ) {
+      setError(`URL must be a ${platformConfig.label} link`);
       return;
     }
 
     const cleanUsername = username.trim().replace(/^@/, "");
-    const platformConfig = platformOptions.find((p) => p.value === platform);
-    if (!platformConfig) return;
 
     setSaving(true);
     setError("");
@@ -66,7 +92,7 @@ export default function AddPlatformModal({
         user_id: userId,
         platform: platform,
         platform_username: cleanUsername,
-        platform_url: `${platformConfig.urlPrefix}${cleanUsername}`,
+        platform_url: profileUrl.trim(),
         follower_count: 0,
         is_verified: false,
       });
@@ -85,6 +111,7 @@ export default function AddPlatformModal({
   const handleClose = () => {
     setPlatform("");
     setUsername("");
+    setProfileUrl("");
     setError("");
     onClose();
   };
@@ -137,7 +164,20 @@ export default function AddPlatformModal({
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="yourhandle"
+                  placeholder="your_username"
+                  className="w-full bg-background border border-border px-3 py-2 text-sm focus:border-gold focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-2">
+                  Profile URL
+                </label>
+                <input
+                  type="url"
+                  value={profileUrl}
+                  onChange={(e) => setProfileUrl(e.target.value)}
+                  placeholder={platform ? platformOptions.find(p => p.value === platform)?.urlPrefix + "username" : "https://..."}
                   className="w-full bg-background border border-border px-3 py-2 text-sm focus:border-gold focus:outline-none"
                 />
               </div>
