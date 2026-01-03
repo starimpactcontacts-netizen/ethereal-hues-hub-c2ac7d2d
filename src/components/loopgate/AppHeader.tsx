@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRealRankings } from '@/hooks/useRealData';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 
@@ -19,9 +20,14 @@ const menuItems = [
 
 export default function AppHeader() {
   const { profile, signOut, isAdmin } = useAuth();
+  const { rankings } = useRealRankings();
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  // Get user's real rank from rankings
+  const userRanking = profile ? rankings.find(r => r.id === profile.id) : null;
+  const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,7 +66,7 @@ export default function AppHeader() {
                   <div className="mt-4 p-3 bg-surface-1 border border-border">
                     <p className="font-display text-lg">{profile.username}</p>
                     <p className="text-xs text-muted-foreground uppercase tracking-widest">
-                      {profile.league} League · Rank #{Math.floor(Math.random() * 1000) + 1}
+                      {profile.league} League · Rank #{userRank}
                     </p>
                   </div>
                 )}
