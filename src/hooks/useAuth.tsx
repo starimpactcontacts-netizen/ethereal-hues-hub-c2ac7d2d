@@ -12,6 +12,7 @@ interface Profile {
   total_wins: number;
   onboarding_completed: boolean;
   rules_accepted: boolean;
+  avatar_url?: string | null;
 }
 
 interface ConnectedPlatform {
