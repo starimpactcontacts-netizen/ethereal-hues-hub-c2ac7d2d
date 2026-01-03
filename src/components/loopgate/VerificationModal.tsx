@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { X, Copy, Check, Loader2, ExternalLink, RefreshCw, Upload, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -57,6 +57,19 @@ export default function VerificationModal({
   const [screenshot, setScreenshot] = useState<string | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset state when modal opens/closes or existingCode changes
+  React.useEffect(() => {
+    if (isOpen) {
+      setStep(existingCode ? "upload" : "generate");
+      setCode(existingCode || "");
+      setScreenshot(null);
+      setScreenshotPreview(null);
+      setCopied(false);
+      setVerifying(false);
+      setGenerating(false);
+    }
+  }, [isOpen, existingCode]);
 
   if (!isOpen) return null;
 

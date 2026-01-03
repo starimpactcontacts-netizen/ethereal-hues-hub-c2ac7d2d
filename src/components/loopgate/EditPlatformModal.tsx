@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Loader2, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -46,6 +46,12 @@ export default function EditPlatformModal({
   const [followerCount, setFollowerCount] = useState(String(platform.follower_count || ""));
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Sync state when platform prop changes (different platform selected)
+  React.useEffect(() => {
+    setUsername(platform.platform_username);
+    setFollowerCount(String(platform.follower_count || ""));
+  }, [platform.id, platform.platform_username, platform.follower_count]);
 
   if (!isOpen) return null;
 
