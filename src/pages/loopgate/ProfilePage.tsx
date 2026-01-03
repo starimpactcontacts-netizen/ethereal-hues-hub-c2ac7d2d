@@ -1,14 +1,13 @@
-import { useState, useRef } from "react";
-import { ExternalLink, Calendar, Camera, Loader2, ShieldCheck, Pencil, Plus } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
-import { supabase } from "@/integrations/supabase/client";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
 import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
 import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
+import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
-import { toast } from "sonner";
 
 function formatFollowers(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -31,13 +30,12 @@ interface EditingPlatform {
 }
 
 export default function ProfilePage() {
-  const { user, profile, platforms, refreshProfile } = useAuth();
+  const { profile, platforms, refreshProfile } = useAuth();
   const { rankings } = useRealRankings();
-  const [uploading, setUploading] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
   const [showAddPlatform, setShowAddPlatform] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
   
   // Keep session active
   useActiveSession();
@@ -46,57 +44,6 @@ export default function ProfilePage() {
     elite: "text-gold border-gold",
     pro: "text-blue-400 border-blue-400",
     open: "text-muted-foreground border-muted-foreground",
-  };
-
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
-
-    setUploading(true);
-
-    try {
-      const fileExt = file.name.split(".").pop();
-      const filePath = `${user.id}/avatar.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user.id);
-
-      if (updateError) throw updateError;
-
-      await refreshProfile();
-      toast.success("Profile picture updated");
-    } catch (error: any) {
-      console.error("Avatar upload error:", error);
-      toast.error("Failed to upload avatar");
-    } finally {
-      setUploading(false);
-    }
   };
 
   // Get platform for verification (prioritize TikTok, then others)
@@ -125,16 +72,8 @@ export default function ProfilePage() {
           {/* Avatar */}
           <div className="flex justify-center mb-4">
             <div className="relative">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleAvatarUpload}
-                accept="image/*"
-                className="hidden"
-              />
               <button
-                onClick={handleAvatarClick}
-                disabled={uploading}
+                onClick={() => setShowAvatarModal(true)}
                 className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gold group"
               >
                 {profile.avatar_url ? (
@@ -152,11 +91,7 @@ export default function ProfilePage() {
                 )}
                 
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  {uploading ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-white" />
-                  ) : (
-                    <Camera className="w-6 h-6 text-white" />
-                  )}
+                  <Camera className="w-6 h-6 text-white" />
                 </div>
               </button>
             </div>
@@ -343,6 +278,15 @@ export default function ProfilePage() {
         userId={profile.id}
         existingPlatforms={platforms.map(p => p.platform)}
         onAdded={refreshProfile}
+      />
+
+      {/* Avatar Upload Modal */}
+      <AvatarUploadModal
+        isOpen={showAvatarModal}
+        onClose={() => setShowAvatarModal(false)}
+        userId={profile.id}
+        currentAvatarUrl={profile.avatar_url}
+        onUpdated={refreshProfile}
       />
     </div>
   );
