@@ -8,6 +8,15 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
+// Check if we should bypass auth (dev mode or Lovable preview)
+function shouldBypassAuth(): boolean {
+  const isDev = import.meta.env.DEV;
+  const isLovablePreview = typeof window !== 'undefined' && 
+    window.location.origin.includes('lovable.dev');
+  
+  return isDev || isLovablePreview;
+}
+
 export default function ProtectedRoute({ 
   children, 
   requireOnboarding = true,
@@ -15,6 +24,11 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, profile, loading, isAdmin } = useAuth();
   const location = useLocation();
+
+  // Bypass auth in dev mode or Lovable preview
+  if (shouldBypassAuth()) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return (

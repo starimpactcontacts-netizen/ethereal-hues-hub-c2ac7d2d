@@ -17,6 +17,7 @@ import IndexPage from "./pages/loopgate/IndexPage";
 import AdminPage from "./pages/loopgate/AdminPage";
 import SupportPage from "./pages/SupportPage";
 import RulesPage from "./pages/RulesPage";
+import NotFound from "./pages/NotFound";
 
 // Components
 import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
@@ -101,26 +102,27 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Public routes */}
+            {/* Public routes - no auth required */}
             <Route path="/" element={<RootRedirect />} />
             <Route path="/auth" element={<AuthPageWrapper />} />
+            <Route path="/login" element={<AuthPageWrapper />} />
             <Route path="/onboarding" element={<OnboardingWrapper />} />
+            <Route path="/rules" element={<RulesPage />} />
+            <Route path="/support" element={<SupportPage />} />
             
-            {/* Protected routes with layout */}
+            {/* Protected routes with layout - auth required */}
             <Route element={
               <ProtectedRoute>
                 <AuthenticatedLayout />
               </ProtectedRoute>
             }>
               <Route path="/hub" element={<HubPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/rankings" element={<RankingsPage />} />
+              <Route path="/leagues" element={<LeaguesPage />} />
               <Route path="/events" element={<HomePage />} />
               <Route path="/event/:id" element={<EventDetailPage />} />
-              <Route path="/rankings" element={<RankingsPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/leagues" element={<LeaguesPage />} />
               <Route path="/index" element={<IndexPage />} />
-              <Route path="/support" element={<SupportPage />} />
-              <Route path="/rules" element={<RulesPage />} />
             </Route>
             
             {/* Admin route - requires admin role */}
@@ -129,6 +131,9 @@ export default function App() {
                 <AdminPage />
               </ProtectedRoute>
             } />
+            
+            {/* 404 - public */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster 
             position="top-center" 
