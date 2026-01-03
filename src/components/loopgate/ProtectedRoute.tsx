@@ -8,13 +8,37 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
-// Check if we should bypass auth (dev mode or Lovable preview)
+// Check if we should bypass auth (ONLY in Lovable preview, NOT on deployed apps)
 function shouldBypassAuth(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  const hostname = window.location.hostname;
+  
+  // ONLY bypass in Lovable editor preview (*.lovable.dev)
+  // DO NOT bypass on deployed apps (*.lovable.app or custom domains)
+  const isLovablePreview = hostname.includes('lovable.dev');
+  
+  // Also bypass in local development
   const isDev = import.meta.env.DEV;
-  const isLovablePreview = typeof window !== 'undefined' && 
-    window.location.origin.includes('lovable.dev');
   
   return isDev || isLovablePreview;
+}
+
+// Mock user for dev preview
+export const DEV_MOCK_USER = {
+  id: 'dev-user-preview',
+  username: 'DEV_PREVIEW',
+  league: 'open' as const,
+  global_index_score: 999,
+  win_rate: 100,
+  total_events: 0,
+  total_wins: 0,
+  onboarding_completed: true,
+  rules_accepted: true,
+};
+
+export function isDevMode(): boolean {
+  return shouldBypassAuth();
 }
 
 export default function ProtectedRoute({ 

@@ -21,13 +21,19 @@ import NotFound from "./pages/NotFound";
 
 // Components
 import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
-import ProtectedRoute from "./components/loopgate/ProtectedRoute";
+import ProtectedRoute, { isDevMode } from "./components/loopgate/ProtectedRoute";
+import DevModeBadge from "./components/loopgate/DevModeBadge";
 
 const queryClient = new QueryClient();
 
 // Root redirect component
 function RootRedirect() {
   const { user, profile, loading } = useAuth();
+  
+  // In dev mode, always go to hub
+  if (isDevMode()) {
+    return <Navigate to="/hub" replace />;
+  }
   
   if (loading) {
     return (
@@ -135,6 +141,7 @@ export default function App() {
             {/* 404 - public */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <DevModeBadge />
           <Toaster 
             position="top-center" 
             toastOptions={{

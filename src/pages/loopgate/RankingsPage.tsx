@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { RefreshCw, ChevronRight, Lock, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
-import { mockEvents, generateEditors, generateEventRankings } from "@/data/loopgateData";
+import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
@@ -21,17 +21,18 @@ export default function RankingsPage() {
     { id: "history", label: "History" },
   ];
 
-  const editors = generateEditors(50);
-  const selectedEvent = mockEvents.find((e) => e.id === selectedEventId);
+  // Keep session active
+  useActiveSession();
+
+  // Real data hooks
+  const { events, loading: eventsLoading } = useRealEvents();
+  const { rankings: globalRankings, loading: rankingsLoading } = useRealRankings();
+  const { rankings: eventRankings, loading: eventRankingsLoading } = useEventRankings(selectedEventId);
+
+  const selectedEvent = events.find((e) => e.id === selectedEventId);
   const isLiveEvent = selectedEvent?.status === "live";
   const isClosedEvent = selectedEvent?.status === "closed";
-  const eventRankings = selectedEventId ? generateEventRankings(selectedEventId, 30) : [];
-  const rankedEvents = mockEvents.filter((e) => e.status === "live" || e.status === "closed");
-
-  const getRankChange = (rank: number) => {
-    const changes = [2, -1, 0, 3, -2, 1, 0, -1, 4, 0];
-    return changes[rank % changes.length];
-  };
+  const rankedEvents = events.filter((e) => e.status === "live" || e.status === "closed");
 
   // Event-specific leaderboard view
   if (selectedEvent) {
@@ -80,64 +81,65 @@ export default function RankingsPage() {
 
         {/* Leaderboard */}
         <div className="px-3 py-4">
-          {/* Column Headers */}
-          <div className="flex items-center gap-2 py-2 text-[9px] text-muted-foreground uppercase tracking-widest border-b border-border mb-1 px-2">
-            <span className="w-10 text-center">#</span>
-            <span className="flex-1">Editor</span>
-            {isLiveEvent ? (
-              <>
-                <span className="w-8 text-center">Q</span>
-                <span className="w-8 text-center">O</span>
-                <span className="w-8 text-center">I</span>
-                <span className="w-14 text-right">QOI</span>
-              </>
-            ) : (
-              <span className="w-16 text-right">Index</span>
-            )}
-          </div>
+          {eventRankings.length === 0 && !eventRankingsLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No rankings yet</p>
+              <p className="text-xs text-muted-foreground mt-2">Submissions are being reviewed</p>
+            </div>
+          ) : (
+            <>
+              {/* Column Headers */}
+              <div className="flex items-center gap-2 py-2 text-[9px] text-muted-foreground uppercase tracking-widest border-b border-border mb-1 px-2">
+                <span className="w-10 text-center">#</span>
+                <span className="flex-1">Editor</span>
+                {isLiveEvent ? (
+                  <>
+                    <span className="w-8 text-center">Q</span>
+                    <span className="w-8 text-center">O</span>
+                    <span className="w-8 text-center">I</span>
+                    <span className="w-14 text-right">QOI</span>
+                  </>
+                ) : (
+                  <span className="w-16 text-right">Index</span>
+                )}
+              </div>
 
-          {/* Rankings Rows */}
-          <div className="space-y-1">
-            {eventRankings.map((ranking) => {
-              const change = getRankChange(ranking.rank);
-              const isTop3 = ranking.rank <= 3;
-              return (
-                <div
-                  key={ranking.editorId}
-                  className={`flex items-center gap-2 py-3 px-2 ${
-                    isTop3 ? "bg-gold/10 border-l-2 border-gold" : "bg-surface-1"
-                  }`}
-                >
-                  <div className="w-10 flex items-center justify-center">
-                    <span className={`font-display text-xl ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
-                      {ranking.rank}
-                    </span>
-                  </div>
-                  <div className="flex-1 flex items-center gap-2">
-                    <span className="font-semibold text-sm">{ranking.alias}</span>
-                    {isLiveEvent && change !== 0 && (
-                      <span className={`flex items-center text-[10px] ${
-                        change > 0 ? "text-green-500" : "text-red-500"
-                      }`}>
-                        {change > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                        {Math.abs(change)}
-                      </span>
-                    )}
-                  </div>
-                  {isLiveEvent ? (
-                    <>
-                      <span className="w-8 text-center text-xs text-muted-foreground">{ranking.quality}</span>
-                      <span className="w-8 text-center text-xs text-muted-foreground">{ranking.originality}</span>
-                      <span className="w-8 text-center text-xs text-muted-foreground">{ranking.impact}</span>
-                      <span className="w-14 text-right font-display text-xl text-gold">{ranking.qoiTotal}</span>
-                    </>
-                  ) : (
-                    <span className="w-16 text-right font-display text-xl text-gold">{ranking.qoiTotal}</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+              {/* Rankings Rows */}
+              <div className="space-y-1">
+                {eventRankings.map((ranking, index) => {
+                  const isTop3 = index < 3;
+                  const displayRank = ranking.final_rank || index + 1;
+                  return (
+                    <div
+                      key={ranking.id}
+                      className={`flex items-center gap-2 py-3 px-2 ${
+                        isTop3 ? "bg-gold/10 border-l-2 border-gold" : "bg-surface-1"
+                      }`}
+                    >
+                      <div className="w-10 flex items-center justify-center">
+                        <span className={`font-display text-xl ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
+                          {displayRank}
+                        </span>
+                      </div>
+                      <div className="flex-1 flex items-center gap-2">
+                        <span className="font-semibold text-sm">{ranking.profile?.username || 'Unknown'}</span>
+                      </div>
+                      {isLiveEvent ? (
+                        <>
+                          <span className="w-8 text-center text-xs text-muted-foreground">{ranking.quality_score || '—'}</span>
+                          <span className="w-8 text-center text-xs text-muted-foreground">{ranking.originality_score || '—'}</span>
+                          <span className="w-8 text-center text-xs text-muted-foreground">{ranking.impact_score || '—'}</span>
+                          <span className="w-14 text-right font-display text-xl text-gold">{ranking.qoi_score?.toFixed(1) || '—'}</span>
+                        </>
+                      ) : (
+                        <span className="w-16 text-right font-display text-xl text-gold">{ranking.qoi_score?.toFixed(1) || '—'}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Footer */}
@@ -187,39 +189,41 @@ export default function RankingsPage() {
       </div>
 
       {/* Event Selection */}
-      <div className="p-4">
-        <p className="font-display text-lg text-muted-foreground mb-4">
-          Select Event
-        </p>
+      {rankedEvents.length > 0 && (
+        <div className="p-4">
+          <p className="font-display text-lg text-muted-foreground mb-4">
+            Select Event
+          </p>
 
-        <div className="space-y-2">
-          {rankedEvents.map((event) => (
-            <button
-              key={event.id}
-              onClick={() => setSelectedEventId(event.id)}
-              className="w-full bg-surface-1 border border-border p-4 text-left flex items-center gap-3"
-            >
-              {event.posterUrl && (
-                <div
-                  className="w-14 h-20 bg-cover bg-center flex-shrink-0"
-                  style={{ backgroundImage: `url(${event.posterUrl})` }}
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-display text-xl truncate">{event.title}</h3>
-                  <StatusBadge status={event.status} small />
+          <div className="space-y-2">
+            {rankedEvents.map((event) => (
+              <button
+                key={event.id}
+                onClick={() => setSelectedEventId(event.id)}
+                className="w-full bg-surface-1 border border-border p-4 text-left flex items-center gap-3"
+              >
+                {event.poster_url && (
+                  <div
+                    className="w-14 h-20 bg-cover bg-center flex-shrink-0"
+                    style={{ backgroundImage: `url(${event.poster_url})` }}
+                  />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-display text-xl truncate">{event.title}</h3>
+                    <StatusBadge status={event.status} small />
+                  </div>
+                  {event.subtitle && <p className="text-xs text-muted-foreground">{event.subtitle}</p>}
+                  <p className="text-[10px] text-gold uppercase tracking-[0.15em] mt-1">
+                    {event.league} League
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">{event.subtitle}</p>
-                <p className="text-[10px] text-gold uppercase tracking-[0.15em] mt-1">
-                  {event.league} League
-                </p>
-              </div>
-              <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
-            </button>
-          ))}
+                <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Global Rankings Preview */}
       {activeTab === "global" && (
@@ -227,44 +231,38 @@ export default function RankingsPage() {
           <p className="font-display text-lg text-muted-foreground mb-4 mt-2">
             Global Index
           </p>
-          <div className="space-y-1">
-            {editors.slice(0, 10).map((editor) => {
-              const change = getRankChange(editor.rank);
-              const isTop3 = editor.rank <= 3;
-              return (
-                <div
-                  key={editor.id}
-                  className={`bg-surface-1 p-3 flex items-center gap-3 ${
-                    isTop3 ? "border-l-2 border-gold" : "border-l-2 border-transparent"
-                  }`}
-                >
-                  <div className={`w-10 font-display text-xl ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
-                    {editor.rank}
+          
+          {globalRankings.length === 0 && !rankingsLoading ? (
+            <div className="bg-surface-1 border border-border p-8 text-center">
+              <p className="text-muted-foreground">No rankings yet</p>
+              <p className="text-xs text-muted-foreground mt-2">Rankings will appear when editors compete</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {globalRankings.slice(0, 10).map((editor) => {
+                const isTop3 = (editor.rank || 0) <= 3;
+                return (
+                  <div
+                    key={editor.id}
+                    className={`bg-surface-1 p-3 flex items-center gap-3 ${
+                      isTop3 ? "border-l-2 border-gold" : "border-l-2 border-transparent"
+                    }`}
+                  >
+                    <div className={`w-10 font-display text-xl ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
+                      {editor.rank}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{editor.username}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{editor.win_rate?.toFixed(0) || 0}% Win</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-display text-2xl text-gold">{editor.global_index_score?.toFixed(1) || '0.0'}</span>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm">{editor.alias}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{editor.winRate}% Win</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-2xl text-gold">{editor.indexScore.toFixed(1)}</span>
-                    {change > 0 && (
-                      <span className="flex items-center text-green-500 text-xs">
-                        <TrendingUp size={12} />
-                      </span>
-                    )}
-                    {change < 0 && (
-                      <span className="flex items-center text-red-500 text-xs">
-                        <TrendingDown size={12} />
-                      </span>
-                    )}
-                    {change === 0 && (
-                      <Minus size={12} className="text-muted-foreground/50" />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,15 +1,32 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Clock, MapPin, Zap, Eye, Users, Send } from "lucide-react";
-import { mockEvents, currentUser, generateEventRankings } from "@/data/loopgateData";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send } from "lucide-react";
+import { useRealEvents, useEventRankings, useEventStats, useActiveSession } from "@/hooks/useRealData";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import SubmissionModal from "@/components/loopgate/SubmissionModal";
 
 export default function EventDetailPage() {
   const { id } = useParams();
-  const event = mockEvents.find((e) => e.id === id);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+
+  // Keep session active
+  useActiveSession();
+
+  // Fetch real data
+  const { events, loading: eventsLoading } = useRealEvents();
+  const { rankings, loading: rankingsLoading } = useEventRankings(id || null);
+  const { stats } = useEventStats(id || null);
+
+  const event = events.find((e) => e.id === id);
+
+  if (eventsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -21,14 +38,13 @@ export default function EventDetailPage() {
 
   const isLive = event.status === "live";
   const isClosed = event.status === "closed";
-  const rankings = generateEventRankings(event.id, 10);
 
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 py-3 flex items-center gap-3">
-          <Link to="/" className="p-1 -ml-1">
+          <Link to="/events" className="p-1 -ml-1">
             <ArrowLeft size={20} />
           </Link>
           <div className="flex-1">
@@ -43,17 +59,17 @@ export default function EventDetailPage() {
 
       {/* Event Banner with Poster */}
       <div className="relative">
-        {event.posterUrl && (
+        {event.poster_url && (
           <div 
             className="h-48 bg-cover bg-center"
-            style={{ backgroundImage: `url(${event.posterUrl})` }}
+            style={{ backgroundImage: `url(${event.poster_url})` }}
           >
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h2 className="text-3xl font-black tracking-tight">{event.title}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{event.subtitle}</p>
+          {event.subtitle && <p className="text-sm text-muted-foreground mt-1">{event.subtitle}</p>}
         </div>
       </div>
 
@@ -70,7 +86,7 @@ export default function EventDetailPage() {
           </span>
         </div>
 
-        {/* Live Activity Indicators */}
+        {/* Live Activity Indicators - Real Data */}
         {isLive && (
           <section className="bg-surface-1 rounded-lg p-4 border border-border space-y-3">
             <div className="flex items-center gap-3 text-sm">
@@ -78,7 +94,7 @@ export default function EventDetailPage() {
                 <Zap size={12} className="text-green-500" />
               </div>
               <span className="text-muted-foreground">
-                <span className="text-foreground font-semibold">287</span> edits submitted in last 24h
+                <span className="text-foreground font-semibold">{stats.entries}</span> edits submitted
               </span>
             </div>
             <div className="flex items-center gap-3 text-sm">
@@ -86,7 +102,7 @@ export default function EventDetailPage() {
                 <Eye size={12} className="text-gold" />
               </div>
               <span className="text-muted-foreground">
-                Live judging <span className="text-gold font-semibold">in progress</span>
+                <span className="text-gold font-semibold">{stats.judges}</span> judges active
               </span>
             </div>
             <div className="flex items-center gap-3 text-sm">
@@ -94,7 +110,7 @@ export default function EventDetailPage() {
                 <Users size={12} />
               </div>
               <span className="text-muted-foreground">
-                <span className="text-foreground font-semibold">1,247</span> editors competing globally
+                <span className="text-foreground font-semibold">{stats.activeUsers}</span> editors online now
               </span>
             </div>
           </section>
@@ -104,7 +120,7 @@ export default function EventDetailPage() {
         {!isClosed && (
           <section className="bg-surface-1 border border-border rounded-lg p-4">
             <CountdownTimer 
-              endDate={isLive ? event.endDate : event.startDate} 
+              endDate={isLive ? event.end_date : event.start_date} 
               label={isLive ? "Event Ends" : "Event Starts"}
               large
             />
@@ -112,9 +128,9 @@ export default function EventDetailPage() {
         )}
 
         {/* Prize Pool */}
-        {event.prizePool && (
+        {event.prize_pool && (
           <section className="bg-card border border-gold/30 rounded-lg p-5 text-center">
-            <p className="text-3xl font-black text-gold">{event.prizePool}</p>
+            <p className="text-3xl font-black text-gold">{event.prize_pool}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
               Prize Pool
             </p>
@@ -130,7 +146,7 @@ export default function EventDetailPage() {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Start</span>
               <span className="font-medium">
-                {new Date(event.startDate).toLocaleDateString("en-US", {
+                {new Date(event.start_date).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
@@ -140,7 +156,7 @@ export default function EventDetailPage() {
             <div className="flex justify-between">
               <span className="text-muted-foreground">End</span>
               <span className="font-medium">
-                {new Date(event.endDate).toLocaleDateString("en-US", {
+                {new Date(event.end_date).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
@@ -151,22 +167,24 @@ export default function EventDetailPage() {
         </section>
 
         {/* Rules */}
-        <section className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-            Rules
-          </h3>
-          <ul className="space-y-2">
-            {event.rules.map((rule, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm">
-                <span className="text-gold mt-0.5">•</span>
-                <span>{rule}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {event.rules && event.rules.length > 0 && (
+          <section className="bg-card border border-border rounded-lg p-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              Rules
+            </h3>
+            <ul className="space-y-2">
+              {event.rules.map((rule, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm">
+                  <span className="text-gold mt-0.5">•</span>
+                  <span>{rule}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
-        {/* Live Rankings Preview (QOI visible only for live) */}
-        {isLive && rankings.length > 0 && (
+        {/* Live Rankings Preview - Real Data */}
+        {isLive && (
           <section className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -177,28 +195,32 @@ export default function EventDetailPage() {
                 Updating
               </span>
             </div>
-            <div className="space-y-2">
-              {rankings.slice(0, 5).map((r) => (
-                <div key={r.editorId} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 text-center font-bold text-gold">{r.rank}</span>
-                    <span className="font-semibold text-sm">{r.alias}</span>
+            {rankings.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No rankings yet</p>
+            ) : (
+              <div className="space-y-2">
+                {rankings.slice(0, 5).map((r, index) => (
+                  <div key={r.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 text-center font-bold text-gold">{r.final_rank || index + 1}</span>
+                      <span className="font-semibold text-sm">{r.profile?.username || 'Unknown'}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs">
+                      <div className="text-muted-foreground">
+                        Q<span className="text-foreground ml-1">{r.quality_score || '—'}</span>
+                      </div>
+                      <div className="text-muted-foreground">
+                        O<span className="text-foreground ml-1">{r.originality_score || '—'}</span>
+                      </div>
+                      <div className="text-muted-foreground">
+                        I<span className="text-foreground ml-1">{r.impact_score || '—'}</span>
+                      </div>
+                      <span className="font-bold text-gold w-12 text-right">{r.qoi_score?.toFixed(1) || '—'}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs">
-                    <div className="text-muted-foreground">
-                      Q<span className="text-foreground ml-1">{r.quality}</span>
-                    </div>
-                    <div className="text-muted-foreground">
-                      O<span className="text-foreground ml-1">{r.originality}</span>
-                    </div>
-                    <div className="text-muted-foreground">
-                      I<span className="text-foreground ml-1">{r.impact}</span>
-                    </div>
-                    <span className="font-bold text-gold w-12 text-right">{r.qoiTotal}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
             <Link 
               to={`/rankings?event=${event.id}`}
               className="block text-center text-xs text-gold font-semibold mt-4 py-2"
