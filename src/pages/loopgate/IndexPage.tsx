@@ -1,38 +1,34 @@
 import { useState, useMemo } from "react";
-import { Search } from "lucide-react";
-import { generateEditors } from "@/data/loopgateData";
+import { Search, Loader2 } from "lucide-react";
+import { useRealRankings } from "@/hooks/useRealData";
 import EditorCard from "@/components/loopgate/EditorCard";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
-type PlatformFilter = "all" | "tiktok" | "instagram" | "youtube";
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
 
 export default function IndexPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
   const [leagueFilter, setLeagueFilter] = useState<LeagueFilter>("all");
   const [rankFilter, setRankFilter] = useState<RankFilter>("all");
 
-  const allEditors = useMemo(() => generateEditors(100), []);
+  const { rankings, loading, error } = useRealRankings();
 
   const filteredEditors = useMemo(() => {
-    return allEditors.filter((editor) => {
-      if (searchQuery && !editor.alias.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-      if (platformFilter !== "all" && !editor.platforms.some(p => p.platform === platformFilter)) {
+    return rankings.filter((editor) => {
+      if (searchQuery && !editor.username.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
       if (leagueFilter !== "all" && editor.league !== leagueFilter) {
         return false;
       }
-      if (rankFilter === "top10" && editor.rank > 10) return false;
-      if (rankFilter === "top50" && editor.rank > 50) return false;
-      if (rankFilter === "top100" && editor.rank > 100) return false;
+      const rank = editor.rank || 999;
+      if (rankFilter === "top10" && rank > 10) return false;
+      if (rankFilter === "top50" && rank > 50) return false;
+      if (rankFilter === "top100" && rank > 100) return false;
       return true;
     });
-  }, [allEditors, searchQuery, platformFilter, leagueFilter, rankFilter]);
+  }, [rankings, searchQuery, leagueFilter, rankFilter]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -62,17 +58,6 @@ export default function IndexPage() {
 
       {/* Filters */}
       <div className="px-4 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
-        <select
-          value={platformFilter}
-          onChange={(e) => setPlatformFilter(e.target.value as PlatformFilter)}
-          className="bg-surface-1 border border-border px-3 py-2 text-xs font-medium uppercase tracking-wider appearance-none cursor-pointer focus:outline-none"
-        >
-          <option value="all">Platform</option>
-          <option value="tiktok">TikTok</option>
-          <option value="instagram">Instagram</option>
-          <option value="youtube">YouTube</option>
-        </select>
-
         <select
           value={leagueFilter}
           onChange={(e) => setLeagueFilter(e.target.value as LeagueFilter)}
@@ -106,17 +91,45 @@ export default function IndexPage() {
         </span>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="px-4 py-8 text-center">
+          <p className="text-sm text-destructive">Failed to load rankings</p>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && filteredEditors.length === 0 && (
+        <div className="px-4 py-16 text-center">
+          <p className="font-display text-2xl text-muted-foreground mb-2">No rankings yet</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+            {rankings.length === 0 
+              ? "Be the first to compete and claim your rank" 
+              : "No editors match your filters"}
+          </p>
+        </div>
+      )}
+
       {/* Editor Cards */}
-      <div className="px-4 space-y-2">
-        {filteredEditors.slice(0, 20).map((editor) => (
-          <EditorCard key={editor.id} editor={editor} />
-        ))}
-      </div>
+      {!loading && !error && filteredEditors.length > 0 && (
+        <div className="px-4 space-y-2">
+          {filteredEditors.map((editor) => (
+            <EditorCard key={editor.id} editor={editor} />
+          ))}
+        </div>
+      )}
 
       {/* Footer */}
       <div className="p-4 text-center mt-4">
         <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-          Verified editor database
+          Real-time verified rankings
         </p>
       </div>
     </div>
