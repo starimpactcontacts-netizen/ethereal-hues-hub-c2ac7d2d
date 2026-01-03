@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import loopgateLogo from '@/assets/loopgate-logo-white.png';
 
 const navLinks = [
   { to: '/auth', label: 'Login' },
@@ -16,14 +17,9 @@ export default function LandingHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
       <div className="flex items-center justify-between px-6 sm:px-8 h-[72px]">
-        {/* Logo - Text-based, tall condensed bold */}
+        {/* Logo */}
         <Link to="/" className="flex items-center">
-          <span 
-            className="text-white text-3xl sm:text-4xl font-display font-bold tracking-[-0.03em] leading-none"
-            style={{ fontStretch: 'condensed' }}
-          >
-            LOOPGATE
-          </span>
+          <img src={loopgateLogo} alt="LOOPGATE" className="h-8 sm:h-10" />
         </Link>
 
         {/* Desktop Navigation */}

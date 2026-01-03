@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
 import { Instagram } from "lucide-react";
 import loopgateHero from "@/assets/loopgate-hero.png";
+import loopgateLogo from "@/assets/loopgate-logo-white.png";
+
 const Loopgate = () => {
   return <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="flex items-center justify-center h-14 px-6 lg:px-12">
+        <div className="flex items-center justify-between h-14 px-6 lg:px-12">
+          <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
           <nav className="flex items-center gap-6">
             <Link to="/" className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors font-serif cursor-pointer">
               Global Events
