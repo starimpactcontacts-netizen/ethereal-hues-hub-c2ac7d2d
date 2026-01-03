@@ -16,12 +16,18 @@ function shouldBypassAuth(): boolean {
   
   // ONLY bypass in Lovable editor preview (*.lovable.dev)
   // DO NOT bypass on deployed apps (*.lovable.app or custom domains)
-  const isLovablePreview = hostname.includes('lovable.dev');
+  const isLovablePreview = hostname.endsWith('.lovable.dev');
   
-  // Also bypass in local development
-  const isDev = import.meta.env.DEV;
+  // NEVER bypass on production domains
+  const isProduction = hostname.endsWith('.lovable.app') || 
+                       (!hostname.includes('localhost') && !isLovablePreview);
   
-  return isDev || isLovablePreview;
+  if (isProduction) return false;
+  
+  // Also bypass in local development (localhost)
+  const isLocalDev = hostname === 'localhost' || hostname === '127.0.0.1';
+  
+  return isLocalDev || isLovablePreview;
 }
 
 // Mock user for dev preview
@@ -72,9 +78,9 @@ export default function ProtectedRoute({
     return <Navigate to="/onboarding" replace />;
   }
 
-  // Requires admin role but user is not admin
+  // Requires admin role but user is not admin - redirect to 404 (not hub)
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/hub" replace />;
+    return <Navigate to="/404" replace />;
   }
 
   return <>{children}</>;
