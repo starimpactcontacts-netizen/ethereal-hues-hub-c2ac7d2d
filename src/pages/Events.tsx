@@ -6,7 +6,6 @@ import { FeaturedEventCard } from "@/components/events/FeaturedEventCard";
 import { EventRow } from "@/components/events/EventRow";
 import { FilterBar } from "@/components/events/FilterBar";
 import { ContactForm } from "@/components/events/ContactForm";
-import loopgateLogo from "@/assets/loopgate-logo-white.png";
 import loopgateThumbnail from "@/assets/loopgate-thumbnail.png";
 import loopgateHero from "@/assets/loopgate-hero.png";
 const events: Event[] = [{
@@ -152,7 +151,7 @@ const Events = () => {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_80%_at_80%_50%,hsl(0_0%_15%/0.3),transparent)]" />
         
         <div className="relative z-10 flex flex-col items-center text-center px-6">
-          <img alt="Loopgate" className="w-[280px] md:w-[360px] lg:w-[420px] h-auto opacity-95" src={loopgateLogo} />
+          <span className="font-display text-6xl md:text-7xl lg:text-8xl text-white tracking-tight">LOOPGATE</span>
         </div>
       </section>
 

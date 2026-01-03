@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import loopgateLogo from '@/assets/loopgate-logo-white.png';
+
 
 export default function LoadingScreen() {
   return (
@@ -11,11 +11,7 @@ export default function LoadingScreen() {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <img 
-          src={loopgateLogo} 
-          alt="Loopgate" 
-          className="w-20 h-20 object-contain"
-        />
+        <span className="font-display text-4xl text-white tracking-tight">LOOPGATE</span>
       </motion.div>
 
       {/* Loading spinner ring */}

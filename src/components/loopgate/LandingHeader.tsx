@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import loopgateLogo from '@/assets/loopgate-logo-white.png';
+
 
 const navLinks = [
   { to: '/auth', label: 'Login' },
@@ -19,7 +19,7 @@ export default function LandingHeader() {
       <div className="flex items-center justify-between px-6 sm:px-8 h-[72px]">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-8 sm:h-10" />
+          <span className="font-display text-2xl sm:text-3xl text-white tracking-tight">LOOPGATE</span>
         </Link>
 
         {/* Desktop Navigation */}

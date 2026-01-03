@@ -1,7 +1,7 @@
 import { Shield, Star, Crown, Lock, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings } from "@/hooks/useRealData";
-import loopgateLogo from "@/assets/loopgate-logo-white.png";
+
 
 const leagues = [
   {
@@ -68,7 +68,7 @@ export default function LeaguesPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
+          <span className="font-display text-xl text-white tracking-tight">LOOPGATE</span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">
             Leagues
           </span>
