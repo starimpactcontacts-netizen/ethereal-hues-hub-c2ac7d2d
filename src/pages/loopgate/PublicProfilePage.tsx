@@ -231,9 +231,11 @@ export default function PublicProfilePage() {
                     {platform.platform_username}
                   </p>
                 </div>
-                <p className="font-display text-xl text-gold">
-                  {formatFollowers(platform.follower_count || 0)}
-                </p>
+                {platform.follower_count > 0 && (
+                  <p className="font-display text-xl text-gold">
+                    {formatFollowers(platform.follower_count)}
+                  </p>
+                )}
               </div>
             ))}
           </div>

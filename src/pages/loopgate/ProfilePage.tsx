@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
-import { ExternalLink, Calendar, Camera, Loader2, ShieldCheck } from "lucide-react";
+import { ExternalLink, Calendar, Camera, Loader2, ShieldCheck, Pencil } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { supabase } from "@/integrations/supabase/client";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
+import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
 import { toast } from "sonner";
 
 function formatFollowers(count: number): string {
@@ -20,11 +21,20 @@ const platformLabels: Record<string, string> = {
   youtube: "YouTube",
 };
 
+interface EditingPlatform {
+  id: string;
+  platform: string;
+  platform_username: string;
+  platform_url: string;
+  follower_count: number;
+}
+
 export default function ProfilePage() {
   const { user, profile, platforms, refreshProfile } = useAuth();
   const { rankings } = useRealRankings();
   const [uploading, setUploading] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Keep session active
@@ -231,16 +241,30 @@ export default function ProfilePage() {
           </h3>
           <div className="space-y-2">
             {platforms.map((platform) => (
-              <div
+              <button
                 key={platform.id}
-                className="bg-surface-1 border border-border p-3 flex items-center justify-between"
+                onClick={() => setEditingPlatform({
+                  id: platform.id,
+                  platform: platform.platform,
+                  platform_username: platform.platform_username,
+                  platform_url: platform.platform_url,
+                  follower_count: platform.follower_count,
+                })}
+                className="w-full bg-surface-1 border border-border p-3 flex items-center justify-between hover:border-gold transition-colors text-left group"
               >
-                <div>
-                  <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
-                  <p className="text-xs text-muted-foreground">{platform.platform_username}</p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
+                    <p className="text-xs text-muted-foreground">{platform.platform_username}</p>
+                  </div>
                 </div>
-                <p className="font-display text-xl text-gold">{formatFollowers(platform.follower_count || 0)}</p>
-              </div>
+                <div className="flex items-center gap-3">
+                  {platform.follower_count > 0 && (
+                    <p className="font-display text-xl text-gold">{formatFollowers(platform.follower_count)}</p>
+                  )}
+                  <Pencil size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </button>
             ))}
           </div>
         </section>
@@ -282,6 +306,16 @@ export default function ProfilePage() {
           tiktokUsername={tiktokPlatform.platform_username}
           existingCode={profile.verification_code}
           onVerified={refreshProfile}
+        />
+      )}
+
+      {/* Edit Platform Modal */}
+      {editingPlatform && (
+        <EditPlatformModal
+          isOpen={!!editingPlatform}
+          onClose={() => setEditingPlatform(null)}
+          platform={editingPlatform}
+          onUpdated={refreshProfile}
         />
       )}
     </div>
