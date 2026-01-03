@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { RealEditor } from "@/hooks/useRealData";
 
 interface EditorCardProps {
@@ -11,13 +12,36 @@ const leagueColors: Record<string, string> = {
 };
 
 export default function EditorCard({ editor }: EditorCardProps) {
+  const navigate = useNavigate();
   const isTop10 = (editor.rank || 999) <= 10;
 
+  const handleClick = () => {
+    navigate(`/editor/${editor.id}`);
+  };
+
   return (
-    <div className={`bg-surface-1 border p-4 ${isTop10 ? "border-l-2 border-l-gold border-t-border border-r-border border-b-border" : "border-border"}`}>
+    <div 
+      onClick={handleClick}
+      className={`bg-surface-1 border p-4 cursor-pointer transition-colors hover:border-gold/50 active:bg-surface-1/80 ${isTop10 ? "border-l-2 border-l-gold border-t-border border-r-border border-b-border" : "border-border"}`}
+    >
       <div className="flex items-start gap-4">
+        {/* Avatar */}
+        {editor.avatar_url ? (
+          <img 
+            src={editor.avatar_url} 
+            alt={editor.username}
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+            <span className="text-xs font-semibold text-muted-foreground">
+              {editor.username?.charAt(0).toUpperCase() || '?'}
+            </span>
+          </div>
+        )}
+
         {/* Rank */}
-        <div className="w-12 text-center flex-shrink-0">
+        <div className="w-10 text-center flex-shrink-0">
           <p className={`font-display text-2xl ${isTop10 ? "text-gold" : "text-muted-foreground"}`}>
             {editor.rank || '-'}
           </p>

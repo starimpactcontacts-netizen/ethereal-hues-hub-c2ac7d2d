@@ -1,7 +1,10 @@
-import { ExternalLink, Calendar, TrendingUp } from "lucide-react";
+import { useState, useRef } from "react";
+import { ExternalLink, Calendar, Camera, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
+import { supabase } from "@/integrations/supabase/client";
 import StatusBadge from "@/components/loopgate/StatusBadge";
+import { toast } from "sonner";
 
 function formatFollowers(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -16,8 +19,10 @@ const platformLabels: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { profile, platforms } = useAuth();
+  const { user, profile, platforms, refreshProfile } = useAuth();
   const { rankings } = useRealRankings();
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Keep session active
   useActiveSession();
@@ -26,6 +31,62 @@ export default function ProfilePage() {
     elite: "text-gold border-gold",
     pro: "text-blue-400 border-blue-400",
     open: "text-muted-foreground border-muted-foreground",
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Update profile with avatar URL
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      await refreshProfile();
+      toast.success("Profile picture updated");
+    } catch (error: any) {
+      console.error("Avatar upload error:", error);
+      toast.error("Failed to upload avatar");
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (!profile) {
@@ -47,6 +108,47 @@ export default function ProfilePage() {
       {/* Profile Hero */}
       <div className="p-4">
         <div className="bg-surface-1 border border-border p-6">
+          {/* Avatar */}
+          <div className="flex justify-center mb-4">
+            <div className="relative">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleAvatarUpload}
+                accept="image/*"
+                className="hidden"
+              />
+              <button
+                onClick={handleAvatarClick}
+                disabled={uploading}
+                className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gold group"
+              >
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <span className="font-display text-2xl text-muted-foreground">
+                      {profile.username?.charAt(0).toUpperCase() || '?'}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploading ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-white" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-white" />
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Alias + League */}
           <div className="flex items-start justify-between mb-1">
             <h1 className="font-display text-4xl">{profile.username}</h1>
