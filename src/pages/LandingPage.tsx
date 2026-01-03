@@ -3,7 +3,7 @@ import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
-
+import loopgateLogo from '@/assets/loopgate-logo-white.png';
 
 const topEditors = [
   { rank: 1, alias: 'KXNE', score: 2847, league: 'elite' },
@@ -221,7 +221,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-border">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-display text-xl text-white tracking-tight">LOOPGATE</span>
+          <img src={loopgateLogo} alt="LOOPGATE" className="h-5" />
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link to="/rules" className="hover:text-foreground">Rules</Link>
             <Link to="/support" className="hover:text-foreground">Support</Link>
