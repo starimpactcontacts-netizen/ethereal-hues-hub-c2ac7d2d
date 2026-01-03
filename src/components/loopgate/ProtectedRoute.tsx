@@ -37,12 +37,9 @@ export default function ProtectedRoute({
   const { user, profile, loading, isAdmin } = useAuth();
   const location = useLocation();
 
+  // Loading is handled by global LoadingScreen in App.tsx
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gold" />
-      </div>
-    );
+    return null;
   }
 
   // Not authenticated

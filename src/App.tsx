@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
 import ProtectedRoute from "./components/loopgate/ProtectedRoute";
 import DevModeBadge from "./components/loopgate/DevModeBadge";
+import LoadingScreen from "./components/loopgate/LoadingScreen";
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -67,11 +68,7 @@ function RootRedirect() {
   }
   
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   // Not logged in - show landing page
@@ -98,11 +95,7 @@ function AuthPageWrapper() {
   const { user, profile, loading } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   if (user) {
@@ -120,11 +113,7 @@ function OnboardingWrapper() {
   const { user, profile, loading } = useAuth();
   
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   if (!user) {
