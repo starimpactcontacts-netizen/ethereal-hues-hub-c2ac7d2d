@@ -67,6 +67,7 @@ function RootRedirect() {
     return <Navigate to="/hub" replace />;
   }
   
+  // Show loading screen during auth check - prevents flash
   if (loading) {
     return <LoadingScreen />;
   }
@@ -87,13 +88,14 @@ function RootRedirect() {
 
 // Auth page wrapper - redirect if already logged in
 function AuthPageWrapper() {
+  const { user, profile, loading } = useAuth();
+  
   // Dev mode: immediate redirect, no render
   if ((window as any).__LOOPGATE_DEV_AUTH__) {
     return <Navigate to="/hub" replace />;
   }
-
-  const { user, profile, loading } = useAuth();
   
+  // Show loading screen during auth check - prevents flash
   if (loading) {
     return <LoadingScreen />;
   }
@@ -112,6 +114,7 @@ function AuthPageWrapper() {
 function OnboardingWrapper() {
   const { user, profile, loading } = useAuth();
   
+  // Show loading screen during auth check - prevents flash
   if (loading) {
     return <LoadingScreen />;
   }
