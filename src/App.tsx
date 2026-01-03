@@ -28,14 +28,13 @@ import LoadingScreen from "./components/loopgate/LoadingScreen";
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-const isDevMode = hostname.endsWith('.lovable.dev') || hostname === 'localhost' || hostname === '127.0.0.1';
+const isDevPreview = hostname.endsWith('.lovable.dev') || hostname === 'localhost' || hostname === '127.0.0.1';
 
-// Block production bypass
-const isProduction = hostname.endsWith('.lovable.app') || 
-  (!hostname.includes('localhost') && !hostname.endsWith('.lovable.dev') && !hostname.includes('127.0.0.1'));
+// Block production bypass - ONLY *.lovable.app is production
+const isProduction = hostname.endsWith('.lovable.app');
 
-// GLOBAL OVERRIDE - inject mock auth for dev mode ONLY
-if (isDevMode && !isProduction && typeof window !== 'undefined') {
+// GLOBAL OVERRIDE - inject mock auth for dev preview ONLY (not production)
+if (isDevPreview && !isProduction && typeof window !== 'undefined') {
   (window as any).__LOOPGATE_DEV_AUTH__ = {
     user: { id: 'dev', email: 'dev@loopgate.io', role: 'admin' },
     profile: {
@@ -54,6 +53,7 @@ if (isDevMode && !isProduction && typeof window !== 'undefined') {
     isAdmin: true,
     loading: false,
   };
+  console.log('[LOOPGATE] Dev mode active - all routes unlocked');
 }
 
 const queryClient = new QueryClient();
