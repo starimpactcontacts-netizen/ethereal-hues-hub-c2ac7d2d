@@ -3,10 +3,10 @@ import { ExternalLink, Calendar, Camera, Loader2, ShieldCheck, Pencil } from "lu
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { supabase } from "@/integrations/supabase/client";
-import StatusBadge from "@/components/loopgate/StatusBadge";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
 import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
+import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import { toast } from "sonner";
 
 function formatFollowers(count: number): string {
@@ -194,10 +194,14 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Status */}
+          {/* Activity Status */}
           <div className="pt-5 mt-5 border-t border-border flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Status</span>
-            <StatusBadge status={profile.total_events > 0 ? "live" : "pending"} />
+            <ActivityStatusSelector
+              userId={profile.id}
+              currentStatus={(profile as any).activity_status || "online"}
+              onStatusChange={refreshProfile}
+            />
           </div>
         </div>
       </div>

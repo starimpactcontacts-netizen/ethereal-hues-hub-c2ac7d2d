@@ -15,6 +15,7 @@ interface Profile {
   avatar_url?: string | null;
   verification_status?: boolean;
   verification_code?: string | null;
+  activity_status?: 'online' | 'offline' | 'busy';
 }
 
 interface ConnectedPlatform {

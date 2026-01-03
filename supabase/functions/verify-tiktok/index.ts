@@ -6,38 +6,38 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Initialize Supabase client at top level for error handling
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { userId, tiktokUsername, verificationCode } = await req.json();
+    const body = await req.json();
+    const { userId, tiktokUsername, verificationCode } = body;
 
-    console.log(`[verify-tiktok] Starting verification for user ${userId}, TikTok: @${tiktokUsername}`);
+    console.log(`[verify-tiktok] Request received:`, { userId, tiktokUsername, verificationCode });
 
     if (!userId || !tiktokUsername || !verificationCode) {
-      console.log("[verify-tiktok] Missing required fields");
+      console.log("[verify-tiktok] Missing required fields:", { userId: !!userId, tiktokUsername: !!tiktokUsername, verificationCode: !!verificationCode });
       return new Response(
         JSON.stringify({ verified: false, message: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verify the user has this verification code
+    // Verify the user has this verification code in their profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("verification_code, verification_status")
       .eq("id", userId)
       .single();
 
+    console.log("[verify-tiktok] Profile lookup:", { profile, error: profileError?.message });
+
     if (profileError || !profile) {
-      console.log("[verify-tiktok] Profile not found:", profileError);
       return new Response(
         JSON.stringify({ verified: false, message: "Profile not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -45,7 +45,6 @@ Deno.serve(async (req) => {
     }
 
     if (profile.verification_status) {
-      console.log("[verify-tiktok] Already verified");
       return new Response(
         JSON.stringify({ verified: true, message: "Already verified" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -53,56 +52,68 @@ Deno.serve(async (req) => {
     }
 
     if (profile.verification_code !== verificationCode) {
-      console.log("[verify-tiktok] Code mismatch");
+      console.log("[verify-tiktok] Code mismatch:", { expected: profile.verification_code, got: verificationCode });
       return new Response(
         JSON.stringify({ verified: false, message: "Invalid verification code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Attempt to fetch TikTok profile bio using multiple methods
-    const cleanUsername = tiktokUsername.replace(/^@/, "");
+    // Fetch TikTok profile - try multiple approaches
+    const cleanUsername = tiktokUsername.replace(/^@/, "").trim();
     const tiktokUrl = `https://www.tiktok.com/@${cleanUsername}`;
     
-    console.log(`[verify-tiktok] Fetching TikTok profile: ${tiktokUrl}`);
+    console.log(`[verify-tiktok] Fetching: ${tiktokUrl}`);
 
-    // Try multiple user agents - some work better with TikTok's anti-scraping
+    // Try multiple user agents to bypass TikTok's bot detection
     const userAgents = [
-      "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
       "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Twitterbot/1.0",
+      "LinkedInBot/1.0 (compatible; Mozilla/5.0)",
+      "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
     ];
 
     let html = "";
     let fetchSuccess = false;
+    let lastError = "";
 
     for (const ua of userAgents) {
       try {
-        console.log(`[verify-tiktok] Trying with UA: ${ua.substring(0, 30)}...`);
+        console.log(`[verify-tiktok] Trying UA: ${ua.substring(0, 40)}...`);
+        
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10000);
+        
         const response = await fetch(tiktokUrl, {
+          signal: controller.signal,
           headers: {
             "User-Agent": ua,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
-            "Cache-Control": "no-cache",
           },
         });
+        
+        clearTimeout(timeout);
+
+        console.log(`[verify-tiktok] Response status: ${response.status}`);
 
         if (response.ok) {
           html = await response.text();
-          if (html.length > 1000) {
+          console.log(`[verify-tiktok] HTML length: ${html.length}`);
+          
+          if (html.length > 5000) {
             fetchSuccess = true;
-            console.log(`[verify-tiktok] Successfully fetched page (${html.length} chars)`);
             break;
           }
         }
-      } catch (e) {
-        console.log(`[verify-tiktok] Fetch attempt failed:`, e);
+      } catch (e: any) {
+        lastError = e.message || String(e);
+        console.log(`[verify-tiktok] Fetch error: ${lastError}`);
       }
     }
 
-    if (!fetchSuccess || html.length < 1000) {
-      console.log(`[verify-tiktok] All fetch attempts failed, submitting for manual review`);
+    if (!fetchSuccess) {
+      console.log(`[verify-tiktok] All fetches failed, submitting for manual review. Last error: ${lastError}`);
       
       await supabase
         .from("profiles")
@@ -113,56 +124,67 @@ Deno.serve(async (req) => {
         JSON.stringify({ 
           verified: false, 
           pending: true,
-          message: "Unable to verify automatically. Your request has been submitted for manual review." 
+          message: "Auto-verification unavailable. Submitted for manual review (usually <24h)." 
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Check if the verification code exists in the page content
-    // TikTok embeds bio in meta tags, JSON-LD, and various other locations
-    const codeFound = html.includes(verificationCode);
+    // Search for the code in the HTML content
+    console.log(`[verify-tiktok] Searching for code: ${verificationCode}`);
     
-    // Also check for common bio locations in TikTok's HTML structure
-    const bioPatterns = [
-      `"signature":"[^"]*${verificationCode}[^"]*"`,
-      `"desc":"[^"]*${verificationCode}[^"]*"`,
-      `content="[^"]*${verificationCode}[^"]*"`,
+    // Direct string match first
+    const codeFound = html.includes(verificationCode);
+    console.log(`[verify-tiktok] Direct match: ${codeFound}`);
+    
+    // Check meta tags and JSON data in the page
+    const patterns = [
+      new RegExp(`"signature"\\s*:\\s*"[^"]*${verificationCode}[^"]*"`, 'i'),
+      new RegExp(`"desc"\\s*:\\s*"[^"]*${verificationCode}[^"]*"`, 'i'),
+      new RegExp(`"bio"\\s*:\\s*"[^"]*${verificationCode}[^"]*"`, 'i'),
+      new RegExp(`content="[^"]*${verificationCode}[^"]*"`, 'i'),
+      new RegExp(`>${verificationCode}<`, 'i'),
     ];
     
-    let foundInBio = codeFound;
-    if (!foundInBio) {
-      for (const pattern of bioPatterns) {
-        if (new RegExp(pattern, 'i').test(html)) {
-          foundInBio = true;
-          break;
-        }
+    let foundViaPattern = false;
+    for (const pattern of patterns) {
+      if (pattern.test(html)) {
+        foundViaPattern = true;
+        console.log(`[verify-tiktok] Found via pattern: ${pattern.toString().substring(0, 50)}`);
+        break;
       }
     }
 
-    console.log(`[verify-tiktok] Code found in page: ${foundInBio}`);
+    const verified = codeFound || foundViaPattern;
+    console.log(`[verify-tiktok] Final verification result: ${verified}`);
 
-    if (foundInBio) {
-      // Update verification status
+    if (verified) {
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ 
           verification_status: true,
-          verification_code: null // Clear the code after successful verification
+          verification_code: null
         })
         .eq("id", userId);
 
       if (updateError) {
         console.error("[verify-tiktok] Update error:", updateError);
         return new Response(
-          JSON.stringify({ verified: false, message: "Failed to update verification status" }),
+          JSON.stringify({ verified: false, message: "Failed to update status" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
-      console.log("[verify-tiktok] Verification successful!");
+      // Also mark the TikTok platform as verified
+      await supabase
+        .from("connected_platforms")
+        .update({ is_verified: true })
+        .eq("user_id", userId)
+        .eq("platform", "tiktok");
+
+      console.log("[verify-tiktok] SUCCESS - User verified!");
       return new Response(
-        JSON.stringify({ verified: true, message: "Account verified successfully!" }),
+        JSON.stringify({ verified: true, message: "Account verified!" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
@@ -170,15 +192,15 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           verified: false, 
-          message: "Code not found in your TikTok bio. Make sure you've added it and saved, then try again." 
+          message: "Code not found in bio. Add the code, save your profile, and try again." 
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-  } catch (error) {
-    console.error("[verify-tiktok] Error:", error);
+  } catch (error: any) {
+    console.error("[verify-tiktok] Exception:", error);
     return new Response(
-      JSON.stringify({ verified: false, message: "Internal server error" }),
+      JSON.stringify({ verified: false, message: "Server error. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
