@@ -15,17 +15,24 @@ type AuthMode = 'signin' | 'signup' | 'reset' | 'reset-sent';
 
 export default function AuthPage() {
   const { signInWithGoogle, signInWithPassword, signUpWithPassword, resetPassword, user } = useAuth();
+  const navigate = useNavigate();
+  
+  // IMMEDIATE redirect in dev mode - before any state or rendering
+  if (isDevMode()) {
+    navigate('/hub', { replace: true });
+    return null;
+  }
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>('signin');
-  const navigate = useNavigate();
 
-  // In dev mode or if already authenticated, redirect to hub
+  // If already authenticated, redirect to hub
   useEffect(() => {
-    if (isDevMode() || user) {
+    if (user) {
       navigate('/hub', { replace: true });
     }
   }, [user, navigate]);
