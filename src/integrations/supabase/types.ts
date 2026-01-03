@@ -181,6 +181,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activity_status: string | null
           avatar_url: string | null
           created_at: string | null
           global_index_score: number | null
@@ -198,6 +199,7 @@ export type Database = {
           win_rate: number | null
         }
         Insert: {
+          activity_status?: string | null
           avatar_url?: string | null
           created_at?: string | null
           global_index_score?: number | null
@@ -215,6 +217,7 @@ export type Database = {
           win_rate?: number | null
         }
         Update: {
+          activity_status?: string | null
           avatar_url?: string | null
           created_at?: string | null
           global_index_score?: number | null
