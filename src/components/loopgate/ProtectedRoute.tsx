@@ -29,13 +29,14 @@ export default function ProtectedRoute({
   requireOnboarding = true,
   requireAdmin = false 
 }: ProtectedRouteProps) {
-  // DEV MODE: ALWAYS ALLOW - check global flag FIRST before any hooks
-  if (typeof window !== 'undefined' && (window as any).__LOOPGATE_DEV_AUTH__) {
-    return <>{children}</>;
-  }
-
   const { user, profile, loading, isAdmin } = useAuth();
   const location = useLocation();
+
+  // DEV MODE: ALWAYS ALLOW - check global flag (set before React mounts)
+  const devAuth = typeof window !== 'undefined' ? (window as any).__LOOPGATE_DEV_AUTH__ : null;
+  if (devAuth) {
+    return <>{children}</>;
+  }
 
   // Loading is handled by global LoadingScreen in App.tsx
   if (loading) {
