@@ -123,9 +123,9 @@ export default function App() {
               <Route path="/rules" element={<RulesPage />} />
             </Route>
             
-            {/* Admin route */}
+            {/* Admin route - requires admin role */}
             <Route path="/admin" element={
-              <ProtectedRoute>
+              <ProtectedRoute requireAdmin={true}>
                 <AdminPage />
               </ProtectedRoute>
             } />

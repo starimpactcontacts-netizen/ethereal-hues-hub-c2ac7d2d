@@ -5,10 +5,15 @@ import { Loader2 } from 'lucide-react';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireOnboarding?: boolean;
+  requireAdmin?: boolean;
 }
 
-export default function ProtectedRoute({ children, requireOnboarding = true }: ProtectedRouteProps) {
-  const { user, profile, loading } = useAuth();
+export default function ProtectedRoute({ 
+  children, 
+  requireOnboarding = true,
+  requireAdmin = false 
+}: ProtectedRouteProps) {
+  const { user, profile, loading, isAdmin } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -27,6 +32,11 @@ export default function ProtectedRoute({ children, requireOnboarding = true }: P
   // Authenticated but no profile (needs onboarding)
   if (requireOnboarding && !profile?.onboarding_completed) {
     return <Navigate to="/onboarding" replace />;
+  }
+
+  // Requires admin role but user is not admin
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/hub" replace />;
   }
 
   return <>{children}</>;
