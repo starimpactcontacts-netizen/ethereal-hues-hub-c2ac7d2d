@@ -3,16 +3,18 @@ import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
-
-const topEditors = [
-  { rank: 1, alias: 'KXNE', score: 2847, league: 'elite' },
-  { rank: 2, alias: 'VXLT', score: 2691, league: 'elite' },
-  { rank: 3, alias: 'RXZE', score: 2534, league: 'pro' },
-  { rank: 4, alias: 'NXVA', score: 2412, league: 'pro' },
-  { rank: 5, alias: 'ZXRO', score: 2298, league: 'pro' },
-];
+import { useRealRankings, useRealEvents, useGlobalStats } from '@/hooks/useRealData';
 
 export default function LandingPage() {
+  const { rankings, loading: rankingsLoading } = useRealRankings();
+  const { events } = useRealEvents();
+  const { stats } = useGlobalStats();
+  
+  // Get top 5 editors from real data
+  const topEditors = rankings.slice(0, 5);
+  
+  // Find the primary live event
+  const liveEvent = events.find(e => e.status === 'live');
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Global Header */}
@@ -115,46 +117,48 @@ export default function LandingPage() {
       </section>
 
       {/* Live Event Preview */}
-      <section className="py-24 px-4 bg-surface-0 border-t border-border">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="font-display text-4xl">Live Event</h2>
-            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold tracking-widest uppercase bg-green-500/10 border border-green-500/20 text-green-500">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Live Now
-            </span>
-          </div>
-          
-          <motion.div 
-            className="bg-surface-1 border border-border p-6 sm:p-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-              <div>
-                <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-2 block">
-                  Open League · Film
-                </span>
-                <h3 className="font-display text-4xl sm:text-5xl text-gold mb-2">#LOOPGATE</h3>
-                <p className="text-muted-foreground">Global Arena · $10,000 Prize Pool</p>
-              </div>
-              <div className="flex flex-col items-start sm:items-end gap-4">
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Editors Competing</p>
-                  <p className="font-display text-3xl">847</p>
-                </div>
-                <Link to="/auth">
-                  <Button className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg">
-                    <Play className="mr-2 h-4 w-4" />
-                    View Event
-                  </Button>
-                </Link>
-              </div>
+      {liveEvent && (
+        <section className="py-24 px-4 bg-surface-0 border-t border-border">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="font-display text-4xl">Live Event</h2>
+              <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold tracking-widest uppercase bg-green-500/10 border border-green-500/20 text-green-500">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Live Now
+              </span>
             </div>
-          </motion.div>
-        </div>
-      </section>
+            
+            <motion.div 
+              className="bg-surface-1 border border-border p-6 sm:p-8"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div>
+                  <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-2 block">
+                    {liveEvent.league} League · {liveEvent.ip}
+                  </span>
+                  <h3 className="font-display text-4xl sm:text-5xl text-gold mb-2">{liveEvent.title}</h3>
+                  <p className="text-muted-foreground">{liveEvent.location} · {liveEvent.prize_pool || 'No Prize'}</p>
+                </div>
+                <div className="flex flex-col items-start sm:items-end gap-4">
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Editors Competing</p>
+                    <p className="font-display text-3xl">{stats.totalCompeting}</p>
+                  </div>
+                  <Link to="/auth">
+                    <Button className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg">
+                      <Play className="mr-2 h-4 w-4" />
+                      View Event
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* Leaderboard Preview */}
       <section className="py-24 px-4 border-t border-border">
@@ -167,34 +171,40 @@ export default function LandingPage() {
           </div>
           
           <div className="bg-surface-1 border border-border divide-y divide-border">
-            {topEditors.map((editor, index) => (
-              <motion.div
-                key={editor.alias}
-                className="flex items-center justify-between p-4 sm:p-5"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="flex items-center gap-4">
-                  <span className={`font-display text-2xl w-8 ${editor.rank === 1 ? 'text-gold' : 'text-muted-foreground'}`}>
-                    {editor.rank}
-                  </span>
-                  <div>
-                    <p className="font-display text-xl">{editor.alias}</p>
-                    <span className={`text-xs font-semibold uppercase tracking-widest ${
-                      editor.league === 'elite' ? 'text-gold' : 'text-muted-foreground'
-                    }`}>
-                      {editor.league} League
+            {rankingsLoading ? (
+              <div className="p-8 text-center text-muted-foreground">Loading rankings...</div>
+            ) : topEditors.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">No rankings yet</div>
+            ) : (
+              topEditors.map((editor, index) => (
+                <motion.div
+                  key={editor.id}
+                  className="flex items-center justify-between p-4 sm:p-5"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className={`font-display text-2xl w-8 ${editor.rank === 1 ? 'text-gold' : 'text-muted-foreground'}`}>
+                      {editor.rank}
                     </span>
+                    <div>
+                      <p className="font-display text-xl">{editor.username}</p>
+                      <span className={`text-xs font-semibold uppercase tracking-widths ${
+                        editor.league === 'elite' ? 'text-gold' : 'text-muted-foreground'
+                      }`}>
+                        {editor.league} League
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-display text-xl">{editor.score.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest">Index</p>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="text-right">
+                    <p className="font-display text-xl">{editor.global_index_score.toFixed(1)}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest">Index</p>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
