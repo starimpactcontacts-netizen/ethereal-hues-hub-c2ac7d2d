@@ -6,7 +6,7 @@ import { FeaturedEventCard } from "@/components/events/FeaturedEventCard";
 import { EventRow } from "@/components/events/EventRow";
 import { FilterBar } from "@/components/events/FilterBar";
 import { ContactForm } from "@/components/events/ContactForm";
-import loopgateLogo from "@/assets/loopgate-logo.png";
+import loopgateLogo from "@/assets/loopgate-logo-white.png";
 import loopgateThumbnail from "@/assets/loopgate-thumbnail.png";
 import loopgateHero from "@/assets/loopgate-hero.png";
 const events: Event[] = [{

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChevronRight, MapPin, Clock } from "lucide-react";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
-import loopgateLogo from "@/assets/loopgate-logo.png";
+import loopgateLogo from "@/assets/loopgate-logo-white.png";
 import PosterStrip from "@/components/loopgate/PosterStrip";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import { useRealEvents, useGlobalStats, useActiveSession } from "@/hooks/useRealData";

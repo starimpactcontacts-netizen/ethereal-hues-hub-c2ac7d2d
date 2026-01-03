@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { RefreshCw, ChevronRight, Lock, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import StatusBadge from "@/components/loopgate/StatusBadge";
-import loopgateLogo from "@/assets/loopgate-logo.png";
+import loopgateLogo from "@/assets/loopgate-logo-white.png";
 
 type TabType = "global" | "league" | "region" | "history";
 
