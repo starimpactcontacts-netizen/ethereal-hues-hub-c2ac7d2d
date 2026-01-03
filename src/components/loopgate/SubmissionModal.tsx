@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, ExternalLink, Loader2 } from "lucide-react";
+import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 
 interface SubmissionModalProps {
   isOpen: boolean;
@@ -10,15 +11,25 @@ interface SubmissionModalProps {
 
 export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }: SubmissionModalProps) {
   const [alias, setAlias] = useState("");
-  const [platform, setPlatform] = useState<"tiktok" | "instagram" | "youtube">("tiktok");
+  const [platform, setPlatform] = useState<PlatformType>("tiktok");
   const [platformLink, setPlatformLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [urlError, setUrlError] = useState("");
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate URL before submission
+    const validation = validatePlatformUrl(platform, platformLink);
+    if (!validation.valid) {
+      setUrlError(validation.error || 'Invalid URL');
+      return;
+    }
+    setUrlError("");
+    
     setIsSubmitting(true);
     
     // Simulate submission (replace with real API call)
@@ -26,12 +37,6 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
     
     setIsSubmitting(false);
     setSubmitted(true);
-  };
-
-  const platformPlaceholders = {
-    tiktok: "https://tiktok.com/@handle/video/...",
-    instagram: "https://instagram.com/reel/...",
-    youtube: "https://youtube.com/shorts/..."
   };
 
   if (submitted) {
@@ -101,7 +106,10 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
                 <button
                   key={p}
                   type="button"
-                  onClick={() => setPlatform(p)}
+                  onClick={() => {
+                    setPlatform(p);
+                    setUrlError("");
+                  }}
                   className={`flex-1 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors ${
                     platform === p
                       ? "bg-gold text-black"
@@ -123,13 +131,21 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
               <input
                 type="url"
                 value={platformLink}
-                onChange={(e) => setPlatformLink(e.target.value)}
-                placeholder={platformPlaceholders[platform]}
-                className="w-full bg-surface-1 border border-border rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:border-gold"
+                onChange={(e) => {
+                  setPlatformLink(e.target.value);
+                  setUrlError("");
+                }}
+                placeholder={getPlatformUrlPlaceholder(platform)}
+                className={`w-full bg-surface-1 border rounded-lg px-4 py-3 pr-10 text-sm focus:outline-none focus:border-gold ${
+                  urlError ? "border-destructive" : "border-border"
+                }`}
                 required
               />
               <ExternalLink size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             </div>
+            {urlError && (
+              <p className="text-destructive text-xs mt-1">{urlError}</p>
+            )}
             <p className="text-[10px] text-muted-foreground mt-2">
               Direct link to your published edit
             </p>

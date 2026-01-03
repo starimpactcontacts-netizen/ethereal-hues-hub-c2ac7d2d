@@ -19,7 +19,6 @@ export default function AuthPage() {
     const { error } = await signInWithGoogle();
     if (error) {
       toast.error('Failed to sign in with Google');
-      console.error(error);
     }
     setIsLoading(false);
   };
@@ -35,7 +34,6 @@ export default function AuthPage() {
     const { error } = await signInWithMagicLink(email);
     if (error) {
       toast.error('Failed to send magic link');
-      console.error(error);
     } else {
       setMagicLinkSent(true);
       toast.success('Check your email for the login link');

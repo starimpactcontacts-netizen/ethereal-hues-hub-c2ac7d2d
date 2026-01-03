@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { validatePlatformUrl } from '@/lib/urlValidation';
 
 const STEPS = [
   { id: 1, title: 'Choose Username' },
@@ -32,6 +33,7 @@ export default function OnboardingPage() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [youtubeUsername, setYoutubeUsername] = useState('');
   const [rulesAccepted, setRulesAccepted] = useState(false);
+  const [urlErrors, setUrlErrors] = useState<Record<string, string>>({});
 
   const validateUsername = async () => {
     if (!username || username.length < 3) {
@@ -78,6 +80,39 @@ export default function OnboardingPage() {
           setIsLoading(false);
           return;
         }
+        
+        // Validate TikTok URL
+        const tiktokValidation = validatePlatformUrl('tiktok', tiktokUrl);
+        if (!tiktokValidation.valid) {
+          setUrlErrors(prev => ({ ...prev, tiktok: tiktokValidation.error || 'Invalid URL' }));
+          toast.error(tiktokValidation.error || 'Invalid TikTok URL');
+          setIsLoading(false);
+          return;
+        }
+        setUrlErrors(prev => ({ ...prev, tiktok: '' }));
+      }
+
+      if (currentStep === 3) {
+        // Validate optional URLs if provided
+        if (instagramUrl) {
+          const igValidation = validatePlatformUrl('instagram', instagramUrl);
+          if (!igValidation.valid) {
+            setUrlErrors(prev => ({ ...prev, instagram: igValidation.error || 'Invalid URL' }));
+            toast.error(igValidation.error || 'Invalid Instagram URL');
+            setIsLoading(false);
+            return;
+          }
+        }
+        if (youtubeUrl) {
+          const ytValidation = validatePlatformUrl('youtube', youtubeUrl);
+          if (!ytValidation.valid) {
+            setUrlErrors(prev => ({ ...prev, youtube: ytValidation.error || 'Invalid URL' }));
+            toast.error(ytValidation.error || 'Invalid YouTube URL');
+            setIsLoading(false);
+            return;
+          }
+        }
+        setUrlErrors({});
       }
 
       if (currentStep === 4) {
@@ -96,7 +131,6 @@ export default function OnboardingPage() {
         });
 
         if (profileError) {
-          console.error('Profile error:', profileError);
           toast.error('Failed to create profile');
           setIsLoading(false);
           return;
@@ -111,7 +145,9 @@ export default function OnboardingPage() {
         });
 
         if (tiktokError) {
-          console.error('TikTok error:', tiktokError);
+          toast.error('Failed to connect TikTok');
+          setIsLoading(false);
+          return;
         }
 
         // Add Instagram (optional)
@@ -141,8 +177,7 @@ export default function OnboardingPage() {
       }
 
       setCurrentStep(currentStep + 1);
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error('Something went wrong');
     }
 
@@ -245,10 +280,19 @@ export default function OnboardingPage() {
                     </label>
                     <Input
                       value={tiktokUrl}
-                      onChange={(e) => setTiktokUrl(e.target.value)}
+                      onChange={(e) => {
+                        setTiktokUrl(e.target.value);
+                        setUrlErrors(prev => ({ ...prev, tiktok: '' }));
+                      }}
                       placeholder="https://tiktok.com/@yourusername"
-                      className="h-12 bg-surface-0 border-border"
+                      className={`h-12 bg-surface-0 ${urlErrors.tiktok ? 'border-destructive' : 'border-border'}`}
                     />
+                    {urlErrors.tiktok && (
+                      <p className="text-destructive text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {urlErrors.tiktok}
+                      </p>
+                    )}
                   </div>
                 </div>
               </motion.div>
