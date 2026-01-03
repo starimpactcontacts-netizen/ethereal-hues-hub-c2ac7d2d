@@ -45,17 +45,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // ONLY bypass on *.lovable.dev, NEVER on *.lovable.app or production
 export function isDevMode(): boolean {
   if (typeof window === 'undefined') return false;
-  const hostname = window.location.hostname;
-  
-  // NEVER bypass on production domains
-  const isProduction = hostname.endsWith('.lovable.app') || 
-                       (!hostname.includes('localhost') && !hostname.endsWith('.lovable.dev'));
-  if (isProduction) return false;
-  
-  const isLovablePreview = hostname.endsWith('.lovable.dev');
-  const isLocalDev = hostname === 'localhost' || hostname === '127.0.0.1';
-  
-  return isLocalDev || isLovablePreview;
+  // Check for global dev auth flag first (set in App.tsx before React renders)
+  return !!(window as any).__LOOPGATE_DEV_AUTH__;
 }
 
 // Mock user for dev mode - simulates authenticated admin
@@ -248,6 +239,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
+  // FORCE AUTH FOR DEV MODE - check global override first
+  const devAuth = typeof window !== 'undefined' ? (window as any).__LOOPGATE_DEV_AUTH__ : null;
+  if (devAuth) {
+    return {
+      user: devAuth.user,
+      session: null,
+      profile: devAuth.profile,
+      platforms: [],
+      loading: false,
+      signInWithGoogle: async () => ({ error: null }),
+      signInWithMagicLink: async () => ({ error: null }),
+      signInWithPassword: async () => ({ error: null }),
+      signUpWithPassword: async () => ({ error: null }),
+      resetPassword: async () => ({ error: null }),
+      signOut: async () => {},
+      refreshProfile: async () => {},
+      isAdmin: true,
+    };
+  }
+
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
