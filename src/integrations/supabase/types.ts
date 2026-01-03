@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_sessions: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_seen: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_seen?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_seen?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       connected_platforms: {
         Row: {
           connected_at: string | null
@@ -95,6 +116,57 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          ip: string | null
+          league: string
+          location: string | null
+          poster_url: string | null
+          prize_pool: string | null
+          rules: string[] | null
+          start_date: string
+          status: string
+          subtitle: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          ip?: string | null
+          league?: string
+          location?: string | null
+          poster_url?: string | null
+          prize_pool?: string | null
+          rules?: string[] | null
+          start_date: string
+          status?: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          ip?: string | null
+          league?: string
+          location?: string | null
+          poster_url?: string | null
+          prize_pool?: string | null
+          rules?: string[] | null
+          start_date?: string
+          status?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -171,6 +243,11 @@ export type Database = {
         Args: { check_username: string }
         Returns: boolean
       }
+      recalculate_user_index: {
+        Args: { user_uuid: string }
+        Returns: undefined
+      }
+      update_active_session: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

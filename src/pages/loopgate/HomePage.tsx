@@ -1,15 +1,22 @@
 import { Link } from "react-router-dom";
-import { ChevronRight, MapPin, Zap, Users, Eye, Clock } from "lucide-react";
-import { mockEvents } from "@/data/loopgateData";
+import { ChevronRight, MapPin, Clock } from "lucide-react";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import PosterStrip from "@/components/loopgate/PosterStrip";
 import StatusBadge from "@/components/loopgate/StatusBadge";
+import { useRealEvents, useGlobalStats, useActiveSession } from "@/hooks/useRealData";
 
 export default function HomePage() {
-  const primaryEvent = mockEvents.find((e) => e.title === "#LOOPGATE");
-  const upcomingEvents = mockEvents.filter((e) => e.status === "pending" && e.title !== "#LOOPGATE");
-  const closedEvents = mockEvents.filter((e) => e.status === "closed");
+  const { events, loading } = useRealEvents();
+  const { stats } = useGlobalStats();
+  
+  // Keep session active
+  useActiveSession();
+
+  const liveEvents = events.filter((e) => e.status === "live");
+  const primaryEvent = liveEvents[0];
+  const upcomingEvents = events.filter((e) => e.status === "pending");
+  const closedEvents = events.filter((e) => e.status === "closed");
 
   return (
     <div className="min-h-screen pb-20 bg-background">
@@ -18,23 +25,23 @@ export default function HomePage() {
         <div className="px-4 py-3 flex items-center justify-between">
           <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
           <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-medium">
-            Live
+            {liveEvents.length > 0 ? 'Live' : 'Events'}
           </span>
         </div>
       </header>
 
-      {/* Hero Live Event - #LOOPGATE */}
-      {primaryEvent && (
+      {/* Hero Live Event */}
+      {primaryEvent ? (
         <section className="p-3">
           <Link
             to={`/event/${primaryEvent.id}`}
             className="block bg-surface-1 border-2 border-gold/40 overflow-hidden"
           >
             {/* Cinematic Banner */}
-            {primaryEvent.posterUrl && (
+            {primaryEvent.poster_url && (
               <div 
                 className="w-full h-52 bg-cover bg-center relative"
-                style={{ backgroundImage: `url(${primaryEvent.posterUrl})` }}
+                style={{ backgroundImage: `url(${primaryEvent.poster_url})` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-surface-1/50 to-transparent" />
                 
@@ -47,9 +54,11 @@ export default function HomePage() {
                 </div>
 
                 {/* Prize Pool Overlay */}
-                <div className="absolute top-4 right-4 bg-background/90 border border-gold/50 px-4 py-2">
-                  <p className="font-display text-2xl text-gold">{primaryEvent.prizePool}</p>
-                </div>
+                {primaryEvent.prize_pool && (
+                  <div className="absolute top-4 right-4 bg-background/90 border border-gold/50 px-4 py-2">
+                    <p className="font-display text-2xl text-gold">{primaryEvent.prize_pool}</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -69,9 +78,11 @@ export default function HomePage() {
               <h1 className="font-display text-5xl tracking-wide text-foreground">
                 {primaryEvent.title}
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {primaryEvent.subtitle}
-              </p>
+              {primaryEvent.subtitle && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {primaryEvent.subtitle}
+                </p>
+              )}
 
               {/* Meta Row */}
               <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
@@ -84,7 +95,7 @@ export default function HomePage() {
               {/* Countdown - Hard Panel */}
               <div className="mt-5 p-4 bg-background border border-border">
                 <CountdownTimer
-                  endDate={primaryEvent.endDate}
+                  endDate={primaryEvent.end_date}
                   label="Ends in"
                   large
                 />
@@ -98,22 +109,29 @@ export default function HomePage() {
             </div>
           </Link>
         </section>
+      ) : (
+        <section className="p-4">
+          <div className="bg-surface-1 border border-border p-8 text-center">
+            <p className="text-muted-foreground font-display text-lg">No live events</p>
+            <p className="text-xs text-muted-foreground mt-2">Check upcoming events below</p>
+          </div>
+        </section>
       )}
 
-      {/* Live Activity Status Row */}
+      {/* Live Activity Status Row - Real Data */}
       <section className="px-4 py-4 border-t border-border bg-surface-1/50">
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <p className="font-display text-2xl text-foreground">312</p>
+            <p className="font-display text-2xl text-foreground">{stats.entries24h}</p>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Edits 24h</p>
           </div>
           <div>
-            <p className="font-display text-2xl text-gold">Live</p>
+            <p className="font-display text-2xl text-gold">{liveEvents.length > 0 ? 'Live' : '—'}</p>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Judging</p>
           </div>
           <div>
-            <p className="font-display text-2xl text-foreground">1.8K</p>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Competing</p>
+            <p className="font-display text-2xl text-foreground">{stats.activeUsers}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Active Now</p>
           </div>
         </div>
       </section>
@@ -124,10 +142,10 @@ export default function HomePage() {
       {/* Micro Status Row */}
       <section className="px-4 py-3 border-t border-border flex items-center justify-between text-[10px] text-muted-foreground uppercase tracking-wider">
         <span className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          Updated live
+          <span className={`w-1.5 h-1.5 rounded-full ${stats.activeUsers > 0 ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground'}`} />
+          {stats.activeUsers > 0 ? 'Updated live' : 'No activity'}
         </span>
-        <span>Editors competing globally</span>
+        <span>{stats.totalCompeting} editors competing</span>
       </section>
 
       {/* Upcoming Activations */}
@@ -153,9 +171,9 @@ export default function HomePage() {
                       <span className="text-gold">{event.league}</span>
                       <span className="flex items-center gap-1">
                         <Clock size={10} />
-                        {new Date(event.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        {new Date(event.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
-                      {event.prizePool && <span className="text-gold font-semibold">{event.prizePool}</span>}
+                      {event.prize_pool && <span className="text-gold font-semibold">{event.prize_pool}</span>}
                     </div>
                   </div>
                   <ChevronRight size={16} className="text-muted-foreground" />
@@ -187,6 +205,14 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* No Events State */}
+      {!loading && events.length === 0 && (
+        <section className="px-4 py-12 text-center">
+          <p className="text-muted-foreground">No events available yet</p>
+          <p className="text-xs text-muted-foreground mt-2">Check back soon for competitions</p>
         </section>
       )}
     </div>

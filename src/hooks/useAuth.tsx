@@ -31,6 +31,9 @@ interface AuthContextType {
   loading: boolean;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>;
+  signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUpWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   isAdmin: boolean;
@@ -38,13 +41,35 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Check if we're in dev mode (Lovable preview or local dev)
+function isDevMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  const isLovablePreview = hostname.includes('lovable.dev');
+  const isDev = import.meta.env.DEV;
+  return isDev || isLovablePreview;
+}
+
+// Mock profile for dev mode
+const DEV_MOCK_PROFILE: Profile = {
+  id: 'dev-user-preview',
+  username: 'DEV_PREVIEW',
+  league: 'open',
+  global_index_score: 999,
+  win_rate: 100,
+  total_events: 0,
+  total_wins: 0,
+  onboarding_completed: true,
+  rules_accepted: true,
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(isDevMode() ? DEV_MOCK_PROFILE : null);
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(!isDevMode()); // Don't show loading in dev mode
+  const [isAdmin, setIsAdmin] = useState(isDevMode()); // Admin in dev mode
 
   const fetchProfile = async (userId: string) => {
     const { data: profileData } = await supabase
@@ -139,6 +164,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const signInWithPassword = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return { error };
+  };
+
+  const signUpWithPassword = async (email: string, password: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
+    return { error };
+  };
+
+  const resetPassword = async (email: string) => {
+    const redirectUrl = `${window.location.origin}/auth`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+    return { error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -158,6 +211,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signInWithGoogle,
         signInWithMagicLink,
+        signInWithPassword,
+        signUpWithPassword,
+        resetPassword,
         signOut,
         refreshProfile,
         isAdmin,
