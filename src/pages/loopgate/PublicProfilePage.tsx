@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import StatusBadge from "@/components/loopgate/StatusBadge";
+import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 interface PublicProfile {
@@ -14,6 +15,7 @@ interface PublicProfile {
   total_events: number;
   total_wins: number;
   avatar_url: string | null;
+  verification_status: boolean;
 }
 
 interface ConnectedPlatform {
@@ -52,7 +54,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url")
+        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status")
         .eq("id", userId)
         .single();
 
@@ -144,9 +146,12 @@ export default function PublicProfilePage() {
             </div>
           )}
 
-          {/* Alias + League */}
+          {/* Alias + League + Verified */}
           <div className="flex items-start justify-between mb-1">
-            <h1 className="font-display text-4xl">{profile.username}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-display text-4xl">{profile.username}</h1>
+              {profile.verification_status && <VerifiedBadge size="lg" />}
+            </div>
             <span
               className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}
             >

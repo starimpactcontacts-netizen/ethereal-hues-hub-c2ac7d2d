@@ -13,6 +13,8 @@ interface Profile {
   onboarding_completed: boolean;
   rules_accepted: boolean;
   avatar_url?: string | null;
+  verification_status?: boolean;
+  verification_code?: string | null;
 }
 
 interface ConnectedPlatform {

@@ -192,6 +192,9 @@ export type Database = {
           total_wins: number | null
           updated_at: string | null
           username: string
+          verification_code: string | null
+          verification_requested_at: string | null
+          verification_status: boolean | null
           win_rate: number | null
         }
         Insert: {
@@ -206,6 +209,9 @@ export type Database = {
           total_wins?: number | null
           updated_at?: string | null
           username: string
+          verification_code?: string | null
+          verification_requested_at?: string | null
+          verification_status?: boolean | null
           win_rate?: number | null
         }
         Update: {
@@ -220,6 +226,9 @@ export type Database = {
           total_wins?: number | null
           updated_at?: string | null
           username?: string
+          verification_code?: string | null
+          verification_requested_at?: string | null
+          verification_status?: boolean | null
           win_rate?: number | null
         }
         Relationships: []

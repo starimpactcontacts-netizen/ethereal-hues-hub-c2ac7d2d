@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { RealEditor } from "@/hooks/useRealData";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface EditorCardProps {
   editor: RealEditor;
@@ -52,6 +53,7 @@ export default function EditorCard({ editor }: EditorCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-semibold text-sm truncate">{editor.username}</h3>
+            {editor.verification_status && <VerifiedBadge size="sm" />}
             <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${leagueColors[editor.league] || leagueColors.open}`}>
               {editor.league}
             </span>

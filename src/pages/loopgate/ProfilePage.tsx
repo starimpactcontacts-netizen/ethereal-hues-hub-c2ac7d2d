@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
-import { ExternalLink, Calendar, Camera, Loader2 } from "lucide-react";
+import { ExternalLink, Calendar, Camera, Loader2, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { supabase } from "@/integrations/supabase/client";
 import StatusBadge from "@/components/loopgate/StatusBadge";
+import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
+import VerificationModal from "@/components/loopgate/VerificationModal";
 import { toast } from "sonner";
 
 function formatFollowers(count: number): string {
@@ -22,6 +24,7 @@ export default function ProfilePage() {
   const { user, profile, platforms, refreshProfile } = useAuth();
   const { rankings } = useRealRankings();
   const [uploading, setUploading] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Keep session active
@@ -41,13 +44,11 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please upload an image file");
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image must be under 5MB");
       return;
@@ -59,19 +60,16 @@ export default function ProfilePage() {
       const fileExt = file.name.split(".").pop();
       const filePath = `${user.id}/avatar.${fileExt}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
         .getPublicUrl(filePath);
 
-      // Update profile with avatar URL
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: publicUrl })
@@ -89,6 +87,10 @@ export default function ProfilePage() {
     }
   };
 
+  // Get TikTok username for verification
+  const tiktokPlatform = platforms.find(p => p.platform === 'tiktok');
+  const canVerify = tiktokPlatform && !profile?.verification_status;
+
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -98,8 +100,6 @@ export default function ProfilePage() {
   }
 
   const league = profile.league || 'open';
-  
-  // Find user's rank from real rankings
   const userRanking = rankings.find(r => r.id === profile.id);
   const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
 
@@ -137,7 +137,6 @@ export default function ProfilePage() {
                   </div>
                 )}
                 
-                {/* Overlay */}
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   {uploading ? (
                     <Loader2 className="w-6 h-6 animate-spin text-white" />
@@ -149,9 +148,12 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Alias + League */}
+          {/* Alias + League + Verified */}
           <div className="flex items-start justify-between mb-1">
-            <h1 className="font-display text-4xl">{profile.username}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-display text-4xl">{profile.username}</h1>
+              {profile.verification_status && <VerifiedBadge size="lg" />}
+            </div>
             <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}>
               {league}
             </span>
@@ -160,13 +162,13 @@ export default function ProfilePage() {
             Global Editor
           </p>
 
-          {/* Global Rank - Real Data */}
+          {/* Global Rank */}
           <div className="my-6 py-6 border-y border-border text-center">
             <p className="font-display text-7xl text-gold">#{userRank}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-2">Global Rank</p>
           </div>
 
-          {/* Stats Grid - Real Data */}
+          {/* Stats Grid */}
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center p-3 bg-background">
               <p className="font-display text-2xl">{Number(profile.global_index_score || 0).toFixed(1)}</p>
@@ -189,6 +191,36 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Verification Status Card */}
+      <section className="px-4 py-2">
+        <div className={`border p-4 ${profile.verification_status ? 'bg-gold/10 border-gold' : 'bg-surface-1 border-border'}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ShieldCheck size={20} className={profile.verification_status ? 'text-gold' : 'text-muted-foreground'} />
+              <div>
+                <p className="text-sm font-medium">
+                  {profile.verification_status ? 'VERIFIED' : 'UNVERIFIED'}
+                </p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  {profile.verification_status ? 'TikTok account verified' : 'Verify to unlock features'}
+                </p>
+              </div>
+            </div>
+            {canVerify && (
+              <button
+                onClick={() => setShowVerificationModal(true)}
+                className="px-4 py-2 bg-gold text-black text-xs font-semibold uppercase tracking-wider"
+              >
+                Verify
+              </button>
+            )}
+            {!tiktokPlatform && !profile.verification_status && (
+              <span className="text-[10px] text-muted-foreground">Connect TikTok first</span>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Platforms */}
       {platforms.length > 0 && (
@@ -214,7 +246,6 @@ export default function ProfilePage() {
         </section>
       )}
 
-      {/* No Platforms State */}
       {platforms.length === 0 && (
         <section className="px-4 py-4">
           <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
@@ -241,6 +272,18 @@ export default function ProfilePage() {
         </h3>
         <p className="text-sm text-muted-foreground">No recent events</p>
       </section>
+
+      {/* Verification Modal */}
+      {tiktokPlatform && (
+        <VerificationModal
+          isOpen={showVerificationModal}
+          onClose={() => setShowVerificationModal(false)}
+          userId={profile.id}
+          tiktokUsername={tiktokPlatform.platform_username}
+          existingCode={profile.verification_code}
+          onVerified={refreshProfile}
+        />
+      )}
     </div>
   );
 }
