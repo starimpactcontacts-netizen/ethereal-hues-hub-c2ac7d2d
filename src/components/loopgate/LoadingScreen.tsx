@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import loopgateLogo from '@/assets/loopgate-logo.png';
+import loopgateLogo from '@/assets/loopgate-logo-white.png';
 
 export default function LoadingScreen() {
   return (

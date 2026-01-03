@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { useRealRankings } from "@/hooks/useRealData";
 import EditorCard from "@/components/loopgate/EditorCard";
-import loopgateLogo from "@/assets/loopgate-logo.png";
+import loopgateLogo from "@/assets/loopgate-logo-white.png";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";

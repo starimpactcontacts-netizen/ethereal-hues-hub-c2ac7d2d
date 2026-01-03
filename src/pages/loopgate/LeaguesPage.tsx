@@ -1,7 +1,7 @@
 import { Shield, Star, Crown, Lock, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings } from "@/hooks/useRealData";
-import loopgateLogo from "@/assets/loopgate-logo.png";
+import loopgateLogo from "@/assets/loopgate-logo-white.png";
 
 const leagues = [
   {
