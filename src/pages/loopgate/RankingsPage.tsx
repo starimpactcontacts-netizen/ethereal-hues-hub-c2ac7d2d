@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { RefreshCw, ChevronRight, Lock, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import StatusBadge from "@/components/loopgate/StatusBadge";
-
+import loopgateLogo from "@/assets/loopgate-logo-white.png";
 
 type TabType = "global" | "league" | "region" | "history";
 
@@ -158,7 +158,7 @@ export default function RankingsPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">
-          <span className="font-display text-xl text-white tracking-tight">LOOPGATE</span>
+          <img src={loopgateLogo} alt="LOOPGATE" className="h-5" />
           <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">
             Rankings
           </span>
