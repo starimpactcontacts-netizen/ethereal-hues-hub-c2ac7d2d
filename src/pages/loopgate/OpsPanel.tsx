@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface RealEvent {
   id: string;
@@ -91,6 +92,27 @@ export default function OpsPanel() {
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  
+  // Edit event state
+  const [editingEvent, setEditingEvent] = useState<RealEvent | null>(null);
+  const [editEvent, setEditEvent] = useState({
+    title: '',
+    subtitle: '',
+    description: '',
+    category: 'Film',
+    region_tags: [] as string[],
+    start_date: '',
+    end_date: '',
+    prize_pool: '',
+    league: 'open',
+  });
+  const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
+  const [editPosterPreview, setEditPosterPreview] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
+  
+  // Delete confirmation state
+  const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   
   // Scoring state
   const [scoringSubmission, setScoringSubmission] = useState<string | null>(null);
@@ -262,6 +284,127 @@ export default function OpsPanel() {
     }
   }
 
+  function openEditEvent(event: RealEvent) {
+    setEditingEvent(event);
+    setEditEvent({
+      title: event.title,
+      subtitle: event.subtitle || '',
+      description: event.description || '',
+      category: event.category || 'Film',
+      region_tags: event.region_tags || [],
+      start_date: event.start_date ? new Date(event.start_date).toISOString().slice(0, 16) : '',
+      end_date: event.end_date ? new Date(event.end_date).toISOString().slice(0, 16) : '',
+      prize_pool: event.prize_pool || '',
+      league: event.league,
+    });
+    setEditPosterPreview(event.poster_url || null);
+    setEditPosterFile(null);
+  }
+
+  async function handleUpdateEvent() {
+    if (!editingEvent || !editEvent.title || !editEvent.start_date || !editEvent.end_date) {
+      toast.error('Please fill in required fields');
+      return;
+    }
+    
+    setUpdating(true);
+    
+    try {
+      let posterUrl = editingEvent.poster_url;
+      
+      // Upload new poster if provided
+      if (editPosterFile) {
+        const fileExt = editPosterFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('event-posters')
+          .upload(fileName, editPosterFile);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('event-posters')
+          .getPublicUrl(fileName);
+        
+        posterUrl = urlData.publicUrl;
+      }
+      
+      // Update event
+      const { error } = await supabase.from('events').update({
+        title: editEvent.title,
+        subtitle: editEvent.subtitle || null,
+        description: editEvent.description || null,
+        category: editEvent.category,
+        region_tags: editEvent.region_tags,
+        start_date: new Date(editEvent.start_date).toISOString(),
+        end_date: new Date(editEvent.end_date).toISOString(),
+        prize_pool: editEvent.prize_pool || null,
+        league: editEvent.league,
+        poster_url: posterUrl,
+      }).eq('id', editingEvent.id);
+      
+      if (error) throw error;
+      
+      toast.success('Event updated successfully');
+      setEditingEvent(null);
+      setEditPosterFile(null);
+      setEditPosterPreview(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating event:', error);
+      toast.error('Failed to update event');
+    } finally {
+      setUpdating(false);
+    }
+  }
+
+  async function handleDeleteEvent() {
+    if (!deleteEventId) return;
+    
+    setDeleting(true);
+    
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', deleteEventId);
+      
+      if (error) throw error;
+      
+      toast.success('Event deleted');
+      setDeleteEventId(null);
+      if (activeEventFilter === deleteEventId) {
+        setActiveEventFilter(null);
+      }
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event');
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  function handleEditPosterChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditPosterFile(file);
+      const reader = new FileReader();
+      reader.onload = () => setEditPosterPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function toggleEditRegionTag(region: string) {
+    setEditEvent(prev => ({
+      ...prev,
+      region_tags: prev.region_tags.includes(region)
+        ? prev.region_tags.filter(r => r !== region)
+        : [...prev.region_tags, region]
+    }));
+  }
+
   async function handleScoreSubmission(submissionId: string) {
     setSaving(true);
     
@@ -402,10 +545,25 @@ export default function OpsPanel() {
                       </div>
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => openEditEvent(event)}
+                          className="p-2 rounded-lg transition-colors bg-surface-1 hover:bg-surface-2"
+                          title="Edit event"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteEventId(event.id)}
+                          className="p-2 rounded-lg transition-colors bg-surface-1 hover:bg-destructive/20 text-destructive"
+                          title="Delete event"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                        <button
                           onClick={() => setActiveEventFilter(event.id)}
                           className={`p-2 rounded-lg transition-colors ${
                             activeEventFilter === event.id ? "bg-gold text-black" : "bg-surface-1 hover:bg-surface-2"
                           }`}
+                          title="View submissions"
                         >
                           <Eye size={16} />
                         </button>
@@ -417,6 +575,7 @@ export default function OpsPanel() {
                             event.status === 'finalized' ? "bg-purple-500" :
                             "bg-muted hover:bg-muted/80"
                           }`}
+                          title="Toggle status"
                         >
                           {event.status === 'live' ? <Unlock size={16} /> : <Lock size={16} />}
                         </button>
@@ -877,6 +1036,226 @@ export default function OpsPanel() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Event Dialog */}
+      <Dialog open={!!editingEvent} onOpenChange={(open) => !open && setEditingEvent(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 pt-4">
+            {/* Poster Upload */}
+            <div>
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Event Poster
+              </Label>
+              <div className="mt-2">
+                {editPosterPreview ? (
+                  <div className="relative">
+                    <img 
+                      src={editPosterPreview} 
+                      alt="Preview" 
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => { setEditPosterFile(null); setEditPosterPreview(null); }}
+                      className="absolute top-2 right-2 p-1 bg-black/50 rounded-full"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-gold/50 transition-colors">
+                    <ImageIcon className="w-8 h-8 text-muted-foreground mb-2" />
+                    <span className="text-sm text-muted-foreground">Click to upload</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditPosterChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            {/* Title */}
+            <div>
+              <Label htmlFor="edit-title">Event Title *</Label>
+              <Input
+                id="edit-title"
+                value={editEvent.title}
+                onChange={(e) => setEditEvent({ ...editEvent, title: e.target.value })}
+                placeholder="VELOCITY CUP #1"
+                className="mt-1"
+              />
+            </div>
+
+            {/* Subtitle */}
+            <div>
+              <Label htmlFor="edit-subtitle">Subtitle</Label>
+              <Input
+                id="edit-subtitle"
+                value={editEvent.subtitle}
+                onChange={(e) => setEditEvent({ ...editEvent, subtitle: e.target.value })}
+                placeholder="The Ultimate Edit Battle"
+                className="mt-1"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={editEvent.description}
+                onChange={(e) => setEditEvent({ ...editEvent, description: e.target.value })}
+                placeholder="Event description..."
+                className="mt-1"
+                rows={3}
+              />
+            </div>
+
+            {/* Category */}
+            <div>
+              <Label>Category</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setEditEvent({ ...editEvent, category: cat })}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      editEvent.category === cat 
+                        ? 'bg-gold text-black' 
+                        : 'bg-surface-1 text-muted-foreground hover:bg-surface-2'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Region Tags */}
+            <div>
+              <Label>Region Tags (optional)</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {REGIONS.map(region => (
+                  <button
+                    key={region}
+                    onClick={() => toggleEditRegionTag(region)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      editEvent.region_tags.includes(region)
+                        ? 'bg-gold text-black' 
+                        : 'bg-surface-1 text-muted-foreground hover:bg-surface-2'
+                    }`}
+                  >
+                    {region}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* League */}
+            <div>
+              <Label>League</Label>
+              <div className="flex gap-2 mt-2">
+                {['open', 'pro', 'elite'].map(league => (
+                  <button
+                    key={league}
+                    onClick={() => setEditEvent({ ...editEvent, league })}
+                    className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium uppercase transition-colors ${
+                      editEvent.league === league 
+                        ? 'bg-gold text-black' 
+                        : 'bg-surface-1 text-muted-foreground hover:bg-surface-2'
+                    }`}
+                  >
+                    {league}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date/Time */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="edit-start">Start Date/Time *</Label>
+                <Input
+                  id="edit-start"
+                  type="datetime-local"
+                  value={editEvent.start_date}
+                  onChange={(e) => setEditEvent({ ...editEvent, start_date: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-end">End Date/Time *</Label>
+                <Input
+                  id="edit-end"
+                  type="datetime-local"
+                  value={editEvent.end_date}
+                  onChange={(e) => setEditEvent({ ...editEvent, end_date: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Prize Pool */}
+            <div>
+              <Label htmlFor="edit-prize">Prize Pool</Label>
+              <Input
+                id="edit-prize"
+                value={editEvent.prize_pool}
+                onChange={(e) => setEditEvent({ ...editEvent, prize_pool: e.target.value })}
+                placeholder="$500"
+                className="mt-1"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              onClick={handleUpdateEvent}
+              disabled={updating || !editEvent.title || !editEvent.start_date || !editEvent.end_date}
+              className="w-full py-3 bg-gold text-black font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {updating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <Save size={18} />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteEventId} onOpenChange={(open) => !open && setDeleteEventId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Event?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this event and all associated submissions. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteEvent}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? 'Deleting...' : 'Delete Event'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
