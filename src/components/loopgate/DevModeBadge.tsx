@@ -1,7 +1,6 @@
-import { isDevMode } from '@/hooks/useAuth';
-
 export default function DevModeBadge() {
-  if (!isDevMode()) {
+  // Check global dev auth flag
+  if (typeof window === 'undefined' || !(window as any).__LOOPGATE_DEV_AUTH__) {
     return null;
   }
 

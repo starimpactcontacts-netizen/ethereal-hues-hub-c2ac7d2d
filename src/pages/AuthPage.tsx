@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth, isDevMode } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { Mail, ArrowRight, Loader2, Eye, EyeOff, KeyRound } from 'lucide-react';
+import { Mail, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -14,15 +14,14 @@ const passwordSchema = z.string().min(8, 'Password must be at least 8 characters
 type AuthMode = 'signin' | 'signup' | 'reset' | 'reset-sent';
 
 export default function AuthPage() {
-  const { signInWithGoogle, signInWithPassword, signUpWithPassword, resetPassword, user } = useAuth();
-  const navigate = useNavigate();
-  
-  // IMMEDIATE redirect in dev mode - before any state or rendering
-  if (isDevMode()) {
-    navigate('/hub', { replace: true });
+  // DEV MODE: immediate redirect before any React logic
+  if (typeof window !== 'undefined' && (window as any).__LOOPGATE_DEV_AUTH__) {
+    window.location.href = '/hub';
     return null;
   }
-  
+
+  const { signInWithGoogle, signInWithPassword, signUpWithPassword, resetPassword, user } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

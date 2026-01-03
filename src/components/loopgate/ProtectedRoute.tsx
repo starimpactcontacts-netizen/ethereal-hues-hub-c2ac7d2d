@@ -29,14 +29,13 @@ export default function ProtectedRoute({
   requireOnboarding = true,
   requireAdmin = false 
 }: ProtectedRouteProps) {
-  const { user, profile, loading, isAdmin } = useAuth();
-  const location = useLocation();
-
-  // In dev mode, useAuth already provides mock user/profile/isAdmin
-  // so we just render children directly - no redirects needed
-  if (isDevMode()) {
+  // DEV MODE: ALWAYS ALLOW - check global flag FIRST before any hooks
+  if (typeof window !== 'undefined' && (window as any).__LOOPGATE_DEV_AUTH__) {
     return <>{children}</>;
   }
+
+  const { user, profile, loading, isAdmin } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (

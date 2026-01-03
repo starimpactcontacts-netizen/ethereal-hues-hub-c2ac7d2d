@@ -22,8 +22,38 @@ import NotFound from "./pages/NotFound";
 
 // Components
 import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
-import ProtectedRoute, { isDevMode } from "./components/loopgate/ProtectedRoute";
+import ProtectedRoute from "./components/loopgate/ProtectedRoute";
 import DevModeBadge from "./components/loopgate/DevModeBadge";
+
+// GLOBAL DEV MODE DETECTION - runs BEFORE React
+const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+const isDevMode = hostname.endsWith('.lovable.dev') || hostname === 'localhost' || hostname === '127.0.0.1';
+
+// Block production bypass
+const isProduction = hostname.endsWith('.lovable.app') || 
+  (!hostname.includes('localhost') && !hostname.endsWith('.lovable.dev') && !hostname.includes('127.0.0.1'));
+
+// GLOBAL OVERRIDE - inject mock auth for dev mode ONLY
+if (isDevMode && !isProduction && typeof window !== 'undefined') {
+  (window as any).__LOOPGATE_DEV_AUTH__ = {
+    user: { id: 'dev', email: 'dev@loopgate.io', role: 'admin' },
+    profile: {
+      id: 'dev',
+      username: 'DEV_PREVIEW',
+      league: 'open',
+      global_index_score: 999,
+      win_rate: 100,
+      total_events: 0,
+      total_wins: 0,
+      onboarding_completed: true,
+      rules_accepted: true,
+    },
+    session: null,
+    platforms: [],
+    isAdmin: true,
+    loading: false,
+  };
+}
 
 const queryClient = new QueryClient();
 
@@ -31,8 +61,8 @@ const queryClient = new QueryClient();
 function RootRedirect() {
   const { user, profile, loading } = useAuth();
   
-  // In dev mode, always go to hub
-  if (isDevMode()) {
+  // In dev mode, always go to hub immediately
+  if ((window as any).__LOOPGATE_DEV_AUTH__) {
     return <Navigate to="/hub" replace />;
   }
   
@@ -60,6 +90,11 @@ function RootRedirect() {
 
 // Auth page wrapper - redirect if already logged in
 function AuthPageWrapper() {
+  // Dev mode: immediate redirect, no render
+  if ((window as any).__LOOPGATE_DEV_AUTH__) {
+    return <Navigate to="/hub" replace />;
+  }
+
   const { user, profile, loading } = useAuth();
   
   if (loading) {
