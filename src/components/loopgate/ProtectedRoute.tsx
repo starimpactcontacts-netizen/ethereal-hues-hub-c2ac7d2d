@@ -1,11 +1,41 @@
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import LoadingScreen from './LoadingScreen';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireOnboarding?: boolean;
   requireAdmin?: boolean;
 }
 
-// TODO: Re-enable auth protection when app is production-ready
-// All routes are currently open for development
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+  const { user, profile, loading, isAdmin } = useAuth();
+  
+  // Dev mode bypass
+  if ((window as any).__LOOPGATE_DEV_AUTH__) {
+    return <>{children}</>;
+  }
+  
+  // CRITICAL: Show loading screen while auth state is being determined
+  // This prevents the flash of login page
+  if (loading) {
+    return <LoadingScreen />;
+  }
+  
+  // Not authenticated - redirect to auth
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  // Needs onboarding
+  if (!profile?.onboarding_completed) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
+  // Admin check
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/hub" replace />;
+  }
+  
   return <>{children}</>;
 }
