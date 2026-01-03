@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, isDevMode } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -8,29 +8,10 @@ interface ProtectedRouteProps {
   requireAdmin?: boolean;
 }
 
-// Check if we should bypass auth (ONLY in Lovable preview, NOT on deployed apps)
-function shouldBypassAuth(): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  const hostname = window.location.hostname;
-  
-  // ONLY bypass in Lovable editor preview (*.lovable.dev)
-  // DO NOT bypass on deployed apps (*.lovable.app or custom domains)
-  const isLovablePreview = hostname.endsWith('.lovable.dev');
-  
-  // NEVER bypass on production domains
-  const isProduction = hostname.endsWith('.lovable.app') || 
-                       (!hostname.includes('localhost') && !isLovablePreview);
-  
-  if (isProduction) return false;
-  
-  // Also bypass in local development (localhost)
-  const isLocalDev = hostname === 'localhost' || hostname === '127.0.0.1';
-  
-  return isLocalDev || isLovablePreview;
-}
+// Re-export isDevMode for components that need it
+export { isDevMode };
 
-// Mock user for dev preview
+// Mock user for dev preview (used by components that need user data)
 export const DEV_MOCK_USER = {
   id: 'dev-user-preview',
   username: 'DEV_PREVIEW',
@@ -43,10 +24,6 @@ export const DEV_MOCK_USER = {
   rules_accepted: true,
 };
 
-export function isDevMode(): boolean {
-  return shouldBypassAuth();
-}
-
 export default function ProtectedRoute({ 
   children, 
   requireOnboarding = true,
@@ -55,8 +32,9 @@ export default function ProtectedRoute({
   const { user, profile, loading, isAdmin } = useAuth();
   const location = useLocation();
 
-  // Bypass auth in dev mode or Lovable preview
-  if (shouldBypassAuth()) {
+  // In dev mode, useAuth already provides mock user/profile/isAdmin
+  // so we just render children directly - no redirects needed
+  if (isDevMode()) {
     return <>{children}</>;
   }
 

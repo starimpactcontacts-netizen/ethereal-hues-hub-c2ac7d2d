@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth, isDevMode } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -14,7 +14,7 @@ const passwordSchema = z.string().min(8, 'Password must be at least 8 characters
 type AuthMode = 'signin' | 'signup' | 'reset' | 'reset-sent';
 
 export default function AuthPage() {
-  const { signInWithGoogle, signInWithPassword, signUpWithPassword, resetPassword } = useAuth();
+  const { signInWithGoogle, signInWithPassword, signUpWithPassword, resetPassword, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -22,6 +22,13 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>('signin');
   const navigate = useNavigate();
+
+  // In dev mode or if already authenticated, redirect to hub
+  useEffect(() => {
+    if (isDevMode() || user) {
+      navigate('/hub', { replace: true });
+    }
+  }, [user, navigate]);
 
   const validateInputs = () => {
     const emailResult = emailSchema.safeParse(email);

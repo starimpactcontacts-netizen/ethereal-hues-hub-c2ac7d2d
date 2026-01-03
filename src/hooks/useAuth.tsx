@@ -42,13 +42,30 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Check if we're in dev mode (Lovable preview or local dev)
-function isDevMode(): boolean {
+// ONLY bypass on *.lovable.dev, NEVER on *.lovable.app or production
+export function isDevMode(): boolean {
   if (typeof window === 'undefined') return false;
   const hostname = window.location.hostname;
-  const isLovablePreview = hostname.includes('lovable.dev');
-  const isDev = import.meta.env.DEV;
-  return isDev || isLovablePreview;
+  
+  // NEVER bypass on production domains
+  const isProduction = hostname.endsWith('.lovable.app') || 
+                       (!hostname.includes('localhost') && !hostname.endsWith('.lovable.dev'));
+  if (isProduction) return false;
+  
+  const isLovablePreview = hostname.endsWith('.lovable.dev');
+  const isLocalDev = hostname === 'localhost' || hostname === '127.0.0.1';
+  
+  return isLocalDev || isLovablePreview;
 }
+
+// Mock user for dev mode - simulates authenticated admin
+const DEV_MOCK_USER = {
+  id: 'dev-user-preview',
+  email: 'dev@loopgate.io',
+  role: 'admin',
+  aud: 'authenticated',
+  created_at: new Date().toISOString(),
+} as unknown as User;
 
 // Mock profile for dev mode
 const DEV_MOCK_PROFILE: Profile = {
@@ -64,12 +81,13 @@ const DEV_MOCK_PROFILE: Profile = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const devMode = isDevMode();
+  const [user, setUser] = useState<User | null>(devMode ? DEV_MOCK_USER : null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(isDevMode() ? DEV_MOCK_PROFILE : null);
+  const [profile, setProfile] = useState<Profile | null>(devMode ? DEV_MOCK_PROFILE : null);
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
-  const [loading, setLoading] = useState(!isDevMode()); // Don't show loading in dev mode
-  const [isAdmin, setIsAdmin] = useState(isDevMode()); // Admin in dev mode
+  const [loading, setLoading] = useState(!devMode); // Never loading in dev mode
+  const [isAdmin, setIsAdmin] = useState(devMode); // Always admin in dev mode
 
   const fetchProfile = async (userId: string) => {
     const { data: profileData } = await supabase
@@ -109,6 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Skip all auth logic in dev mode - already have mock user/profile
+    if (devMode) {
+      return;
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -140,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [devMode]);
 
   const signInWithGoogle = async () => {
     const redirectUrl = `${window.location.origin}/`;
