@@ -193,6 +193,10 @@ export default function AvatarUploadModal({
   const handleClose = () => {
     setImgSrc("");
     setCrop(undefined);
+    // Reset file input to allow re-selecting same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     onClose();
   };
 

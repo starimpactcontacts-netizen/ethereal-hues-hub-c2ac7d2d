@@ -109,11 +109,14 @@ export default function AddPlatformModal({
   };
 
   const handleClose = () => {
-    setPlatform("");
-    setUsername("");
-    setProfileUrl("");
-    setError("");
+    // Delay state reset to prevent flash during close animation
     onClose();
+    setTimeout(() => {
+      setPlatform("");
+      setUsername("");
+      setProfileUrl("");
+      setError("");
+    }, 200);
   };
 
   return (
