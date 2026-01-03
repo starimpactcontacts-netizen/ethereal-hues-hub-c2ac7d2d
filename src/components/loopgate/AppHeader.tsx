@@ -4,7 +4,6 @@ import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Sear
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import loopgateLogo from '@/assets/loopgate-logo-white.png';
 
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
@@ -34,8 +33,8 @@ export default function AppHeader() {
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="flex items-center justify-between px-4 h-14">
         {/* Logo */}
-        <Link to="/hub">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-5" />
+        <Link to="/hub" className="font-display text-xl text-gold">
+          LOOPGATE
         </Link>
 
         {/* Menu Button */}

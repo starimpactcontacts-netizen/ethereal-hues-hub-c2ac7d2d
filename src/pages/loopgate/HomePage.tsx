@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ChevronRight, MapPin, Clock } from "lucide-react";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
-import loopgateLogo from "@/assets/loopgate-logo-white.png";
+import loopgateLogo from "@/assets/loopgate-logo.png";
 import PosterStrip from "@/components/loopgate/PosterStrip";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import { useRealEvents, useGlobalStats, useActiveSession } from "@/hooks/useRealData";
@@ -23,7 +23,7 @@ export default function HomePage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-5" />
+          <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
           <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-medium">
             {liveEvents.length > 0 ? 'Live' : 'Events'}
           </span>
