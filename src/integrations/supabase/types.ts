@@ -74,6 +74,7 @@ export type Database = {
           final_rank: number | null
           id: string
           impact_score: number | null
+          judge_id: string | null
           judged_at: string | null
           originality_score: number | null
           platform: Database["public"]["Enums"]["platform_type"]
@@ -89,6 +90,7 @@ export type Database = {
           final_rank?: number | null
           id?: string
           impact_score?: number | null
+          judge_id?: string | null
           judged_at?: string | null
           originality_score?: number | null
           platform: Database["public"]["Enums"]["platform_type"]
@@ -104,6 +106,7 @@ export type Database = {
           final_rank?: number | null
           id?: string
           impact_score?: number | null
+          judge_id?: string | null
           judged_at?: string | null
           originality_score?: number | null
           platform?: Database["public"]["Enums"]["platform_type"]
@@ -118,7 +121,9 @@ export type Database = {
       }
       events: {
         Row: {
+          category: string | null
           created_at: string | null
+          description: string | null
           end_date: string
           id: string
           ip: string | null
@@ -126,6 +131,7 @@ export type Database = {
           location: string | null
           poster_url: string | null
           prize_pool: string | null
+          region_tags: string[] | null
           rules: string[] | null
           start_date: string
           status: string
@@ -134,7 +140,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
+          description?: string | null
           end_date: string
           id?: string
           ip?: string | null
@@ -142,6 +150,7 @@ export type Database = {
           location?: string | null
           poster_url?: string | null
           prize_pool?: string | null
+          region_tags?: string[] | null
           rules?: string[] | null
           start_date: string
           status?: string
@@ -150,7 +159,9 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
+          description?: string | null
           end_date?: string
           id?: string
           ip?: string | null
@@ -158,6 +169,7 @@ export type Database = {
           location?: string | null
           poster_url?: string | null
           prize_pool?: string | null
+          region_tags?: string[] | null
           rules?: string[] | null
           start_date?: string
           status?: string
