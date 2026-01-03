@@ -131,15 +131,24 @@ export default function OpsPanel() {
   useEffect(() => {
     fetchData();
     
-    // Set up realtime subscriptions
+    // Set up realtime subscriptions for instant updates
     const eventsChannel = supabase
-      .channel('admin-events')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, fetchData)
+      .channel('admin-events-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+        fetchData();
+      })
       .subscribe();
       
     const submissionsChannel = supabase
-      .channel('admin-submissions')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_participations' }, fetchData)
+      .channel('admin-submissions-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_participations' }, (payload) => {
+        console.log('[OPS] New submission received:', payload);
+        toast.info('New submission received!');
+        fetchData();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_participations' }, () => {
+        fetchData();
+      })
       .subscribe();
     
     return () => {
