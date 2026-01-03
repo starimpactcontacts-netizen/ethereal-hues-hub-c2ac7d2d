@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { X, ExternalLink, Loader2 } from "lucide-react";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface SubmissionModalProps {
   isOpen: boolean;
@@ -10,7 +13,7 @@ interface SubmissionModalProps {
 }
 
 export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }: SubmissionModalProps) {
-  const [alias, setAlias] = useState("");
+  const { user, profile } = useAuth();
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
   const [platformLink, setPlatformLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,6 +25,11 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user || !profile) {
+      toast.error("You must be logged in to submit");
+      return;
+    }
+    
     // Validate URL before submission
     const validation = validatePlatformUrl(platform, platformLink);
     if (!validation.valid) {
@@ -32,11 +40,26 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
     
     setIsSubmitting(true);
     
-    // Simulate submission (replace with real API call)
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setSubmitted(true);
+    try {
+      // Insert submission into database - goes directly to ops panel unrated
+      const { error } = await supabase.from('event_participations').insert({
+        event_id: eventId,
+        user_id: user.id,
+        platform: platform,
+        submission_url: platformLink,
+        status: 'pending', // Unrated status
+      });
+      
+      if (error) throw error;
+      
+      setSubmitted(true);
+      toast.success("Submission received!");
+    } catch (error: any) {
+      console.error('Submission error:', error);
+      toast.error(error.message || "Failed to submit");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -81,19 +104,14 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          {/* Alias */}
+          {/* Submitting as (read-only) */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-              Editor Alias
+              Submitting as
             </label>
-            <input
-              type="text"
-              value={alias}
-              onChange={(e) => setAlias(e.target.value)}
-              placeholder="YOUR_ALIAS"
-              className="w-full bg-surface-1 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-gold"
-              required
-            />
+            <div className="w-full bg-surface-1 border border-border rounded-lg px-4 py-3 text-sm text-foreground">
+              {profile?.username || 'Unknown'}
+            </div>
           </div>
 
           {/* Platform Selection */}
@@ -164,7 +182,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting || !alias || !platformLink}
+            disabled={isSubmitting || !platformLink}
             className="w-full py-4 bg-gold text-black font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
