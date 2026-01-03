@@ -14,16 +14,168 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      connected_platforms: {
+        Row: {
+          connected_at: string | null
+          follower_count: number | null
+          id: string
+          is_verified: boolean | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          platform_url: string
+          platform_username: string
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string | null
+          follower_count?: number | null
+          id?: string
+          is_verified?: boolean | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          platform_url: string
+          platform_username: string
+          user_id: string
+        }
+        Update: {
+          connected_at?: string | null
+          follower_count?: number | null
+          id?: string
+          is_verified?: boolean | null
+          platform?: Database["public"]["Enums"]["platform_type"]
+          platform_url?: string
+          platform_username?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      event_participations: {
+        Row: {
+          event_id: string
+          final_rank: number | null
+          id: string
+          impact_score: number | null
+          judged_at: string | null
+          originality_score: number | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          qoi_score: number | null
+          quality_score: number | null
+          status: string | null
+          submission_url: string
+          submitted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          final_rank?: number | null
+          id?: string
+          impact_score?: number | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          qoi_score?: number | null
+          quality_score?: number | null
+          status?: string | null
+          submission_url: string
+          submitted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          final_rank?: number | null
+          id?: string
+          impact_score?: number | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform?: Database["public"]["Enums"]["platform_type"]
+          qoi_score?: number | null
+          quality_score?: number | null
+          status?: string | null
+          submission_url?: string
+          submitted_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          global_index_score: number | null
+          id: string
+          league: Database["public"]["Enums"]["league_tier"]
+          onboarding_completed: boolean | null
+          rules_accepted: boolean | null
+          total_events: number | null
+          total_wins: number | null
+          updated_at: string | null
+          username: string
+          win_rate: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          global_index_score?: number | null
+          id: string
+          league?: Database["public"]["Enums"]["league_tier"]
+          onboarding_completed?: boolean | null
+          rules_accepted?: boolean | null
+          total_events?: number | null
+          total_wins?: number | null
+          updated_at?: string | null
+          username: string
+          win_rate?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          global_index_score?: number | null
+          id?: string
+          league?: Database["public"]["Enums"]["league_tier"]
+          onboarding_completed?: boolean | null
+          rules_accepted?: boolean | null
+          total_events?: number | null
+          total_wins?: number | null
+          updated_at?: string | null
+          username?: string
+          win_rate?: number | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_username_available: {
+        Args: { check_username: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
+      league_tier: "open" | "pro" | "elite"
+      platform_type: "tiktok" | "instagram" | "youtube"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +302,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+      league_tier: ["open", "pro", "elite"],
+      platform_type: ["tiktok", "instagram", "youtube"],
+    },
   },
 } as const
