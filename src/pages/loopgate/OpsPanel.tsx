@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 
 interface RealEvent {
   id: string;
@@ -46,6 +47,16 @@ interface RealSubmission {
   judged_at: string | null;
   judge_id: string | null;
   username?: string;
+  verification_status?: boolean;
+}
+
+interface VerificationRequest {
+  id: string;
+  username: string;
+  verification_code: string | null;
+  verification_requested_at: string | null;
+  verification_status: boolean;
+  tiktok_username?: string;
 }
 
 const CATEGORIES = ["Film", "Trailer", "Music", "Regional", "Global"];
@@ -119,6 +130,10 @@ export default function OpsPanel() {
   const [scores, setScores] = useState({ quality: 80, originality: 80, impact: 80 });
   const [saving, setSaving] = useState(false);
 
+  // Verification state
+  const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
+  const [verifyingUserId, setVerifyingUserId] = useState<string | null>(null);
+
   // Admin check disabled during development - will re-enable for production
   // useEffect(() => {
   //   if (!isAdmin && !loading) {
@@ -180,26 +195,93 @@ export default function OpsPanel() {
       
       if (submissionsError) throw submissionsError;
       
-      // Fetch usernames for submissions
+      // Fetch usernames and verification status for submissions
       const userIds = [...new Set((submissionsData || []).map(s => s.user_id))];
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, username')
+        .select('id, username, verification_status')
         .in('id', userIds);
       
-      const usernameMap = new Map((profilesData || []).map(p => [p.id, p.username]));
+      const profileMap = new Map((profilesData || []).map(p => [p.id, p]));
       
       const formattedSubmissions = (submissionsData || []).map(s => ({
         ...s,
-        username: usernameMap.get(s.user_id) || 'Unknown'
+        username: profileMap.get(s.user_id)?.username || 'Unknown',
+        verification_status: profileMap.get(s.user_id)?.verification_status || false
       }));
       
       setSubmissions(formattedSubmissions);
+
+      // Fetch verification requests (users with pending verification codes)
+      const { data: verificationData } = await supabase
+        .from('profiles')
+        .select('id, username, verification_code, verification_requested_at, verification_status')
+        .not('verification_code', 'is', null)
+        .eq('verification_status', false)
+        .order('verification_requested_at', { ascending: false });
+
+      if (verificationData) {
+        // Fetch TikTok usernames for these users
+        const verUserIds = verificationData.map(v => v.id);
+        const { data: platformsData } = await supabase
+          .from('connected_platforms')
+          .select('user_id, platform_username')
+          .in('user_id', verUserIds)
+          .eq('platform', 'tiktok');
+
+        const tiktokMap = new Map((platformsData || []).map(p => [p.user_id, p.platform_username]));
+
+        setVerificationRequests(verificationData.map(v => ({
+          ...v,
+          tiktok_username: tiktokMap.get(v.id) || undefined
+        })));
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleManualVerify(userId: string) {
+    setVerifyingUserId(userId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          verification_status: true,
+          verification_code: null 
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+      toast.success('User verified successfully');
+      fetchData();
+    } catch (error) {
+      console.error('Error verifying user:', error);
+      toast.error('Failed to verify user');
+    } finally {
+      setVerifyingUserId(null);
+    }
+  }
+
+  async function handleRejectVerification(userId: string) {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          verification_code: null,
+          verification_requested_at: null
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+      toast.success('Verification request rejected');
+      fetchData();
+    } catch (error) {
+      console.error('Error rejecting verification:', error);
+      toast.error('Failed to reject verification');
     }
   }
 
@@ -649,7 +731,10 @@ export default function OpsPanel() {
                       <div className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-semibold">{submission.username}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{submission.username}</p>
+                              {submission.verification_status && <VerifiedBadge size="sm" />}
+                            </div>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                                 {submission.platform}
@@ -778,7 +863,10 @@ export default function OpsPanel() {
                       <div className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="font-semibold">{submission.username}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{submission.username}</p>
+                              {submission.verification_status && <VerifiedBadge size="sm" />}
+                            </div>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                                 {submission.platform}
@@ -817,6 +905,74 @@ export default function OpsPanel() {
               )}
             </TabsContent>
           </Tabs>
+        </section>
+
+        {/* Verification Requests */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Verification Requests
+            </h2>
+            <span className="text-xs text-gold">{verificationRequests.length} pending</span>
+          </div>
+
+          {verificationRequests.length === 0 ? (
+            <div className="bg-card border border-border rounded-lg p-6 text-center">
+              <ShieldCheck className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">No pending verifications</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {verificationRequests.map((req) => (
+                <div
+                  key={req.id}
+                  className="bg-card border border-border rounded-lg p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">{req.username}</p>
+                      {req.tiktok_username && (
+                        <a 
+                          href={`https://www.tiktok.com/@${req.tiktok_username}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gold text-xs hover:underline"
+                        >
+                          @{req.tiktok_username} →
+                        </a>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-mono bg-surface-1 px-2 py-1 text-gold">
+                          {req.verification_code}
+                        </span>
+                        {req.verification_requested_at && (
+                          <span className="text-[10px] text-muted-foreground">
+                            {new Date(req.verification_requested_at).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleRejectVerification(req.id)}
+                        className="px-3 py-2 bg-destructive/20 text-destructive rounded-lg text-xs font-semibold"
+                      >
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleManualVerify(req.id)}
+                        disabled={verifyingUserId === req.id}
+                        className="px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <BadgeCheck size={14} />
+                        {verifyingUserId === req.id ? 'Verifying...' : 'Verify'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Export */}
