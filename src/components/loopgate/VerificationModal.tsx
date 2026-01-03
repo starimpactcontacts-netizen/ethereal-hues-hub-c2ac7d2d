@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X, Copy, Check, Loader2, ExternalLink, RefreshCw } from "lucide-react";
+import { useState, useRef } from "react";
+import { X, Copy, Check, Loader2, ExternalLink, RefreshCw, Upload, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -7,7 +7,8 @@ interface VerificationModalProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
-  tiktokUsername: string;
+  platform: "tiktok" | "instagram" | "youtube";
+  platformUsername: string;
   existingCode?: string | null;
   onVerified: () => void;
 }
@@ -21,20 +22,41 @@ function generateVerificationCode(): string {
   return `LG-${code}`;
 }
 
+const platformLabels: Record<string, string> = {
+  tiktok: "TikTok",
+  instagram: "Instagram",
+  youtube: "YouTube",
+};
+
+const platformUrls: Record<string, (username: string) => string> = {
+  tiktok: (u) => `https://www.tiktok.com/@${u}`,
+  instagram: (u) => `https://www.instagram.com/${u}`,
+  youtube: (u) => `https://www.youtube.com/@${u}`,
+};
+
+const platformInstructions: Record<string, string> = {
+  tiktok: "Open TikTok → Profile → Edit Profile → Add the code to your bio",
+  instagram: "Open Instagram → Profile → Edit Profile → Add the code to your bio",
+  youtube: "Open YouTube Studio → Customization → Basic Info → Add the code to your description",
+};
+
 export default function VerificationModal({
   isOpen,
   onClose,
   userId,
-  tiktokUsername,
+  platform,
+  platformUsername,
   existingCode,
   onVerified,
 }: VerificationModalProps) {
-  const [step, setStep] = useState<"generate" | "verify">(existingCode ? "verify" : "generate");
+  const [step, setStep] = useState<"generate" | "upload">(existingCode ? "upload" : "generate");
   const [code, setCode] = useState(existingCode || "");
   const [copied, setCopied] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [verifyAttempts, setVerifyAttempts] = useState(0);
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -57,8 +79,7 @@ export default function VerificationModal({
     }
 
     setCode(newCode);
-    setStep("verify");
-    setVerifyAttempts(0);
+    setStep("upload");
     setGenerating(false);
   };
 
@@ -74,33 +95,59 @@ export default function VerificationModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image must be under 10MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setScreenshot(base64);
+      setScreenshotPreview(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleVerify = async () => {
+    if (!screenshot) {
+      toast.error("Please upload a screenshot first");
+      return;
+    }
+
     setVerifying(true);
-    setVerifyAttempts(prev => prev + 1);
 
     try {
-      // Mark the user as verified directly since TikTok blocks server scraping
-      // This is a trust-based verification that can be manually reviewed later
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ 
-          verification_status: true,
-          verification_code: null
-        })
-        .eq("id", userId);
+      const { data, error } = await supabase.functions.invoke("verify-screenshot", {
+        body: { 
+          userId,
+          platform,
+          platformUsername,
+          verificationCode: code,
+          screenshotBase64: screenshot
+        },
+      });
 
-      if (profileError) throw profileError;
+      if (error) throw error;
 
-      // Also mark any connected TikTok platform as verified
-      await supabase
-        .from("connected_platforms")
-        .update({ is_verified: true })
-        .eq("user_id", userId)
-        .eq("platform", "tiktok");
-
-      toast.success("Account verified! 🎉");
-      onVerified();
-      onClose();
+      if (data?.verified) {
+        toast.success(data.message || "Account verified! 🎉");
+        onVerified();
+        onClose();
+      } else {
+        toast.error(data?.message || "Verification failed. Please check your screenshot and try again.");
+      }
     } catch (error: any) {
       console.error("Verification error:", error);
       toast.error("Verification failed. Please try again.");
@@ -109,16 +156,28 @@ export default function VerificationModal({
     }
   };
 
+  const clearScreenshot = () => {
+    setScreenshot(null);
+    setScreenshotPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const platformLabel = platformLabels[platform] || "Platform";
+  const profileUrl = platformUrls[platform]?.(platformUsername) || "#";
+  const instructions = platformInstructions[platform] || "";
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/80" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-surface-1 border border-border w-full max-w-md">
+      <div className="relative bg-surface-1 border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="font-display text-xl">Verify Account</h2>
+        <div className="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-surface-1">
+          <h2 className="font-display text-xl">Verify {platformLabel}</h2>
           <button onClick={onClose} className="p-1">
             <X size={20} className="text-muted-foreground" />
           </button>
@@ -129,7 +188,7 @@ export default function VerificationModal({
           {step === "generate" && (
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Verify your TikTok account to earn a verified badge. This proves you own <span className="text-foreground font-medium">@{tiktokUsername}</span>.
+                Verify your {platformLabel} account to earn a verified badge. This proves you own <span className="text-foreground font-medium">@{platformUsername}</span>.
               </p>
               
               <div className="bg-background border border-border p-4 space-y-3">
@@ -141,11 +200,15 @@ export default function VerificationModal({
                   </li>
                   <li className="flex gap-2">
                     <span className="text-gold font-semibold">2.</span>
-                    <span>Add the code to your TikTok bio</span>
+                    <span>Add the code to your {platformLabel} bio for 60 seconds</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-gold font-semibold">3.</span>
-                    <span>Click verify — we'll check your bio</span>
+                    <span>Take a screenshot of your profile page</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-gold font-semibold">4.</span>
+                    <span>Upload the screenshot — we'll verify it instantly</span>
                   </li>
                 </ol>
               </div>
@@ -164,19 +227,15 @@ export default function VerificationModal({
             </div>
           )}
 
-          {step === "verify" && (
+          {step === "upload" && (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Add this code to your TikTok bio, then click verify.
-              </p>
-
               {/* Code Display */}
               <div className="bg-background border border-gold p-4">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">
                   Your Verification Code
                 </p>
                 <div className="flex items-center justify-between">
-                  <p className="font-display text-3xl text-gold tracking-wider">{code}</p>
+                  <p className="font-display text-2xl text-gold tracking-wider">{code}</p>
                   <button
                     onClick={handleCopy}
                     className="p-2 border border-border hover:border-gold transition-colors"
@@ -192,31 +251,81 @@ export default function VerificationModal({
 
               {/* Instructions */}
               <div className="bg-background border border-border p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">Step 1: Add code to your bio</p>
                 <p className="text-xs text-muted-foreground">
-                  Open TikTok → Profile → Edit Profile → Add <span className="text-gold font-mono">{code}</span> to your bio
+                  {instructions}
                 </p>
                 <a
-                  href={`https://www.tiktok.com/@${tiktokUsername}`}
+                  href={profileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-gold flex items-center gap-1"
+                  className="text-xs text-gold flex items-center gap-1 hover:underline"
                 >
-                  Open your TikTok profile <ExternalLink size={12} />
+                  Open your {platformLabel} profile <ExternalLink size={12} />
                 </a>
               </div>
 
+              <div className="bg-background border border-border p-3 space-y-2">
+                <p className="text-xs font-medium text-foreground">Step 2: Take a screenshot</p>
+                <p className="text-xs text-muted-foreground">
+                  Screenshot your profile page showing your username and the code in your bio.
+                </p>
+              </div>
+
+              {/* Upload Area */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-foreground">Step 3: Upload screenshot</p>
+                
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  ref={fileInputRef}
+                  className="hidden"
+                />
+
+                {screenshotPreview ? (
+                  <div className="relative">
+                    <img 
+                      src={screenshotPreview} 
+                      alt="Screenshot preview" 
+                      className="w-full h-48 object-contain bg-background border border-border"
+                    />
+                    <button
+                      onClick={clearScreenshot}
+                      className="absolute top-2 right-2 p-1 bg-black/70 border border-border hover:border-red-500 transition-colors"
+                    >
+                      <X size={16} className="text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-border hover:border-gold transition-colors p-8 flex flex-col items-center gap-2"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Upload size={24} className="text-muted-foreground" />
+                      <Camera size={24} className="text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">Click to upload screenshot</p>
+                    <p className="text-xs text-muted-foreground">PNG, JPG up to 10MB</p>
+                  </button>
+                )}
+              </div>
+
+              {/* Verify Button */}
               <button
                 onClick={handleVerify}
-                disabled={verifying}
-                className="w-full bg-gold text-black font-semibold py-3 flex items-center justify-center gap-2"
+                disabled={verifying || !screenshot}
+                className="w-full bg-gold text-black font-semibold py-3 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {verifying ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Verifying...
+                    Analyzing screenshot...
                   </>
                 ) : (
-                  "I've Added It — Verify Now"
+                  "Verify Now"
                 )}
               </button>
 

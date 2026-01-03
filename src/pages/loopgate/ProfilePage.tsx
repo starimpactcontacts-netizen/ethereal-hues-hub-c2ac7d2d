@@ -99,9 +99,11 @@ export default function ProfilePage() {
     }
   };
 
-  // Get TikTok username for verification
-  const tiktokPlatform = platforms.find(p => p.platform === 'tiktok');
-  const canVerify = tiktokPlatform && !profile?.verification_status;
+  // Get platform for verification (prioritize TikTok, then others)
+  const verifiablePlatform = platforms.find(p => p.platform === 'tiktok') 
+    || platforms.find(p => p.platform === 'instagram')
+    || platforms.find(p => p.platform === 'youtube');
+  const canVerify = verifiablePlatform && !profile?.verification_status;
 
   if (!profile) {
     return (
@@ -219,7 +221,7 @@ export default function ProfilePage() {
                   {profile.verification_status ? 'VERIFIED' : 'UNVERIFIED'}
                 </p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  {profile.verification_status ? 'TikTok account verified' : 'Verify to unlock features'}
+                  {profile.verification_status ? 'Account verified' : 'Verify to unlock features'}
                 </p>
               </div>
             </div>
@@ -231,8 +233,8 @@ export default function ProfilePage() {
                 Verify
               </button>
             )}
-            {!tiktokPlatform && !profile.verification_status && (
-              <span className="text-[10px] text-muted-foreground">Connect TikTok first</span>
+            {!verifiablePlatform && !profile.verification_status && (
+              <span className="text-[10px] text-muted-foreground">Connect a platform first</span>
             )}
           </div>
         </div>
@@ -312,12 +314,13 @@ export default function ProfilePage() {
       </section>
 
       {/* Verification Modal */}
-      {tiktokPlatform && (
+      {verifiablePlatform && (
         <VerificationModal
           isOpen={showVerificationModal}
           onClose={() => setShowVerificationModal(false)}
           userId={profile.id}
-          tiktokUsername={tiktokPlatform.platform_username}
+          platform={verifiablePlatform.platform as "tiktok" | "instagram" | "youtube"}
+          platformUsername={verifiablePlatform.platform_username}
           existingCode={profile.verification_code}
           onVerified={refreshProfile}
         />
