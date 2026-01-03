@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Trophy, Upload, Globe, Play } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
+import LandingHeader from '@/components/loopgate/LandingHeader';
 
 const topEditors = [
   { rank: 1, alias: 'KXNE', score: 2847, league: 'elite' },
@@ -14,8 +15,10 @@ const topEditors = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Global Header */}
+      <LandingHeader />
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden">
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden pt-[72px]">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-surface-0 via-background to-background" />
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px]" />
