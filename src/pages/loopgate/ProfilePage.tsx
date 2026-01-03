@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
-import { ExternalLink, Calendar, Camera, Loader2, ShieldCheck, Pencil } from "lucide-react";
+import { ExternalLink, Calendar, Camera, Loader2, ShieldCheck, Pencil, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { supabase } from "@/integrations/supabase/client";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
 import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
+import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import { toast } from "sonner";
 
@@ -35,6 +36,7 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
+  const [showAddPlatform, setShowAddPlatform] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Keep session active
@@ -237,12 +239,23 @@ export default function ProfilePage() {
       </section>
 
       {/* Platforms */}
-      {platforms.length > 0 && (
-        <section className="px-4 py-4">
-          <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+      <section className="px-4 py-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
             <ExternalLink size={14} />
             Platforms
           </h3>
+          {platforms.length < 3 && (
+            <button
+              onClick={() => setShowAddPlatform(true)}
+              className="flex items-center gap-1 text-[10px] text-gold uppercase tracking-wider hover:underline"
+            >
+              <Plus size={12} />
+              Add
+            </button>
+          )}
+        </div>
+        {platforms.length > 0 ? (
           <div className="space-y-2">
             {platforms.map((platform) => (
               <button
@@ -271,18 +284,15 @@ export default function ProfilePage() {
               </button>
             ))}
           </div>
-        </section>
-      )}
-
-      {platforms.length === 0 && (
-        <section className="px-4 py-4">
-          <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
-            <ExternalLink size={14} />
-            Platforms
-          </h3>
-          <p className="text-sm text-muted-foreground">No platforms connected</p>
-        </section>
-      )}
+        ) : (
+          <button
+            onClick={() => setShowAddPlatform(true)}
+            className="w-full border border-dashed border-border p-4 text-center text-sm text-muted-foreground hover:border-gold hover:text-gold transition-colors"
+          >
+            + Add your first platform
+          </button>
+        )}
+      </section>
 
       {/* Active Events */}
       <section className="px-4 py-4">
@@ -322,6 +332,15 @@ export default function ProfilePage() {
           onUpdated={refreshProfile}
         />
       )}
+
+      {/* Add Platform Modal */}
+      <AddPlatformModal
+        isOpen={showAddPlatform}
+        onClose={() => setShowAddPlatform(false)}
+        userId={profile.id}
+        existingPlatforms={platforms.map(p => p.platform)}
+        onAdded={refreshProfile}
+      />
     </div>
   );
 }
