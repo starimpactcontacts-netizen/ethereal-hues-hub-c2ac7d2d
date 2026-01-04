@@ -289,7 +289,7 @@ export type Database = {
       update_active_session: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "judge" | "dev"
       league_tier: "open" | "pro" | "elite"
       platform_type: "tiktok" | "instagram" | "youtube"
     }
@@ -419,7 +419,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "judge", "dev"],
       league_tier: ["open", "pro", "elite"],
       platform_type: ["tiktok", "instagram", "youtube"],
     },

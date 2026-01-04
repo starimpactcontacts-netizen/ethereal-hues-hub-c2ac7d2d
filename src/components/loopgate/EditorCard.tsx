@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { RealEditor } from "@/hooks/useRealData";
 import VerifiedBadge from "./VerifiedBadge";
+import AuthorityBadge from "./AuthorityBadge";
 
 interface EditorCardProps {
   editor: RealEditor;
@@ -12,9 +13,18 @@ const leagueColors: Record<string, string> = {
   open: "text-muted-foreground border-muted-foreground/50",
 };
 
+// Get authority role for display (prioritize dev over judge)
+function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | null {
+  if (!roles) return null;
+  if (roles.includes('dev')) return 'dev';
+  if (roles.includes('judge')) return 'judge';
+  return null;
+}
+
 export default function EditorCard({ editor }: EditorCardProps) {
   const navigate = useNavigate();
   const isTop10 = (editor.rank || 999) <= 10;
+  const authorityRole = getAuthorityRole(editor.roles);
 
   const handleClick = () => {
     navigate(`/editor/${editor.id}`);
@@ -50,14 +60,15 @@ export default function EditorCard({ editor }: EditorCardProps) {
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-sm truncate">{editor.username}</h3>
-            {editor.verification_status && <VerifiedBadge size="sm" />}
-            <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${leagueColors[editor.league] || leagueColors.open}`}>
-              {editor.league}
-            </span>
-          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3 className="font-semibold text-sm truncate">{editor.username}</h3>
+              {editor.verification_status && <VerifiedBadge size="sm" />}
+              {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+              <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${leagueColors[editor.league] || leagueColors.open}`}>
+                {editor.league}
+              </span>
+            </div>
 
           {/* Stats Row */}
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">

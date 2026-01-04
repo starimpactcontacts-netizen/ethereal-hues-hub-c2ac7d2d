@@ -162,9 +162,9 @@ export default function App() {
             </Route>
             
             
-            {/* Hidden secure ops panel - requires admin role */}
+            {/* Hidden secure ops panel - requires judge/dev/admin role */}
             <Route path="/ops-panel/a7c92ff31b" element={
-              <ProtectedRoute requireAdmin={true}>
+              <ProtectedRoute requireOpsAccess={true}>
                 <OpsPanel />
               </ProtectedRoute>
             } />

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Loader2, Mail, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
+import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 interface PublicProfile {
@@ -42,12 +43,15 @@ const platformLabels: Record<string, string> = {
   youtube: "YouTube",
 };
 
+type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev';
+
 export default function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
   const [rank, setRank] = useState<number | null>(null);
+  const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -88,6 +92,16 @@ export default function PublicProfilePage() {
         setRank(userRank > 0 ? userRank : null);
       }
 
+      // Fetch roles
+      const { data: rolesData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      if (rolesData) {
+        setRoles(rolesData.map(r => r.role as AppRole));
+      }
+
       setLoading(false);
     };
 
@@ -99,6 +113,15 @@ export default function PublicProfilePage() {
     pro: "text-blue-400 border-blue-400",
     open: "text-muted-foreground border-muted-foreground",
   };
+
+  // Get authority role for display
+  const getAuthorityRole = (): 'dev' | 'judge' | null => {
+    if (roles.includes('dev')) return 'dev';
+    if (roles.includes('judge')) return 'judge';
+    return null;
+  };
+
+  const authorityRole = getAuthorityRole();
 
   if (loading) {
     return (
@@ -160,11 +183,12 @@ export default function PublicProfilePage() {
             </div>
           )}
 
-          {/* Alias + League + Verified */}
+          {/* Alias + League + Verified + Authority */}
           <div className="flex items-start justify-between mb-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="font-display text-4xl">{profile.username}</h1>
               {profile.verification_status && <VerifiedBadge size="lg" />}
+              {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
             </div>
             <span
               className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}

@@ -79,7 +79,7 @@ function getEventStatusTag(event: RealEvent): { label: string; color: string } {
 }
 
 export default function OpsPanel() {
-  const { user, isAdmin } = useAuth();
+  const { user, hasOpsAccess } = useAuth();
   const navigate = useNavigate();
   
   const [events, setEvents] = useState<RealEvent[]>([]);
@@ -134,13 +134,13 @@ export default function OpsPanel() {
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
   const [verifyingUserId, setVerifyingUserId] = useState<string | null>(null);
 
-  // Admin check disabled during development - will re-enable for production
-  // useEffect(() => {
-  //   if (!isAdmin && !loading) {
-  //     toast.error("Access denied");
-  //     navigate('/hub');
-  //   }
-  // }, [isAdmin, loading, navigate]);
+  // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
+  useEffect(() => {
+    if (!hasOpsAccess && !loading && !(window as any).__LOOPGATE_DEV_AUTH__) {
+      toast.error("Access denied");
+      navigate('/hub');
+    }
+  }, [hasOpsAccess, loading, navigate]);
 
   // Fetch events and submissions
   useEffect(() => {
