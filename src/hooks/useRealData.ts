@@ -30,6 +30,7 @@ export interface RealEditor {
   rank?: number;
   avatar_url?: string | null;
   verification_status?: boolean;
+  roles?: ('admin' | 'moderator' | 'user' | 'judge' | 'dev')[];
 }
 
 export interface EventStats {
@@ -110,10 +111,26 @@ export function useRealRankings() {
     if (error) {
       setError(error.message);
     } else {
-      // Add rank based on order
+      // Fetch roles for all users
+      const userIds = (data || []).map(e => e.id);
+      const { data: rolesData } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+
+      // Build roles map
+      const rolesMap = new Map<string, string[]>();
+      (rolesData || []).forEach(r => {
+        const existing = rolesMap.get(r.user_id) || [];
+        existing.push(r.role);
+        rolesMap.set(r.user_id, existing);
+      });
+
+      // Add rank and roles based on order
       const rankedData = (data || []).map((editor, index) => ({
         ...editor,
         rank: index + 1,
+        roles: rolesMap.get(editor.id) || [],
       })) as RealEditor[];
       setRankings(rankedData);
     }

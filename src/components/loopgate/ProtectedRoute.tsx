@@ -6,10 +6,11 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requireOnboarding?: boolean;
   requireAdmin?: boolean;
+  requireOpsAccess?: boolean; // admin OR judge OR dev
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, profile, loading, isAdmin } = useAuth();
+export default function ProtectedRoute({ children, requireAdmin = false, requireOpsAccess = false }: ProtectedRouteProps) {
+  const { user, profile, loading, isAdmin, hasOpsAccess } = useAuth();
   
   // Dev mode bypass
   if ((window as any).__LOOPGATE_DEV_AUTH__) {
@@ -35,6 +36,11 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
   // Admin check
   if (requireAdmin && !isAdmin) {
     return <Navigate to="/hub" replace />;
+  }
+  
+  // Ops access check (admin OR judge OR dev)
+  if (requireOpsAccess && !hasOpsAccess) {
+    return <Navigate to="/404" replace />;
   }
   
   return <>{children}</>;

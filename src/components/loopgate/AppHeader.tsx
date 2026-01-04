@@ -19,7 +19,7 @@ const menuItems = [
 ];
 
 export default function AppHeader() {
-  const { profile, signOut, isAdmin } = useAuth();
+  const { profile, signOut, hasOpsAccess } = useAuth();
   const { rankings } = useRealRankings();
   const location = useLocation();
   const navigate = useNavigate();
@@ -97,13 +97,13 @@ export default function AppHeader() {
                   );
                 })}
 
-                {isAdmin && (
+                {hasOpsAccess && (
                   <>
                     <div className="my-2 border-t border-border" />
                     <SheetClose asChild>
                       <Link
-                        to="/admin"
-                        className="flex items-center gap-3 px-4 py-3 text-gold hover:bg-gold/10 transition-colors"
+                        to="/ops-panel/a7c92ff31b"
+                        className="flex items-center gap-3 px-4 py-3 text-blue-400 hover:bg-blue-500/10 transition-colors"
                       >
                         <Shield className="w-5 h-5" />
                         <span className="font-display text-sm">Admin Panel</span>

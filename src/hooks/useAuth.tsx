@@ -27,6 +27,8 @@ interface ConnectedPlatform {
   is_verified: boolean;
 }
 
+type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -41,6 +43,10 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   isAdmin: boolean;
+  isJudge: boolean;
+  isDev: boolean;
+  hasOpsAccess: boolean; // admin OR judge OR dev
+  roles: AppRole[];
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -81,8 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(devMode ? DEV_MOCK_PROFILE : null);
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
-  const [loading, setLoading] = useState(!devMode); // Never loading in dev mode
-  const [isAdmin, setIsAdmin] = useState(devMode); // Always admin in dev mode
+  const [loading, setLoading] = useState(!devMode);
+  const [roles, setRoles] = useState<AppRole[]>(devMode ? ['admin', 'dev'] : []);
 
   const fetchProfile = async (userId: string) => {
     const { data: profileData } = await supabase
@@ -104,15 +110,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setPlatforms(platformsData as ConnectedPlatform[]);
     }
 
-    // Check admin role
-    const { data: roleData } = await supabase
+    // Fetch all user roles
+    const { data: rolesData } = await supabase
       .from('user_roles')
       .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
-      .single();
+      .eq('user_id', userId);
     
-    setIsAdmin(!!roleData);
+    setRoles((rolesData || []).map(r => r.role as AppRole));
   };
 
   const refreshProfile = async () => {
@@ -140,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setProfile(null);
           setPlatforms([]);
-          setIsAdmin(false);
+          setRoles([]);
         }
         setLoading(false);
       }
@@ -216,8 +220,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setPlatforms([]);
-    setIsAdmin(false);
+    setRoles([]);
   };
+
+  const isAdmin = roles.includes('admin');
+  const isJudge = roles.includes('judge');
+  const isDev = roles.includes('dev');
+  const hasOpsAccess = isAdmin || isJudge || isDev;
 
   return (
     <AuthContext.Provider
@@ -235,6 +244,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         refreshProfile,
         isAdmin,
+        isJudge,
+        isDev,
+        hasOpsAccess,
+        roles,
       }}
     >
       {children}
@@ -260,6 +273,10 @@ export function useAuth() {
       signOut: async () => {},
       refreshProfile: async () => {},
       isAdmin: true,
+      isJudge: true,
+      isDev: true,
+      hasOpsAccess: true,
+      roles: ['admin', 'dev', 'judge'] as const,
     };
   }
 
