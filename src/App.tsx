@@ -19,6 +19,7 @@ import LeaguesPage from "./pages/loopgate/LeaguesPage";
 import IndexPage from "./pages/loopgate/IndexPage";
 
 import OpsPanel from "./pages/loopgate/OpsPanel";
+import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
 import SupportPage from "./pages/SupportPage";
 import RulesPage from "./pages/RulesPage";
@@ -210,6 +211,7 @@ export default function App() {
               <Route path="/events" element={<HomePage />} />
               <Route path="/event/:id" element={<EventDetailPage />} />
               <Route path="/index" element={<IndexPage />} />
+              <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             
             {/* Hidden secure ops panel - requires judge/dev/admin role */}
