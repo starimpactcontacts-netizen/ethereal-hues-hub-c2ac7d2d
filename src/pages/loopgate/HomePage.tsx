@@ -5,6 +5,7 @@ import loopgateLogo from "@/assets/loopgate-logo.png";
 import PosterStrip from "@/components/loopgate/PosterStrip";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import { useRealEvents, useGlobalStats, useActiveSession } from "@/hooks/useRealData";
+import SEO, { pageSEO } from "@/components/SEO";
 
 export default function HomePage() {
   const { events, loading } = useRealEvents();
@@ -20,6 +21,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen pb-20 bg-background">
+      <SEO {...pageSEO.events} />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">

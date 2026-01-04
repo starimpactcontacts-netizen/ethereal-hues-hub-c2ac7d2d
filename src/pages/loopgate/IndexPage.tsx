@@ -3,6 +3,7 @@ import { Search, Loader2 } from "lucide-react";
 import { useRealRankings } from "@/hooks/useRealData";
 import EditorCard from "@/components/loopgate/EditorCard";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+import SEO, { pageSEO } from "@/components/SEO";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
@@ -32,6 +33,7 @@ export default function IndexPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <SEO {...pageSEO.index} />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">
