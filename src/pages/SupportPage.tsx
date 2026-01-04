@@ -26,8 +26,12 @@ export default function SupportPage() {
               <p className="text-sm text-muted-foreground">For general inquiries</p>
             </div>
           </div>
-          <Button variant="outline" className="w-full border-border">
-            support@loopgate.com
+          <Button 
+            variant="outline" 
+            className="w-full border-border"
+            onClick={() => window.location.href = 'mailto:team@loopgate.io'}
+          >
+            team@loopgate.io
           </Button>
         </div>
 
