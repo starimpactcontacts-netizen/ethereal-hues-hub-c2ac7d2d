@@ -48,6 +48,22 @@ export default function EnterprisePage() {
           throw authError;
         }
       }
+
+      // Send email notification to team
+      const { error: emailError } = await supabase.functions.invoke('send-enterprise-lead', {
+        body: {
+          fullName: formData.fullName,
+          email: formData.email,
+          company: formData.company,
+          role: formData.role,
+          message: formData.message
+        }
+      });
+
+      if (emailError) {
+        console.error('Failed to send notification email:', emailError);
+        // Don't block submission if email fails
+      }
       
       toast.success('Request submitted! We\'ll reach out within 24 hours.');
       setIsSubmitted(true);

@@ -1,5 +1,8 @@
 project_id = "tmfnqnmyxxydrxwjkaiq"
 
+[functions.send-enterprise-lead]
+verify_jwt = false
+
 [functions.verify-tiktok]
 verify_jwt = false
 
