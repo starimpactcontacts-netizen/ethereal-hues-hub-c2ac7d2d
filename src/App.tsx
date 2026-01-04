@@ -2,11 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { useUserRoles } from "./hooks/useUserRoles";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import EnterpriseOnboardingPage from "./pages/EnterpriseOnboardingPage";
 import HubPage from "./pages/HubPage";
 import HomePage from "./pages/loopgate/HomePage";
 import EventDetailPage from "./pages/loopgate/EventDetailPage";
@@ -63,6 +65,9 @@ const queryClient = new QueryClient();
 // Root redirect component
 function RootRedirect() {
   const { user, profile, loading } = useAuth();
+  const { roles, loading: rolesLoading } = useUserRoles(user?.id);
+  
+  const isEnterprise = roles.includes('enterprise');
   
   // In dev mode, always go to hub immediately
   if ((window as any).__LOOPGATE_DEV_AUTH__) {
@@ -70,7 +75,7 @@ function RootRedirect() {
   }
   
   // Show loading screen during auth check - prevents flash
-  if (loading) {
+  if (loading || rolesLoading) {
     return <LoadingScreen />;
   }
   
@@ -79,7 +84,12 @@ function RootRedirect() {
     return <LandingPage />;
   }
   
-  // Logged in but no profile - needs onboarding
+  // Enterprise without profile - enterprise onboarding
+  if (isEnterprise && !profile?.onboarding_completed) {
+    return <Navigate to="/enterprise-onboarding" replace />;
+  }
+  
+  // Regular user without profile - standard onboarding
   if (!profile?.onboarding_completed) {
     return <Navigate to="/onboarding" replace />;
   }
@@ -91,6 +101,9 @@ function RootRedirect() {
 // Auth page wrapper - redirect if already logged in
 function AuthPageWrapper() {
   const { user, profile, loading } = useAuth();
+  const { roles, loading: rolesLoading } = useUserRoles(user?.id);
+  
+  const isEnterprise = roles.includes('enterprise');
   
   // Dev mode: immediate redirect, no render
   if ((window as any).__LOOPGATE_DEV_AUTH__) {
@@ -98,13 +111,13 @@ function AuthPageWrapper() {
   }
   
   // Show loading screen during auth check - prevents flash
-  if (loading) {
+  if (loading || rolesLoading) {
     return <LoadingScreen />;
   }
   
   if (user) {
     if (!profile?.onboarding_completed) {
-      return <Navigate to="/onboarding" replace />;
+      return <Navigate to={isEnterprise ? "/enterprise-onboarding" : "/onboarding"} replace />;
     }
     return <Navigate to="/hub" replace />;
   }
@@ -115,9 +128,12 @@ function AuthPageWrapper() {
 // Onboarding wrapper
 function OnboardingWrapper() {
   const { user, profile, loading } = useAuth();
+  const { roles, loading: rolesLoading } = useUserRoles(user?.id);
+  
+  const isEnterprise = roles.includes('enterprise');
   
   // Show loading screen during auth check - prevents flash
-  if (loading) {
+  if (loading || rolesLoading) {
     return <LoadingScreen />;
   }
   
@@ -125,11 +141,44 @@ function OnboardingWrapper() {
     return <Navigate to="/auth" replace />;
   }
   
+  // Enterprise users go to enterprise onboarding
+  if (isEnterprise) {
+    return <Navigate to="/enterprise-onboarding" replace />;
+  }
+  
   if (profile?.onboarding_completed) {
     return <Navigate to="/hub" replace />;
   }
   
   return <OnboardingPage />;
+}
+
+// Enterprise onboarding wrapper
+function EnterpriseOnboardingWrapper() {
+  const { user, profile, loading } = useAuth();
+  const { roles, loading: rolesLoading } = useUserRoles(user?.id);
+  
+  const isEnterprise = roles.includes('enterprise');
+  
+  // Show loading screen during auth check
+  if (loading || rolesLoading) {
+    return <LoadingScreen />;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  // Non-enterprise users go to regular onboarding
+  if (!isEnterprise) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
+  if (profile?.onboarding_completed) {
+    return <Navigate to="/hub" replace />;
+  }
+  
+  return <EnterpriseOnboardingPage />;
 }
 
 export default function App() {
@@ -143,6 +192,7 @@ export default function App() {
             <Route path="/auth" element={<AuthPageWrapper />} />
             <Route path="/login" element={<AuthPageWrapper />} />
             <Route path="/onboarding" element={<OnboardingWrapper />} />
+            <Route path="/enterprise-onboarding" element={<EnterpriseOnboardingWrapper />} />
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/support" element={<SupportPage />} />
             
