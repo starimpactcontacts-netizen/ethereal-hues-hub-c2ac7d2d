@@ -27,7 +27,7 @@ interface ConnectedPlatform {
   is_verified: boolean;
 }
 
-type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev';
+type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise';
 
 interface AuthContextType {
   user: User | null;

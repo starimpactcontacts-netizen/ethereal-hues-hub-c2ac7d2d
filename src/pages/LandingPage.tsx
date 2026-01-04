@@ -365,6 +365,15 @@ export default function LandingPage() {
           </div>
           <p className="text-xs text-muted-foreground">© 2026 Loopgate. All rights reserved.</p>
         </div>
+        {/* Subtle enterprise link - only visible to those who know */}
+        <div className="max-w-5xl mx-auto mt-6 pt-4 border-t border-border/30 text-center">
+          <Link 
+            to="/enterprise" 
+            className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
+          >
+            Enterprise Portal
+          </Link>
+        </div>
       </footer>
     </div>
   );
