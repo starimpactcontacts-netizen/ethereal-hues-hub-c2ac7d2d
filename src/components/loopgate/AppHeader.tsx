@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -19,11 +20,14 @@ const menuItems = [
 ];
 
 export default function AppHeader() {
-  const { profile, signOut, hasOpsAccess } = useAuth();
+  const { user, profile, signOut, hasOpsAccess } = useAuth();
+  const { roles } = useUserRoles(user?.id);
   const { rankings } = useRealRankings();
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  const isEnterprise = roles.includes('enterprise');
 
   // Get user's real rank from rankings
   const userRanking = profile ? rankings.find(r => r.id === profile.id) : null;
@@ -96,6 +100,21 @@ export default function AppHeader() {
                     </SheetClose>
                   );
                 })}
+
+                {isEnterprise && (
+                  <>
+                    <div className="my-2 border-t border-border" />
+                    <SheetClose asChild>
+                      <Link
+                        to="/enterprise-dashboard"
+                        className="flex items-center gap-3 px-4 py-3 text-gold hover:bg-gold/10 transition-colors"
+                      >
+                        <Building2 className="w-5 h-5" />
+                        <span className="font-display text-sm">Enterprise Portal</span>
+                      </Link>
+                    </SheetClose>
+                  </>
+                )}
 
                 {hasOpsAccess && (
                   <>
