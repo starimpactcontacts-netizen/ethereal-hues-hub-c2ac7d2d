@@ -239,6 +239,7 @@ export type Database = {
           league: Database["public"]["Enums"]["league_tier"]
           onboarding_completed: boolean | null
           portfolio_url: string | null
+          region: string | null
           rules_accepted: boolean | null
           total_events: number | null
           total_wins: number | null
@@ -261,6 +262,7 @@ export type Database = {
           league?: Database["public"]["Enums"]["league_tier"]
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
+          region?: string | null
           rules_accepted?: boolean | null
           total_events?: number | null
           total_wins?: number | null
@@ -283,6 +285,7 @@ export type Database = {
           league?: Database["public"]["Enums"]["league_tier"]
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
+          region?: string | null
           rules_accepted?: boolean | null
           total_events?: number | null
           total_wins?: number | null

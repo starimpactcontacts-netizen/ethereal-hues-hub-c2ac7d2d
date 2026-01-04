@@ -14,10 +14,11 @@ const leagueColors: Record<string, string> = {
 };
 
 // Get authority role for display (prioritize dev over judge)
-function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | null {
+function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | null {
   if (!roles) return null;
   if (roles.includes('dev')) return 'dev';
   if (roles.includes('judge')) return 'judge';
+  if (roles.includes('enterprise')) return 'enterprise';
   return null;
 }
 

@@ -1,12 +1,18 @@
-import { Shield } from "lucide-react";
+import { Shield, Building2 } from "lucide-react";
 
 interface AuthorityBadgeProps {
-  role: 'dev' | 'judge';
+  role: 'dev' | 'judge' | 'enterprise';
   size?: 'sm' | 'md';
 }
 
 export default function AuthorityBadge({ role, size = 'sm' }: AuthorityBadgeProps) {
-  const label = role === 'dev' ? 'DEV' : 'JUDGE';
+  const config = {
+    dev: { label: 'DEV', title: 'Loopgate Developer', icon: Shield, color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
+    judge: { label: 'JUDGE', title: 'Official Judge', icon: Shield, color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
+    enterprise: { label: 'ENTERPRISE', title: 'Enterprise Client', icon: Building2, color: 'bg-purple-500/20 text-purple-400 border-purple-500/50' },
+  };
+  
+  const { label, title, icon: Icon, color } = config[role];
   
   const sizeClasses = size === 'sm' 
     ? 'h-4 px-1.5 text-[9px] gap-0.5' 
@@ -16,10 +22,10 @@ export default function AuthorityBadge({ role, size = 'sm' }: AuthorityBadgeProp
   
   return (
     <span 
-      className={`inline-flex items-center ${sizeClasses} bg-blue-500/20 text-blue-400 border border-blue-500/50 rounded-full font-semibold uppercase tracking-wider`}
-      title={role === 'dev' ? 'Loopgate Developer' : 'Official Judge'}
+      className={`inline-flex items-center ${sizeClasses} ${color} rounded-full font-semibold uppercase tracking-wider border`}
+      title={title}
     >
-      <Shield className={iconSize} />
+      <Icon className={iconSize} />
       {label}
     </span>
   );

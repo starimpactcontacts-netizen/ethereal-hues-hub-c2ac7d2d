@@ -30,7 +30,7 @@ export interface RealEditor {
   rank?: number;
   avatar_url?: string | null;
   verification_status?: boolean;
-  roles?: ('admin' | 'moderator' | 'user' | 'judge' | 'dev')[];
+  roles?: ('admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise')[];
 }
 
 export interface EventStats {

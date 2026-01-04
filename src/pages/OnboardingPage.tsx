@@ -5,10 +5,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Check, ArrowRight, Loader2, AlertCircle, Globe } from 'lucide-react';
 import { validatePlatformUrl } from '@/lib/urlValidation';
+
+const REGIONS = [
+  { value: 'NA', label: 'North America' },
+  { value: 'EU', label: 'Europe' },
+  { value: 'ASIA', label: 'Asia' },
+  { value: 'LATAM', label: 'Latin America' },
+  { value: 'MENA', label: 'Middle East & North Africa' },
+  { value: 'OCE', label: 'Oceania' },
+  { value: 'AF', label: 'Africa' },
+];
 
 const STEPS = [
   { id: 1, title: 'Choose Username' },
@@ -26,6 +37,7 @@ export default function OnboardingPage() {
 
   // Form state
   const [username, setUsername] = useState('');
+  const [region, setRegion] = useState('');
   const [tiktokUrl, setTiktokUrl] = useState('');
   const [tiktokUsername, setTiktokUsername] = useState('');
   const [instagramUrl, setInstagramUrl] = useState('');
@@ -69,6 +81,11 @@ export default function OnboardingPage() {
       if (currentStep === 1) {
         const isValid = await validateUsername();
         if (!isValid) {
+          setIsLoading(false);
+          return;
+        }
+        if (!region) {
+          toast.error('Please select your region');
           setIsLoading(false);
           return;
         }
@@ -126,6 +143,7 @@ export default function OnboardingPage() {
         const { error: profileError } = await supabase.from('profiles').insert({
           id: user!.id,
           username: username.toUpperCase(),
+          region: region,
           rules_accepted: true,
           onboarding_completed: true,
         });
@@ -226,26 +244,47 @@ export default function OnboardingPage() {
                   This will be your permanent identity on Loopgate. Choose wisely.
                 </p>
                 
-                <div className="space-y-2">
-                  <Input
-                    value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value.toUpperCase());
-                      setUsernameError('');
-                    }}
-                    placeholder="ENTER USERNAME"
-                    className="h-14 bg-surface-0 border-border font-display text-2xl text-center tracking-widest uppercase"
-                    maxLength={20}
-                  />
-                  {usernameError && (
-                    <p className="text-destructive text-sm flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      {usernameError}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Input
+                      value={username}
+                      onChange={(e) => {
+                        setUsername(e.target.value.toUpperCase());
+                        setUsernameError('');
+                      }}
+                      placeholder="ENTER USERNAME"
+                      className="h-14 bg-surface-0 border-border font-display text-2xl text-center tracking-widest uppercase"
+                      maxLength={20}
+                    />
+                    {usernameError && (
+                      <p className="text-destructive text-sm flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {usernameError}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground text-center">
+                      3-20 characters. Letters, numbers, underscores only.
                     </p>
-                  )}
-                  <p className="text-xs text-muted-foreground text-center">
-                    3-20 characters. Letters, numbers, underscores only.
-                  </p>
+                  </div>
+
+                  <div className="pt-4">
+                    <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      Your Region
+                    </label>
+                    <Select value={region} onValueChange={setRegion}>
+                      <SelectTrigger className="h-12 bg-surface-0 border-border">
+                        <SelectValue placeholder="Select your region" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REGIONS.map((r) => (
+                          <SelectItem key={r.value} value={r.value}>
+                            {r.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </motion.div>
             )}
