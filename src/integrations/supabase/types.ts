@@ -185,10 +185,13 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          discord: string | null
+          email: string | null
           global_index_score: number | null
           id: string
           league: Database["public"]["Enums"]["league_tier"]
           onboarding_completed: boolean | null
+          portfolio_url: string | null
           rules_accepted: boolean | null
           total_events: number | null
           total_wins: number | null
@@ -204,10 +207,13 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          discord?: string | null
+          email?: string | null
           global_index_score?: number | null
           id: string
           league?: Database["public"]["Enums"]["league_tier"]
           onboarding_completed?: boolean | null
+          portfolio_url?: string | null
           rules_accepted?: boolean | null
           total_events?: number | null
           total_wins?: number | null
@@ -223,10 +229,13 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          discord?: string | null
+          email?: string | null
           global_index_score?: number | null
           id?: string
           league?: Database["public"]["Enums"]["league_tier"]
           onboarding_completed?: boolean | null
+          portfolio_url?: string | null
           rules_accepted?: boolean | null
           total_events?: number | null
           total_wins?: number | null
