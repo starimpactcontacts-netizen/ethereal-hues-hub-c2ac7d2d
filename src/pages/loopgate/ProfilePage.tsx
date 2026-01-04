@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
@@ -8,12 +9,6 @@ import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
 import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
-
-function formatFollowers(count: number): string {
-  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-  if (count >= 1000) return `${(count / 1000).toFixed(0)}K`;
-  return String(count);
-}
 
 const platformLabels: Record<string, string> = {
   tiktok: "TikTok",
@@ -36,9 +31,20 @@ export default function ProfilePage() {
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
   const [showAddPlatform, setShowAddPlatform] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [bio, setBio] = useState("");
+  const [isSavingBio, setIsSavingBio] = useState(false);
+  const [bioEdited, setBioEdited] = useState(false);
   
   // Keep session active
   useActiveSession();
+
+  // Initialize bio from profile
+  useEffect(() => {
+    if (profile?.bio !== undefined) {
+      setBio(profile.bio || "");
+      setBioEdited(false);
+    }
+  }, [profile?.bio]);
 
   const leagueColors: Record<string, string> = {
     elite: "text-gold border-gold",
@@ -63,6 +69,23 @@ export default function ProfilePage() {
   const league = profile.league || 'open';
   const userRanking = rankings.find(r => r.id === profile.id);
   const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
+
+  const handleSaveBio = async () => {
+    if (!profile?.id) return;
+    setIsSavingBio(true);
+    try {
+      await supabase
+        .from("profiles")
+        .update({ bio: bio.trim() || null })
+        .eq("id", profile.id);
+      setBioEdited(false);
+      refreshProfile();
+    } catch (error) {
+      console.error("Failed to save bio:", error);
+    } finally {
+      setIsSavingBio(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -175,6 +198,43 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      {/* Bio */}
+      <section className="px-4 py-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
+            <Pencil size={14} />
+            Bio
+          </h3>
+          <span className="text-[10px] text-muted-foreground">{bio.length}/200</span>
+        </div>
+        <div className="bg-surface-1 border border-border p-3">
+          <textarea
+            value={bio}
+            onChange={(e) => {
+              if (e.target.value.length <= 200) {
+                setBio(e.target.value);
+                setBioEdited(true);
+              }
+            }}
+            placeholder="For work: email@example.com | Video Editor | Open to commissions"
+            className="w-full bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground/50"
+            rows={2}
+          />
+          {bioEdited && (
+            <div className="flex justify-end mt-2 pt-2 border-t border-border">
+              <button
+                onClick={handleSaveBio}
+                disabled={isSavingBio}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gold text-black text-[10px] font-semibold uppercase tracking-wider disabled:opacity-50"
+              >
+                <Save size={12} />
+                {isSavingBio ? "Saving..." : "Save"}
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Platforms */}
       <section className="px-4 py-4">
         <div className="flex items-center justify-between mb-3">
@@ -206,18 +266,11 @@ export default function ProfilePage() {
                 })}
                 className="w-full bg-surface-1 border border-border p-3 flex items-center justify-between hover:border-gold transition-colors text-left group"
               >
-                <div className="flex items-center gap-3">
-                  <div>
-                    <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
-                    <p className="text-xs text-muted-foreground">{platform.platform_username}</p>
-                  </div>
+                <div>
+                  <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
+                  <p className="text-xs text-muted-foreground">@{platform.platform_username}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  {platform.follower_count > 0 && (
-                    <p className="font-display text-xl text-gold">{formatFollowers(platform.follower_count)}</p>
-                  )}
-                  <Pencil size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
+                <Pencil size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
           </div>

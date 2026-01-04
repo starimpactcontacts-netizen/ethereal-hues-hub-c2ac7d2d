@@ -183,6 +183,7 @@ export type Database = {
         Row: {
           activity_status: string | null
           avatar_url: string | null
+          bio: string | null
           created_at: string | null
           global_index_score: number | null
           id: string
@@ -201,6 +202,7 @@ export type Database = {
         Insert: {
           activity_status?: string | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           global_index_score?: number | null
           id: string
@@ -219,6 +221,7 @@ export type Database = {
         Update: {
           activity_status?: string | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string | null
           global_index_score?: number | null
           id?: string

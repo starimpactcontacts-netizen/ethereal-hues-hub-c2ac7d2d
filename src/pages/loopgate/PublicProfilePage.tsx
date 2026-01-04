@@ -16,6 +16,7 @@ interface PublicProfile {
   avatar_url: string | null;
   verification_status: boolean;
   activity_status: string | null;
+  bio: string | null;
 }
 
 interface ConnectedPlatform {
@@ -23,7 +24,6 @@ interface ConnectedPlatform {
   platform: string;
   platform_username: string;
   platform_url: string;
-  follower_count: number;
 }
 
 const activityLabels: Record<string, { label: string; color: string }> = {
@@ -31,12 +31,6 @@ const activityLabels: Record<string, { label: string; color: string }> = {
   offline: { label: "Offline", color: "bg-muted-foreground" },
   busy: { label: "Editing", color: "bg-gold" },
 };
-
-function formatFollowers(count: number): string {
-  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-  if (count >= 1000) return `${(count / 1000).toFixed(0)}K`;
-  return String(count);
-}
 
 const platformLabels: Record<string, string> = {
   tiktok: "TikTok",
@@ -61,7 +55,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status")
+        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio")
         .eq("id", userId)
         .single();
 
@@ -72,7 +66,7 @@ export default function PublicProfilePage() {
       // Fetch platforms
       const { data: platformsData } = await supabase
         .from("connected_platforms")
-        .select("id, platform, platform_username, platform_url, follower_count")
+        .select("id, platform, platform_username, platform_url")
         .eq("user_id", userId);
 
       if (platformsData) {
@@ -222,6 +216,18 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
+      {/* Bio */}
+      {(profile as any).bio && (
+        <section className="px-4 py-4">
+          <h3 className="font-display text-lg text-muted-foreground mb-3">
+            Bio
+          </h3>
+          <div className="bg-surface-1 border border-border p-3">
+            <p className="text-sm text-foreground whitespace-pre-wrap">{(profile as any).bio}</p>
+          </div>
+        </section>
+      )}
+
       {/* Platforms */}
       {platforms.length > 0 && (
         <section className="px-4 py-4">
@@ -247,11 +253,6 @@ export default function PublicProfilePage() {
                     @{platform.platform_username}
                   </p>
                 </div>
-                {platform.follower_count > 0 && (
-                  <p className="font-display text-xl text-gold">
-                    {formatFollowers(platform.follower_count)}
-                  </p>
-                )}
               </a>
             ))}
           </div>
