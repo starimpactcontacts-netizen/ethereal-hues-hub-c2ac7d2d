@@ -32,19 +32,25 @@ export default function ProfilePage() {
   const [showAddPlatform, setShowAddPlatform] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [bio, setBio] = useState("");
-  const [isSavingBio, setIsSavingBio] = useState(false);
-  const [bioEdited, setBioEdited] = useState(false);
+  const [email, setEmail] = useState("");
+  const [discord, setDiscord] = useState("");
+  const [portfolioUrl, setPortfolioUrl] = useState("");
+  const [isSavingContact, setIsSavingContact] = useState(false);
+  const [contactEdited, setContactEdited] = useState(false);
   
   // Keep session active
   useActiveSession();
 
-  // Initialize bio from profile
+  // Initialize contact fields from profile
   useEffect(() => {
-    if (profile?.bio !== undefined) {
-      setBio(profile.bio || "");
-      setBioEdited(false);
+    if (profile) {
+      setBio((profile as any).bio || "");
+      setEmail((profile as any).email || "");
+      setDiscord((profile as any).discord || "");
+      setPortfolioUrl((profile as any).portfolio_url || "");
+      setContactEdited(false);
     }
-  }, [profile?.bio]);
+  }, [profile]);
 
   const leagueColors: Record<string, string> = {
     elite: "text-gold border-gold",
@@ -70,21 +76,35 @@ export default function ProfilePage() {
   const userRanking = rankings.find(r => r.id === profile.id);
   const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
 
-  const handleSaveBio = async () => {
+  const handleSaveContact = async () => {
     if (!profile?.id) return;
-    setIsSavingBio(true);
+    setIsSavingContact(true);
     try {
       await supabase
         .from("profiles")
-        .update({ bio: bio.trim() || null })
+        .update({ 
+          bio: bio.trim() || null,
+          email: email.trim() || null,
+          discord: discord.trim() || null,
+          portfolio_url: portfolioUrl.trim() || null,
+        })
         .eq("id", profile.id);
-      setBioEdited(false);
+      setContactEdited(false);
       refreshProfile();
     } catch (error) {
-      console.error("Failed to save bio:", error);
+      console.error("Failed to save contact:", error);
     } finally {
-      setIsSavingBio(false);
+      setIsSavingContact(false);
     }
+  };
+
+  const formatJoinDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
   };
 
   return (
@@ -131,7 +151,7 @@ export default function ProfilePage() {
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
-            Global Editor
+            Global Editor{profile.created_at && ` since ${formatJoinDate(profile.created_at)}`}
           </p>
 
           {/* Global Rank */}
@@ -198,37 +218,89 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      {/* Bio */}
+      {/* Contact & Bio */}
       <section className="px-4 py-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
             <Pencil size={14} />
-            Bio
+            Contact & Bio
           </h3>
-          <span className="text-[10px] text-muted-foreground">{bio.length}/200</span>
         </div>
-        <div className="bg-surface-1 border border-border p-3">
-          <textarea
-            value={bio}
-            onChange={(e) => {
-              if (e.target.value.length <= 200) {
-                setBio(e.target.value);
-                setBioEdited(true);
-              }
-            }}
-            placeholder="For work: email@example.com | Video Editor | Open to commissions"
-            className="w-full bg-transparent text-sm resize-none outline-none placeholder:text-muted-foreground/50"
-            rows={2}
-          />
-          {bioEdited && (
-            <div className="flex justify-end mt-2 pt-2 border-t border-border">
+        <div className="bg-surface-1 border border-border p-4 space-y-4">
+          {/* Bio */}
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Bio</label>
+              <span className="text-[10px] text-muted-foreground">{bio.length}/200</span>
+            </div>
+            <textarea
+              value={bio}
+              onChange={(e) => {
+                if (e.target.value.length <= 200) {
+                  setBio(e.target.value);
+                  setContactEdited(true);
+                }
+              }}
+              placeholder="Video Editor | Open to commissions"
+              className="w-full bg-background border border-border p-2 text-sm resize-none outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+              rows={2}
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setContactEdited(true);
+              }}
+              placeholder="work@example.com"
+              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+            />
+          </div>
+
+          {/* Discord */}
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Discord</label>
+            <input
+              type="text"
+              value={discord}
+              onChange={(e) => {
+                setDiscord(e.target.value);
+                setContactEdited(true);
+              }}
+              placeholder="username#1234"
+              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+            />
+          </div>
+
+          {/* Portfolio */}
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Portfolio (optional)</label>
+            <input
+              type="url"
+              value={portfolioUrl}
+              onChange={(e) => {
+                setPortfolioUrl(e.target.value);
+                setContactEdited(true);
+              }}
+              placeholder="https://yourportfolio.com"
+              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+            />
+          </div>
+
+          {contactEdited && (
+            <div className="flex justify-end pt-2 border-t border-border">
               <button
-                onClick={handleSaveBio}
-                disabled={isSavingBio}
+                onClick={handleSaveContact}
+                disabled={isSavingContact}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-gold text-black text-[10px] font-semibold uppercase tracking-wider disabled:opacity-50"
               >
                 <Save size={12} />
-                {isSavingBio ? "Saving..." : "Save"}
+                {isSavingContact ? "Saving..." : "Save"}
               </button>
             </div>
           )}
