@@ -170,36 +170,164 @@ export default function LandingPage() {
             </Link>
           </div>
           
-          <div className="bg-surface-1 border border-border divide-y divide-border">
+          <div className="bg-surface-1 border border-border divide-y divide-border overflow-hidden">
             {rankingsLoading ? (
               <div className="p-8 text-center text-muted-foreground">Loading rankings...</div>
             ) : topEditors.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">No rankings yet</div>
+              // Epic placeholder rankings with maximum aura
+              <>
+                {[
+                  { rank: 1, name: '—', league: 'elite', score: '—', isTop: true },
+                  { rank: 2, name: '—', league: 'elite', score: '—', isTop: false },
+                  { rank: 3, name: '—', league: 'pro', score: '—', isTop: false },
+                  { rank: 4, name: '—', league: 'pro', score: '—', isTop: false },
+                  { rank: 5, name: '—', league: 'open', score: '—', isTop: false },
+                ].map((slot, index) => (
+                  <motion.div
+                    key={slot.rank}
+                    className={`relative flex items-center justify-between p-5 sm:p-6 ${
+                      slot.isTop ? 'bg-gradient-to-r from-gold/5 via-gold/10 to-gold/5' : ''
+                    }`}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.08 }}
+                  >
+                    {/* Rank glow for #1 */}
+                    {slot.isTop && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/5 to-transparent animate-pulse" />
+                    )}
+                    
+                    <div className="relative flex items-center gap-5">
+                      {/* Rank number with crown for #1 */}
+                      <div className="relative">
+                        <span className={`font-display text-3xl sm:text-4xl w-12 text-center block ${
+                          slot.isTop ? 'text-gold' : 'text-muted-foreground/50'
+                        }`}>
+                          {slot.rank}
+                        </span>
+                        {slot.isTop && (
+                          <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-gold text-xs">👑</span>
+                        )}
+                      </div>
+                      
+                      {/* Avatar placeholder */}
+                      <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 ${
+                        slot.isTop 
+                          ? 'border-gold/40 bg-gold/10' 
+                          : 'border-border bg-surface-0'
+                      } flex items-center justify-center`}>
+                        <span className="text-muted-foreground/30 text-lg">?</span>
+                      </div>
+                      
+                      <div>
+                        <p className={`font-display text-xl sm:text-2xl ${
+                          slot.isTop ? 'text-gold' : 'text-muted-foreground/40'
+                        }`}>
+                          {slot.name}
+                        </p>
+                        <span className={`text-xs font-semibold uppercase tracking-widest ${
+                          slot.league === 'elite' ? 'text-gold/60' : 
+                          slot.league === 'pro' ? 'text-muted-foreground/50' : 
+                          'text-muted-foreground/30'
+                        }`}>
+                          {slot.league} League
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="relative text-right">
+                      <p className={`font-display text-2xl sm:text-3xl ${
+                        slot.isTop ? 'text-gold' : 'text-muted-foreground/40'
+                      }`}>
+                        {slot.score}
+                      </p>
+                      <p className="text-xs text-muted-foreground/50 uppercase tracking-widest">Index</p>
+                    </div>
+                  </motion.div>
+                ))}
+                
+                {/* CTA overlay */}
+                <motion.div 
+                  className="p-6 bg-gradient-to-t from-surface-1 to-transparent flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Link to="/auth">
+                    <Button className="bg-gold hover:bg-gold/90 text-gold-foreground font-display">
+                      Claim Your Rank
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </motion.div>
+              </>
             ) : (
               topEditors.map((editor, index) => (
                 <motion.div
                   key={editor.id}
-                  className="flex items-center justify-between p-4 sm:p-5"
+                  className={`relative flex items-center justify-between p-5 sm:p-6 ${
+                    editor.rank === 1 ? 'bg-gradient-to-r from-gold/5 via-gold/10 to-gold/5' : ''
+                  }`}
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.08 }}
                 >
-                  <div className="flex items-center gap-4">
-                    <span className={`font-display text-2xl w-8 ${editor.rank === 1 ? 'text-gold' : 'text-muted-foreground'}`}>
-                      {editor.rank}
-                    </span>
+                  {editor.rank === 1 && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/5 to-transparent animate-pulse" />
+                  )}
+                  
+                  <div className="relative flex items-center gap-5">
+                    <div className="relative">
+                      <span className={`font-display text-3xl sm:text-4xl w-12 text-center block ${
+                        editor.rank === 1 ? 'text-gold' : 
+                        editor.rank <= 3 ? 'text-foreground' : 'text-muted-foreground'
+                      }`}>
+                        {editor.rank}
+                      </span>
+                      {editor.rank === 1 && (
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-gold text-xs">👑</span>
+                      )}
+                    </div>
+                    
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 overflow-hidden ${
+                      editor.rank === 1 
+                        ? 'border-gold/40' 
+                        : 'border-border'
+                    }`}>
+                      {editor.avatar_url ? (
+                        <img src={editor.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-surface-0 flex items-center justify-center">
+                          <span className="text-muted-foreground text-sm font-display">
+                            {editor.username.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    
                     <div>
-                      <p className="font-display text-xl">{editor.username}</p>
-                      <span className={`text-xs font-semibold uppercase tracking-widths ${
+                      <p className={`font-display text-xl sm:text-2xl ${
+                        editor.rank === 1 ? 'text-gold' : 'text-foreground'
+                      }`}>
+                        {editor.username}
+                      </p>
+                      <span className={`text-xs font-semibold uppercase tracking-widest ${
                         editor.league === 'elite' ? 'text-gold' : 'text-muted-foreground'
                       }`}>
                         {editor.league} League
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-display text-xl">{editor.global_index_score.toFixed(1)}</p>
+                  
+                  <div className="relative text-right">
+                    <p className={`font-display text-2xl sm:text-3xl ${
+                      editor.rank === 1 ? 'text-gold' : 'text-foreground'
+                    }`}>
+                      {editor.global_index_score.toFixed(1)}
+                    </p>
                     <p className="text-xs text-muted-foreground uppercase tracking-widest">Index</p>
                   </div>
                 </motion.div>
