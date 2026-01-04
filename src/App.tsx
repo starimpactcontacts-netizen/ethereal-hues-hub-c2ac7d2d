@@ -17,6 +17,7 @@ import LeaguesPage from "./pages/loopgate/LeaguesPage";
 import IndexPage from "./pages/loopgate/IndexPage";
 
 import OpsPanel from "./pages/loopgate/OpsPanel";
+import EnterprisePage from "./pages/EnterprisePage";
 import SupportPage from "./pages/SupportPage";
 import RulesPage from "./pages/RulesPage";
 import NotFound from "./pages/NotFound";
@@ -161,13 +162,15 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
             </Route>
             
-            
             {/* Hidden secure ops panel - requires judge/dev/admin role */}
             <Route path="/ops-panel/a7c92ff31b" element={
               <ProtectedRoute requireOpsAccess={true}>
                 <OpsPanel />
               </ProtectedRoute>
             } />
+            
+            {/* Enterprise Portal - NO DEV MODE BYPASS - requires enterprise role only */}
+            <Route path="/enterprise" element={<EnterprisePage />} />
             
             {/* 404 - public */}
             <Route path="*" element={<NotFound />} />

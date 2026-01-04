@@ -68,6 +68,53 @@ export type Database = {
         }
         Relationships: []
       }
+      enterprise_campaigns: {
+        Row: {
+          asset_urls: string[] | null
+          billing_status: string | null
+          budget: number | null
+          created_at: string | null
+          enterprise_user_id: string
+          event_id: string | null
+          id: string
+          invoice_url: string | null
+          notes: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          asset_urls?: string[] | null
+          billing_status?: string | null
+          budget?: number | null
+          created_at?: string | null
+          enterprise_user_id: string
+          event_id?: string | null
+          id?: string
+          invoice_url?: string | null
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          asset_urls?: string[] | null
+          billing_status?: string | null
+          budget?: number | null
+          created_at?: string | null
+          enterprise_user_id?: string
+          event_id?: string | null
+          id?: string
+          invoice_url?: string | null
+          notes?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_campaigns_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_participations: {
         Row: {
           event_id: string
