@@ -41,7 +41,11 @@ export default function SupportPage() {
               <p className="text-sm text-muted-foreground">Join the conversation</p>
             </div>
           </div>
-          <Button variant="outline" className="w-full border-border">
+          <Button 
+            variant="outline" 
+            className="w-full border-border"
+            onClick={() => window.open('https://discord.gg/loopgate', '_blank')}
+          >
             Join Discord
           </Button>
         </div>
