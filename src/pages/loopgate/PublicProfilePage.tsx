@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import StatusBadge from "@/components/loopgate/StatusBadge";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
@@ -16,14 +15,22 @@ interface PublicProfile {
   total_wins: number;
   avatar_url: string | null;
   verification_status: boolean;
+  activity_status: string | null;
 }
 
 interface ConnectedPlatform {
   id: string;
   platform: string;
   platform_username: string;
+  platform_url: string;
   follower_count: number;
 }
+
+const activityLabels: Record<string, { label: string; color: string }> = {
+  online: { label: "Online", color: "bg-green-500" },
+  offline: { label: "Offline", color: "bg-muted-foreground" },
+  busy: { label: "Editing", color: "bg-gold" },
+};
 
 function formatFollowers(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -54,7 +61,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status")
+        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status")
         .eq("id", userId)
         .single();
 
@@ -65,7 +72,7 @@ export default function PublicProfilePage() {
       // Fetch platforms
       const { data: platformsData } = await supabase
         .from("connected_platforms")
-        .select("id, platform, platform_username, follower_count")
+        .select("id, platform, platform_username, platform_url, follower_count")
         .eq("user_id", userId);
 
       if (platformsData) {
@@ -200,12 +207,17 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* Status */}
+          {/* Activity Status */}
           <div className="pt-5 mt-5 border-t border-border flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
               Status
             </span>
-            <StatusBadge status={profile.total_events > 0 ? "live" : "pending"} />
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
+              <span className="text-xs font-medium">
+                {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -219,16 +231,20 @@ export default function PublicProfilePage() {
           </h3>
           <div className="space-y-2">
             {platforms.map((platform) => (
-              <div
+              <a
                 key={platform.id}
-                className="bg-surface-1 border border-border p-3 flex items-center justify-between"
+                href={platform.platform_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-surface-1 border border-border p-3 flex items-center justify-between hover:border-gold/50 transition-colors block"
               >
                 <div>
-                  <p className="font-semibold text-sm">
+                  <p className="font-semibold text-sm flex items-center gap-1.5">
                     {platformLabels[platform.platform] || platform.platform}
+                    <ExternalLink size={12} className="text-muted-foreground" />
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {platform.platform_username}
+                    @{platform.platform_username}
                   </p>
                 </div>
                 {platform.follower_count > 0 && (
@@ -236,7 +252,7 @@ export default function PublicProfilePage() {
                     {formatFollowers(platform.follower_count)}
                   </p>
                 )}
-              </div>
+              </a>
             ))}
           </div>
         </section>
