@@ -43,7 +43,7 @@ const platformLabels: Record<string, string> = {
   youtube: "YouTube",
 };
 
-type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev';
+type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise';
 
 export default function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -122,6 +122,7 @@ export default function PublicProfilePage() {
   };
 
   const authorityRole = getAuthorityRole();
+  const isEnterprise = roles.includes('enterprise');
 
   if (loading) {
     return (
@@ -183,12 +184,17 @@ export default function PublicProfilePage() {
             </div>
           )}
 
-          {/* Alias + League + Verified + Authority */}
+          {/* Alias + League + Verified + Authority + Enterprise */}
           <div className="flex items-start justify-between mb-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="font-display text-4xl">{profile.username}</h1>
               {profile.verification_status && <VerifiedBadge size="lg" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
+              {isEnterprise && (
+                <span className="px-2 py-0.5 bg-gold/10 border border-gold/30 text-gold text-[10px] font-semibold uppercase tracking-wider">
+                  Enterprise
+                </span>
+              )}
             </div>
             <span
               className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}
@@ -197,7 +203,7 @@ export default function PublicProfilePage() {
             </span>
           </div>
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
-            Global Editor{profile.created_at && ` since ${formatJoinDate(profile.created_at)}`}
+            {isEnterprise ? 'Enterprise' : 'Global Editor'}{profile.created_at && ` since ${formatJoinDate(profile.created_at)}`}
           </p>
 
           {/* Global Rank */}
