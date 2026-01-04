@@ -4,6 +4,7 @@ import { RefreshCw, ChevronRight, Lock, TrendingUp, TrendingDown, Minus, ArrowLe
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+import SEO, { pageSEO } from "@/components/SEO";
 
 type TabType = "global" | "league" | "region" | "history";
 
@@ -155,6 +156,7 @@ export default function RankingsPage() {
   // Event selection view
   return (
     <div className="min-h-screen pb-20 bg-background">
+      <SEO {...pageSEO.rankings} />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">

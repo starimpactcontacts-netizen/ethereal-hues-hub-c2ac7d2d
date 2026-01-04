@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Mail, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
+import SEO, { pageSEO } from '@/components/SEO';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
@@ -273,6 +274,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 relative">
+      <SEO {...pageSEO.login} />
       {/* Back to Home */}
       <Link 
         to="/" 

@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import SEO, { pageSEO } from '@/components/SEO';
 
 type ViewMode = 'form' | 'login' | 'otp';
 
@@ -173,6 +174,7 @@ export default function EnterprisePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO {...pageSEO.enterprise} />
       {/* Header */}
       <header className="border-b border-border/50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">

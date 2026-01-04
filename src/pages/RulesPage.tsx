@@ -1,5 +1,6 @@
 import { ArrowLeft, Scale, AlertTriangle, Trophy, Users, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO, { pageSEO } from '@/components/SEO';
 
 const rules = [
   {
@@ -32,6 +33,7 @@ const rules = [
 export default function RulesPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
+      <SEO {...pageSEO.rules} />
       <div className="px-4 pt-6 pb-8">
         <Link to="/hub" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft size={16} />

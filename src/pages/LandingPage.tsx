@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import { useRealRankings, useRealEvents, useGlobalStats } from '@/hooks/useRealData';
+import SEO, { pageSEO } from '@/components/SEO';
 
 export default function LandingPage() {
   const { rankings, loading: rankingsLoading } = useRealRankings();
@@ -17,6 +18,7 @@ export default function LandingPage() {
   const liveEvent = events.find(e => e.status === 'live');
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEO {...pageSEO.home} />
       {/* Global Header */}
       <LandingHeader />
       {/* Hero Section */}
