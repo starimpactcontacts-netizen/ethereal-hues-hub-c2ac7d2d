@@ -10,13 +10,19 @@ import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import SEO, { pageSEO } from '@/components/SEO';
 import { isNativeApp } from '@/lib/native';
+import { supabase } from '@/integrations/supabase/client';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
+const usernameSchema = z.string().min(3, 'Username must be at least 3 characters');
 
 const REMEMBERED_EMAIL_KEY = 'loopgate_remembered_email';
+const REMEMBERED_IDENTIFIER_KEY = 'loopgate_remembered_identifier';
 
 type AuthMode = 'signin' | 'signup' | 'reset' | 'reset-sent' | 'welcome-back';
+
+// Check if input is an email or username
+const isEmail = (value: string) => value.includes('@');
 
 export default function AuthPage() {
   // DEV MODE: immediate redirect before any React logic
@@ -27,21 +33,21 @@ export default function AuthPage() {
 
   const { signInWithGoogle, signInWithPassword, signUpWithPassword, resetPassword, user } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // Can be email or username
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>('signin');
   const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const [rememberedEmail, setRememberedEmail] = useState<string | null>(null);
+  const [rememberedIdentifier, setRememberedIdentifier] = useState<string | null>(null);
 
-  // Check for remembered email on mount
+  // Check for remembered identifier on mount
   useEffect(() => {
-    const stored = localStorage.getItem(REMEMBERED_EMAIL_KEY);
+    const stored = localStorage.getItem(REMEMBERED_IDENTIFIER_KEY) || localStorage.getItem(REMEMBERED_EMAIL_KEY);
     if (stored) {
-      setRememberedEmail(stored);
-      setEmail(stored);
+      setRememberedIdentifier(stored);
+      setIdentifier(stored);
       setMode('welcome-back');
     }
   }, []);
@@ -49,26 +55,59 @@ export default function AuthPage() {
   // If already authenticated, redirect to hub
   useEffect(() => {
     if (user) {
-      // Save email for next time
-      if (email) {
-        localStorage.setItem(REMEMBERED_EMAIL_KEY, email);
+      // Save identifier for next time
+      if (identifier) {
+        localStorage.setItem(REMEMBERED_IDENTIFIER_KEY, identifier);
       }
       navigate('/hub', { replace: true });
     }
-  }, [user, navigate, email]);
+  }, [user, navigate, identifier]);
 
-  const clearRememberedEmail = () => {
+  const clearRememberedIdentifier = () => {
     localStorage.removeItem(REMEMBERED_EMAIL_KEY);
-    setRememberedEmail(null);
-    setEmail('');
+    localStorage.removeItem(REMEMBERED_IDENTIFIER_KEY);
+    setRememberedIdentifier(null);
+    setIdentifier('');
     setMode('signin');
   };
 
+  // Lookup email by username
+  const getEmailFromUsername = async (username: string): Promise<string | null> => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('username', username)
+      .single();
+    
+    if (error || !data?.email) {
+      return null;
+    }
+    return data.email;
+  };
+
   const validateInputs = () => {
-    const emailResult = emailSchema.safeParse(email);
-    if (!emailResult.success) {
-      toast.error(emailResult.error.errors[0].message);
-      return false;
+    // For signup and reset, require email format
+    if (mode === 'signup' || mode === 'reset') {
+      const emailResult = emailSchema.safeParse(identifier);
+      if (!emailResult.success) {
+        toast.error('Please enter a valid email address');
+        return false;
+      }
+    } else {
+      // For signin, accept either email or username
+      if (isEmail(identifier)) {
+        const emailResult = emailSchema.safeParse(identifier);
+        if (!emailResult.success) {
+          toast.error(emailResult.error.errors[0].message);
+          return false;
+        }
+      } else {
+        const usernameResult = usernameSchema.safeParse(identifier);
+        if (!usernameResult.success) {
+          toast.error(usernameResult.error.errors[0].message);
+          return false;
+        }
+      }
     }
 
     if (mode !== 'reset') {
@@ -103,19 +142,32 @@ export default function AuthPage() {
     setIsLoading(true);
 
     if (mode === 'signin' || mode === 'welcome-back') {
-      const { error } = await signInWithPassword(email, password);
+      let emailToUse = identifier;
+      
+      // If identifier is not an email, look up the email by username
+      if (!isEmail(identifier)) {
+        const foundEmail = await getEmailFromUsername(identifier);
+        if (!foundEmail) {
+          toast.error('Username not found');
+          setIsLoading(false);
+          return;
+        }
+        emailToUse = foundEmail;
+      }
+      
+      const { error } = await signInWithPassword(emailToUse, password);
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid email or password');
+          toast.error('Invalid username/email or password');
         } else {
           toast.error(error.message);
         }
       } else {
-        // Save email for remembered login
-        localStorage.setItem(REMEMBERED_EMAIL_KEY, email);
+        // Save identifier for remembered login
+        localStorage.setItem(REMEMBERED_IDENTIFIER_KEY, identifier);
       }
     } else if (mode === 'signup') {
-      const { error } = await signUpWithPassword(email, password);
+      const { error } = await signUpWithPassword(identifier, password);
       if (error) {
         if (error.message.includes('already registered')) {
           toast.error('This email is already registered. Try signing in.');
@@ -124,11 +176,11 @@ export default function AuthPage() {
         }
       } else {
         // Save email for remembered login
-        localStorage.setItem(REMEMBERED_EMAIL_KEY, email);
+        localStorage.setItem(REMEMBERED_IDENTIFIER_KEY, identifier);
         toast.success('Account created! Redirecting...');
       }
     } else if (mode === 'reset') {
-      const { error } = await resetPassword(email);
+      const { error } = await resetPassword(identifier);
       if (error) {
         toast.error(error.message);
       } else {
@@ -151,7 +203,7 @@ export default function AuthPage() {
       </div>
       
       <p className="text-muted-foreground text-sm mb-1">Welcome back</p>
-      <p className="text-foreground font-medium text-lg mb-6">{rememberedEmail}</p>
+      <p className="text-foreground font-medium text-lg mb-6">{rememberedIdentifier}</p>
       
       <form onSubmit={handleEmailAuth} className="space-y-4">
         <div className="relative">
@@ -199,7 +251,7 @@ export default function AuthPage() {
         <div>
           <button
             type="button"
-            onClick={clearRememberedEmail}
+            onClick={clearRememberedIdentifier}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mx-auto"
           >
             <X size={14} />
@@ -211,7 +263,7 @@ export default function AuthPage() {
   );
 
   const renderForm = () => {
-    if (mode === 'welcome-back' && rememberedEmail) {
+    if (mode === 'welcome-back' && rememberedIdentifier) {
       return renderWelcomeBack();
     }
 
@@ -223,9 +275,9 @@ export default function AuthPage() {
           </div>
           <h3 className="font-display text-xl mb-2">Check Your Email</h3>
           <p className="text-muted-foreground text-sm mb-6">
-            We sent a password reset link to <span className="text-foreground">{email}</span>
+            We sent a password reset link to <span className="text-foreground">{identifier}</span>
           </p>
-          <Button 
+          <Button
             variant="outline" 
             onClick={() => setMode('signin')}
             className="border-border"
@@ -245,14 +297,14 @@ export default function AuthPage() {
           exit={{ opacity: 0, x: mode === 'signup' ? -20 : 20 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Email + Password Form */}
+          {/* Email/Username + Password Form */}
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="space-y-1">
               <Input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type={mode === 'signup' || mode === 'reset' ? 'email' : 'text'}
+                placeholder={mode === 'signup' || mode === 'reset' ? 'Email address' : 'Username or email'}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="h-14 bg-surface-0 border-border text-base"
               />
             </div>
