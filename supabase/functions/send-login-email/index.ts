@@ -81,8 +81,8 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Extract the token from properties (force 6 digits)
-    const token = (linkData.properties?.email_otp || '------').slice(0, 6)
+    // Extract the full token from properties (Supabase uses 6 digits by default)
+    const token = linkData.properties?.email_otp || '------'
     const magicLink = linkData.properties?.action_link || ''
 
     console.log('Generated link for:', email, 'token length:', token.length)
