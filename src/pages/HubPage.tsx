@@ -1,10 +1,37 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Clock, Trophy, Users, Zap, ArrowRight } from 'lucide-react';
+import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
+
+const leagueConfig = {
+  elite: {
+    label: 'Elite League',
+    icon: Crown,
+    color: 'text-gold',
+    bg: 'bg-gold/10',
+    border: 'border-gold',
+    description: 'Top 1% of global rankings',
+  },
+  pro: {
+    label: 'Pro League',
+    icon: Shield,
+    color: 'text-blue-400',
+    bg: 'bg-blue-400/10',
+    border: 'border-blue-400',
+    description: 'Top 15% with event wins',
+  },
+  open: {
+    label: 'Open League',
+    icon: Users,
+    color: 'text-muted-foreground',
+    bg: 'bg-muted/20',
+    border: 'border-border',
+    description: 'All competitors welcome',
+  },
+};
 
 export default function HubPage() {
   const { profile } = useAuth();
@@ -13,6 +40,11 @@ export default function HubPage() {
   
   // Keep session active
   useActiveSession();
+
+  // Get user's league
+  const userLeague = (profile?.league?.toLowerCase() || 'open') as keyof typeof leagueConfig;
+  const league = leagueConfig[userLeague] || leagueConfig.open;
+  const LeagueIcon = league.icon;
 
   // Find the primary live event
   const liveEvent = events.find(e => e.status === 'live');
@@ -37,6 +69,31 @@ export default function HubPage() {
             Welcome back
           </p>
           <h1 className="font-display text-3xl text-gold">{profile?.username || 'EDITOR'}</h1>
+        </motion.div>
+      </div>
+
+      {/* League Status Card */}
+      <div className="px-4 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className={`${league.bg} border ${league.border} p-4`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 ${league.bg} border ${league.border} flex items-center justify-center`}>
+                <LeagueIcon className={`w-5 h-5 ${league.color}`} />
+              </div>
+              <div>
+                <p className={`font-display text-lg ${league.color}`}>{league.label}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{league.description}</p>
+              </div>
+            </div>
+            <Link to="/rankings" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              View Ranks <ArrowRight size={12} />
+            </Link>
+          </div>
         </motion.div>
       </div>
 
@@ -196,10 +253,10 @@ export default function HubPage() {
               <span className="font-display text-sm">Rankings</span>
             </div>
           </Link>
-          <Link to="/leagues">
+          <Link to="/arenas">
             <div className="bg-surface-1 border border-border p-4 flex flex-col items-center text-center hover:border-gold/50 transition-colors">
-              <Users className="w-6 h-6 text-muted-foreground mb-2" />
-              <span className="font-display text-sm">Leagues</span>
+              <MessageCircle className="w-6 h-6 text-muted-foreground mb-2" />
+              <span className="font-display text-sm">Arenas</span>
             </div>
           </Link>
         </div>
