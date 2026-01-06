@@ -71,18 +71,24 @@ export default function AuthPage() {
     setMode('signin');
   };
 
-  // Lookup email by username
-  const getEmailFromUsername = async (username: string): Promise<string | null> => {
+  // Lookup email by username (case-insensitive)
+  const getEmailFromUsername = async (username: string): Promise<{ email: string | null; found: boolean }> => {
     const { data, error } = await supabase
       .from('profiles')
       .select('email')
-      .eq('username', username)
-      .single();
+      .ilike('username', username)
+      .maybeSingle();
     
-    if (error || !data?.email) {
-      return null;
+    if (error) {
+      console.error('Username lookup error:', error);
+      return { email: null, found: false };
     }
-    return data.email;
+    
+    if (!data) {
+      return { email: null, found: false };
+    }
+    
+    return { email: data.email, found: true };
   };
 
   const validateInputs = () => {
@@ -146,13 +152,18 @@ export default function AuthPage() {
       
       // If identifier is not an email, look up the email by username
       if (!isEmail(identifier)) {
-        const foundEmail = await getEmailFromUsername(identifier);
-        if (!foundEmail) {
+        const result = await getEmailFromUsername(identifier);
+        if (!result.found) {
           toast.error('Username not found');
           setIsLoading(false);
           return;
         }
-        emailToUse = foundEmail;
+        if (!result.email) {
+          toast.error('This account was created with Google. Please use "More options" to sign in with Google.');
+          setIsLoading(false);
+          return;
+        }
+        emailToUse = result.email;
       }
       
       const { error } = await signInWithPassword(emailToUse, password);
