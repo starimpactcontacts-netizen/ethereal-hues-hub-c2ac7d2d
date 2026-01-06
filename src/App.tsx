@@ -211,14 +211,13 @@ export default function App() {
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/support" element={<SupportPage />} />
             
-            {/* Protected routes with layout - auth required */}
+            {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={
-              <ProtectedRoute>
+              <ProtectedRoute allowGuest={true}>
                 <AuthenticatedLayout />
               </ProtectedRoute>
             }>
               <Route path="/hub" element={<HubPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/editor/:userId" element={<PublicProfilePage />} />
               <Route path="/rankings" element={<RankingsPage />} />
               <Route path="/leagues" element={<LeaguesPage />} />
@@ -226,6 +225,15 @@ export default function App() {
               <Route path="/event/:id" element={<EventDetailPage />} />
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
+            </Route>
+            
+            {/* Protected routes - auth required */}
+            <Route element={
+              <ProtectedRoute>
+                <AuthenticatedLayout />
+              </ProtectedRoute>
+            }>
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/arenas/:arenaId" element={<ArenaChatPage />} />
               <Route path="/crews" element={<CrewsPage />} />
               <Route path="/crews/create" element={<CreateCrewPage />} />
