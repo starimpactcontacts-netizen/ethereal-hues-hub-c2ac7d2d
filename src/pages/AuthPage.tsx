@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowRight, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 import SEO, { pageSEO } from '@/components/SEO';
+import loopgateWordmark from '@/assets/loopgate-wordmark.png';
 import { supabase } from '@/integrations/supabase/client';
 
 const emailSchema = z.string().email('Enter a valid email');
@@ -186,20 +187,19 @@ export default function AuthPage() {
           </button>
         )}
 
-        {/* LOOPGATE Logo Text - using Impact-style font */}
-        <motion.h1 
+        {/* LOOPGATE Logo */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-center text-5xl sm:text-6xl md:text-7xl text-white mb-10 font-black tracking-tight"
-          style={{ 
-            fontFamily: 'Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif',
-            textShadow: '0 4px 30px rgba(255,255,255,0.15)',
-            letterSpacing: '-0.02em'
-          }}
+          className="flex justify-center mb-10"
         >
-          LOOPGATE
-        </motion.h1>
+          <img 
+            src={loopgateWordmark} 
+            alt="LOOPGATE" 
+            className="h-16 sm:h-20 w-auto"
+          />
+        </motion.div>
 
         <AnimatePresence mode="wait">
           {/* INITIAL CHOICE: New or Returning */}
