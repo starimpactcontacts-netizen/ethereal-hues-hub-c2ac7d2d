@@ -98,6 +98,150 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_join_requests: {
+        Row: {
+          created_at: string
+          crew_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crew_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crew_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_join_requests_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_members: {
+        Row: {
+          crew_id: string
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["crew_role"]
+          user_id: string
+        }
+        Insert: {
+          crew_id: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["crew_role"]
+          user_id: string
+        }
+        Update: {
+          crew_id?: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["crew_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_messages: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          crew_id: string
+          display_name: string | null
+          id: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          crew_id: string
+          display_name?: string | null
+          id?: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          crew_id?: string
+          display_name?: string | null
+          id?: string
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_messages_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crews: {
+        Row: {
+          created_at: string
+          description: string | null
+          emblem: string
+          id: string
+          join_type: string
+          member_count: number
+          min_league: Database["public"]["Enums"]["league_tier"]
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          emblem?: string
+          id?: string
+          join_type?: string
+          member_count?: number
+          min_league?: Database["public"]["Enums"]["league_tier"]
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          emblem?: string
+          id?: string
+          join_type?: string
+          member_count?: number
+          min_league?: Database["public"]["Enums"]["league_tier"]
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       enterprise_campaigns: {
         Row: {
           asset_urls: string[] | null
@@ -262,6 +406,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string | null
+          crew_id: string | null
           discord: string | null
           display_name: string | null
           email: string | null
@@ -287,6 +432,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          crew_id?: string | null
           discord?: string | null
           display_name?: string | null
           email?: string | null
@@ -312,6 +458,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string | null
+          crew_id?: string | null
           discord?: string | null
           display_name?: string | null
           email?: string | null
@@ -332,7 +479,15 @@ export type Database = {
           verification_status?: boolean | null
           win_rate?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -369,6 +524,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_crew_owner: {
+        Args: { check_crew_id: string; check_user_id: string }
+        Returns: boolean
+      }
+      is_crew_staff: {
+        Args: { check_crew_id: string; check_user_id: string }
+        Returns: boolean
+      }
       is_username_available: {
         Args: { check_username: string }
         Returns: boolean
@@ -381,6 +544,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "judge" | "dev" | "enterprise"
+      crew_role: "owner" | "officer" | "member"
       league_tier: "open" | "pro" | "elite"
       platform_type: "tiktok" | "instagram" | "youtube"
     }
@@ -511,6 +675,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user", "judge", "dev", "enterprise"],
+      crew_role: ["owner", "officer", "member"],
       league_tier: ["open", "pro", "elite"],
       platform_type: ["tiktok", "instagram", "youtube"],
     },

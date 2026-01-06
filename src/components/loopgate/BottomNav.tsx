@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
-import { Home, Trophy, MessageCircle, Search, User } from "lucide-react";
+import { Home, Trophy, MessageCircle, Search, User, Users } from "lucide-react";
 
 const navItems = [
   { to: "/hub", icon: Home, label: "Hub" },
   { to: "/rankings", icon: Trophy, label: "Rankings" },
   { to: "/arenas", icon: MessageCircle, label: "Arenas" },
-  { to: "/index", icon: Search, label: "Index" },
+  { to: "/crews", icon: Users, label: "Crews" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 
