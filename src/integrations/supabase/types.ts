@@ -233,6 +233,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           discord: string | null
+          display_name: string | null
           email: string | null
           global_index_score: number | null
           id: string
@@ -245,6 +246,7 @@ export type Database = {
           total_wins: number | null
           updated_at: string | null
           username: string
+          username_changed_at: string | null
           verification_code: string | null
           verification_requested_at: string | null
           verification_status: boolean | null
@@ -256,6 +258,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           discord?: string | null
+          display_name?: string | null
           email?: string | null
           global_index_score?: number | null
           id: string
@@ -268,6 +271,7 @@ export type Database = {
           total_wins?: number | null
           updated_at?: string | null
           username: string
+          username_changed_at?: string | null
           verification_code?: string | null
           verification_requested_at?: string | null
           verification_status?: boolean | null
@@ -279,6 +283,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           discord?: string | null
+          display_name?: string | null
           email?: string | null
           global_index_score?: number | null
           id?: string
@@ -291,6 +296,7 @@ export type Database = {
           total_wins?: number | null
           updated_at?: string | null
           username?: string
+          username_changed_at?: string | null
           verification_code?: string | null
           verification_requested_at?: string | null
           verification_status?: boolean | null
@@ -321,6 +327,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_change_username: { Args: { user_uuid: string }; Returns: boolean }
+      days_until_username_change: {
+        Args: { user_uuid: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
