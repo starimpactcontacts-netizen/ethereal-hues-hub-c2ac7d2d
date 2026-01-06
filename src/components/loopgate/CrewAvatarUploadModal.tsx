@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
-import { X, Upload, Camera, Loader2 } from "lucide-react";
+import { X, Upload, Camera as CameraIcon, Loader2 } from "lucide-react";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { isNativeApp } from "@/lib/native";
 
 interface CrewAvatarUploadModalProps {
   crewId: string;
@@ -30,8 +32,36 @@ export default function CrewAvatarUploadModal({
   const [crop, setCrop] = useState<Crop>();
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [pickingPhoto, setPickingPhoto] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Native photo picker using Capacitor Camera
+  const handleNativePhotoPicker = async (source: CameraSource) => {
+    setPickingPhoto(true);
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: source,
+        correctOrientation: true,
+      });
+
+      if (photo.dataUrl) {
+        setSelectedImage(photo.dataUrl);
+      }
+    } catch (error: any) {
+      if (error?.message?.includes("User cancelled") || error?.message?.includes("canceled")) {
+        console.log("User cancelled photo selection");
+      } else {
+        console.error("Photo picker error:", error);
+        toast.error("Failed to select photo");
+      }
+    } finally {
+      setPickingPhoto(false);
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -195,7 +225,7 @@ export default function CrewAvatarUploadModal({
                     />
                   ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <Camera className="w-10 h-10 text-muted-foreground" />
+                      <CameraIcon className="w-10 h-10 text-muted-foreground" />
                     </div>
                   )}
                 </div>
@@ -209,13 +239,45 @@ export default function CrewAvatarUploadModal({
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <button
-                onClick={() => inputRef.current?.click()}
-                className="w-full py-3 bg-gold text-black font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2"
-              >
-                <Upload size={16} />
-                Select Image
-              </button>
+              
+              {isNativeApp() ? (
+                // Native iOS/Android: Show Camera and Gallery options
+                <>
+                  <button
+                    onClick={() => handleNativePhotoPicker(CameraSource.Camera)}
+                    disabled={pickingPhoto}
+                    className="w-full py-3 bg-gold text-black font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {pickingPhoto ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <CameraIcon size={16} />
+                    )}
+                    Take Photo
+                  </button>
+                  <button
+                    onClick={() => handleNativePhotoPicker(CameraSource.Photos)}
+                    disabled={pickingPhoto}
+                    className="w-full py-3 border border-border text-foreground font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {pickingPhoto ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Upload size={16} />
+                    )}
+                    Choose from Library
+                  </button>
+                </>
+              ) : (
+                // Web: Use standard file input
+                <button
+                  onClick={() => inputRef.current?.click()}
+                  className="w-full py-3 bg-gold text-black font-semibold uppercase tracking-wider text-sm flex items-center justify-center gap-2"
+                >
+                  <Upload size={16} />
+                  Select Image
+                </button>
+              )}
 
               {/* Remove button */}
               {currentAvatarUrl && (
