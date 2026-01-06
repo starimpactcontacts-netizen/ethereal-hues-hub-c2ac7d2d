@@ -123,8 +123,8 @@ export default function AuthPage() {
             alt="Loopgate" 
             className="w-16 h-16 mx-auto mb-4"
           />
-          <h1 className="font-display text-2xl text-foreground">Get In</h1>
-          <p className="text-muted-foreground text-sm mt-1">No bullshit, just enter</p>
+          <h1 className="font-display text-2xl text-foreground">Enter</h1>
+          <p className="text-muted-foreground text-sm mt-1">Access the arena</p>
         </div>
 
         <AnimatePresence mode="wait">
