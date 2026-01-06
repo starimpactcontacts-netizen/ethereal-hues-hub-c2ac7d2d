@@ -139,10 +139,11 @@ export default function OnboardingPage() {
           return;
         }
 
-        // Create profile
+        // Create profile (include email for username login)
         const { error: profileError } = await supabase.from('profiles').insert({
           id: user!.id,
           username: username.toUpperCase(),
+          email: user!.email,
           region: region,
           rules_accepted: true,
           onboarding_completed: true,
