@@ -81,8 +81,9 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Extract the full token from properties (Supabase uses 6 digits by default)
+    // Extract the OTP and hashed token from properties
     const token = linkData.properties?.email_otp || '------'
+    const tokenHash = linkData.properties?.hashed_token || ''
     const magicLink = linkData.properties?.action_link || ''
 
     console.log('Generated link for:', email, 'token length:', token.length)
@@ -108,7 +109,8 @@ Deno.serve(async (req) => {
 
     console.log('Email sent successfully to:', email)
 
-    return new Response(JSON.stringify({ success: true }), {
+    // Return the token_hash so the client can use it for verification
+    return new Response(JSON.stringify({ success: true, tokenHash }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

@@ -40,8 +40,8 @@ interface AuthContextType {
   loading: boolean;
   needsPasswordSetup: boolean; // True if user signed up via magic link only
   signInWithGoogle: () => Promise<{ error: Error | null }>;
-  signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>;
-  signInWithOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
+  signInWithMagicLink: (email: string) => Promise<{ error: Error | null; tokenHash?: string }>;
+  signInWithOtp: (email: string, token: string, tokenHash?: string) => Promise<{ error: Error | null }>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUpWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
@@ -271,10 +271,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: fnError };
     }
     
-    return { error: null };
+    // Return the tokenHash for OTP verification
+    return { error: null, tokenHash: data?.tokenHash };
   };
 
-  const signInWithOtp = async (email: string, token: string) => {
+  const signInWithOtp = async (email: string, token: string, tokenHash?: string) => {
+    // Use token_hash for verification (PKCE flow)
+    if (tokenHash) {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: 'magiclink',
+      });
+      return { error };
+    }
+    
+    // Fallback to email + token (shouldn't be used but kept for safety)
     const { error } = await supabase.auth.verifyOtp({
       email,
       token,
@@ -379,7 +390,7 @@ export function useAuth() {
       loading: false,
       needsPasswordSetup: false,
       signInWithGoogle: async () => ({ error: null }),
-      signInWithMagicLink: async () => ({ error: null }),
+      signInWithMagicLink: async () => ({ error: null, tokenHash: undefined }),
       signInWithOtp: async () => ({ error: null }),
       signInWithPassword: async () => ({ error: null }),
       signUpWithPassword: async () => ({ error: null }),
