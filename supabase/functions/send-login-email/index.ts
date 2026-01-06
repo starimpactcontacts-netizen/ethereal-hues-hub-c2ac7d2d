@@ -24,8 +24,8 @@ const buildLoginEmailHtml = (token: string, magicLink: string): string => {
     </div>
     <h1 style="color: #ffffff; font-size: 24px; font-weight: 600; text-align: center; margin: 0 0 32px 0;">Sign In</h1>
     <div style="background-color: #1a1a1a; border-radius: 12px; padding: 24px; text-align: center; border: 1px solid #333;">
-      <p style="color: #888; font-size: 14px; margin: 0 0 12px 0;">Your 6-digit login code:</p>
-      <p style="color: #ffffff; font-size: 36px; font-weight: 700; letter-spacing: 8px; margin: 0; font-family: monospace;">${token.slice(0, 6)}</p>
+      <p style="color: #888; font-size: 14px; margin: 0 0 12px 0;">Your login code:</p>
+      <p style="color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: 6px; margin: 0; font-family: monospace;">${token}</p>
       <p style="color: #666; font-size: 12px; margin: 12px 0 0 0;">Enter this code in the app</p>
     </div>
     <hr style="border-color: #333; margin: 32px 0;">
