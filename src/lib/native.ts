@@ -16,6 +16,9 @@ export async function initializeNativeApp() {
     // Hide splash screen after app is ready
     // The web app's LoadingScreen will take over
     await SplashScreen.hide();
+    
+    // Apply native-like scroll behavior
+    applyNativeScrollBehavior();
   } catch (error) {
     console.error('Native initialization error:', error);
   }
@@ -38,32 +41,39 @@ export function disableZoom() {
   }
 }
 
-// Enable pull-to-refresh behavior
-export function enablePullToRefresh() {
+// Apply native scroll behavior - prevent bounce/overscroll reset
+function applyNativeScrollBehavior() {
   if (!Capacitor.isNativePlatform()) return;
   
-  let startY = 0;
-  let isPulling = false;
-  
-  document.addEventListener('touchstart', (e) => {
-    if (window.scrollY === 0) {
-      startY = e.touches[0].pageY;
-      isPulling = true;
+  // Add CSS to prevent iOS bounce that causes "reset" feel
+  const style = document.createElement('style');
+  style.textContent = `
+    /* Prevent iOS overscroll bounce on body */
+    html, body {
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
     }
-  });
-  
-  document.addEventListener('touchmove', (e) => {
-    if (!isPulling) return;
-    const currentY = e.touches[0].pageY;
-    const pullDistance = currentY - startY;
     
-    if (pullDistance > 100 && window.scrollY === 0) {
-      window.location.reload();
-      isPulling = false;
+    /* Allow scrolling in specific containers */
+    .scroll-container, 
+    [data-scroll="true"],
+    main {
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
-  });
+  `;
+  document.head.appendChild(style);
   
-  document.addEventListener('touchend', () => {
-    isPulling = false;
-  });
+  // Prevent pull-to-refresh on document level
+  document.body.style.overscrollBehavior = 'none';
+}
+
+// Check if running in native app
+export function isNativeApp(): boolean {
+  return Capacitor.isNativePlatform();
+}
+
+// Get platform name
+export function getPlatform(): 'ios' | 'android' | 'web' {
+  return Capacitor.getPlatform() as 'ios' | 'android' | 'web';
 }
