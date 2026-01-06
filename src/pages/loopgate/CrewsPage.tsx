@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, Shield, Crown, Lock } from "lucide-react";
+import { Plus, Search, Users, Shield, Crown, Lock, Star, Zap, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,9 @@ const emblemIcons: Record<string, React.ReactNode> = {
   shield: <Shield className="w-8 h-8" />,
   crown: <Crown className="w-8 h-8" />,
   users: <Users className="w-8 h-8" />,
+  star: <Star className="w-8 h-8" />,
+  zap: <Zap className="w-8 h-8" />,
+  award: <Award className="w-8 h-8" />,
 };
 
 export default function CrewsPage() {
@@ -35,6 +38,7 @@ export default function CrewsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [crews, setCrews] = useState<Crew[]>([]);
   const [myCrew, setMyCrew] = useState<Crew | null>(null);
+  const [ownedCrewsCount, setOwnedCrewsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -64,6 +68,12 @@ export default function CrewsPage() {
       setMyCrew(userCrew || null);
     } else {
       setMyCrew(null);
+    }
+
+    // Count crews owned by user (max 2 allowed)
+    if (user) {
+      const ownedCount = allCrews?.filter((c) => c.owner_id === user.id).length || 0;
+      setOwnedCrewsCount(ownedCount);
     }
 
     setLoading(false);
@@ -118,7 +128,7 @@ export default function CrewsPage() {
           <div className="px-4 py-4">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-bold tracking-tight">Crews</h1>
-              {!myCrew && (
+              {ownedCrewsCount < 2 && (
                 <Button
                   size="sm"
                   onClick={() => navigate("/crews/create")}

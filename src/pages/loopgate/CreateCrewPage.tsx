@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +33,7 @@ export default function CreateCrewPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [ownedCrewsCount, setOwnedCrewsCount] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -41,8 +42,24 @@ export default function CreateCrewPage() {
     join_type: "open",
   });
 
+  // Check how many crews user already owns
+  useEffect(() => {
+    const checkOwnedCrews = async () => {
+      if (!user) return;
+      const { count, error } = await supabase
+        .from("crews")
+        .select("*", { count: "exact", head: true })
+        .eq("owner_id", user.id);
+      
+      if (!error) {
+        setOwnedCrewsCount(count || 0);
+      }
+    };
+    checkOwnedCrews();
+  }, [user]);
+
   const handleCreate = async () => {
-    if (!user || !formData.name.trim()) return;
+    if (!user || !formData.name.trim() || (ownedCrewsCount !== null && ownedCrewsCount >= 2)) return;
 
     setLoading(true);
 
@@ -100,6 +117,15 @@ export default function CreateCrewPage() {
         </div>
 
         <div className="px-4 py-6 space-y-6">
+          {/* Max crews limit warning */}
+          {ownedCrewsCount !== null && ownedCrewsCount >= 2 && (
+            <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+              <p className="text-sm text-destructive">
+                You already own 2 crews (maximum limit). Delete one to create a new crew.
+              </p>
+            </div>
+          )}
+
           {/* Crew Name */}
           <div className="space-y-2">
             <Label>Crew Name</Label>
@@ -109,6 +135,7 @@ export default function CreateCrewPage() {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               maxLength={24}
               className="bg-muted/50"
+              disabled={ownedCrewsCount !== null && ownedCrewsCount >= 2}
             />
           </div>
 
@@ -192,7 +219,7 @@ export default function CreateCrewPage() {
           {/* Create Button */}
           <Button
             onClick={handleCreate}
-            disabled={loading || !formData.name.trim()}
+            disabled={loading || !formData.name.trim() || (ownedCrewsCount !== null && ownedCrewsCount >= 2)}
             className="w-full bg-gold text-black hover:bg-gold/90"
           >
             {loading ? "Creating..." : "Create Crew"}
