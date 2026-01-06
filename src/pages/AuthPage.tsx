@@ -9,6 +9,7 @@ import { Mail, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff, ChevronDown, User, X
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
 import SEO, { pageSEO } from '@/components/SEO';
+import { isNativeApp } from '@/lib/native';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
@@ -404,14 +405,16 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 relative">
       <SEO {...pageSEO.login} />
-      {/* Back to Home */}
-      <Link 
-        to="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
-      >
-        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-        <span className="text-sm font-medium">Home</span>
-      </Link>
+      {/* Back to Home - only show on web, not native app */}
+      {!isNativeApp() && (
+        <Link 
+          to="/" 
+          className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Home</span>
+        </Link>
+      )}
       
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[120px]" />
       
