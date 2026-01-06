@@ -1,20 +1,6 @@
 // @ts-nocheck
-import React from "https://esm.sh/react@18.3.1"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-import { Resend } from "https://esm.sh/resend@4.0.0"
-import { 
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Link,
-  Preview,
-  Text,
-  Section,
-  Hr,
-  render,
-} from "https://esm.sh/@react-email/components@0.0.22"
+import { Resend } from "https://esm.sh/resend@2.0.0"
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
 
@@ -23,51 +9,33 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Email template component
-const LoginEmail = ({
-  token,
-  magicLink,
-}: {
-  token: string
-  magicLink: string
-}) => {
-  const main = { backgroundColor: '#0a0a0a', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
-  const container = { padding: '40px 20px', margin: '0 auto', maxWidth: '400px' }
-  const headerSection = { textAlign: 'center' as const, marginBottom: '32px' }
-  const logoText = { fontSize: '28px', fontWeight: '900', color: '#ffffff', letterSpacing: '4px', margin: '0' }
-  const h1 = { color: '#ffffff', fontSize: '24px', fontWeight: '600', textAlign: 'center' as const, margin: '0 0 32px 0' }
-  const codeSection = { backgroundColor: '#1a1a1a', borderRadius: '12px', padding: '24px', textAlign: 'center' as const, border: '1px solid #333' }
-  const codeLabel = { color: '#888', fontSize: '14px', margin: '0 0 12px 0' }
-  const code = { color: '#ffffff', fontSize: '36px', fontWeight: '700', letterSpacing: '8px', margin: '0', fontFamily: 'monospace' }
-  const codeHint = { color: '#666', fontSize: '12px', margin: '12px 0 0 0' }
-  const divider = { borderColor: '#333', margin: '32px 0' }
-  const orText = { color: '#888', fontSize: '14px', textAlign: 'center' as const, margin: '0 0 16px 0' }
-  const linkButton = { display: 'block', backgroundColor: '#ffffff', color: '#000000', fontSize: '16px', fontWeight: '600', textDecoration: 'none', textAlign: 'center' as const, padding: '14px 24px', borderRadius: '8px', margin: '0 auto' }
-  const footer = { color: '#666', fontSize: '12px', textAlign: 'center' as const, margin: '32px 0 8px 0' }
-  const footerBrand = { color: '#444', fontSize: '11px', textAlign: 'center' as const, margin: '0' }
-
-  return React.createElement(Html, null,
-    React.createElement(Head),
-    React.createElement(Preview, null, `Your Loopgate login code: ${token}`),
-    React.createElement(Body, { style: main },
-      React.createElement(Container, { style: container },
-        React.createElement(Section, { style: headerSection },
-          React.createElement(Text, { style: logoText }, "LOOPGATE")
-        ),
-        React.createElement(Heading, { style: h1 }, "Sign In"),
-        React.createElement(Section, { style: codeSection },
-          React.createElement(Text, { style: codeLabel }, "Your login code:"),
-          React.createElement(Text, { style: code }, token),
-          React.createElement(Text, { style: codeHint }, "Enter this code in the app")
-        ),
-        React.createElement(Hr, { style: divider }),
-        React.createElement(Text, { style: orText }, "Or click this link to sign in instantly:"),
-        React.createElement(Link, { href: magicLink, target: "_blank", style: linkButton }, "Sign In to Loopgate →"),
-        React.createElement(Text, { style: footer }, "If you didn't request this, you can safely ignore this email."),
-        React.createElement(Text, { style: footerBrand }, "© Loopgate — Competitive Editing Index")
-      )
-    )
-  )
+// Build email HTML directly without React (avoids version conflicts)
+const buildLoginEmailHtml = (token: string, magicLink: string): string => {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="background-color: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0;">
+  <div style="padding: 40px 20px; margin: 0 auto; max-width: 400px;">
+    <div style="text-align: center; margin-bottom: 32px;">
+      <p style="font-size: 28px; font-weight: 900; color: #ffffff; letter-spacing: 4px; margin: 0;">LOOPGATE</p>
+    </div>
+    <h1 style="color: #ffffff; font-size: 24px; font-weight: 600; text-align: center; margin: 0 0 32px 0;">Sign In</h1>
+    <div style="background-color: #1a1a1a; border-radius: 12px; padding: 24px; text-align: center; border: 1px solid #333;">
+      <p style="color: #888; font-size: 14px; margin: 0 0 12px 0;">Your login code:</p>
+      <p style="color: #ffffff; font-size: 36px; font-weight: 700; letter-spacing: 8px; margin: 0; font-family: monospace;">${token}</p>
+      <p style="color: #666; font-size: 12px; margin: 12px 0 0 0;">Enter this code in the app</p>
+    </div>
+    <hr style="border-color: #333; margin: 32px 0;">
+    <p style="color: #888; font-size: 14px; text-align: center; margin: 0 0 16px 0;">Or click this link to sign in instantly:</p>
+    <a href="${magicLink}" target="_blank" style="display: block; background-color: #ffffff; color: #000000; font-size: 16px; font-weight: 600; text-decoration: none; text-align: center; padding: 14px 24px; border-radius: 8px; margin: 0 auto;">Sign In to Loopgate →</a>
+    <p style="color: #666; font-size: 12px; text-align: center; margin: 32px 0 8px 0;">If you didn't request this, you can safely ignore this email.</p>
+    <p style="color: #444; font-size: 11px; text-align: center; margin: 0;">© Loopgate — Competitive Editing Index</p>
+  </div>
+</body>
+</html>`
 }
 
 Deno.serve(async (req) => {
@@ -119,10 +87,8 @@ Deno.serve(async (req) => {
 
     console.log('Generated link for:', email, 'token length:', token.length)
 
-    // Render email
-    const emailHtml = render(
-      React.createElement(LoginEmail, { token, magicLink })
-    )
+    // Build email HTML
+    const emailHtml = buildLoginEmailHtml(token, magicLink)
 
     // Send via Resend
     const { error: emailError } = await resend.emails.send({
