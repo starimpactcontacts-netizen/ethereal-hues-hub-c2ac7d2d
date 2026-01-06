@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -9,6 +9,7 @@ import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
 import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
+import { toast } from "sonner";
 
 const platformLabels: Record<string, string> = {
   tiktok: "TikTok",
@@ -35,7 +36,12 @@ export default function ProfilePage() {
   const [email, setEmail] = useState("");
   const [discord, setDiscord] = useState("");
   const [portfolioUrl, setPortfolioUrl] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [username, setUsername] = useState("");
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [daysUntilUsernameChange, setDaysUntilUsernameChange] = useState<number>(0);
   const [isSavingContact, setIsSavingContact] = useState(false);
+  const [isSavingUsername, setIsSavingUsername] = useState(false);
   const [contactEdited, setContactEdited] = useState(false);
   
   // Keep session active
@@ -48,9 +54,21 @@ export default function ProfilePage() {
       setEmail((profile as any).email || "");
       setDiscord((profile as any).discord || "");
       setPortfolioUrl((profile as any).portfolio_url || "");
+      setDisplayName((profile as any).display_name || "");
+      setUsername(profile.username || "");
       setContactEdited(false);
     }
   }, [profile]);
+
+  // Check username change cooldown
+  useEffect(() => {
+    if (profile?.id) {
+      supabase.rpc('days_until_username_change', { user_uuid: profile.id })
+        .then(({ data }) => {
+          setDaysUntilUsernameChange(data || 0);
+        });
+    }
+  }, [profile?.id]);
 
   const leagueColors: Record<string, string> = {
     elite: "text-gold border-gold",
@@ -87,6 +105,7 @@ export default function ProfilePage() {
           email: email.trim() || null,
           discord: discord.trim() || null,
           portfolio_url: portfolioUrl.trim() || null,
+          display_name: displayName.trim() || null,
         })
         .eq("id", profile.id);
       setContactEdited(false);
@@ -95,6 +114,49 @@ export default function ProfilePage() {
       console.error("Failed to save contact:", error);
     } finally {
       setIsSavingContact(false);
+    }
+  };
+
+  const handleSaveUsername = async () => {
+    if (!profile?.id || !username.trim()) return;
+    
+    const newUsername = username.trim().toLowerCase();
+    if (newUsername === profile.username) {
+      setIsEditingUsername(false);
+      return;
+    }
+
+    // Check if username is available
+    const { data: isAvailable } = await supabase.rpc('is_username_available', { 
+      check_username: newUsername 
+    });
+
+    if (!isAvailable) {
+      toast.error('Username is already taken');
+      return;
+    }
+
+    setIsSavingUsername(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ 
+          username: newUsername,
+          username_changed_at: new Date().toISOString(),
+        })
+        .eq("id", profile.id);
+      
+      if (error) throw error;
+      
+      toast.success('Username updated');
+      setIsEditingUsername(false);
+      setDaysUntilUsernameChange(14);
+      refreshProfile();
+    } catch (error) {
+      console.error("Failed to save username:", error);
+      toast.error('Failed to update username');
+    } finally {
+      setIsSavingUsername(false);
     }
   };
 
@@ -140,17 +202,76 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Alias + League + Verified */}
+          {/* Display Name + Username + League + Verified */}
           <div className="flex items-start justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <h1 className="font-display text-4xl">{profile.username}</h1>
-              {profile.verification_status && <VerifiedBadge size="lg" />}
+            <div className="flex flex-col">
+              {(profile as any).display_name && (
+                <h1 className="font-display text-4xl flex items-center gap-2">
+                  {(profile as any).display_name}
+                  {profile.verification_status && <VerifiedBadge size="lg" />}
+                </h1>
+              )}
+              <div className="flex items-center gap-2">
+                {isEditingUsername ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                      className="bg-background border border-gold px-2 py-1 text-sm font-medium outline-none w-32"
+                      maxLength={20}
+                      autoFocus
+                    />
+                    <button
+                      onClick={handleSaveUsername}
+                      disabled={isSavingUsername}
+                      className="p-1 text-gold hover:bg-gold/10"
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUsername(profile.username || '');
+                        setIsEditingUsername(false);
+                      }}
+                      className="p-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {!(profile as any).display_name ? (
+                      <h1 className="font-display text-4xl flex items-center gap-2">
+                        {profile.username}
+                        {profile.verification_status && <VerifiedBadge size="lg" />}
+                      </h1>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">@{profile.username}</span>
+                    )}
+                    {daysUntilUsernameChange === 0 ? (
+                      <button
+                        onClick={() => setIsEditingUsername(true)}
+                        className="p-1 text-muted-foreground hover:text-gold transition-colors"
+                        title="Edit username"
+                      >
+                        <Pencil size={12} />
+                      </button>
+                    ) : (
+                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground" title={`Can change in ${daysUntilUsernameChange} days`}>
+                        <Clock size={10} />
+                        {daysUntilUsernameChange}d
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}>
               {league}
             </span>
           </div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-2">
             Global Editor{profile.created_at && ` since ${formatJoinDate(profile.created_at)}`}
           </p>
 
@@ -227,6 +348,24 @@ export default function ProfilePage() {
           </h3>
         </div>
         <div className="bg-surface-1 border border-border p-4 space-y-4">
+          {/* Display Name */}
+          <div>
+            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Display Name</label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => {
+                if (e.target.value.length <= 50) {
+                  setDisplayName(e.target.value);
+                  setContactEdited(true);
+                }
+              }}
+              placeholder="Your public name"
+              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+            />
+            <p className="text-[9px] text-muted-foreground mt-1">This is your public display name (can be changed anytime)</p>
+          </div>
+
           {/* Bio */}
           <div>
             <div className="flex justify-between items-center mb-1">
