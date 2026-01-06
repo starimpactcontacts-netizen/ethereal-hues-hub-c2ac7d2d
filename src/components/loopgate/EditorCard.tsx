@@ -89,12 +89,23 @@ export default function EditorCard({ editor }: EditorCardProps) {
           </div>
         </div>
 
-        {/* Index Score */}
-        <div className="text-right flex-shrink-0">
-          <p className="font-display text-2xl text-gold">
-            {(editor.global_index_score || 0).toFixed(1)}
-          </p>
-          <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Index</p>
+        {/* Index & Level */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Level */}
+          <div className="text-center">
+            <p className="font-display text-xl text-foreground/80">
+              {editor.level || 1}
+            </p>
+            <p className="text-[8px] text-muted-foreground uppercase tracking-wider">LVL</p>
+          </div>
+          
+          {/* Index Score */}
+          <div className="text-right">
+            <p className="font-display text-2xl text-gold">
+              {(editor.global_index_score || 0).toFixed(1)}
+            </p>
+            <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Index</p>
+          </div>
         </div>
       </div>
     </div>
