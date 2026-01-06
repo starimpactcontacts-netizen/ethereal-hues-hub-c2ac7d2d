@@ -38,6 +38,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState(''); // email or username
   const [resolvedEmail, setResolvedEmail] = useState(''); // for OTP after username lookup
+  const [tokenHash, setTokenHash] = useState(''); // for OTP verification
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -85,13 +86,14 @@ export default function AuthPage() {
     }
 
     setIsLoading(true);
-    const { error } = await signInWithMagicLink(emailToUse);
+    const result = await signInWithMagicLink(emailToUse);
     setIsLoading(false);
 
-    if (error) {
-      toast.error(error.message);
+    if (result.error) {
+      toast.error(result.error.message);
     } else {
       setResolvedEmail(emailToUse);
+      if (result.tokenHash) setTokenHash(result.tokenHash);
       setMode('magic-sent');
     }
   };
@@ -105,7 +107,8 @@ export default function AuthPage() {
     }
 
     setIsLoading(true);
-    const { error } = await signInWithOtp(resolvedEmail, otpCode);
+    // Use tokenHash for verification (PKCE flow)
+    const { error } = await signInWithOtp(resolvedEmail, otpCode, tokenHash);
     setIsLoading(false);
 
     if (error) {
