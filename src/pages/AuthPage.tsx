@@ -99,8 +99,8 @@ export default function AuthPage() {
   const handleOtpVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (otpCode.length !== 6) {
-      toast.error('Enter the 6-digit code');
+    if (otpCode.length < 6) {
+      toast.error('Enter the full code');
       return;
     }
 
@@ -288,17 +288,17 @@ export default function AuthPage() {
                   <Input
                     type="text"
                     inputMode="numeric"
-                    placeholder="Enter 6-digit code"
+                    placeholder="Enter code"
                     value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="h-14 bg-white/5 border-white/10 text-white text-center text-2xl tracking-[0.5em] placeholder:text-white/30 placeholder:tracking-normal placeholder:text-base focus:border-white/30 focus:ring-0 font-mono"
+                    onChange={(e) => setOtpCode(e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8))}
+                    className="h-14 bg-white/5 border-white/10 text-white text-center text-2xl tracking-[0.3em] placeholder:text-white/30 placeholder:tracking-normal placeholder:text-base focus:border-white/30 focus:ring-0 font-mono uppercase"
                     autoFocus
                   />
                 </div>
                 
                 <Button 
                   type="submit"
-                  disabled={isLoading || otpCode.length !== 6}
+                  disabled={isLoading || otpCode.length < 6}
                   className="w-full bg-white hover:bg-white/90 text-black font-bold h-12"
                 >
                   {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY CODE'}
