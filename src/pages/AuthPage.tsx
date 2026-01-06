@@ -415,8 +415,8 @@ export default function AuthPage() {
             )}
           </div>
 
-          {/* More Options - Hidden Google OAuth */}
-          {(mode === 'signin' || mode === 'signup') && (
+          {/* More Options - Hidden Google OAuth (only show on web, not native) */}
+          {(mode === 'signin' || mode === 'signup') && !isNativeApp() && (
             <div className="mt-8 pt-6 border-t border-border/50">
               <button
                 type="button"
