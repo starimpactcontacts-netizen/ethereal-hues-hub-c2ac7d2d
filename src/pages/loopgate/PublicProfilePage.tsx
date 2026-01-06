@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Loader2, Mail, Globe } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Mail, Globe, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
+import CrewBadge from "@/components/loopgate/CrewBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 interface PublicProfile {
@@ -22,6 +23,7 @@ interface PublicProfile {
   discord: string | null;
   portfolio_url: string | null;
   created_at: string | null;
+  crew_id: string | null;
 }
 
 interface ConnectedPlatform {
@@ -52,6 +54,7 @@ export default function PublicProfilePage() {
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
   const [rank, setRank] = useState<number | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -63,12 +66,22 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at")
+        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id")
         .eq("id", userId)
         .single();
 
       if (profileData) {
         setProfile(profileData as PublicProfile);
+        
+        // Fetch crew if user has one
+        if (profileData.crew_id) {
+          const { data: crewData } = await supabase
+            .from("crews")
+            .select("id, name, emblem, avatar_url")
+            .eq("id", profileData.crew_id)
+            .single();
+          setUserCrew(crewData);
+        }
       }
 
       // Fetch platforms
@@ -256,6 +269,17 @@ export default function PublicProfilePage() {
               </span>
             </div>
           </div>
+
+          {/* Crew */}
+          {userCrew && (
+            <div className="pt-5 mt-5 border-t border-border flex items-center justify-between">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <Users size={12} />
+                Crew
+              </span>
+              <CrewBadge crew={userCrew} size="md" />
+            </div>
+          )}
         </div>
       </div>
 

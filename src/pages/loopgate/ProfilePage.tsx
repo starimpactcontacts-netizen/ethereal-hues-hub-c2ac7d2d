@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -9,6 +10,7 @@ import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
 import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
+import CrewBadge from "@/components/loopgate/CrewBadge";
 import { toast } from "sonner";
 
 const platformLabels: Record<string, string> = {
@@ -26,6 +28,7 @@ interface EditingPlatform {
 }
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const { profile, platforms, refreshProfile } = useAuth();
   const { rankings } = useRealRankings();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -43,6 +46,7 @@ export default function ProfilePage() {
   const [isSavingContact, setIsSavingContact] = useState(false);
   const [isSavingUsername, setIsSavingUsername] = useState(false);
   const [contactEdited, setContactEdited] = useState(false);
+  const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   
   // Keep session active
   useActiveSession();
@@ -59,6 +63,23 @@ export default function ProfilePage() {
       setContactEdited(false);
     }
   }, [profile]);
+
+  // Fetch user's crew if they have one
+  useEffect(() => {
+    const fetchCrew = async () => {
+      if (profile?.crew_id) {
+        const { data } = await supabase
+          .from("crews")
+          .select("id, name, emblem, avatar_url")
+          .eq("id", profile.crew_id)
+          .single();
+        setUserCrew(data);
+      } else {
+        setUserCrew(null);
+      }
+    };
+    fetchCrew();
+  }, [profile?.crew_id]);
 
   // Check username change cooldown
   useEffect(() => {
@@ -305,6 +326,24 @@ export default function ProfilePage() {
               currentStatus={(profile as any).activity_status || "online"}
               onStatusChange={refreshProfile}
             />
+          </div>
+
+          {/* Crew */}
+          <div className="pt-5 mt-5 border-t border-border flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Users size={12} />
+              Crew
+            </span>
+            {userCrew ? (
+              <CrewBadge crew={userCrew} size="md" />
+            ) : (
+              <button
+                onClick={() => navigate("/crews")}
+                className="text-[10px] text-gold uppercase tracking-wider hover:underline"
+              >
+                Join a crew
+              </button>
+            )}
           </div>
         </div>
       </div>
