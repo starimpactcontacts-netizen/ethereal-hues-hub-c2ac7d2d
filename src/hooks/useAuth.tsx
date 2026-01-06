@@ -259,14 +259,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithMagicLink = async (email: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: redirectUrl,
-      },
+    const redirectUrl = `${window.location.origin}/hub`;
+    
+    // Use our custom edge function that sends a nicely formatted email with both OTP code and magic link
+    const { data, error: fnError } = await supabase.functions.invoke('send-login-email', {
+      body: { email, redirectTo: redirectUrl }
     });
-    return { error };
+    
+    if (fnError) {
+      console.error('Custom email function error:', fnError);
+      return { error: fnError };
+    }
+    
+    return { error: null };
   };
 
   const signInWithOtp = async (email: string, token: string) => {
