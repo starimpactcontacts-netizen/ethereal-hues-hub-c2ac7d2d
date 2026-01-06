@@ -15,6 +15,7 @@ interface Crew {
   min_league: "open" | "pro" | "elite";
   join_type: string;
   member_count: number;
+  avatar_url: string | null;
 }
 
 const leagueColors = {
@@ -171,8 +172,12 @@ export default function CrewsPage() {
                     className="p-4 bg-muted/30 border border-gold/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-lg bg-gold/10 flex items-center justify-center text-gold">
-                        {emblemIcons[myCrew.emblem] || <Shield className="w-8 h-8" />}
+                      <div className="w-14 h-14 rounded-full overflow-hidden bg-gold/10 flex items-center justify-center text-gold">
+                        {myCrew.avatar_url ? (
+                          <img src={myCrew.avatar_url} alt={myCrew.name} className="w-full h-full object-cover" />
+                        ) : (
+                          emblemIcons[myCrew.emblem] || <Shield className="w-8 h-8" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold truncate">{myCrew.name}</h3>
@@ -217,9 +222,13 @@ export default function CrewsPage() {
                         <div className="flex items-center gap-4">
                           <div
                             onClick={() => navigate(`/crews/${crew.id}`)}
-                            className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground cursor-pointer hover:bg-muted/80"
+                            className="w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center text-muted-foreground cursor-pointer hover:opacity-80"
                           >
-                            {emblemIcons[crew.emblem] || <Shield className="w-6 h-6" />}
+                            {crew.avatar_url ? (
+                              <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+                            ) : (
+                              emblemIcons[crew.emblem] || <Shield className="w-6 h-6" />
+                            )}
                           </div>
                           <div
                             className="flex-1 min-w-0 cursor-pointer"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2 } from "lucide-react";
+import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import PageTransition from "@/components/loopgate/PageTransition";
+import CrewAvatarUploadModal from "@/components/loopgate/CrewAvatarUploadModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +48,8 @@ export default function CrewSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [crewAvatarUrl, setCrewAvatarUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -89,6 +92,7 @@ export default function CrewSettingsPage() {
       min_league: crew.min_league as "open" | "pro" | "elite",
       join_type: crew.join_type,
     });
+    setCrewAvatarUrl(crew.avatar_url || null);
 
     setLoading(false);
   };
@@ -167,6 +171,33 @@ export default function CrewSettingsPage() {
         </div>
 
         <div className="px-4 py-6 space-y-6">
+          {/* Crew Avatar */}
+          <div className="space-y-2">
+            <Label>Crew Avatar</Label>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowAvatarModal(true)}
+                className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border hover:border-gold transition-colors group"
+              >
+                {crewAvatarUrl ? (
+                  <img
+                    src={crewAvatarUrl}
+                    alt="Crew avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <Camera className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Camera className="w-5 h-5 text-white" />
+                </div>
+              </button>
+              <p className="text-xs text-muted-foreground">Click to upload a crew avatar</p>
+            </div>
+          </div>
+
           {/* Crew Name */}
           <div className="space-y-2">
             <Label>Crew Name</Label>
@@ -293,6 +324,18 @@ export default function CrewSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Crew Avatar Upload Modal */}
+      {showAvatarModal && crewId && (
+        <CrewAvatarUploadModal
+          crewId={crewId}
+          currentAvatarUrl={crewAvatarUrl}
+          onClose={() => setShowAvatarModal(false)}
+          onSuccess={() => {
+            fetchCrew();
+          }}
+        />
+      )}
     </PageTransition>
   );
 }

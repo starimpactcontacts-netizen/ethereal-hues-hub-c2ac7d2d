@@ -32,6 +32,13 @@ export interface RealEditor {
   avatar_url?: string | null;
   verification_status?: boolean;
   roles?: ('admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise')[];
+  crew_id?: string | null;
+  crew?: {
+    id: string;
+    name: string;
+    emblem: string;
+    avatar_url: string | null;
+  } | null;
 }
 
 export interface EventStats {
@@ -106,7 +113,10 @@ export function useRealRankings() {
   const fetchRankings = useCallback(async () => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status')
+      .select(`
+        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id,
+        crews:crew_id (id, name, emblem, avatar_url)
+      `)
       .order('global_index_score', { ascending: false });
 
     if (error) {
@@ -132,6 +142,7 @@ export function useRealRankings() {
         ...editor,
         rank: index + 1,
         roles: rolesMap.get(editor.id) || [],
+        crew: editor.crews as RealEditor['crew'],
       })) as RealEditor[];
       setRankings(rankedData);
     }

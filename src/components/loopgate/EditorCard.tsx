@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { RealEditor } from "@/hooks/useRealData";
 import VerifiedBadge from "./VerifiedBadge";
 import AuthorityBadge from "./AuthorityBadge";
+import CrewBadge from "./CrewBadge";
 
 interface EditorCardProps {
   editor: RealEditor;
@@ -77,10 +78,12 @@ export default function EditorCard({ editor }: EditorCardProps) {
             )}
 
           {/* Stats Row */}
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider flex-wrap">
             <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
             <span>{editor.total_events || 0} Events</span>
-            <span>{editor.total_wins || 0} Wins</span>
+            {editor.crew && (
+              <CrewBadge crew={editor.crew} size="sm" />
+            )}
           </div>
         </div>
 

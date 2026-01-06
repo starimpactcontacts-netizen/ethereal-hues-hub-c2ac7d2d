@@ -27,6 +27,7 @@ interface Crew {
   join_type: string;
   member_count: number;
   owner_id: string;
+  avatar_url: string | null;
 }
 
 interface Member {
@@ -251,8 +252,12 @@ export default function CrewDetailPage() {
         <div className="px-4 py-6 space-y-6">
           {/* Crew Header */}
           <div className="text-center">
-            <div className="w-20 h-20 mx-auto rounded-xl bg-gold/10 flex items-center justify-center text-gold mb-4">
-              {emblemIcons[crew.emblem] || <Shield className="w-12 h-12" />}
+            <div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-2 border-gold bg-gold/10 flex items-center justify-center text-gold mb-4">
+              {crew.avatar_url ? (
+                <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+              ) : (
+                emblemIcons[crew.emblem] || <Shield className="w-12 h-12" />
+              )}
             </div>
             <h2 className="text-xl font-bold">{crew.name}</h2>
             <p className="text-sm text-muted-foreground mt-1">
