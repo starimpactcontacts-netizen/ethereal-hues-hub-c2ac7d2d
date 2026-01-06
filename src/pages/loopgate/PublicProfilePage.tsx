@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Loader2, Mail, Globe, Users } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Globe, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
@@ -284,7 +284,7 @@ export default function PublicProfilePage() {
       </div>
 
       {/* Contact & Bio */}
-      {(profile.bio || profile.email || profile.discord || profile.portfolio_url) && (
+      {(profile.bio || profile.discord || profile.portfolio_url) && (
         <section className="px-4 py-4">
           <h3 className="font-display text-lg text-muted-foreground mb-3">
             About
@@ -294,17 +294,8 @@ export default function PublicProfilePage() {
               <p className="text-sm text-foreground whitespace-pre-wrap">{profile.bio}</p>
             )}
             
-            {(profile.email || profile.discord || profile.portfolio_url) && (
+            {(profile.discord || profile.portfolio_url) && (
               <div className={`space-y-2 ${profile.bio ? 'pt-3 border-t border-border' : ''}`}>
-                {profile.email && (
-                  <a
-                    href={`mailto:${profile.email}`}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-gold transition-colors"
-                  >
-                    <Mail size={14} />
-                    <span>{profile.email}</span>
-                  </a>
-                )}
                 {profile.discord && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
