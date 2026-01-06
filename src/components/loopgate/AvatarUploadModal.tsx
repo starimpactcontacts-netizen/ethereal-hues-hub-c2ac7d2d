@@ -58,23 +58,30 @@ export default function AvatarUploadModal({
     setPickingPhoto(true);
     try {
       const photo = await Camera.getPhoto({
-        quality: 90,
+        quality: 85,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: source,
         correctOrientation: true,
+        width: 1024,
+        height: 1024,
+        presentationStyle: 'popover',
       });
 
       if (photo.dataUrl) {
-        setImgSrc(photo.dataUrl);
+        // Small delay to ensure modal is ready for the image
+        setTimeout(() => {
+          setImgSrc(photo.dataUrl!);
+        }, 100);
       }
     } catch (error: any) {
       // User cancelled - don't show error
-      if (error?.message?.includes("User cancelled") || error?.message?.includes("canceled")) {
+      const errorMsg = error?.message || error?.toString() || '';
+      if (errorMsg.includes("User cancelled") || errorMsg.includes("canceled") || errorMsg.includes("cancelled")) {
         console.log("User cancelled photo selection");
       } else {
         console.error("Photo picker error:", error);
-        toast.error("Failed to select photo");
+        toast.error("Failed to select photo. Please try again.");
       }
     } finally {
       setPickingPhoto(false);
