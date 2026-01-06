@@ -8,9 +8,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2, Upload } from "lucide-react";
+import { Loader2, Trash2, Upload, Camera as CameraIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { isNativeApp } from "@/lib/native";
 
 interface AvatarUploadModalProps {
   isOpen: boolean;
@@ -47,9 +49,39 @@ export default function AvatarUploadModal({
   const [crop, setCrop] = useState<Crop>();
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
+  const [pickingPhoto, setPickingPhoto] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Native photo picker using Capacitor Camera
+  const handleNativePhotoPicker = async (source: CameraSource) => {
+    setPickingPhoto(true);
+    try {
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: source,
+        correctOrientation: true,
+      });
+
+      if (photo.dataUrl) {
+        setImgSrc(photo.dataUrl);
+      }
+    } catch (error: any) {
+      // User cancelled - don't show error
+      if (error?.message?.includes("User cancelled") || error?.message?.includes("canceled")) {
+        console.log("User cancelled photo selection");
+      } else {
+        console.error("Photo picker error:", error);
+        toast.error("Failed to select photo");
+      }
+    } finally {
+      setPickingPhoto(false);
+    }
+  };
+
+  // Web file input handler
   const onSelectFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -283,13 +315,45 @@ export default function AvatarUploadModal({
               />
 
               <div className="space-y-2">
-                <Button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full bg-gold hover:bg-gold/90 text-black"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  {currentAvatarUrl ? "Change Photo" : "Upload Photo"}
-                </Button>
+                {isNativeApp() ? (
+                  // Native iOS/Android: Show Camera and Gallery options
+                  <>
+                    <Button
+                      onClick={() => handleNativePhotoPicker(CameraSource.Camera)}
+                      className="w-full bg-gold hover:bg-gold/90 text-black"
+                      disabled={pickingPhoto}
+                    >
+                      {pickingPhoto ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <CameraIcon className="w-4 h-4 mr-2" />
+                      )}
+                      Take Photo
+                    </Button>
+                    <Button
+                      onClick={() => handleNativePhotoPicker(CameraSource.Photos)}
+                      variant="outline"
+                      className="w-full"
+                      disabled={pickingPhoto}
+                    >
+                      {pickingPhoto ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      Choose from Library
+                    </Button>
+                  </>
+                ) : (
+                  // Web: Use standard file input
+                  <Button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full bg-gold hover:bg-gold/90 text-black"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    {currentAvatarUrl ? "Change Photo" : "Upload Photo"}
+                  </Button>
+                )}
 
                 {currentAvatarUrl && (
                   <Button

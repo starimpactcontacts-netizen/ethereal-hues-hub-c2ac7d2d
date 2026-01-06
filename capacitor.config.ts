@@ -41,8 +41,10 @@ const config: CapacitorConfig = {
       style: 'Dark',
       backgroundColor: '#09090B'
     },
-    // Disable pull-to-refresh (we handle it ourselves or not at all)
-    // This prevents the jarring page reload on scroll up
+    // Camera plugin for photo uploads
+    Camera: {
+      // iOS permissions are handled via Info.plist in Xcode
+    },
     // Keyboard handling
     Keyboard: {
       resize: 'body',
