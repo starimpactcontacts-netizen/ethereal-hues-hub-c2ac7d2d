@@ -3,6 +3,7 @@ import { RealEditor } from "@/hooks/useRealData";
 import VerifiedBadge from "./VerifiedBadge";
 import AuthorityBadge from "./AuthorityBadge";
 import CrewBadge from "./CrewBadge";
+import LevelBadge from "./LevelBadge";
 
 interface EditorCardProps {
   editor: RealEditor;
@@ -63,10 +64,11 @@ export default function EditorCard({ editor }: EditorCardProps) {
 
         {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
               <h3 className="font-semibold text-sm truncate">
                 {editor.display_name || editor.username}
               </h3>
+              {editor.level && editor.level > 1 && <LevelBadge level={editor.level} size="xs" />}
               {editor.verification_status && <VerifiedBadge size="sm" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
               <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${leagueColors[editor.league] || leagueColors.open}`}>

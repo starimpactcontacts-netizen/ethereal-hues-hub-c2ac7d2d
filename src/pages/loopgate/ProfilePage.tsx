@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
+import { useXP } from "@/hooks/useXP";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
 import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
@@ -11,6 +12,9 @@ import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import CrewBadge from "@/components/loopgate/CrewBadge";
+import LevelBadge from "@/components/loopgate/LevelBadge";
+import XPProgressBar from "@/components/loopgate/XPProgressBar";
+import XPHistory from "@/components/loopgate/XPHistory";
 import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
 import { toast } from "sonner";
 
@@ -32,6 +36,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { profile, platforms, refreshProfile } = useAuth();
   const { rankings } = useRealRankings();
+  const { xp, level, streak } = useXP();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
   const [showAddPlatform, setShowAddPlatform] = useState(false);
@@ -233,6 +238,7 @@ export default function ProfilePage() {
               {(profile as any).display_name && (
                 <h1 className="font-display text-4xl flex items-center gap-2">
                   {(profile as any).display_name}
+                  {level > 1 && <LevelBadge level={level} size="md" />}
                   {profile.verification_status && <VerifiedBadge size="lg" />}
                 </h1>
               )}
@@ -269,6 +275,7 @@ export default function ProfilePage() {
                     {!(profile as any).display_name ? (
                       <h1 className="font-display text-4xl flex items-center gap-2">
                         {profile.username}
+                        {level > 1 && <LevelBadge level={level} size="md" />}
                         {profile.verification_status && <VerifiedBadge size="lg" />}
                       </h1>
                     ) : (
@@ -380,6 +387,41 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+      </section>
+
+      {/* XP & Level Section */}
+      <section className="px-4 py-4">
+        <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+          <Zap size={14} />
+          Level & XP
+        </h3>
+        <div className="bg-surface-1 border border-border p-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <LevelBadge level={level} size="lg" />
+              <div>
+                <p className="text-sm font-semibold">Level {level}</p>
+                <p className="text-[10px] text-muted-foreground">{xp.toLocaleString()} Total XP</p>
+              </div>
+            </div>
+            {streak && streak.current_streak > 0 && (
+              <div className="text-right">
+                <p className="text-gold font-semibold">🔥 {streak.current_streak} Day{streak.current_streak !== 1 ? 's' : ''}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Login Streak</p>
+              </div>
+            )}
+          </div>
+          <XPProgressBar xp={xp} level={level} size="md" />
+        </div>
+      </section>
+
+      {/* XP Activity */}
+      <section className="px-4 py-4">
+        <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+          <Zap size={14} />
+          XP Activity
+        </h3>
+        <XPHistory limit={10} />
       </section>
 
       {/* Contact & Bio */}
