@@ -20,6 +20,10 @@ import LeaguesPage from "./pages/loopgate/LeaguesPage";
 import IndexPage from "./pages/loopgate/IndexPage";
 import ArenasPage from "./pages/loopgate/ArenasPage";
 import ArenaChatPage from "./pages/loopgate/ArenaChatPage";
+import CrewsPage from "./pages/loopgate/CrewsPage";
+import CreateCrewPage from "./pages/loopgate/CreateCrewPage";
+import CrewDetailPage from "./pages/loopgate/CrewDetailPage";
+import CrewChatPage from "./pages/loopgate/CrewChatPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -222,6 +226,10 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
               <Route path="/arenas/:arenaId" element={<ArenaChatPage />} />
+              <Route path="/crews" element={<CrewsPage />} />
+              <Route path="/crews/create" element={<CreateCrewPage />} />
+              <Route path="/crews/:crewId" element={<CrewDetailPage />} />
+              <Route path="/crews/:crewId/chat" element={<CrewChatPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             
