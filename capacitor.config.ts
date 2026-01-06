@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
-    scheme: 'Loopgate',
+    scheme: 'io.loopgate.app', // Custom URL scheme for deep links
     // Full-screen mode
     backgroundColor: '#09090B',
     // Disable zooming and bouncing

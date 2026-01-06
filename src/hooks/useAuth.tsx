@@ -1,6 +1,8 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { isNativeApp } from '@/lib/native';
+import { App as CapApp } from '@capacitor/app';
 
 interface Profile {
   id: string;
@@ -161,11 +163,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Handle deep links for native OAuth callback
+    let appUrlListener: any = null;
+    if (isNativeApp()) {
+      CapApp.addListener('appUrlOpen', async ({ url }) => {
+        // Check if this is an auth callback
+        if (url.startsWith('io.loopgate.app://auth-callback')) {
+          // Extract tokens from URL hash or query params
+          const hashParams = new URLSearchParams(url.split('#')[1] || '');
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          
+          if (accessToken && refreshToken) {
+            // Set the session with the tokens from the deep link
+            await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+          }
+        }
+      }).then((listener) => {
+        appUrlListener = listener;
+      });
+    }
+
+    return () => {
+      subscription.unsubscribe();
+      if (appUrlListener) {
+        appUrlListener.remove();
+      }
+    };
   }, [devMode]);
 
   const signInWithGoogle = async () => {
-    const redirectUrl = `${window.location.origin}/`;
+    // For native apps, use custom URL scheme for deep linking back
+    const redirectUrl = isNativeApp() 
+      ? 'io.loopgate.app://auth-callback'
+      : `${window.location.origin}/`;
+    
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
