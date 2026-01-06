@@ -30,6 +30,7 @@ import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
 import SupportPage from "./pages/SupportPage";
 import RulesPage from "./pages/RulesPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -209,6 +210,7 @@ export default function App() {
             <Route path="/onboarding" element={<OnboardingWrapper />} />
             <Route path="/enterprise-onboarding" element={<EnterpriseOnboardingWrapper />} />
             <Route path="/rules" element={<RulesPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/support" element={<SupportPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
