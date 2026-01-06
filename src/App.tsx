@@ -24,6 +24,7 @@ import CrewsPage from "./pages/loopgate/CrewsPage";
 import CreateCrewPage from "./pages/loopgate/CreateCrewPage";
 import CrewDetailPage from "./pages/loopgate/CrewDetailPage";
 import CrewChatPage from "./pages/loopgate/CrewChatPage";
+import CrewSettingsPage from "./pages/loopgate/CrewSettingsPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -230,6 +231,7 @@ export default function App() {
               <Route path="/crews/create" element={<CreateCrewPage />} />
               <Route path="/crews/:crewId" element={<CrewDetailPage />} />
               <Route path="/crews/:crewId/chat" element={<CrewChatPage />} />
+              <Route path="/crews/:crewId/settings" element={<CrewSettingsPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             
