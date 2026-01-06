@@ -31,6 +31,7 @@ import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
 import ProtectedRoute from "./components/loopgate/ProtectedRoute";
 import DevModeBadge from "./components/loopgate/DevModeBadge";
 import LoadingScreen from "./components/loopgate/LoadingScreen";
+import { isNativeApp } from "./lib/native";
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -81,8 +82,13 @@ function RootRedirect() {
     return <LoadingScreen />;
   }
   
-  // Not logged in - show landing page
+  // Not logged in
   if (!user) {
+    // Native app: skip landing, go straight to auth
+    if (isNativeApp()) {
+      return <Navigate to="/auth" replace />;
+    }
+    // Web: show landing page
     return <LandingPage />;
   }
   
