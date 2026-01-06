@@ -17,8 +17,14 @@ export default function IndexPage() {
 
   const filteredEditors = useMemo(() => {
     return rankings.filter((editor) => {
-      if (searchQuery && !editor.username.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
+      // Search by username or display_name
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesUsername = editor.username.toLowerCase().includes(query);
+        const matchesDisplayName = editor.display_name?.toLowerCase().includes(query);
+        if (!matchesUsername && !matchesDisplayName) {
+          return false;
+        }
       }
       if (leagueFilter !== "all" && editor.league !== leagueFilter) {
         return false;

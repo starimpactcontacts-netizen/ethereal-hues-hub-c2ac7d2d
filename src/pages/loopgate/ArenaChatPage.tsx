@@ -120,10 +120,13 @@ export default function ArenaChatPage() {
 
     setSending(true);
 
+    // Use display_name if available, otherwise username
+    const displayUsername = (profile as any).display_name || profile.username || "Anonymous";
+
     const { error } = await supabase.from("arena_messages").insert({
       arena_id: numericArenaId,
       user_id: user.id,
-      username: profile.username || "Anonymous",
+      username: displayUsername,
       avatar_url: profile.avatar_url,
       message_text: newMessage.trim(),
     });

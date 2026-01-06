@@ -41,13 +41,13 @@ export default function EditorCard({ editor }: EditorCardProps) {
         {editor.avatar_url ? (
           <img 
             src={editor.avatar_url} 
-            alt={editor.username}
+            alt={editor.display_name || editor.username}
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
             <span className="text-xs font-semibold text-muted-foreground">
-              {editor.username?.charAt(0).toUpperCase() || '?'}
+              {(editor.display_name || editor.username)?.charAt(0).toUpperCase() || '?'}
             </span>
           </div>
         )}
@@ -63,13 +63,18 @@ export default function EditorCard({ editor }: EditorCardProps) {
         {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h3 className="font-semibold text-sm truncate">{editor.username}</h3>
+              <h3 className="font-semibold text-sm truncate">
+                {editor.display_name || editor.username}
+              </h3>
               {editor.verification_status && <VerifiedBadge size="sm" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
               <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${leagueColors[editor.league] || leagueColors.open}`}>
                 {editor.league}
               </span>
             </div>
+            {editor.display_name && (
+              <p className="text-[10px] text-muted-foreground mb-1">@{editor.username}</p>
+            )}
 
           {/* Stats Row */}
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">

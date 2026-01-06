@@ -22,6 +22,7 @@ export interface RealEvent {
 export interface RealEditor {
   id: string;
   username: string;
+  display_name?: string | null;
   league: 'open' | 'pro' | 'elite';
   global_index_score: number;
   win_rate: number;
@@ -105,7 +106,7 @@ export function useRealRankings() {
   const fetchRankings = useCallback(async () => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status')
+      .select('id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status')
       .order('global_index_score', { ascending: false });
 
     if (error) {
