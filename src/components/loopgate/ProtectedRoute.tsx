@@ -8,9 +8,15 @@ interface ProtectedRouteProps {
   requireOnboarding?: boolean;
   requireAdmin?: boolean;
   requireOpsAccess?: boolean; // admin OR judge OR dev
+  allowGuest?: boolean; // Allow unauthenticated users to view (read-only)
 }
 
-export default function ProtectedRoute({ children, requireAdmin = false, requireOpsAccess = false }: ProtectedRouteProps) {
+export default function ProtectedRoute({ 
+  children, 
+  requireAdmin = false, 
+  requireOpsAccess = false,
+  allowGuest = false 
+}: ProtectedRouteProps) {
   const { user, profile, loading, isAdmin, hasOpsAccess } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles(user?.id);
   
@@ -23,12 +29,17 @@ export default function ProtectedRoute({ children, requireAdmin = false, require
   
   // CRITICAL: Show loading screen while auth state is being determined
   // This prevents the flash of login page
-  if (loading || rolesLoading) {
+  if (loading || (user && rolesLoading)) {
     return <LoadingScreen />;
   }
   
-  // Not authenticated - redirect to auth
+  // Not authenticated
   if (!user) {
+    // If guest access allowed, let them through
+    if (allowGuest) {
+      return <>{children}</>;
+    }
+    // Otherwise redirect to auth
     return <Navigate to="/auth" replace />;
   }
   

@@ -1,513 +1,296 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, ArrowRight, ArrowLeft, Loader2, Eye, EyeOff, ChevronDown, User, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Mail, ArrowRight, Loader2, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { z } from 'zod';
 import SEO, { pageSEO } from '@/components/SEO';
 import { isNativeApp } from '@/lib/native';
 import { supabase } from '@/integrations/supabase/client';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 
-const emailSchema = z.string().email('Please enter a valid email address');
-const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
-const usernameSchema = z.string().min(3, 'Username must be at least 3 characters');
+const emailSchema = z.string().email('Enter a valid email');
+const passwordSchema = z.string().min(8, 'Min 8 characters');
 
-const REMEMBERED_EMAIL_KEY = 'loopgate_remembered_email';
-const REMEMBERED_IDENTIFIER_KEY = 'loopgate_remembered_identifier';
-
-type AuthMode = 'signin' | 'signup' | 'reset' | 'reset-sent' | 'welcome-back';
-
-// Check if input is an email or username
-const isEmail = (value: string) => value.includes('@');
+type AuthMode = 'magic' | 'password' | 'magic-sent';
 
 export default function AuthPage() {
-  // DEV MODE: immediate redirect before any React logic
+  // DEV MODE: immediate redirect
   if (typeof window !== 'undefined' && (window as any).__LOOPGATE_DEV_AUTH__) {
     window.location.href = '/hub';
     return null;
   }
 
-  const { signInWithGoogle, signInWithPassword, signUpWithPassword, resetPassword, user } = useAuth();
+  const { signInWithMagicLink, signInWithPassword, signUpWithPassword, user } = useAuth();
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState(''); // Can be email or username
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<AuthMode>('signin');
-  const [showMoreOptions, setShowMoreOptions] = useState(false);
-  const [rememberedIdentifier, setRememberedIdentifier] = useState<string | null>(null);
+  const [mode, setMode] = useState<AuthMode>('magic');
+  const [isNewUser, setIsNewUser] = useState(false);
 
-  // Check for remembered identifier on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(REMEMBERED_IDENTIFIER_KEY) || localStorage.getItem(REMEMBERED_EMAIL_KEY);
-    if (stored) {
-      setRememberedIdentifier(stored);
-      setIdentifier(stored);
-      setMode('welcome-back');
-    }
-  }, []);
-
-  // If already authenticated, redirect to hub
+  // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      // Save identifier for next time
-      if (identifier) {
-        localStorage.setItem(REMEMBERED_IDENTIFIER_KEY, identifier);
-      }
       navigate('/hub', { replace: true });
     }
-  }, [user, navigate, identifier]);
+  }, [user, navigate]);
 
-  const clearRememberedIdentifier = () => {
-    localStorage.removeItem(REMEMBERED_EMAIL_KEY);
-    localStorage.removeItem(REMEMBERED_IDENTIFIER_KEY);
-    setRememberedIdentifier(null);
-    setIdentifier('');
-    setMode('signin');
-  };
-
-  // Lookup email by username (case-insensitive)
-  const getEmailFromUsername = async (username: string): Promise<{ email: string | null; found: boolean }> => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('email')
-      .ilike('username', username)
-      .maybeSingle();
-    
-    if (error) {
-      console.error('Username lookup error:', error);
-      return { email: null, found: false };
-    }
-    
-    if (!data) {
-      return { email: null, found: false };
-    }
-    
-    return { email: data.email, found: true };
-  };
-
-  const validateInputs = () => {
-    // For signup and reset, require email format
-    if (mode === 'signup' || mode === 'reset') {
-      const emailResult = emailSchema.safeParse(identifier);
-      if (!emailResult.success) {
-        toast.error('Please enter a valid email address');
-        return false;
-      }
-    } else {
-      // For signin, accept either email or username
-      if (isEmail(identifier)) {
-        const emailResult = emailSchema.safeParse(identifier);
-        if (!emailResult.success) {
-          toast.error(emailResult.error.errors[0].message);
-          return false;
-        }
-      } else {
-        const usernameResult = usernameSchema.safeParse(identifier);
-        if (!usernameResult.success) {
-          toast.error(usernameResult.error.errors[0].message);
-          return false;
-        }
-      }
-    }
-
-    if (mode !== 'reset') {
-      const passwordResult = passwordSchema.safeParse(password);
-      if (!passwordResult.success) {
-        toast.error(passwordResult.error.errors[0].message);
-        return false;
-      }
-    }
-
-    if (mode === 'signup' && password !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    const { error } = await signInWithGoogle();
-    if (error) {
-      toast.error('Failed to sign in with Google');
-    }
-    setIsLoading(false);
-  };
-
-  const handleEmailAuth = async (e: React.FormEvent) => {
+  const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateInputs()) return;
+    const result = emailSchema.safeParse(email);
+    if (!result.success) {
+      toast.error('Enter a valid email');
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await signInWithMagicLink(email);
+    setIsLoading(false);
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setMode('magic-sent');
+    }
+  };
+
+  const handlePasswordAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      toast.error('Enter a valid email');
+      return;
+    }
+    
+    const passResult = passwordSchema.safeParse(password);
+    if (!passResult.success) {
+      toast.error(passResult.error.errors[0].message);
+      return;
+    }
 
     setIsLoading(true);
 
-    if (mode === 'signin' || mode === 'welcome-back') {
-      let emailToUse = identifier;
-      
-      // If identifier is not an email, look up the email by username
-      if (!isEmail(identifier)) {
-        const result = await getEmailFromUsername(identifier);
-        if (!result.found) {
-          toast.error('Username not found');
-          setIsLoading(false);
-          return;
-        }
-        if (!result.email) {
-          toast.error('This account was created with Google. Please use "More options" to sign in with Google.');
-          setIsLoading(false);
-          return;
-        }
-        emailToUse = result.email;
-      }
-      
-      const { error } = await signInWithPassword(emailToUse, password);
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid username/email or password');
-        } else {
-          toast.error(error.message);
-        }
-      } else {
-        // Save identifier for remembered login
-        localStorage.setItem(REMEMBERED_IDENTIFIER_KEY, identifier);
-      }
-    } else if (mode === 'signup') {
-      const { error } = await signUpWithPassword(identifier, password);
+    if (isNewUser) {
+      const { error } = await signUpWithPassword(email, password);
       if (error) {
         if (error.message.includes('already registered')) {
-          toast.error('This email is already registered. Try signing in.');
+          toast.error('Email already registered. Try signing in.');
+          setIsNewUser(false);
         } else {
           toast.error(error.message);
         }
       } else {
-        // Save email for remembered login
-        localStorage.setItem(REMEMBERED_IDENTIFIER_KEY, identifier);
-        toast.success('Account created! Redirecting...');
+        toast.success('Account created!');
       }
-    } else if (mode === 'reset') {
-      const { error } = await resetPassword(identifier);
+    } else {
+      const { error } = await signInWithPassword(email, password);
       if (error) {
-        toast.error(error.message);
-      } else {
-        setMode('reset-sent');
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Wrong email or password');
+        } else {
+          toast.error(error.message);
+        }
       }
     }
 
     setIsLoading(false);
   };
 
-  const renderWelcomeBack = () => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="text-center"
-    >
-      {/* Avatar placeholder */}
-      <div className="w-20 h-20 bg-gradient-to-br from-gold/20 to-gold/5 border-2 border-gold/30 rounded-full flex items-center justify-center mx-auto mb-4">
-        <User className="w-10 h-10 text-gold" />
-      </div>
-      
-      <p className="text-muted-foreground text-sm mb-1">Welcome back</p>
-      <p className="text-foreground font-medium text-lg mb-6">{rememberedIdentifier}</p>
-      
-      <form onSubmit={handleEmailAuth} className="space-y-4">
-        <div className="relative">
-          <Input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="h-14 bg-surface-0 border-border pr-12 text-center text-lg"
-            autoFocus
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-        </div>
-
-        <Button 
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl h-14"
-        >
-          {isLoading ? (
-            <Loader2 className="w-6 h-6 animate-spin" />
-          ) : (
-            <>
-              Log In
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </>
-          )}
-        </Button>
-      </form>
-
-      <div className="mt-6 space-y-2">
-        <button
-          type="button"
-          onClick={() => setMode('reset')}
-          className="text-sm text-muted-foreground hover:text-gold transition-colors"
-        >
-          Forgot password?
-        </button>
-        <div>
-          <button
-            type="button"
-            onClick={clearRememberedIdentifier}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mx-auto"
-          >
-            <X size={14} />
-            Not you? Sign in with different account
-          </button>
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  const renderForm = () => {
-    if (mode === 'welcome-back' && rememberedIdentifier) {
-      return renderWelcomeBack();
-    }
-
-    if (mode === 'reset-sent') {
-      return (
-        <div className="text-center py-8">
-          <div className="w-16 h-16 bg-gold/10 border border-gold/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Mail className="w-8 h-8 text-gold" />
-          </div>
-          <h3 className="font-display text-xl mb-2">Check Your Email</h3>
-          <p className="text-muted-foreground text-sm mb-6">
-            We sent a password reset link to <span className="text-foreground">{identifier}</span>
-          </p>
-          <Button
-            variant="outline" 
-            onClick={() => setMode('signin')}
-            className="border-border"
-          >
-            Back to sign in
-          </Button>
-        </div>
-      );
-    }
-
-    return (
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={mode}
-          initial={{ opacity: 0, x: mode === 'signup' ? 20 : -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: mode === 'signup' ? -20 : 20 }}
-          transition={{ duration: 0.2 }}
-        >
-          {/* Email/Username + Password Form */}
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            <div className="space-y-1">
-              <Input
-                type={mode === 'signup' || mode === 'reset' ? 'email' : 'text'}
-                placeholder={mode === 'signup' || mode === 'reset' ? 'Email address' : 'Username or email'}
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                className="h-14 bg-surface-0 border-border text-base"
-              />
-            </div>
-            
-            {mode !== 'reset' && (
-              <div className="relative">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-14 bg-surface-0 border-border pr-12 text-base"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            )}
-
-            {mode === 'signup' && (
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="h-14 bg-surface-0 border-border text-base"
-              />
-            )}
-
-            <Button 
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl h-14 shadow-lg shadow-gold/20"
-            >
-              {isLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <>
-                  {mode === 'signin' && 'Sign In'}
-                  {mode === 'signup' && 'Create Account'}
-                  {mode === 'reset' && 'Send Reset Link'}
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </>
-              )}
-            </Button>
-          </form>
-
-          {/* Mode Toggles */}
-          <div className="mt-6 space-y-3 text-center">
-            {mode === 'signin' && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setMode('reset')}
-                  className="text-sm text-muted-foreground hover:text-gold transition-colors"
-                >
-                  Forgot your password?
-                </button>
-                <p className="text-sm text-muted-foreground">
-                  New to Loopgate?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setMode('signup')}
-                    className="text-gold hover:underline font-semibold"
-                  >
-                    Create account
-                  </button>
-                </p>
-              </>
-            )}
-            
-            {mode === 'signup' && (
-              <p className="text-sm text-muted-foreground">
-                Already competing?{' '}
-                <button
-                  type="button"
-                  onClick={() => setMode('signin')}
-                  className="text-gold hover:underline font-semibold"
-                >
-                  Sign in
-                </button>
-              </p>
-            )}
-
-            {mode === 'reset' && (
-              <button
-                type="button"
-                onClick={() => setMode('signin')}
-                className="text-sm text-muted-foreground hover:text-gold transition-colors"
-              >
-                Back to sign in
-              </button>
-            )}
-          </div>
-
-          {/* More Options - Hidden Google OAuth (only show on web, not native) */}
-          {(mode === 'signin' || mode === 'signup') && !isNativeApp() && (
-            <div className="mt-8 pt-6 border-t border-border/50">
-              <button
-                type="button"
-                onClick={() => setShowMoreOptions(!showMoreOptions)}
-                className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-              >
-                <span>More options</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${showMoreOptions ? 'rotate-180' : ''}`} />
-              </button>
-              
-              <AnimatePresence>
-                {showMoreOptions && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-4 overflow-hidden"
-                  >
-                    <Button 
-                      onClick={handleGoogleSignIn}
-                      disabled={isLoading}
-                      variant="outline"
-                      className="w-full border-border/50 h-11 text-muted-foreground hover:text-foreground"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                          </svg>
-                          Continue with Google
-                        </>
-                      )}
-                    </Button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    );
+  const handleGuestMode = () => {
+    // Just go to hub - protected routes will handle limiting access
+    navigate('/hub');
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 relative">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       <SEO {...pageSEO.login} />
-      {/* Back to Home - only show on web, not native app */}
-      {!isNativeApp() && (
-        <Link 
-          to="/" 
-          className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="text-sm font-medium">Home</span>
-        </Link>
-      )}
       
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[120px]" />
-      
-      <motion.div 
-        className="relative z-10 w-full max-w-md"
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        className="w-full max-w-sm"
       >
         {/* Logo */}
-        <div className="text-center mb-10">
-          <h1 className="font-display text-5xl text-gold mb-2 tracking-tight">LOOPGATE</h1>
-          <p className="text-muted-foreground text-sm">The Global Competitive Editing Index</p>
+        <div className="text-center mb-8">
+          <img 
+            src={loopgateLogo} 
+            alt="Loopgate" 
+            className="w-16 h-16 mx-auto mb-4"
+          />
+          <h1 className="font-display text-2xl text-foreground">Get In</h1>
+          <p className="text-muted-foreground text-sm mt-1">No bullshit, just enter</p>
         </div>
 
-        <div className="bg-surface-1/80 backdrop-blur-sm border border-border/80 p-8 shadow-2xl shadow-black/20">
-          {mode !== 'welcome-back' && mode !== 'reset-sent' && (
-            <h2 className="font-display text-2xl text-center mb-8">
-              {mode === 'signin' && 'Sign In to Compete'}
-              {mode === 'signup' && 'Join the Competition'}
-              {mode === 'reset' && 'Reset Password'}
-            </h2>
+        <AnimatePresence mode="wait">
+          {mode === 'magic-sent' ? (
+            <motion.div
+              key="sent"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="text-center py-8"
+            >
+              <div className="w-16 h-16 bg-gold/10 border border-gold/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-8 h-8 text-gold" />
+              </div>
+              <h3 className="font-display text-xl mb-2">Check your email</h3>
+              <p className="text-muted-foreground text-sm mb-6">
+                We sent a magic link to <span className="text-foreground">{email}</span>
+              </p>
+              <p className="text-muted-foreground/60 text-xs">Click the link to sign in instantly</p>
+              <Button
+                variant="ghost"
+                onClick={() => setMode('magic')}
+                className="mt-6 text-muted-foreground"
+              >
+                Use different email
+              </Button>
+            </motion.div>
+          ) : mode === 'magic' ? (
+            <motion.div
+              key="magic"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+            >
+              {/* Magic Link Form - EASIEST */}
+              <form onSubmit={handleMagicLink} className="space-y-4">
+                <Input
+                  type="email"
+                  placeholder="Your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-14 bg-surface-0 border-border text-base text-center"
+                  autoFocus
+                />
+                
+                <Button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg h-14"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Mail className="mr-2 w-5 h-5" />
+                      Send Magic Link
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <p className="text-center text-muted-foreground/60 text-xs mt-4">
+                No password needed. We'll email you a link.
+              </p>
+
+              {/* Alternative: Password */}
+              <div className="mt-8 pt-6 border-t border-border/30">
+                <button
+                  type="button"
+                  onClick={() => setMode('password')}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Or use password instead
+                </button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="password"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              {/* Password Form */}
+              <form onSubmit={handlePasswordAuth} className="space-y-3">
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-12 bg-surface-0 border-border text-base"
+                />
+                
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-12 bg-surface-0 border-border pr-12 text-base"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                
+                <Button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-gold hover:bg-gold/90 text-gold-foreground font-display h-12"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      {isNewUser ? 'Create Account' : 'Sign In'}
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => setIsNewUser(!isNewUser)}
+                  className="text-sm text-muted-foreground hover:text-gold transition-colors"
+                >
+                  {isNewUser ? 'Already have account? Sign in' : "New here? Create account"}
+                </button>
+              </div>
+
+              {/* Back to magic link */}
+              <div className="mt-6 pt-6 border-t border-border/30">
+                <button
+                  type="button"
+                  onClick={() => setMode('magic')}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ← Back to magic link
+                </button>
+              </div>
+            </motion.div>
           )}
+        </AnimatePresence>
 
-          {renderForm()}
-        </div>
-
-        <p className="text-center text-xs text-muted-foreground/60 mt-6">
-          By signing in, you agree to Loopgate's Terms and Competition Rules.
-        </p>
+        {/* Guest Mode */}
+        {mode !== 'magic-sent' && (
+          <div className="mt-8">
+            <Button
+              variant="ghost"
+              onClick={handleGuestMode}
+              className="w-full text-muted-foreground hover:text-foreground h-12"
+            >
+              <Sparkles className="mr-2 w-4 h-4" />
+              Browse as Guest
+            </Button>
+            <p className="text-center text-muted-foreground/40 text-xs mt-2">
+              Look around first, sign up when ready
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );
