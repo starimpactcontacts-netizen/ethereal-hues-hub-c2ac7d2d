@@ -18,7 +18,8 @@ import ProfilePage from "./pages/loopgate/ProfilePage";
 import PublicProfilePage from "./pages/loopgate/PublicProfilePage";
 import LeaguesPage from "./pages/loopgate/LeaguesPage";
 import IndexPage from "./pages/loopgate/IndexPage";
-
+import ArenasPage from "./pages/loopgate/ArenasPage";
+import ArenaChatPage from "./pages/loopgate/ArenaChatPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -219,6 +220,8 @@ export default function App() {
               <Route path="/events" element={<HomePage />} />
               <Route path="/event/:id" element={<EventDetailPage />} />
               <Route path="/index" element={<IndexPage />} />
+              <Route path="/arenas" element={<ArenasPage />} />
+              <Route path="/arenas/:arenaId" element={<ArenaChatPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             

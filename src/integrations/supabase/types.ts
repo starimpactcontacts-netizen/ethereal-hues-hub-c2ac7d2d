@@ -35,6 +35,36 @@ export type Database = {
         }
         Relationships: []
       }
+      arena_messages: {
+        Row: {
+          arena_id: number
+          avatar_url: string | null
+          created_at: string
+          id: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          arena_id: number
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          arena_id?: number
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       connected_platforms: {
         Row: {
           connected_at: string | null
