@@ -11,6 +11,7 @@ import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import CrewBadge from "@/components/loopgate/CrewBadge";
+import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
 import { toast } from "sonner";
 
 const platformLabels: Record<string, string> = {
@@ -192,6 +193,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Password Setup Banner for magic-link users */}
+      <PasswordSetupBanner />
+
       {/* Profile Hero */}
       <div className="p-4">
         <div className="bg-surface-1 border border-border p-6">
