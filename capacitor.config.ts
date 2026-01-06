@@ -17,9 +17,11 @@ const config: CapacitorConfig = {
     scheme: 'Loopgate',
     // Full-screen mode
     backgroundColor: '#09090B',
-    // Disable zooming
+    // Disable zooming and bouncing
     scrollEnabled: true,
-    allowsLinkPreview: false
+    allowsLinkPreview: false,
+    // Prevent overscroll bounce
+    overrideUserAgent: 'Loopgate iOS App'
   },
   
   plugins: {
@@ -39,10 +41,8 @@ const config: CapacitorConfig = {
       style: 'Dark',
       backgroundColor: '#09090B'
     },
-    // Enable pull-to-refresh
-    PullToRefresh: {
-      enabled: true
-    },
+    // Disable pull-to-refresh (we handle it ourselves or not at all)
+    // This prevents the jarring page reload on scroll up
     // Keyboard handling
     Keyboard: {
       resize: 'body',
