@@ -245,6 +245,38 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_xp_tracking: {
+        Row: {
+          action_type: string
+          date: string
+          id: string
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          action_type: string
+          date?: string
+          id?: string
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          action_type?: string
+          date?: string
+          id?: string
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_xp_tracking_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_campaigns: {
         Row: {
           asset_urls: string[] | null
@@ -403,6 +435,41 @@ export type Database = {
         }
         Relationships: []
       }
+      login_streaks: {
+        Row: {
+          current_streak: number
+          id: string
+          last_login_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number
+          id?: string
+          last_login_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          current_streak?: number
+          id?: string
+          last_login_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activity_status: string | null
@@ -416,6 +483,7 @@ export type Database = {
           global_index_score: number | null
           id: string
           league: Database["public"]["Enums"]["league_tier"]
+          level: number
           onboarding_completed: boolean | null
           portfolio_url: string | null
           region: string | null
@@ -429,6 +497,7 @@ export type Database = {
           verification_requested_at: string | null
           verification_status: boolean | null
           win_rate: number | null
+          xp: number
         }
         Insert: {
           activity_status?: string | null
@@ -442,6 +511,7 @@ export type Database = {
           global_index_score?: number | null
           id: string
           league?: Database["public"]["Enums"]["league_tier"]
+          level?: number
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           region?: string | null
@@ -455,6 +525,7 @@ export type Database = {
           verification_requested_at?: string | null
           verification_status?: boolean | null
           win_rate?: number | null
+          xp?: number
         }
         Update: {
           activity_status?: string | null
@@ -468,6 +539,7 @@ export type Database = {
           global_index_score?: number | null
           id?: string
           league?: Database["public"]["Enums"]["league_tier"]
+          level?: number
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           region?: string | null
@@ -481,6 +553,7 @@ export type Database = {
           verification_requested_at?: string | null
           verification_status?: boolean | null
           win_rate?: number | null
+          xp?: number
         }
         Relationships: [
           {
@@ -510,11 +583,75 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_history: {
+        Row: {
+          action: string
+          created_at: string
+          description: string | null
+          id: string
+          user_id: string
+          xp_amount: number
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          user_id: string
+          xp_amount: number
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          user_id?: string
+          xp_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      award_daily_capped_xp: {
+        Args: {
+          p_action_type: string
+          p_amount: number
+          p_daily_cap: number
+          p_description?: string
+          p_user_id: string
+        }
+        Returns: {
+          leveled_up: boolean
+          new_level: number
+          new_xp: number
+          xp_awarded: number
+        }[]
+      }
+      award_xp: {
+        Args: {
+          p_action: string
+          p_amount: number
+          p_description?: string
+          p_user_id: string
+        }
+        Returns: {
+          leveled_up: boolean
+          new_level: number
+          new_xp: number
+        }[]
+      }
+      calculate_level_from_xp: { Args: { xp_amount: number }; Returns: number }
       can_change_username: { Args: { user_uuid: string }; Returns: boolean }
       days_until_username_change: {
         Args: { user_uuid: string }
@@ -538,6 +675,16 @@ export type Database = {
       is_username_available: {
         Args: { check_username: string }
         Returns: boolean
+      }
+      process_login_streak: {
+        Args: { p_user_id: string }
+        Returns: {
+          current_streak: number
+          leveled_up: boolean
+          new_level: number
+          new_xp: number
+          streak_xp: number
+        }[]
       }
       recalculate_user_index: {
         Args: { user_uuid: string }

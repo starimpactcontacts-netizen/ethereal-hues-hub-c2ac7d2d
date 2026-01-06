@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import CrewBadge from "@/components/loopgate/CrewBadge";
+import LevelBadge from "@/components/loopgate/LevelBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 interface PublicProfile {
@@ -24,6 +25,8 @@ interface PublicProfile {
   portfolio_url: string | null;
   created_at: string | null;
   crew_id: string | null;
+  xp: number;
+  level: number;
 }
 
 interface ConnectedPlatform {
@@ -66,7 +69,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id")
+        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level")
         .eq("id", userId)
         .single();
 
@@ -201,6 +204,7 @@ export default function PublicProfilePage() {
           <div className="flex items-start justify-between mb-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="font-display text-4xl">{profile.username}</h1>
+              {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
               {profile.verification_status && <VerifiedBadge size="lg" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
               {isEnterprise && (

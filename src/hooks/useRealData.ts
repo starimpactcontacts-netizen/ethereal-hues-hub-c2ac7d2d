@@ -31,6 +31,8 @@ export interface RealEditor {
   rank?: number;
   avatar_url?: string | null;
   verification_status?: boolean;
+  xp?: number;
+  level?: number;
   roles?: ('admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise')[];
   crew_id?: string | null;
   crew?: {
@@ -114,7 +116,7 @@ export function useRealRankings() {
     const { data, error } = await supabase
       .from('profiles')
       .select(`
-        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id,
+        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id, xp, level,
         crews:crew_id (id, name, emblem, avatar_url)
       `)
       .order('global_index_score', { ascending: false });
