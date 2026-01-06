@@ -1,16 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, ArrowRight, Loader2, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Mail, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
 import SEO, { pageSEO } from '@/components/SEO';
-import { isNativeApp } from '@/lib/native';
-import { supabase } from '@/integrations/supabase/client';
-import loopgateLogo from '@/assets/loopgate-logo.png';
 
 const emailSchema = z.string().email('Enter a valid email');
 const passwordSchema = z.string().min(8, 'Min 8 characters');
@@ -103,119 +100,130 @@ export default function AuthPage() {
   };
 
   const handleGuestMode = () => {
-    // Just go to hub - protected routes will handle limiting access
     navigate('/hub');
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4 relative overflow-hidden">
       <SEO {...pageSEO.login} />
       
+      {/* Radial vignette background */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(30,30,30,0.4) 0%, rgba(0,0,0,1) 70%)'
+        }}
+      />
+      
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative z-10"
       >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <img 
-            src={loopgateLogo} 
-            alt="Loopgate" 
-            className="w-16 h-16 mx-auto mb-4"
-          />
-          <h1 className="font-display text-2xl text-foreground">Enter</h1>
-          <p className="text-muted-foreground text-sm mt-1">Access the arena</p>
-        </div>
+        {/* Giant LOOPGATE text */}
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-center font-display text-6xl sm:text-7xl md:text-8xl tracking-tight text-white mb-12"
+          style={{ 
+            textShadow: '0 4px 30px rgba(255,255,255,0.1)',
+            letterSpacing: '-0.02em'
+          }}
+        >
+          LOOPGATE
+        </motion.h1>
 
         <AnimatePresence mode="wait">
           {mode === 'magic-sent' ? (
             <motion.div
               key="sent"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               className="text-center py-8"
             >
-              <div className="w-16 h-16 bg-gold/10 border border-gold/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail className="w-8 h-8 text-gold" />
+              <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-10 h-10 text-white" />
               </div>
-              <h3 className="font-display text-xl mb-2">Check your email</h3>
-              <p className="text-muted-foreground text-sm mb-6">
-                We sent a magic link to <span className="text-foreground">{email}</span>
+              <h3 className="font-display text-2xl text-white mb-3">CHECK YOUR EMAIL</h3>
+              <p className="text-white/50 text-sm mb-6">
+                Link sent to <span className="text-white">{email}</span>
               </p>
-              <p className="text-muted-foreground/60 text-xs">Click the link to sign in instantly</p>
-              <Button
-                variant="ghost"
+              <button
                 onClick={() => setMode('magic')}
-                className="mt-6 text-muted-foreground"
+                className="text-white/40 hover:text-white text-sm transition-colors"
               >
                 Use different email
-              </Button>
+              </button>
             </motion.div>
           ) : mode === 'magic' ? (
             <motion.div
               key="magic"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             >
-              {/* Magic Link Form - EASIEST */}
               <form onSubmit={handleMagicLink} className="space-y-4">
                 <Input
                   type="email"
-                  placeholder="Your email"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-14 bg-surface-0 border-border text-base text-center"
+                  className="h-14 bg-white/5 border-white/10 text-white text-center text-lg placeholder:text-white/30 focus:border-white/30 focus:ring-0"
                   autoFocus
                 />
                 
                 <Button 
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg h-14"
+                  className="w-full bg-white hover:bg-white/90 text-black font-display text-lg h-14 tracking-wide"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <>
-                      <Mail className="mr-2 w-5 h-5" />
-                      Send Magic Link
-                    </>
+                    'SEND LINK'
                   )}
                 </Button>
               </form>
 
-              <p className="text-center text-muted-foreground/60 text-xs mt-4">
-                No password needed. We'll email you a link.
+              <p className="text-center text-white/30 text-xs mt-4">
+                No password. We'll email you a login link.
               </p>
 
-              {/* Alternative: Password */}
-              <div className="mt-8 pt-6 border-t border-border/30">
+              <div className="mt-10 flex items-center justify-center gap-6">
                 <button
                   type="button"
                   onClick={() => setMode('password')}
-                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm text-white/40 hover:text-white transition-colors"
                 >
-                  Or use password instead
+                  Use password
+                </button>
+                <span className="text-white/20">•</span>
+                <button
+                  type="button"
+                  onClick={handleGuestMode}
+                  className="text-sm text-white/40 hover:text-white transition-colors"
+                >
+                  Browse as guest
                 </button>
               </div>
             </motion.div>
           ) : (
             <motion.div
               key="password"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
             >
-              {/* Password Form */}
               <form onSubmit={handlePasswordAuth} className="space-y-3">
                 <Input
                   type="email"
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 bg-surface-0 border-border text-base"
+                  className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/30 focus:ring-0"
                 />
                 
                 <div className="relative">
@@ -224,12 +232,12 @@ export default function AuthPage() {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 bg-surface-0 border-border pr-12 text-base"
+                    className="h-12 bg-white/5 border-white/10 text-white pr-12 placeholder:text-white/30 focus:border-white/30 focus:ring-0"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -238,15 +246,12 @@ export default function AuthPage() {
                 <Button 
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-gold hover:bg-gold/90 text-gold-foreground font-display h-12"
+                  className="w-full bg-white hover:bg-white/90 text-black font-display h-12 tracking-wide"
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <>
-                      {isNewUser ? 'Create Account' : 'Sign In'}
-                      <ArrowRight className="ml-2 w-4 h-4" />
-                    </>
+                    isNewUser ? 'CREATE ACCOUNT' : 'SIGN IN'
                   )}
                 </Button>
               </form>
@@ -255,42 +260,32 @@ export default function AuthPage() {
                 <button
                   type="button"
                   onClick={() => setIsNewUser(!isNewUser)}
-                  className="text-sm text-muted-foreground hover:text-gold transition-colors"
+                  className="text-sm text-white/40 hover:text-white transition-colors"
                 >
-                  {isNewUser ? 'Already have account? Sign in' : "New here? Create account"}
+                  {isNewUser ? 'Already have account? Sign in' : "New? Create account"}
                 </button>
               </div>
 
-              {/* Back to magic link */}
-              <div className="mt-6 pt-6 border-t border-border/30">
+              <div className="mt-8 flex items-center justify-center gap-6">
                 <button
                   type="button"
                   onClick={() => setMode('magic')}
-                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm text-white/40 hover:text-white transition-colors"
                 >
-                  ← Back to magic link
+                  ← Magic link
+                </button>
+                <span className="text-white/20">•</span>
+                <button
+                  type="button"
+                  onClick={handleGuestMode}
+                  className="text-sm text-white/40 hover:text-white transition-colors"
+                >
+                  Browse as guest
                 </button>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Guest Mode */}
-        {mode !== 'magic-sent' && (
-          <div className="mt-8">
-            <Button
-              variant="ghost"
-              onClick={handleGuestMode}
-              className="w-full text-muted-foreground hover:text-foreground h-12"
-            >
-              <Sparkles className="mr-2 w-4 h-4" />
-              Browse as Guest
-            </Button>
-            <p className="text-center text-muted-foreground/40 text-xs mt-2">
-              Look around first, sign up when ready
-            </p>
-          </div>
-        )}
       </motion.div>
     </div>
   );
