@@ -38,10 +38,13 @@ interface AuthContextType {
   profile: Profile | null;
   platforms: ConnectedPlatform[];
   loading: boolean;
+  needsPasswordSetup: boolean; // True if user signed up via magic link only
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signInWithMagicLink: (email: string) => Promise<{ error: Error | null }>;
+  signInWithOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
   signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUpWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -266,6 +269,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const signInWithOtp = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email',
+    });
+    return { error };
+  };
+
   const signInWithPassword = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -294,6 +306,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    return { error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -302,6 +321,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPlatforms([]);
     setRoles([]);
   };
+
+  // Detect if user needs to set up a password (signed up via magic link/OTP only)
+  // Check if user has no identities with password provider OR raw_app_meta_data shows only OTP
+  const needsPasswordSetup = user?.app_metadata?.provider === 'email' 
+    && !user?.app_metadata?.providers?.includes('password');
 
   const isAdmin = roles.includes('admin');
   const isJudge = roles.includes('judge');
@@ -316,10 +340,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         platforms,
         loading,
+        needsPasswordSetup,
         signInWithGoogle,
         signInWithMagicLink,
+        signInWithOtp,
         signInWithPassword,
         signUpWithPassword,
+        updatePassword,
         resetPassword,
         signOut,
         refreshProfile,
@@ -345,10 +372,13 @@ export function useAuth() {
       profile: devAuth.profile,
       platforms: [],
       loading: false,
+      needsPasswordSetup: false,
       signInWithGoogle: async () => ({ error: null }),
       signInWithMagicLink: async () => ({ error: null }),
+      signInWithOtp: async () => ({ error: null }),
       signInWithPassword: async () => ({ error: null }),
       signUpWithPassword: async () => ({ error: null }),
+      updatePassword: async () => ({ error: null }),
       resetPassword: async () => ({ error: null }),
       signOut: async () => {},
       refreshProfile: async () => {},

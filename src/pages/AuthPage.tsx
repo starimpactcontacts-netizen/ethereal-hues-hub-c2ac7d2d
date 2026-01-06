@@ -20,8 +20,9 @@ const passwordSchema = z.string().min(8, 'Min 8 characters');
 // 'signup-password' - new user uses password instead
 // 'login-email' - returning user enters email for magic link  
 // 'login-password' - returning user uses password
+// 'login-otp' - returning user enters OTP code
 // 'magic-sent' - magic link sent confirmation
-type AuthMode = 'choice' | 'signup-email' | 'signup-password' | 'login-email' | 'login-password' | 'magic-sent';
+type AuthMode = 'choice' | 'signup-email' | 'signup-password' | 'login-email' | 'login-password' | 'login-otp' | 'magic-sent';
 
 // Check if input is an email or username
 const isEmail = (value: string) => value.includes('@');
@@ -33,10 +34,12 @@ export default function AuthPage() {
     return null;
   }
 
-  const { signInWithMagicLink, signInWithPassword, signUpWithPassword, user } = useAuth();
+  const { signInWithMagicLink, signInWithPassword, signUpWithPassword, signInWithOtp, user } = useAuth();
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState(''); // email or username
+  const [resolvedEmail, setResolvedEmail] = useState(''); // for OTP after username lookup
   const [password, setPassword] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>('choice');
@@ -88,7 +91,27 @@ export default function AuthPage() {
     if (error) {
       toast.error(error.message);
     } else {
+      setResolvedEmail(emailToUse);
       setMode('magic-sent');
+    }
+  };
+
+  const handleOtpVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (otpCode.length !== 6) {
+      toast.error('Enter the 6-digit code');
+      return;
+    }
+
+    setIsLoading(true);
+    const { error } = await signInWithOtp(resolvedEmail, otpCode);
+    setIsLoading(false);
+
+    if (error) {
+      toast.error('Invalid or expired code');
+    } else {
+      toast.success('Signed in!');
     }
   };
 
@@ -155,6 +178,10 @@ export default function AuthPage() {
   const goBack = () => {
     if (mode === 'signup-password') setMode('signup-email');
     else if (mode === 'login-password') setMode('login-email');
+    else if (mode === 'magic-sent') {
+      setOtpCode('');
+      setMode('login-email');
+    }
     else setMode('choice');
   };
 
@@ -177,7 +204,7 @@ export default function AuthPage() {
         className="w-full max-w-sm relative z-10"
       >
         {/* Back button when not on choice screen */}
-        {mode !== 'choice' && mode !== 'magic-sent' && (
+        {mode !== 'choice' && (
           <button
             onClick={goBack}
             className="absolute -top-12 left-0 text-white/40 hover:text-white flex items-center gap-1 text-sm transition-colors"
@@ -245,18 +272,49 @@ export default function AuthPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="text-center py-6"
+              className="text-center py-4"
             >
-              <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail className="w-10 h-10 text-white" />
+              <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Mail className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl text-white font-bold mb-3">CHECK YOUR EMAIL</h3>
+              <h3 className="text-xl text-white font-bold mb-2">CHECK YOUR EMAIL</h3>
               <p className="text-white/50 text-sm mb-6">
-                Link sent to <span className="text-white">{identifier}</span>
+                We sent a code to <span className="text-white">{resolvedEmail || identifier}</span>
               </p>
+
+              {/* OTP Input */}
+              <form onSubmit={handleOtpVerify} className="space-y-4">
+                <div>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Enter 6-digit code"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="h-14 bg-white/5 border-white/10 text-white text-center text-2xl tracking-[0.5em] placeholder:text-white/30 placeholder:tracking-normal placeholder:text-base focus:border-white/30 focus:ring-0 font-mono"
+                    autoFocus
+                  />
+                </div>
+                
+                <Button 
+                  type="submit"
+                  disabled={isLoading || otpCode.length !== 6}
+                  className="w-full bg-white hover:bg-white/90 text-black font-bold h-12"
+                >
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'VERIFY CODE'}
+                </Button>
+              </form>
+
+              <p className="text-white/30 text-xs mt-4">
+                Or click the magic link in your email
+              </p>
+
               <button
-                onClick={() => setMode('choice')}
-                className="text-white/40 hover:text-white text-sm transition-colors"
+                onClick={() => {
+                  setOtpCode('');
+                  setMode('choice');
+                }}
+                className="text-white/40 hover:text-white text-sm transition-colors mt-4"
               >
                 Start over
               </button>
