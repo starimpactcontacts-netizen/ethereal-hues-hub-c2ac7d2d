@@ -104,8 +104,8 @@ export default function PrivacyPolicyPage() {
           <h2 className="font-display text-xl text-gold mb-3">9. Contact Us</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             If you have any questions about this Privacy Policy, please contact us at{' '}
-            <a href="mailto:support@loopgate.io" className="text-gold hover:underline">
-              support@loopgate.io
+            <a href="mailto:team@loopgate.io" className="text-gold hover:underline">
+              team@loopgate.io
             </a>
           </p>
         </section>
