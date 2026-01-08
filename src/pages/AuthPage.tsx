@@ -150,8 +150,12 @@ export default function AuthPage() {
 
     if (isSignup) {
       const { error } = await signUpWithPassword(emailToUse, password);
+      setIsLoading(false);
       if (error) {
-        if (error.message.includes('already registered')) {
+        // Check for various "already exists" error messages
+        if (error.message.includes('already registered') || 
+            error.message.includes('already been registered') ||
+            error.message.includes('User already registered')) {
           toast.error('Email already registered. Try signing in.');
           setMode('login-password');
         } else {
@@ -162,16 +166,18 @@ export default function AuthPage() {
       }
     } else {
       const { error } = await signInWithPassword(emailToUse, password);
+      setIsLoading(false);
       if (error) {
+        // For login failures, offer helpful suggestions
         if (error.message.includes('Invalid login credentials')) {
-          toast.error('Wrong credentials');
+          toast.error('Wrong email or password. Check and try again.');
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Please confirm your email first');
         } else {
           toast.error(error.message);
         }
       }
     }
-
-    setIsLoading(false);
   };
 
   const handleGuestMode = () => {
