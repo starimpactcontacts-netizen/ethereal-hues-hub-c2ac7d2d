@@ -116,8 +116,6 @@ function AuthPageWrapper() {
   const { user, profile, loading } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles(user?.id);
   
-  const isEnterprise = roles.includes('enterprise');
-  
   // Dev mode: immediate redirect, no render
   if ((window as any).__LOOPGATE_DEV_AUTH__) {
     return <Navigate to="/hub" replace />;
@@ -129,6 +127,10 @@ function AuthPageWrapper() {
   }
   
   if (user) {
+    // Dev account bypasses everything - straight to hub
+    if (user.email === 'dev@loopgate.io') {
+      return <Navigate to="/hub" replace />;
+    }
     // ZERO FRICTION: Go straight to hub, skip onboarding redirect
     return <Navigate to="/hub" replace />;
   }
@@ -150,6 +152,11 @@ function OnboardingWrapper() {
   
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+  
+  // Dev account bypasses onboarding entirely - straight to hub
+  if (user.email === 'dev@loopgate.io') {
+    return <Navigate to="/hub" replace />;
   }
   
   // Enterprise users go to enterprise onboarding
