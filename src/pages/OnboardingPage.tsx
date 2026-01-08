@@ -91,34 +91,8 @@ export default function OnboardingPage() {
       }
 
       if (currentStep === 2) {
-        // All socials are optional - just validate URLs if provided
-        if (tiktokUrl) {
-          const tiktokValidation = validatePlatformUrl('tiktok', tiktokUrl);
-          if (!tiktokValidation.valid) {
-            setUrlErrors(prev => ({ ...prev, tiktok: tiktokValidation.error || 'Invalid URL' }));
-            toast.error(tiktokValidation.error || 'Invalid TikTok URL');
-            setIsLoading(false);
-            return;
-          }
-        }
-        if (instagramUrl) {
-          const igValidation = validatePlatformUrl('instagram', instagramUrl);
-          if (!igValidation.valid) {
-            setUrlErrors(prev => ({ ...prev, instagram: igValidation.error || 'Invalid URL' }));
-            toast.error(igValidation.error || 'Invalid Instagram URL');
-            setIsLoading(false);
-            return;
-          }
-        }
-        if (youtubeUrl) {
-          const ytValidation = validatePlatformUrl('youtube', youtubeUrl);
-          if (!ytValidation.valid) {
-            setUrlErrors(prev => ({ ...prev, youtube: ytValidation.error || 'Invalid URL' }));
-            toast.error(ytValidation.error || 'Invalid YouTube URL');
-            setIsLoading(false);
-            return;
-          }
-        }
+        // All socials are completely optional - NO VALIDATION BLOCKING
+        // Clear any old errors and proceed
         setUrlErrors({});
       }
 

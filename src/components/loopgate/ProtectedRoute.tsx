@@ -42,6 +42,19 @@ export default function ProtectedRoute({
     return <Navigate to="/auth" replace />;
   }
   
+  // Dev account (dev@loopgate.io) bypasses ALL onboarding - App Store review account
+  const isDevAccount = user?.email === 'dev@loopgate.io';
+  if (isDevAccount) {
+    // Skip all onboarding checks for dev account
+    if (requireAdmin && !isAdmin) {
+      return <Navigate to="/hub" replace />;
+    }
+    if (requireOpsAccess && !hasOpsAccess) {
+      return <Navigate to="/404" replace />;
+    }
+    return <>{children}</>;
+  }
+  
   // Enterprise users skip standard onboarding - go to enterprise onboarding if no profile
   if (isEnterprise && !profile?.onboarding_completed) {
     return <Navigate to="/enterprise-onboarding" replace />;
