@@ -131,18 +131,19 @@ export default function OnboardingPage() {
           return;
         }
 
-        // Create profile (include email for username login)
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: user!.id,
-          username: username.toUpperCase(),
-          email: user!.email,
-          region: region,
-          rules_accepted: true,
-          onboarding_completed: true,
-        });
+        // Update profile with chosen username and details
+        const { error: profileError } = await supabase.from('profiles')
+          .update({
+            username: username.toUpperCase(),
+            display_name: username,
+            region: region,
+            rules_accepted: true,
+            onboarding_completed: true,
+          })
+          .eq('id', user!.id);
 
         if (profileError) {
-          toast.error('Failed to create profile');
+          toast.error('Failed to update profile');
           setIsLoading(false);
           return;
         }
