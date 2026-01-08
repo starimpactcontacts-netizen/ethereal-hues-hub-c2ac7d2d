@@ -5,7 +5,6 @@ import LoadingScreen from './LoadingScreen';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireOnboarding?: boolean;
   requireAdmin?: boolean;
   requireOpsAccess?: boolean; // admin OR judge OR dev
   allowGuest?: boolean; // Allow unauthenticated users to view (read-only)
@@ -44,18 +43,12 @@ export default function ProtectedRoute({
   }
   
   // Enterprise users skip standard onboarding - go to enterprise onboarding if no profile
-  if (isEnterprise) {
-    if (!profile?.onboarding_completed) {
-      return <Navigate to="/enterprise-onboarding" replace />;
-    }
-    // Enterprise with completed onboarding can access everything
-    return <>{children}</>;
+  if (isEnterprise && !profile?.onboarding_completed) {
+    return <Navigate to="/enterprise-onboarding" replace />;
   }
   
-  // Needs standard onboarding (non-enterprise users)
-  if (!profile?.onboarding_completed) {
-    return <Navigate to="/onboarding" replace />;
-  }
+  // ZERO FRICTION: No onboarding redirect for regular users
+  // They go straight to Hub and can complete profile later in Profile tab
   
   // Admin check
   if (requireAdmin && !isAdmin) {

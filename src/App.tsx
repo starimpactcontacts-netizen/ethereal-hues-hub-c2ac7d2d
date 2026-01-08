@@ -104,12 +104,10 @@ function RootRedirect() {
     return <Navigate to="/enterprise-onboarding" replace />;
   }
   
-  // Regular user without profile - standard onboarding
-  if (!profile?.onboarding_completed) {
-    return <Navigate to="/onboarding" replace />;
-  }
+  // ZERO FRICTION: Skip onboarding for regular users - go straight to hub
+  // They can complete profile later in Profile tab
   
-  // Logged in with profile - go to hub
+  // Logged in - go to hub regardless of onboarding status
   return <Navigate to="/hub" replace />;
 }
 
@@ -131,9 +129,7 @@ function AuthPageWrapper() {
   }
   
   if (user) {
-    if (!profile?.onboarding_completed) {
-      return <Navigate to={isEnterprise ? "/enterprise-onboarding" : "/onboarding"} replace />;
-    }
+    // ZERO FRICTION: Go straight to hub, skip onboarding redirect
     return <Navigate to="/hub" replace />;
   }
   

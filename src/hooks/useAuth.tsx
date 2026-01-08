@@ -78,13 +78,20 @@ const DEV_MOCK_USER = {
 const DEV_MOCK_PROFILE: Profile = {
   id: 'dev-user-preview',
   username: 'DEV_PREVIEW',
-  league: 'open',
+  league: 'elite',
   global_index_score: 999,
   win_rate: 100,
   total_events: 0,
   total_wins: 0,
   onboarding_completed: true,
   rules_accepted: true,
+};
+
+// Demo account credentials for Apple Review (HARDCODED)
+const DEMO_ACCOUNT = {
+  email: 'dev@loopgate.io',
+  username: 'DEV',
+  password: 'admin!!!',
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -295,6 +302,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithPassword = async (email: string, password: string) => {
+    // HARDCODED DEMO ACCOUNT - Always works for Apple Review
+    if ((email.toLowerCase() === DEMO_ACCOUNT.email || email.toUpperCase() === DEMO_ACCOUNT.username) && password === DEMO_ACCOUNT.password) {
+      // Try to sign in with demo credentials
+      const { error } = await supabase.auth.signInWithPassword({
+        email: DEMO_ACCOUNT.email,
+        password: DEMO_ACCOUNT.password,
+      });
+      return { error };
+    }
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
