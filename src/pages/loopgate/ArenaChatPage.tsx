@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Send, Globe, Users, Crown, Shield } from "lucide-react";
+import { ArrowLeft, Send, Globe, Users, Crown, Shield, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -82,7 +82,7 @@ export default function ArenaChatPage() {
     fetchMessages();
   }, [numericArenaId]);
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates (INSERT and DELETE)
   useEffect(() => {
     const channel = supabase
       .channel(`arena-${numericArenaId}`)
@@ -97,6 +97,18 @@ export default function ArenaChatPage() {
         (payload) => {
           const newMsg = payload.new as ArenaMessage;
           setMessages((prev) => [...prev, newMsg]);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "arena_messages",
+        },
+        (payload) => {
+          const deletedId = (payload.old as any).id;
+          setMessages((prev) => prev.filter(msg => msg.id !== deletedId));
         }
       )
       .subscribe();
@@ -139,6 +151,22 @@ export default function ArenaChatPage() {
     }
 
     setSending(false);
+  };
+
+  // Admin message deletion
+  const { isAdmin } = useAuth();
+  const handleDeleteMessage = async (messageId: string) => {
+    const { error } = await supabase
+      .from("arena_messages")
+      .delete()
+      .eq("id", messageId);
+    
+    if (error) {
+      toast.error("Failed to delete message");
+    } else {
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      toast.success("Message deleted");
+    }
   };
 
   const formatTime = (dateString: string) => {
@@ -197,7 +225,7 @@ export default function ArenaChatPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(index * 0.02, 0.5) }}
-                className={`flex gap-3 ${isOwnMessage ? "flex-row-reverse" : ""}`}
+                className={`flex gap-3 group ${isOwnMessage ? "flex-row-reverse" : ""}`}
               >
                 <Avatar className="w-8 h-8 shrink-0">
                   <AvatarImage src={message.avatar_url || undefined} />
@@ -230,6 +258,16 @@ export default function ArenaChatPage() {
                       {message.message_text}
                     </p>
                   </div>
+                  {/* Admin delete button */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="ml-2 p-1 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete message"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  )}
                 </div>
               </motion.div>
             );
