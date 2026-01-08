@@ -23,9 +23,8 @@ const REGIONS = [
 
 const STEPS = [
   { id: 1, title: 'Choose Username' },
-  { id: 2, title: 'Connect TikTok' },
-  { id: 3, title: 'Connect More' },
-  { id: 4, title: 'Accept Rules' },
+  { id: 2, title: 'Connect Socials' },
+  { id: 3, title: 'Accept Rules' },
 ];
 
 export default function OnboardingPage() {
@@ -92,25 +91,16 @@ export default function OnboardingPage() {
       }
 
       if (currentStep === 2) {
-        if (!tiktokUrl || !tiktokUsername) {
-          toast.error('TikTok connection is required');
-          setIsLoading(false);
-          return;
+        // All socials are optional - just validate URLs if provided
+        if (tiktokUrl) {
+          const tiktokValidation = validatePlatformUrl('tiktok', tiktokUrl);
+          if (!tiktokValidation.valid) {
+            setUrlErrors(prev => ({ ...prev, tiktok: tiktokValidation.error || 'Invalid URL' }));
+            toast.error(tiktokValidation.error || 'Invalid TikTok URL');
+            setIsLoading(false);
+            return;
+          }
         }
-        
-        // Validate TikTok URL
-        const tiktokValidation = validatePlatformUrl('tiktok', tiktokUrl);
-        if (!tiktokValidation.valid) {
-          setUrlErrors(prev => ({ ...prev, tiktok: tiktokValidation.error || 'Invalid URL' }));
-          toast.error(tiktokValidation.error || 'Invalid TikTok URL');
-          setIsLoading(false);
-          return;
-        }
-        setUrlErrors(prev => ({ ...prev, tiktok: '' }));
-      }
-
-      if (currentStep === 3) {
-        // Validate optional URLs if provided
         if (instagramUrl) {
           const igValidation = validatePlatformUrl('instagram', instagramUrl);
           if (!igValidation.valid) {
@@ -132,7 +122,9 @@ export default function OnboardingPage() {
         setUrlErrors({});
       }
 
-      if (currentStep === 4) {
+      // Step 3 is now Accept Rules (final step)
+
+      if (currentStep === 3) {
         if (!rulesAccepted) {
           toast.error('You must accept the competition rules');
           setIsLoading(false);
@@ -155,18 +147,14 @@ export default function OnboardingPage() {
           return;
         }
 
-        // Add TikTok (required)
-        const { error: tiktokError } = await supabase.from('connected_platforms').insert({
-          user_id: user!.id,
-          platform: 'tiktok',
-          platform_username: tiktokUsername,
-          platform_url: tiktokUrl,
-        });
-
-        if (tiktokError) {
-          toast.error('Failed to connect TikTok');
-          setIsLoading(false);
-          return;
+        // Add TikTok (optional now)
+        if (tiktokUrl && tiktokUsername) {
+          await supabase.from('connected_platforms').insert({
+            user_id: user!.id,
+            platform: 'tiktok',
+            platform_username: tiktokUsername,
+            platform_url: tiktokUrl,
+          });
         }
 
         // Add Instagram (optional)
@@ -215,7 +203,7 @@ export default function OnboardingPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="font-display text-3xl mb-2">Create Your Profile</h1>
-          <p className="text-muted-foreground">Step {currentStep} of 4</p>
+          <p className="text-muted-foreground">Step {currentStep} of 3</p>
         </div>
 
         {/* Progress */}
@@ -297,27 +285,24 @@ export default function OnboardingPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="font-display text-2xl mb-2">Connect TikTok</h2>
+                <h2 className="font-display text-2xl mb-2">Connect Socials</h2>
                 <p className="text-muted-foreground text-sm mb-6">
-                  Required to verify your identity and track submissions.
+                  Optional. Add your social profiles to compete in events.
                 </p>
                 
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
-                      TikTok Username
-                    </label>
+                <div className="space-y-6">
+                  {/* TikTok */}
+                  <div className="space-y-3">
+                    <h3 className="font-display text-lg flex items-center gap-2">
+                      TikTok
+                      <span className="text-xs text-muted-foreground font-sans normal-case">(Optional)</span>
+                    </h3>
                     <Input
                       value={tiktokUsername}
                       onChange={(e) => setTiktokUsername(e.target.value)}
                       placeholder="@yourusername"
                       className="h-12 bg-surface-0 border-border"
                     />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2 block">
-                      TikTok Profile URL
-                    </label>
                     <Input
                       value={tiktokUrl}
                       onChange={(e) => {
@@ -334,23 +319,7 @@ export default function OnboardingPage() {
                       </p>
                     )}
                   </div>
-                </div>
-              </motion.div>
-            )}
 
-            {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <h2 className="font-display text-2xl mb-2">Connect More Platforms</h2>
-                <p className="text-muted-foreground text-sm mb-6">
-                  Optional. Add Instagram or YouTube to expand your profile.
-                </p>
-                
-                <div className="space-y-6">
                   {/* Instagram */}
                   <div className="space-y-3">
                     <h3 className="font-display text-lg flex items-center gap-2">
@@ -394,9 +363,9 @@ export default function OnboardingPage() {
               </motion.div>
             )}
 
-            {currentStep === 4 && (
+            {currentStep === 3 && (
               <motion.div
-                key="step4"
+                key="step3"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -437,7 +406,7 @@ export default function OnboardingPage() {
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
-            ) : currentStep === 4 ? (
+            ) : currentStep === 3 ? (
               <>
                 Create Profile
                 <Check className="ml-2 w-5 h-5" />
