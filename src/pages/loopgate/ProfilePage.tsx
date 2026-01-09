@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -17,6 +17,18 @@ import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
 import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 const platformLabels: Record<string, string> = {
   tiktok: "TikTok",
@@ -34,7 +46,7 @@ interface EditingPlatform {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { profile, platforms, refreshProfile } = useAuth();
+  const { profile, platforms, refreshProfile, signOut } = useAuth();
   const { rankings } = useRealRankings();
   const { xp, level, streak } = useXP();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -53,6 +65,8 @@ export default function ProfilePage() {
   const [isSavingUsername, setIsSavingUsername] = useState(false);
   const [contactEdited, setContactEdited] = useState(false);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   
   // Keep session active
   useActiveSession();
@@ -595,6 +609,109 @@ export default function ProfilePage() {
           Recent Events
         </h3>
         <p className="text-sm text-muted-foreground">No recent events</p>
+      </section>
+
+      {/* Account Deletion Section */}
+      <section className="px-4 py-4 mt-8 mb-8">
+        <div className="bg-destructive/5 border border-destructive/20 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-display text-lg text-destructive mb-1">Danger Zone</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="bg-surface-0 border-border">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-destructive flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      Delete Account
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-4">
+                      <p>This will permanently delete:</p>
+                      <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                        <li>Your profile and all personal data</li>
+                        <li>Your connected platforms</li>
+                        <li>Your event participations and rankings</li>
+                        <li>Your XP history and achievements</li>
+                        <li>Your crew membership</li>
+                      </ul>
+                      <p className="font-semibold text-foreground">This action cannot be undone.</p>
+                      <div className="pt-2">
+                        <label className="text-sm text-muted-foreground">
+                          Type <span className="font-mono text-destructive">DELETE</span> to confirm:
+                        </label>
+                        <input
+                          type="text"
+                          value={deleteConfirmText}
+                          onChange={(e) => setDeleteConfirmText(e.target.value)}
+                          placeholder="DELETE"
+                          className="w-full mt-2 px-3 py-2 bg-background border border-border text-sm outline-none focus:border-destructive"
+                        />
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel 
+                      onClick={() => setDeleteConfirmText("")}
+                      className="border-border"
+                    >
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      disabled={deleteConfirmText !== "DELETE" || isDeletingAccount}
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (deleteConfirmText !== "DELETE") return;
+                        
+                        setIsDeletingAccount(true);
+                        try {
+                          // Delete user data from all tables
+                          const userId = profile.id;
+                          
+                          // Delete in order to respect foreign key constraints
+                          await supabase.from("xp_history").delete().eq("user_id", userId);
+                          await supabase.from("daily_xp_tracking").delete().eq("user_id", userId);
+                          await supabase.from("login_streaks").delete().eq("user_id", userId);
+                          await supabase.from("event_participations").delete().eq("user_id", userId);
+                          await supabase.from("connected_platforms").delete().eq("user_id", userId);
+                          await supabase.from("crew_messages").delete().eq("user_id", userId);
+                          await supabase.from("crew_join_requests").delete().eq("user_id", userId);
+                          await supabase.from("crew_members").delete().eq("user_id", userId);
+                          await supabase.from("arena_messages").delete().eq("user_id", userId);
+                          await supabase.from("active_sessions").delete().eq("user_id", userId);
+                          await supabase.from("user_roles").delete().eq("user_id", userId);
+                          await supabase.from("profiles").delete().eq("id", userId);
+                          
+                          // Sign out and redirect
+                          await signOut();
+                          toast.success("Account deleted successfully");
+                          navigate("/");
+                        } catch (error) {
+                          console.error("Failed to delete account:", error);
+                          toast.error("Failed to delete account. Please contact support.");
+                        } finally {
+                          setIsDeletingAccount(false);
+                          setDeleteConfirmText("");
+                        }
+                      }}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeletingAccount ? "Deleting..." : "Delete My Account"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Verification Modal */}
