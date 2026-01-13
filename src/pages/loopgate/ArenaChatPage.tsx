@@ -161,8 +161,9 @@ export default function ArenaChatPage() {
     setSending(false);
   };
 
-  // Admin message deletion
-  const { isAdmin } = useAuth();
+  // Admin/Dev message deletion
+  const { isAdmin, isDev } = useAuth();
+  const canModerate = isAdmin || isDev;
   const handleDeleteMessage = async (messageId: string) => {
     const { error } = await supabase
       .from("arena_messages")
@@ -266,8 +267,8 @@ export default function ArenaChatPage() {
                       {message.message_text}
                     </p>
                   </div>
-                  {/* Admin delete button */}
-                  {isAdmin && (
+                  {/* Moderator delete button */}
+                  {canModerate && (
                     <button
                       onClick={() => handleDeleteMessage(message.id)}
                       className="ml-2 p-1 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
