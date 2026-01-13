@@ -474,6 +474,8 @@ export type Database = {
         Row: {
           activity_status: string | null
           avatar_url: string | null
+          banned_at: string | null
+          banned_reason: string | null
           bio: string | null
           created_at: string | null
           crew_id: string | null
@@ -482,6 +484,8 @@ export type Database = {
           email: string | null
           global_index_score: number | null
           id: string
+          is_banned: boolean
+          is_hidden: boolean
           league: Database["public"]["Enums"]["league_tier"]
           level: number
           onboarding_completed: boolean | null
@@ -502,6 +506,8 @@ export type Database = {
         Insert: {
           activity_status?: string | null
           avatar_url?: string | null
+          banned_at?: string | null
+          banned_reason?: string | null
           bio?: string | null
           created_at?: string | null
           crew_id?: string | null
@@ -510,6 +516,8 @@ export type Database = {
           email?: string | null
           global_index_score?: number | null
           id: string
+          is_banned?: boolean
+          is_hidden?: boolean
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           onboarding_completed?: boolean | null
@@ -530,6 +538,8 @@ export type Database = {
         Update: {
           activity_status?: string | null
           avatar_url?: string | null
+          banned_at?: string | null
+          banned_reason?: string | null
           bio?: string | null
           created_at?: string | null
           crew_id?: string | null
@@ -538,6 +548,8 @@ export type Database = {
           email?: string | null
           global_index_score?: number | null
           id?: string
+          is_banned?: boolean
+          is_hidden?: boolean
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           onboarding_completed?: boolean | null
