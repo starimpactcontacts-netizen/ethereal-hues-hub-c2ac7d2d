@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXP } from "@/hooks/useXP";
+import { useGuestMode } from "@/hooks/useGuestMode";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
 import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
@@ -47,6 +48,7 @@ interface EditingPlatform {
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { profile, platforms, refreshProfile, signOut } = useAuth();
+  const { isGuest, clearGuest } = useGuestMode();
   const { rankings } = useRealRankings();
   const { xp, level, streak } = useXP();
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -122,6 +124,29 @@ export default function ProfilePage() {
     || platforms.find(p => p.platform === 'instagram')
     || platforms.find(p => p.platform === 'youtube');
   const canVerify = verifiablePlatform && !profile?.verification_status;
+
+  // Guest mode - show sign in prompt
+  if (isGuest) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 pb-20">
+        <div className="text-center">
+          <h1 className="font-display text-3xl mb-2">Sign In Required</h1>
+          <p className="text-muted-foreground text-sm mb-6">
+            You're browsing as a guest. Sign in to view and edit your profile.
+          </p>
+          <Button
+            onClick={() => {
+              clearGuest();
+              navigate("/auth");
+            }}
+            className="bg-gold text-black hover:bg-gold/90 font-semibold"
+          >
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!profile) {
     return (

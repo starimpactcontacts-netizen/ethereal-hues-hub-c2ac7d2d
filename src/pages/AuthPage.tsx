@@ -10,6 +10,7 @@ import { z } from 'zod';
 import SEO, { pageSEO } from '@/components/SEO';
 import loopgateWordmark from '@/assets/loopgate-wordmark.png';
 import { supabase } from '@/integrations/supabase/client';
+import { useGuestMode } from '@/hooks/useGuestMode';
 
 const emailSchema = z.string().email('Enter a valid email');
 const passwordSchema = z.string().min(8, 'Min 8 characters');
@@ -180,20 +181,12 @@ export default function AuthPage() {
     }
   };
 
+  const { setGuest } = useGuestMode();
+  
   const handleGuestMode = () => {
+    setGuest(true);
+    toast.info('Browsing as guest - sign in to interact');
     navigate('/hub');
-  };
-
-  // Demo account for App Store review - auto-login with dev credentials
-  const handleDemoLogin = async () => {
-    setIsLoading(true);
-    const { error } = await signInWithPassword('dev@loopgate.io', 'admin!!!');
-    setIsLoading(false);
-    if (error) {
-      toast.error('Demo login failed. Please try email/password login.');
-    } else {
-      toast.success('Welcome to Loopgate!');
-    }
   };
 
   const goBack = () => {
@@ -273,16 +266,6 @@ export default function AuthPage() {
                 className="w-full border-white/20 bg-transparent hover:bg-white/5 text-white font-bold text-lg h-14 tracking-wide"
               >
                 I HAVE AN ACCOUNT
-              </Button>
-
-              {/* Demo Account Button for App Store Review */}
-              <Button 
-                onClick={handleDemoLogin}
-                disabled={isLoading}
-                variant="outline"
-                className="w-full border-gold/30 bg-gold/5 hover:bg-gold/10 text-gold font-bold h-12 tracking-wide mt-2"
-              >
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CONTINUE AS DEMO'}
               </Button>
 
               <div className="pt-4 text-center">
