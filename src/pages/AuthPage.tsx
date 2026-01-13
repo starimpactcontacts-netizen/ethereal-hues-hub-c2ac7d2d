@@ -184,18 +184,6 @@ export default function AuthPage() {
     navigate('/hub');
   };
 
-  // Demo account for App Store review - auto-login with dev credentials
-  const handleDemoLogin = async () => {
-    setIsLoading(true);
-    const { error } = await signInWithPassword('dev@loopgate.io', 'admin!!!');
-    setIsLoading(false);
-    if (error) {
-      toast.error('Demo login failed. Please try email/password login.');
-    } else {
-      toast.success('Welcome to Loopgate!');
-    }
-  };
-
   const goBack = () => {
     if (mode === 'signup-password') setMode('signup-email');
     else if (mode === 'login-password') setMode('login-email');
