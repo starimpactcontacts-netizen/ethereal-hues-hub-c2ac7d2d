@@ -4,6 +4,7 @@ import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } fro
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 interface SubmissionModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface SubmissionModalProps {
 
 export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }: SubmissionModalProps) {
   const { user, profile } = useAuth();
+  const { isGuest } = useGuestMode();
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
   const [platformLink, setPlatformLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,6 +23,26 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
   const [urlError, setUrlError] = useState("");
 
   if (!isOpen) return null;
+
+  // Block guest users
+  if (isGuest) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="w-full max-w-md bg-card border border-border rounded-lg p-6 text-center">
+          <h2 className="text-xl font-bold mb-2">Sign In Required</h2>
+          <p className="text-muted-foreground text-sm mb-4">
+            You're browsing as a guest. Sign in to submit your edit.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-foreground text-background font-bold rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

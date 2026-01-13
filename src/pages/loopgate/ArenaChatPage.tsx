@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 interface ArenaMessage {
   id: string;
@@ -31,6 +32,7 @@ export default function ArenaChatPage() {
   const { arenaId } = useParams<{ arenaId: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { isGuest } = useGuestMode();
   const [messages, setMessages] = useState<ArenaMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -125,6 +127,12 @@ export default function ArenaChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Block guest users
+    if (isGuest) {
+      toast.error("Sign in to send messages");
+      return;
+    }
 
     if (!newMessage.trim() || !user || !profile) {
       return;

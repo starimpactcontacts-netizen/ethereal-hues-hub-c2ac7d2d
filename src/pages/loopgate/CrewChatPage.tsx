@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 interface Message {
   id: string;
@@ -28,6 +30,7 @@ export default function CrewChatPage() {
   const { crewId } = useParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { isGuest } = useGuestMode();
   const [crew, setCrew] = useState<Crew | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -109,6 +112,12 @@ export default function CrewChatPage() {
   };
 
   const handleSendMessage = async () => {
+    // Block guest users
+    if (isGuest) {
+      toast.error("Sign in to send messages");
+      return;
+    }
+    
     if (!user || !profile || !crewId || !newMessage.trim()) return;
 
     setSending(true);
