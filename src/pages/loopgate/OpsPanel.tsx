@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -57,6 +57,26 @@ interface VerificationRequest {
   verification_requested_at: string | null;
   verification_status: boolean;
   tiktok_username?: string;
+}
+
+interface AdminCrew {
+  id: string;
+  name: string;
+  member_count: number;
+  owner_id: string;
+  owner_username?: string;
+  created_at: string;
+}
+
+interface AdminUser {
+  id: string;
+  username: string;
+  display_name: string | null;
+  email: string | null;
+  is_banned: boolean;
+  is_hidden: boolean;
+  banned_reason: string | null;
+  created_at: string;
 }
 
 const CATEGORIES = ["Film", "Trailer", "Music", "Regional", "Global"];
@@ -133,6 +153,15 @@ export default function OpsPanel() {
   // Verification state
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
   const [verifyingUserId, setVerifyingUserId] = useState<string | null>(null);
+
+  // Admin management state
+  const [crews, setCrews] = useState<AdminCrew[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [userSearch, setUserSearch] = useState('');
+  const [deletingCrewId, setDeletingCrewId] = useState<string | null>(null);
+  const [banningUserId, setBanningUserId] = useState<string | null>(null);
+  const [banReason, setBanReason] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
@@ -235,6 +264,39 @@ export default function OpsPanel() {
           ...v,
           tiktok_username: tiktokMap.get(v.id) || undefined
         })));
+      }
+
+      // Fetch all crews for admin management
+      const { data: crewsData } = await supabase
+        .from('crews')
+        .select('id, name, member_count, owner_id, created_at')
+        .order('created_at', { ascending: false });
+
+      if (crewsData) {
+        // Fetch owner usernames
+        const ownerIds = [...new Set(crewsData.map(c => c.owner_id))];
+        const { data: ownerProfiles } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .in('id', ownerIds);
+        
+        const ownerMap = new Map((ownerProfiles || []).map(p => [p.id, p.username]));
+        
+        setCrews(crewsData.map(c => ({
+          ...c,
+          owner_username: ownerMap.get(c.owner_id) || 'Unknown'
+        })));
+      }
+
+      // Fetch users for admin management (including banned/hidden)
+      const { data: usersData } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, email, is_banned, is_hidden, banned_reason, created_at')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      
+      if (usersData) {
+        setUsers(usersData);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -528,6 +590,81 @@ export default function OpsPanel() {
       setSaving(false);
     }
   }
+
+  // Admin: Delete crew
+  async function handleDeleteCrew(crewId: string) {
+    setActionLoading(true);
+    try {
+      // First remove all members
+      await supabase.from('crew_members').delete().eq('crew_id', crewId);
+      // Then delete the crew
+      const { error } = await supabase.from('crews').delete().eq('id', crewId);
+      if (error) throw error;
+      toast.success('Crew deleted');
+      setDeletingCrewId(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting crew:', error);
+      toast.error('Failed to delete crew');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  // Admin: Ban user
+  async function handleBanUser(userId: string, ban: boolean) {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          is_banned: ban,
+          banned_at: ban ? new Date().toISOString() : null,
+          banned_reason: ban ? (banReason || 'Violation of terms') : null
+        })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      toast.success(ban ? 'User banned' : 'User unbanned');
+      setBanningUserId(null);
+      setBanReason('');
+      fetchData();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  // Admin: Hide/unhide profile
+  async function handleToggleHidden(userId: string, hide: boolean) {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_hidden: hide })
+        .eq('id', userId);
+      
+      if (error) throw error;
+      toast.success(hide ? 'Profile hidden' : 'Profile visible');
+      fetchData();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  // Filter users by search
+  const filteredUsers = userSearch 
+    ? users.filter(u => 
+        u.username.toLowerCase().includes(userSearch.toLowerCase()) ||
+        (u.display_name?.toLowerCase().includes(userSearch.toLowerCase())) ||
+        (u.email?.toLowerCase().includes(userSearch.toLowerCase()))
+      )
+    : users;
 
   function handlePosterChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -973,6 +1110,53 @@ export default function OpsPanel() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* Admin: Crew Management */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Crew Management</h2>
+            <span className="text-xs text-muted-foreground">{crews.length} crews</span>
+          </div>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {crews.map((crew) => (
+              <div key={crew.id} className="bg-card border border-border rounded-lg p-3 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-sm">{crew.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{crew.member_count} members • @{crew.owner_username}</p>
+                </div>
+                <button onClick={() => setDeletingCrewId(crew.id)} className="p-2 rounded-lg bg-destructive/20 text-destructive"><Trash2 size={14} /></button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Admin: User Management */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">User Management</h2>
+          </div>
+          <Input placeholder="Search users..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)} className="mb-3" />
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {filteredUsers.slice(0, 50).map((u) => (
+              <div key={u.id} className={`bg-card border rounded-lg p-3 ${u.is_banned ? 'border-destructive/50' : u.is_hidden ? 'border-orange-500/50' : 'border-border'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{u.display_name || u.username}</p>
+                      {u.is_banned && <Badge variant="destructive" className="text-[9px]">BANNED</Badge>}
+                      {u.is_hidden && <Badge className="bg-orange-500 text-[9px]">HIDDEN</Badge>}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">@{u.username}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => handleToggleHidden(u.id, !u.is_hidden)} disabled={actionLoading} className={`p-2 rounded-lg ${u.is_hidden ? 'bg-orange-500 text-white' : 'bg-surface-1'}`} title={u.is_hidden ? 'Unhide' : 'Hide'}><EyeOff size={14} /></button>
+                    <button onClick={() => u.is_banned ? handleBanUser(u.id, false) : setBanningUserId(u.id)} disabled={actionLoading} className={`p-2 rounded-lg ${u.is_banned ? 'bg-destructive text-white' : 'bg-surface-1 text-destructive'}`} title={u.is_banned ? 'Unban' : 'Ban'}><Ban size={14} /></button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Export */}
@@ -1421,6 +1605,38 @@ export default function OpsPanel() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Delete Crew Confirmation */}
+      <AlertDialog open={!!deletingCrewId} onOpenChange={(open) => !open && setDeletingCrewId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Crew?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete this crew and remove all members.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deletingCrewId && handleDeleteCrew(deletingCrewId)} disabled={actionLoading} className="bg-destructive text-destructive-foreground">
+              {actionLoading ? 'Deleting...' : 'Delete Crew'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Ban User Dialog */}
+      <Dialog open={!!banningUserId} onOpenChange={(open) => !open && setBanningUserId(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Ban User</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Reason (optional)</Label>
+              <Input value={banReason} onChange={(e) => setBanReason(e.target.value)} placeholder="Violation of terms..." className="mt-1" />
+            </div>
+            <button onClick={() => banningUserId && handleBanUser(banningUserId, true)} disabled={actionLoading} className="w-full py-3 bg-destructive text-white font-bold rounded-lg">
+              {actionLoading ? 'Banning...' : 'Confirm Ban'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
