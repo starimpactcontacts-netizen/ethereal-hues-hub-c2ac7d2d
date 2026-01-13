@@ -184,6 +184,18 @@ export default function AuthPage() {
     navigate('/hub');
   };
 
+  // Demo account for App Store review - auto-login with dev credentials
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    const { error } = await signInWithPassword('dev@loopgate.io', 'admin!!!');
+    setIsLoading(false);
+    if (error) {
+      toast.error('Demo login failed. Please try email/password login.');
+    } else {
+      toast.success('Welcome to Loopgate!');
+    }
+  };
+
   const goBack = () => {
     if (mode === 'signup-password') setMode('signup-email');
     else if (mode === 'login-password') setMode('login-email');
@@ -263,7 +275,15 @@ export default function AuthPage() {
                 I HAVE AN ACCOUNT
               </Button>
 
-              {/* Demo credentials (dev@loopgate.io / admin!!!) still work for App Store review - just hidden from UI */}
+              {/* Demo Account Button for App Store Review */}
+              <Button 
+                onClick={handleDemoLogin}
+                disabled={isLoading}
+                variant="outline"
+                className="w-full border-gold/30 bg-gold/5 hover:bg-gold/10 text-gold font-bold h-12 tracking-wide mt-2"
+              >
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CONTINUE AS DEMO'}
+              </Button>
 
               <div className="pt-4 text-center">
                 <button
