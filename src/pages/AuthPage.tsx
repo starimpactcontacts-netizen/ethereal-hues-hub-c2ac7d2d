@@ -275,15 +275,7 @@ export default function AuthPage() {
                 I HAVE AN ACCOUNT
               </Button>
 
-              {/* Demo Account Button for App Store Review */}
-              <Button 
-                onClick={handleDemoLogin}
-                disabled={isLoading}
-                variant="outline"
-                className="w-full border-gold/30 bg-gold/5 hover:bg-gold/10 text-gold font-bold h-12 tracking-wide mt-2"
-              >
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'CONTINUE AS DEMO'}
-              </Button>
+              {/* Demo credentials (dev@loopgate.io / admin!!!) still work for App Store review - just hidden from UI */}
 
               <div className="pt-4 text-center">
                 <button
