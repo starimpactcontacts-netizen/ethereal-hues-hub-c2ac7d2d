@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -29,8 +29,9 @@ interface Crew {
 export default function CrewChatPage() {
   const { crewId } = useParams();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin, isDev } = useAuth();
   const { isGuest } = useGuestMode();
+  const canModerate = isAdmin || isDev;
   const [crew, setCrew] = useState<Crew | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -149,6 +150,20 @@ export default function CrewChatPage() {
     }
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    const { error } = await supabase
+      .from("crew_messages")
+      .delete()
+      .eq("id", messageId);
+    
+    if (error) {
+      toast.error("Failed to delete message");
+    } else {
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      toast.success("Message deleted");
+    }
+  };
+
   if (loading || !crew) {
     return (
       <PageTransition>
@@ -188,7 +203,7 @@ export default function CrewChatPage() {
               return (
                 <div
                   key={message.id}
-                  className={`flex gap-3 ${isOwn ? "flex-row-reverse" : ""}`}
+                  className={`flex gap-3 group ${isOwn ? "flex-row-reverse" : ""}`}
                 >
                   <Avatar className="w-8 h-8 shrink-0">
                     <AvatarImage src={message.avatar_url || undefined} />
@@ -214,6 +229,16 @@ export default function CrewChatPage() {
                     >
                       {message.message_text}
                     </div>
+                    {/* Moderator delete button */}
+                    {canModerate && (
+                      <button
+                        onClick={() => handleDeleteMessage(message.id)}
+                        className="ml-2 p-1 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete message"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
