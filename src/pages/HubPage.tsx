@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users, ShoppingBag, Coins } from 'lucide-react';
+import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users, ShoppingBag, Coins, Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
 import LoopMonster from '@/components/loopgate/LoopMonster';
+import ActivityFeed from '@/components/loopgate/ActivityFeed';
 const leagueConfig = {
   elite: {
     label: 'Elite League',
@@ -272,6 +273,17 @@ export default function HubPage() {
             </div>
           </motion.div>
         </Link>
+      </div>
+
+      {/* Activity Feed */}
+      <div className="px-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display text-xl flex items-center gap-2">
+            <Activity className="w-5 h-5 text-gold" />
+            Live Activity
+          </h3>
+        </div>
+        <ActivityFeed limit={5} compact />
       </div>
 
       {/* Quick Links */}
