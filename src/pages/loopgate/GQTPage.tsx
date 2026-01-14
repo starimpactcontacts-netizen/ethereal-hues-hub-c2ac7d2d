@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { useGuestMode } from '@/hooks/useGuestMode';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink, LogIn } from 'lucide-react';
 import { validatePlatformUrl, detectPlatform, type PlatformType } from '@/lib/urlValidation';
 import { toast } from 'sonner';
 import GQTResultCard from '@/components/loopgate/GQTResultCard';
@@ -35,7 +38,9 @@ interface GQTSubmission {
 }
 
 export default function GQTPage() {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
+  const { isGuest } = useGuestMode();
+  const navigate = useNavigate();
   const [url, setUrl] = useState('');
   const [platform, setPlatform] = useState<PlatformType>('tiktok');
   const [editingSoftware, setEditingSoftware] = useState('');
@@ -46,6 +51,10 @@ export default function GQTPage() {
   const [urlError, setUrlError] = useState<string | null>(null);
   const [latestSubmission, setLatestSubmission] = useState<GQTSubmission | null>(null);
   const [pendingSubmission, setPendingSubmission] = useState<GQTSubmission | null>(null);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  
+  // Check if user is authenticated (not guest)
+  const isAuthenticated = !!user && !isGuest;
   
   // Load latest submission on mount
   useEffect(() => {
@@ -107,8 +116,9 @@ export default function GQTPage() {
   };
   
   const handleSubmit = async () => {
-    if (!profile?.id) {
-      toast.error('Please log in to submit');
+    // Guest users: show auth prompt instead of submitting
+    if (!isAuthenticated || !profile?.id) {
+      setShowAuthPrompt(true);
       return;
     }
     
@@ -367,6 +377,44 @@ export default function GQTPage() {
           </motion.div>
         )}
       </div>
+      
+      {/* Auth Prompt Dialog - Appears when guests try to submit */}
+      <Dialog open={showAuthPrompt} onOpenChange={setShowAuthPrompt}>
+        <DialogContent className="bg-surface-0 border-gold/30 max-w-sm">
+          <DialogHeader>
+            <div className="w-16 h-16 mx-auto mb-4 bg-gold/10 border border-gold/30 flex items-center justify-center">
+              <LogIn className="w-8 h-8 text-gold" />
+            </div>
+            <DialogTitle className="font-display text-2xl text-center text-gold">
+              Ready to Get Scored?
+            </DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground">
+              Sign in or create an account to submit your edit and get your official QOI score from a real judge.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 pt-4">
+            <Button 
+              onClick={() => navigate('/auth')}
+              className="w-full bg-gold hover:bg-gold/90 text-background font-display h-12"
+            >
+              <LogIn className="w-5 h-5 mr-2" />
+              Sign In / Sign Up
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAuthPrompt(false)}
+              className="w-full border-border text-muted-foreground"
+            >
+              Keep Browsing
+            </Button>
+          </div>
+          
+          <p className="text-xs text-center text-muted-foreground pt-2">
+            Your form data is saved — just sign in and hit submit again.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
