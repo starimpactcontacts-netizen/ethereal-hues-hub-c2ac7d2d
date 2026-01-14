@@ -9,6 +9,7 @@ export interface RealEvent {
   subtitle: string | null;
   description: string | null;
   ip: string;
+  category: string | null;
   status: 'live' | 'pending' | 'closed';
   start_date: string;
   end_date: string;
