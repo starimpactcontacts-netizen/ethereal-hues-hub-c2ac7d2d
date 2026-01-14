@@ -21,9 +21,9 @@ interface House {
   description: string;
   lore: string | null;
   member_count: number;
-  avg_qoi: number | null;
   prestige_level: number;
   requires_approval: boolean;
+  house_index?: number;
 }
 
 export default function HousesPage() {
@@ -45,7 +45,8 @@ export default function HousesPage() {
   }, [user]);
 
   async function fetchHouses() {
-    const { data, error } = await supabase
+    // Fetch houses
+    const { data: housesData, error } = await supabase
       .from("houses")
       .select("*")
       .order("type", { ascending: true })
@@ -54,9 +55,27 @@ export default function HousesPage() {
     if (error) {
       console.error("Error fetching houses:", error);
       toast.error("Failed to load houses");
-    } else {
-      setHouses(data || []);
+      setLoading(false);
+      return;
     }
+
+    // For each house, calculate total index from members
+    const housesWithIndex = await Promise.all(
+      (housesData || []).map(async (house) => {
+        const { data: members } = await supabase
+          .from("house_members")
+          .select("user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
+          .eq("house_id", house.id);
+
+        const totalIndex = members?.reduce((sum, m: any) => 
+          sum + (m.profile?.global_index_score || 0), 0
+        ) || 0;
+
+        return { ...house, house_index: Math.floor(totalIndex) };
+      })
+    );
+
+    setHouses(housesWithIndex);
     setLoading(false);
   }
 
@@ -84,7 +103,17 @@ export default function HousesPage() {
         .single();
       
       if (houseData) {
-        setMyHouse(houseData);
+        // Calculate house index
+        const { data: members } = await supabase
+          .from("house_members")
+          .select("user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
+          .eq("house_id", houseData.id);
+
+        const totalIndex = members?.reduce((sum, m: any) => 
+          sum + (m.profile?.global_index_score || 0), 0
+        ) || 0;
+
+        setMyHouse({ ...houseData, house_index: Math.floor(totalIndex) });
       }
     }
   }
@@ -131,7 +160,7 @@ export default function HousesPage() {
       if (error) {
         toast.error("Failed to join house");
       } else {
-        toast.success(`Welcome to ${house.name}!`);
+        toast.success(`Welcome to ${house.name}`);
         // Update profile
         await supabase
           .from("profiles")
@@ -210,32 +239,28 @@ export default function HousesPage() {
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-lg border"
-            style={{
-              borderColor: myHouse.primary_color,
-              background: `linear-gradient(135deg, ${myHouse.primary_color}10, transparent)`,
-            }}
+            className="p-4 rounded-lg border border-gold/30 bg-muted/30"
           >
             <div className="flex items-center gap-3 mb-2">
-              <div
-                className="w-10 h-10 rounded-lg flex items-center justify-center"
-                style={{
-                  backgroundColor: `${myHouse.primary_color}20`,
-                }}
-              >
-                <HouseIcon symbol={myHouse.symbol} size={24} style={{ color: myHouse.primary_color }} />
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-muted/50 border border-gold/20">
+                <HouseIcon symbol={myHouse.symbol} size={24} className="text-gold" />
               </div>
-              <div>
+              <div className="flex-1">
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">Your House</div>
                 <div className="font-display font-semibold">{myHouse.name}</div>
               </div>
+              {myHouse.house_index !== undefined && (
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">House Index</div>
+                  <div className="text-gold font-mono">{myHouse.house_index.toLocaleString()}</div>
+                </div>
+              )}
             </div>
             <button
               onClick={() => navigate(`/houses/${myHouse.id}`)}
-              className="text-xs underline opacity-70 hover:opacity-100"
-              style={{ color: myHouse.primary_color }}
+              className="text-xs underline text-muted-foreground hover:text-foreground"
             >
-              View House Details →
+              View Details →
             </button>
           </motion.div>
         )}

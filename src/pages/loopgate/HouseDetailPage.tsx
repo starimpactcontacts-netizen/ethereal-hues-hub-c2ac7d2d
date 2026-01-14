@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Users, Trophy, Star, Lock, Clock, LogOut } from "lucide-react";
+import { ArrowLeft, Users, Clock, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,19 +18,8 @@ interface House {
   secondary_color: string;
   description: string;
   lore: string | null;
-  bonuses: Record<string, number>;
   member_count: number;
-  avg_qoi: number | null;
-  prestige_level: number;
   requires_approval: boolean;
-}
-
-// Helper to safely cast bonuses from JSON
-function parseBonuses(bonuses: unknown): Record<string, number> {
-  if (typeof bonuses === 'object' && bonuses !== null && !Array.isArray(bonuses)) {
-    return bonuses as Record<string, number>;
-  }
-  return {};
 }
 
 interface Member {
@@ -46,36 +35,13 @@ interface Member {
   };
 }
 
-const bonusLabels: Record<string, string> = {
-  lateSubmissionBoost: "Late Submission Boost",
-  chaosStyleBoost: "Chaos Style Boost",
-  moraleBoostBehind: "Morale Boost When Behind",
-  darkGradeScoring: "Dark Grade Scoring",
-  ambientMoodScore: "Ambient Mood Score",
-  pacingScore: "Pacing Score",
-  aestheticScoring: "Aesthetic Scoring",
-  storyCohesion: "Story Cohesion",
-  emotionalResonance: "Emotional Resonance",
-  experimentalScore: "Experimental Score",
-  innovationRating: "Innovation Rating",
-  colorGradingScore: "Color Grading Score",
-  aestheticAccuracy: "Aesthetic Accuracy",
-  penaltyResistance: "Penalty Resistance",
-  consistencySupport: "Consistency Support",
-  audioSyncScore: "Audio Sync Score",
-  motionTimingScore: "Motion Timing Score",
-  qoiStability: "QOI Stability",
-  rankProtection: "Rank Protection",
-  qoiBoost: "QOI Boost",
-  housePrestigeMultiplier: "House Prestige Multiplier",
-};
-
 export default function HouseDetailPage() {
   const { houseId } = useParams<{ houseId: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [house, setHouse] = useState<House | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
+  const [houseIndex, setHouseIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [hasPendingApplication, setHasPendingApplication] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -96,7 +62,7 @@ export default function HouseDetailPage() {
     // Fetch house
     const { data: houseData, error: houseError } = await supabase
       .from("houses")
-      .select("*")
+      .select("id, name, type, symbol, primary_color, secondary_color, description, lore, member_count, requires_approval")
       .eq("id", houseId)
       .single();
 
@@ -106,12 +72,9 @@ export default function HouseDetailPage() {
       return;
     }
 
-    setHouse({
-      ...houseData,
-      bonuses: parseBonuses(houseData.bonuses),
-    });
+    setHouse(houseData);
 
-    // Fetch members with profiles
+    // Fetch members with profiles and calculate house index
     const { data: membersData } = await supabase
       .from("house_members")
       .select(`
@@ -128,10 +91,17 @@ export default function HouseDetailPage() {
       `)
       .eq("house_id", houseId)
       .order("role", { ascending: true })
-      .limit(20);
+      .limit(50);
 
     if (membersData) {
-      setMembers(membersData as unknown as Member[]);
+      const typedMembers = membersData as unknown as Member[];
+      setMembers(typedMembers);
+      
+      // Calculate total house index
+      const totalIndex = typedMembers.reduce((sum, m) => 
+        sum + (m.profile?.global_index_score || 0), 0
+      );
+      setHouseIndex(Math.floor(totalIndex));
     }
 
     // Check pending application
@@ -178,7 +148,7 @@ export default function HouseDetailPage() {
       if (error) {
         toast.error("Failed to join");
       } else {
-        toast.success(`Welcome to ${house.name}!`);
+        toast.success(`Welcome to ${house.name}`);
         await supabase
           .from("profiles")
           .update({ house_id: house.id, house_changed_at: new Date().toISOString() })
@@ -224,33 +194,20 @@ export default function HouseDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Hero Banner */}
-      <div
-        className="relative h-48 overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, ${house.primary_color}40, ${house.secondary_color}40)`,
-        }}
-      >
-        {/* Animated glow */}
-        <motion.div
-          className="absolute inset-0"
-          animate={{
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+      {/* Minimal Hero */}
+      <div className="relative h-40 bg-muted/30">
+        {/* Subtle glow */}
+        <div
+          className="absolute inset-0 opacity-10"
           style={{
-            background: `radial-gradient(circle at 50% 0%, ${house.primary_color}60, transparent 70%)`,
+            background: `radial-gradient(circle at 50% 0%, hsl(var(--gold)), transparent 70%)`,
           }}
         />
 
         {/* Back button */}
         <button
           onClick={() => navigate("/houses")}
-          className="absolute top-4 left-4 z-10 p-2 rounded-full bg-background/80 backdrop-blur"
+          className="absolute top-4 left-4 z-10 p-2 rounded-full bg-background/80 backdrop-blur border border-border"
         >
           <ArrowLeft size={20} />
         </button>
@@ -260,86 +217,53 @@ export default function HouseDetailPage() {
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="p-6 rounded-2xl"
-            style={{
-              backgroundColor: `${house.secondary_color}80`,
-              border: `2px solid ${house.primary_color}50`,
-            }}
+            className="p-5 rounded-xl bg-muted/50 border border-gold/20"
           >
             <HouseIcon 
               symbol={house.symbol} 
-              size={64} 
-              style={{ color: house.primary_color }}
+              size={56} 
+              className="text-gold"
             />
           </motion.div>
         </div>
 
         {isPrestige && (
-          <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 rounded bg-gold/20 text-gold text-xs font-semibold uppercase">
-            <Lock size={12} />
+          <div className="absolute top-4 right-4 px-2 py-1 rounded border border-gold/50 bg-background/80 backdrop-blur text-gold text-xs font-semibold uppercase tracking-wider">
             Prestige
           </div>
         )}
       </div>
 
       {/* Content */}
-      <div className="px-4 -mt-4 relative z-10">
+      <div className="px-4 -mt-4 relative z-10 space-y-4">
         {/* Name & Description */}
-        <div className="bg-card rounded-lg border border-border p-4 mb-4">
+        <div className="bg-card rounded-lg border border-border p-4">
           <h1 className="text-xl font-display font-bold uppercase tracking-wide mb-2">
             {house.name}
           </h1>
           <p className="text-sm text-muted-foreground italic">
-            "{house.lore || house.description}"
+            "{house.description}"
           </p>
 
           {/* Stats */}
-          <div className="flex items-center gap-4 mt-4 text-sm">
-            <div className="flex items-center gap-1 text-muted-foreground">
+          <div className="flex items-center gap-6 mt-4 text-sm">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
               <Users size={14} />
               <span>{house.member_count} members</span>
             </div>
-            {house.avg_qoi && house.avg_qoi > 0 && (
-              <div className="flex items-center gap-1 text-gold">
-                <Trophy size={14} />
-                <span>{house.avg_qoi.toFixed(1)} avg QOI</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Star size={14} />
-              <span>Level {house.prestige_level}</span>
+            <div className="flex items-center gap-1.5 text-gold">
+              <span>◆</span>
+              <span className="font-mono">{houseIndex.toLocaleString()} Index</span>
             </div>
-          </div>
-        </div>
-
-        {/* Buffs */}
-        <div className="bg-card rounded-lg border border-border p-4 mb-4">
-          <h2 className="text-sm font-display font-semibold uppercase tracking-wider mb-3">
-            House Buffs
-          </h2>
-          <div className="space-y-2">
-            {Object.entries(house.bonuses).map(([key, value]) => (
-              <div
-                key={key}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className="text-muted-foreground">
-                  {bonusLabels[key] || key}
-                </span>
-                <span className="font-mono" style={{ color: house.primary_color }}>
-                  +{(value * 100).toFixed(0)}%
-                </span>
-              </div>
-            ))}
           </div>
         </div>
 
         {/* Action Button */}
-        <div className="mb-4">
+        <div>
           {isMember ? (
             <Button
               variant="outline"
-              className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              className="w-full border-muted-foreground/30 text-muted-foreground hover:text-foreground"
               onClick={handleLeave}
               disabled={isLeaving}
             >
@@ -347,53 +271,58 @@ export default function HouseDetailPage() {
               Leave House
             </Button>
           ) : isPrestige ? (
-            <Button disabled className="w-full">
+            <Button 
+              disabled 
+              variant="outline"
+              className="w-full font-semibold uppercase border-gold/50 text-gold bg-background"
+            >
               Invite Only
             </Button>
           ) : hasPendingApplication ? (
-            <Button disabled className="w-full bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+            <Button 
+              disabled 
+              variant="outline"
+              className="w-full bg-muted text-muted-foreground border-muted"
+            >
               <Clock size={16} className="mr-2" />
               Application Pending
             </Button>
           ) : profile?.house_id ? (
-            <Button disabled className="w-full">
+            <Button disabled variant="outline" className="w-full">
               Already in a House
             </Button>
           ) : (
             <Button
-              className="w-full font-semibold"
-              style={{
-                backgroundColor: house.primary_color,
-                color: house.secondary_color === "#0A0A0A" || house.secondary_color === "#1A1A1A" ? "#000" : "#fff",
-              }}
+              variant="outline"
+              className="w-full font-semibold border-gold/30 hover:bg-gold/10 hover:border-gold/50"
               onClick={handleApply}
               disabled={isApplying}
             >
-              {house.requires_approval ? "Apply to Join" : "Join House"}
+              Apply
             </Button>
           )}
         </div>
 
         {/* Members */}
         <div className="bg-card rounded-lg border border-border p-4">
-          <h2 className="text-sm font-display font-semibold uppercase tracking-wider mb-3">
-            Members ({house.member_count})
+          <h2 className="text-sm font-display font-semibold uppercase tracking-wider mb-3 text-muted-foreground">
+            Members
           </h2>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {members.map((member) => (
               <button
                 key={member.id}
                 onClick={() => navigate(`/u/${member.profile.username}`)}
                 className="w-full flex items-center gap-3 p-2 -mx-2 rounded hover:bg-muted/50 transition-colors"
               >
-                <Avatar className="w-10 h-10">
+                <Avatar className="w-9 h-9">
                   <AvatarImage src={member.profile.avatar_url || undefined} />
-                  <AvatarFallback className="bg-muted">
+                  <AvatarFallback className="bg-muted text-xs">
                     {(member.profile.display_name || member.profile.username)[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 text-left">
-                  <div className="font-medium text-sm">
+                <div className="flex-1 text-left min-w-0">
+                  <div className="font-medium text-sm truncate">
                     {member.profile.display_name || member.profile.username}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -401,13 +330,7 @@ export default function HouseDetailPage() {
                   </div>
                 </div>
                 {member.role !== "member" && (
-                  <span
-                    className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded"
-                    style={{
-                      backgroundColor: `${house.primary_color}20`,
-                      color: house.primary_color,
-                    }}
-                  >
+                  <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-gold/30 text-gold">
                     {member.role}
                   </span>
                 )}
