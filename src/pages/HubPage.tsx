@@ -1,356 +1,418 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users, ShoppingBag, Coins, Activity, UserPlus } from 'lucide-react';
+import { 
+  Target, ArrowRight, Crown, Shield, Users, Play, Trophy, 
+  MessageCircle, Users2, Zap, TrendingUp, Star, Award
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
-import GQTCard from '@/components/loopgate/GQTCard';
+import CountdownTimer from '@/components/loopgate/CountdownTimer';
+
 const leagueConfig = {
-  elite: {
-    label: 'Elite League',
-    icon: Crown,
-    color: 'text-gold',
-    bg: 'bg-gold/10',
-    border: 'border-gold',
-    description: 'Top 1% of global rankings',
-  },
-  pro: {
-    label: 'Pro League',
-    icon: Shield,
-    color: 'text-blue-400',
-    bg: 'bg-blue-400/10',
-    border: 'border-blue-400',
-    description: 'Top 15% with event wins',
-  },
-  open: {
-    label: 'Open League',
-    icon: Users,
-    color: 'text-muted-foreground',
-    bg: 'bg-muted/20',
-    border: 'border-border',
-    description: 'All competitors welcome',
-  },
+  cartel: { label: 'CARTEL', icon: Crown, gradient: 'from-gold via-amber-400 to-gold', glow: 'shadow-gold/30' },
+  elite: { label: 'ELITE', icon: Crown, gradient: 'from-gold to-amber-500', glow: 'shadow-gold/20' },
+  pro: { label: 'PRO', icon: Shield, gradient: 'from-blue-400 to-blue-600', glow: 'shadow-blue-500/20' },
+  open: { label: 'OPEN', icon: Users, gradient: 'from-zinc-500 to-zinc-600', glow: 'shadow-zinc-500/10' },
 };
 
 export default function HubPage() {
   const { profile } = useAuth();
-  const { events, loading: eventsLoading } = useRealEvents();
-  const { stats, loading: statsLoading } = useGlobalStats();
+  const { events } = useRealEvents();
+  const { stats } = useGlobalStats();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   
-  // Keep session active
   useActiveSession();
 
-  // Get user's league
   const userLeague = (profile?.league?.toLowerCase() || 'open') as keyof typeof leagueConfig;
   const league = leagueConfig[userLeague] || leagueConfig.open;
   const LeagueIcon = league.icon;
+  const bestScore = profile?.best_gatekeeper_qoi;
 
-  // Find the primary live event
-  const liveEvent = events.find(e => e.status === 'live');
-  const upcomingEvents = events.filter(e => e.status === 'pending').slice(0, 2);
-
-  // Build real activity based on actual data
-  const recentActivity = stats.entries24h > 0 ? [
-    { type: 'submission', text: `${stats.entries24h} edits submitted in the last 24h`, time: 'Live' },
-    { type: 'judging', text: liveEvent ? `Judging in progress for ${liveEvent.title}` : 'No active judging', time: liveEvent ? 'Active' : 'Inactive' },
-    { type: 'update', text: 'Rankings updated', time: 'Live' },
-  ] : [];
+  const liveEvents = events.filter(e => e.status === 'live').slice(0, 3);
+  const upcomingEvents = events.filter(e => e.status === 'pending').slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Loop Monster - appears when pulling down from top (Snapchat-style) */}
+    <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
       <LoopMonster />
-      {/* Welcome Header */}
-      <div className="px-4 pt-8 pb-6">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-1">
-            Welcome back
-          </p>
-          <h1 className="font-display text-3xl text-gold">{profile?.username || 'EDITOR'}</h1>
-        </motion.div>
-      </div>
+      
+      {/* ═══════════════════════════════════════════════════════════════════
+          HERO LAYER - Immersive gradient + user identity + QOI spotlight
+      ═══════════════════════════════════════════════════════════════════ */}
+      <div className="relative">
+        {/* Immersive background with radial gradient and subtle noise */}
+        <div className="absolute inset-0 h-[420px] overflow-hidden">
+          {/* Deep radial gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-surface-1 via-background to-background" />
+          {/* Gold accent glow from top */}
+          <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-gold/5 to-transparent" />
+          {/* Subtle radial spotlight */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_top,_hsl(43_74%_49%_/_0.08)_0%,_transparent_60%)]" />
+          {/* Animated pulse overlay */}
+          <motion.div 
+            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,_hsl(43_74%_49%_/_0.05)_0%,_transparent_50%)]"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* Grid overlay for depth */}
+          <div 
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: `linear-gradient(hsl(var(--gold)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--gold)) 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }}
+          />
+        </div>
 
-      {/* Global QOI Test Card - THE GENERATIONAL TOOL */}
-      <div className="px-4 mb-6">
-        <GQTCard />
-      </div>
-
-      {/* League Status Card */}
-      <div className="px-4 mb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className={`${league.bg} border ${league.border} p-4`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 ${league.bg} border ${league.border} flex items-center justify-center`}>
-                <LeagueIcon className={`w-5 h-5 ${league.color}`} />
+        {/* Hero Content */}
+        <div className="relative px-4 pt-10 pb-6">
+          {/* User Identity Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 mb-8"
+          >
+            {/* Avatar with league ring */}
+            <div className="relative">
+              <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow}`}>
+                <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-display text-xl text-foreground">
+                      {profile?.username?.charAt(0).toUpperCase() || 'E'}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className={`font-display text-lg ${league.color}`}>{league.label}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{league.description}</p>
+              {/* League indicator */}
+              <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br ${league.gradient} flex items-center justify-center shadow-lg`}>
+                <LeagueIcon className="w-3 h-3 text-background" />
               </div>
             </div>
-            <Link to="/rankings" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              View Ranks <ArrowRight size={12} />
-            </Link>
-          </div>
-        </motion.div>
-      </div>
+            
+            <div>
+              <h1 className="font-display text-2xl text-foreground leading-none">
+                {profile?.username || 'EDITOR'}
+              </h1>
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`text-[10px] font-bold tracking-widest uppercase bg-gradient-to-r ${league.gradient} bg-clip-text text-transparent`}>
+                  {league.label} LEAGUE
+                </span>
+                <span className="text-[10px] text-muted-foreground">•</span>
+                <span className="text-[10px] text-muted-foreground">LVL {profile?.level || 1}</span>
+              </div>
+            </div>
+          </motion.div>
 
-      {/* Live Event Card */}
-      {liveEvent ? (
-        <div className="px-4 mb-8">
+          {/* ═══════════════════════════════════════════════════════════════════
+              PRIMARY ACTION - Global QOI Test Spotlight
+          ═══════════════════════════════════════════════════════════════════ */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-surface-1 border border-border overflow-hidden"
           >
-            {/* Live Badge */}
-            <div className="bg-green-500/10 border-b border-green-500/20 px-4 py-2 flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-xs font-semibold tracking-widest text-green-500 uppercase">Live Competition</span>
-            </div>
-
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase block mb-2">
-                    {liveEvent.league} League{liveEvent.category ? ` · ${liveEvent.category}` : ''}
-                  </span>
-                  <h2 className="font-display text-4xl text-gold">{liveEvent.title}</h2>
-                </div>
-                {liveEvent.prize_pool && (
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Prize Pool</p>
-                    <p className="font-display text-2xl">{liveEvent.prize_pool}</p>
+            <Link to="/gqt" className="block">
+              <div className="relative group">
+                {/* Outer glow container */}
+                <div className="absolute -inset-[1px] bg-gradient-to-r from-gold/50 via-gold to-gold/50 opacity-60 blur-sm group-hover:opacity-100 transition-opacity" />
+                
+                {/* Main card with glass effect */}
+                <div className="relative bg-gradient-to-br from-surface-1/95 via-surface-0/95 to-background/95 backdrop-blur-xl border border-gold/30 overflow-hidden">
+                  {/* Inner gold accent line */}
+                  <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent" />
+                  
+                  {/* Hazard pattern subtle overlay */}
+                  <div className="absolute inset-0 opacity-[0.03]">
+                    <div 
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 20px, hsl(43 74% 49%) 20px, hsl(43 74% 49%) 40px)',
+                      }}
+                    />
                   </div>
-                )}
-              </div>
-
-              {/* Countdown */}
-              <div className="bg-surface-0 border border-border p-4 mb-6">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2 text-center">Ends In</p>
-                <CountdownTimer endDate={liveEvent.end_date} large />
-              </div>
-
-              {/* Stats Row - Real Data */}
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="text-center">
-                  <p className="font-display text-2xl">{stats.entries24h}</p>
-                  <p className="text-xs text-muted-foreground uppercase">Entries 24h</p>
+                  
+                  <div className="relative p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        {/* Badge */}
+                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-gold/10 border border-gold/30 mb-3">
+                          <Zap className="w-3 h-3 text-gold" />
+                          <span className="text-[9px] font-bold tracking-widest text-gold uppercase">Featured</span>
+                        </div>
+                        
+                        <h2 className="font-display text-3xl text-gold mb-1">GLOBAL QOI TEST</h2>
+                        <p className="text-sm text-muted-foreground italic">"Submit an edit. Get your score."</p>
+                      </div>
+                      
+                      {/* Target icon with animation */}
+                      <div className="relative">
+                        <motion.div 
+                          className="w-16 h-16 border-2 border-gold/50 flex items-center justify-center"
+                          animate={{ rotate: [0, 5, 0, -5, 0] }}
+                          transition={{ duration: 4, repeat: Infinity }}
+                        >
+                          <Target className="w-8 h-8 text-gold" />
+                        </motion.div>
+                        {/* Ping effect */}
+                        <div className="absolute inset-0 border-2 border-gold/30 animate-ping opacity-20" />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/50">
+                      {bestScore ? (
+                        <div className="flex items-center gap-3">
+                          <div className="text-center">
+                            <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Your Best</p>
+                            <p className="font-display text-2xl text-gold">{bestScore.toFixed(1)}</p>
+                          </div>
+                          <div className="w-px h-8 bg-border" />
+                          <span className="text-[10px] text-muted-foreground">Beat your score →</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                          Get real feedback on your edits
+                        </span>
+                      )}
+                      
+                      <Button className="bg-gold hover:bg-gold/90 text-background font-display h-10 px-6 group-hover:shadow-lg group-hover:shadow-gold/30 transition-shadow">
+                        START TEST
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="font-display text-2xl">{stats.activeUsers}</p>
-                  <p className="text-xs text-muted-foreground uppercase">Active Now</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-display text-2xl">{stats.totalCompeting || 0}</p>
-                  <p className="text-xs text-muted-foreground uppercase">Competing</p>
-                </div>
               </div>
+            </Link>
+          </motion.div>
+        </div>
+      </div>
 
-              <Link to={`/event/${liveEvent.id}`}>
-                <Button className="w-full bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg h-12">
-                  <Play className="mr-2 w-5 h-5" />
-                  View Event
-                </Button>
+      {/* ═══════════════════════════════════════════════════════════════════
+          SECONDARY LAYER - Horizontal scroll modules
+      ═══════════════════════════════════════════════════════════════════ */}
+      <div className="mt-8 space-y-6">
+        
+        {/* Live Events Scroll */}
+        {liveEvents.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex items-center justify-between px-4 mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <h3 className="font-display text-lg text-foreground">LIVE NOW</h3>
+              </div>
+              <Link to="/events" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+                VIEW ALL <ArrowRight size={10} />
               </Link>
             </div>
+            
+            <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+              {liveEvents.map((event, i) => (
+                <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 + i * 0.05 }}
+                    className="w-[200px] bg-surface-1/80 backdrop-blur border border-border hover:border-gold/50 transition-colors overflow-hidden group"
+                  >
+                    {/* Mini poster */}
+                    {event.poster_url && (
+                      <div className="h-24 overflow-hidden">
+                        <img 
+                          src={event.poster_url} 
+                          alt={event.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                      </div>
+                    )}
+                    <div className="p-3">
+                      <div className="flex items-center gap-1 mb-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                        <span className="text-[8px] text-green-500 uppercase tracking-widest font-bold">Live</span>
+                      </div>
+                      <p className="font-display text-sm text-foreground truncate">{event.title}</p>
+                      <div className="mt-2 text-[10px] text-muted-foreground">
+                        <CountdownTimer endDate={event.end_date} />
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
           </motion.div>
-        </div>
-      ) : (
-        <div className="px-4 mb-8">
-          <div className="bg-surface-1 border border-border p-8 text-center">
-            <p className="text-muted-foreground">No live events at the moment</p>
-            <p className="text-xs text-muted-foreground mt-2">Check back soon for upcoming competitions</p>
-          </div>
-        </div>
-      )}
+        )}
 
-      {/* Live Activity */}
-      {recentActivity.length > 0 && (
-        <div className="px-4 mb-8">
-          <h3 className="font-display text-xl mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-gold" />
-            Live Activity
-          </h3>
-          <div className="space-y-2">
-            {recentActivity.map((activity, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                className="bg-surface-1 border border-border p-4 flex items-center justify-between"
-              >
-                <p className="text-sm">{activity.text}</p>
-                <span className={`text-xs font-semibold uppercase tracking-widest ${
-                  activity.time === 'Live' ? 'text-green-500' : 
-                  activity.time === 'Active' ? 'text-gold' : 'text-muted-foreground'
-                }`}>
-                  {activity.time}
-                </span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Upcoming Activations */}
-      {upcomingEvents.length > 0 && (
-        <div className="px-4 mb-8">
-          <h3 className="font-display text-xl mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-muted-foreground" />
-            Upcoming Activations
-          </h3>
-          <div className="space-y-2">
-            {upcomingEvents.map((event, index) => {
-              const startsIn = new Date(event.start_date).getTime() - Date.now();
-              const days = Math.floor(startsIn / (1000 * 60 * 60 * 24));
-              const hours = Math.floor((startsIn % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-              
-              return (
-                <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                  className="bg-surface-1 border border-border p-4 flex items-center justify-between"
-                >
-                  <div>
-                    <h4 className="font-display text-lg">{event.title}</h4>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest">{event.league} League</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="px-3 py-1 bg-gold/10 border border-gold/20 text-gold text-xs font-semibold uppercase tracking-widest">
-                      {days > 0 ? `${days}d ${hours}h` : `${hours}h`}
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* No Events State */}
-      {!eventsLoading && events.length === 0 && (
-        <div className="px-4 mb-8">
-          <div className="bg-surface-1 border border-border p-8 text-center">
-            <p className="text-muted-foreground">No events scheduled yet</p>
-          </div>
-        </div>
-      )}
-
-      {/* Shop Banner */}
-      <div className="px-4 mb-6">
-        <Link to="/shop">
+        {/* Upcoming Events */}
+        {upcomingEvents.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-gradient-to-r from-gold/20 to-gold/5 border border-gold/50 p-4 flex items-center justify-between hover:border-gold transition-colors"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gold/20 border border-gold/50 flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-gold" />
+            <div className="flex items-center justify-between px-4 mb-3">
+              <h3 className="font-display text-lg text-foreground flex items-center gap-2">
+                <Zap className="w-4 h-4 text-gold" />
+                UPCOMING
+              </h3>
+            </div>
+            
+            <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+              {upcomingEvents.map((event, i) => {
+                const startsIn = new Date(event.start_date).getTime() - Date.now();
+                const days = Math.floor(startsIn / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((startsIn % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                
+                return (
+                  <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.25 + i * 0.05 }}
+                      className="w-[180px] bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4"
+                    >
+                      <p className="font-display text-sm text-foreground truncate mb-1">{event.title}</p>
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-3">{event.league} League</p>
+                      <div className="inline-flex items-center gap-1 px-2 py-1 bg-gold/10 border border-gold/30">
+                        <span className="text-[10px] text-gold font-bold">
+                          {days > 0 ? `${days}D ${hours}H` : `${hours}H`}
+                        </span>
+                      </div>
+                    </motion.div>
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Quick Access Row - Rankings, Crews */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="px-4"
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <Link to="/rankings">
+              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group">
+                <div className="flex items-center justify-between mb-3">
+                  <Trophy className="w-5 h-5 text-gold" />
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
+                </div>
+                <p className="font-display text-sm">RANKINGS</p>
+                <p className="text-[9px] text-muted-foreground mt-0.5">Global Index</p>
+              </div>
+            </Link>
+            
+            <Link to="/crews">
+              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group">
+                <div className="flex items-center justify-between mb-3">
+                  <Users2 className="w-5 h-5 text-muted-foreground" />
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
+                </div>
+                <p className="font-display text-sm">CREWS</p>
+                <p className="text-[9px] text-muted-foreground mt-0.5">Join a team</p>
+              </div>
+            </Link>
+          </div>
+        </motion.div>
+
+        {/* Stats Strip */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35 }}
+          className="px-4"
+        >
+          <div className="bg-gradient-to-r from-surface-1/40 via-surface-1/60 to-surface-1/40 border border-border/30 p-4">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="font-display text-xl text-gold">{stats.entries24h}</p>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Entries 24h</p>
               </div>
               <div>
-                <p className="font-display text-lg text-gold">Shop</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Spend your INDEX on rewards</p>
+                <p className="font-display text-xl text-foreground">{stats.activeUsers}</p>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Active Now</p>
+              </div>
+              <div>
+                <p className="font-display text-xl text-foreground">{stats.totalCompeting || 0}</p>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Competing</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 bg-background/50 px-3 py-1.5 rounded-full">
-                <Coins className="w-4 h-4 text-gold" />
-                <span className="font-display text-gold">{(profile as any)?.spendable_index || 0}</span>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gold" />
-            </div>
-          </motion.div>
-        </Link>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Feed */}
-      <div className="px-4 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display text-xl flex items-center gap-2">
-            <Activity className="w-5 h-5 text-gold" />
-            Feed
-          </h3>
-          <Link to="/feed" className="text-xs text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-            View All <ArrowRight size={12} />
+      {/* ═══════════════════════════════════════════════════════════════════
+          WORLD LAYER - Dynamic Activity Feed
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        className="mt-8 px-4"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <TrendingUp className="w-5 h-5 text-gold" />
+              <motion.div 
+                className="absolute inset-0"
+                animate={{ opacity: [0, 0.5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <TrendingUp className="w-5 h-5 text-gold blur-sm" />
+              </motion.div>
+            </div>
+            <h3 className="font-display text-lg">LIVE FEED</h3>
+          </div>
+          <Link to="/feed" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+            FULL FEED <ArrowRight size={10} />
           </Link>
         </div>
-        <ActivityFeed limit={5} compact />
-      </div>
+        
+        {/* Elegant feed container with subtle glass effect */}
+        <div className="relative">
+          {/* Subtle glow behind */}
+          <div className="absolute inset-0 bg-gradient-to-b from-gold/[0.02] to-transparent rounded-sm" />
+          
+          <ActivityFeed limit={6} compact />
+        </div>
+      </motion.div>
 
-      {/* Invite Friends CTA - Opens Full Modal */}
-      <div className="px-4 mb-6">
-        <motion.button
+      {/* Invite CTA - Subtle but present */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.45 }}
+        className="mt-8 px-4"
+      >
+        <button
           onClick={() => setInviteModalOpen(true)}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="w-full bg-gradient-to-r from-gold via-gold/90 to-gold border-2 border-gold p-5 flex items-center justify-between hover:shadow-lg hover:shadow-gold/20 transition-all group"
+          className="w-full bg-gradient-to-r from-gold/10 via-gold/20 to-gold/10 border border-gold/30 hover:border-gold/60 transition-colors p-4 flex items-center justify-between group"
         >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-background/20 border border-background/30 flex items-center justify-center">
-              <UserPlus className="w-6 h-6 text-background" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
+              <Star className="w-5 h-5 text-gold" />
             </div>
             <div className="text-left">
-              <p className="font-display text-xl text-background">Invite Friends</p>
-              <p className="text-xs text-background/80 uppercase tracking-widest">Earn XP for every friend who joins</p>
+              <p className="font-display text-sm text-gold">INVITE FRIENDS</p>
+              <p className="text-[9px] text-muted-foreground">Earn +170 XP per invite</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="bg-background/20 px-3 py-1.5 text-xs font-bold text-background uppercase tracking-wider">
-              +170 XP
-            </span>
-            <ArrowRight className="w-6 h-6 text-background group-hover:translate-x-1 transition-transform" />
-          </div>
-        </motion.button>
-      </div>
+          <ArrowRight className="w-5 h-5 text-gold group-hover:translate-x-1 transition-transform" />
+        </button>
+      </motion.div>
 
-      {/* Quick Links */}
-      <div className="px-4">
-        <h3 className="font-display text-xl mb-4">Quick Links</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <Link to="/rankings">
-            <div className="bg-surface-1 border border-border p-4 flex flex-col items-center text-center hover:border-gold/50 transition-colors">
-              <Trophy className="w-6 h-6 text-gold mb-2" />
-              <span className="font-display text-sm">Rankings</span>
-            </div>
-          </Link>
-          <Link to="/arenas">
-            <div className="bg-surface-1 border border-border p-4 flex flex-col items-center text-center hover:border-gold/50 transition-colors">
-              <MessageCircle className="w-6 h-6 text-muted-foreground mb-2" />
-              <span className="font-display text-sm">Arenas</span>
-            </div>
-          </Link>
-          <Link to="/shop">
-            <div className="bg-surface-1 border border-gold/30 p-4 flex flex-col items-center text-center hover:border-gold/50 transition-colors">
-              <ShoppingBag className="w-6 h-6 text-gold mb-2" />
-              <span className="font-display text-sm">Shop</span>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      {/* Invite Modal - Same as header */}
       <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
     </div>
   );
