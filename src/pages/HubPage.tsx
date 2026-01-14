@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users } from 'lucide-react';
+import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users, ShoppingBag, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
@@ -243,10 +243,39 @@ export default function HubPage() {
         </div>
       )}
 
+      {/* Shop Banner */}
+      <div className="px-4 mb-6">
+        <Link to="/shop">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-gradient-to-r from-gold/20 to-gold/5 border border-gold/50 p-4 flex items-center justify-between hover:border-gold transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gold/20 border border-gold/50 flex items-center justify-center">
+                <ShoppingBag className="w-5 h-5 text-gold" />
+              </div>
+              <div>
+                <p className="font-display text-lg text-gold">Shop</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Spend your INDEX on rewards</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-background/50 px-3 py-1.5 rounded-full">
+                <Coins className="w-4 h-4 text-gold" />
+                <span className="font-display text-gold">{(profile as any)?.spendable_index || 0}</span>
+              </div>
+              <ArrowRight className="w-5 h-5 text-gold" />
+            </div>
+          </motion.div>
+        </Link>
+      </div>
+
       {/* Quick Links */}
       <div className="px-4">
         <h3 className="font-display text-xl mb-4">Quick Links</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Link to="/rankings">
             <div className="bg-surface-1 border border-border p-4 flex flex-col items-center text-center hover:border-gold/50 transition-colors">
               <Trophy className="w-6 h-6 text-gold mb-2" />
@@ -257,6 +286,12 @@ export default function HubPage() {
             <div className="bg-surface-1 border border-border p-4 flex flex-col items-center text-center hover:border-gold/50 transition-colors">
               <MessageCircle className="w-6 h-6 text-muted-foreground mb-2" />
               <span className="font-display text-sm">Arenas</span>
+            </div>
+          </Link>
+          <Link to="/shop">
+            <div className="bg-surface-1 border border-gold/30 p-4 flex flex-col items-center text-center hover:border-gold/50 transition-colors">
+              <ShoppingBag className="w-6 h-6 text-gold mb-2" />
+              <span className="font-display text-sm">Shop</span>
             </div>
           </Link>
         </div>
