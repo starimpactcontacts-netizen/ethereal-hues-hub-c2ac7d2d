@@ -12,45 +12,52 @@ export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
 
   useEffect(() => {
     let startY = 0;
+    let touchStartedAtBottom = false;
 
     const isAtBottom = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = window.innerHeight;
-      // Consider "at bottom" when within 5px of the end
-      return scrollTop + clientHeight >= scrollHeight - 5;
+      // For short pages (content fits in viewport), always consider "at bottom"
+      const isShortPage = scrollHeight <= clientHeight + 50;
+      // Consider "at bottom" when within 20px of the end (more forgiving)
+      return isShortPage || scrollTop + clientHeight >= scrollHeight - 20;
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Only start tracking if at bottom of page
-      if (isAtBottom()) {
-        startY = e.touches[0].clientY;
+      startY = e.touches[0].clientY;
+      // Check if we're at bottom when touch starts
+      touchStartedAtBottom = isAtBottom();
+      if (touchStartedAtBottom) {
         setIsPulling(true);
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isPulling) return;
+      // Must have started at bottom
+      if (!touchStartedAtBottom) return;
       
       const currentY = e.touches[0].clientY;
-      const diff = startY - currentY; // Inverted: pulling UP from bottom
+      const diff = startY - currentY; // Pulling UP = positive diff
       
-      // Only activate when pulling up (positive diff) and at bottom
-      if (diff > 0 && isAtBottom()) {
+      // Only activate when pulling up and still at bottom (or short page)
+      if (diff > 20 && isAtBottom()) {
         // Apply resistance for natural feel
-        const pull = Math.min(diff * 0.6, 120);
+        const pull = Math.min((diff - 20) * 0.7, 120);
         setPullAmount(pull);
         
-        if (pull > 15) {
+        if (pull > 10) {
           setIsVisible(true);
         }
-      } else {
+      } else if (diff <= 0) {
         setPullAmount(0);
+        setIsVisible(false);
       }
     };
 
     const handleTouchEnd = () => {
       setIsPulling(false);
+      touchStartedAtBottom = false;
       setPullAmount(0);
       // Delay hiding for smooth exit animation (flies down)
       setTimeout(() => setIsVisible(false), 500);
