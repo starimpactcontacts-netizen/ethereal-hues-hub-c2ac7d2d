@@ -92,17 +92,17 @@ export default function HouseCard({
         </div>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <Users size={12} />
-            <span>{house.member_count}</span>
+        <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center gap-1.5 text-xs">
+            <Users size={12} className="text-muted-foreground" />
+            <span className="font-mono font-medium">{house.member_count}</span>
+            <span className="text-muted-foreground">members</span>
           </div>
-          {house.house_index !== undefined && house.house_index > 0 && (
-            <div className="flex items-center gap-1">
-              <span className="text-gold">◆</span>
-              <span className="text-gold font-mono">{house.house_index.toLocaleString()} Index</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-gold">◆</span>
+            <span className="text-gold font-mono font-medium">{(house.house_index || 0).toLocaleString()}</span>
+            <span className="text-muted-foreground">index</span>
+          </div>
         </div>
 
         {/* Actions */}
