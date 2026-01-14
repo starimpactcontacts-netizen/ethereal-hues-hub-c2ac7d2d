@@ -2187,23 +2187,74 @@ export default function OpsPanel() {
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
-                            {/* Approve/Decline quick actions */}
+                            {/* Decline button */}
                             <button
                               onClick={() => handleDeclineSubmission(submission)}
                               disabled={actionLoading}
-                              className="p-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors"
+                              className="px-4 py-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors flex items-center gap-2"
                               title="Decline (stolen/invalid)"
                             >
                               <ThumbsDown size={16} />
+                              <span className="text-sm font-medium">Decline</span>
                             </button>
+                            {/* Approve button */}
                             <button
                               onClick={() => handleApproveSubmission(submission)}
                               disabled={actionLoading}
-                              className="p-2 bg-green-500/20 text-green-500 rounded-lg hover:bg-green-500/30 transition-colors"
+                              className="px-4 py-2 bg-green-500/20 text-green-500 rounded-lg hover:bg-green-500/30 transition-colors flex items-center gap-2"
                               title={`Approve (+${events.find(e => e.id === submission.event_id)?.xp_reward || 50} XP)`}
                             >
                               <ThumbsUp size={16} />
+                              <span className="text-sm font-medium">Approve</span>
                             </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="approved">
+              {approvedSubmissions.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-6 text-center">
+                  <ThumbsUp className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No approved submissions yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {approvedSubmissions.map((submission) => (
+                    <div
+                      key={submission.id}
+                      className="bg-card border border-green-500/30 rounded-lg overflow-hidden"
+                    >
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{submission.username}</p>
+                              {submission.verification_status && <VerifiedBadge size="sm" />}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                {submission.platform}
+                              </span>
+                              <a 
+                                href={submission.submission_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-gold text-xs hover:underline"
+                              >
+                                View Edit →
+                              </a>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-green-500/20 text-green-500 flex items-center gap-1">
+                              <Sparkles size={10} />
+                              +{submission.xp_awarded || 0} XP
+                            </Badge>
                             <button
                               onClick={() => setScoringSubmission(
                                 scoringSubmission === submission.id ? null : submission.id
@@ -2217,13 +2268,21 @@ export default function OpsPanel() {
                                 <ChevronDown size={14} />
                               )}
                             </button>
+                            <button
+                              onClick={() => handleDeclineSubmission(submission)}
+                              disabled={actionLoading}
+                              className="p-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors"
+                              title="Decline & revoke XP"
+                            >
+                              <ThumbsDown size={14} />
+                            </button>
                           </div>
                         </div>
                       </div>
 
-                      {/* Scoring Panel */}
+                      {/* QOI Scoring Panel - Only visible when Rating */}
                       {scoringSubmission === submission.id && (
-                        <div className="border-t border-border p-4 bg-surface-1 space-y-4">
+                        <div className="border-t border-border p-4 bg-surface-1 space-y-4 animate-in slide-in-from-top-2 duration-200">
                           <p className="text-xs text-muted-foreground uppercase tracking-widest">
                             QOI Scoring
                           </p>
@@ -2294,62 +2353,6 @@ export default function OpsPanel() {
                           </button>
                         </div>
                       )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="approved">
-              {approvedSubmissions.length === 0 ? (
-                <div className="bg-card border border-border rounded-lg p-6 text-center">
-                  <ThumbsUp className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">No approved submissions yet</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {approvedSubmissions.map((submission) => (
-                    <div
-                      key={submission.id}
-                      className="bg-card border border-green-500/30 rounded-lg overflow-hidden"
-                    >
-                      <div className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-semibold">{submission.username}</p>
-                              {submission.verification_status && <VerifiedBadge size="sm" />}
-                            </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                                {submission.platform}
-                              </span>
-                              <a 
-                                href={submission.submission_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-gold text-xs hover:underline"
-                              >
-                                View Edit →
-                              </a>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className="bg-green-500/20 text-green-500 flex items-center gap-1">
-                              <Sparkles size={10} />
-                              +{submission.xp_awarded || 0} XP
-                            </Badge>
-                            <button
-                              onClick={() => handleDeclineSubmission(submission)}
-                              disabled={actionLoading}
-                              className="p-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors"
-                              title="Decline & revoke XP"
-                            >
-                              <ThumbsDown size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   ))}
                 </div>
