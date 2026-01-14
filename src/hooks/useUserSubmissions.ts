@@ -34,27 +34,73 @@ export function useUserSubmissions() {
       return;
     }
 
-    // Fetch submissions
-    const { data: submissionsData, error } = await supabase
+    // Fetch standard event submissions
+    const { data: standardData, error: standardError } = await supabase
       .from('event_participations')
       .select('*')
       .eq('user_id', user.id)
       .order('submitted_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching submissions:', error);
-      setLoading(false);
-      return;
+    // Fetch Open Arena round submissions
+    const { data: roundData, error: roundError } = await supabase
+      .from('round_participations')
+      .select('*')
+      .eq('user_id', user.id)
+      .not('submission_url', 'is', null)
+      .order('submitted_at', { ascending: false });
+
+    if (standardError) {
+      console.error('Error fetching standard submissions:', standardError);
+    }
+    if (roundError) {
+      console.error('Error fetching round submissions:', roundError);
     }
 
-    if (!submissionsData || submissionsData.length === 0) {
+    // Merge both submission types
+    const allSubmissions = [
+      ...(standardData || []).map(s => ({
+        id: s.id,
+        event_id: s.event_id,
+        submission_url: s.submission_url,
+        platform: s.platform,
+        status: s.status || 'pending',
+        quality_score: s.quality_score,
+        originality_score: s.originality_score,
+        impact_score: s.impact_score,
+        qoi_score: s.qoi_score,
+        final_rank: s.final_rank,
+        submitted_at: s.submitted_at,
+      })),
+      ...(roundData || []).map(s => ({
+        id: s.id,
+        event_id: s.event_id,
+        submission_url: s.submission_url!,
+        platform: s.platform || 'tiktok',
+        status: s.status || 'pending',
+        quality_score: s.quality_score,
+        originality_score: s.originality_score,
+        impact_score: s.impact_score,
+        qoi_score: s.qoi_score,
+        final_rank: null,
+        submitted_at: s.submitted_at || s.created_at,
+      })),
+    ];
+
+    // Sort by submitted_at descending
+    allSubmissions.sort((a, b) => {
+      const dateA = new Date(a.submitted_at || '').getTime();
+      const dateB = new Date(b.submitted_at || '').getTime();
+      return dateB - dateA;
+    });
+
+    if (allSubmissions.length === 0) {
       setSubmissions([]);
       setLoading(false);
       return;
     }
 
     // Fetch event details for each submission
-    const eventIds = [...new Set(submissionsData.map(s => s.event_id))];
+    const eventIds = [...new Set(allSubmissions.map(s => s.event_id))];
     const { data: eventsData } = await supabase
       .from('events')
       .select('id, title, status, poster_url')
@@ -62,7 +108,7 @@ export function useUserSubmissions() {
 
     const eventsMap = new Map((eventsData || []).map(e => [e.id, e]));
 
-    const submissionsWithEvents = submissionsData.map(s => ({
+    const submissionsWithEvents = allSubmissions.map(s => ({
       ...s,
       event: eventsMap.get(s.event_id) || undefined
     })) as UserSubmission[];

@@ -48,30 +48,40 @@ export default function PosterStrip() {
   const [submissions, setSubmissions] = useState<ScoredSubmission[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch scored submissions
+  // Fetch scored submissions from both tables
   useEffect(() => {
     async function fetchSubmissions() {
-      const { data, error } = await supabase
+      // Fetch from round_participations (Open Arena)
+      const { data: roundData } = await supabase
         .from('round_participations')
-        .select(`
-          id,
-          submission_url,
-          platform,
-          qoi_score,
-          user_id
-        `)
+        .select('id, submission_url, platform, qoi_score, user_id')
         .not('qoi_score', 'is', null)
         .not('submission_url', 'is', null)
         .order('qoi_score', { ascending: false })
         .limit(20);
 
-      if (error || !data) {
+      // Fetch from event_participations (Standard events)
+      const { data: standardData } = await supabase
+        .from('event_participations')
+        .select('id, submission_url, platform, qoi_score, user_id')
+        .not('qoi_score', 'is', null)
+        .eq('status', 'scored')
+        .order('qoi_score', { ascending: false })
+        .limit(20);
+
+      // Merge and sort by qoi_score
+      const allData = [
+        ...(roundData || []).map(s => ({ ...s, submission_url: s.submission_url! })),
+        ...(standardData || []),
+      ].sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0)).slice(0, 20);
+
+      if (allData.length === 0) {
         setLoading(false);
         return;
       }
 
       // Fetch profiles for usernames
-      const userIds = [...new Set(data.map(s => s.user_id))];
+      const userIds = [...new Set(allData.map(s => s.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, username, avatar_url')
@@ -79,9 +89,9 @@ export default function PosterStrip() {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      const enriched: ScoredSubmission[] = data.map(s => ({
+      const enriched: ScoredSubmission[] = allData.map(s => ({
         id: s.id,
-        submission_url: s.submission_url!,
+        submission_url: s.submission_url,
         platform: s.platform || 'tiktok',
         qoi_score: s.qoi_score,
         username: profileMap.get(s.user_id)?.username || 'editor',
