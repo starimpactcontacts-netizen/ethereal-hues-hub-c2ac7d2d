@@ -83,3 +83,21 @@ export function getPlatformUrlPlaceholder(platform: PlatformType): string {
       return 'https://youtube.com/shorts/...';
   }
 }
+
+export function detectPlatform(url: string): PlatformType | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('tiktok.com') || parsed.hostname.includes('vm.tiktok.com')) {
+      return 'tiktok';
+    }
+    if (parsed.hostname.includes('instagram.com')) {
+      return 'instagram';
+    }
+    if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be')) {
+      return 'youtube';
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
