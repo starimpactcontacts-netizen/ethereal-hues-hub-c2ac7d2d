@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Send } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import NotificationCenter from './NotificationCenter';
 import BeginnerGuideModal from './BeginnerGuideModal';
+import InviteModal from './InviteModal';
 
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
@@ -29,6 +30,7 @@ export default function AppHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   const isEnterprise = roles.includes('enterprise');
 
@@ -50,9 +52,21 @@ export default function AppHeader() {
           LOOPGATE
         </Link>
 
-        {/* Right side: Notifications + Menu */}
+        {/* Right side: Invite + Notifications + Menu */}
         <div className="flex items-center gap-1">
+          {/* Invite Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-gold hover:bg-gold/10"
+            onClick={() => setInviteModalOpen(true)}
+          >
+            <Send className="h-5 w-5" />
+          </Button>
+          
           <NotificationCenter />
+          
+          <InviteModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
           
           {/* Menu Button */}
           <Sheet open={open} onOpenChange={setOpen}>

@@ -1046,13 +1046,21 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
-      create_invite: {
-        Args: { p_user_id: string }
-        Returns: {
-          invite_code: string
-          xp_awarded: number
-        }[]
-      }
+      create_invite:
+        | {
+            Args: { p_user_id: string }
+            Returns: {
+              invite_code: string
+              xp_awarded: number
+            }[]
+          }
+        | {
+            Args: { p_custom_code?: string; p_user_id: string }
+            Returns: {
+              invite_code: string
+              xp_awarded: number
+            }[]
+          }
       days_until_username_change: {
         Args: { user_uuid: string }
         Returns: number

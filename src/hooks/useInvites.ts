@@ -70,15 +70,27 @@ export function useInvites() {
     fetchInvites();
   }, [fetchInvites]);
 
-  const createInvite = async (): Promise<string | null> => {
+  const createInvite = async (customCode?: string): Promise<string | null> => {
     if (!user) return null;
     
     setCreating(true);
     try {
-      const { data, error } = await supabase
-        .rpc('create_invite', { p_user_id: user.id });
+      const params: { p_user_id: string; p_custom_code?: string } = { p_user_id: user.id };
       
-      if (error) throw error;
+      if (customCode && customCode.trim().length >= 4) {
+        params.p_custom_code = customCode.trim();
+      }
+      
+      const { data, error } = await supabase.rpc('create_invite', params);
+      
+      if (error) {
+        if (error.message.includes('already taken')) {
+          toast.error('Code already taken', { description: 'Try a different custom code' });
+        } else {
+          throw error;
+        }
+        return null;
+      }
       
       const result = data?.[0];
       if (result?.invite_code) {
