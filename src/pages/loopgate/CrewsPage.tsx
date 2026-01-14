@@ -19,9 +19,9 @@ interface House {
   description: string;
   lore?: string;
   member_count: number;
-  avg_qoi?: number;
   prestige_level: number;
   requires_approval: boolean;
+  house_index?: number;
 }
 
 interface Crew {
@@ -108,11 +108,11 @@ export default function CrewsPage() {
   const fetchHouses = async () => {
     setHousesLoading(true);
     
-    // Fetch public houses only (prestige houses are hidden)
+    // Fetch all houses
     const { data: housesData, error } = await supabase
       .from("houses")
       .select("*")
-      .eq("type", "public")
+      .order("type", { ascending: true })
       .order("member_count", { ascending: false });
 
     if (error) {
@@ -121,7 +121,23 @@ export default function CrewsPage() {
       return;
     }
 
-    setHouses(housesData || []);
+    // Calculate house index for each house
+    const housesWithIndex = await Promise.all(
+      (housesData || []).map(async (house) => {
+        const { data: members } = await supabase
+          .from("house_members")
+          .select("user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
+          .eq("house_id", house.id);
+
+        const totalIndex = members?.reduce((sum, m: any) => 
+          sum + (m.profile?.global_index_score || 0), 0
+        ) || 0;
+
+        return { ...house, house_index: Math.floor(totalIndex) };
+      })
+    );
+
+    setHouses(housesWithIndex);
     
     // Set user's current house
     if (profile?.house_id) {

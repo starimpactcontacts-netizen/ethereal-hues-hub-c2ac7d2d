@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Users, ChevronRight, Lock, Clock } from "lucide-react";
+import { Users, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import HouseIcon from "./HouseIcon";
 
@@ -16,6 +16,7 @@ interface House {
   avg_qoi?: number;
   prestige_level: number;
   requires_approval: boolean;
+  house_index?: number;
 }
 
 interface HouseCardProps {
@@ -43,16 +44,16 @@ export default function HouseCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-lg border border-border bg-card"
+      className="relative overflow-hidden rounded-lg border bg-card"
       style={{
-        borderColor: isMember ? house.primary_color : undefined,
+        borderColor: isMember ? "hsl(var(--gold))" : "hsl(var(--border))",
       }}
     >
-      {/* Glow effect */}
+      {/* Subtle glow effect */}
       <div
-        className="absolute inset-0 opacity-10"
+        className="absolute inset-0 opacity-5"
         style={{
-          background: `radial-gradient(ellipse at top, ${house.primary_color}40, transparent 70%)`,
+          background: `radial-gradient(ellipse at top, hsl(var(--gold)), transparent 70%)`,
         }}
       />
 
@@ -61,17 +62,15 @@ export default function HouseCard({
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3">
             <div
-              className="w-12 h-12 rounded-lg flex items-center justify-center"
+              className="w-12 h-12 rounded-lg flex items-center justify-center bg-muted/50"
               style={{
-                background: `linear-gradient(135deg, ${house.primary_color}30, ${house.secondary_color}30)`,
-                border: `1px solid ${house.primary_color}50`,
+                border: `1px solid hsl(var(--gold) / 0.3)`,
               }}
             >
               <HouseIcon 
                 symbol={house.symbol} 
                 size={28} 
-                className="opacity-90"
-                style={{ color: house.primary_color }}
+                className="text-gold"
               />
             </div>
             <div>
@@ -80,11 +79,13 @@ export default function HouseCard({
                   {house.name}
                 </h3>
                 {isPrestige && (
-                  <Lock size={12} className="text-gold" />
+                  <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border border-gold/50 text-gold bg-gold/10">
+                    Prestige
+                  </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {house.description}
+              <p className="text-xs text-muted-foreground mt-0.5 italic">
+                "{house.description}"
               </p>
             </div>
           </div>
@@ -94,12 +95,12 @@ export default function HouseCard({
         <div className="flex items-center gap-4 mb-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <Users size={12} />
-            <span>{house.member_count} members</span>
+            <span>{house.member_count}</span>
           </div>
-          {house.avg_qoi && house.avg_qoi > 0 && (
+          {house.house_index !== undefined && house.house_index > 0 && (
             <div className="flex items-center gap-1">
               <span className="text-gold">◆</span>
-              <span>{house.avg_qoi.toFixed(1)} avg QOI</span>
+              <span className="text-gold font-mono">{house.house_index.toLocaleString()} Index</span>
             </div>
           )}
         </div>
@@ -107,21 +108,19 @@ export default function HouseCard({
         {/* Actions */}
         <div className="flex items-center gap-2">
           {isMember ? (
-            <div 
-              className="flex-1 py-2 px-3 text-xs font-semibold uppercase text-center rounded"
-              style={{ 
-                backgroundColor: `${house.primary_color}20`,
-                color: house.primary_color,
-              }}
-            >
+            <div className="flex-1 py-2 px-3 text-xs font-semibold uppercase text-center rounded border border-gold/50 bg-gold/10 text-gold">
               Your House
             </div>
           ) : isPrestige ? (
-            <div className="flex-1 py-2 px-3 text-xs font-semibold uppercase text-center rounded bg-muted text-muted-foreground">
+            <Button 
+              disabled 
+              variant="outline"
+              className="flex-1 text-xs font-semibold uppercase border-gold/50 text-gold bg-background hover:bg-background"
+            >
               Invite Only
-            </div>
+            </Button>
           ) : hasPendingApplication ? (
-            <div className="flex-1 py-2 px-3 text-xs font-semibold uppercase text-center rounded bg-yellow-500/20 text-yellow-500 flex items-center justify-center gap-1">
+            <div className="flex-1 py-2 px-3 text-xs font-semibold uppercase text-center rounded bg-muted text-muted-foreground flex items-center justify-center gap-1">
               <Clock size={12} />
               Pending
             </div>
@@ -129,7 +128,7 @@ export default function HouseCard({
             <Button 
               variant="outline" 
               size="sm" 
-              className="flex-1 text-xs"
+              className="flex-1 text-xs border-muted"
               disabled
             >
               Already in a House
@@ -137,21 +136,18 @@ export default function HouseCard({
           ) : (
             <Button
               size="sm"
-              className="flex-1 text-xs font-semibold"
-              style={{
-                backgroundColor: house.primary_color,
-                color: house.secondary_color === "#0A0A0A" || house.secondary_color === "#1A1A1A" ? "#000" : "#fff",
-              }}
+              variant="outline"
+              className="flex-1 text-xs font-semibold border-gold/30 text-foreground hover:bg-gold/10 hover:border-gold/50"
               onClick={() => onApply(house.id)}
               disabled={isApplying}
             >
-              {house.requires_approval ? "Apply" : "Join"}
+              Apply
             </Button>
           )}
           <Button
             variant="ghost"
             size="sm"
-            className="px-2"
+            className="px-2 text-muted-foreground hover:text-foreground"
             onClick={() => onViewDetails(house.id)}
           >
             <ChevronRight size={16} />
