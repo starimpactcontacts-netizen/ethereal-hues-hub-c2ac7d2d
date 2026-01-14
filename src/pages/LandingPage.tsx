@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,21 +12,28 @@ export default function LandingPage() {
   const { rankings, loading: rankingsLoading } = useRealRankings();
   const { events } = useRealEvents();
   const { stats } = useGlobalStats();
+  const [bannerVisible, setBannerVisible] = useState(false);
   
   // Get top 5 editors from real data
   const topEditors = rankings.slice(0, 5);
   
   // Find the primary live event
   const liveEvent = events.find(e => e.status === 'live');
+
+  // Banner height is h-14 = 56px
+  const bannerOffset = bannerVisible ? 'pt-14' : '';
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO {...pageSEO.home} />
       {/* iOS App Banner - only shows on mobile web */}
-      <IOSAppBanner />
-      {/* Global Header */}
-      <LandingHeader />
+      <IOSAppBanner onVisibilityChange={setBannerVisible} />
+      {/* Global Header - offset by banner height when visible */}
+      <div className={bannerOffset}>
+        <LandingHeader />
+      </div>
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden pt-[72px]">
+      <section className={`relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden ${bannerVisible ? 'pt-[128px]' : 'pt-[72px]'}`}>
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-surface-0 via-background to-background" />
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px]" />
@@ -375,27 +383,29 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 border-t border-border">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="font-display text-2xl">LOOPGATE</div>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <Link to="/about" className="hover:text-foreground">About</Link>
-            <Link to="/how-it-works" className="hover:text-foreground">How It Works</Link>
-            <Link to="/download" className="hover:text-foreground">Download</Link>
-            <Link to="/faq" className="hover:text-foreground">FAQ</Link>
-            <Link to="/rules" className="hover:text-foreground">Rules</Link>
-            <Link to="/support" className="hover:text-foreground">Support</Link>
+      <footer className="py-12 px-4 border-t border-border">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-8">
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground">About</Link>
+              <Link to="/how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How It Works</Link>
+              <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground">FAQ</Link>
+              <Link to="/rules" className="text-sm text-muted-foreground hover:text-foreground">Rules</Link>
+              <Link to="/support" className="text-sm text-muted-foreground hover:text-foreground">Support</Link>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              LOOPGATE © {new Date().getFullYear()}
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Loopgate. All rights reserved.</p>
-        </div>
-        {/* Subtle enterprise link - only visible to those who know */}
-        <div className="max-w-5xl mx-auto mt-6 pt-4 border-t border-border/30 text-center">
-          <Link 
-            to="/enterprise" 
-            className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
-          >
-            Enterprise Portal
-          </Link>
+          {/* Hidden enterprise link for special access */}
+          <div className="mt-8 text-center">
+            <Link 
+              to="/enterprise" 
+              className="text-xs text-muted-foreground/30 hover:text-muted-foreground transition-colors"
+            >
+              Enterprise Portal
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
