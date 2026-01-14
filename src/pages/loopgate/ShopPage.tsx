@@ -587,9 +587,9 @@ function ShopItemCard({
     >
       {/* Image Container */}
       <div className="aspect-square bg-surface-2 flex items-center justify-center overflow-hidden relative">
-        {(localAssetMap[item.name] || item.image_url) ? (
+        {(item.image_url || localAssetMap[item.name]) ? (
           <img 
-            src={localAssetMap[item.name] || item.image_url || ''} 
+            src={item.image_url || localAssetMap[item.name] || ''} 
             alt={item.name} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
           />
