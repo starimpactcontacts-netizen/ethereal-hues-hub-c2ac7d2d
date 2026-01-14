@@ -34,76 +34,72 @@ export default function SoftwareSelector({ value, onChange, onClose, isOpen = tr
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm"
+      className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden"
     >
-      <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-display font-semibold">Select Software</h2>
-          <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground">
-            <X size={20} />
-          </button>
-        </div>
-        
-        {/* Subtitle */}
-        <p className="px-4 py-3 text-sm text-muted-foreground">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border">
+        <h2 className="text-lg font-display font-semibold uppercase">Select Software</h2>
+        <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground">
+          <X size={20} />
+        </button>
+      </div>
+      
+      {/* Subtitle - Fixed */}
+      <div className="flex-shrink-0 px-4 py-3">
+        <p className="text-sm text-muted-foreground">
           Select all the editing software you use. You can choose multiple options.
         </p>
-        
-        {/* Selected count */}
         {selected.length > 0 && (
-          <div className="px-4 pb-2">
-            <span className="text-xs text-gold font-medium">
-              {selected.length} selected
-            </span>
-          </div>
+          <span className="text-xs text-gold font-medium mt-1 block">
+            {selected.length} selected
+          </span>
         )}
-        
-        {/* Options */}
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
-          <div className="grid gap-2">
-            {SOFTWARE_OPTIONS.map((software) => {
-              const isSelected = selected.includes(software.id);
-              
-              return (
-                <motion.button
-                  key={software.id}
-                  onClick={() => toggleSoftware(software.id)}
-                  whileTap={{ scale: 0.98 }}
-                  className={`flex items-center gap-3 p-3.5 rounded-lg border transition-all ${
-                    isSelected 
-                      ? 'bg-gold/10 border-gold' 
-                      : 'bg-surface-1 border-border hover:border-gold/30'
-                  }`}
-                >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${
-                    isSelected ? 'bg-gold/20 text-gold' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {software.short}
-                  </div>
-                  <span className={`flex-1 text-left font-medium ${isSelected ? 'text-gold' : 'text-foreground'}`}>
-                    {software.label}
-                  </span>
-                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                    isSelected ? 'bg-gold border-gold' : 'border-muted-foreground/50'
-                  }`}>
-                    {isSelected && <Check size={12} className="text-background" />}
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
+      </div>
+      
+      {/* Options - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-4 overscroll-contain">
+        <div className="grid gap-2 pb-4">
+          {SOFTWARE_OPTIONS.map((software) => {
+            const isSelected = selected.includes(software.id);
+            
+            return (
+              <motion.button
+                key={software.id}
+                onClick={() => toggleSoftware(software.id)}
+                whileTap={{ scale: 0.98 }}
+                className={`flex items-center gap-3 p-3.5 rounded-lg border transition-all ${
+                  isSelected 
+                    ? 'bg-gold/10 border-gold' 
+                    : 'bg-surface-1 border-border hover:border-gold/30'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${
+                  isSelected ? 'bg-gold/20 text-gold' : 'bg-muted text-muted-foreground'
+                }`}>
+                  {software.short}
+                </div>
+                <span className={`flex-1 text-left font-medium ${isSelected ? 'text-gold' : 'text-foreground'}`}>
+                  {software.label}
+                </span>
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                  isSelected ? 'bg-gold border-gold' : 'border-muted-foreground/50'
+                }`}>
+                  {isSelected && <Check size={12} className="text-background" />}
+                </div>
+              </motion.button>
+            );
+          })}
         </div>
-        
-        {/* Footer */}
-        <div className="p-4 border-t border-border">
-          <Button 
-            onClick={handleSave}
-            className="w-full bg-gold hover:bg-gold/90 text-background font-semibold"
-          >
-            Save Software ({selected.length})
-          </Button>
-        </div>
+      </div>
+      
+      {/* Footer - Fixed */}
+      <div className="flex-shrink-0 p-4 border-t border-border bg-background safe-area-bottom">
+        <Button 
+          onClick={handleSave}
+          className="w-full bg-gold hover:bg-gold/90 text-background font-semibold h-12"
+        >
+          Save Software ({selected.length})
+        </Button>
       </div>
     </motion.div>
   );
