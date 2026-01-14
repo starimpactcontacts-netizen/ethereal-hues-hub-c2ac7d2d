@@ -26,7 +26,7 @@ export default function LandingPage() {
       <IOSAppBanner onVisibilityChange={setBannerVisible} />
       <div className="min-h-screen bg-background text-foreground">
         <SEO {...pageSEO.home} />
-        <LandingHeader />
+        <LandingHeader bannerVisible={bannerVisible} />
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden pt-[72px]">
         {/* Background gradient */}
