@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
-import { SOFTWARE_OPTIONS, SoftwareId } from "./SoftwareBadge";
+import { SOFTWARE_OPTIONS } from "./SoftwareBadge";
 import { Button } from "@/components/ui/button";
 
 interface SoftwareSelectorProps {
@@ -13,6 +13,24 @@ interface SoftwareSelectorProps {
 
 export default function SoftwareSelector({ value, onChange, onClose, isOpen = true }: SoftwareSelectorProps) {
   const [selected, setSelected] = useState<string[]>(value || []);
+  
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${window.scrollY}px`;
+    }
+    return () => {
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
+    };
+  }, [isOpen]);
   
   const toggleSoftware = (id: string) => {
     setSelected(prev => 
