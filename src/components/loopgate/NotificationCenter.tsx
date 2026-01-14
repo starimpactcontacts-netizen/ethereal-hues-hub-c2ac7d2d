@@ -17,6 +17,8 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string 
   event_starting: { icon: Calendar, color: "text-green-500", bg: "bg-green-500/10" },
   event_ended: { icon: Calendar, color: "text-muted-foreground", bg: "bg-muted/10" },
   achievement: { icon: Star, color: "text-purple-400", bg: "bg-purple-400/10" },
+  house_accepted: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
+  house_invited: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
 };
 
 interface NotificationItemProps {

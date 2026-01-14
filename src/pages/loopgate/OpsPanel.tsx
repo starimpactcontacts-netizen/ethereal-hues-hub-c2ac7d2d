@@ -1143,6 +1143,13 @@ export default function OpsPanel() {
         return;
       }
 
+      // Get house name for notification
+      const { data: houseData } = await supabase
+        .from('houses')
+        .select('name')
+        .eq('id', application.house_id)
+        .single();
+
       // Add member to house
       const { error: insertError } = await supabase
         .from('house_members')
@@ -1175,7 +1182,18 @@ export default function OpsPanel() {
 
       if (updateError) throw updateError;
 
-      toast.success('Application approved');
+      // Send notification to user
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: application.user_id,
+          type: 'house_accepted',
+          title: 'Welcome to ' + (houseData?.name || 'the House') + '!',
+          message: 'Your application has been approved. You are now a member of ' + (houseData?.name || 'the House') + '.',
+          data: { house_id: application.house_id, house_name: houseData?.name },
+        });
+
+      toast.success('Application approved & user notified');
       fetchData();
     } catch (error) {
       console.error('Error approving application:', error);
@@ -1236,6 +1254,10 @@ export default function OpsPanel() {
         return;
       }
 
+      // Get house name for notification
+      const selectedHouse = houses.find(h => h.id === selectedHouseId);
+      const houseName = selectedHouse?.name || 'the House';
+
       // Add member directly (admin invite bypasses application)
       const { error: insertError } = await supabase
         .from('house_members')
@@ -1256,7 +1278,18 @@ export default function OpsPanel() {
         })
         .eq('id', targetProfile.id);
 
-      toast.success(`Invited ${inviteUsername} to house`);
+      // Send notification to user
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: targetProfile.id,
+          type: 'house_invited',
+          title: 'You have been invited to ' + houseName + '!',
+          message: 'You have been personally invited to join ' + houseName + '. Welcome to the family.',
+          data: { house_id: selectedHouseId, house_name: houseName },
+        });
+
+      toast.success(`Invited ${inviteUsername} to house & notified`);
       setInviteUsername('');
       setShowInviteModal(false);
       fetchData();
