@@ -28,6 +28,7 @@ import CrewSettingsPage from "./pages/loopgate/CrewSettingsPage";
 import ShopPage from "./pages/loopgate/ShopPage";
 import HousesPage from "./pages/loopgate/HousesPage";
 import HouseDetailPage from "./pages/loopgate/HouseDetailPage";
+import JoinCrewPage from "./pages/loopgate/JoinCrewPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -226,6 +227,7 @@ export default function App() {
             <Route path="/download" element={<DownloadPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/faq" element={<FAQPage />} />
+            <Route path="/join/:crewSlug" element={<JoinCrewPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={

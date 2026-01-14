@@ -1,24 +1,28 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { RefreshCw, ChevronRight, Lock, TrendingUp, TrendingDown, Minus, ArrowLeft } from "lucide-react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { RefreshCw, ChevronRight, Lock, TrendingUp, TrendingDown, Minus, ArrowLeft, Zap, Users } from "lucide-react";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
+import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
 import StatusBadge from "@/components/loopgate/StatusBadge";
+import LevelBadge from "@/components/loopgate/LevelBadge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import SEO, { pageSEO } from "@/components/SEO";
 
-type TabType = "global" | "league" | "region" | "history";
+type TabType = "global" | "xp" | "crews" | "history";
 
 export default function RankingsPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const eventIdFromUrl = searchParams.get("event");
   
   const [activeTab, setActiveTab] = useState<TabType>("global");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
 
   const tabs: { id: TabType; label: string }[] = [
-    { id: "global", label: "Global" },
-    { id: "league", label: "League" },
-    { id: "region", label: "Region" },
+    { id: "global", label: "Index" },
+    { id: "xp", label: "XP" },
+    { id: "crews", label: "Crews" },
     { id: "history", label: "History" },
   ];
 
@@ -29,6 +33,8 @@ export default function RankingsPage() {
   const { events, loading: eventsLoading } = useRealEvents();
   const { rankings: globalRankings, loading: rankingsLoading } = useRealRankings();
   const { rankings: eventRankings, loading: eventRankingsLoading } = useEventRankings(selectedEventId);
+  const { users: xpUsers, loading: xpLoading } = useXPUserLeaderboard(50);
+  const { crews: xpCrews, loading: crewsLoading } = useXPCrewLeaderboard(20);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
   const isLiveEvent = selectedEvent?.status === "live";
@@ -227,7 +233,7 @@ export default function RankingsPage() {
         </div>
       )}
 
-      {/* Global Rankings Preview */}
+      {/* Global Index Rankings */}
       {activeTab === "global" && (
         <div className="px-4 pb-6">
           <p className="font-display text-lg text-muted-foreground mb-4 mt-2">
@@ -237,7 +243,6 @@ export default function RankingsPage() {
           {globalRankings.length === 0 && !rankingsLoading ? (
             <div className="bg-surface-1 border border-border p-8 text-center">
               <p className="text-muted-foreground">No rankings yet</p>
-              <p className="text-xs text-muted-foreground mt-2">Rankings will appear when editors compete</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -255,11 +260,96 @@ export default function RankingsPage() {
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold text-sm">{editor.username}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{editor.win_rate?.toFixed(0) || 0}% Win</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-display text-2xl text-gold">{editor.global_index_score?.toFixed(1) || '0.0'}</span>
+                    <span className="font-display text-2xl text-gold">{editor.global_index_score?.toFixed(1) || '0.0'}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* XP Leaderboard */}
+      {activeTab === "xp" && (
+        <div className="px-4 pb-6">
+          <p className="font-display text-lg text-muted-foreground mb-4 mt-2 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-gold" />
+            User XP Rankings
+          </p>
+          
+          {xpUsers.length === 0 && !xpLoading ? (
+            <div className="bg-surface-1 border border-border p-8 text-center">
+              <p className="text-muted-foreground">No XP rankings yet</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {xpUsers.map((user) => {
+                const isTop3 = (user.rank || 0) <= 3;
+                return (
+                  <div
+                    key={user.id}
+                    onClick={() => navigate(`/editor/${user.id}`)}
+                    className={`bg-surface-1 p-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 ${
+                      isTop3 ? "border-l-2 border-gold" : "border-l-2 border-transparent"
+                    }`}
+                  >
+                    <div className={`w-8 font-display text-lg ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
+                      {user.rank}
                     </div>
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user.avatar_url || undefined} />
+                      <AvatarFallback>{user.username[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 flex items-center gap-2">
+                      <p className="font-semibold text-sm">{user.username}</p>
+                      <LevelBadge level={user.level} size="sm" showAura />
+                    </div>
+                    <span className="font-display text-xl">{user.xp.toLocaleString()} XP</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Crew XP Leaderboard */}
+      {activeTab === "crews" && (
+        <div className="px-4 pb-6">
+          <p className="font-display text-lg text-muted-foreground mb-4 mt-2 flex items-center gap-2">
+            <Users className="w-5 h-5 text-gold" />
+            Crew XP Rankings
+          </p>
+          
+          {xpCrews.length === 0 && !crewsLoading ? (
+            <div className="bg-surface-1 border border-border p-8 text-center">
+              <p className="text-muted-foreground">No crews yet</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {xpCrews.map((crew) => {
+                const isTop3 = (crew.rank || 0) <= 3;
+                return (
+                  <div
+                    key={crew.id}
+                    onClick={() => navigate(`/crews/${crew.id}`)}
+                    className={`bg-surface-1 p-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 ${
+                      isTop3 ? "border-l-2 border-gold" : "border-l-2 border-transparent"
+                    }`}
+                  >
+                    <div className={`w-8 font-display text-lg ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
+                      {crew.rank}
+                    </div>
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={crew.avatar_url || undefined} />
+                      <AvatarFallback>{crew.name[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{crew.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{crew.member_count} members • Lv {crew.crewLevel}</p>
+                    </div>
+                    <span className="font-display text-xl">{crew.totalXP.toLocaleString()}</span>
                   </div>
                 );
               })}

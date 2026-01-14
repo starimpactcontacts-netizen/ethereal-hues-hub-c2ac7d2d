@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, LogOut, UserPlus, Check, X } from "lucide-react";
+import { ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
+import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,9 @@ interface Member {
     display_name: string | null;
     avatar_url: string | null;
     league: string;
+    xp?: number;
+    level?: number;
+    global_index_score?: number;
   } | null;
 }
 
@@ -53,6 +57,12 @@ interface JoinRequest {
     avatar_url: string | null;
     league: string;
   } | null;
+}
+
+interface CrewStats {
+  totalXP: number;
+  totalIndex: number;
+  crewLevel: number;
 }
 
 const emblemIcons: Record<string, React.ReactNode> = {
@@ -76,6 +86,20 @@ const roleLabels = {
   member: "Member",
 };
 
+// Calculate crew level based on XP (same thresholds as user levels)
+function calculateCrewLevel(xp: number): number {
+  if (xp >= 70000) return 10;
+  if (xp >= 45000) return 9;
+  if (xp >= 32000) return 8;
+  if (xp >= 22000) return 7;
+  if (xp >= 15000) return 6;
+  if (xp >= 10000) return 5;
+  if (xp >= 6000) return 4;
+  if (xp >= 3000) return 3;
+  if (xp >= 1000) return 2;
+  return 1;
+}
+
 export default function CrewDetailPage() {
   const { crewId } = useParams();
   const navigate = useNavigate();
@@ -85,6 +109,8 @@ export default function CrewDetailPage() {
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [myRole, setMyRole] = useState<"owner" | "officer" | "member" | null>(null);
   const [loading, setLoading] = useState(true);
+  const [crewStats, setCrewStats] = useState<CrewStats>({ totalXP: 0, totalIndex: 0, crewLevel: 1 });
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     if (crewId) {
@@ -112,7 +138,7 @@ export default function CrewDetailPage() {
 
     setCrew(crewData);
 
-    // Fetch members with profiles
+    // Fetch members with profiles INCLUDING XP and Index
     const { data: membersData, error: membersError } = await supabase
       .from("crew_members")
       .select("id, user_id, role, joined_at")
@@ -120,17 +146,23 @@ export default function CrewDetailPage() {
       .order("role", { ascending: true });
 
     if (!membersError && membersData) {
-      // Fetch profiles for each member
+      // Fetch profiles for each member with XP and Index
       const memberIds = membersData.map((m) => m.user_id);
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, username, display_name, avatar_url, league")
+        .select("id, username, display_name, avatar_url, league, xp, level, global_index_score")
         .in("id", memberIds);
 
       const membersWithProfiles = membersData.map((member) => ({
         ...member,
         profile: profiles?.find((p) => p.id === member.user_id) || null,
       })) as Member[];
+
+      // Calculate crew stats
+      const totalXP = profiles?.reduce((sum, p) => sum + (p.xp || 0), 0) || 0;
+      const totalIndex = profiles?.reduce((sum, p) => sum + (p.global_index_score || 0), 0) || 0;
+      const crewLevel = calculateCrewLevel(totalXP);
+      setCrewStats({ totalXP, totalIndex, crewLevel });
 
       // Sort: owners first, then officers, then members
       const sortOrder = { owner: 0, officer: 1, member: 2 };
@@ -277,6 +309,31 @@ export default function CrewDetailPage() {
             </div>
           </div>
 
+          {/* Crew Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-muted/30 border border-border p-3 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <TrendingUp className="w-4 h-4 text-gold" />
+              </div>
+              <p className="font-display text-xl text-gold">{crewStats.crewLevel}</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Crew Level</p>
+            </div>
+            <div className="bg-muted/30 border border-border p-3 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Zap className="w-4 h-4 text-gold" />
+              </div>
+              <p className="font-display text-xl">{crewStats.totalXP.toLocaleString()}</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Total XP</p>
+            </div>
+            <div className="bg-muted/30 border border-border p-3 text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <Coins className="w-4 h-4 text-gold" />
+              </div>
+              <p className="font-display text-xl">{Math.floor(crewStats.totalIndex).toLocaleString()}</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Index Pool</p>
+            </div>
+          </div>
+
           {/* Actions */}
           {myRole && (
             <div className="flex gap-3">
@@ -286,6 +343,13 @@ export default function CrewDetailPage() {
               >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Crew Chat
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowInviteModal(true)}
+                className="shrink-0 border-gold/30 text-gold hover:bg-gold/10"
+              >
+                <Share2 className="w-4 h-4" />
               </Button>
               {myRole !== "owner" && (
                 <AlertDialog>
@@ -428,6 +492,16 @@ export default function CrewDetailPage() {
           </section>
         </div>
       </div>
+      
+      {/* Invite Modal */}
+      {crew && (
+        <CrewInviteModal
+          open={showInviteModal}
+          onOpenChange={setShowInviteModal}
+          crewName={crew.name}
+          crewId={crew.id}
+        />
+      )}
     </PageTransition>
   );
 }
