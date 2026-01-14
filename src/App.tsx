@@ -28,6 +28,7 @@ import CrewSettingsPage from "./pages/loopgate/CrewSettingsPage";
 import ShopPage from "./pages/loopgate/ShopPage";
 import HousesPage from "./pages/loopgate/HousesPage";
 import HouseDetailPage from "./pages/loopgate/HouseDetailPage";
+import FeedPage from "./pages/loopgate/FeedPage";
 import JoinCrewPage from "./pages/loopgate/JoinCrewPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
@@ -243,6 +244,7 @@ export default function App() {
               <Route path="/leagues" element={<LeaguesPage />} />
               <Route path="/events" element={<HomePage />} />
               <Route path="/event/:id" element={<EventDetailPage />} />
+              <Route path="/feed" element={<FeedPage />} />
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
             </Route>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, ExternalLink, Star } from "lucide-react";
+import { Play, ExternalLink, Star, ChevronRight } from "lucide-react";
 
 interface ScoredSubmission {
   id: string;
@@ -42,6 +43,7 @@ const platformColors: Record<string, string> = {
 };
 
 export default function PosterStrip() {
+  const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [submissions, setSubmissions] = useState<ScoredSubmission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,8 +126,8 @@ export default function PosterStrip() {
     "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=80",
   ];
 
-  const openSubmission = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const openFeed = () => {
+    navigate('/feed');
   };
 
   // Show fallback if no submissions
@@ -156,9 +158,18 @@ export default function PosterStrip() {
 
   return (
     <section className="py-4 overflow-hidden">
-      <div className="flex items-center gap-2 px-1 mb-2">
-        <Play className="w-3 h-3 text-primary" />
-        <span className="text-xs text-muted-foreground uppercase tracking-wider">Top Edits</span>
+      <div className="flex items-center justify-between px-1 mb-2">
+        <div className="flex items-center gap-2">
+          <Play className="w-3 h-3 text-primary" />
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">Top Edits</span>
+        </div>
+        <button 
+          onClick={openFeed}
+          className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+        >
+          <span>View All</span>
+          <ChevronRight className="w-3 h-3" />
+        </button>
       </div>
       <div 
         ref={scrollRef}
@@ -172,7 +183,7 @@ export default function PosterStrip() {
           return (
             <div
               key={`${submission.id}-${index}`}
-              onClick={() => openSubmission(submission.submission_url)}
+              onClick={openFeed}
               className="w-24 h-36 flex-shrink-0 rounded-lg relative overflow-hidden cursor-pointer group transition-transform hover:scale-105"
             >
               {/* Background */}
