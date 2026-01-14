@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PageTransition from "@/components/loopgate/PageTransition";
 import HouseCard from "@/components/loopgate/houses/HouseCard";
+import HouseIcon from "@/components/loopgate/houses/HouseIcon";
 import { toast } from "sonner";
 
 interface House {
@@ -339,13 +340,13 @@ export default function CrewsPage() {
                 />
                 <div className="relative flex items-center gap-4">
                   <div
-                    className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
+                    className="w-16 h-16 rounded-xl flex items-center justify-center"
                     style={{
                       background: `linear-gradient(135deg, ${userHouse.primary_color}30, ${userHouse.secondary_color}30)`,
                       border: `2px solid ${userHouse.primary_color}`,
                     }}
                   >
-                    <span style={{ color: userHouse.primary_color }}>{userHouse.symbol}</span>
+                    <HouseIcon symbol={userHouse.symbol} size={32} style={{ color: userHouse.primary_color }} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
