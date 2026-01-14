@@ -414,6 +414,77 @@ export type Database = {
         }
         Relationships: []
       }
+      event_rounds: {
+        Row: {
+          advancement_type: Database["public"]["Enums"]["advancement_type"]
+          advancement_value: number | null
+          auto_start_next: boolean | null
+          bonus_multiplier: number | null
+          created_at: string | null
+          duration_hours: number | null
+          ends_at: string | null
+          event_id: string
+          id: string
+          index_reward: number | null
+          max_submissions: number | null
+          round_number: number
+          round_type: Database["public"]["Enums"]["round_type"]
+          show_leaderboard: boolean | null
+          starts_at: string | null
+          status: Database["public"]["Enums"]["round_status"] | null
+          threshold_qoi: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          advancement_type?: Database["public"]["Enums"]["advancement_type"]
+          advancement_value?: number | null
+          auto_start_next?: boolean | null
+          bonus_multiplier?: number | null
+          created_at?: string | null
+          duration_hours?: number | null
+          ends_at?: string | null
+          event_id: string
+          id?: string
+          index_reward?: number | null
+          max_submissions?: number | null
+          round_number: number
+          round_type?: Database["public"]["Enums"]["round_type"]
+          show_leaderboard?: boolean | null
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["round_status"] | null
+          threshold_qoi?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          advancement_type?: Database["public"]["Enums"]["advancement_type"]
+          advancement_value?: number | null
+          auto_start_next?: boolean | null
+          bonus_multiplier?: number | null
+          created_at?: string | null
+          duration_hours?: number | null
+          ends_at?: string | null
+          event_id?: string
+          id?: string
+          index_reward?: number | null
+          max_submissions?: number | null
+          round_number?: number
+          round_type?: Database["public"]["Enums"]["round_type"]
+          show_leaderboard?: boolean | null
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["round_status"] | null
+          threshold_qoi?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rounds_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           category: string | null
@@ -421,19 +492,25 @@ export type Database = {
           description: string | null
           editor_category: string | null
           end_date: string
+          event_mode: Database["public"]["Enums"]["event_mode"] | null
+          hide_future_rounds: boolean | null
           id: string
           ip: string | null
           league: string
           location: string | null
+          max_editors: number | null
           poster_url: string | null
           prize_pool: string | null
           region_tags: string[] | null
           rules: string[] | null
+          show_eliminated: boolean | null
           start_date: string
           status: string
           subtitle: string | null
           title: string
+          total_rounds: number | null
           updated_at: string | null
+          winner_logic: Database["public"]["Enums"]["winner_logic"] | null
           xp_reward: number | null
         }
         Insert: {
@@ -442,19 +519,25 @@ export type Database = {
           description?: string | null
           editor_category?: string | null
           end_date: string
+          event_mode?: Database["public"]["Enums"]["event_mode"] | null
+          hide_future_rounds?: boolean | null
           id?: string
           ip?: string | null
           league?: string
           location?: string | null
+          max_editors?: number | null
           poster_url?: string | null
           prize_pool?: string | null
           region_tags?: string[] | null
           rules?: string[] | null
+          show_eliminated?: boolean | null
           start_date: string
           status?: string
           subtitle?: string | null
           title: string
+          total_rounds?: number | null
           updated_at?: string | null
+          winner_logic?: Database["public"]["Enums"]["winner_logic"] | null
           xp_reward?: number | null
         }
         Update: {
@@ -463,19 +546,25 @@ export type Database = {
           description?: string | null
           editor_category?: string | null
           end_date?: string
+          event_mode?: Database["public"]["Enums"]["event_mode"] | null
+          hide_future_rounds?: boolean | null
           id?: string
           ip?: string | null
           league?: string
           location?: string | null
+          max_editors?: number | null
           poster_url?: string | null
           prize_pool?: string | null
           region_tags?: string[] | null
           rules?: string[] | null
+          show_eliminated?: boolean | null
           start_date?: string
           status?: string
           subtitle?: string | null
           title?: string
+          total_rounds?: number | null
           updated_at?: string | null
+          winner_logic?: Database["public"]["Enums"]["winner_logic"] | null
           xp_reward?: number | null
         }
         Relationships: []
@@ -914,6 +1003,74 @@ export type Database = {
           },
         ]
       }
+      round_participations: {
+        Row: {
+          created_at: string | null
+          cumulative_qoi: number | null
+          event_id: string
+          id: string
+          impact_score: number | null
+          judge_id: string | null
+          judged_at: string | null
+          originality_score: number | null
+          platform: Database["public"]["Enums"]["platform_type"] | null
+          qoi_score: number | null
+          quality_score: number | null
+          round_number: number
+          status: Database["public"]["Enums"]["participant_status"] | null
+          submission_url: string | null
+          submitted_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          cumulative_qoi?: number | null
+          event_id: string
+          id?: string
+          impact_score?: number | null
+          judge_id?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform?: Database["public"]["Enums"]["platform_type"] | null
+          qoi_score?: number | null
+          quality_score?: number | null
+          round_number: number
+          status?: Database["public"]["Enums"]["participant_status"] | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          cumulative_qoi?: number | null
+          event_id?: string
+          id?: string
+          impact_score?: number | null
+          judge_id?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform?: Database["public"]["Enums"]["platform_type"] | null
+          qoi_score?: number | null
+          quality_score?: number | null
+          round_number?: number
+          status?: Database["public"]["Enums"]["participant_status"] | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round_participations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shop_items: {
         Row: {
           created_at: string
@@ -1011,6 +1168,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      advance_round_participants: {
+        Args: {
+          p_advancement_type: Database["public"]["Enums"]["advancement_type"]
+          p_advancement_value?: number
+          p_event_id: string
+          p_round_number: number
+        }
+        Returns: number
+      }
       award_daily_capped_xp: {
         Args: {
           p_action_type: string
@@ -1065,6 +1231,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: number
       }
+      end_event_round: {
+        Args: { p_event_id: string; p_round_number: number }
+        Returns: number
+      }
       generate_invite_code: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -1111,17 +1281,27 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: boolean
       }
+      start_event_round: {
+        Args: { p_event_id: string; p_round_number: number }
+        Returns: boolean
+      }
       update_active_session: { Args: never; Returns: undefined }
     }
     Enums: {
+      advancement_type: "top_x" | "percentage" | "manual" | "none"
       app_role: "admin" | "moderator" | "user" | "judge" | "dev" | "enterprise"
       crew_role: "owner" | "officer" | "member"
+      event_mode: "standard" | "open_arena"
       house_role: "member" | "captain" | "judge"
       house_type: "public" | "prestige"
       league_tier: "open" | "pro" | "elite"
+      participant_status: "active" | "advanced" | "eliminated" | "pending"
       platform_type: "tiktok" | "instagram" | "youtube"
       redemption_status: "pending" | "approved" | "fulfilled" | "rejected"
+      round_status: "pending" | "active" | "completed"
+      round_type: "open" | "elimination" | "threshold"
       shop_item_type: "cosmetic" | "digital" | "physical"
+      winner_logic: "final_qoi" | "cumulative_qoi" | "manual"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1249,14 +1429,20 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      advancement_type: ["top_x", "percentage", "manual", "none"],
       app_role: ["admin", "moderator", "user", "judge", "dev", "enterprise"],
       crew_role: ["owner", "officer", "member"],
+      event_mode: ["standard", "open_arena"],
       house_role: ["member", "captain", "judge"],
       house_type: ["public", "prestige"],
       league_tier: ["open", "pro", "elite"],
+      participant_status: ["active", "advanced", "eliminated", "pending"],
       platform_type: ["tiktok", "instagram", "youtube"],
       redemption_status: ["pending", "approved", "fulfilled", "rejected"],
+      round_status: ["pending", "active", "completed"],
+      round_type: ["open", "elimination", "threshold"],
       shop_item_type: ["cosmetic", "digital", "physical"],
+      winner_logic: ["final_qoi", "cumulative_qoi", "manual"],
     },
   },
 } as const
