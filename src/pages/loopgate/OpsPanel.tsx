@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -134,6 +134,27 @@ interface HouseMember {
   joined_at: string;
   username?: string;
   global_index_score?: number;
+}
+
+interface AdminInvite {
+  id: string;
+  invite_code: string;
+  inviter_id: string;
+  invitee_id: string | null;
+  status: string;
+  created_at: string;
+  joined_at: string | null;
+  first_submission_at: string | null;
+  inviter_username?: string;
+  invitee_username?: string;
+}
+
+interface InviteStats {
+  total_invites: number;
+  total_joined: number;
+  total_submitted: number;
+  conversion_rate: number;
+  top_recruiters: { user_id: string; username: string; count: number; xp_earned: number }[];
 }
 
 const CATEGORIES = ["Film", "Trailer", "Music", "Regional", "Global"];
@@ -273,6 +294,16 @@ export default function OpsPanel() {
   const [inviteUsername, setInviteUsername] = useState('');
   const [invitingUser, setInvitingUser] = useState(false);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+
+  // Invite analytics state
+  const [inviteAnalytics, setInviteAnalytics] = useState<InviteStats>({
+    total_invites: 0,
+    total_joined: 0,
+    total_submitted: 0,
+    conversion_rate: 0,
+    top_recruiters: [],
+  });
+  const [recentInvites, setRecentInvites] = useState<AdminInvite[]>([]);
 
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
@@ -503,6 +534,67 @@ export default function OpsPanel() {
           ...a,
           username: appProfileMap.get(a.user_id) || 'Unknown',
           house_name: housesData?.find(h => h.id === a.house_id)?.name || 'Unknown',
+        })));
+      }
+
+      // Fetch invite analytics
+      const { data: invitesData } = await supabase
+        .from('invites')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (invitesData) {
+        // Get all inviter IDs for username lookup
+        const inviterIds = [...new Set(invitesData.map(i => i.inviter_id))];
+        const inviteeIds = invitesData.filter(i => i.invitee_id).map(i => i.invitee_id!);
+        const allUserIds = [...new Set([...inviterIds, ...inviteeIds])];
+        
+        const { data: inviteProfiles } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .in('id', allUserIds);
+
+        const inviteProfileMap = new Map((inviteProfiles || []).map(p => [p.id, p.username]));
+
+        // Calculate stats
+        const totalInvites = invitesData.length;
+        const totalJoined = invitesData.filter(i => i.status === 'joined' || i.status === 'submitted').length;
+        const totalSubmitted = invitesData.filter(i => i.status === 'submitted').length;
+        const conversionRate = totalInvites > 0 ? Math.round((totalJoined / totalInvites) * 100) : 0;
+
+        // Calculate top recruiters
+        const recruiterCounts = new Map<string, { count: number; joined: number; submitted: number }>();
+        invitesData.forEach(invite => {
+          const current = recruiterCounts.get(invite.inviter_id) || { count: 0, joined: 0, submitted: 0 };
+          current.count++;
+          if (invite.status === 'joined' || invite.status === 'submitted') current.joined++;
+          if (invite.status === 'submitted') current.submitted++;
+          recruiterCounts.set(invite.inviter_id, current);
+        });
+
+        const topRecruiters = Array.from(recruiterCounts.entries())
+          .map(([userId, data]) => ({
+            user_id: userId,
+            username: inviteProfileMap.get(userId) || 'Unknown',
+            count: data.count,
+            xp_earned: (data.count * 20) + (data.joined * 50) + (data.submitted * 100),
+          }))
+          .sort((a, b) => b.xp_earned - a.xp_earned)
+          .slice(0, 10);
+
+        setInviteAnalytics({
+          total_invites: totalInvites,
+          total_joined: totalJoined,
+          total_submitted: totalSubmitted,
+          conversion_rate: conversionRate,
+          top_recruiters: topRecruiters,
+        });
+
+        // Set recent invites with usernames
+        setRecentInvites(invitesData.slice(0, 20).map(invite => ({
+          ...invite,
+          inviter_username: inviteProfileMap.get(invite.inviter_id) || 'Unknown',
+          invitee_username: invite.invitee_id ? inviteProfileMap.get(invite.invitee_id) || 'Unknown' : undefined,
         })));
       }
     } catch (error) {
@@ -1520,6 +1612,48 @@ export default function OpsPanel() {
       </header>
 
       <div className="p-4 space-y-6">
+        {/* Quick Actions - Hyper Growth Mode */}
+        <section className="bg-gradient-to-r from-gold/5 to-transparent border border-gold/20 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-gold flex items-center gap-2">
+              <Sparkles size={14} />
+              Quick Actions
+            </h2>
+            <span className="text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded-full">
+              {inviteAnalytics.total_invites} invites • {inviteAnalytics.conversion_rate}% conv
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button 
+              onClick={() => setShowCreateEvent(true)}
+              className="flex items-center justify-center gap-2 bg-gold text-black font-semibold py-3 rounded-lg text-sm"
+            >
+              <Calendar size={16} />
+              New Event
+            </button>
+            <button 
+              onClick={() => setShowCreateItem(true)}
+              className="flex items-center justify-center gap-2 bg-surface-1 border border-border font-semibold py-3 rounded-lg text-sm hover:border-gold/50 transition-colors"
+            >
+              <ShoppingBag size={16} />
+              Add Shop Item
+            </button>
+          </div>
+          
+          {/* Live Stats Bar */}
+          <div className="mt-3 pt-3 border-t border-gold/20 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-muted-foreground">{pendingSubmissions.length} pending</span>
+              </span>
+              <span className="text-muted-foreground">{pendingRedemptions.length} orders</span>
+              <span className="text-muted-foreground">{verificationRequests.length} verifications</span>
+            </div>
+            <span className="text-muted-foreground">{users.length} users</span>
+          </div>
+        </section>
+
         {/* Event Control */}
         <section>
           <div className="flex items-center justify-between mb-4">
@@ -2475,6 +2609,120 @@ export default function OpsPanel() {
                 </TabsContent>
               </Tabs>
             )}
+          </div>
+        </section>
+
+        {/* Invite Analytics - Quick Growth Dashboard */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Send className="w-4 h-4 text-gold" />
+              Invite Analytics
+            </h2>
+            <span className="text-xs text-gold font-semibold">Hyper Growth Mode</span>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="bg-card border border-border rounded-lg p-3 text-center">
+              <p className="font-display text-2xl">{inviteAnalytics.total_invites}</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Total Sent</p>
+            </div>
+            <div className="bg-card border border-border rounded-lg p-3 text-center">
+              <p className="font-display text-2xl text-green-400">{inviteAnalytics.total_joined}</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Joined</p>
+            </div>
+            <div className="bg-card border border-border rounded-lg p-3 text-center">
+              <p className="font-display text-2xl text-gold">{inviteAnalytics.total_submitted}</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Submitted</p>
+            </div>
+            <div className="bg-card border border-border rounded-lg p-3 text-center">
+              <p className="font-display text-2xl">{inviteAnalytics.conversion_rate}%</p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Conversion</p>
+            </div>
+          </div>
+
+          {/* Top Recruiters */}
+          <div className="mb-4">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 flex items-center gap-2">
+              <Crown size={12} className="text-gold" />
+              Top Recruiters
+            </p>
+            {inviteAnalytics.top_recruiters.length === 0 ? (
+              <div className="bg-card border border-border rounded-lg p-4 text-center">
+                <UserPlus className="w-6 h-6 mx-auto text-muted-foreground mb-2" />
+                <p className="text-xs text-muted-foreground">No recruiters yet</p>
+              </div>
+            ) : (
+              <div className="space-y-1 max-h-40 overflow-y-auto">
+                {inviteAnalytics.top_recruiters.map((recruiter, idx) => (
+                  <div 
+                    key={recruiter.user_id} 
+                    className={`flex items-center justify-between p-2 rounded-lg ${
+                      idx === 0 ? 'bg-gold/10 border border-gold/30' : 
+                      idx < 3 ? 'bg-card border border-border' : 
+                      'bg-surface-1'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold ${
+                        idx === 0 ? 'bg-gold text-black' : 
+                        idx === 1 ? 'bg-gray-400 text-black' : 
+                        idx === 2 ? 'bg-amber-700 text-white' : 
+                        'bg-surface-2'
+                      }`}>
+                        {idx + 1}
+                      </span>
+                      <span className="font-semibold text-sm">@{recruiter.username}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="text-muted-foreground">{recruiter.count} sent</span>
+                      <span className="text-gold font-semibold">+{recruiter.xp_earned} XP</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Invites */}
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+              Recent Activity
+            </p>
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {recentInvites.length === 0 ? (
+                <p className="text-center text-xs text-muted-foreground py-4">No invites yet</p>
+              ) : (
+                recentInvites.map(invite => (
+                  <div 
+                    key={invite.id} 
+                    className={`flex items-center justify-between p-2 rounded-lg text-xs ${
+                      invite.status === 'submitted' ? 'bg-gold/5 border border-gold/20' :
+                      invite.status === 'joined' ? 'bg-green-500/5 border border-green-500/20' :
+                      'bg-surface-1'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <code className="font-mono text-muted-foreground">{invite.invite_code}</code>
+                      <span className="text-muted-foreground">by @{invite.inviter_username}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {invite.invitee_username && (
+                        <span className="text-green-400">→ @{invite.invitee_username}</span>
+                      )}
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase ${
+                        invite.status === 'submitted' ? 'bg-gold/20 text-gold' :
+                        invite.status === 'joined' ? 'bg-green-500/20 text-green-400' :
+                        'bg-muted text-muted-foreground'
+                      }`}>
+                        {invite.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </section>
 
