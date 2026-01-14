@@ -1062,14 +1062,17 @@ export default function OpsPanel() {
     }));
   }
 
-  async function handleScoreSubmission(submissionId: string) {
+  async function handleScoreSubmission(submission: RealSubmission & { source?: string }) {
     setSaving(true);
     
     const qoiTotal = scores.quality + scores.originality + scores.impact;
     
+    // Determine which table to update based on source
+    const tableName = submission.source === 'open_arena' ? 'round_participations' : 'event_participations';
+    
     try {
       const { error } = await supabase
-        .from('event_participations')
+        .from(tableName)
         .update({
           quality_score: scores.quality,
           originality_score: scores.originality,
@@ -1079,7 +1082,7 @@ export default function OpsPanel() {
           judged_at: new Date().toISOString(),
           judge_id: user?.id,
         })
-        .eq('id', submissionId);
+        .eq('id', submission.id);
       
       if (error) throw error;
       
@@ -1178,14 +1181,17 @@ export default function OpsPanel() {
   }
 
   // Delete submission completely (for stolen/invalid edits)
-  async function handleDeleteSubmission(submission: RealSubmission) {
+  async function handleDeleteSubmission(submission: RealSubmission & { source?: string }) {
     setActionLoading(true);
     try {
       const xpToRevoke = submission.xp_awarded || 0;
 
+      // Determine which table to delete from based on source
+      const tableName = submission.source === 'open_arena' ? 'round_participations' : 'event_participations';
+
       // Delete the submission
       const { error: deleteError } = await supabase
-        .from('event_participations')
+        .from(tableName)
         .delete()
         .eq('id', submission.id);
 
@@ -2279,7 +2285,7 @@ export default function OpsPanel() {
                           </div>
 
                           <button
-                            onClick={() => handleScoreSubmission(submission.id)}
+                            onClick={() => handleScoreSubmission(submission)}
                             disabled={saving}
                             className="w-full py-3 bg-green-600 text-white font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
                           >
