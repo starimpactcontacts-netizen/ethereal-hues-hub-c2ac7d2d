@@ -12,9 +12,10 @@ interface SubmissionModalProps {
   onClose: () => void;
   eventId: string;
   eventTitle: string;
+  roundNumber?: number; // For Open Arena events
 }
 
-export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }: SubmissionModalProps) {
+export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, roundNumber }: SubmissionModalProps) {
   const { user, profile } = useAuth();
   const { isGuest } = useGuestMode();
   const { checkSubmissionBonus } = useInviteSubmissionBonus();
@@ -65,16 +66,28 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
     setIsSubmitting(true);
     
     try {
-      // Insert submission into database - goes directly to ops panel unrated
-      const { error } = await supabase.from('event_participations').insert({
-        event_id: eventId,
-        user_id: user.id,
-        platform: platform,
-        submission_url: platformLink,
-        status: 'pending', // Unrated status
-      });
-      
-      if (error) throw error;
+      // For Open Arena events, submit to round_participations table
+      if (roundNumber) {
+        const { error } = await supabase.from('round_participations').insert({
+          event_id: eventId,
+          user_id: user.id,
+          round_number: roundNumber,
+          platform: platform,
+          submission_url: platformLink,
+          status: 'active',
+        });
+        if (error) throw error;
+      } else {
+        // Standard event submission
+        const { error } = await supabase.from('event_participations').insert({
+          event_id: eventId,
+          user_id: user.id,
+          platform: platform,
+          submission_url: platformLink,
+          status: 'pending',
+        });
+        if (error) throw error;
+      }
       
       // Check if user was invited and this is their first submission within 24h
       await checkSubmissionBonus();

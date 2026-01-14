@@ -1,14 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, Sparkles } from "lucide-react";
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession } from "@/hooks/useRealData";
+import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
+import { useAuth } from "@/hooks/useAuth";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import SubmissionModal from "@/components/loopgate/SubmissionModal";
+import OpenArenaRoundLeaderboard from "@/components/loopgate/OpenArenaRoundLeaderboard";
+import OpenArenaGuide, { OpenArenaInfoButton } from "@/components/loopgate/OpenArenaGuide";
+import { Badge } from "@/components/ui/badge";
 
 export default function EventDetailPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [showSubmitModal, setShowSubmitModal] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   // Keep session active
   useActiveSession();
@@ -17,8 +24,27 @@ export default function EventDetailPage() {
   const { events, loading: eventsLoading } = useRealEvents();
   const { rankings, loading: rankingsLoading } = useEventRankings(id || null);
   const { stats } = useEventStats(id || null);
+  
+  // Open Arena data
+  const { rounds, loading: roundsLoading } = useEventRounds(id || null);
+  const { statuses: userRoundStatuses } = useUserRoundStatus(id || null);
 
   const event = events.find((e) => e.id === id);
+  const isOpenArena = (event as any)?.event_mode === 'open_arena';
+  const activeRound = rounds.find(r => r.status === 'active');
+  const currentUserStatus = userRoundStatuses.find(s => s.round_number === activeRound?.round_number);
+
+  // Check if user should see the Open Arena guide
+  useEffect(() => {
+    if (isOpenArena && event) {
+      const hasSeenGuide = localStorage.getItem('loopgate-guide-open-arena-v1');
+      // Auto-show guide for first-time viewers of Open Arena events
+      if (!hasSeenGuide) {
+        setShowGuide(true);
+        localStorage.setItem('loopgate-guide-open-arena-v1', 'true');
+      }
+    }
+  }, [isOpenArena, event]);
 
   if (eventsLoading) {
     return (
@@ -39,6 +65,15 @@ export default function EventDetailPage() {
   const isLive = event.status === "live";
   const isClosed = event.status === "closed";
 
+  const getUserAdvancementStatus = () => {
+    if (!user || !activeRound) return null;
+    const status = userRoundStatuses.find(s => s.round_number === activeRound.round_number);
+    if (!status) return 'not_entered';
+    return status.status;
+  };
+
+  const advancementStatus = getUserAdvancementStatus();
+
   return (
     <div className="min-h-screen pb-20">
       {/* Header */}
@@ -50,7 +85,7 @@ export default function EventDetailPage() {
           <div className="flex-1">
             <h1 className="text-base font-bold">{event.title}</h1>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              Arena
+              {isOpenArena ? 'Open Arena' : 'Arena'}
             </p>
           </div>
           <StatusBadge status={event.status} />
@@ -68,6 +103,14 @@ export default function EventDetailPage() {
           </div>
         )}
         <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            {isOpenArena && (
+              <Badge className="bg-gold/20 text-gold text-[10px] gap-1">
+                <Zap size={10} />
+                OPEN ARENA
+              </Badge>
+            )}
+          </div>
           <h2 className="text-3xl font-black tracking-tight">{event.title}</h2>
           {event.subtitle && <p className="text-sm text-muted-foreground mt-1">{event.subtitle}</p>}
         </div>
@@ -85,6 +128,140 @@ export default function EventDetailPage() {
             {event.league} League
           </span>
         </div>
+
+        {/* Open Arena Info Button */}
+        {isOpenArena && (
+          <div className="flex items-center justify-between">
+            <OpenArenaInfoButton onClick={() => setShowGuide(true)} />
+            {rounds.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {rounds.length} Round{rounds.length > 1 ? 's' : ''} • {activeRound ? `R${activeRound.round_number} Active` : 'Awaiting Start'}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Open Arena Round Progress */}
+        {isOpenArena && rounds.length > 0 && (
+          <section className="bg-surface-1 rounded-lg border border-border overflow-hidden">
+            {/* Round Tabs */}
+            <div className="flex border-b border-border">
+              {rounds.map((round) => {
+                const userStatus = userRoundStatuses.find(s => s.round_number === round.round_number);
+                return (
+                  <div
+                    key={round.round_number}
+                    className={`flex-1 px-3 py-3 text-center relative ${
+                      round.status === 'active' ? 'bg-gold/10' : ''
+                    }`}
+                  >
+                    <div className="text-xs font-bold">R{round.round_number}</div>
+                    <div className={`text-[9px] uppercase tracking-wider mt-0.5 ${
+                      round.status === 'active' ? 'text-green-400' :
+                      round.status === 'completed' ? 'text-muted-foreground' :
+                      'text-muted-foreground/50'
+                    }`}>
+                      {round.status === 'active' ? 'Live' : round.status === 'completed' ? 'Done' : 'Soon'}
+                    </div>
+                    {userStatus && (
+                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                        {userStatus.status === 'advanced' ? (
+                          <CheckCircle2 size={12} className="text-green-400" />
+                        ) : userStatus.status === 'eliminated' ? (
+                          <XCircle size={12} className="text-red-400" />
+                        ) : null}
+                      </div>
+                    )}
+                    {round.status === 'active' && (
+                      <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Active Round Details */}
+            {activeRound && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className={`text-[10px] ${
+                      activeRound.round_type === 'open' ? 'bg-green-500/20 text-green-400' :
+                      activeRound.round_type === 'elimination' ? 'bg-orange-500/20 text-orange-400' :
+                      'bg-purple-500/20 text-purple-400'
+                    }`}>
+                      {activeRound.round_type === 'open' ? 'Open' : 
+                       activeRound.round_type === 'elimination' ? 'Elimination' : 'Threshold'}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      Round {activeRound.round_number} of {rounds.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-gold">
+                    <Sparkles size={12} />
+                    <span>{activeRound.index_reward} INDEX</span>
+                  </div>
+                </div>
+
+                {/* Advancement Info */}
+                {activeRound.round_type !== 'open' && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground p-2 bg-background rounded border border-border">
+                    <Target size={14} className="text-orange-400" />
+                    <span>
+                      {activeRound.round_type === 'elimination' 
+                        ? activeRound.advancement_type === 'top_x'
+                          ? `Top ${activeRound.advancement_value} editors advance`
+                          : `Top ${activeRound.advancement_value}% advance`
+                        : `QOI ≥ ${activeRound.threshold_qoi} to advance`
+                      }
+                    </span>
+                  </div>
+                )}
+
+                {/* User's Current Status */}
+                {user && advancementStatus && advancementStatus !== 'not_entered' && (
+                  <div className={`p-3 rounded-lg border ${
+                    advancementStatus === 'advanced' ? 'bg-green-500/10 border-green-500/30' :
+                    advancementStatus === 'eliminated' ? 'bg-red-500/10 border-red-500/30' :
+                    'bg-gold/10 border-gold/30'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      {advancementStatus === 'advanced' ? (
+                        <>
+                          <CheckCircle2 size={16} className="text-green-400" />
+                          <span className="text-sm font-semibold text-green-400">You Advanced!</span>
+                        </>
+                      ) : advancementStatus === 'eliminated' ? (
+                        <>
+                          <XCircle size={16} className="text-red-400" />
+                          <span className="text-sm font-semibold text-red-400">Eliminated</span>
+                        </>
+                      ) : (
+                        <>
+                          <Zap size={16} className="text-gold" />
+                          <span className="text-sm font-semibold text-gold">Competing</span>
+                        </>
+                      )}
+                    </div>
+                    {currentUserStatus?.qoi_score !== null && currentUserStatus?.qoi_score !== undefined && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Your QOI: <span className="text-foreground font-medium">{currentUserStatus.qoi_score}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Round Countdown */}
+                {activeRound.ends_at && (
+                  <CountdownTimer 
+                    endDate={activeRound.ends_at} 
+                    label="Round Ends"
+                  />
+                )}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Editor Category */}
         {(event as any).editor_category && (
@@ -126,8 +303,8 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        {/* Countdown (Live/Upcoming) */}
-        {!isClosed && (
+        {/* Countdown (Live/Upcoming) - Only for non-Open Arena or when no active round */}
+        {!isClosed && (!isOpenArena || !activeRound) && (
           <section className="bg-surface-1 border border-border rounded-lg p-4">
             <CountdownTimer 
               endDate={isLive ? event.end_date : event.start_date} 
@@ -193,8 +370,24 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        {/* Live Rankings Preview - Real Data */}
-        {isLive && (
+        {/* Open Arena Round Leaderboard */}
+        {isOpenArena && rounds.length > 0 && isLive && (
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+              <Trophy size={14} className="text-gold" />
+              Round Rankings
+            </h3>
+            <OpenArenaRoundLeaderboard
+              eventId={id || ''}
+              rounds={rounds}
+              showEliminated={(event as any).show_eliminated ?? true}
+              currentUserId={user?.id}
+            />
+          </section>
+        )}
+
+        {/* Standard Live Rankings Preview - For non-Open Arena events */}
+        {!isOpenArena && isLive && (
           <section className="bg-card border border-border rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -258,15 +451,23 @@ export default function EventDetailPage() {
           </section>
         )}
 
-        {/* Submit Button (Live only) */}
+        {/* Submit Button (Live only) - Check if user can submit to active round */}
         {isLive && (
-          <button 
-            onClick={() => setShowSubmitModal(true)}
-            className="w-full bg-gold text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2"
-          >
-            <Send size={18} />
-            Submit Edit
-          </button>
+          <>
+            {isOpenArena && advancementStatus === 'eliminated' ? (
+              <div className="w-full bg-surface-1 border border-border text-muted-foreground font-medium py-4 rounded-lg text-center">
+                You were eliminated in a previous round
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowSubmitModal(true)}
+                className="w-full bg-gold text-black font-bold py-4 rounded-lg flex items-center justify-center gap-2"
+              >
+                <Send size={18} />
+                {isOpenArena && activeRound ? `Submit to Round ${activeRound.round_number}` : 'Submit Edit'}
+              </button>
+            )}
+          </>
         )}
 
         {/* Pending Status */}
@@ -293,6 +494,13 @@ export default function EventDetailPage() {
         onClose={() => setShowSubmitModal(false)}
         eventId={event.id}
         eventTitle={event.title}
+        roundNumber={isOpenArena ? activeRound?.round_number : undefined}
+      />
+
+      {/* Open Arena Guide Modal */}
+      <OpenArenaGuide
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
       />
     </div>
   );
