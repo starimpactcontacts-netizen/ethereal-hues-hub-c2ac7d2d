@@ -353,6 +353,16 @@ export default function EventDetailPage() {
           </div>
         </section>
 
+        {/* Description */}
+        {event.description && (
+          <section className="bg-card border border-border rounded-lg p-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+              About This Event
+            </h3>
+            <p className="text-sm whitespace-pre-wrap">{event.description}</p>
+          </section>
+        )}
+
         {/* Rules */}
         {event.rules && event.rules.length > 0 && (
           <section className="bg-card border border-border rounded-lg p-4">

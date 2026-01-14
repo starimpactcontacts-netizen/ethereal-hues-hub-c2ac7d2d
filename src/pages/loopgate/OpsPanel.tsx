@@ -220,7 +220,9 @@ export default function OpsPanel() {
     editor_category: '',
     event_mode: 'standard' as 'standard' | 'open_arena',
     materials_url: '',
+    rules: [] as string[],
   });
+  const [newRuleInput, setNewRuleInput] = useState('');
   const [openArenaConfig, setOpenArenaConfig] = useState(getDefaultOpenArenaConfig());
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
@@ -241,7 +243,9 @@ export default function OpsPanel() {
     xp_reward: 50,
     editor_category: '',
     materials_url: '',
+    rules: [] as string[],
   });
+  const [editRuleInput, setEditRuleInput] = useState('');
   const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
   const [editPosterPreview, setEditPosterPreview] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -769,6 +773,7 @@ export default function OpsPanel() {
         description: newEvent.description || null,
         category: newEvent.category,
         region_tags: newEvent.region_tags,
+        rules: newEvent.rules.length > 0 ? newEvent.rules : null,
         start_date: new Date(newEvent.start_date).toISOString(),
         end_date: new Date(newEvent.end_date).toISOString(),
         prize_pool: newEvent.prize_pool || null,
@@ -832,7 +837,9 @@ export default function OpsPanel() {
         editor_category: '',
         event_mode: 'standard',
         materials_url: '',
+        rules: [],
       });
+      setNewRuleInput('');
       setOpenArenaConfig(getDefaultOpenArenaConfig());
       setPosterFile(null);
       setPosterPreview(null);
@@ -880,7 +887,9 @@ export default function OpsPanel() {
       xp_reward: event.xp_reward || 50,
       editor_category: (event as any).editor_category || '',
       materials_url: event.materials_url || '',
+      rules: event.rules || [],
     });
+    setEditRuleInput('');
     setEditPosterPreview(event.poster_url || null);
     setEditPosterFile(null);
   }
@@ -921,6 +930,7 @@ export default function OpsPanel() {
         description: editEvent.description || null,
         category: editEvent.category,
         region_tags: editEvent.region_tags,
+        rules: editEvent.rules.length > 0 ? editEvent.rules : null,
         start_date: new Date(editEvent.start_date).toISOString(),
         end_date: new Date(editEvent.end_date).toISOString(),
         prize_pool: editEvent.prize_pool || null,
@@ -3125,6 +3135,59 @@ export default function OpsPanel() {
               </p>
             </div>
 
+            {/* Rules Editor */}
+            <div>
+              <Label className="flex items-center gap-1">
+                Rules
+                <span className="text-muted-foreground text-[10px]">({newEvent.rules.length} added)</span>
+              </Label>
+              <div className="mt-2 space-y-2">
+                {newEvent.rules.map((rule, index) => (
+                  <div key={index} className="flex items-center gap-2 bg-surface-1 rounded-lg px-3 py-2">
+                    <span className="text-gold text-xs">•</span>
+                    <span className="flex-1 text-sm">{rule}</span>
+                    <button
+                      type="button"
+                      onClick={() => setNewEvent({ ...newEvent, rules: newEvent.rules.filter((_, i) => i !== index) })}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <Input
+                    value={newRuleInput}
+                    onChange={(e) => setNewRuleInput(e.target.value)}
+                    placeholder="Add a rule..."
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newRuleInput.trim()) {
+                        e.preventDefault();
+                        setNewEvent({ ...newEvent, rules: [...newEvent.rules, newRuleInput.trim()] });
+                        setNewRuleInput('');
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newRuleInput.trim()) {
+                        setNewEvent({ ...newEvent, rules: [...newEvent.rules, newRuleInput.trim()] });
+                        setNewRuleInput('');
+                      }
+                    }}
+                    className="px-3 py-2 bg-gold text-black rounded-lg text-sm font-medium"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Press Enter or click Add to add rules
+              </p>
+            </div>
+
             {/* Event Mode Toggle */}
             <div>
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Event Mode</Label>
@@ -3397,6 +3460,59 @@ export default function OpsPanel() {
               />
               <p className="text-[10px] text-muted-foreground mt-1">
                 Link to sounds, footage, or assets for participants
+              </p>
+            </div>
+
+            {/* Rules Editor */}
+            <div>
+              <Label className="flex items-center gap-1">
+                Rules
+                <span className="text-muted-foreground text-[10px]">({editEvent.rules.length} added)</span>
+              </Label>
+              <div className="mt-2 space-y-2">
+                {editEvent.rules.map((rule, index) => (
+                  <div key={index} className="flex items-center gap-2 bg-surface-1 rounded-lg px-3 py-2">
+                    <span className="text-gold text-xs">•</span>
+                    <span className="flex-1 text-sm">{rule}</span>
+                    <button
+                      type="button"
+                      onClick={() => setEditEvent({ ...editEvent, rules: editEvent.rules.filter((_, i) => i !== index) })}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+                <div className="flex gap-2">
+                  <Input
+                    value={editRuleInput}
+                    onChange={(e) => setEditRuleInput(e.target.value)}
+                    placeholder="Add a rule..."
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && editRuleInput.trim()) {
+                        e.preventDefault();
+                        setEditEvent({ ...editEvent, rules: [...editEvent.rules, editRuleInput.trim()] });
+                        setEditRuleInput('');
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (editRuleInput.trim()) {
+                        setEditEvent({ ...editEvent, rules: [...editEvent.rules, editRuleInput.trim()] });
+                        setEditRuleInput('');
+                      }
+                    }}
+                    className="px-3 py-2 bg-gold text-black rounded-lg text-sm font-medium"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Press Enter or click Add to add rules
               </p>
             </div>
 
