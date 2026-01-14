@@ -244,6 +244,7 @@ export default function OpsPanel() {
     editor_category: '',
     materials_url: '',
     rules: [] as string[],
+    status: 'pending' as string,
   });
   const [editRuleInput, setEditRuleInput] = useState('');
   const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
@@ -888,6 +889,7 @@ export default function OpsPanel() {
       editor_category: (event as any).editor_category || '',
       materials_url: event.materials_url || '',
       rules: event.rules || [],
+      status: event.status,
     });
     setEditRuleInput('');
     setEditPosterPreview(event.poster_url || null);
@@ -939,6 +941,7 @@ export default function OpsPanel() {
         xp_reward: editEvent.xp_reward,
         materials_url: editEvent.materials_url || null,
         editor_category: editEvent.editor_category || null,
+        status: editEvent.status,
       }).eq('id', editingEvent.id);
       
       if (error) throw error;
@@ -1811,89 +1814,222 @@ export default function OpsPanel() {
               {events.map((event) => {
                 const statusTag = getEventStatusTag(event);
                 const isRegional = event.region_tags && event.region_tags.length > 0;
+                const isOpenArena = (event as any).event_mode === 'open_arena';
+                const isExpanded = selectedArenaEventId === event.id;
                 
                 return (
-                  <div
-                    key={event.id}
-                    className={`bg-card border rounded-lg p-4 ${
-                      activeEventFilter === event.id ? "border-gold" : "border-border"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold truncate">{event.title}</h3>
-                          <Badge className={`${statusTag.color} text-white text-[10px]`}>
-                            {statusTag.label}
-                          </Badge>
-                          {isRegional && (
-                            <Badge variant="outline" className="text-[10px]">REGIONAL</Badge>
-                          )}
-                          {(event as any).event_mode === 'open_arena' && (
-                            <Badge className="bg-gold/20 text-gold text-[10px] flex items-center gap-1">
-                              <Zap size={10} />
-                              OPEN ARENA
+                  <div key={event.id} className="bg-card border border-border rounded-lg overflow-hidden">
+                    <div
+                      className={`p-4 ${
+                        activeEventFilter === event.id ? "border-l-2 border-gold" : ""
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold truncate">{event.title}</h3>
+                            <Badge className={`${statusTag.color} text-white text-[10px]`}>
+                              {statusTag.label}
                             </Badge>
-                          )}
+                            {isRegional && (
+                              <Badge variant="outline" className="text-[10px]">REGIONAL</Badge>
+                            )}
+                            {isOpenArena && (
+                              <Badge className="bg-gold/20 text-gold text-[10px] flex items-center gap-1">
+                                <Zap size={10} />
+                                OPEN ARENA
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                            <span>{event.category || 'Film'}</span>
+                            <span>•</span>
+                            <span>{event.league.toUpperCase()} League</span>
+                            {event.prize_pool && (
+                              <>
+                                <span>•</span>
+                                <span className="text-gold">{event.prize_pool}</span>
+                              </>
+                            )}
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Sparkles size={10} className="text-gold" />
+                              {event.xp_reward || 50} XP
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            {new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span>{event.category || 'Film'}</span>
-                          <span>•</span>
-                          <span>{event.league.toUpperCase()} League</span>
-                          {event.prize_pool && (
-                            <>
-                              <span>•</span>
-                              <span className="text-gold">{event.prize_pool}</span>
-                            </>
+                        <div className="flex items-center gap-2">
+                          {isOpenArena && (
+                            <button
+                              onClick={() => {
+                                if (isExpanded) {
+                                  setSelectedArenaEventId(null);
+                                  setEventRounds([]);
+                                } else {
+                                  fetchEventRounds(event.id);
+                                }
+                              }}
+                              className={`p-2 rounded-lg transition-colors ${
+                                isExpanded ? "bg-gold text-black" : "bg-surface-1 hover:bg-gold/20 text-gold"
+                              }`}
+                              title="Manage Rounds"
+                            >
+                              <Zap size={16} />
+                            </button>
                           )}
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Sparkles size={10} className="text-gold" />
-                            {event.xp_reward || 50} XP
-                          </span>
+                          <button
+                            onClick={() => openEditEvent(event)}
+                            className="p-2 rounded-lg transition-colors bg-surface-1 hover:bg-surface-2"
+                            title="Edit event"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => setDeleteEventId(event.id)}
+                            className="p-2 rounded-lg transition-colors bg-surface-1 hover:bg-destructive/20 text-destructive"
+                            title="Delete event"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => setActiveEventFilter(event.id)}
+                            className={`p-2 rounded-lg transition-colors ${
+                              activeEventFilter === event.id ? "bg-gold text-black" : "bg-surface-1 hover:bg-surface-2"
+                            }`}
+                            title="View submissions"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleToggleEventStatus(event.id, event.status)}
+                            className={`p-2 rounded-lg transition-colors ${
+                              event.status === 'live' ? "bg-green-600" :
+                              event.status === 'judging' ? "bg-orange-500" :
+                              event.status === 'finalized' ? "bg-purple-500" :
+                              "bg-muted hover:bg-muted/80"
+                            }`}
+                            title="Toggle status"
+                          >
+                            {event.status === 'live' ? <Unlock size={16} /> : <Lock size={16} />}
+                          </button>
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-1">
-                          {new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => openEditEvent(event)}
-                          className="p-2 rounded-lg transition-colors bg-surface-1 hover:bg-surface-2"
-                          title="Edit event"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => setDeleteEventId(event.id)}
-                          className="p-2 rounded-lg transition-colors bg-surface-1 hover:bg-destructive/20 text-destructive"
-                          title="Delete event"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => setActiveEventFilter(event.id)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            activeEventFilter === event.id ? "bg-gold text-black" : "bg-surface-1 hover:bg-surface-2"
-                          }`}
-                          title="View submissions"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleToggleEventStatus(event.id, event.status)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            event.status === 'live' ? "bg-green-600" :
-                            event.status === 'judging' ? "bg-orange-500" :
-                            event.status === 'finalized' ? "bg-purple-500" :
-                            "bg-muted hover:bg-muted/80"
-                          }`}
-                          title="Toggle status"
-                        >
-                          {event.status === 'live' ? <Unlock size={16} /> : <Lock size={16} />}
-                        </button>
                       </div>
                     </div>
+                    
+                    {/* Open Arena Round Controls */}
+                    {isOpenArena && isExpanded && (
+                      <div className="border-t border-border bg-surface-1 p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            <Zap size={12} className="text-gold" />
+                            Round Management
+                          </p>
+                          <span className="text-[10px] text-muted-foreground">
+                            {event.total_rounds || 3} total rounds
+                          </span>
+                        </div>
+                        
+                        {eventRounds.length === 0 ? (
+                          <div className="text-center py-4">
+                            <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            <p className="text-xs text-muted-foreground">Loading rounds...</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {eventRounds.map((round) => (
+                              <div 
+                                key={round.id} 
+                                className={`p-3 rounded-lg border ${
+                                  round.status === 'active' ? 'border-green-500 bg-green-500/10' :
+                                  round.status === 'completed' ? 'border-muted bg-muted/20' :
+                                  'border-border bg-card'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-bold text-sm">Round {round.round_number}</span>
+                                      <Badge className={`text-[9px] ${
+                                        round.status === 'active' ? 'bg-green-500' :
+                                        round.status === 'completed' ? 'bg-muted-foreground' :
+                                        'bg-gold/20 text-gold'
+                                      }`}>
+                                        {round.status.toUpperCase()}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-[9px]">
+                                        {round.round_type.toUpperCase()}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
+                                      <span>{round.duration_hours}h duration</span>
+                                      {round.advancement_type !== 'none' && (
+                                        <span>
+                                          {round.advancement_type === 'top_x' ? `Top ${round.advancement_value}` : 
+                                           round.advancement_type === 'percentage' ? `Top ${round.advancement_value}%` :
+                                           round.advancement_type === 'manual' ? 'Manual' : ''}
+                                          {' '}advance
+                                        </span>
+                                      )}
+                                      {round.threshold_qoi && (
+                                        <span>Min QOI: {round.threshold_qoi}</span>
+                                      )}
+                                      <span>+{round.index_reward} INDEX</span>
+                                    </div>
+                                    {round.starts_at && (
+                                      <p className="text-[10px] text-muted-foreground mt-1">
+                                        {round.status === 'active' ? 'Started' : 'Ended'}: {new Date(round.starts_at).toLocaleString()}
+                                        {round.ends_at && round.status === 'active' && (
+                                          <> → Ends: {new Date(round.ends_at).toLocaleString()}</>
+                                        )}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {round.status === 'pending' && (
+                                      <button
+                                        onClick={() => handleStartRound(event.id, round.round_number)}
+                                        disabled={roundActionLoading === `start-${round.round_number}`}
+                                        className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
+                                      >
+                                        {roundActionLoading === `start-${round.round_number}` ? (
+                                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                          <Play size={12} />
+                                        )}
+                                        Start
+                                      </button>
+                                    )}
+                                    {round.status === 'active' && (
+                                      <button
+                                        onClick={() => handleEndRound(event.id, round.round_number)}
+                                        disabled={roundActionLoading === `end-${round.round_number}`}
+                                        className="px-3 py-1.5 bg-orange-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
+                                      >
+                                        {roundActionLoading === `end-${round.round_number}` ? (
+                                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                          <Square size={12} />
+                                        )}
+                                        End Round
+                                      </button>
+                                    )}
+                                    {round.status === 'completed' && (
+                                      <Badge className="bg-green-500/20 text-green-400 text-[9px]">
+                                        <Check size={10} className="mr-1" />
+                                        Done
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -3287,6 +3423,30 @@ export default function OpsPanel() {
                     />
                   </label>
                 )}
+              </div>
+            </div>
+
+            {/* Event Status */}
+            <div>
+              <Label>Event Status</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {['pending', 'live', 'judging', 'finalized', 'closed'].map(status => (
+                  <button
+                    key={status}
+                    onClick={() => setEditEvent({ ...editEvent, status })}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium uppercase transition-colors ${
+                      editEvent.status === status 
+                        ? status === 'live' ? 'bg-green-600 text-white' :
+                          status === 'judging' ? 'bg-orange-500 text-white' :
+                          status === 'finalized' ? 'bg-purple-500 text-white' :
+                          status === 'closed' ? 'bg-muted-foreground text-white' :
+                          'bg-gold text-black'
+                        : 'bg-surface-1 text-muted-foreground hover:bg-surface-2'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
               </div>
             </div>
 
