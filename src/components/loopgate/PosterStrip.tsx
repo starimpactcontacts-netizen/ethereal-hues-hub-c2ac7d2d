@@ -116,37 +116,25 @@ export default function PosterStrip() {
     return () => cancelAnimationFrame(animationId);
   }, [submissions]);
 
-  // Fallback static posters for when no submissions exist
-  const fallbackPosters = [
-    "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&q=80",
-    "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&q=80",
-    "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&q=80",
-    "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&q=80",
-    "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400&q=80",
-    "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=400&q=80",
-  ];
-
   const openFeed = () => {
     navigate('/feed');
   };
 
-  // Show fallback if no submissions
+  // Hide section completely if no submissions
   if (!loading && submissions.length === 0) {
+    return null;
+  }
+
+  // Show loading skeleton
+  if (loading) {
     return (
       <section className="py-4 overflow-hidden">
-        <div 
-          ref={scrollRef}
-          className="flex gap-3 overflow-hidden"
-          style={{ scrollBehavior: "auto" }}
-        >
-          {[...fallbackPosters, ...fallbackPosters].map((poster, index) => (
+        <div className="flex gap-3 overflow-hidden">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div
-              key={index}
-              className="w-24 h-36 flex-shrink-0 rounded-lg bg-cover bg-center relative overflow-hidden"
-              style={{ backgroundImage: `url(${poster})` }}
-            >
-              <div className="absolute inset-0 bg-black/40" />
-            </div>
+              key={i}
+              className="w-24 h-36 flex-shrink-0 rounded-lg bg-muted animate-pulse"
+            />
           ))}
         </div>
       </section>
