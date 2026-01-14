@@ -378,9 +378,23 @@ export default function OpsPanel() {
       })
       .subscribe();
     
+    // Subscribe to Open Arena round submissions too
+    const roundSubmissionsChannel = supabase
+      .channel('admin-round-submissions-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'round_participations' }, (payload) => {
+        console.log('[OPS] New Open Arena submission received:', payload);
+        toast.info('New Open Arena submission received!');
+        fetchData();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'round_participations' }, () => {
+        fetchData();
+      })
+      .subscribe();
+    
     return () => {
       supabase.removeChannel(eventsChannel);
       supabase.removeChannel(submissionsChannel);
+      supabase.removeChannel(roundSubmissionsChannel);
     };
   }, []);
 
@@ -399,24 +413,67 @@ export default function OpsPanel() {
         setActiveEventFilter(eventsData[0].id);
       }
       
-      // Fetch submissions
-      const { data: submissionsData, error: submissionsError } = await supabase
+      // Fetch submissions from both tables (standard + Open Arena)
+      const { data: standardSubmissions, error: standardError } = await supabase
         .from('event_participations')
         .select('*')
         .order('submitted_at', { ascending: false });
       
-      if (submissionsError) throw submissionsError;
+      if (standardError) throw standardError;
+      
+      // Fetch Open Arena round submissions
+      const { data: roundSubmissions, error: roundError } = await supabase
+        .from('round_participations')
+        .select('*')
+        .not('submission_url', 'is', null)
+        .order('submitted_at', { ascending: false });
+      
+      if (roundError) throw roundError;
+      
+      // Merge both submission types, normalizing the structure
+      const allSubmissions = [
+        ...(standardSubmissions || []).map(s => ({
+          ...s,
+          source: 'standard' as const,
+        })),
+        ...(roundSubmissions || []).map(s => ({
+          id: s.id,
+          user_id: s.user_id,
+          event_id: s.event_id,
+          submission_url: s.submission_url,
+          platform: s.platform,
+          status: s.status,
+          quality_score: s.quality_score,
+          originality_score: s.originality_score,
+          impact_score: s.impact_score,
+          qoi_score: s.qoi_score,
+          final_rank: null,
+          submitted_at: s.submitted_at || s.created_at,
+          judged_at: s.judged_at,
+          judge_id: s.judge_id,
+          xp_awarded: null,
+          source: 'open_arena' as const,
+          round_number: s.round_number,
+        })),
+      ];
+      
+      // Sort by submitted_at descending
+      allSubmissions.sort((a, b) => {
+        const dateA = new Date(a.submitted_at || '').getTime();
+        const dateB = new Date(b.submitted_at || '').getTime();
+        return dateB - dateA;
+      });
       
       // Fetch usernames and verification status for submissions
-      const userIds = [...new Set((submissionsData || []).map(s => s.user_id))];
+      const userIds = [...new Set(allSubmissions.map(s => s.user_id))];
       const { data: profilesData } = await supabase
         .from('profiles')
         .select('id, username, verification_status')
-        .in('id', userIds);
+        .in('id', userIds.length > 0 ? userIds : ['']);
       
       const profileMap = new Map((profilesData || []).map(p => [p.id, p]));
       
-      const formattedSubmissions = (submissionsData || []).map(s => ({
+      const formattedSubmissions = allSubmissions.map(s => ({
         ...s,
         username: profileMap.get(s.user_id)?.username || 'Unknown',
         verification_status: profileMap.get(s.user_id)?.verification_status || false

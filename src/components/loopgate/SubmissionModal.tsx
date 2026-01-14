@@ -75,6 +75,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
           platform: platform,
           submission_url: platformLink,
           status: 'active',
+          submitted_at: new Date().toISOString(),
         });
         if (error) throw error;
       } else {
