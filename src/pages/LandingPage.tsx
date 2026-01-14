@@ -375,17 +375,13 @@ export default function LandingPage() {
       <footer className="py-8 px-4 border-t border-border">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="font-display text-2xl">LOOPGATE</div>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <Link to="/about" className="hover:text-foreground">About</Link>
+            <Link to="/how-it-works" className="hover:text-foreground">How It Works</Link>
+            <Link to="/download" className="hover:text-foreground">Download</Link>
+            <Link to="/faq" className="hover:text-foreground">FAQ</Link>
             <Link to="/rules" className="hover:text-foreground">Rules</Link>
             <Link to="/support" className="hover:text-foreground">Support</Link>
-            <a 
-              href="https://apps.apple.com/app/loopgate/id6757446330" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="hover:text-foreground"
-            >
-              App Store
-            </a>
           </div>
           <p className="text-xs text-muted-foreground">© 2026 Loopgate. All rights reserved.</p>
         </div>
