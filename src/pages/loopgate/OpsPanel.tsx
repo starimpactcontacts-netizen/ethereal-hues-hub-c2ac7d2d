@@ -1779,7 +1779,7 @@ export default function OpsPanel() {
     ? submissions.filter(s => s.event_id === activeEventFilter)
     : submissions;
   
-  const pendingSubmissions = filteredSubmissions.filter(s => s.status === 'pending');
+  const pendingSubmissions = filteredSubmissions.filter(s => s.status === 'pending' || s.status === 'active');
   const approvedSubmissions = filteredSubmissions.filter(s => s.status === 'approved');
   const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined');
   const ratedSubmissions = filteredSubmissions.filter(s => s.status === 'scored');
