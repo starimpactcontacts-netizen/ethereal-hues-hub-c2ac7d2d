@@ -21,14 +21,12 @@ export default function LandingPage() {
   const liveEvent = events.find(e => e.status === 'live');
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <SEO {...pageSEO.home} />
-      {/* iOS App Banner - only shows on mobile web, sits above header */}
+    <>
+      {/* iOS App Banner - absolutely first, at the very top of the page */}
       <IOSAppBanner onVisibilityChange={setBannerVisible} />
-      {/* Global Header - pushed down by banner when visible */}
-      <div className={bannerVisible ? 'pt-14' : ''}>
+      <div className="min-h-screen bg-background text-foreground">
+        <SEO {...pageSEO.home} />
         <LandingHeader />
-      </div>
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden pt-[72px]">
         {/* Background gradient */}
@@ -405,6 +403,7 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
