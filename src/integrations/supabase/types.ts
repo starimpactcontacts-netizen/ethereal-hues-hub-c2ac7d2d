@@ -480,6 +480,130 @@ export type Database = {
         }
         Relationships: []
       }
+      house_applications: {
+        Row: {
+          created_at: string
+          house_id: string
+          id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          house_id: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          house_id?: string
+          id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "house_applications_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      house_members: {
+        Row: {
+          house_id: string
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["house_role"]
+          user_id: string
+        }
+        Insert: {
+          house_id: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["house_role"]
+          user_id: string
+        }
+        Update: {
+          house_id?: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["house_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "house_members_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      houses: {
+        Row: {
+          avg_qoi: number | null
+          bonuses: Json
+          created_at: string
+          description: string
+          id: string
+          lore: string | null
+          member_count: number
+          name: string
+          prestige_level: number
+          primary_color: string
+          requires_approval: boolean
+          secondary_color: string
+          symbol: string
+          type: Database["public"]["Enums"]["house_type"]
+          updated_at: string
+        }
+        Insert: {
+          avg_qoi?: number | null
+          bonuses?: Json
+          created_at?: string
+          description: string
+          id: string
+          lore?: string | null
+          member_count?: number
+          name: string
+          prestige_level?: number
+          primary_color: string
+          requires_approval?: boolean
+          secondary_color: string
+          symbol: string
+          type?: Database["public"]["Enums"]["house_type"]
+          updated_at?: string
+        }
+        Update: {
+          avg_qoi?: number | null
+          bonuses?: Json
+          created_at?: string
+          description?: string
+          id?: string
+          lore?: string | null
+          member_count?: number
+          name?: string
+          prestige_level?: number
+          primary_color?: string
+          requires_approval?: boolean
+          secondary_color?: string
+          symbol?: string
+          type?: Database["public"]["Enums"]["house_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       login_streaks: {
         Row: {
           current_streak: number
@@ -562,6 +686,8 @@ export type Database = {
           display_name: string | null
           email: string | null
           global_index_score: number | null
+          house_changed_at: string | null
+          house_id: string | null
           id: string
           is_banned: boolean
           is_hidden: boolean
@@ -597,6 +723,8 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           global_index_score?: number | null
+          house_changed_at?: string | null
+          house_id?: string | null
           id: string
           is_banned?: boolean
           is_hidden?: boolean
@@ -632,6 +760,8 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           global_index_score?: number | null
+          house_changed_at?: string | null
+          house_id?: string | null
           id?: string
           is_banned?: boolean
           is_hidden?: boolean
@@ -660,6 +790,13 @@ export type Database = {
             columns: ["crew_id"]
             isOneToOne: false
             referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_house_id_fkey"
+            columns: ["house_id"]
+            isOneToOne: false
+            referencedRelation: "houses"
             referencedColumns: ["id"]
           },
         ]
@@ -840,6 +977,7 @@ export type Database = {
         }[]
       }
       calculate_level_from_xp: { Args: { xp_amount: number }; Returns: number }
+      can_change_house: { Args: { user_uuid: string }; Returns: boolean }
       can_change_username: { Args: { user_uuid: string }; Returns: boolean }
       days_until_username_change: {
         Args: { user_uuid: string }
@@ -887,6 +1025,8 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user" | "judge" | "dev" | "enterprise"
       crew_role: "owner" | "officer" | "member"
+      house_role: "member" | "captain" | "judge"
+      house_type: "public" | "prestige"
       league_tier: "open" | "pro" | "elite"
       platform_type: "tiktok" | "instagram" | "youtube"
       redemption_status: "pending" | "approved" | "fulfilled" | "rejected"
@@ -1020,6 +1160,8 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user", "judge", "dev", "enterprise"],
       crew_role: ["owner", "officer", "member"],
+      house_role: ["member", "captain", "judge"],
+      house_type: ["public", "prestige"],
       league_tier: ["open", "pro", "elite"],
       platform_type: ["tiktok", "instagram", "youtube"],
       redemption_status: ["pending", "approved", "fulfilled", "rejected"],
