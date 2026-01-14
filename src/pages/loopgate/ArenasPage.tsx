@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageCircle, ChevronRight, Lock, Globe, Users, Crown, Shield } from "lucide-react";
@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import LoopMonster from "@/components/loopgate/LoopMonster";
 
 interface Arena {
   id: number;
@@ -82,6 +83,9 @@ export default function ArenasPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Loop Monster - appears on overscroll */}
+      <LoopMonster />
+
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 py-4">
