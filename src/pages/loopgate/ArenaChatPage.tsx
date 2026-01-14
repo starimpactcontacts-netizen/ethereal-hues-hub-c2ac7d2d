@@ -164,6 +164,15 @@ export default function ArenaChatPage() {
   // Admin/Dev message deletion
   const { isAdmin, isDev } = useAuth();
   const canModerate = isAdmin || isDev;
+
+  // Check if message is within 5-minute delete window
+  const canDeleteOwnMessage = (createdAt: string) => {
+    const messageTime = new Date(createdAt).getTime();
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+    return now - messageTime < fiveMinutes;
+  };
+
   const handleDeleteMessage = async (messageId: string) => {
     const { error } = await supabase
       .from("arena_messages")
@@ -267,12 +276,14 @@ export default function ArenaChatPage() {
                       {message.message_text}
                     </p>
                   </div>
-                  {/* Moderator delete button */}
-                  {canModerate && (
+                  {/* Delete button - moderators or own message within 5 min */}
+                  {(canModerate || (isOwnMessage && canDeleteOwnMessage(message.created_at))) && (
                     <button
                       onClick={() => handleDeleteMessage(message.id)}
-                      className="ml-2 p-1 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                      title="Delete message"
+                      className={`ml-2 p-1 transition-colors opacity-0 group-hover:opacity-100 ${
+                        isOwnMessage ? "text-muted-foreground hover:text-destructive" : "text-muted-foreground hover:text-destructive"
+                      }`}
+                      title={isOwnMessage && !canModerate ? "Delete (5 min window)" : "Delete message"}
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
