@@ -10,25 +10,26 @@ export default function IOSAppBanner() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Check if mobile and not native app
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
+    // Check if phone (not tablet/laptop) - use narrow width + touch device
+    const checkPhone = () => {
+      const isNarrow = window.innerWidth < 640; // Phone-sized screens only
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      setIsMobile(isNarrow && isTouchDevice);
     };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+    checkPhone();
+    window.addEventListener('resize', checkPhone);
 
     // Check if banner was dismissed
     const dismissed = localStorage.getItem(BANNER_DISMISSED_KEY);
     const isNative = isNativeApp();
 
-    // Show banner only on mobile web (not native app) and not dismissed
+    // Show banner only on mobile phones (not native app) and not dismissed
     if (!dismissed && !isNative) {
       setIsVisible(true);
     }
 
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkPhone);
   }, []);
 
   const handleDismiss = () => {
