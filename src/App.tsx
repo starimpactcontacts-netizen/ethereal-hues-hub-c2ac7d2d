@@ -37,6 +37,7 @@ import RulesPage from "./pages/RulesPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import AboutPage from "./pages/AboutPage";
 import DownloadPage from "./pages/DownloadPage";
+import AppPage from "./pages/AppPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import FAQPage from "./pages/FAQPage";
 import NotFound from "./pages/NotFound";
@@ -225,6 +226,7 @@ export default function App() {
             <Route path="/support" element={<SupportPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/download" element={<DownloadPage />} />
+            <Route path="/app" element={<AppPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/join/:crewSlug" element={<JoinCrewPage />} />
