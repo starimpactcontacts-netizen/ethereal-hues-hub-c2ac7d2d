@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square } from "lucide-react";
+import OpenArenaForm, { getDefaultOpenArenaConfig } from "@/components/loopgate/OpenArenaForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -30,6 +31,13 @@ interface RealEvent {
   region_tags: string[] | null;
   description: string | null;
   xp_reward: number | null;
+  // Open Arena fields
+  event_mode: 'standard' | 'open_arena' | null;
+  total_rounds: number | null;
+  max_editors: number | null;
+  winner_logic: 'final_qoi' | 'cumulative_qoi' | 'manual' | null;
+  show_eliminated: boolean | null;
+  hide_future_rounds: boolean | null;
 }
 
 interface RealSubmission {
@@ -209,7 +217,9 @@ export default function OpsPanel() {
     league: 'open',
     xp_reward: 50,
     editor_category: '',
+    event_mode: 'standard' as 'standard' | 'open_arena',
   });
+  const [openArenaConfig, setOpenArenaConfig] = useState(getDefaultOpenArenaConfig());
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
@@ -304,6 +314,29 @@ export default function OpsPanel() {
     top_recruiters: [],
   });
   const [recentInvites, setRecentInvites] = useState<AdminInvite[]>([]);
+
+  // Open Arena round management state
+  interface EventRound {
+    id: string;
+    event_id: string;
+    round_number: number;
+    round_type: 'open' | 'elimination' | 'threshold';
+    advancement_type: 'top_x' | 'percentage' | 'manual' | 'none';
+    advancement_value: number | null;
+    threshold_qoi: number | null;
+    max_submissions: number;
+    index_reward: number;
+    bonus_multiplier: number;
+    duration_hours: number;
+    auto_start_next: boolean;
+    show_leaderboard: boolean;
+    status: 'pending' | 'active' | 'completed';
+    starts_at: string | null;
+    ends_at: string | null;
+  }
+  const [eventRounds, setEventRounds] = useState<EventRound[]>([]);
+  const [selectedArenaEventId, setSelectedArenaEventId] = useState<string | null>(null);
+  const [roundActionLoading, setRoundActionLoading] = useState<string | null>(null);
 
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
@@ -646,6 +679,56 @@ export default function OpsPanel() {
     }
   }
 
+  // Open Arena round management functions
+  async function fetchEventRounds(eventId: string) {
+    const { data, error } = await supabase
+      .from('event_rounds')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('round_number');
+    
+    if (!error && data) {
+      setEventRounds(data as any);
+      setSelectedArenaEventId(eventId);
+    }
+  }
+
+  async function handleStartRound(eventId: string, roundNumber: number) {
+    setRoundActionLoading(`start-${roundNumber}`);
+    try {
+      const { error } = await supabase.rpc('start_event_round', {
+        p_event_id: eventId,
+        p_round_number: roundNumber
+      });
+      if (error) throw error;
+      toast.success(`Round ${roundNumber} started!`);
+      fetchEventRounds(eventId);
+    } catch (error) {
+      console.error('Error starting round:', error);
+      toast.error('Failed to start round');
+    } finally {
+      setRoundActionLoading(null);
+    }
+  }
+
+  async function handleEndRound(eventId: string, roundNumber: number) {
+    setRoundActionLoading(`end-${roundNumber}`);
+    try {
+      const { data, error } = await supabase.rpc('end_event_round', {
+        p_event_id: eventId,
+        p_round_number: roundNumber
+      });
+      if (error) throw error;
+      toast.success(`Round ${roundNumber} ended! ${data} users processed.`);
+      fetchEventRounds(eventId);
+    } catch (error) {
+      console.error('Error ending round:', error);
+      toast.error('Failed to end round');
+    } finally {
+      setRoundActionLoading(null);
+    }
+  }
+
   async function handleCreateEvent() {
     if (!newEvent.title || !newEvent.start_date || !newEvent.end_date) {
       toast.error('Please fill in required fields');
@@ -675,8 +758,9 @@ export default function OpsPanel() {
         posterUrl = urlData.publicUrl;
       }
       
-      // Create event
-      const { error } = await supabase.from('events').insert({
+      // Create event with Open Arena fields if applicable
+      const isOpenArena = newEvent.event_mode === 'open_arena';
+      const { data: eventData, error } = await supabase.from('events').insert({
         title: newEvent.title,
         subtitle: newEvent.subtitle || null,
         description: newEvent.description || null,
@@ -690,11 +774,45 @@ export default function OpsPanel() {
         status: 'pending',
         xp_reward: newEvent.xp_reward,
         editor_category: newEvent.editor_category || null,
-      });
+        event_mode: newEvent.event_mode,
+        total_rounds: isOpenArena ? openArenaConfig.total_rounds : 1,
+        max_editors: isOpenArena ? openArenaConfig.max_editors : null,
+        winner_logic: isOpenArena ? openArenaConfig.winner_logic : 'final_qoi',
+        show_eliminated: isOpenArena ? openArenaConfig.show_eliminated : true,
+        hide_future_rounds: isOpenArena ? openArenaConfig.hide_future_rounds : false,
+      }).select().single();
       
       if (error) throw error;
       
-      toast.success('Event created successfully');
+      // Create rounds for Open Arena events
+      if (isOpenArena && eventData) {
+        const roundsToInsert = openArenaConfig.rounds.map((round, index) => ({
+          event_id: eventData.id,
+          round_number: index + 1,
+          round_type: round.round_type as 'open' | 'elimination' | 'threshold',
+          advancement_type: round.advancement_type as 'top_x' | 'percentage' | 'manual' | 'none',
+          advancement_value: round.advancement_value,
+          threshold_qoi: round.threshold_qoi,
+          max_submissions: round.max_submissions,
+          index_reward: round.index_reward,
+          bonus_multiplier: round.bonus_multiplier,
+          duration_hours: round.duration_hours,
+          auto_start_next: round.auto_start_next,
+          show_leaderboard: round.show_leaderboard,
+          status: 'pending' as const,
+        }));
+
+        const { error: roundsError } = await supabase
+          .from('event_rounds')
+          .insert(roundsToInsert);
+
+        if (roundsError) {
+          console.error('Error creating rounds:', roundsError);
+          toast.error('Event created but failed to create rounds');
+        }
+      }
+      
+      toast.success(isOpenArena ? 'Open Arena event created!' : 'Event created successfully');
       setShowCreateEvent(false);
       setNewEvent({
         title: '',
@@ -708,7 +826,9 @@ export default function OpsPanel() {
         league: 'open',
         xp_reward: 50,
         editor_category: '',
+        event_mode: 'standard',
       });
+      setOpenArenaConfig(getDefaultOpenArenaConfig());
       setPosterFile(null);
       setPosterPreview(null);
       fetchData();
@@ -1690,6 +1810,12 @@ export default function OpsPanel() {
                           </Badge>
                           {isRegional && (
                             <Badge variant="outline" className="text-[10px]">REGIONAL</Badge>
+                          )}
+                          {(event as any).event_mode === 'open_arena' && (
+                            <Badge className="bg-gold/20 text-gold text-[10px] flex items-center gap-1">
+                              <Zap size={10} />
+                              OPEN ARENA
+                            </Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
@@ -2971,6 +3097,43 @@ export default function OpsPanel() {
                 XP awarded when a submission is approved
               </p>
             </div>
+
+            {/* Event Mode Toggle */}
+            <div>
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">Event Mode</Label>
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => setNewEvent({ ...newEvent, event_mode: 'standard' })}
+                  className={`flex-1 px-3 py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                    newEvent.event_mode === 'standard'
+                      ? 'bg-surface-2 border-2 border-border text-foreground'
+                      : 'bg-surface-1 text-muted-foreground hover:bg-surface-2'
+                  }`}
+                >
+                  <Calendar size={16} />
+                  Standard
+                </button>
+                <button
+                  onClick={() => setNewEvent({ ...newEvent, event_mode: 'open_arena' })}
+                  className={`flex-1 px-3 py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                    newEvent.event_mode === 'open_arena'
+                      ? 'bg-gold/20 border-2 border-gold text-gold'
+                      : 'bg-surface-1 text-muted-foreground hover:bg-surface-2'
+                  }`}
+                >
+                  <Zap size={16} />
+                  Open Arena
+                </button>
+              </div>
+            </div>
+
+            {/* Open Arena Configuration */}
+            {newEvent.event_mode === 'open_arena' && (
+              <OpenArenaForm
+                config={openArenaConfig}
+                onChange={setOpenArenaConfig}
+              />
+            )}
 
             {/* Submit Button */}
             <button
