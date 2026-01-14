@@ -498,6 +498,7 @@ export type Database = {
           ip: string | null
           league: string
           location: string | null
+          materials_url: string | null
           max_editors: number | null
           poster_url: string | null
           prize_pool: string | null
@@ -525,6 +526,7 @@ export type Database = {
           ip?: string | null
           league?: string
           location?: string | null
+          materials_url?: string | null
           max_editors?: number | null
           poster_url?: string | null
           prize_pool?: string | null
@@ -552,6 +554,7 @@ export type Database = {
           ip?: string | null
           league?: string
           location?: string | null
+          materials_url?: string | null
           max_editors?: number | null
           poster_url?: string | null
           prize_pool?: string | null

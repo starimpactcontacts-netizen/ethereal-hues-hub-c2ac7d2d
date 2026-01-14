@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, Sparkles } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, Sparkles, ExternalLink } from "lucide-react";
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession } from "@/hooks/useRealData";
 import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
 import { useAuth } from "@/hooks/useAuth";
@@ -367,6 +367,28 @@ export default function EventDetailPage() {
                 </li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {/* Materials / Assets Link */}
+        {(event as any).materials_url && (
+          <section className="bg-card border border-gold/30 rounded-lg p-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+              <ExternalLink size={14} className="text-gold" />
+              Event Materials
+            </h3>
+            <a 
+              href={(event as any).materials_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-gold hover:underline text-sm font-medium"
+            >
+              <span>Access Sounds & Assets</span>
+              <ExternalLink size={14} />
+            </a>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Download or access the official materials for this event
+            </p>
           </section>
         )}
 
