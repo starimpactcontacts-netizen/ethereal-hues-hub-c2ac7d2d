@@ -86,6 +86,16 @@ export default function EventDetailPage() {
           </span>
         </div>
 
+        {/* Editor Category */}
+        {(event as any).editor_category && (
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Category:</span>
+            <span className="px-2 py-0.5 bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider rounded-full">
+              {(event as any).editor_category.replace('-', ' / ').replace('_', ' ')}
+            </span>
+          </div>
+        )}
+
         {/* Live Activity Indicators - Real Data */}
         {isLive && (
           <section className="bg-surface-1 rounded-lg p-4 border border-border space-y-3">

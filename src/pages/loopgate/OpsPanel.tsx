@@ -109,6 +109,16 @@ interface Redemption {
 
 const CATEGORIES = ["Film", "Trailer", "Music", "Regional", "Global"];
 const REGIONS = ["North America", "Europe", "Asia", "Latin America", "Africa", "Oceania", "Middle East"];
+const EDITOR_CATEGORIES = [
+  { id: 'film', label: 'Film Editor' },
+  { id: 'music', label: 'Music Editor' },
+  { id: 'anime', label: 'Anime Editor' },
+  { id: 'sports', label: 'Sports Editor' },
+  { id: 'gaming', label: 'Gaming Editor' },
+  { id: 'trailer', label: 'Trailer Editor' },
+  { id: 'abstract', label: 'Abstract / FX' },
+  { id: 'meme', label: 'Meme / Shortform' },
+];
 
 function getEventStatusTag(event: RealEvent): { label: string; color: string } {
   const now = new Date();
@@ -148,6 +158,7 @@ export default function OpsPanel() {
     prize_pool: '',
     league: 'open',
     xp_reward: 50,
+    editor_category: '',
   });
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
@@ -166,6 +177,7 @@ export default function OpsPanel() {
     prize_pool: '',
     league: 'open',
     xp_reward: 50,
+    editor_category: '',
   });
   const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
   const [editPosterPreview, setEditPosterPreview] = useState<string | null>(null);
@@ -477,6 +489,7 @@ export default function OpsPanel() {
         poster_url: posterUrl,
         status: 'pending',
         xp_reward: newEvent.xp_reward,
+        editor_category: newEvent.editor_category || null,
       });
       
       if (error) throw error;
@@ -494,6 +507,7 @@ export default function OpsPanel() {
         prize_pool: '',
         league: 'open',
         xp_reward: 50,
+        editor_category: '',
       });
       setPosterFile(null);
       setPosterPreview(null);
@@ -539,6 +553,7 @@ export default function OpsPanel() {
       prize_pool: event.prize_pool || '',
       league: event.league,
       xp_reward: event.xp_reward || 50,
+      editor_category: (event as any).editor_category || '',
     });
     setEditPosterPreview(event.poster_url || null);
     setEditPosterFile(null);
@@ -1990,7 +2005,27 @@ export default function OpsPanel() {
               </div>
             </div>
 
-            {/* League */}
+            {/* Editor Category (Archetype) */}
+            <div>
+              <Label>Editor Category (Archetype)</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {EDITOR_CATEGORIES.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setNewEvent({ ...newEvent, editor_category: cat.id })}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                      newEvent.editor_category === cat.id
+                        ? 'bg-gold text-black' 
+                        : 'bg-surface-1 text-muted-foreground hover:bg-surface-2'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">Optional: Target specific editor archetypes</p>
+            </div>
+
             <div>
               <Label>League</Label>
               <div className="flex gap-2 mt-2">
