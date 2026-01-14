@@ -572,6 +572,81 @@ export type Database = {
         }
         Relationships: []
       }
+      gatekeeper_submissions: {
+        Row: {
+          age_range: string | null
+          created_at: string
+          editing_software: string | null
+          editing_style: string | null
+          house_fit: Json | null
+          id: string
+          impact_score: number | null
+          judge_archetype: string | null
+          judge_commentary: string | null
+          judge_id: string | null
+          judged_at: string | null
+          originality_score: number | null
+          platform: string
+          qoi_score: number | null
+          quality_score: number | null
+          rank_projection: string | null
+          status: string
+          submission_url: string
+          suggested_action: string | null
+          updated_at: string
+          user_id: string
+          years_editing: string | null
+        }
+        Insert: {
+          age_range?: string | null
+          created_at?: string
+          editing_software?: string | null
+          editing_style?: string | null
+          house_fit?: Json | null
+          id?: string
+          impact_score?: number | null
+          judge_archetype?: string | null
+          judge_commentary?: string | null
+          judge_id?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform: string
+          qoi_score?: number | null
+          quality_score?: number | null
+          rank_projection?: string | null
+          status?: string
+          submission_url: string
+          suggested_action?: string | null
+          updated_at?: string
+          user_id: string
+          years_editing?: string | null
+        }
+        Update: {
+          age_range?: string | null
+          created_at?: string
+          editing_software?: string | null
+          editing_style?: string | null
+          house_fit?: Json | null
+          id?: string
+          impact_score?: number | null
+          judge_archetype?: string | null
+          judge_commentary?: string | null
+          judge_id?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform?: string
+          qoi_score?: number | null
+          quality_score?: number | null
+          rank_projection?: string | null
+          status?: string
+          submission_url?: string
+          suggested_action?: string | null
+          updated_at?: string
+          user_id?: string
+          years_editing?: string | null
+        }
+        Relationships: []
+      }
       house_applications: {
         Row: {
           created_at: string
@@ -834,6 +909,7 @@ export type Database = {
           avatar_url: string | null
           banned_at: string | null
           banned_reason: string | null
+          best_gatekeeper_qoi: number | null
           bio: string | null
           created_at: string | null
           crew_id: string | null
@@ -871,6 +947,7 @@ export type Database = {
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
+          best_gatekeeper_qoi?: number | null
           bio?: string | null
           created_at?: string | null
           crew_id?: string | null
@@ -908,6 +985,7 @@ export type Database = {
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
+          best_gatekeeper_qoi?: number | null
           bio?: string | null
           created_at?: string | null
           crew_id?: string | null
