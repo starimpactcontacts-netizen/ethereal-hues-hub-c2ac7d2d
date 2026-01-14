@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users, ShoppingBag, Coins, Activity } from 'lucide-react';
+import { Play, Clock, Trophy, MessageCircle, Zap, ArrowRight, Shield, Crown, Users, ShoppingBag, Coins, Activity, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
+import InviteFriendsModal from '@/components/loopgate/InviteFriendsModal';
 const leagueConfig = {
   elite: {
     label: 'Elite League',
@@ -38,6 +40,7 @@ export default function HubPage() {
   const { profile } = useAuth();
   const { events, loading: eventsLoading } = useRealEvents();
   const { stats, loading: statsLoading } = useGlobalStats();
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   
   // Keep session active
   useActiveSession();
@@ -286,6 +289,33 @@ export default function HubPage() {
         <ActivityFeed limit={5} compact />
       </div>
 
+      {/* Invite Friends CTA - Prominent */}
+      <div className="px-4 mb-6">
+        <motion.button
+          onClick={() => setInviteModalOpen(true)}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="w-full bg-gradient-to-r from-gold via-gold/90 to-gold border-2 border-gold p-5 flex items-center justify-between hover:shadow-lg hover:shadow-gold/20 transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-background/20 border border-background/30 flex items-center justify-center">
+              <UserPlus className="w-6 h-6 text-background" />
+            </div>
+            <div className="text-left">
+              <p className="font-display text-xl text-background">Invite Friends</p>
+              <p className="text-xs text-background/80 uppercase tracking-widest">Earn XP for every friend who joins</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="bg-background/20 px-3 py-1.5 text-xs font-bold text-background uppercase tracking-wider">
+              +170 XP
+            </span>
+            <ArrowRight className="w-6 h-6 text-background group-hover:translate-x-1 transition-transform" />
+          </div>
+        </motion.button>
+      </div>
+
       {/* Quick Links */}
       <div className="px-4">
         <h3 className="font-display text-xl mb-4">Quick Links</h3>
@@ -310,6 +340,9 @@ export default function HubPage() {
           </Link>
         </div>
       </div>
+
+      {/* Invite Friends Modal */}
+      <InviteFriendsModal open={inviteModalOpen} onOpenChange={setInviteModalOpen} />
     </div>
   );
 }
