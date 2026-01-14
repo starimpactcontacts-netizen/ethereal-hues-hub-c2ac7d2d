@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon } from "lucide-react";
 import OpenArenaForm, { getDefaultOpenArenaConfig } from "@/components/loopgate/OpenArenaForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,6 +31,7 @@ interface RealEvent {
   region_tags: string[] | null;
   description: string | null;
   xp_reward: number | null;
+  materials_url: string | null;
   // Open Arena fields
   event_mode: 'standard' | 'open_arena' | null;
   total_rounds: number | null;
@@ -218,6 +219,7 @@ export default function OpsPanel() {
     xp_reward: 50,
     editor_category: '',
     event_mode: 'standard' as 'standard' | 'open_arena',
+    materials_url: '',
   });
   const [openArenaConfig, setOpenArenaConfig] = useState(getDefaultOpenArenaConfig());
   const [posterFile, setPosterFile] = useState<File | null>(null);
@@ -238,6 +240,7 @@ export default function OpsPanel() {
     league: 'open',
     xp_reward: 50,
     editor_category: '',
+    materials_url: '',
   });
   const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
   const [editPosterPreview, setEditPosterPreview] = useState<string | null>(null);
@@ -775,6 +778,7 @@ export default function OpsPanel() {
         xp_reward: newEvent.xp_reward,
         editor_category: newEvent.editor_category || null,
         event_mode: newEvent.event_mode,
+        materials_url: newEvent.materials_url || null,
         total_rounds: isOpenArena ? openArenaConfig.total_rounds : 1,
         max_editors: isOpenArena ? openArenaConfig.max_editors : null,
         winner_logic: isOpenArena ? openArenaConfig.winner_logic : 'final_qoi',
@@ -827,6 +831,7 @@ export default function OpsPanel() {
         xp_reward: 50,
         editor_category: '',
         event_mode: 'standard',
+        materials_url: '',
       });
       setOpenArenaConfig(getDefaultOpenArenaConfig());
       setPosterFile(null);
@@ -874,6 +879,7 @@ export default function OpsPanel() {
       league: event.league,
       xp_reward: event.xp_reward || 50,
       editor_category: (event as any).editor_category || '',
+      materials_url: event.materials_url || '',
     });
     setEditPosterPreview(event.poster_url || null);
     setEditPosterFile(null);
@@ -921,6 +927,8 @@ export default function OpsPanel() {
         league: editEvent.league,
         poster_url: posterUrl,
         xp_reward: editEvent.xp_reward,
+        materials_url: editEvent.materials_url || null,
+        editor_category: editEvent.editor_category || null,
       }).eq('id', editingEvent.id);
       
       if (error) throw error;
@@ -3098,6 +3106,25 @@ export default function OpsPanel() {
               </p>
             </div>
 
+            {/* Materials URL */}
+            <div>
+              <Label htmlFor="materials-url" className="flex items-center gap-1">
+                <LinkIcon size={14} className="text-gold" />
+                Materials / Assets URL
+              </Label>
+              <Input
+                id="materials-url"
+                type="url"
+                value={newEvent.materials_url}
+                onChange={(e) => setNewEvent({ ...newEvent, materials_url: e.target.value })}
+                placeholder="https://drive.google.com/... or sound link"
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Link to sounds, footage, or assets for participants
+              </p>
+            </div>
+
             {/* Event Mode Toggle */}
             <div>
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">Event Mode</Label>
@@ -3351,6 +3378,25 @@ export default function OpsPanel() {
               />
               <p className="text-[10px] text-muted-foreground mt-1">
                 XP awarded when a submission is approved
+              </p>
+            </div>
+
+            {/* Materials URL */}
+            <div>
+              <Label htmlFor="edit-materials-url" className="flex items-center gap-1">
+                <LinkIcon size={14} className="text-gold" />
+                Materials / Assets URL
+              </Label>
+              <Input
+                id="edit-materials-url"
+                type="url"
+                value={editEvent.materials_url}
+                onChange={(e) => setEditEvent({ ...editEvent, materials_url: e.target.value })}
+                placeholder="https://drive.google.com/... or sound link"
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Link to sounds, footage, or assets for participants
               </p>
             </div>
 
