@@ -71,9 +71,11 @@ export default function HomePage() {
                 <span className="text-[10px] text-gold uppercase tracking-[0.2em] font-semibold border border-gold/30 px-2 py-0.5">
                   {primaryEvent.league} League
                 </span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  IP: {primaryEvent.ip}
-                </span>
+                {primaryEvent.category && (
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    {primaryEvent.category}
+                  </span>
+                )}
               </div>
 
               {/* Title - Massive */}

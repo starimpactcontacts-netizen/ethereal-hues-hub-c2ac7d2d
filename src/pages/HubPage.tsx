@@ -122,7 +122,7 @@ export default function HubPage() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase block mb-2">
-                    {liveEvent.league} League · {liveEvent.ip}
+                    {liveEvent.league} League{liveEvent.category ? ` · ${liveEvent.category}` : ''}
                   </span>
                   <h2 className="font-display text-4xl text-gold">{liveEvent.title}</h2>
                 </div>
@@ -278,13 +278,16 @@ export default function HubPage() {
         </Link>
       </div>
 
-      {/* Activity Feed */}
+      {/* Feed */}
       <div className="px-4 mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display text-xl flex items-center gap-2">
             <Activity className="w-5 h-5 text-gold" />
-            Live Activity
+            Feed
           </h3>
+          <Link to="/feed" className="text-xs text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+            View All <ArrowRight size={12} />
+          </Link>
         </div>
         <ActivityFeed limit={5} compact />
       </div>
