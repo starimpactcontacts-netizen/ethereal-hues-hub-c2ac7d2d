@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -105,6 +105,35 @@ interface Redemption {
   user_username?: string;
   item_name?: string;
   item_type?: string;
+}
+
+interface AdminHouse {
+  id: string;
+  name: string;
+  type: 'public' | 'prestige';
+  symbol: string;
+  member_count: number;
+  house_index: number;
+}
+
+interface HouseApplication {
+  id: string;
+  user_id: string;
+  house_id: string;
+  status: string;
+  created_at: string;
+  username?: string;
+  house_name?: string;
+}
+
+interface HouseMember {
+  id: string;
+  user_id: string;
+  house_id: string;
+  role: string;
+  joined_at: string;
+  username?: string;
+  global_index_score?: number;
 }
 
 const CATEGORIES = ["Film", "Trailer", "Music", "Regional", "Global"];
@@ -219,6 +248,16 @@ export default function OpsPanel() {
   const [creatingItem, setCreatingItem] = useState(false);
   const [processingRedemption, setProcessingRedemption] = useState<string | null>(null);
   const [redemptionNotes, setRedemptionNotes] = useState('');
+
+  // House management state
+  const [houses, setHouses] = useState<AdminHouse[]>([]);
+  const [houseApplications, setHouseApplications] = useState<HouseApplication[]>([]);
+  const [houseMembers, setHouseMembers] = useState<HouseMember[]>([]);
+  const [selectedHouseId, setSelectedHouseId] = useState<string | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteUsername, setInviteUsername] = useState('');
+  const [invitingUser, setInvitingUser] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
 
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
@@ -396,6 +435,60 @@ export default function OpsPanel() {
           item_name: itemMap.get(r.item_id)?.name || 'Unknown',
           item_type: itemMap.get(r.item_id)?.item_type || 'digital',
         })) as Redemption[]);
+      }
+
+      // Fetch houses with calculated house index
+      const { data: housesData } = await supabase
+        .from('houses')
+        .select('id, name, type, symbol, member_count')
+        .order('name');
+
+      if (housesData) {
+        // Calculate house index for each house
+        const housesWithIndex: AdminHouse[] = await Promise.all(
+          housesData.map(async (house) => {
+            const { data: members } = await supabase
+              .from('house_members')
+              .select('user_id')
+              .eq('house_id', house.id);
+
+            if (members && members.length > 0) {
+              const memberIds = members.map(m => m.user_id);
+              const { data: profiles } = await supabase
+                .from('profiles')
+                .select('global_index_score')
+                .in('id', memberIds);
+
+              const totalIndex = (profiles || []).reduce((sum, p) => sum + (p.global_index_score || 0), 0);
+              return { ...house, house_index: Math.round(totalIndex * 10) / 10 };
+            }
+            return { ...house, house_index: 0 };
+          })
+        );
+        setHouses(housesWithIndex as AdminHouse[]);
+      }
+
+      // Fetch pending house applications
+      const { data: applicationsData } = await supabase
+        .from('house_applications')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (applicationsData) {
+        const appUserIds = [...new Set(applicationsData.map(a => a.user_id))];
+        const { data: appProfiles } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .in('id', appUserIds);
+
+        const appProfileMap = new Map((appProfiles || []).map(p => [p.id, p.username]));
+
+        setHouseApplications(applicationsData.map(a => ({
+          ...a,
+          username: appProfileMap.get(a.user_id) || 'Unknown',
+          house_name: housesData?.find(h => h.id === a.house_id)?.name || 'Unknown',
+        })));
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -1004,6 +1097,208 @@ export default function OpsPanel() {
     }
   }
 
+  // House: Fetch members for a house
+  async function fetchHouseMembers(houseId: string) {
+    setSelectedHouseId(houseId);
+    try {
+      const { data: membersData } = await supabase
+        .from('house_members')
+        .select('*')
+        .eq('house_id', houseId);
+
+      if (membersData) {
+        const memberUserIds = membersData.map(m => m.user_id);
+        const { data: memberProfiles } = await supabase
+          .from('profiles')
+          .select('id, username, global_index_score')
+          .in('id', memberUserIds);
+
+        const memberProfileMap = new Map((memberProfiles || []).map(p => [p.id, p]));
+
+        setHouseMembers(membersData.map(m => ({
+          ...m,
+          username: memberProfileMap.get(m.user_id)?.username || 'Unknown',
+          global_index_score: memberProfileMap.get(m.user_id)?.global_index_score || 0,
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching house members:', error);
+      toast.error('Failed to load members');
+    }
+  }
+
+  // House: Approve application
+  async function handleApproveHouseApplication(application: HouseApplication) {
+    setActionLoading(true);
+    try {
+      // Check cooldown
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('house_id, house_changed_at')
+        .eq('id', application.user_id)
+        .single();
+
+      if (profile?.house_id) {
+        toast.error('User is already in a house');
+        return;
+      }
+
+      // Add member to house
+      const { error: insertError } = await supabase
+        .from('house_members')
+        .insert({
+          house_id: application.house_id,
+          user_id: application.user_id,
+          role: 'member',
+        });
+
+      if (insertError) throw insertError;
+
+      // Update profile
+      await supabase
+        .from('profiles')
+        .update({ 
+          house_id: application.house_id,
+          house_changed_at: new Date().toISOString(),
+        })
+        .eq('id', application.user_id);
+
+      // Update application status
+      const { error: updateError } = await supabase
+        .from('house_applications')
+        .update({ 
+          status: 'approved',
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user?.id,
+        })
+        .eq('id', application.id);
+
+      if (updateError) throw updateError;
+
+      toast.success('Application approved');
+      fetchData();
+    } catch (error) {
+      console.error('Error approving application:', error);
+      toast.error('Failed to approve');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  // House: Reject application
+  async function handleRejectHouseApplication(applicationId: string) {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from('house_applications')
+        .update({ 
+          status: 'rejected',
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user?.id,
+        })
+        .eq('id', applicationId);
+
+      if (error) throw error;
+
+      toast.success('Application rejected');
+      fetchData();
+    } catch (error) {
+      console.error('Error rejecting application:', error);
+      toast.error('Failed to reject');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  // House: Invite user to house (for prestige houses)
+  async function handleInviteToHouse() {
+    if (!selectedHouseId || !inviteUsername.trim()) {
+      toast.error('Please enter a username');
+      return;
+    }
+
+    setInvitingUser(true);
+    try {
+      // Find user by username
+      const { data: targetProfile } = await supabase
+        .from('profiles')
+        .select('id, house_id')
+        .eq('username', inviteUsername.trim().toLowerCase())
+        .single();
+
+      if (!targetProfile) {
+        toast.error('User not found');
+        return;
+      }
+
+      if (targetProfile.house_id) {
+        toast.error('User is already in a house');
+        return;
+      }
+
+      // Add member directly (admin invite bypasses application)
+      const { error: insertError } = await supabase
+        .from('house_members')
+        .insert({
+          house_id: selectedHouseId,
+          user_id: targetProfile.id,
+          role: 'member',
+        });
+
+      if (insertError) throw insertError;
+
+      // Update profile
+      await supabase
+        .from('profiles')
+        .update({ 
+          house_id: selectedHouseId,
+          house_changed_at: new Date().toISOString(),
+        })
+        .eq('id', targetProfile.id);
+
+      toast.success(`Invited ${inviteUsername} to house`);
+      setInviteUsername('');
+      setShowInviteModal(false);
+      fetchData();
+      fetchHouseMembers(selectedHouseId);
+    } catch (error) {
+      console.error('Error inviting user:', error);
+      toast.error('Failed to invite user');
+    } finally {
+      setInvitingUser(false);
+    }
+  }
+
+  // House: Remove member
+  async function handleRemoveHouseMember(memberId: string, userId: string) {
+    setRemovingMemberId(memberId);
+    try {
+      const { error } = await supabase
+        .from('house_members')
+        .delete()
+        .eq('id', memberId);
+
+      if (error) throw error;
+
+      // Update profile
+      await supabase
+        .from('profiles')
+        .update({ house_id: null })
+        .eq('id', userId);
+
+      toast.success('Member removed');
+      if (selectedHouseId) {
+        fetchHouseMembers(selectedHouseId);
+      }
+      fetchData();
+    } catch (error) {
+      console.error('Error removing member:', error);
+      toast.error('Failed to remove member');
+    } finally {
+      setRemovingMemberId(null);
+    }
+  }
+
   // Filter users by search
   const filteredUsers = userSearch 
     ? users.filter(u => 
@@ -1603,6 +1898,166 @@ export default function OpsPanel() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+
+        {/* Admin: House Management */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Home size={14} className="text-gold" />
+              House Management
+            </h2>
+            <span className="text-xs text-gold">{houseApplications.length} pending</span>
+          </div>
+
+          {/* House Applications */}
+          {houseApplications.length > 0 && (
+            <div className="mb-4">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Applications</p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {houseApplications.map((app) => (
+                  <div key={app.id} className="bg-card border border-gold/30 rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-sm">@{app.username}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          Applying to {app.house_name} • {new Date(app.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleRejectHouseApplication(app.id)}
+                          disabled={actionLoading}
+                          className="p-2 bg-destructive/20 text-destructive rounded-lg"
+                          title="Reject"
+                        >
+                          <X size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleApproveHouseApplication(app)}
+                          disabled={actionLoading}
+                          className="p-2 bg-green-500/20 text-green-400 rounded-lg"
+                          title="Approve"
+                        >
+                          <Check size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Houses List */}
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">All Houses</p>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {houses.map((house) => (
+                <div 
+                  key={house.id} 
+                  className={`bg-card border rounded-lg p-3 cursor-pointer transition-colors ${
+                    selectedHouseId === house.id ? 'border-gold' : 'border-border hover:border-gold/50'
+                  }`}
+                  onClick={() => fetchHouseMembers(house.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        house.type === 'prestige' ? 'bg-gold/20' : 'bg-surface-2'
+                      }`}>
+                        {house.type === 'prestige' ? (
+                          <Crown size={14} className="text-gold" />
+                        ) : (
+                          <Home size={14} className="text-muted-foreground" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-sm">{house.name}</p>
+                          {house.type === 'prestige' && (
+                            <Badge className="bg-gold/20 text-gold text-[8px] border border-gold/50">PRESTIGE</Badge>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          {house.member_count} members • Index: <span className="text-gold">{house.house_index}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1">
+                      {house.type === 'prestige' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedHouseId(house.id);
+                            setShowInviteModal(true);
+                          }}
+                          className="p-2 rounded-lg bg-gold/20 text-gold hover:bg-gold/30"
+                          title="Invite user"
+                        >
+                          <UserPlus size={14} />
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fetchHouseMembers(house.id);
+                        }}
+                        className="p-2 rounded-lg bg-surface-1 hover:bg-surface-2"
+                        title="View members"
+                      >
+                        <Users size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Selected House Members */}
+          {selectedHouseId && houseMembers.length > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Members of {houses.find(h => h.id === selectedHouseId)?.name}
+                </p>
+                {houses.find(h => h.id === selectedHouseId)?.type === 'prestige' && (
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className="flex items-center gap-1 text-[10px] text-gold hover:underline"
+                  >
+                    <UserPlus size={12} />
+                    Invite
+                  </button>
+                )}
+              </div>
+              <div className="space-y-1 max-h-48 overflow-y-auto bg-surface-1 rounded-lg p-2">
+                {houseMembers.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-surface-2">
+                    <div>
+                      <p className="text-sm font-medium">@{member.username}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Index: {member.global_index_score?.toFixed(1) || '0'} • {member.role}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveHouseMember(member.id, member.user_id)}
+                      disabled={removingMemberId === member.id}
+                      className="p-1.5 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30"
+                      title="Remove member"
+                    >
+                      {removingMemberId === member.id ? (
+                        <div className="w-3 h-3 border border-destructive border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <X size={12} />
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </section>
@@ -2432,6 +2887,65 @@ export default function OpsPanel() {
             </div>
             <button onClick={handleCreateShopItem} disabled={creatingItem || !newItem.name} className="w-full py-3 bg-gold text-black font-bold rounded-lg disabled:opacity-50">
               {creatingItem ? 'Creating...' : 'Create Item'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite to House Dialog */}
+      <Dialog open={showInviteModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowInviteModal(false);
+          setInviteUsername('');
+        }
+      }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown size={18} className="text-gold" />
+              Invite to House
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <p className="text-sm text-muted-foreground">
+              Invite a user to <span className="text-gold font-semibold">{houses.find(h => h.id === selectedHouseId)?.name}</span>
+            </p>
+            <div>
+              <Label>Username *</Label>
+              <div className="relative mt-1">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input 
+                  value={inviteUsername} 
+                  onChange={(e) => setInviteUsername(e.target.value)} 
+                  placeholder="Enter username..." 
+                  className="pl-10"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleInviteToHouse();
+                    }
+                  }}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Enter the exact username (without @)
+              </p>
+            </div>
+            <button 
+              onClick={handleInviteToHouse} 
+              disabled={invitingUser || !inviteUsername.trim()} 
+              className="w-full py-3 bg-gold text-black font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {invitingUser ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                  Inviting...
+                </>
+              ) : (
+                <>
+                  <UserPlus size={16} />
+                  Send Invite
+                </>
+              )}
             </button>
           </div>
         </DialogContent>
