@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { isNativeApp } from '@/lib/native';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 
 const IOS_APP_URL = 'https://apps.apple.com/app/loopgate/id6757446330';
 const BANNER_DISMISSED_KEY = 'loopgate_ios_banner_dismissed';
@@ -81,7 +82,7 @@ export default function IOSAppBanner({ onVisibilityChange }: IOSAppBannerProps) 
   if (!shouldShow) return null;
 
   return (
-    <div className="sticky top-0 left-0 right-0 z-[60] bg-surface-1 border-b border-border px-3 py-2 flex items-center gap-3 h-14">
+    <div className="w-full bg-surface-1 border-b border-border px-3 py-2 flex items-center gap-3 h-14">
       {/* Dismiss button */}
       <button 
         onClick={handleDismiss}
@@ -91,9 +92,9 @@ export default function IOSAppBanner({ onVisibilityChange }: IOSAppBannerProps) 
         <X className="h-4 w-4" />
       </button>
 
-      {/* App icon */}
+      {/* App icon - actual logo */}
       <div className="w-10 h-10 rounded-lg bg-black border border-border flex items-center justify-center flex-shrink-0 overflow-hidden">
-        <span className="font-display text-gold text-xs">LG</span>
+        <img src={loopgateLogo} alt="Loopgate" className="w-8 h-8 object-contain" />
       </div>
 
       {/* Text */}
