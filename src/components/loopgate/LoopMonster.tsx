@@ -1,110 +1,84 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useState, useCallback } from "react";
 
 interface LoopMonsterProps {
   scrollContainerRef?: React.RefObject<HTMLElement>;
 }
 
 export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
-  const [overscrollY, setOverscrollY] = useState(0);
+  const [pullAmount, setPullAmount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
 
   useEffect(() => {
-    const container = scrollContainerRef?.current || window;
-    const isWindow = container === window;
-
     let startY = 0;
-    let isAtTop = true;
+    let currentPull = 0;
 
-    const handleScroll = () => {
-      const scrollTop = isWindow 
-        ? window.scrollY 
-        : (container as HTMLElement).scrollTop;
-      isAtTop = scrollTop <= 0;
+    const getScrollTop = () => {
+      if (scrollContainerRef?.current) {
+        return scrollContainerRef.current.scrollTop;
+      }
+      return window.scrollY || document.documentElement.scrollTop;
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      startY = e.touches[0].clientY;
+      // Only start tracking if at top of page
+      if (getScrollTop() <= 5) {
+        startY = e.touches[0].clientY;
+        setIsPulling(true);
+      }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isAtTop) return;
+      if (!isPulling && getScrollTop() > 5) return;
       
       const currentY = e.touches[0].clientY;
       const diff = currentY - startY;
       
-      if (diff > 0) {
-        // Pulling down while at top
-        const pullAmount = Math.min(diff, 150);
-        setOverscrollY(pullAmount);
-        setIsVisible(pullAmount > 20);
+      // Only activate when pulling down (positive diff) and at top
+      if (diff > 0 && getScrollTop() <= 5) {
+        // Apply resistance for natural feel
+        currentPull = Math.min(diff * 0.6, 120);
+        setPullAmount(currentPull);
+        
+        if (currentPull > 15) {
+          setIsVisible(true);
+        }
+      } else {
+        currentPull = 0;
+        setPullAmount(0);
       }
     };
 
     const handleTouchEnd = () => {
-      setOverscrollY(0);
-      setTimeout(() => setIsVisible(false), 300);
+      setIsPulling(false);
+      setPullAmount(0);
+      // Delay hiding for smooth exit animation
+      setTimeout(() => setIsVisible(false), 400);
     };
 
-    // Also handle mouse wheel overscroll for desktop
-    const handleWheel = (e: WheelEvent) => {
-      const scrollTop = isWindow 
-        ? window.scrollY 
-        : (container as HTMLElement).scrollTop;
-      
-      if (scrollTop <= 0 && e.deltaY < 0) {
-        const pullAmount = Math.min(Math.abs(e.deltaY) * 2, 100);
-        setOverscrollY(pullAmount);
-        setIsVisible(true);
-        
-        setTimeout(() => {
-          setOverscrollY(0);
-          setTimeout(() => setIsVisible(false), 300);
-        }, 500);
-      }
-    };
-
-    if (isWindow) {
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      window.addEventListener('touchstart', handleTouchStart, { passive: true });
-      window.addEventListener('touchmove', handleTouchMove, { passive: true });
-      window.addEventListener('touchend', handleTouchEnd, { passive: true });
-      window.addEventListener('wheel', handleWheel, { passive: true });
-    } else {
-      const el = container as HTMLElement;
-      el.addEventListener('scroll', handleScroll, { passive: true });
-      el.addEventListener('touchstart', handleTouchStart, { passive: true });
-      el.addEventListener('touchmove', handleTouchMove, { passive: true });
-      el.addEventListener('touchend', handleTouchEnd, { passive: true });
-      el.addEventListener('wheel', handleWheel, { passive: true });
-    }
+    // Add listeners to window for global touch tracking
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
-      if (isWindow) {
-        window.removeEventListener('scroll', handleScroll);
-        window.removeEventListener('touchstart', handleTouchStart);
-        window.removeEventListener('touchmove', handleTouchMove);
-        window.removeEventListener('touchend', handleTouchEnd);
-        window.removeEventListener('wheel', handleWheel);
-      } else {
-        const el = container as HTMLElement;
-        el.removeEventListener('scroll', handleScroll);
-        el.removeEventListener('touchstart', handleTouchStart);
-        el.removeEventListener('touchmove', handleTouchMove);
-        el.removeEventListener('touchend', handleTouchEnd);
-        el.removeEventListener('wheel', handleWheel);
-      }
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [scrollContainerRef]);
+  }, [scrollContainerRef, isPulling]);
 
-  const progress = Math.min(overscrollY / 100, 1);
+  const progress = Math.min(pullAmount / 80, 1);
 
   return (
     <motion.div
       className="fixed left-1/2 -translate-x-1/2 z-50 pointer-events-none"
       initial={{ y: -100, opacity: 0 }}
       animate={{ 
-        y: isVisible ? 80 + (overscrollY * 0.5) : -100,
+        y: isVisible ? 80 + (pullAmount * 0.5) : -100,
         opacity: isVisible ? progress : 0,
         scale: 0.8 + (progress * 0.4),
         rotate: progress * 360
