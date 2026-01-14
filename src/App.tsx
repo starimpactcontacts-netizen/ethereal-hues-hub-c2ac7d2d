@@ -31,6 +31,10 @@ import EnterprisePage from "./pages/EnterprisePage";
 import SupportPage from "./pages/SupportPage";
 import RulesPage from "./pages/RulesPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import AboutPage from "./pages/AboutPage";
+import DownloadPage from "./pages/DownloadPage";
+import HowItWorksPage from "./pages/HowItWorksPage";
+import FAQPage from "./pages/FAQPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -215,6 +219,10 @@ export default function App() {
             <Route path="/rules" element={<RulesPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/support" element={<SupportPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/download" element={<DownloadPage />} />
+            <Route path="/how-it-works" element={<HowItWorksPage />} />
+            <Route path="/faq" element={<FAQPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={
