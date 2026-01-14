@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -79,6 +79,32 @@ interface AdminUser {
   is_hidden: boolean;
   banned_reason: string | null;
   created_at: string;
+}
+
+interface ShopItem {
+  id: string;
+  name: string;
+  description: string | null;
+  item_type: 'cosmetic' | 'digital' | 'physical';
+  price: number;
+  image_url: string | null;
+  is_active: boolean;
+  stock: number | null;
+}
+
+interface Redemption {
+  id: string;
+  user_id: string;
+  item_id: string;
+  status: 'pending' | 'approved' | 'fulfilled' | 'rejected';
+  points_spent: number;
+  admin_notes: string | null;
+  shipping_info: any;
+  created_at: string;
+  fulfilled_at: string | null;
+  user_username?: string;
+  item_name?: string;
+  item_type?: string;
 }
 
 const CATEGORIES = ["Film", "Trailer", "Music", "Regional", "Global"];
@@ -166,6 +192,21 @@ export default function OpsPanel() {
   const [banningUserId, setBanningUserId] = useState<string | null>(null);
   const [banReason, setBanReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Shop management state
+  const [shopItems, setShopItems] = useState<ShopItem[]>([]);
+  const [redemptions, setRedemptions] = useState<Redemption[]>([]);
+  const [showCreateItem, setShowCreateItem] = useState(false);
+  const [newItem, setNewItem] = useState({
+    name: '',
+    description: '',
+    item_type: 'digital' as 'cosmetic' | 'digital' | 'physical',
+    price: 100,
+    stock: null as number | null,
+  });
+  const [creatingItem, setCreatingItem] = useState(false);
+  const [processingRedemption, setProcessingRedemption] = useState<string | null>(null);
+  const [redemptionNotes, setRedemptionNotes] = useState('');
 
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
@@ -301,6 +342,48 @@ export default function OpsPanel() {
       
       if (usersData) {
         setUsers(usersData);
+      }
+
+      // Fetch shop items
+      const { data: shopItemsData } = await supabase
+        .from('shop_items')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (shopItemsData) {
+        setShopItems(shopItemsData as ShopItem[]);
+      }
+
+      // Fetch redemptions with user and item info
+      const { data: redemptionsData } = await supabase
+        .from('redemptions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (redemptionsData) {
+        // Get user IDs and item IDs
+        const redemptionUserIds = [...new Set(redemptionsData.map(r => r.user_id))];
+        const itemIds = [...new Set(redemptionsData.map(r => r.item_id))];
+
+        const { data: redemptionProfiles } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .in('id', redemptionUserIds);
+
+        const { data: itemsForRedemptions } = await supabase
+          .from('shop_items')
+          .select('id, name, item_type')
+          .in('id', itemIds);
+
+        const profileMap = new Map((redemptionProfiles || []).map(p => [p.id, p.username]));
+        const itemMap = new Map((itemsForRedemptions || []).map(i => [i.id, i]));
+
+        setRedemptions(redemptionsData.map(r => ({
+          ...r,
+          user_username: profileMap.get(r.user_id) || 'Unknown',
+          item_name: itemMap.get(r.item_id)?.name || 'Unknown',
+          item_type: itemMap.get(r.item_id)?.item_type || 'digital',
+        })) as Redemption[]);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -782,6 +865,130 @@ export default function OpsPanel() {
     }
   }
 
+  // Shop: Create item
+  async function handleCreateShopItem() {
+    if (!newItem.name || newItem.price <= 0) {
+      toast.error('Please fill in item name and price');
+      return;
+    }
+
+    setCreatingItem(true);
+    try {
+      const { error } = await supabase
+        .from('shop_items')
+        .insert({
+          name: newItem.name,
+          description: newItem.description || null,
+          item_type: newItem.item_type,
+          price: newItem.price,
+          stock: newItem.stock,
+          is_active: true,
+        });
+
+      if (error) throw error;
+
+      toast.success('Shop item created!');
+      setShowCreateItem(false);
+      setNewItem({ name: '', description: '', item_type: 'digital', price: 100, stock: null });
+      fetchData();
+    } catch (error) {
+      console.error('Error creating shop item:', error);
+      toast.error('Failed to create item');
+    } finally {
+      setCreatingItem(false);
+    }
+  }
+
+  // Shop: Toggle item active status
+  async function handleToggleItemActive(item: ShopItem) {
+    try {
+      const { error } = await supabase
+        .from('shop_items')
+        .update({ is_active: !item.is_active })
+        .eq('id', item.id);
+
+      if (error) throw error;
+      toast.success(item.is_active ? 'Item hidden from shop' : 'Item now visible in shop');
+      fetchData();
+    } catch (error) {
+      console.error('Error updating item:', error);
+      toast.error('Failed to update item');
+    }
+  }
+
+  // Shop: Delete item
+  async function handleDeleteShopItem(itemId: string) {
+    try {
+      const { error } = await supabase
+        .from('shop_items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) throw error;
+      toast.success('Item deleted');
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast.error('Failed to delete item');
+    }
+  }
+
+  // Shop: Process redemption
+  async function handleProcessRedemption(redemption: Redemption, action: 'approved' | 'fulfilled' | 'rejected') {
+    setProcessingRedemption(redemption.id);
+    try {
+      const updateData: any = {
+        status: action,
+        admin_notes: redemptionNotes || null,
+      };
+
+      if (action === 'fulfilled') {
+        updateData.fulfilled_at = new Date().toISOString();
+      }
+
+      // If rejecting, refund the points
+      if (action === 'rejected') {
+        await supabase.rpc('award_xp', {
+          p_user_id: redemption.user_id,
+          p_amount: 0, // We'll handle this differently
+          p_action: 'refund',
+          p_description: 'Shop order refunded',
+        });
+        
+        // Manually add back the spendable index
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('spendable_index')
+          .eq('id', redemption.user_id)
+          .single();
+        
+        if (profile) {
+          await supabase
+            .from('profiles')
+            .update({ spendable_index: (profile.spendable_index || 0) + redemption.points_spent })
+            .eq('id', redemption.user_id);
+        }
+      }
+
+      const { error } = await supabase
+        .from('redemptions')
+        .update(updateData)
+        .eq('id', redemption.id);
+
+      if (error) throw error;
+
+      const actionText = action === 'approved' ? 'Approved' : action === 'fulfilled' ? 'Fulfilled' : 'Rejected & refunded';
+      toast.success(`${actionText} successfully`);
+      setRedemptionNotes('');
+      fetchData();
+    } catch (error) {
+      console.error('Error processing redemption:', error);
+      toast.error('Failed to process redemption');
+    } finally {
+      setProcessingRedemption(null);
+    }
+  }
+
   // Filter users by search
   const filteredUsers = userSearch 
     ? users.filter(u => 
@@ -790,6 +997,10 @@ export default function OpsPanel() {
         (u.email?.toLowerCase().includes(userSearch.toLowerCase()))
       )
     : users;
+
+  const pendingRedemptions = redemptions.filter(r => r.status === 'pending');
+  const approvedRedemptions = redemptions.filter(r => r.status === 'approved');
+  const fulfilledRedemptions = redemptions.filter(r => r.status === 'fulfilled');
 
   function handlePosterChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -1428,6 +1639,208 @@ export default function OpsPanel() {
           </div>
         </section>
 
+        {/* Shop Management */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <ShoppingBag size={14} className="text-gold" />
+              Shop Management
+            </h2>
+            <button
+              onClick={() => setShowCreateItem(true)}
+              className="flex items-center gap-1 text-xs bg-gold text-black px-3 py-1.5 rounded-lg font-semibold"
+            >
+              <Plus size={14} />
+              Add Item
+            </button>
+          </div>
+
+          {/* Shop Items */}
+          <div className="space-y-2 mb-6">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Items ({shopItems.length})</p>
+            {shopItems.length === 0 ? (
+              <div className="bg-card border border-border rounded-lg p-6 text-center">
+                <ShoppingBag className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">No shop items yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {shopItems.map((item) => (
+                  <div key={item.id} className={`bg-card border rounded-lg p-3 ${item.is_active ? 'border-border' : 'border-muted-foreground/30 opacity-60'}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-surface-2 flex items-center justify-center">
+                          {item.item_type === 'cosmetic' && <Sparkles size={16} className="text-gold" />}
+                          {item.item_type === 'digital' && <Gift size={16} className="text-blue-400" />}
+                          {item.item_type === 'physical' && <Package size={16} className="text-green-400" />}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm">{item.name}</p>
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <span className="uppercase">{item.item_type}</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 text-gold">
+                              <Coins size={10} />
+                              {item.price}
+                            </span>
+                            {item.stock !== null && (
+                              <>
+                                <span>•</span>
+                                <span>{item.stock} left</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleToggleItemActive(item)}
+                          className={`p-2 rounded-lg ${item.is_active ? 'bg-green-500/20 text-green-400' : 'bg-surface-1'}`}
+                          title={item.is_active ? 'Hide item' : 'Show item'}
+                        >
+                          {item.is_active ? <Eye size={14} /> : <EyeOff size={14} />}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteShopItem(item.id)}
+                          className="p-2 rounded-lg bg-destructive/20 text-destructive"
+                          title="Delete item"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Redemption Requests */}
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              Redemption Queue ({pendingRedemptions.length} pending, {approvedRedemptions.length} approved)
+            </p>
+            
+            {redemptions.length === 0 ? (
+              <div className="bg-card border border-border rounded-lg p-6 text-center">
+                <Package className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">No redemptions yet</p>
+              </div>
+            ) : (
+              <Tabs defaultValue="pending" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-surface-1">
+                  <TabsTrigger value="pending" className="text-xs">
+                    Pending ({pendingRedemptions.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="approved" className="text-xs">
+                    Approved ({approvedRedemptions.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="fulfilled" className="text-xs">
+                    Fulfilled ({fulfilledRedemptions.length})
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="pending" className="space-y-2 mt-2 max-h-64 overflow-y-auto">
+                  {pendingRedemptions.map((r) => (
+                    <div key={r.id} className="bg-card border border-gold/50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-semibold text-sm">{r.item_name}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            @{r.user_username} • {new Date(r.created_at).toLocaleDateString()} • <span className="text-gold">{r.points_spent} INDEX</span>
+                          </p>
+                        </div>
+                        <Badge className={`text-[9px] ${r.item_type === 'physical' ? 'bg-green-500' : r.item_type === 'digital' ? 'bg-blue-500' : 'bg-gold text-black'}`}>
+                          {(r.item_type || 'digital').toUpperCase()}
+                        </Badge>
+                      </div>
+                      {r.shipping_info && (
+                        <div className="bg-surface-2 rounded-lg p-2 mb-2 text-xs">
+                          <p className="font-semibold">{r.shipping_info.name}</p>
+                          <p className="text-muted-foreground">{r.shipping_info.address}, {r.shipping_info.city}, {r.shipping_info.country}</p>
+                          {r.shipping_info.phone && <p className="text-muted-foreground">{r.shipping_info.phone}</p>}
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleProcessRedemption(r, 'approved')}
+                          disabled={processingRedemption === r.id}
+                          className="flex-1 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1"
+                        >
+                          <Check size={14} />
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleProcessRedemption(r, 'rejected')}
+                          disabled={processingRedemption === r.id}
+                          className="flex-1 py-2 bg-destructive text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1"
+                        >
+                          <X size={14} />
+                          Reject & Refund
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {pendingRedemptions.length === 0 && (
+                    <p className="text-center text-sm text-muted-foreground py-4">No pending redemptions</p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="approved" className="space-y-2 mt-2 max-h-64 overflow-y-auto">
+                  {approvedRedemptions.map((r) => (
+                    <div key={r.id} className="bg-card border border-blue-500/50 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-semibold text-sm">{r.item_name}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            @{r.user_username} • Approved
+                          </p>
+                        </div>
+                      </div>
+                      {r.shipping_info && (
+                        <div className="bg-surface-2 rounded-lg p-2 mb-2 text-xs">
+                          <p className="font-semibold">{r.shipping_info.name}</p>
+                          <p className="text-muted-foreground">{r.shipping_info.address}, {r.shipping_info.city}, {r.shipping_info.country}</p>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => handleProcessRedemption(r, 'fulfilled')}
+                        disabled={processingRedemption === r.id}
+                        className="w-full py-2 bg-gold text-black rounded-lg text-xs font-semibold flex items-center justify-center gap-1"
+                      >
+                        <Check size={14} />
+                        Mark as Fulfilled
+                      </button>
+                    </div>
+                  ))}
+                  {approvedRedemptions.length === 0 && (
+                    <p className="text-center text-sm text-muted-foreground py-4">No approved redemptions awaiting fulfillment</p>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="fulfilled" className="space-y-2 mt-2 max-h-64 overflow-y-auto">
+                  {fulfilledRedemptions.map((r) => (
+                    <div key={r.id} className="bg-card border border-green-500/50 rounded-lg p-3 opacity-70">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-sm">{r.item_name}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            @{r.user_username} • Fulfilled {r.fulfilled_at ? new Date(r.fulfilled_at).toLocaleDateString() : ''}
+                          </p>
+                        </div>
+                        <Badge className="bg-green-500 text-[9px]">COMPLETE</Badge>
+                      </div>
+                    </div>
+                  ))}
+                  {fulfilledRedemptions.length === 0 && (
+                    <p className="text-center text-sm text-muted-foreground py-4">No fulfilled redemptions</p>
+                  )}
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+        </section>
+
         {/* Export */}
         <section>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
@@ -1944,6 +2357,46 @@ export default function OpsPanel() {
             </div>
             <button onClick={() => banningUserId && handleBanUser(banningUserId, true)} disabled={actionLoading} className="w-full py-3 bg-destructive text-white font-bold rounded-lg">
               {actionLoading ? 'Banning...' : 'Confirm Ban'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Shop Item Dialog */}
+      <Dialog open={showCreateItem} onOpenChange={setShowCreateItem}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Add Shop Item</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <Label>Item Name *</Label>
+              <Input value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} placeholder="Discord Nitro" className="mt-1" />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea value={newItem.description} onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} placeholder="1 month of Discord Nitro" className="mt-1" rows={2} />
+            </div>
+            <div>
+              <Label>Type</Label>
+              <div className="flex gap-2 mt-1">
+                {(['cosmetic', 'digital', 'physical'] as const).map(type => (
+                  <button key={type} onClick={() => setNewItem({ ...newItem, item_type: type })} className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium capitalize ${newItem.item_type === type ? 'bg-gold text-black' : 'bg-surface-1'}`}>
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Price (INDEX) *</Label>
+                <Input type="number" min="1" value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} className="mt-1" />
+              </div>
+              <div>
+                <Label>Stock (empty = unlimited)</Label>
+                <Input type="number" min="0" value={newItem.stock || ''} onChange={(e) => setNewItem({ ...newItem, stock: e.target.value ? Number(e.target.value) : null })} className="mt-1" />
+              </div>
+            </div>
+            <button onClick={handleCreateShopItem} disabled={creatingItem || !newItem.name} className="w-full py-3 bg-gold text-black font-bold rounded-lg disabled:opacity-50">
+              {creatingItem ? 'Creating...' : 'Create Item'}
             </button>
           </div>
         </DialogContent>
