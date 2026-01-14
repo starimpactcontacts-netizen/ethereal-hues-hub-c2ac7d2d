@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface LoopMonsterProps {
   scrollContainerRef?: React.RefObject<HTMLElement>;
@@ -8,107 +8,161 @@ interface LoopMonsterProps {
 export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
   const [pullAmount, setPullAmount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const [isPulling, setIsPulling] = useState(false);
+  const lastScrollTop = useRef(0);
+  const consecutiveBottomScrolls = useRef(0);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let startY = 0;
-    let touchStartedAtBottom = false;
+    let isTouchActive = false;
+    let wasAtBottom = false;
 
     const isAtBottom = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       const scrollHeight = document.documentElement.scrollHeight;
       const clientHeight = window.innerHeight;
-      // For short pages (content fits in viewport), always consider "at bottom"
-      const isShortPage = scrollHeight <= clientHeight + 50;
-      // Consider "at bottom" when within 20px of the end (more forgiving)
-      return isShortPage || scrollTop + clientHeight >= scrollHeight - 20;
+      // For short pages, always at bottom
+      const isShortPage = scrollHeight <= clientHeight + 10;
+      // Within 30px of bottom
+      return isShortPage || scrollTop + clientHeight >= scrollHeight - 30;
     };
 
     const handleTouchStart = (e: TouchEvent) => {
       startY = e.touches[0].clientY;
-      // Check if we're at bottom when touch starts
-      touchStartedAtBottom = isAtBottom();
-      if (touchStartedAtBottom) {
-        setIsPulling(true);
+      isTouchActive = true;
+      wasAtBottom = isAtBottom();
+      
+      // Clear any pending hide
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+        hideTimeoutRef.current = null;
       }
+      
+      console.log('[LoopMonster] Touch start, at bottom:', wasAtBottom);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      // Must have started at bottom
-      if (!touchStartedAtBottom) return;
+      if (!isTouchActive) return;
       
       const currentY = e.touches[0].clientY;
-      const diff = startY - currentY; // Pulling UP = positive diff
+      const diff = startY - currentY; // Positive = swiping up
       
-      // Only activate when pulling up and still at bottom (or short page)
-      if (diff > 20 && isAtBottom()) {
-        // Apply resistance for natural feel
-        const pull = Math.min((diff - 20) * 0.7, 120);
+      // Check if touch started in bottom third of screen
+      const screenHeight = window.innerHeight;
+      const touchStartedInBottomZone = startY > screenHeight * 0.6;
+      
+      // Trigger when: at bottom (or was at bottom) AND swiping up AND started low on screen
+      if (wasAtBottom && diff > 15 && touchStartedInBottomZone) {
+        const pull = Math.min((diff - 15) * 0.8, 100);
         setPullAmount(pull);
         
-        if (pull > 10) {
+        if (pull > 5) {
           setIsVisible(true);
+          console.log('[LoopMonster] Showing, pull:', pull);
         }
-      } else if (diff <= 0) {
+      } else if (diff < -10) {
+        // Swiping down - hide
         setPullAmount(0);
-        setIsVisible(false);
       }
     };
 
     const handleTouchEnd = () => {
-      setIsPulling(false);
-      touchStartedAtBottom = false;
+      isTouchActive = false;
+      wasAtBottom = false;
       setPullAmount(0);
-      // Delay hiding for smooth exit animation (flies down)
-      setTimeout(() => setIsVisible(false), 500);
+      
+      // Delay hiding for fly-away animation
+      hideTimeoutRef.current = setTimeout(() => {
+        setIsVisible(false);
+      }, 600);
+      
+      console.log('[LoopMonster] Touch end');
     };
 
-    // Add listeners to window for global touch tracking
+    // Also detect scroll-to-bottom attempts (repeated scrolling at bottom)
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+      
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 5;
+      const scrollingDown = scrollTop > lastScrollTop.current;
+      
+      if (atBottom && scrollingDown) {
+        consecutiveBottomScrolls.current++;
+        
+        // After 3 consecutive scroll attempts at bottom, show briefly
+        if (consecutiveBottomScrolls.current >= 3) {
+          setIsVisible(true);
+          setPullAmount(60);
+          console.log('[LoopMonster] Scroll trigger activated');
+          
+          setTimeout(() => {
+            setPullAmount(0);
+            setIsVisible(false);
+          }, 1200);
+          
+          consecutiveBottomScrolls.current = 0;
+        }
+      } else if (!atBottom) {
+        consecutiveBottomScrolls.current = 0;
+      }
+      
+      lastScrollTop.current = scrollTop;
+    };
+
+    // Global touch listeners
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
     window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
+      window.removeEventListener('scroll', handleScroll);
+      
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
     };
-  }, [isPulling]);
+  }, []);
 
-  const progress = Math.min(pullAmount / 80, 1);
+  const progress = Math.min(pullAmount / 60, 1);
 
   return (
     <motion.div
-      className="fixed left-1/2 -translate-x-1/2 z-50 pointer-events-none"
-      style={{ bottom: 100 }} // Position above bottom nav
-      initial={{ y: 100, opacity: 0 }}
+      className="fixed left-1/2 -translate-x-1/2 z-[100] pointer-events-none"
+      style={{ bottom: 120 }} // Above bottom nav + safe area
+      initial={{ y: 150, opacity: 0 }}
       animate={{ 
-        y: isVisible ? -(pullAmount * 0.8) : 100,
-        opacity: isVisible ? progress : 0,
-        scale: 0.8 + (progress * 0.4),
+        y: isVisible ? -(pullAmount * 0.6) : 150,
+        opacity: isVisible ? Math.max(0.3, progress) : 0,
+        scale: 0.7 + (progress * 0.5),
         rotate: progress * 360
       }}
       transition={{ 
         type: "spring", 
-        stiffness: 200, 
-        damping: 20,
-        rotate: { duration: 0.8, ease: "easeOut" }
+        stiffness: 180, 
+        damping: 18,
+        rotate: { duration: 0.6, ease: "easeOut" }
       }}
     >
       {/* Loop Monster - Infinity Symbol with Eyes */}
       <div className="relative">
         {/* Glow effect */}
         <div 
-          className="absolute inset-0 blur-xl bg-gold/40 rounded-full"
-          style={{ transform: `scale(${1 + progress * 0.5})` }}
+          className="absolute inset-0 blur-xl bg-gold/50 rounded-full"
+          style={{ transform: `scale(${1.2 + progress * 0.5})` }}
         />
         
         {/* Main infinity symbol */}
         <svg 
-          width="64" 
-          height="40" 
+          width="72" 
+          height="48" 
           viewBox="0 0 64 40" 
           className="relative z-10"
         >
@@ -116,80 +170,98 @@ export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
           <motion.path
             d="M16 20C16 12 8 8 8 20C8 32 16 28 16 20C16 12 24 8 32 20C32 20 40 8 48 20C48 32 56 28 56 20C56 8 48 12 48 20C48 28 40 32 32 20C24 8 16 28 16 20Z"
             fill="none"
-            stroke="url(#goldGradient)"
+            stroke="url(#goldGradientMonster)"
             strokeWidth="4"
             strokeLinecap="round"
             initial={{ pathLength: 0 }}
-            animate={{ pathLength: progress }}
-            transition={{ duration: 0.3 }}
+            animate={{ pathLength: isVisible ? 1 : 0 }}
+            transition={{ duration: 0.4 }}
           />
           
           {/* Left eye */}
           <motion.circle
             cx="12"
             cy="18"
-            r="3"
+            r="4"
             fill="hsl(var(--gold))"
             animate={{ 
-              scale: isVisible ? [1, 1.2, 1] : 1,
-              opacity: progress 
+              scale: isVisible ? [1, 1.3, 1] : 0,
             }}
-            transition={{ repeat: Infinity, duration: 1 }}
+            transition={{ repeat: isVisible ? Infinity : 0, duration: 0.8 }}
           />
           
           {/* Right eye */}
           <motion.circle
             cx="52"
             cy="18"
-            r="3"
+            r="4"
             fill="hsl(var(--gold))"
             animate={{ 
-              scale: isVisible ? [1, 1.2, 1] : 1,
-              opacity: progress 
+              scale: isVisible ? [1, 1.3, 1] : 0,
             }}
-            transition={{ repeat: Infinity, duration: 1, delay: 0.5 }}
+            transition={{ repeat: isVisible ? Infinity : 0, duration: 0.8, delay: 0.4 }}
           />
           
           {/* Gradient definition */}
           <defs>
-            <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id="goldGradientMonster" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="hsl(45, 93%, 47%)" />
-              <stop offset="50%" stopColor="hsl(45, 100%, 60%)" />
+              <stop offset="50%" stopColor="hsl(45, 100%, 65%)" />
               <stop offset="100%" stopColor="hsl(45, 93%, 47%)" />
             </linearGradient>
           </defs>
         </svg>
 
-        {/* Sparkles around */}
-        {isVisible && progress > 0.5 && (
+        {/* Sparkles */}
+        {isVisible && progress > 0.4 && (
           <>
             <motion.div
-              className="absolute -top-2 -left-2 w-2 h-2 bg-gold rounded-full"
+              className="absolute -top-3 -left-3 w-3 h-3 bg-gold rounded-full"
               animate={{ 
-                y: [-5, -15, -5],
+                y: [-5, -20, -5],
                 opacity: [0, 1, 0],
-                scale: [0.5, 1, 0.5]
+                scale: [0.5, 1.2, 0.5]
               }}
-              transition={{ repeat: Infinity, duration: 1 }}
+              transition={{ repeat: Infinity, duration: 0.8 }}
             />
             <motion.div
-              className="absolute -top-2 -right-2 w-2 h-2 bg-gold rounded-full"
+              className="absolute -top-3 -right-3 w-3 h-3 bg-gold rounded-full"
               animate={{ 
-                y: [-5, -15, -5],
+                y: [-5, -20, -5],
                 opacity: [0, 1, 0],
-                scale: [0.5, 1, 0.5]
+                scale: [0.5, 1.2, 0.5]
               }}
-              transition={{ repeat: Infinity, duration: 1, delay: 0.3 }}
+              transition={{ repeat: Infinity, duration: 0.8, delay: 0.25 }}
+            />
+            <motion.div
+              className="absolute top-1/2 -left-4 w-2 h-2 bg-gold/70 rounded-full"
+              animate={{ 
+                x: [-5, -15, -5],
+                opacity: [0, 1, 0],
+              }}
+              transition={{ repeat: Infinity, duration: 1, delay: 0.5 }}
+            />
+            <motion.div
+              className="absolute top-1/2 -right-4 w-2 h-2 bg-gold/70 rounded-full"
+              animate={{ 
+                x: [5, 15, 5],
+                opacity: [0, 1, 0],
+              }}
+              transition={{ repeat: Infinity, duration: 1, delay: 0.75 }}
             />
           </>
         )}
       </div>
       
-      {/* Text below */}
+      {/* Text */}
       <motion.p
-        className="text-center text-xs text-gold font-display mt-2 uppercase tracking-widest"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: progress > 0.7 ? 1 : 0 }}
+        className="text-center text-xs text-gold font-display mt-3 uppercase tracking-[0.2em] font-bold"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ 
+          opacity: isVisible && progress > 0.5 ? 1 : 0,
+          y: isVisible && progress > 0.5 ? 0 : 10
+        }}
+        transition={{ duration: 0.3 }}
       >
         ∞ LOOP
       </motion.p>
