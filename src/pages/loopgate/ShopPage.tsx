@@ -14,6 +14,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+// Local asset imports for shop items
+import discordNitroImg from "@/assets/shop-discord-nitro.png";
+import profileFrameImg from "@/assets/shop-profile-frame.png";
+import nameGlowImg from "@/assets/shop-name-glow.png";
+
+// Map item names to local assets
+const localAssetMap: Record<string, string> = {
+  'Discord Nitro': discordNitroImg,
+  'Loopgate Profile Frame': profileFrameImg,
+  'Loopgate Name Glow': nameGlowImg,
+};
+
 interface ShopItem {
   id: string;
   name: string;
@@ -575,9 +587,9 @@ function ShopItemCard({
     >
       {/* Image Container */}
       <div className="aspect-square bg-surface-2 flex items-center justify-center overflow-hidden relative">
-        {item.image_url ? (
+        {(localAssetMap[item.name] || item.image_url) ? (
           <img 
-            src={item.image_url} 
+            src={localAssetMap[item.name] || item.image_url || ''} 
             alt={item.name} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
           />
