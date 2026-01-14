@@ -20,20 +20,17 @@ export default function LandingPage() {
   // Find the primary live event
   const liveEvent = events.find(e => e.status === 'live');
 
-  // Banner height is h-14 = 56px
-  const bannerOffset = bannerVisible ? 'pt-14' : '';
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO {...pageSEO.home} />
-      {/* iOS App Banner - only shows on mobile web */}
+      {/* iOS App Banner - only shows on mobile web, sits above header */}
       <IOSAppBanner onVisibilityChange={setBannerVisible} />
-      {/* Global Header - offset by banner height when visible */}
-      <div className={bannerOffset}>
+      {/* Global Header - pushed down by banner when visible */}
+      <div className={bannerVisible ? 'pt-14' : ''}>
         <LandingHeader />
       </div>
       {/* Hero Section */}
-      <section className={`relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden ${bannerVisible ? 'pt-[128px]' : 'pt-[72px]'}`}>
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden pt-[72px]">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-surface-0 via-background to-background" />
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px]" />
