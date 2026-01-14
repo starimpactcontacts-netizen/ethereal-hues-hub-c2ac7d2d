@@ -675,6 +675,47 @@ export default function OpsPanel() {
     }
   }
 
+  // Delete submission completely (for stolen/invalid edits)
+  async function handleDeleteSubmission(submission: RealSubmission) {
+    setActionLoading(true);
+    try {
+      const xpToRevoke = submission.xp_awarded || 0;
+
+      // Delete the submission
+      const { error: deleteError } = await supabase
+        .from('event_participations')
+        .delete()
+        .eq('id', submission.id);
+
+      if (deleteError) throw deleteError;
+
+      // Revoke XP if any was awarded
+      if (xpToRevoke > 0) {
+        await supabase.rpc('award_xp', {
+          p_user_id: submission.user_id,
+          p_amount: -xpToRevoke,
+          p_action: 'submission_deleted',
+          p_description: 'Submission removed by admin - XP revoked',
+        });
+      }
+
+      // Recalculate user's index score since we removed a scored submission
+      if (submission.status === 'scored') {
+        await supabase.rpc('recalculate_user_index', {
+          user_uuid: submission.user_id,
+        });
+      }
+
+      toast.success(`Submission deleted${xpToRevoke > 0 ? `. ${xpToRevoke} XP revoked.` : ''}`);
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting submission:', error);
+      toast.error('Failed to delete submission');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
   // Admin: Delete crew
   async function handleDeleteCrew(crewId: string) {
     setActionLoading(true);
@@ -1191,11 +1232,21 @@ export default function OpsPanel() {
                               </a>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-lg font-bold text-gold">
-                              {submission.qoi_score}
-                            </p>
-                            <p className="text-[10px] text-green-500 uppercase">Scored</p>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-gold">
+                                {submission.qoi_score}
+                              </p>
+                              <p className="text-[10px] text-green-500 uppercase">Scored</p>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteSubmission(submission)}
+                              disabled={actionLoading}
+                              className="p-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors"
+                              title="Delete submission & revoke score"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </div>
                       </div>
