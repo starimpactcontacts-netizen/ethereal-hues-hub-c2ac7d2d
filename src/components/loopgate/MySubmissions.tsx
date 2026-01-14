@@ -73,7 +73,7 @@ export default function MySubmissions() {
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <Link 
-                  to={`/events/${submission.event_id}`}
+                  to={`/event/${submission.event_id}`}
                   className="font-semibold text-sm hover:text-gold transition-colors line-clamp-1"
                 >
                   {submission.event?.title || 'Unknown Event'}

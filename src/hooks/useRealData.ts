@@ -19,6 +19,10 @@ export interface RealEvent {
   rules: string[];
   materials_url: string | null;
   updated_at: string;
+  event_mode: 'standard' | 'open_arena' | null;
+  total_rounds: number | null;
+  max_editors: number | null;
+  winner_logic: 'final_qoi' | 'cumulative_qoi' | 'manual' | null;
 }
 
 export interface RealEditor {
@@ -182,7 +186,7 @@ export function useRealRankings() {
   return { rankings, loading, error, refetch: fetchRankings };
 }
 
-// Hook for event-specific rankings
+// Hook for event-specific rankings (supports both standard and Open Arena events)
 export function useEventRankings(eventId: string | null) {
   const [rankings, setRankings] = useState<EventParticipation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -195,22 +199,76 @@ export function useEventRankings(eventId: string | null) {
       return;
     }
 
-    // Fetch participations
-    const { data, error: participationsError } = await supabase
+    // Fetch standard event participations
+    const { data: standardData, error: standardError } = await supabase
       .from('event_participations')
       .select('*')
       .eq('event_id', eventId)
       .order('qoi_score', { ascending: false, nullsFirst: false });
 
-    if (participationsError) {
-      setError(participationsError.message);
-      setLoading(false);
-      return;
+    // Fetch Open Arena round participations
+    const { data: roundData, error: roundError } = await supabase
+      .from('round_participations')
+      .select('*')
+      .eq('event_id', eventId)
+      .not('submission_url', 'is', null)
+      .order('qoi_score', { ascending: false, nullsFirst: false });
+
+    if (standardError) {
+      setError(standardError.message);
+    }
+    if (roundError && !standardError) {
+      setError(roundError.message);
     }
 
+    // Merge both types - use standard if available, otherwise round participations
+    const allData = [
+      ...(standardData || []).map(p => ({
+        id: p.id,
+        user_id: p.user_id,
+        event_id: p.event_id,
+        submission_url: p.submission_url,
+        platform: p.platform,
+        status: p.status,
+        quality_score: p.quality_score,
+        originality_score: p.originality_score,
+        impact_score: p.impact_score,
+        qoi_score: p.qoi_score,
+        final_rank: p.final_rank,
+        submitted_at: p.submitted_at,
+      })),
+      ...(roundData || []).map(p => ({
+        id: p.id,
+        user_id: p.user_id,
+        event_id: p.event_id,
+        submission_url: p.submission_url!,
+        platform: p.platform || 'tiktok',
+        status: p.status || 'pending',
+        quality_score: p.quality_score,
+        originality_score: p.originality_score,
+        impact_score: p.impact_score,
+        qoi_score: p.qoi_score,
+        final_rank: null,
+        submitted_at: p.submitted_at || p.created_at,
+      })),
+    ];
+
+    // Deduplicate by user_id (keep highest qoi_score)
+    const userMap = new Map<string, typeof allData[0]>();
+    allData.forEach(p => {
+      const existing = userMap.get(p.user_id);
+      if (!existing || (p.qoi_score || 0) > (existing.qoi_score || 0)) {
+        userMap.set(p.user_id, p);
+      }
+    });
+    const dedupedData = Array.from(userMap.values());
+
+    // Sort by qoi_score descending
+    dedupedData.sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
+
     // Fetch profiles for usernames
-    if (data && data.length > 0) {
-      const userIds = data.map(p => p.user_id);
+    if (dedupedData.length > 0) {
+      const userIds = dedupedData.map(p => p.user_id);
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, username')
@@ -218,7 +276,7 @@ export function useEventRankings(eventId: string | null) {
 
       const profileMap = new Map((profiles || []).map(p => [p.id, p.username]));
       
-      const rankingsWithProfiles = data.map(p => ({
+      const rankingsWithProfiles = dedupedData.map(p => ({
         ...p,
         profile: { username: profileMap.get(p.user_id) || 'Unknown' }
       })) as EventParticipation[];
@@ -235,8 +293,8 @@ export function useEventRankings(eventId: string | null) {
 
     if (!eventId) return;
 
-    // Subscribe to realtime updates
-    const channel = supabase
+    // Subscribe to realtime updates for both tables
+    const standardChannel = supabase
       .channel(`event-${eventId}-rankings`)
       .on('postgres_changes', { 
         event: '*', 
@@ -248,15 +306,28 @@ export function useEventRankings(eventId: string | null) {
       })
       .subscribe();
 
+    const roundChannel = supabase
+      .channel(`event-${eventId}-round-rankings`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'round_participations',
+        filter: `event_id=eq.${eventId}`
+      }, () => {
+        fetchRankings();
+      })
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(standardChannel);
+      supabase.removeChannel(roundChannel);
     };
   }, [eventId, fetchRankings]);
 
   return { rankings, loading, error, refetch: fetchRankings };
 }
 
-// Hook for real event statistics
+// Hook for real event statistics (counts both standard and Open Arena submissions)
 export function useEventStats(eventId: string | null) {
   const [stats, setStats] = useState<EventStats>({ entries: 0, judges: 0, activeUsers: 0 });
   const [loading, setLoading] = useState(true);
@@ -268,17 +339,24 @@ export function useEventStats(eventId: string | null) {
       return;
     }
 
-    // Get entries count for this event
-    const { count: entriesCount } = await supabase
+    // Get standard entries count for this event
+    const { count: standardCount } = await supabase
       .from('event_participations')
       .select('*', { count: 'exact', head: true })
       .eq('event_id', eventId);
+
+    // Get Open Arena round entries count
+    const { count: roundCount } = await supabase
+      .from('round_participations')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId)
+      .not('submission_url', 'is', null);
 
     // Get judges count (admins and moderators)
     const { count: judgesCount } = await supabase
       .from('user_roles')
       .select('*', { count: 'exact', head: true })
-      .in('role', ['admin', 'moderator']);
+      .in('role', ['admin', 'moderator', 'judge']);
 
     // Get active users (last 10 minutes)
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
@@ -288,7 +366,7 @@ export function useEventStats(eventId: string | null) {
       .gte('last_seen', tenMinutesAgo);
 
     setStats({
-      entries: entriesCount || 0,
+      entries: (standardCount || 0) + (roundCount || 0),
       judges: judgesCount || 0,
       activeUsers: activeCount || 0,
     });
@@ -307,7 +385,7 @@ export function useEventStats(eventId: string | null) {
   return { stats, loading, refetch: fetchStats };
 }
 
-// Hook for global stats (for Hub page)
+// Hook for global stats (for Hub page) - counts both standard and Open Arena submissions
 export function useGlobalStats() {
   const [stats, setStats] = useState<{ entries24h: number; activeUsers: number; totalCompeting: number }>({
     entries24h: 0,
@@ -320,10 +398,17 @@ export function useGlobalStats() {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    // Get submissions in last 24h
-    const { count: entries24h } = await supabase
+    // Get standard submissions in last 24h
+    const { count: standardEntries } = await supabase
       .from('event_participations')
       .select('*', { count: 'exact', head: true })
+      .gte('submitted_at', twentyFourHoursAgo);
+
+    // Get Open Arena submissions in last 24h
+    const { count: roundEntries } = await supabase
+      .from('round_participations')
+      .select('*', { count: 'exact', head: true })
+      .not('submission_url', 'is', null)
       .gte('submitted_at', twentyFourHoursAgo);
 
     // Get active users (last 10 minutes)
@@ -339,7 +424,7 @@ export function useGlobalStats() {
       .gt('total_events', 0);
 
     setStats({
-      entries24h: entries24h || 0,
+      entries24h: (standardEntries || 0) + (roundEntries || 0),
       activeUsers: activeUsers || 0,
       totalCompeting: totalCompeting || 0,
     });
