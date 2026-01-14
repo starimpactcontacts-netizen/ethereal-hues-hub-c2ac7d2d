@@ -1096,19 +1096,22 @@ export default function OpsPanel() {
   }
 
   // Approve submission and award XP
-  async function handleApproveSubmission(submission: RealSubmission) {
+  async function handleApproveSubmission(submission: RealSubmission & { source?: string }) {
     setActionLoading(true);
     try {
       // Get event XP reward
       const event = events.find(e => e.id === submission.event_id);
       const xpReward = event?.xp_reward || 50;
 
+      // Determine which table to update based on source
+      const tableName = submission.source === 'open_arena' ? 'round_participations' : 'event_participations';
+
       // Update submission status to approved
       const { error: updateError } = await supabase
-        .from('event_participations')
+        .from(tableName)
         .update({
           status: 'approved',
-          xp_awarded: xpReward,
+          ...(tableName === 'event_participations' ? { xp_awarded: xpReward } : {}),
         })
         .eq('id', submission.id);
 
@@ -1133,17 +1136,20 @@ export default function OpsPanel() {
   }
 
   // Decline submission (no XP, or revoke if previously awarded)
-  async function handleDeclineSubmission(submission: RealSubmission) {
+  async function handleDeclineSubmission(submission: RealSubmission & { source?: string }) {
     setActionLoading(true);
     try {
       const previouslyAwarded = submission.xp_awarded || 0;
 
+      // Determine which table to update based on source
+      const tableName = submission.source === 'open_arena' ? 'round_participations' : 'event_participations';
+
       // Update submission status to declined
       const { error: updateError } = await supabase
-        .from('event_participations')
+        .from(tableName)
         .update({
           status: 'declined',
-          xp_awarded: 0,
+          ...(tableName === 'event_participations' ? { xp_awarded: 0 } : {}),
         })
         .eq('id', submission.id);
 
