@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, Users, Clock, LogOut } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Users, Clock, LogOut, BookOpen, TrendingUp, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import HouseIcon from "@/components/loopgate/houses/HouseIcon";
+import HouseFeed from "@/components/loopgate/houses/HouseFeed";
+import PrestigeGate from "@/components/loopgate/houses/PrestigeGate";
 
 interface House {
   id: string;
@@ -41,11 +43,14 @@ export default function HouseDetailPage() {
   const { user, profile } = useAuth();
   const [house, setHouse] = useState<House | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
+  const [memberIds, setMemberIds] = useState<string[]>([]);
   const [houseIndex, setHouseIndex] = useState(0);
+  const [avgQoi, setAvgQoi] = useState(0);
   const [loading, setLoading] = useState(true);
   const [hasPendingApplication, setHasPendingApplication] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [showPrestigeGate, setShowPrestigeGate] = useState(false);
 
   const isMember = profile?.house_id === houseId;
   const isPrestige = house?.type === "prestige";
@@ -96,12 +101,13 @@ export default function HouseDetailPage() {
     if (membersData) {
       const typedMembers = membersData as unknown as Member[];
       setMembers(typedMembers);
+      setMemberIds(typedMembers.map(m => m.user_id));
       
-      // Calculate total house index
-      const totalIndex = typedMembers.reduce((sum, m) => 
-        sum + (m.profile?.global_index_score || 0), 0
-      );
+      // Calculate total house index and average
+      const scores = typedMembers.map(m => m.profile?.global_index_score || 0);
+      const totalIndex = scores.reduce((sum, s) => sum + s, 0);
       setHouseIndex(Math.floor(totalIndex));
+      setAvgQoi(scores.length > 0 ? totalIndex / scores.length : 0);
     }
 
     // Check pending application
@@ -128,6 +134,13 @@ export default function HouseDetailPage() {
 
     if (!house) return;
     setIsApplying(true);
+
+    // Show prestige gate for invite-only houses
+    if (house.type === "prestige") {
+      setShowPrestigeGate(true);
+      setIsApplying(false);
+      return;
+    }
 
     if (house.requires_approval) {
       const { error } = await supabase
@@ -193,6 +206,14 @@ export default function HouseDetailPage() {
   }
 
   return (
+    <>
+    {/* Prestige Gate Animation */}
+    <AnimatePresence>
+      {showPrestigeGate && (
+        <PrestigeGate onComplete={() => setShowPrestigeGate(false)} />
+      )}
+    </AnimatePresence>
+    
     <div className="min-h-screen bg-background pb-24">
       {/* Minimal Hero */}
       <div className="relative h-40 bg-muted/30">
@@ -255,8 +276,25 @@ export default function HouseDetailPage() {
               <span>◆</span>
               <span className="font-mono">{houseIndex.toLocaleString()} Index</span>
             </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <TrendingUp size={14} />
+              <span className="font-mono">{avgQoi.toFixed(1)} avg</span>
+            </div>
           </div>
         </div>
+
+        {/* Lore Section */}
+        {house.lore && (
+          <div className="bg-card rounded-lg border border-border p-4">
+            <h2 className="text-sm font-display font-semibold uppercase tracking-wider mb-3 text-muted-foreground flex items-center gap-2">
+              <BookOpen size={14} />
+              Lore
+            </h2>
+            <p className="text-sm text-foreground/90 leading-relaxed italic">
+              "{house.lore}"
+            </p>
+          </div>
+        )}
 
         {/* Action Button */}
         <div>
@@ -272,9 +310,9 @@ export default function HouseDetailPage() {
             </Button>
           ) : isPrestige ? (
             <Button 
-              disabled 
               variant="outline"
-              className="w-full font-semibold uppercase border-gold/50 text-gold bg-background"
+              className="w-full font-semibold uppercase border-gold/50 text-gold bg-background hover:bg-gold/10"
+              onClick={() => setShowPrestigeGate(true)}
             >
               Invite Only
             </Button>
@@ -303,7 +341,14 @@ export default function HouseDetailPage() {
           )}
         </div>
 
-        {/* Members */}
+        {/* House Activity Feed */}
+        <div className="bg-card rounded-lg border border-border p-4">
+          <h2 className="text-sm font-display font-semibold uppercase tracking-wider mb-3 text-muted-foreground flex items-center gap-2">
+            <Activity size={14} />
+            House Activity
+          </h2>
+          <HouseFeed houseId={house.id} memberIds={memberIds} />
+        </div>
         <div className="bg-card rounded-lg border border-border p-4">
           <h2 className="text-sm font-display font-semibold uppercase tracking-wider mb-3 text-muted-foreground">
             Members
@@ -351,5 +396,6 @@ export default function HouseDetailPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

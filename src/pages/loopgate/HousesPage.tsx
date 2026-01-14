@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Search, Shield, Crown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Shield, Crown, Trophy } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import HouseCard from "@/components/loopgate/houses/HouseCard";
 import HouseBadge from "@/components/loopgate/houses/HouseBadge";
+import HouseLeaderboard from "@/components/loopgate/houses/HouseLeaderboard";
+import PrestigeGate from "@/components/loopgate/houses/PrestigeGate";
 import HouseIcon from "@/components/loopgate/houses/HouseIcon";
 
 interface House {
@@ -23,7 +25,8 @@ interface House {
   member_count: number;
   prestige_level: number;
   requires_approval: boolean;
-  house_index?: number;
+  house_index: number;
+  avg_qoi: number;
 }
 
 export default function HousesPage() {
@@ -32,10 +35,11 @@ export default function HousesPage() {
   const [houses, setHouses] = useState<House[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "public" | "prestige">("all");
+  const [filter, setFilter] = useState<"all" | "public" | "prestige" | "leaderboard">("all");
   const [pendingApplicationHouseId, setPendingApplicationHouseId] = useState<string | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [myHouse, setMyHouse] = useState<House | null>(null);
+  const [showPrestigeGate, setShowPrestigeGate] = useState(false);
 
   useEffect(() => {
     fetchHouses();
@@ -59,7 +63,7 @@ export default function HousesPage() {
       return;
     }
 
-    // For each house, calculate total index from members
+    // For each house, calculate total index and avg QOI from members
     const housesWithIndex = await Promise.all(
       (housesData || []).map(async (house) => {
         const { data: members } = await supabase
@@ -67,11 +71,15 @@ export default function HousesPage() {
           .select("user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
           .eq("house_id", house.id);
 
-        const totalIndex = members?.reduce((sum, m: any) => 
-          sum + (m.profile?.global_index_score || 0), 0
-        ) || 0;
+        const scores = members?.map((m: any) => m.profile?.global_index_score || 0) || [];
+        const totalIndex = scores.reduce((sum, score) => sum + score, 0);
+        const avgQoi = scores.length > 0 ? totalIndex / scores.length : 0;
 
-        return { ...house, house_index: Math.floor(totalIndex) };
+        return { 
+          ...house, 
+          house_index: Math.floor(totalIndex),
+          avg_qoi: avgQoi,
+        };
       })
     );
 
@@ -103,17 +111,21 @@ export default function HousesPage() {
         .single();
       
       if (houseData) {
-        // Calculate house index
+        // Calculate house index and avg QOI
         const { data: members } = await supabase
           .from("house_members")
           .select("user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
           .eq("house_id", houseData.id);
 
-        const totalIndex = members?.reduce((sum, m: any) => 
-          sum + (m.profile?.global_index_score || 0), 0
-        ) || 0;
+        const scores = members?.map((m: any) => m.profile?.global_index_score || 0) || [];
+        const totalIndex = scores.reduce((sum, score) => sum + score, 0);
+        const avgQoi = scores.length > 0 ? totalIndex / scores.length : 0;
 
-        setMyHouse({ ...houseData, house_index: Math.floor(totalIndex) });
+        setMyHouse({ 
+          ...houseData, 
+          house_index: Math.floor(totalIndex),
+          avg_qoi: avgQoi,
+        });
       }
     }
   }
@@ -134,6 +146,13 @@ export default function HousesPage() {
 
     const house = houses.find(h => h.id === houseId);
     if (!house) return;
+
+    // Show prestige gate for invite-only houses
+    if (house.type === "prestige") {
+      setShowPrestigeGate(true);
+      setIsApplying(false);
+      return;
+    }
 
     if (house.requires_approval) {
       // Create application
@@ -177,7 +196,7 @@ export default function HousesPage() {
   const filteredHouses = houses.filter(house => {
     const matchesSearch = house.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       house.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === "all" || house.type === filter;
+    const matchesFilter = filter === "all" || filter === "leaderboard" || house.type === filter;
     return matchesSearch && matchesFilter;
   });
 
@@ -193,6 +212,14 @@ export default function HousesPage() {
   }
 
   return (
+    <>
+    {/* Prestige Gate Animation */}
+    <AnimatePresence>
+      {showPrestigeGate && (
+        <PrestigeGate onComplete={() => setShowPrestigeGate(false)} />
+      )}
+    </AnimatePresence>
+    
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
@@ -217,8 +244,12 @@ export default function HousesPage() {
 
           {/* Filter Tabs */}
           <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-            <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+            <TabsList className="grid w-full grid-cols-4 bg-muted/50">
               <TabsTrigger value="all" className="text-xs uppercase">All</TabsTrigger>
+              <TabsTrigger value="leaderboard" className="text-xs uppercase flex items-center gap-1">
+                <Trophy size={12} />
+                Rankings
+              </TabsTrigger>
               <TabsTrigger value="public" className="text-xs uppercase flex items-center gap-1">
                 <Shield size={12} />
                 Public
@@ -234,6 +265,10 @@ export default function HousesPage() {
 
       {/* Content */}
       <div className="px-4 py-4 space-y-6">
+        {/* House Leaderboard */}
+        {filter === "leaderboard" && (
+          <HouseLeaderboard houses={filteredHouses} />
+        )}
         {/* User's House Section */}
         {myHouse && (
           <motion.div
@@ -266,6 +301,8 @@ export default function HousesPage() {
         )}
 
         {/* Public Houses */}
+        {filter !== "leaderboard" && (
+        <>
         {publicHouses.length > 0 && (filter === "all" || filter === "public") && (
           <div>
             <h2 className="text-sm font-display font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
@@ -316,7 +353,10 @@ export default function HousesPage() {
             No houses found
           </div>
         )}
+        </>
+        )}
       </div>
     </div>
+    </>
   );
 }

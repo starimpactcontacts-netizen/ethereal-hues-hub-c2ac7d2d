@@ -13,6 +13,8 @@ import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import CrewBadge from "@/components/loopgate/CrewBadge";
+import HouseIdentityStrip from "@/components/loopgate/houses/HouseIdentityStrip";
+import HouseBadge from "@/components/loopgate/houses/HouseBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
@@ -72,6 +74,7 @@ export default function ProfilePage() {
   const [isSavingUsername, setIsSavingUsername] = useState(false);
   const [contactEdited, setContactEdited] = useState(false);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
+  const [userHouse, setUserHouse] = useState<{ id: string; name: string; symbol: string; primary_color: string; secondary_color: string } | null>(null);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [showArchetypeSelector, setShowArchetypeSelector] = useState(false);
@@ -109,6 +112,23 @@ export default function ProfilePage() {
     };
     fetchCrew();
   }, [profile?.crew_id]);
+
+  // Fetch user's house if they have one
+  useEffect(() => {
+    const fetchHouse = async () => {
+      if ((profile as any)?.house_id) {
+        const { data } = await supabase
+          .from("houses")
+          .select("id, name, symbol, primary_color, secondary_color")
+          .eq("id", (profile as any).house_id)
+          .single();
+        setUserHouse(data);
+      } else {
+        setUserHouse(null);
+      }
+    };
+    fetchHouse();
+  }, [(profile as any)?.house_id]);
 
   // Check username change cooldown
   useEffect(() => {
@@ -418,6 +438,23 @@ export default function ProfilePage() {
               currentStatus={(profile as any).activity_status || "online"}
               onStatusChange={refreshProfile}
             />
+          </div>
+
+          {/* House */}
+          <div className="pt-5 mt-5 border-t border-border">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-2 mb-2">
+              House
+            </span>
+            {userHouse ? (
+              <HouseIdentityStrip house={userHouse} size="md" />
+            ) : (
+              <button
+                onClick={() => navigate("/houses")}
+                className="text-[10px] text-gold uppercase tracking-wider hover:underline"
+              >
+                Join a house
+              </button>
+            )}
           </div>
 
           {/* Crew */}
