@@ -52,7 +52,7 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
           
           {eventId && (
             <Link 
-              to={`/events/${eventId}`}
+              to={`/event/${eventId}`}
               className="inline-block mt-2 text-[10px] text-gold uppercase tracking-wider hover:underline"
             >
               View Event →
