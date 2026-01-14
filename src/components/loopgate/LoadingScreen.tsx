@@ -82,7 +82,7 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
       {/* Logo with subtle pulse */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}

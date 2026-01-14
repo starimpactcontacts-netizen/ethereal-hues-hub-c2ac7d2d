@@ -12,34 +12,31 @@ const config: CapacitorConfig = {
   },
   
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'always',
     preferredContentMode: 'mobile',
-    scheme: 'io.loopgate.app', // Custom URL scheme for deep links
-    // Full-screen mode
-    backgroundColor: '#09090B',
-    // Disable zooming and bouncing
+    scheme: 'io.loopgate.app',
+    backgroundColor: '#000000',
     scrollEnabled: true,
     allowsLinkPreview: false,
-    // Prevent overscroll bounce
     overrideUserAgent: 'Loopgate iOS App'
   },
   
   plugins: {
     // Splash screen - shows while loading
     SplashScreen: {
-      launchShowDuration: 0, // We control it manually
+      launchShowDuration: 0,
       launchAutoHide: false,
-      backgroundColor: '#09090B',
+      backgroundColor: '#000000',
       showSpinner: false,
       splashFullScreen: true,
       splashImmersive: true,
       layoutName: 'launch_screen',
       useDialog: false
     },
-    // Status bar styling
     StatusBar: {
       style: 'Dark',
-      backgroundColor: '#09090B'
+      backgroundColor: '#000000',
+      overlaysWebView: false
     },
     // Camera plugin for photo uploads
     Camera: {
