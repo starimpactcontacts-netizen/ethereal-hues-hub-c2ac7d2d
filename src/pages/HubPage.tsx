@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
-
+import LoopMonster from '@/components/loopgate/LoopMonster';
 const leagueConfig = {
   elite: {
     label: 'Elite League',
@@ -59,6 +59,8 @@ export default function HubPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      {/* Loop Monster - appears when overscrolling at bottom */}
+      <LoopMonster />
       {/* Welcome Header */}
       <div className="px-4 pt-8 pb-6">
         <motion.div

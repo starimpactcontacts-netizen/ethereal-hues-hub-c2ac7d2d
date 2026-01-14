@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 interface LoopMonsterProps {
   scrollContainerRef?: React.RefObject<HTMLElement>;
@@ -12,40 +12,39 @@ export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
 
   useEffect(() => {
     let startY = 0;
-    let currentPull = 0;
 
-    const getScrollTop = () => {
-      if (scrollContainerRef?.current) {
-        return scrollContainerRef.current.scrollTop;
-      }
-      return window.scrollY || document.documentElement.scrollTop;
+    const isAtBottom = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
+      // Consider "at bottom" when within 5px of the end
+      return scrollTop + clientHeight >= scrollHeight - 5;
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Only start tracking if at top of page
-      if (getScrollTop() <= 5) {
+      // Only start tracking if at bottom of page
+      if (isAtBottom()) {
         startY = e.touches[0].clientY;
         setIsPulling(true);
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isPulling && getScrollTop() > 5) return;
+      if (!isPulling) return;
       
       const currentY = e.touches[0].clientY;
-      const diff = currentY - startY;
+      const diff = startY - currentY; // Inverted: pulling UP from bottom
       
-      // Only activate when pulling down (positive diff) and at top
-      if (diff > 0 && getScrollTop() <= 5) {
+      // Only activate when pulling up (positive diff) and at bottom
+      if (diff > 0 && isAtBottom()) {
         // Apply resistance for natural feel
-        currentPull = Math.min(diff * 0.6, 120);
-        setPullAmount(currentPull);
+        const pull = Math.min(diff * 0.6, 120);
+        setPullAmount(pull);
         
-        if (currentPull > 15) {
+        if (pull > 15) {
           setIsVisible(true);
         }
       } else {
-        currentPull = 0;
         setPullAmount(0);
       }
     };
@@ -53,8 +52,8 @@ export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
     const handleTouchEnd = () => {
       setIsPulling(false);
       setPullAmount(0);
-      // Delay hiding for smooth exit animation
-      setTimeout(() => setIsVisible(false), 400);
+      // Delay hiding for smooth exit animation (flies down)
+      setTimeout(() => setIsVisible(false), 500);
     };
 
     // Add listeners to window for global touch tracking
@@ -69,16 +68,17 @@ export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [scrollContainerRef, isPulling]);
+  }, [isPulling]);
 
   const progress = Math.min(pullAmount / 80, 1);
 
   return (
     <motion.div
       className="fixed left-1/2 -translate-x-1/2 z-50 pointer-events-none"
-      initial={{ y: -100, opacity: 0 }}
+      style={{ bottom: 100 }} // Position above bottom nav
+      initial={{ y: 100, opacity: 0 }}
       animate={{ 
-        y: isVisible ? 80 + (pullAmount * 0.5) : -100,
+        y: isVisible ? -(pullAmount * 0.8) : 100,
         opacity: isVisible ? progress : 0,
         scale: 0.8 + (progress * 0.4),
         rotate: progress * 360
