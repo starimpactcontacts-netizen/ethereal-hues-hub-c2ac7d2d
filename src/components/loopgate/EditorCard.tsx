@@ -4,6 +4,7 @@ import VerifiedBadge from "./VerifiedBadge";
 import AuthorityBadge from "./AuthorityBadge";
 import CrewBadge from "./CrewBadge";
 import LevelBadge from "./LevelBadge";
+import HouseBadge from "./houses/HouseBadge";
 
 interface EditorCardProps {
   editor: RealEditor;
@@ -83,6 +84,9 @@ export default function EditorCard({ editor }: EditorCardProps) {
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider flex-wrap">
             <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
             <span>{editor.total_events || 0} Events</span>
+            {editor.house && (
+              <HouseBadge house={editor.house} size="sm" />
+            )}
             {editor.crew && (
               <CrewBadge crew={editor.crew} size="sm" />
             )}
