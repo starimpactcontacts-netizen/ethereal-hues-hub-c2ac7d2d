@@ -1067,24 +1067,41 @@ export default function OpsPanel() {
     
     const qoiTotal = scores.quality + scores.originality + scores.impact;
     
-    // Determine which table to update based on source
-    const tableName = submission.source === 'open_arena' ? 'round_participations' : 'event_participations';
-    
     try {
-      const { error } = await supabase
-        .from(tableName)
-        .update({
-          quality_score: scores.quality,
-          originality_score: scores.originality,
-          impact_score: scores.impact,
-          qoi_score: qoiTotal,
-          status: 'scored',
-          judged_at: new Date().toISOString(),
-          judge_id: user?.id,
-        })
-        .eq('id', submission.id);
-      
-      if (error) throw error;
+      // For Open Arena (round_participations), keep status as 'active' since the enum
+      // only supports: 'active' | 'advanced' | 'eliminated' | 'pending'
+      // For standard events (event_participations), use 'scored' status
+      if (submission.source === 'open_arena') {
+        const { error } = await supabase
+          .from('round_participations')
+          .update({
+            quality_score: scores.quality,
+            originality_score: scores.originality,
+            impact_score: scores.impact,
+            qoi_score: qoiTotal,
+            // Keep status as 'active' - having qoi_score means it's been scored
+            judged_at: new Date().toISOString(),
+            judge_id: user?.id,
+          })
+          .eq('id', submission.id);
+        
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('event_participations')
+          .update({
+            quality_score: scores.quality,
+            originality_score: scores.originality,
+            impact_score: scores.impact,
+            qoi_score: qoiTotal,
+            status: 'scored',
+            judged_at: new Date().toISOString(),
+            judge_id: user?.id,
+          })
+          .eq('id', submission.id);
+        
+        if (error) throw error;
+      }
       
       toast.success('Score saved');
       setScoringSubmission(null);
@@ -1804,12 +1821,17 @@ export default function OpsPanel() {
   
   // For pending: 'pending' status in both tables
   const pendingSubmissions = filteredSubmissions.filter(s => s.status === 'pending');
-  // For approved: 'approved' for standard events, 'active' for Open Arena (participant_status enum)
+  // For approved: 'approved' for standard events, 'active' for Open Arena (without qoi_score)
   const approvedSubmissions = filteredSubmissions.filter(s => 
-    s.status === 'approved' || ((s as any).source === 'open_arena' && s.status === 'active')
+    s.status === 'approved' || 
+    ((s as any).source === 'open_arena' && s.status === 'active' && !s.qoi_score)
   );
   const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined' || s.status === 'eliminated');
-  const ratedSubmissions = filteredSubmissions.filter(s => s.status === 'scored');
+  // For rated: 'scored' for standard events, or Open Arena 'active' WITH qoi_score
+  const ratedSubmissions = filteredSubmissions.filter(s => 
+    s.status === 'scored' || 
+    ((s as any).source === 'open_arena' && s.status === 'active' && s.qoi_score)
+  );
 
   if (loading) {
     return (
