@@ -81,7 +81,7 @@ export default function IOSAppBanner({ onVisibilityChange }: IOSAppBannerProps) 
   if (!shouldShow) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[60] bg-surface-1 border-b border-border px-3 py-2 flex items-center gap-3 h-14">
+    <div className="sticky top-0 left-0 right-0 z-[60] bg-surface-1 border-b border-border px-3 py-2 flex items-center gap-3 h-14">
       {/* Dismiss button */}
       <button 
         onClick={handleDismiss}
