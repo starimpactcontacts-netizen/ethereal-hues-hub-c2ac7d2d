@@ -498,6 +498,7 @@ export type Database = {
           portfolio_url: string | null
           region: string | null
           rules_accepted: boolean | null
+          spendable_index: number
           total_events: number | null
           total_wins: number | null
           updated_at: string | null
@@ -530,6 +531,7 @@ export type Database = {
           portfolio_url?: string | null
           region?: string | null
           rules_accepted?: boolean | null
+          spendable_index?: number
           total_events?: number | null
           total_wins?: number | null
           updated_at?: string | null
@@ -562,6 +564,7 @@ export type Database = {
           portfolio_url?: string | null
           region?: string | null
           rules_accepted?: boolean | null
+          spendable_index?: number
           total_events?: number | null
           total_wins?: number | null
           updated_at?: string | null
@@ -582,6 +585,95 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      redemptions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          item_id: string
+          points_spent: number
+          shipping_info: Json | null
+          status: Database["public"]["Enums"]["redemption_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_id: string
+          points_spent: number
+          shipping_info?: Json | null
+          status?: Database["public"]["Enums"]["redemption_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_id?: string
+          points_spent?: number
+          shipping_info?: Json | null
+          status?: Database["public"]["Enums"]["redemption_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shop_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          item_type: Database["public"]["Enums"]["shop_item_type"]
+          name: string
+          price: number
+          stock: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          item_type?: Database["public"]["Enums"]["shop_item_type"]
+          name: string
+          price?: number
+          stock?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          item_type?: Database["public"]["Enums"]["shop_item_type"]
+          name?: string
+          price?: number
+          stock?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -708,6 +800,10 @@ export type Database = {
         Args: { user_uuid: string }
         Returns: undefined
       }
+      spend_index: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: boolean
+      }
       update_active_session: { Args: never; Returns: undefined }
     }
     Enums: {
@@ -715,6 +811,8 @@ export type Database = {
       crew_role: "owner" | "officer" | "member"
       league_tier: "open" | "pro" | "elite"
       platform_type: "tiktok" | "instagram" | "youtube"
+      redemption_status: "pending" | "approved" | "fulfilled" | "rejected"
+      shop_item_type: "cosmetic" | "digital" | "physical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -846,6 +944,8 @@ export const Constants = {
       crew_role: ["owner", "officer", "member"],
       league_tier: ["open", "pro", "elite"],
       platform_type: ["tiktok", "instagram", "youtube"],
+      redemption_status: ["pending", "approved", "fulfilled", "rejected"],
+      shop_item_type: ["cosmetic", "digital", "physical"],
     },
   },
 } as const
