@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -367,6 +367,26 @@ export default function ProfilePage() {
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">Events</p>
             </div>
           </div>
+
+          {/* Spendable Index / Shop CTA */}
+          <Link to="/shop" className="block mt-4">
+            <div className="bg-gradient-to-r from-gold/15 to-gold/5 border border-gold/40 p-4 flex items-center justify-between hover:border-gold transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gold/20 border border-gold/50 flex items-center justify-center">
+                  <Coins className="w-5 h-5 text-gold" />
+                </div>
+                <div>
+                  <p className="font-display text-2xl text-gold">{(profile as any)?.spendable_index || 0}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Spendable Index</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-gold">
+                <ShoppingBag className="w-5 h-5" />
+                <span className="font-display text-sm">Shop</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </div>
+          </Link>
 
           {/* Activity Status */}
           <div className="pt-5 mt-5 border-t border-border flex items-center justify-between">
