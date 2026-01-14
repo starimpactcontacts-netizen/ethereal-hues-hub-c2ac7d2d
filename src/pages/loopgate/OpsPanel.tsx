@@ -1107,18 +1107,29 @@ export default function OpsPanel() {
       const xpReward = event?.xp_reward || 50;
 
       // Determine which table to update based on source
-      const tableName = submission.source === 'open_arena' ? 'round_participations' : 'event_participations';
+      // For round_participations, use 'active' status (participant_status enum)
+      // For event_participations, use 'approved' status (string field)
+      if (submission.source === 'open_arena') {
+        // Open Arena uses round_participations with participant_status enum
+        // 'active' means approved and ready for scoring
+        const { error: updateError } = await supabase
+          .from('round_participations')
+          .update({ status: 'active' })
+          .eq('id', submission.id);
 
-      // Update submission status to approved
-      const { error: updateError } = await supabase
-        .from(tableName)
-        .update({
-          status: 'approved',
-          ...(tableName === 'event_participations' ? { xp_awarded: xpReward } : {}),
-        })
-        .eq('id', submission.id);
+        if (updateError) throw updateError;
+      } else {
+        // Standard events use event_participations with string status
+        const { error: updateError } = await supabase
+          .from('event_participations')
+          .update({
+            status: 'approved',
+            xp_awarded: xpReward,
+          })
+          .eq('id', submission.id);
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
+      }
 
       // Award XP to user
       await supabase.rpc('award_xp', {
@@ -1791,9 +1802,13 @@ export default function OpsPanel() {
     ? submissions.filter(s => s.event_id === activeEventFilter)
     : submissions;
   
-  const pendingSubmissions = filteredSubmissions.filter(s => s.status === 'pending' || s.status === 'active');
-  const approvedSubmissions = filteredSubmissions.filter(s => s.status === 'approved');
-  const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined');
+  // For pending: 'pending' status in both tables
+  const pendingSubmissions = filteredSubmissions.filter(s => s.status === 'pending');
+  // For approved: 'approved' for standard events, 'active' for Open Arena (participant_status enum)
+  const approvedSubmissions = filteredSubmissions.filter(s => 
+    s.status === 'approved' || ((s as any).source === 'open_arena' && s.status === 'active')
+  );
+  const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined' || s.status === 'eliminated');
   const ratedSubmissions = filteredSubmissions.filter(s => s.status === 'scored');
 
   if (loading) {
