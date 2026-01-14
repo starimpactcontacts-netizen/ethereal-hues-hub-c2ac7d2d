@@ -9,6 +9,7 @@ import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useReal
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
+import GQTCard from '@/components/loopgate/GQTCard';
 const leagueConfig = {
   elite: {
     label: 'Elite League',
@@ -76,6 +77,11 @@ export default function HubPage() {
           </p>
           <h1 className="font-display text-3xl text-gold">{profile?.username || 'EDITOR'}</h1>
         </motion.div>
+      </div>
+
+      {/* Global QOI Test Card - THE GENERATIONAL TOOL */}
+      <div className="px-4 mb-6">
+        <GQTCard />
       </div>
 
       {/* League Status Card */}
