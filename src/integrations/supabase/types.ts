@@ -35,6 +35,42 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_feed: {
+        Row: {
+          activity_type: string
+          avatar_url: string | null
+          created_at: string
+          data: Json | null
+          description: string | null
+          id: string
+          title: string
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          activity_type: string
+          avatar_url?: string | null
+          created_at?: string
+          data?: Json | null
+          description?: string | null
+          id?: string
+          title: string
+          user_id?: string | null
+          username: string
+        }
+        Update: {
+          activity_type?: string
+          avatar_url?: string | null
+          created_at?: string
+          data?: Json | null
+          description?: string | null
+          id?: string
+          title?: string
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       arena_messages: {
         Row: {
           arena_id: number
@@ -475,6 +511,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
