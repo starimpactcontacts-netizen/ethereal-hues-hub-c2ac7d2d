@@ -340,6 +340,7 @@ export type Database = {
           submission_url: string
           submitted_at: string | null
           user_id: string
+          xp_awarded: number | null
         }
         Insert: {
           event_id: string
@@ -356,6 +357,7 @@ export type Database = {
           submission_url: string
           submitted_at?: string | null
           user_id: string
+          xp_awarded?: number | null
         }
         Update: {
           event_id?: string
@@ -372,6 +374,7 @@ export type Database = {
           submission_url?: string
           submitted_at?: string | null
           user_id?: string
+          xp_awarded?: number | null
         }
         Relationships: []
       }
@@ -394,6 +397,7 @@ export type Database = {
           subtitle: string | null
           title: string
           updated_at: string | null
+          xp_reward: number | null
         }
         Insert: {
           category?: string | null
@@ -413,6 +417,7 @@ export type Database = {
           subtitle?: string | null
           title: string
           updated_at?: string | null
+          xp_reward?: number | null
         }
         Update: {
           category?: string | null
@@ -432,6 +437,7 @@ export type Database = {
           subtitle?: string | null
           title?: string
           updated_at?: string | null
+          xp_reward?: number | null
         }
         Relationships: []
       }
