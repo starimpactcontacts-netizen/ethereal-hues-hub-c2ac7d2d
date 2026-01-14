@@ -5,7 +5,37 @@ import { isNativeApp } from '@/lib/native';
 const IOS_APP_URL = 'https://apps.apple.com/app/loopgate/id6757446330';
 const BANNER_DISMISSED_KEY = 'loopgate_ios_banner_dismissed';
 
-export default function IOSAppBanner() {
+// Hook to check if banner should be visible (for layout adjustments)
+export function useIOSBannerVisible() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const isNarrow = window.innerWidth < 640;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const dismissed = localStorage.getItem(BANNER_DISMISSED_KEY);
+    const isNative = isNativeApp();
+
+    setIsVisible(isNarrow && isTouchDevice && !dismissed && !isNative);
+
+    const handleResize = () => {
+      const narrow = window.innerWidth < 640;
+      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const wasDismissed = localStorage.getItem(BANNER_DISMISSED_KEY);
+      setIsVisible(narrow && touch && !wasDismissed && !isNative);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isVisible;
+}
+
+interface IOSAppBannerProps {
+  onVisibilityChange?: (visible: boolean) => void;
+}
+
+export default function IOSAppBanner({ onVisibilityChange }: IOSAppBannerProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -32,6 +62,12 @@ export default function IOSAppBanner() {
     return () => window.removeEventListener('resize', checkPhone);
   }, []);
 
+  const shouldShow = isVisible && isMobile;
+
+  useEffect(() => {
+    onVisibilityChange?.(shouldShow);
+  }, [shouldShow, onVisibilityChange]);
+
   const handleDismiss = () => {
     setIsVisible(false);
     localStorage.setItem(BANNER_DISMISSED_KEY, 'true');
@@ -42,10 +78,10 @@ export default function IOSAppBanner() {
   };
 
   // Only show on mobile web
-  if (!isVisible || !isMobile) return null;
+  if (!shouldShow) return null;
 
   return (
-    <div className="bg-surface-1 border-b border-border px-3 py-2 flex items-center gap-3">
+    <div className="fixed top-0 left-0 right-0 z-[60] bg-surface-1 border-b border-border px-3 py-2 flex items-center gap-3 h-14">
       {/* Dismiss button */}
       <button 
         onClick={handleDismiss}
