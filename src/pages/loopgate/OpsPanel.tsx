@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -29,6 +29,7 @@ interface RealEvent {
   category: string | null;
   region_tags: string[] | null;
   description: string | null;
+  xp_reward: number | null;
 }
 
 interface RealSubmission {
@@ -48,6 +49,7 @@ interface RealSubmission {
   judge_id: string | null;
   username?: string;
   verification_status?: boolean;
+  xp_awarded: number | null;
 }
 
 interface VerificationRequest {
@@ -119,6 +121,7 @@ export default function OpsPanel() {
     end_date: '',
     prize_pool: '',
     league: 'open',
+    xp_reward: 50,
   });
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
@@ -136,6 +139,7 @@ export default function OpsPanel() {
     end_date: '',
     prize_pool: '',
     league: 'open',
+    xp_reward: 50,
   });
   const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
   const [editPosterPreview, setEditPosterPreview] = useState<string | null>(null);
@@ -389,6 +393,7 @@ export default function OpsPanel() {
         league: newEvent.league,
         poster_url: posterUrl,
         status: 'pending',
+        xp_reward: newEvent.xp_reward,
       });
       
       if (error) throw error;
@@ -405,6 +410,7 @@ export default function OpsPanel() {
         end_date: '',
         prize_pool: '',
         league: 'open',
+        xp_reward: 50,
       });
       setPosterFile(null);
       setPosterPreview(null);
@@ -449,6 +455,7 @@ export default function OpsPanel() {
       end_date: event.end_date ? new Date(event.end_date).toISOString().slice(0, 16) : '',
       prize_pool: event.prize_pool || '',
       league: event.league,
+      xp_reward: event.xp_reward || 50,
     });
     setEditPosterPreview(event.poster_url || null);
     setEditPosterFile(null);
@@ -495,6 +502,7 @@ export default function OpsPanel() {
         prize_pool: editEvent.prize_pool || null,
         league: editEvent.league,
         poster_url: posterUrl,
+        xp_reward: editEvent.xp_reward,
       }).eq('id', editingEvent.id);
       
       if (error) throw error;
@@ -588,6 +596,82 @@ export default function OpsPanel() {
       toast.error('Failed to save score');
     } finally {
       setSaving(false);
+    }
+  }
+
+  // Approve submission and award XP
+  async function handleApproveSubmission(submission: RealSubmission) {
+    setActionLoading(true);
+    try {
+      // Get event XP reward
+      const event = events.find(e => e.id === submission.event_id);
+      const xpReward = event?.xp_reward || 50;
+
+      // Update submission status to approved
+      const { error: updateError } = await supabase
+        .from('event_participations')
+        .update({
+          status: 'approved',
+          xp_awarded: xpReward,
+        })
+        .eq('id', submission.id);
+
+      if (updateError) throw updateError;
+
+      // Award XP to user
+      await supabase.rpc('award_xp', {
+        p_user_id: submission.user_id,
+        p_amount: xpReward,
+        p_action: 'event_submission',
+        p_description: `Approved submission for ${event?.title || 'event'}`,
+      });
+
+      toast.success(`Submission approved! +${xpReward} XP awarded`);
+      fetchData();
+    } catch (error) {
+      console.error('Error approving submission:', error);
+      toast.error('Failed to approve submission');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  // Decline submission (no XP, or revoke if previously awarded)
+  async function handleDeclineSubmission(submission: RealSubmission) {
+    setActionLoading(true);
+    try {
+      const previouslyAwarded = submission.xp_awarded || 0;
+
+      // Update submission status to declined
+      const { error: updateError } = await supabase
+        .from('event_participations')
+        .update({
+          status: 'declined',
+          xp_awarded: 0,
+        })
+        .eq('id', submission.id);
+
+      if (updateError) throw updateError;
+
+      // If XP was previously awarded, revoke it
+      if (previouslyAwarded > 0) {
+        await supabase.rpc('award_xp', {
+          p_user_id: submission.user_id,
+          p_amount: -previouslyAwarded,
+          p_action: 'submission_declined',
+          p_description: 'Submission declined - XP revoked',
+        });
+        toast.success(`Submission declined. ${previouslyAwarded} XP revoked.`);
+      } else {
+        toast.success('Submission declined');
+      }
+      
+      fetchData();
+    } catch (error) {
+      console.error('Error declining submission:', error);
+      toast.error('Failed to decline submission');
+    } finally {
+      setActionLoading(false);
     }
   }
 
@@ -689,7 +773,9 @@ export default function OpsPanel() {
     ? submissions.filter(s => s.event_id === activeEventFilter)
     : submissions;
   
-  const unratedSubmissions = filteredSubmissions.filter(s => s.status !== 'scored');
+  const pendingSubmissions = filteredSubmissions.filter(s => s.status === 'pending');
+  const approvedSubmissions = filteredSubmissions.filter(s => s.status === 'approved');
+  const declinedSubmissions = filteredSubmissions.filter(s => s.status === 'declined');
   const ratedSubmissions = filteredSubmissions.filter(s => s.status === 'scored');
 
   if (loading) {
@@ -766,6 +852,11 @@ export default function OpsPanel() {
                               <span className="text-gold">{event.prize_pool}</span>
                             </>
                           )}
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Sparkles size={10} className="text-gold" />
+                            {event.xp_reward || 50} XP
+                          </span>
                         </div>
                         <p className="text-[10px] text-muted-foreground mt-1">
                           {new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}
@@ -837,30 +928,37 @@ export default function OpsPanel() {
               Submissions {activeEventFilter && `• ${events.find(e => e.id === activeEventFilter)?.title || ''}`}
             </h2>
             <div className="flex items-center gap-3 text-xs">
-              <span className="text-gold">{unratedSubmissions.length} unrated</span>
-              <span className="text-green-500">{ratedSubmissions.length} rated</span>
+              <span className="text-orange-400">{pendingSubmissions.length} pending</span>
+              <span className="text-green-500">{approvedSubmissions.length} approved</span>
+              <span className="text-gold">{ratedSubmissions.length} rated</span>
             </div>
           </div>
 
-          <Tabs defaultValue="unrated" className="w-full">
-            <TabsList className="w-full mb-4">
-              <TabsTrigger value="unrated" className="flex-1">
-                Unrated ({unratedSubmissions.length})
+          <Tabs defaultValue="pending" className="w-full">
+            <TabsList className="w-full mb-4 grid grid-cols-4">
+              <TabsTrigger value="pending">
+                Pending ({pendingSubmissions.length})
               </TabsTrigger>
-              <TabsTrigger value="rated" className="flex-1">
+              <TabsTrigger value="approved">
+                Approved ({approvedSubmissions.length})
+              </TabsTrigger>
+              <TabsTrigger value="rated">
                 Rated ({ratedSubmissions.length})
+              </TabsTrigger>
+              <TabsTrigger value="declined">
+                Declined ({declinedSubmissions.length})
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="unrated">
-              {unratedSubmissions.length === 0 ? (
+            <TabsContent value="pending">
+              {pendingSubmissions.length === 0 ? (
                 <div className="bg-card border border-border rounded-lg p-6 text-center">
                   <Check className="w-8 h-8 mx-auto text-green-500 mb-2" />
-                  <p className="text-sm text-muted-foreground">All submissions rated!</p>
+                  <p className="text-sm text-muted-foreground">No pending submissions</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {unratedSubmissions.map((submission) => (
+                  {pendingSubmissions.map((submission) => (
                     <div
                       key={submission.id}
                       className="bg-card border border-border rounded-lg overflow-hidden"
@@ -889,19 +987,38 @@ export default function OpsPanel() {
                               {new Date(submission.submitted_at).toLocaleString()}
                             </p>
                           </div>
-                          <button
-                            onClick={() => setScoringSubmission(
-                              scoringSubmission === submission.id ? null : submission.id
-                            )}
-                            className="px-3 py-2 bg-gold text-black rounded-lg text-xs font-semibold flex items-center gap-1"
-                          >
-                            Rate
-                            {scoringSubmission === submission.id ? (
-                              <ChevronUp size={14} />
-                            ) : (
-                              <ChevronDown size={14} />
-                            )}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            {/* Approve/Decline quick actions */}
+                            <button
+                              onClick={() => handleDeclineSubmission(submission)}
+                              disabled={actionLoading}
+                              className="p-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors"
+                              title="Decline (stolen/invalid)"
+                            >
+                              <ThumbsDown size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleApproveSubmission(submission)}
+                              disabled={actionLoading}
+                              className="p-2 bg-green-500/20 text-green-500 rounded-lg hover:bg-green-500/30 transition-colors"
+                              title={`Approve (+${events.find(e => e.id === submission.event_id)?.xp_reward || 50} XP)`}
+                            >
+                              <ThumbsUp size={16} />
+                            </button>
+                            <button
+                              onClick={() => setScoringSubmission(
+                                scoringSubmission === submission.id ? null : submission.id
+                              )}
+                              className="px-3 py-2 bg-gold text-black rounded-lg text-xs font-semibold flex items-center gap-1"
+                            >
+                              Rate
+                              {scoringSubmission === submission.id ? (
+                                <ChevronUp size={14} />
+                              ) : (
+                                <ChevronDown size={14} />
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -984,6 +1101,62 @@ export default function OpsPanel() {
               )}
             </TabsContent>
 
+            <TabsContent value="approved">
+              {approvedSubmissions.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-6 text-center">
+                  <ThumbsUp className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No approved submissions yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {approvedSubmissions.map((submission) => (
+                    <div
+                      key={submission.id}
+                      className="bg-card border border-green-500/30 rounded-lg overflow-hidden"
+                    >
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{submission.username}</p>
+                              {submission.verification_status && <VerifiedBadge size="sm" />}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                {submission.platform}
+                              </span>
+                              <a 
+                                href={submission.submission_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-gold text-xs hover:underline"
+                              >
+                                View Edit →
+                              </a>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-green-500/20 text-green-500 flex items-center gap-1">
+                              <Sparkles size={10} />
+                              +{submission.xp_awarded || 0} XP
+                            </Badge>
+                            <button
+                              onClick={() => handleDeclineSubmission(submission)}
+                              disabled={actionLoading}
+                              className="p-2 bg-destructive/20 text-destructive rounded-lg hover:bg-destructive/30 transition-colors"
+                              title="Decline & revoke XP"
+                            >
+                              <ThumbsDown size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
             <TabsContent value="rated">
               {ratedSubmissions.length === 0 ? (
                 <div className="bg-card border border-border rounded-lg p-6 text-center">
@@ -995,7 +1168,7 @@ export default function OpsPanel() {
                   {ratedSubmissions.map((submission) => (
                     <div
                       key={submission.id}
-                      className="bg-card border border-green-500/30 rounded-lg overflow-hidden"
+                      className="bg-card border border-gold/30 rounded-lg overflow-hidden"
                     >
                       <div className="p-4">
                         <div className="flex items-center justify-between">
@@ -1035,6 +1208,51 @@ export default function OpsPanel() {
                         <span className="text-muted-foreground">
                           {submission.judged_at ? new Date(submission.judged_at).toLocaleDateString() : '-'}
                         </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="declined">
+              {declinedSubmissions.length === 0 ? (
+                <div className="bg-card border border-border rounded-lg p-6 text-center">
+                  <ThumbsDown className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">No declined submissions</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {declinedSubmissions.map((submission) => (
+                    <div
+                      key={submission.id}
+                      className="bg-card border border-destructive/30 rounded-lg overflow-hidden opacity-60"
+                    >
+                      <div className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{submission.username}</p>
+                              {submission.verification_status && <VerifiedBadge size="sm" />}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                {submission.platform}
+                              </span>
+                              <a 
+                                href={submission.submission_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-gold text-xs hover:underline"
+                              >
+                                View Edit →
+                              </a>
+                            </div>
+                          </div>
+                          <Badge variant="destructive" className="text-[10px]">
+                            DECLINED
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -1364,6 +1582,27 @@ export default function OpsPanel() {
               />
             </div>
 
+            {/* XP Reward */}
+            <div>
+              <Label htmlFor="xp-reward" className="flex items-center gap-1">
+                <Sparkles size={14} className="text-gold" />
+                XP Reward per Submission
+              </Label>
+              <Input
+                id="xp-reward"
+                type="number"
+                min="0"
+                max="500"
+                value={newEvent.xp_reward}
+                onChange={(e) => setNewEvent({ ...newEvent, xp_reward: Number(e.target.value) })}
+                placeholder="50"
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                XP awarded when a submission is approved
+              </p>
+            </div>
+
             {/* Submit Button */}
             <button
               onClick={handleCreateEvent}
@@ -1560,6 +1799,27 @@ export default function OpsPanel() {
                 placeholder="$500"
                 className="mt-1"
               />
+            </div>
+
+            {/* XP Reward */}
+            <div>
+              <Label htmlFor="edit-xp-reward" className="flex items-center gap-1">
+                <Sparkles size={14} className="text-gold" />
+                XP Reward per Submission
+              </Label>
+              <Input
+                id="edit-xp-reward"
+                type="number"
+                min="0"
+                max="500"
+                value={editEvent.xp_reward}
+                onChange={(e) => setEditEvent({ ...editEvent, xp_reward: Number(e.target.value) })}
+                placeholder="50"
+                className="mt-1"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                XP awarded when a submission is approved
+              </p>
             </div>
 
             {/* Submit Button */}
