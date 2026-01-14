@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,10 @@ import {
   Zap,
   HelpCircle
 } from "lucide-react";
+
+// Increment this version to force show the guide to everyone again
+const GUIDE_VERSION = "v1.0";
+const GUIDE_STORAGE_KEY = "loopgate_guide_seen";
 
 const guideSteps = [
   {
@@ -53,21 +57,42 @@ const guideSteps = [
 
 interface BeginnerGuideModalProps {
   trigger?: React.ReactNode;
+  autoShow?: boolean;
 }
 
-export default function BeginnerGuideModal({ trigger }: BeginnerGuideModalProps) {
+export default function BeginnerGuideModal({ trigger, autoShow = false }: BeginnerGuideModalProps) {
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    if (!autoShow) return;
+
+    // Check if user has seen this version of the guide
+    const seenVersion = localStorage.getItem(GUIDE_STORAGE_KEY);
+    if (seenVersion !== GUIDE_VERSION) {
+      // Small delay to let the page load first
+      const timer = setTimeout(() => {
+        setOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [autoShow]);
+
+  const handleClose = () => {
+    setOpen(false);
+    // Mark as seen
+    localStorage.setItem(GUIDE_STORAGE_KEY, GUIDE_VERSION);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
-            <HelpCircle size={16} />
-            <span>How It Works</span>
-          </button>
-        )}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen) handleClose();
+      else setOpen(true);
+    }}>
+      {trigger && (
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+      )}
       <DialogContent className="bg-background border-border max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-center">
@@ -113,7 +138,7 @@ export default function BeginnerGuideModal({ trigger }: BeginnerGuideModalProps)
 
           <div className="pt-6 text-center">
             <button
-              onClick={() => setOpen(false)}
+              onClick={handleClose}
               className="px-6 py-2.5 bg-gold text-background font-semibold text-sm rounded-lg hover:bg-gold/90 transition-colors"
             >
               Got It

@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import AppHeader from './AppHeader';
 import BottomNav from './BottomNav';
 import LoadingScreen from './LoadingScreen';
+import BeginnerGuideModal from './BeginnerGuideModal';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
@@ -18,6 +19,9 @@ export default function AuthenticatedLayout() {
         </Suspense>
       </main>
       {showNav && <BottomNav />}
+      
+      {/* Auto-show beginner guide for new users / official opening */}
+      <BeginnerGuideModal autoShow />
     </div>
   );
 }
