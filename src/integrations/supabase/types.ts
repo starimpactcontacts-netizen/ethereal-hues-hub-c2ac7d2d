@@ -419,6 +419,7 @@ export type Database = {
           category: string | null
           created_at: string | null
           description: string | null
+          editor_category: string | null
           end_date: string
           id: string
           ip: string | null
@@ -439,6 +440,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
+          editor_category?: string | null
           end_date: string
           id?: string
           ip?: string | null
@@ -459,6 +461,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           description?: string | null
+          editor_category?: string | null
           end_date?: string
           id?: string
           ip?: string | null
@@ -548,6 +551,7 @@ export type Database = {
       profiles: {
         Row: {
           activity_status: string | null
+          archetype: string | null
           avatar_url: string | null
           banned_at: string | null
           banned_reason: string | null
@@ -567,6 +571,7 @@ export type Database = {
           portfolio_url: string | null
           region: string | null
           rules_accepted: boolean | null
+          software: string[] | null
           spendable_index: number
           total_events: number | null
           total_wins: number | null
@@ -581,6 +586,7 @@ export type Database = {
         }
         Insert: {
           activity_status?: string | null
+          archetype?: string | null
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
@@ -600,6 +606,7 @@ export type Database = {
           portfolio_url?: string | null
           region?: string | null
           rules_accepted?: boolean | null
+          software?: string[] | null
           spendable_index?: number
           total_events?: number | null
           total_wins?: number | null
@@ -614,6 +621,7 @@ export type Database = {
         }
         Update: {
           activity_status?: string | null
+          archetype?: string | null
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
@@ -633,6 +641,7 @@ export type Database = {
           portfolio_url?: string | null
           region?: string | null
           rules_accepted?: boolean | null
+          software?: string[] | null
           spendable_index?: number
           total_events?: number | null
           total_wins?: number | null

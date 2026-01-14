@@ -6,11 +6,14 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
+import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
+import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 interface PublicProfile {
   id: string;
   username: string;
+  display_name: string | null;
   league: string;
   global_index_score: number;
   win_rate: number;
@@ -27,6 +30,8 @@ interface PublicProfile {
   crew_id: string | null;
   xp: number;
   level: number;
+  archetype: string | null;
+  software: string[] | null;
 }
 
 interface ConnectedPlatform {
@@ -69,7 +74,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level")
+        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software")
         .eq("id", userId)
         .single();
 
@@ -202,16 +207,33 @@ export default function PublicProfilePage() {
 
           {/* Alias + League + Verified + Authority + Enterprise */}
           <div className="flex items-start justify-between mb-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-display text-4xl">{profile.username}</h1>
-              {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
-              {profile.verification_status && <VerifiedBadge size="lg" />}
-              {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
-              {isEnterprise && (
-                <span className="px-2 py-0.5 bg-gold/10 border border-gold/30 text-gold text-[10px] font-semibold uppercase tracking-wider">
-                  Enterprise
-                </span>
+            <div className="flex flex-col">
+              {profile.display_name && (
+                <h1 className="font-display text-4xl flex items-center gap-2">
+                  {profile.display_name}
+                  {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
+                  {profile.verification_status && <VerifiedBadge size="lg" />}
+                  {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
+                </h1>
               )}
+              <div className="flex items-center gap-2 flex-wrap">
+                {!profile.display_name && (
+                  <h1 className="font-display text-4xl flex items-center gap-2">
+                    {profile.username}
+                    {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
+                    {profile.verification_status && <VerifiedBadge size="lg" />}
+                    {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
+                  </h1>
+                )}
+                {profile.display_name && (
+                  <span className="text-sm text-muted-foreground">@{profile.username}</span>
+                )}
+                {isEnterprise && (
+                  <span className="px-2 py-0.5 bg-gold/10 border border-gold/30 text-gold text-[10px] font-semibold uppercase tracking-wider">
+                    Enterprise
+                  </span>
+                )}
+              </div>
             </div>
             <span
               className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}
@@ -222,6 +244,21 @@ export default function PublicProfilePage() {
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
             {isEnterprise ? 'Enterprise' : 'Global Editor'}{profile.created_at && ` since ${formatJoinDate(profile.created_at)}`}
           </p>
+
+          {/* Archetype Badge */}
+          {profile.archetype && (
+            <div className="mt-4">
+              <ArchetypeBadge archetype={profile.archetype} size="lg" />
+            </div>
+          )}
+
+          {/* Software Badges */}
+          {profile.software && profile.software.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1.5">Software</p>
+              <SoftwareBadges software={profile.software} size="sm" />
+            </div>
+          )}
 
           {/* Global Rank */}
           <div className="my-6 py-6 border-y border-border text-center">

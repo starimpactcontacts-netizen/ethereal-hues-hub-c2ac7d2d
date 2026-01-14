@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -18,6 +18,10 @@ import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
 import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
 import MySubmissions from "@/components/loopgate/MySubmissions";
+import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
+import ArchetypeSelector from "@/components/loopgate/ArchetypeSelector";
+import SoftwareSelector from "@/components/loopgate/SoftwareSelector";
+import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -70,6 +74,8 @@ export default function ProfilePage() {
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [showArchetypeSelector, setShowArchetypeSelector] = useState(false);
+  const [showSoftwareSelector, setShowSoftwareSelector] = useState(false);
   
   // Keep session active
   useActiveSession();
@@ -347,6 +353,21 @@ export default function ProfilePage() {
             Global Editor{profile.created_at && ` since ${formatJoinDate(profile.created_at)}`}
           </p>
 
+          {/* Archetype Badge */}
+          {(profile as any).archetype && (
+            <div className="mt-4">
+              <ArchetypeBadge archetype={(profile as any).archetype} size="lg" />
+            </div>
+          )}
+
+          {/* Software Badges */}
+          {(profile as any).software && (profile as any).software.length > 0 && (
+            <div className="mt-3">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1.5">Software</p>
+              <SoftwareBadges software={(profile as any).software} size="sm" />
+            </div>
+          )}
+
           {/* Global Rank */}
           <div className="my-6 py-6 border-y border-border text-center">
             <p className="font-display text-7xl text-gold">#{userRank}</p>
@@ -418,6 +439,66 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Editor Identity Section */}
+      <section className="px-4 py-4">
+        <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+          <Palette size={14} />
+          Editor Identity
+        </h3>
+        <div className="bg-surface-1 border border-border p-4 space-y-4">
+          {/* Archetype */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Archetype</label>
+              <button
+                onClick={() => setShowArchetypeSelector(true)}
+                className="text-[10px] text-gold uppercase tracking-wider hover:underline flex items-center gap-1"
+              >
+                <Pencil size={10} />
+                {(profile as any).archetype ? 'Change' : 'Set'}
+              </button>
+            </div>
+            {(profile as any).archetype ? (
+              <ArchetypeBadge archetype={(profile as any).archetype} size="md" animate={false} />
+            ) : (
+              <button
+                onClick={() => setShowArchetypeSelector(true)}
+                className="text-sm text-muted-foreground hover:text-gold transition-colors"
+              >
+                + Select your archetype
+              </button>
+            )}
+          </div>
+
+          {/* Software */}
+          <div className="pt-4 border-t border-border">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Wrench size={10} />
+                Software
+              </label>
+              <button
+                onClick={() => setShowSoftwareSelector(true)}
+                className="text-[10px] text-gold uppercase tracking-wider hover:underline flex items-center gap-1"
+              >
+                <Pencil size={10} />
+                Edit
+              </button>
+            </div>
+            {(profile as any).software && (profile as any).software.length > 0 ? (
+              <SoftwareBadges software={(profile as any).software} size="md" animate={false} />
+            ) : (
+              <button
+                onClick={() => setShowSoftwareSelector(true)}
+                className="text-sm text-muted-foreground hover:text-gold transition-colors"
+              >
+                + Add your software
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Verification Status Card */}
       <section className="px-4 py-2">
@@ -797,6 +878,48 @@ export default function ProfilePage() {
         currentAvatarUrl={profile.avatar_url}
         onUpdated={refreshProfile}
       />
+
+      {/* Archetype Selector */}
+      {showArchetypeSelector && (
+        <ArchetypeSelector
+          value={(profile as any).archetype || null}
+          onChange={async (archetype) => {
+            try {
+              await supabase
+                .from('profiles')
+                .update({ archetype })
+                .eq('id', profile.id);
+              refreshProfile();
+              toast.success('Archetype updated');
+            } catch (error) {
+              toast.error('Failed to update archetype');
+            }
+          }}
+          onClose={() => setShowArchetypeSelector(false)}
+          isOpen={showArchetypeSelector}
+        />
+      )}
+
+      {/* Software Selector */}
+      {showSoftwareSelector && (
+        <SoftwareSelector
+          value={(profile as any).software || []}
+          onChange={async (software) => {
+            try {
+              await supabase
+                .from('profiles')
+                .update({ software })
+                .eq('id', profile.id);
+              refreshProfile();
+              toast.success('Software updated');
+            } catch (error) {
+              toast.error('Failed to update software');
+            }
+          }}
+          onClose={() => setShowSoftwareSelector(false)}
+          isOpen={showSoftwareSelector}
+        />
+      )}
     </div>
   );
 }
