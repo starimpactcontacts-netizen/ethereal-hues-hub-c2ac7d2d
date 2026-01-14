@@ -12,7 +12,7 @@ export default function AuthenticatedLayout() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <AppHeader />
-      <main className="flex-1 pb-20">
+      <main className="flex-1 pb-14">
         <Suspense fallback={<LoadingScreen minimal />}>
           <Outlet />
         </Suspense>

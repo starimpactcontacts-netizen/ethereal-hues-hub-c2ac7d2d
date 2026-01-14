@@ -8,7 +8,7 @@ export default function MobileLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <main className="flex-1 pb-20">
+      <main className="flex-1 pb-14">
         <Outlet />
       </main>
       {showNav && <BottomNav />}
