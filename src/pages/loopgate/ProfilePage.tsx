@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -17,6 +17,7 @@ import LevelBadge from "@/components/loopgate/LevelBadge";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
 import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
+import MySubmissions from "@/components/loopgate/MySubmissions";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -639,21 +640,18 @@ export default function ProfilePage() {
         )}
       </section>
 
-      {/* Active Events */}
+      {/* My Submissions */}
       <section className="px-4 py-4">
-        <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
-          <Calendar size={14} />
-          Active Events
-        </h3>
-        <p className="text-sm text-muted-foreground">No active events</p>
-      </section>
-
-      {/* Recent Events */}
-      <section className="px-4 py-4">
-        <h3 className="font-display text-lg text-muted-foreground mb-3">
-          Recent Events
-        </h3>
-        <p className="text-sm text-muted-foreground">No recent events</p>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
+            <Send size={14} />
+            My Submissions
+          </h3>
+          <Link to="/events" className="text-[10px] text-gold uppercase tracking-wider hover:underline">
+            Browse Events →
+          </Link>
+        </div>
+        <MySubmissions />
       </section>
 
       {/* Account Deletion Section */}

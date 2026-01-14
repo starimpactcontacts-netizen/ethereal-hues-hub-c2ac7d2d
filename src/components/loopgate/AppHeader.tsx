@@ -6,7 +6,7 @@ import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-
+import NotificationCenter from './NotificationCenter';
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
   { to: '/', icon: Calendar, label: 'Events' },
@@ -48,13 +48,17 @@ export default function AppHeader() {
           LOOPGATE
         </Link>
 
-        {/* Menu Button */}
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
+        {/* Right side: Notifications + Menu */}
+        <div className="flex items-center gap-1">
+          <NotificationCenter />
+          
+          {/* Menu Button */}
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
           <SheetContent side="right" className="w-72 bg-surface-0 border-border p-0">
             <div className="flex flex-col h-full">
               {/* Header */}
@@ -149,7 +153,8 @@ export default function AppHeader() {
               </div>
             </div>
           </SheetContent>
-        </Sheet>
+          </Sheet>
+        </div>
       </div>
     </header>
   );
