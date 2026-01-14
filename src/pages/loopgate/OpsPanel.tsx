@@ -245,9 +245,24 @@ export default function OpsPanel() {
     price: 100,
     stock: null as number | null,
   });
+  const [itemImageFile, setItemImageFile] = useState<File | null>(null);
+  const [itemImagePreview, setItemImagePreview] = useState<string | null>(null);
   const [creatingItem, setCreatingItem] = useState(false);
   const [processingRedemption, setProcessingRedemption] = useState<string | null>(null);
   const [redemptionNotes, setRedemptionNotes] = useState('');
+  
+  // Edit shop item state
+  const [editingItem, setEditingItem] = useState<ShopItem | null>(null);
+  const [editItem, setEditItem] = useState({
+    name: '',
+    description: '',
+    item_type: 'digital' as 'cosmetic' | 'digital' | 'physical',
+    price: 100,
+    stock: null as number | null,
+  });
+  const [editItemImageFile, setEditItemImageFile] = useState<File | null>(null);
+  const [editItemImagePreview, setEditItemImagePreview] = useState<string | null>(null);
+  const [updatingItem, setUpdatingItem] = useState(false);
 
   // House management state
   const [houses, setHouses] = useState<AdminHouse[]>([]);
@@ -973,7 +988,7 @@ export default function OpsPanel() {
     }
   }
 
-  // Shop: Create item
+  // Shop: Create item with image upload
   async function handleCreateShopItem() {
     if (!newItem.name || newItem.price <= 0) {
       toast.error('Please fill in item name and price');
@@ -982,6 +997,26 @@ export default function OpsPanel() {
 
     setCreatingItem(true);
     try {
+      let imageUrl: string | null = null;
+
+      // Upload image if provided
+      if (itemImageFile) {
+        const fileExt = itemImageFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('shop-items')
+          .upload(fileName, itemImageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('shop-items')
+          .getPublicUrl(fileName);
+        
+        imageUrl = urlData.publicUrl;
+      }
+
       const { error } = await supabase
         .from('shop_items')
         .insert({
@@ -991,6 +1026,7 @@ export default function OpsPanel() {
           price: newItem.price,
           stock: newItem.stock,
           is_active: true,
+          image_url: imageUrl,
         });
 
       if (error) throw error;
@@ -998,12 +1034,97 @@ export default function OpsPanel() {
       toast.success('Shop item created!');
       setShowCreateItem(false);
       setNewItem({ name: '', description: '', item_type: 'digital', price: 100, stock: null });
+      setItemImageFile(null);
+      setItemImagePreview(null);
       fetchData();
     } catch (error) {
       console.error('Error creating shop item:', error);
       toast.error('Failed to create item');
     } finally {
       setCreatingItem(false);
+    }
+  }
+
+  // Shop: Edit item
+  function openEditItem(item: ShopItem) {
+    setEditingItem(item);
+    setEditItem({
+      name: item.name,
+      description: item.description || '',
+      item_type: item.item_type,
+      price: item.price,
+      stock: item.stock,
+    });
+    setEditItemImagePreview(item.image_url);
+    setEditItemImageFile(null);
+  }
+
+  async function handleUpdateShopItem() {
+    if (!editingItem || !editItem.name || editItem.price <= 0) {
+      toast.error('Please fill in item name and price');
+      return;
+    }
+
+    setUpdatingItem(true);
+    try {
+      let imageUrl: string | null = editingItem.image_url;
+
+      // Upload new image if provided
+      if (editItemImageFile) {
+        const fileExt = editItemImageFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('shop-items')
+          .upload(fileName, editItemImageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('shop-items')
+          .getPublicUrl(fileName);
+        
+        imageUrl = urlData.publicUrl;
+      }
+
+      const { error } = await supabase
+        .from('shop_items')
+        .update({
+          name: editItem.name,
+          description: editItem.description || null,
+          item_type: editItem.item_type,
+          price: editItem.price,
+          stock: editItem.stock,
+          image_url: imageUrl,
+        })
+        .eq('id', editingItem.id);
+
+      if (error) throw error;
+
+      toast.success('Shop item updated!');
+      setEditingItem(null);
+      setEditItemImageFile(null);
+      setEditItemImagePreview(null);
+      fetchData();
+    } catch (error) {
+      console.error('Error updating shop item:', error);
+      toast.error('Failed to update item');
+    } finally {
+      setUpdatingItem(false);
+    }
+  }
+
+  // Handle item image selection
+  function handleItemImageChange(e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean = false) {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (isEdit) {
+        setEditItemImageFile(file);
+        setEditItemImagePreview(URL.createObjectURL(file));
+      } else {
+        setItemImageFile(file);
+        setItemImagePreview(URL.createObjectURL(file));
+      }
     }
   }
 
@@ -2172,10 +2293,16 @@ export default function OpsPanel() {
                   <div key={item.id} className={`bg-card border rounded-lg p-3 ${item.is_active ? 'border-border' : 'border-muted-foreground/30 opacity-60'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-surface-2 flex items-center justify-center">
-                          {item.item_type === 'cosmetic' && <Sparkles size={16} className="text-gold" />}
-                          {item.item_type === 'digital' && <Gift size={16} className="text-blue-400" />}
-                          {item.item_type === 'physical' && <Package size={16} className="text-green-400" />}
+                        <div className="w-10 h-10 rounded-lg bg-surface-2 flex items-center justify-center overflow-hidden">
+                          {item.image_url ? (
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <>
+                              {item.item_type === 'cosmetic' && <Sparkles size={16} className="text-gold" />}
+                              {item.item_type === 'digital' && <Gift size={16} className="text-blue-400" />}
+                              {item.item_type === 'physical' && <Package size={16} className="text-green-400" />}
+                            </>
+                          )}
                         </div>
                         <div>
                           <p className="font-semibold text-sm">{item.name}</p>
@@ -2196,6 +2323,13 @@ export default function OpsPanel() {
                         </div>
                       </div>
                       <div className="flex gap-1">
+                        <button
+                          onClick={() => openEditItem(item)}
+                          className="p-2 rounded-lg bg-surface-1 hover:bg-gold/20 text-muted-foreground hover:text-gold transition-colors"
+                          title="Edit item"
+                        >
+                          <Pencil size={14} />
+                        </button>
                         <button
                           onClick={() => handleToggleItemActive(item)}
                           className={`p-2 rounded-lg ${item.is_active ? 'bg-green-500/20 text-green-400' : 'bg-surface-1'}`}
@@ -2886,10 +3020,41 @@ export default function OpsPanel() {
       </Dialog>
 
       {/* Create Shop Item Dialog */}
-      <Dialog open={showCreateItem} onOpenChange={setShowCreateItem}>
-        <DialogContent className="max-w-sm">
+      <Dialog open={showCreateItem} onOpenChange={(open) => {
+        if (!open) {
+          setShowCreateItem(false);
+          setItemImageFile(null);
+          setItemImagePreview(null);
+        }
+      }}>
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Add Shop Item</DialogTitle></DialogHeader>
           <div className="space-y-4 pt-4">
+            {/* Image Upload */}
+            <div>
+              <Label>Item Image</Label>
+              <div className="mt-1">
+                {itemImagePreview ? (
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
+                    <img src={itemImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => { setItemImageFile(null); setItemImagePreview(null); }}
+                      className="absolute top-1 right-1 p-1 bg-background/80 rounded-full"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center w-24 h-24 bg-surface-1 border border-dashed border-border rounded-lg cursor-pointer hover:border-gold/50 transition-colors">
+                    <input type="file" accept="image/*" onChange={(e) => handleItemImageChange(e, false)} className="hidden" />
+                    <div className="text-center">
+                      <ImageIcon size={20} className="mx-auto text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground mt-1">Upload</span>
+                    </div>
+                  </label>
+                )}
+              </div>
+            </div>
             <div>
               <Label>Item Name *</Label>
               <Input value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} placeholder="Discord Nitro" className="mt-1" />
@@ -2914,12 +3079,83 @@ export default function OpsPanel() {
                 <Input type="number" min="1" value={newItem.price} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} className="mt-1" />
               </div>
               <div>
-                <Label>Stock (empty = unlimited)</Label>
-                <Input type="number" min="0" value={newItem.stock || ''} onChange={(e) => setNewItem({ ...newItem, stock: e.target.value ? Number(e.target.value) : null })} className="mt-1" />
+                <Label>Stock (empty = ∞)</Label>
+                <Input type="number" min="0" value={newItem.stock || ''} onChange={(e) => setNewItem({ ...newItem, stock: e.target.value ? Number(e.target.value) : null })} className="mt-1" placeholder="∞" />
               </div>
             </div>
             <button onClick={handleCreateShopItem} disabled={creatingItem || !newItem.name} className="w-full py-3 bg-gold text-black font-bold rounded-lg disabled:opacity-50">
               {creatingItem ? 'Creating...' : 'Create Item'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Shop Item Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={(open) => {
+        if (!open) {
+          setEditingItem(null);
+          setEditItemImageFile(null);
+          setEditItemImagePreview(null);
+        }
+      }}>
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Edit Shop Item</DialogTitle></DialogHeader>
+          <div className="space-y-4 pt-4">
+            {/* Image Upload */}
+            <div>
+              <Label>Item Image</Label>
+              <div className="mt-1">
+                {editItemImagePreview ? (
+                  <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
+                    <img src={editItemImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => { setEditItemImageFile(null); setEditItemImagePreview(null); }}
+                      className="absolute top-1 right-1 p-1 bg-background/80 rounded-full"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center w-24 h-24 bg-surface-1 border border-dashed border-border rounded-lg cursor-pointer hover:border-gold/50 transition-colors">
+                    <input type="file" accept="image/*" onChange={(e) => handleItemImageChange(e, true)} className="hidden" />
+                    <div className="text-center">
+                      <ImageIcon size={20} className="mx-auto text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground mt-1">Upload</span>
+                    </div>
+                  </label>
+                )}
+              </div>
+            </div>
+            <div>
+              <Label>Item Name *</Label>
+              <Input value={editItem.name} onChange={(e) => setEditItem({ ...editItem, name: e.target.value })} placeholder="Discord Nitro" className="mt-1" />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea value={editItem.description} onChange={(e) => setEditItem({ ...editItem, description: e.target.value })} placeholder="1 month of Discord Nitro" className="mt-1" rows={2} />
+            </div>
+            <div>
+              <Label>Type</Label>
+              <div className="flex gap-2 mt-1">
+                {(['cosmetic', 'digital', 'physical'] as const).map(type => (
+                  <button key={type} onClick={() => setEditItem({ ...editItem, item_type: type })} className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium capitalize ${editItem.item_type === type ? 'bg-gold text-black' : 'bg-surface-1'}`}>
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Price (INDEX) *</Label>
+                <Input type="number" min="1" value={editItem.price} onChange={(e) => setEditItem({ ...editItem, price: Number(e.target.value) })} className="mt-1" />
+              </div>
+              <div>
+                <Label>Stock (empty = ∞)</Label>
+                <Input type="number" min="0" value={editItem.stock || ''} onChange={(e) => setEditItem({ ...editItem, stock: e.target.value ? Number(e.target.value) : null })} className="mt-1" placeholder="∞" />
+              </div>
+            </div>
+            <button onClick={handleUpdateShopItem} disabled={updatingItem || !editItem.name} className="w-full py-3 bg-gold text-black font-bold rounded-lg disabled:opacity-50">
+              {updatingItem ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </DialogContent>
