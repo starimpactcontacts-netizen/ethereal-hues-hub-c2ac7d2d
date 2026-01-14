@@ -8,6 +8,8 @@ import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
+import HouseBadge from "@/components/loopgate/houses/HouseBadge";
+import HouseAvatarRing from "@/components/loopgate/houses/HouseAvatarRing";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 interface PublicProfile {
@@ -28,10 +30,19 @@ interface PublicProfile {
   portfolio_url: string | null;
   created_at: string | null;
   crew_id: string | null;
+  house_id: string | null;
   xp: number;
   level: number;
   archetype: string | null;
   software: string[] | null;
+}
+
+interface UserHouse {
+  id: string;
+  name: string;
+  symbol: string;
+  primary_color: string;
+  secondary_color: string;
 }
 
 interface ConnectedPlatform {
@@ -63,6 +74,7 @@ export default function PublicProfilePage() {
   const [rank, setRank] = useState<number | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
+  const [userHouse, setUserHouse] = useState<UserHouse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,7 +86,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software")
+        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, house_id, xp, level, archetype, software")
         .eq("id", userId)
         .single();
 
@@ -89,6 +101,16 @@ export default function PublicProfilePage() {
             .eq("id", profileData.crew_id)
             .single();
           setUserCrew(crewData);
+        }
+
+        // Fetch house if user has one
+        if (profileData.house_id) {
+          const { data: houseData } = await supabase
+            .from("houses")
+            .select("id, name, symbol, primary_color, secondary_color")
+            .eq("id", profileData.house_id)
+            .single();
+          setUserHouse(houseData);
         }
       }
 

@@ -123,22 +123,33 @@ export default function CrewsPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-24">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
           <div className="px-4 py-4">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-xl font-bold tracking-tight">Crews</h1>
-              {ownedCrewsCount < 2 && (
+              <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  onClick={() => navigate("/crews/create")}
-                  className="bg-gold text-black hover:bg-gold/90"
+                  variant="outline"
+                  onClick={() => navigate("/houses")}
+                  className="border-gold/30 text-gold hover:bg-gold/10"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Create
+                  <Crown className="w-4 h-4 mr-1" />
+                  Houses
                 </Button>
-              )}
+                {ownedCrewsCount < 2 && (
+                  <Button
+                    size="sm"
+                    onClick={() => navigate("/crews/create")}
+                    className="bg-gold text-black hover:bg-gold/90"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Create
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Search */}
