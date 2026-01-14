@@ -3,6 +3,7 @@ import { ArrowRight, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
+import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
 import { useRealRankings, useRealEvents, useGlobalStats } from '@/hooks/useRealData';
 import SEO, { pageSEO } from '@/components/SEO';
 
@@ -19,6 +20,8 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SEO {...pageSEO.home} />
+      {/* iOS App Banner - only shows on mobile web */}
+      <IOSAppBanner />
       {/* Global Header */}
       <LandingHeader />
       {/* Hero Section */}
