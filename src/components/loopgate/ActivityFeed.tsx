@@ -83,7 +83,7 @@ function ActivityItemCard({ activity, compact }: { activity: ActivityItem; compa
         {/* Event Link */}
         {eventId && (
           <Link 
-            to={`/events/${eventId}`}
+            to={`/event/${eventId}`}
             className="text-[10px] text-gold uppercase tracking-wider hover:underline shrink-0"
           >
             View →

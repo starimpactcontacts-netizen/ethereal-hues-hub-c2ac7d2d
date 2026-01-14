@@ -63,25 +63,31 @@ export default function HousesPage() {
       return;
     }
 
-    // For each house, calculate total index and avg QOI from members
-    const housesWithIndex = await Promise.all(
-      (housesData || []).map(async (house) => {
-        const { data: members } = await supabase
-          .from("house_members")
-          .select("user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
-          .eq("house_id", house.id);
+    // Fetch all house members with their index scores in a single query
+    const houseIds = (housesData || []).map(h => h.id);
+    const { data: allMembers } = await supabase
+      .from("house_members")
+      .select("house_id, user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
+      .in("house_id", houseIds.length > 0 ? houseIds : ['']);
 
-        const scores = members?.map((m: any) => m.profile?.global_index_score || 0) || [];
-        const totalIndex = scores.reduce((sum, score) => sum + score, 0);
-        const avgQoi = scores.length > 0 ? totalIndex / scores.length : 0;
+    // Group members by house and calculate stats
+    const membersByHouse = new Map<string, number[]>();
+    (allMembers || []).forEach((m: any) => {
+      const scores = membersByHouse.get(m.house_id) || [];
+      scores.push(m.profile?.global_index_score || 0);
+      membersByHouse.set(m.house_id, scores);
+    });
 
-        return { 
-          ...house, 
-          house_index: Math.floor(totalIndex),
-          avg_qoi: avgQoi,
-        };
-      })
-    );
+    const housesWithIndex = (housesData || []).map(house => {
+      const scores = membersByHouse.get(house.id) || [];
+      const totalIndex = scores.reduce((sum, score) => sum + score, 0);
+      const avgQoi = scores.length > 0 ? totalIndex / scores.length : 0;
+      return { 
+        ...house, 
+        house_index: Math.floor(totalIndex),
+        avg_qoi: avgQoi,
+      };
+    });
 
     setHouses(housesWithIndex);
     setLoading(false);

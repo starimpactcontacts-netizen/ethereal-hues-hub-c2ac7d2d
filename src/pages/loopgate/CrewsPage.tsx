@@ -122,21 +122,24 @@ export default function CrewsPage() {
       return;
     }
 
-    // Calculate house index for each house
-    const housesWithIndex = await Promise.all(
-      (housesData || []).map(async (house) => {
-        const { data: members } = await supabase
-          .from("house_members")
-          .select("user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
-          .eq("house_id", house.id);
+    // Fetch all house members with their index scores in a single query
+    const houseIds = (housesData || []).map(h => h.id);
+    const { data: allMembers } = await supabase
+      .from("house_members")
+      .select("house_id, user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
+      .in("house_id", houseIds.length > 0 ? houseIds : ['']);
 
-        const totalIndex = members?.reduce((sum, m: any) => 
-          sum + (m.profile?.global_index_score || 0), 0
-        ) || 0;
+    // Group members by house and calculate stats
+    const membersByHouse = new Map<string, number>();
+    (allMembers || []).forEach((m: any) => {
+      const current = membersByHouse.get(m.house_id) || 0;
+      membersByHouse.set(m.house_id, current + (m.profile?.global_index_score || 0));
+    });
 
-        return { ...house, house_index: Math.floor(totalIndex) };
-      })
-    );
+    const housesWithIndex = (housesData || []).map(house => ({
+      ...house, 
+      house_index: Math.floor(membersByHouse.get(house.id) || 0),
+    }));
 
     setHouses(housesWithIndex);
     

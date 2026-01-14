@@ -52,91 +52,104 @@ export default function FeedPage() {
   // Fetch rated submissions
   useEffect(() => {
     async function fetchSubmissions() {
-      // First get round_participations with scores
-      const { data: roundData, error: roundError } = await supabase
-        .from('round_participations')
-        .select(`
-          id,
-          submission_url,
-          platform,
-          qoi_score,
-          quality_score,
-          originality_score,
-          impact_score,
-          user_id,
-          event_id
-        `)
-        .not('qoi_score', 'is', null)
-        .not('submission_url', 'is', null)
-        .order('qoi_score', { ascending: false })
-        .limit(50);
+      try {
+        // First get round_participations with scores
+        const { data: roundData, error: roundError } = await supabase
+          .from('round_participations')
+          .select(`
+            id,
+            submission_url,
+            platform,
+            qoi_score,
+            quality_score,
+            originality_score,
+            impact_score,
+            user_id,
+            event_id
+          `)
+          .not('qoi_score', 'is', null)
+          .not('submission_url', 'is', null)
+          .order('qoi_score', { ascending: false })
+          .limit(50);
 
-      // Also get event_participations
-      const { data: eventData, error: eventError } = await supabase
-        .from('event_participations')
-        .select(`
-          id,
-          submission_url,
-          platform,
-          qoi_score,
-          quality_score,
-          originality_score,
-          impact_score,
-          user_id,
-          event_id,
-          final_rank
-        `)
-        .not('qoi_score', 'is', null)
-        .not('submission_url', 'is', null)
-        .order('qoi_score', { ascending: false })
-        .limit(50);
+        if (roundError) {
+          console.error('Error fetching round submissions:', roundError);
+        }
 
-      const allData = [...(roundData || []), ...(eventData || [])];
+        // Also get event_participations
+        const { data: eventData, error: eventError } = await supabase
+          .from('event_participations')
+          .select(`
+            id,
+            submission_url,
+            platform,
+            qoi_score,
+            quality_score,
+            originality_score,
+            impact_score,
+            user_id,
+            event_id,
+            final_rank
+          `)
+          .not('qoi_score', 'is', null)
+          .not('submission_url', 'is', null)
+          .order('qoi_score', { ascending: false })
+          .limit(50);
 
-      if (allData.length === 0) {
+        if (eventError) {
+          console.error('Error fetching event submissions:', eventError);
+        }
+
+        const allData = [...(roundData || []), ...(eventData || [])];
+
+        if (allData.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        // Get unique user IDs and event IDs
+        const userIds = [...new Set(allData.map(s => s.user_id))];
+        const eventIds = [...new Set(allData.map(s => s.event_id))];
+
+        // Fetch profiles and events in parallel
+        const [profilesRes, eventsRes] = await Promise.all([
+          supabase.from('profiles').select('id, username, avatar_url').in('id', userIds.length > 0 ? userIds : ['']),
+          supabase.from('events').select('id, title').in('id', eventIds.length > 0 ? eventIds : [''])
+        ]);
+
+        const profileMap = new Map(profilesRes.data?.map(p => [p.id, p]) || []);
+        const eventMap = new Map(eventsRes.data?.map(e => [e.id, e]) || []);
+
+        const enriched: Submission[] = allData.map(s => ({
+          id: s.id,
+          submission_url: s.submission_url!,
+          platform: s.platform || 'tiktok',
+          qoi_score: s.qoi_score,
+          quality_score: s.quality_score || null,
+          originality_score: s.originality_score || null,
+          impact_score: s.impact_score || null,
+          user_id: s.user_id,
+          event_id: s.event_id,
+          username: profileMap.get(s.user_id)?.username || 'editor',
+          avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
+          event_title: eventMap.get(s.event_id)?.title || 'Event',
+          final_rank: (s as any).final_rank || null,
+        }));
+
+        // Sort by QOI and dedupe by submission_url
+        const seen = new Set<string>();
+        const unique = enriched.filter(s => {
+          if (seen.has(s.submission_url)) return false;
+          seen.add(s.submission_url);
+          return true;
+        });
+
+        setSubmissions(unique);
+      } catch (error) {
+        console.error('Error fetching feed submissions:', error);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // Get unique user IDs and event IDs
-      const userIds = [...new Set(allData.map(s => s.user_id))];
-      const eventIds = [...new Set(allData.map(s => s.event_id))];
-
-      // Fetch profiles and events in parallel
-      const [profilesRes, eventsRes] = await Promise.all([
-        supabase.from('profiles').select('id, username, avatar_url').in('id', userIds),
-        supabase.from('events').select('id, title').in('id', eventIds)
-      ]);
-
-      const profileMap = new Map(profilesRes.data?.map(p => [p.id, p]) || []);
-      const eventMap = new Map(eventsRes.data?.map(e => [e.id, e]) || []);
-
-      const enriched: Submission[] = allData.map(s => ({
-        id: s.id,
-        submission_url: s.submission_url!,
-        platform: s.platform || 'tiktok',
-        qoi_score: s.qoi_score,
-        quality_score: s.quality_score || null,
-        originality_score: s.originality_score || null,
-        impact_score: s.impact_score || null,
-        user_id: s.user_id,
-        event_id: s.event_id,
-        username: profileMap.get(s.user_id)?.username || 'editor',
-        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
-        event_title: eventMap.get(s.event_id)?.title || 'Event',
-        final_rank: (s as any).final_rank || null,
-      }));
-
-      // Sort by QOI and dedupe by submission_url
-      const seen = new Set<string>();
-      const unique = enriched.filter(s => {
-        if (seen.has(s.submission_url)) return false;
-        seen.add(s.submission_url);
-        return true;
-      });
-
-      setSubmissions(unique);
-      setLoading(false);
     }
 
     fetchSubmissions();
