@@ -25,6 +25,9 @@ const actionLabels: Record<string, string> = {
   arena_chat: "Arena Chat",
   verify_platform: "Platform Verified",
   login_streak: "Login Streak",
+  invite_sent: "Sent Invite",
+  invite_joined: "Friend Joined",
+  invite_submitted: "Friend Submitted (24h)",
 };
 
 interface XPHistoryProps {

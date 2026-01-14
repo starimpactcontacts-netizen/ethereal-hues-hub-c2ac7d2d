@@ -3,6 +3,7 @@ import { X, ExternalLink, Loader2 } from "lucide-react";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useInviteSubmissionBonus } from "@/hooks/useInvites";
 import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
 
@@ -16,6 +17,7 @@ interface SubmissionModalProps {
 export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }: SubmissionModalProps) {
   const { user, profile } = useAuth();
   const { isGuest } = useGuestMode();
+  const { checkSubmissionBonus } = useInviteSubmissionBonus();
   const [platform, setPlatform] = useState<PlatformType>("tiktok");
   const [platformLink, setPlatformLink] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,6 +75,9 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle }
       });
       
       if (error) throw error;
+      
+      // Check if user was invited and this is their first submission within 24h
+      await checkSubmissionBonus();
       
       setSubmitted(true);
       toast.success("Submission received!");

@@ -604,6 +604,69 @@ export type Database = {
         }
         Relationships: []
       }
+      invites: {
+        Row: {
+          created_at: string
+          first_submission_at: string | null
+          id: string
+          invite_code: string
+          invite_sent_at: string
+          invitee_id: string | null
+          inviter_id: string
+          joined_at: string | null
+          status: string
+          updated_at: string
+          xp_awarded_join: boolean | null
+          xp_awarded_send: boolean | null
+          xp_awarded_submit: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          first_submission_at?: string | null
+          id?: string
+          invite_code: string
+          invite_sent_at?: string
+          invitee_id?: string | null
+          inviter_id: string
+          joined_at?: string | null
+          status?: string
+          updated_at?: string
+          xp_awarded_join?: boolean | null
+          xp_awarded_send?: boolean | null
+          xp_awarded_submit?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          first_submission_at?: string | null
+          id?: string
+          invite_code?: string
+          invite_sent_at?: string
+          invitee_id?: string | null
+          inviter_id?: string
+          joined_at?: string | null
+          status?: string
+          updated_at?: string
+          xp_awarded_join?: boolean | null
+          xp_awarded_send?: boolean | null
+          xp_awarded_submit?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_invitee_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_streaks: {
         Row: {
           current_streak: number
@@ -979,10 +1042,22 @@ export type Database = {
       calculate_level_from_xp: { Args: { xp_amount: number }; Returns: number }
       can_change_house: { Args: { user_uuid: string }; Returns: boolean }
       can_change_username: { Args: { user_uuid: string }; Returns: boolean }
+      check_invite_submission_bonus: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
+      create_invite: {
+        Args: { p_user_id: string }
+        Returns: {
+          invite_code: string
+          xp_awarded: number
+        }[]
+      }
       days_until_username_change: {
         Args: { user_uuid: string }
         Returns: number
       }
+      generate_invite_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1015,6 +1090,14 @@ export type Database = {
       recalculate_user_index: {
         Args: { user_uuid: string }
         Returns: undefined
+      }
+      redeem_invite: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: {
+          inviter_xp: number
+          message: string
+          success: boolean
+        }[]
       }
       spend_index: {
         Args: { p_amount: number; p_user_id: string }

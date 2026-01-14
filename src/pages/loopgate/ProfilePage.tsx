@@ -24,6 +24,7 @@ import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import ArchetypeSelector from "@/components/loopgate/ArchetypeSelector";
 import SoftwareSelector from "@/components/loopgate/SoftwareSelector";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
+import InviteFriendsModal from "@/components/loopgate/InviteFriendsModal";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -79,6 +80,7 @@ export default function ProfilePage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [showArchetypeSelector, setShowArchetypeSelector] = useState(false);
   const [showSoftwareSelector, setShowSoftwareSelector] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   
   // Keep session active
   useActiveSession();
@@ -473,6 +475,25 @@ export default function ProfilePage() {
                 Join a crew
               </button>
             )}
+          </div>
+
+          {/* Invite Friends */}
+          <div className="pt-5 mt-5 border-t border-border">
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="w-full bg-gradient-to-r from-gold/20 to-gold/5 border border-gold/40 p-4 flex items-center justify-between hover:border-gold transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gold/20 border border-gold/50 flex items-center justify-center">
+                  <Send className="w-5 h-5 text-gold" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gold">Invite Friends</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Earn XP for referrals</p>
+                </div>
+              </div>
+              <ArrowRight className="w-5 h-5 text-gold" />
+            </button>
           </div>
         </div>
       </div>
@@ -957,6 +978,12 @@ export default function ProfilePage() {
           isOpen={showSoftwareSelector}
         />
       )}
+
+      {/* Invite Friends Modal */}
+      <InviteFriendsModal
+        open={showInviteModal}
+        onOpenChange={setShowInviteModal}
+      />
     </div>
   );
 }

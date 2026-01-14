@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, ArrowRight, Loader2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowRight, Loader2, Eye, EyeOff, ArrowLeft, Gift } from 'lucide-react';
 import { z } from 'zod';
 import SEO, { pageSEO } from '@/components/SEO';
 import loopgateWordmark from '@/assets/loopgate-wordmark.png';
@@ -37,6 +37,8 @@ export default function AuthPage() {
 
   const { signInWithMagicLink, signInWithPassword, signUpWithPassword, signInWithOtp, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const inviteCode = searchParams.get('invite');
   const [identifier, setIdentifier] = useState(''); // email or username
   const [resolvedEmail, setResolvedEmail] = useState(''); // for OTP after username lookup
   const [tokenHash, setTokenHash] = useState(''); // for OTP verification
@@ -45,12 +47,41 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>('choice');
+  const [pendingInviteCode, setPendingInviteCode] = useState<string | null>(null);
 
-  // Redirect if already logged in
+  // Store invite code on mount
   useEffect(() => {
-    if (user) {
-      navigate('/hub', { replace: true });
+    if (inviteCode) {
+      setPendingInviteCode(inviteCode);
+      localStorage.setItem('pending_invite_code', inviteCode);
+    } else {
+      const stored = localStorage.getItem('pending_invite_code');
+      if (stored) setPendingInviteCode(stored);
     }
+  }, [inviteCode]);
+
+  // Redirect if already logged in and redeem invite if pending
+  useEffect(() => {
+    const redeemAndRedirect = async () => {
+      if (user) {
+        const storedInvite = localStorage.getItem('pending_invite_code');
+        if (storedInvite) {
+          try {
+            const { data, error } = await supabase
+              .rpc('redeem_invite', { p_user_id: user.id, p_code: storedInvite });
+            if (!error && data?.[0]?.success) {
+              toast.success('Invite redeemed!', { description: 'Your friend earned XP for inviting you!' });
+            }
+          } catch (e) {
+            console.error('Error redeeming invite:', e);
+          } finally {
+            localStorage.removeItem('pending_invite_code');
+          }
+        }
+        navigate('/hub', { replace: true });
+      }
+    };
+    redeemAndRedirect();
   }, [user, navigate]);
 
   // Lookup email by username (case-insensitive)
@@ -252,6 +283,17 @@ export default function AuthPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-4"
             >
+              {/* Invite Code Banner */}
+              {pendingInviteCode && (
+                <div className="bg-gold/10 border border-gold/30 p-3 flex items-center gap-3 mb-2">
+                  <Gift className="w-5 h-5 text-gold flex-shrink-0" />
+                  <div className="text-left">
+                    <p className="text-gold text-sm font-semibold">You've been invited!</p>
+                    <p className="text-white/60 text-xs">Sign up to start earning XP together</p>
+                  </div>
+                </div>
+              )}
+
               <Button 
                 onClick={() => setMode('signup-email')}
                 className="w-full bg-white hover:bg-white/90 text-black font-bold text-lg h-14 tracking-wide"
