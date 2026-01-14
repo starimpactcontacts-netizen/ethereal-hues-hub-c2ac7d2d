@@ -11,11 +11,15 @@ const navLinks = [
   { to: '/support', label: 'Support' },
 ];
 
-export default function LandingHeader() {
+interface LandingHeaderProps {
+  bannerVisible?: boolean;
+}
+
+export default function LandingHeader({ bannerVisible = false }: LandingHeaderProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
+    <header className={`fixed left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50 ${bannerVisible ? 'top-14' : 'top-0'}`}>
       <div className="flex items-center justify-between px-6 sm:px-8 h-[72px]">
         {/* Logo - Text-based, tall condensed bold */}
         <Link to="/" className="flex items-center">
