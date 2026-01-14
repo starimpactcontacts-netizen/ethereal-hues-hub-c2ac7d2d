@@ -59,7 +59,7 @@ export default function HubPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Loop Monster - appears when overscrolling at bottom */}
+      {/* Loop Monster - appears when pulling down from top (Snapchat-style) */}
       <LoopMonster />
       {/* Welcome Header */}
       <div className="px-4 pt-8 pb-6">

@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 
 interface LoopMonsterProps {
@@ -8,263 +8,289 @@ interface LoopMonsterProps {
 export default function LoopMonster({ scrollContainerRef }: LoopMonsterProps) {
   const [pullAmount, setPullAmount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
-  const lastScrollTop = useRef(0);
-  const consecutiveBottomScrolls = useRef(0);
+  const [eyesBlink, setEyesBlink] = useState(false);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let startY = 0;
     let isTouchActive = false;
-    let wasAtBottom = false;
+    let wasAtTop = false;
 
-    const isAtBottom = () => {
+    const isAtTop = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = window.innerHeight;
-      // For short pages, always at bottom
-      const isShortPage = scrollHeight <= clientHeight + 10;
-      // Within 30px of bottom
-      return isShortPage || scrollTop + clientHeight >= scrollHeight - 30;
+      return scrollTop <= 5;
     };
 
     const handleTouchStart = (e: TouchEvent) => {
       startY = e.touches[0].clientY;
       isTouchActive = true;
-      wasAtBottom = isAtBottom();
+      wasAtTop = isAtTop();
       
-      // Clear any pending hide
+      // Clear any pending hide timeout
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
         hideTimeoutRef.current = null;
       }
-      
-      console.log('[LoopMonster] Touch start, at bottom:', wasAtBottom);
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (!isTouchActive) return;
       
       const currentY = e.touches[0].clientY;
-      const diff = startY - currentY; // Positive = swiping up
+      const diff = currentY - startY; // Positive = pulling DOWN
       
-      // Check if touch started in bottom third of screen
-      const screenHeight = window.innerHeight;
-      const touchStartedInBottomZone = startY > screenHeight * 0.6;
-      
-      // Trigger when: at bottom (or was at bottom) AND swiping up AND started low on screen
-      if (wasAtBottom && diff > 15 && touchStartedInBottomZone) {
-        const pull = Math.min((diff - 15) * 0.8, 100);
+      // Only trigger when at top AND pulling down
+      if (wasAtTop && diff > 10) {
+        // Apply resistance for elastic feel
+        const pull = Math.min(Math.pow(diff - 10, 0.75) * 1.5, 120);
         setPullAmount(pull);
         
-        if (pull > 5) {
+        if (pull > 8) {
           setIsVisible(true);
-          console.log('[LoopMonster] Showing, pull:', pull);
         }
-      } else if (diff < -10) {
-        // Swiping down - hide
+      } else {
         setPullAmount(0);
       }
     };
 
     const handleTouchEnd = () => {
       isTouchActive = false;
-      wasAtBottom = false;
+      wasAtTop = false;
+      
+      // Snap away immediately
       setPullAmount(0);
       
-      // Delay hiding for fly-away animation
+      // Brief delay before fully hiding for snap animation
       hideTimeoutRef.current = setTimeout(() => {
         setIsVisible(false);
-      }, 600);
-      
-      console.log('[LoopMonster] Touch end');
+      }, 300);
     };
 
-    // Also detect scroll-to-bottom attempts (repeated scrolling at bottom)
-    const handleScroll = () => {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const scrollHeight = document.documentElement.scrollHeight;
-      const clientHeight = window.innerHeight;
-      
-      const atBottom = scrollTop + clientHeight >= scrollHeight - 5;
-      const scrollingDown = scrollTop > lastScrollTop.current;
-      
-      if (atBottom && scrollingDown) {
-        consecutiveBottomScrolls.current++;
-        
-        // After 3 consecutive scroll attempts at bottom, show briefly
-        if (consecutiveBottomScrolls.current >= 3) {
-          setIsVisible(true);
-          setPullAmount(60);
-          console.log('[LoopMonster] Scroll trigger activated');
-          
-          setTimeout(() => {
-            setPullAmount(0);
-            setIsVisible(false);
-          }, 1200);
-          
-          consecutiveBottomScrolls.current = 0;
-        }
-      } else if (!atBottom) {
-        consecutiveBottomScrolls.current = 0;
+    // Blink animation interval
+    const blinkInterval = setInterval(() => {
+      if (isVisible) {
+        setEyesBlink(true);
+        setTimeout(() => setEyesBlink(false), 150);
       }
-      
-      lastScrollTop.current = scrollTop;
-    };
+    }, 2500);
 
-    // Global touch listeners
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
     window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchcancel', handleTouchEnd);
-      window.removeEventListener('scroll', handleScroll);
+      clearInterval(blinkInterval);
       
       if (hideTimeoutRef.current) {
         clearTimeout(hideTimeoutRef.current);
       }
     };
-  }, []);
+  }, [isVisible]);
 
-  const progress = Math.min(pullAmount / 60, 1);
+  // Progress from 0 to 1 based on pull
+  const progress = Math.min(pullAmount / 80, 1);
 
   return (
-    <motion.div
-      className="fixed left-1/2 -translate-x-1/2 z-[100] pointer-events-none"
-      style={{ bottom: 120 }} // Above bottom nav + safe area
-      initial={{ y: 150, opacity: 0 }}
-      animate={{ 
-        y: isVisible ? -(pullAmount * 0.6) : 150,
-        opacity: isVisible ? Math.max(0.3, progress) : 0,
-        scale: 0.7 + (progress * 0.5),
-        rotate: progress * 360
-      }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 180, 
-        damping: 18,
-        rotate: { duration: 0.6, ease: "easeOut" }
-      }}
-    >
-      {/* Loop Monster - Infinity Symbol with Eyes */}
-      <div className="relative">
-        {/* Glow effect */}
-        <div 
-          className="absolute inset-0 blur-xl bg-gold/50 rounded-full"
-          style={{ transform: `scale(${1.2 + progress * 0.5})` }}
-        />
-        
-        {/* Main infinity symbol */}
-        <svg 
-          width="72" 
-          height="48" 
-          viewBox="0 0 64 40" 
-          className="relative z-10"
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          className="fixed left-1/2 -translate-x-1/2 z-[9999] pointer-events-none"
+          style={{ top: -20 }}
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ 
+            y: pullAmount * 0.9, // Follows the pull
+            opacity: Math.min(progress * 1.5, 1),
+          }}
+          exit={{ 
+            y: -120,
+            opacity: 0,
+            transition: { duration: 0.25, ease: "easeIn" }
+          }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 300, 
+            damping: 25,
+          }}
         >
-          {/* Infinity path */}
-          <motion.path
-            d="M16 20C16 12 8 8 8 20C8 32 16 28 16 20C16 12 24 8 32 20C32 20 40 8 48 20C48 32 56 28 56 20C56 8 48 12 48 20C48 28 40 32 32 20C24 8 16 28 16 20Z"
-            fill="none"
-            stroke="url(#goldGradientMonster)"
-            strokeWidth="4"
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: isVisible ? 1 : 0 }}
-            transition={{ duration: 0.4 }}
-          />
-          
-          {/* Left eye */}
-          <motion.circle
-            cx="12"
-            cy="18"
-            r="4"
-            fill="hsl(var(--gold))"
-            animate={{ 
-              scale: isVisible ? [1, 1.3, 1] : 0,
-            }}
-            transition={{ repeat: isVisible ? Infinity : 0, duration: 0.8 }}
-          />
-          
-          {/* Right eye */}
-          <motion.circle
-            cx="52"
-            cy="18"
-            r="4"
-            fill="hsl(var(--gold))"
-            animate={{ 
-              scale: isVisible ? [1, 1.3, 1] : 0,
-            }}
-            transition={{ repeat: isVisible ? Infinity : 0, duration: 0.8, delay: 0.4 }}
-          />
-          
-          {/* Gradient definition */}
-          <defs>
-            <linearGradient id="goldGradientMonster" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="hsl(45, 93%, 47%)" />
-              <stop offset="50%" stopColor="hsl(45, 100%, 65%)" />
-              <stop offset="100%" stopColor="hsl(45, 93%, 47%)" />
-            </linearGradient>
-          </defs>
-        </svg>
-
-        {/* Sparkles */}
-        {isVisible && progress > 0.4 && (
-          <>
-            <motion.div
-              className="absolute -top-3 -left-3 w-3 h-3 bg-gold rounded-full"
-              animate={{ 
-                y: [-5, -20, -5],
-                opacity: [0, 1, 0],
-                scale: [0.5, 1.2, 0.5]
+          {/* Loop Monster - Premium Infinity Creature */}
+          <div className="relative flex flex-col items-center">
+            {/* Subtle glow behind */}
+            <motion.div 
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-20 rounded-full blur-2xl"
+              style={{ 
+                background: 'radial-gradient(ellipse, hsla(45, 93%, 47%, 0.4) 0%, transparent 70%)'
               }}
-              transition={{ repeat: Infinity, duration: 0.8 }}
-            />
-            <motion.div
-              className="absolute -top-3 -right-3 w-3 h-3 bg-gold rounded-full"
-              animate={{ 
-                y: [-5, -20, -5],
-                opacity: [0, 1, 0],
-                scale: [0.5, 1.2, 0.5]
+              animate={{
+                scale: [1, 1.15, 1],
+                opacity: [0.4, 0.6, 0.4],
               }}
-              transition={{ repeat: Infinity, duration: 0.8, delay: 0.25 }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
             />
+            
+            {/* Main Monster SVG */}
+            <svg 
+              width="100" 
+              height="60" 
+              viewBox="0 0 100 60" 
+              className="relative z-10"
+            >
+              <defs>
+                {/* Premium gold gradient */}
+                <linearGradient id="loopMonsterGold" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(43, 74%, 49%)" />
+                  <stop offset="30%" stopColor="hsl(45, 100%, 60%)" />
+                  <stop offset="50%" stopColor="hsl(48, 100%, 70%)" />
+                  <stop offset="70%" stopColor="hsl(45, 100%, 60%)" />
+                  <stop offset="100%" stopColor="hsl(43, 74%, 49%)" />
+                </linearGradient>
+                
+                {/* Shine gradient for highlight */}
+                <linearGradient id="loopMonsterShine" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(48, 100%, 80%)" />
+                  <stop offset="100%" stopColor="hsl(45, 93%, 55%)" />
+                </linearGradient>
+                
+                {/* Eye glow filter */}
+                <filter id="eyeGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              
+              {/* Main infinity body - fluid, premium stroke */}
+              <motion.path
+                d="M25 30 C25 18, 12 12, 12 30 C12 48, 25 42, 25 30 C25 18, 38 12, 50 30 C50 30, 62 12, 75 30 C75 42, 88 48, 88 30 C88 12, 75 18, 75 30 C75 42, 62 48, 50 30 C38 48, 25 42, 25 30"
+                fill="none"
+                stroke="url(#loopMonsterGold)"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                animate={{
+                  pathLength: progress > 0 ? 1 : 0,
+                }}
+                transition={{ duration: 0.3 }}
+                style={{ filter: 'drop-shadow(0 2px 8px hsla(45, 93%, 47%, 0.5))' }}
+              />
+              
+              {/* Inner shine line */}
+              <motion.path
+                d="M27 30 C27 20, 16 16, 16 30 C16 44, 27 40, 27 30 C27 20, 38 16, 50 30 C50 30, 62 16, 73 30 C73 40, 84 44, 84 30 C84 16, 73 20, 73 30 C73 40, 62 44, 50 30 C38 44, 27 40, 27 30"
+                fill="none"
+                stroke="url(#loopMonsterShine)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={0.6}
+                animate={{
+                  opacity: progress > 0.3 ? [0.3, 0.7, 0.3] : 0,
+                }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              />
+              
+              {/* Left eye - premium, mysterious */}
+              <motion.g filter="url(#eyeGlow)">
+                <motion.ellipse
+                  cx="20"
+                  cy="28"
+                  rx={eyesBlink ? 3.5 : 3.5}
+                  ry={eyesBlink ? 0.5 : 5}
+                  fill="hsl(48, 100%, 70%)"
+                  animate={{
+                    ry: eyesBlink ? 0.5 : 5,
+                    opacity: progress > 0.2 ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.1 }}
+                />
+                {/* Eye pupil */}
+                {!eyesBlink && (
+                  <motion.circle
+                    cx="20"
+                    cy="29"
+                    r="2"
+                    fill="hsl(30, 80%, 25%)"
+                    animate={{
+                      opacity: progress > 0.3 ? 1 : 0,
+                    }}
+                  />
+                )}
+              </motion.g>
+              
+              {/* Right eye - premium, mysterious */}
+              <motion.g filter="url(#eyeGlow)">
+                <motion.ellipse
+                  cx="80"
+                  cy="28"
+                  rx={eyesBlink ? 3.5 : 3.5}
+                  ry={eyesBlink ? 0.5 : 5}
+                  fill="hsl(48, 100%, 70%)"
+                  animate={{
+                    ry: eyesBlink ? 0.5 : 5,
+                    opacity: progress > 0.2 ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.1 }}
+                />
+                {/* Eye pupil */}
+                {!eyesBlink && (
+                  <motion.circle
+                    cx="80"
+                    cy="29"
+                    r="2"
+                    fill="hsl(30, 80%, 25%)"
+                    animate={{
+                      opacity: progress > 0.3 ? 1 : 0,
+                    }}
+                  />
+                )}
+              </motion.g>
+            </svg>
+            
+            {/* Subtle wiggle particles - only when fully pulled */}
+            {progress > 0.6 && (
+              <>
+                <motion.div
+                  className="absolute top-3 -left-1 w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: 'hsl(45, 100%, 60%)' }}
+                  animate={{ 
+                    y: [0, -8, 0],
+                    x: [-2, 2, -2],
+                    opacity: [0.6, 1, 0.6],
+                    scale: [0.8, 1, 0.8]
+                  }}
+                  transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute top-3 -right-1 w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: 'hsl(45, 100%, 60%)' }}
+                  animate={{ 
+                    y: [0, -8, 0],
+                    x: [2, -2, 2],
+                    opacity: [0.6, 1, 0.6],
+                    scale: [0.8, 1, 0.8]
+                  }}
+                  transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut", delay: 0.3 }}
+                />
+              </>
+            )}
+            
+            {/* Body wiggle effect */}
             <motion.div
-              className="absolute top-1/2 -left-4 w-2 h-2 bg-gold/70 rounded-full"
-              animate={{ 
-                x: [-5, -15, -5],
-                opacity: [0, 1, 0],
+              className="absolute inset-0"
+              animate={{
+                rotate: progress > 0.5 ? [-1, 1, -1] : 0,
               }}
-              transition={{ repeat: Infinity, duration: 1, delay: 0.5 }}
+              transition={{ repeat: Infinity, duration: 0.4, ease: "easeInOut" }}
             />
-            <motion.div
-              className="absolute top-1/2 -right-4 w-2 h-2 bg-gold/70 rounded-full"
-              animate={{ 
-                x: [5, 15, 5],
-                opacity: [0, 1, 0],
-              }}
-              transition={{ repeat: Infinity, duration: 1, delay: 0.75 }}
-            />
-          </>
-        )}
-      </div>
-      
-      {/* Text */}
-      <motion.p
-        className="text-center text-xs text-gold font-display mt-3 uppercase tracking-[0.2em] font-bold"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ 
-          opacity: isVisible && progress > 0.5 ? 1 : 0,
-          y: isVisible && progress > 0.5 ? 0 : 10
-        }}
-        transition={{ duration: 0.3 }}
-      >
-        ∞ LOOP
-      </motion.p>
-    </motion.div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
