@@ -1,11 +1,28 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, Shield, Crown, Lock, Star, Zap, Award } from "lucide-react";
+import { Plus, Search, Users, Shield, Crown, Lock, Star, Zap, Award, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import PageTransition from "@/components/loopgate/PageTransition";
+import HouseCard from "@/components/loopgate/houses/HouseCard";
+import { toast } from "sonner";
+
+interface House {
+  id: string;
+  name: string;
+  type: string;
+  symbol: string;
+  primary_color: string;
+  secondary_color: string;
+  description: string;
+  lore?: string;
+  member_count: number;
+  avg_qoi?: number;
+  prestige_level: number;
+  requires_approval: boolean;
+}
 
 interface Crew {
   id: string;
@@ -41,10 +58,18 @@ export default function CrewsPage() {
   const [myCrew, setMyCrew] = useState<Crew | null>(null);
   const [ownedCrewsCount, setOwnedCrewsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  
+  // Houses state
+  const [houses, setHouses] = useState<House[]>([]);
+  const [userHouseId, setUserHouseId] = useState<string | null>(null);
+  const [pendingApplicationId, setPendingApplicationId] = useState<string | null>(null);
+  const [applyingHouseId, setApplyingHouseId] = useState<string | null>(null);
+  const [housesLoading, setHousesLoading] = useState(true);
 
   useEffect(() => {
     fetchCrews();
-  }, [profile?.crew_id]);
+    fetchHouses();
+  }, [profile?.crew_id, profile?.house_id]);
 
   const fetchCrews = async () => {
     setLoading(true);
@@ -78,6 +103,108 @@ export default function CrewsPage() {
     }
 
     setLoading(false);
+  };
+
+  const fetchHouses = async () => {
+    setHousesLoading(true);
+    
+    // Fetch public houses only (prestige houses are hidden)
+    const { data: housesData, error } = await supabase
+      .from("houses")
+      .select("*")
+      .eq("type", "public")
+      .order("member_count", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching houses:", error);
+      setHousesLoading(false);
+      return;
+    }
+
+    setHouses(housesData || []);
+    
+    // Set user's current house
+    if (profile?.house_id) {
+      setUserHouseId(profile.house_id);
+    }
+    
+    // Check for pending applications
+    if (user) {
+      const { data: pendingApp } = await supabase
+        .from("house_applications")
+        .select("house_id")
+        .eq("user_id", user.id)
+        .eq("status", "pending")
+        .maybeSingle();
+      
+      if (pendingApp) {
+        setPendingApplicationId(pendingApp.house_id);
+      }
+    }
+    
+    setHousesLoading(false);
+  };
+
+  const handleApplyToHouse = async (houseId: string) => {
+    if (!user) {
+      toast.error("Please log in to apply");
+      return;
+    }
+    
+    if (userHouseId) {
+      toast.error("You're already in a house");
+      return;
+    }
+    
+    setApplyingHouseId(houseId);
+    
+    const house = houses.find(h => h.id === houseId);
+    
+    if (house?.requires_approval) {
+      // Create application
+      const { error } = await supabase
+        .from("house_applications")
+        .insert({
+          house_id: houseId,
+          user_id: user.id,
+        });
+      
+      if (error) {
+        if (error.code === "23505") {
+          toast.error("You already have a pending application");
+        } else {
+          toast.error("Failed to apply");
+        }
+      } else {
+        setPendingApplicationId(houseId);
+        toast.success("Application submitted!");
+      }
+    } else {
+      // Direct join
+      const { error } = await supabase
+        .from("house_members")
+        .insert({
+          house_id: houseId,
+          user_id: user.id,
+          role: "member",
+        });
+      
+      if (error) {
+        toast.error("Failed to join house");
+      } else {
+        // Update profile
+        await supabase
+          .from("profiles")
+          .update({ house_id: houseId, house_changed_at: new Date().toISOString() })
+          .eq("id", user.id);
+        
+        setUserHouseId(houseId);
+        toast.success("Welcome to the house!");
+        fetchHouses();
+      }
+    }
+    
+    setApplyingHouseId(null);
   };
 
   const filteredCrews = crews.filter((crew) => {
@@ -121,6 +248,9 @@ export default function CrewsPage() {
     }
   };
 
+  // Get user's house for display
+  const userHouse = houses.find(h => h.id === userHouseId);
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background pb-24">
@@ -128,17 +258,8 @@ export default function CrewsPage() {
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
           <div className="px-4 py-4">
             <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold tracking-tight">Crews</h1>
+              <h1 className="text-xl font-bold tracking-tight">Crews & Houses</h1>
               <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => navigate("/houses")}
-                  className="border-gold/30 text-gold hover:bg-gold/10"
-                >
-                  <Crown className="w-4 h-4 mr-1" />
-                  Houses
-                </Button>
                 {ownedCrewsCount < 2 && (
                   <Button
                     size="sm"
@@ -146,7 +267,7 @@ export default function CrewsPage() {
                     className="bg-gold text-black hover:bg-gold/90"
                   >
                     <Plus className="w-4 h-4 mr-1" />
-                    Create
+                    Create Crew
                   </Button>
                 )}
               </div>
@@ -166,6 +287,105 @@ export default function CrewsPage() {
         </div>
 
         <div className="px-4 py-4 space-y-6">
+          {/* HOUSES SECTION - DOMINANT */}
+          <section>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-gold" />
+                <h2 className="text-lg font-bold tracking-tight">Houses</h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/houses")}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                View All
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+
+            {/* User's House Banner */}
+            {userHouse && (
+              <div
+                onClick={() => navigate(`/houses/${userHouse.id}`)}
+                className="relative overflow-hidden rounded-xl p-5 mb-4 cursor-pointer transition-transform hover:scale-[1.01]"
+                style={{
+                  background: `linear-gradient(135deg, ${userHouse.primary_color}20, ${userHouse.secondary_color}40)`,
+                  border: `1px solid ${userHouse.primary_color}50`,
+                }}
+              >
+                <div
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    background: `radial-gradient(ellipse at top right, ${userHouse.primary_color}60, transparent 60%)`,
+                  }}
+                />
+                <div className="relative flex items-center gap-4">
+                  <div
+                    className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
+                    style={{
+                      background: `linear-gradient(135deg, ${userHouse.primary_color}30, ${userHouse.secondary_color}30)`,
+                      border: `2px solid ${userHouse.primary_color}`,
+                    }}
+                  >
+                    <span style={{ color: userHouse.primary_color }}>{userHouse.symbol}</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                        style={{
+                          backgroundColor: `${userHouse.primary_color}30`,
+                          color: userHouse.primary_color,
+                        }}
+                      >
+                        Your House
+                      </span>
+                    </div>
+                    <h3 className="font-display font-bold text-lg mt-1">{userHouse.name}</h3>
+                    <p className="text-xs text-muted-foreground">{userHouse.description}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </div>
+            )}
+
+            {/* Houses Grid */}
+            {housesLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading houses...</div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3">
+                {houses
+                  .filter(h => h.id !== userHouseId)
+                  .slice(0, 4)
+                  .map((house) => (
+                    <HouseCard
+                      key={house.id}
+                      house={house}
+                      userHouseId={userHouseId}
+                      pendingApplicationId={pendingApplicationId}
+                      onApply={handleApplyToHouse}
+                      onViewDetails={(id) => navigate(`/houses/${id}`)}
+                      isApplying={applyingHouseId === house.id}
+                    />
+                  ))}
+              </div>
+            )}
+
+            {houses.length > 4 && (
+              <Button
+                variant="outline"
+                className="w-full mt-3 border-gold/30 text-gold hover:bg-gold/10"
+                onClick={() => navigate("/houses")}
+              >
+                <Crown className="w-4 h-4 mr-2" />
+                View All {houses.length} Houses
+              </Button>
+            )}
+          </section>
+
+          {/* CREWS SECTION */}
           {loading ? (
             <div className="text-center py-12 text-muted-foreground">
               Loading crews...
