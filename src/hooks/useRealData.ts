@@ -7,6 +7,7 @@ export interface RealEvent {
   id: string;
   title: string;
   subtitle: string | null;
+  description: string | null;
   ip: string;
   status: 'live' | 'pending' | 'closed';
   start_date: string;
@@ -16,6 +17,7 @@ export interface RealEvent {
   prize_pool: string | null;
   poster_url: string | null;
   rules: string[];
+  materials_url: string | null;
   updated_at: string;
 }
 
