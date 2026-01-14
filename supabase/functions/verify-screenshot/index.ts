@@ -19,19 +19,16 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { userId, platform, platformUsername, verificationCode, screenshotBase64 } = body;
 
-    console.log(`[verify-screenshot] Starting verification for ${platform}`);
-    console.log(`[verify-screenshot] Username: ${platformUsername}, Code: ${verificationCode}`);
-    console.log(`[verify-screenshot] Screenshot size: ${screenshotBase64?.length || 0} chars`);
+    console.log(`[verify-screenshot] Verifying ${platform} for ${platformUsername}`);
 
     if (!userId || !platform || !platformUsername || !verificationCode || !screenshotBase64) {
-      console.log("[verify-screenshot] Missing required fields:", { userId: !!userId, platform: !!platform, platformUsername: !!platformUsername, verificationCode: !!verificationCode, hasScreenshot: !!screenshotBase64 });
       return new Response(
         JSON.stringify({ verified: false, message: "Missing required fields" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Verify the user has this verification code in their profile
+    // Quick profile check
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("verification_code, verification_status")
@@ -39,14 +36,11 @@ Deno.serve(async (req) => {
       .single();
 
     if (profileError || !profile) {
-      console.log("[verify-screenshot] Profile not found:", profileError?.message);
       return new Response(
         JSON.stringify({ verified: false, message: "Profile not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    console.log("[verify-screenshot] Profile found, stored code:", profile.verification_code);
 
     if (profile.verification_status) {
       return new Response(
@@ -56,36 +50,16 @@ Deno.serve(async (req) => {
     }
 
     if (profile.verification_code !== verificationCode) {
-      console.log("[verify-screenshot] Code mismatch - stored:", profile.verification_code, "received:", verificationCode);
       return new Response(
         JSON.stringify({ verified: false, message: "Invalid verification code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Simplified, more lenient prompt for the AI
-    const prompt = `You are verifying a social media profile screenshot. This is a ${platform.toUpperCase()} profile.
+    // Ultra-fast, minimal prompt - just find the code
+    const prompt = `Find "${verificationCode}" in this ${platform} profile screenshot. Reply ONLY with JSON: {"found":true} or {"found":false}`;
 
-VERIFICATION TASK:
-1. Find the code "${verificationCode}" anywhere visible in the screenshot (bio, description, about section, or anywhere on screen)
-2. Find the username "${platformUsername}" or "@${platformUsername}" on the profile
-3. Confirm this looks like a real ${platform} app/website screenshot
-
-Be LENIENT - if you can see ANY part of the code or username, count it as found. Users may have formatting differences.
-
-RESPOND WITH ONLY THIS JSON (no other text):
-{
-  "codeFound": true/false,
-  "usernameFound": true/false,
-  "isPlatformUI": true/false,
-  "confidence": 0-100,
-  "codeLocation": "where you found the code or 'not found'",
-  "usernameLocation": "where you found username or 'not found'"
-}`;
-
-    console.log("[verify-screenshot] Sending to AI vision...");
-
-    // Call Lovable AI with vision capability
+    // Use fastest model for quick response
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -93,7 +67,7 @@ RESPOND WITH ONLY THIS JSON (no other text):
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           {
             role: "user",
@@ -110,31 +84,23 @@ RESPOND WITH ONLY THIS JSON (no other text):
             ]
           }
         ],
+        max_tokens: 50,
       }),
     });
 
-    console.log("[verify-screenshot] AI response status:", aiResponse.status);
-
     if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("[verify-screenshot] AI API error:", aiResponse.status, errorText);
+      const status = aiResponse.status;
+      console.error("[verify-screenshot] AI error:", status);
       
-      if (aiResponse.status === 429) {
+      if (status === 429) {
         return new Response(
-          JSON.stringify({ verified: false, message: "Verification service is busy. Please try again in a moment." }),
+          JSON.stringify({ verified: false, message: "Service busy. Try again." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ verified: false, message: "Verification service payment required." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      
       return new Response(
-        JSON.stringify({ verified: false, message: "Verification service unavailable. Please try again." }),
+        JSON.stringify({ verified: false, message: "Verification unavailable. Try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -142,107 +108,46 @@ RESPOND WITH ONLY THIS JSON (no other text):
     const aiData = await aiResponse.json();
     const aiContent = aiData.choices?.[0]?.message?.content || "";
     
-    console.log("[verify-screenshot] RAW AI RESPONSE:", aiContent);
+    console.log("[verify-screenshot] AI:", aiContent);
 
-    // Parse the AI response
-    let result;
-    try {
-      // Extract JSON from the response (handle markdown code blocks)
-      const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        result = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error("No JSON found in response");
-      }
-    } catch (parseError) {
-      console.error("[verify-screenshot] Failed to parse AI response:", parseError);
-      console.error("[verify-screenshot] Raw content was:", aiContent);
-      return new Response(
-        JSON.stringify({ verified: false, message: "Could not analyze screenshot. Please try again with a clearer image." }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log("[verify-screenshot] PARSED RESULT:", JSON.stringify(result));
-
-    // More lenient verification - just need code + username OR high confidence
-    const codeOk = result.codeFound === true;
-    const usernameOk = result.usernameFound === true;
-    const platformOk = result.isPlatformUI === true;
-    const highConfidence = (result.confidence || 0) >= 50;
-
-    console.log("[verify-screenshot] Checks - code:", codeOk, "username:", usernameOk, "platform:", platformOk, "confidence:", result.confidence);
-
-    // Pass if: (code found AND username found) OR (code found AND high confidence)
-    const isVerified = codeOk && (usernameOk || highConfidence);
+    // Simple check - look for "true" in response
+    const isVerified = aiContent.toLowerCase().includes('"found":true') || 
+                       aiContent.toLowerCase().includes('"found": true') ||
+                       (aiContent.toLowerCase().includes('true') && !aiContent.toLowerCase().includes('false'));
 
     if (isVerified) {
-      // Update profile verification status
-      const { error: updateError } = await supabase
+      // Update profile
+      await supabase
         .from("profiles")
-        .update({ 
-          verification_status: true,
-          verification_code: null
-        })
+        .update({ verification_status: true, verification_code: null })
         .eq("id", userId);
 
-      if (updateError) {
-        console.error("[verify-screenshot] Update error:", updateError);
-        return new Response(
-          JSON.stringify({ verified: false, message: "Failed to update verification status" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Mark the platform as verified
+      // Mark platform verified
       await supabase
         .from("connected_platforms")
         .update({ is_verified: true })
         .eq("user_id", userId)
         .eq("platform", platform);
 
-      console.log("[verify-screenshot] ✅ SUCCESS - User verified!");
+      console.log("[verify-screenshot] ✅ Verified!");
       return new Response(
-        JSON.stringify({ 
-          verified: true, 
-          message: "Account verified! 🎉",
-          details: `Code found: ${result.codeLocation || 'yes'}`
-        }),
+        JSON.stringify({ verified: true, message: "Account verified! 🎉" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
-      // Build helpful error message
-      let errorMessage = "Verification failed: ";
-      const issues = [];
-      
-      if (!codeOk) {
-        issues.push(`code "${verificationCode}" not found`);
-      }
-      if (!usernameOk && !highConfidence) {
-        issues.push(`username "@${platformUsername}" not found`);
-      }
-      if (!platformOk) {
-        issues.push("screenshot doesn't look like " + platform);
-      }
-      
-      errorMessage += issues.join(", ") + ".";
-
-      console.log("[verify-screenshot] ❌ Failed:", errorMessage);
-      console.log("[verify-screenshot] AI locations:", result.codeLocation, result.usernameLocation);
-      
+      console.log("[verify-screenshot] ❌ Code not found");
       return new Response(
         JSON.stringify({ 
           verified: false, 
-          message: errorMessage,
-          details: `Code: ${result.codeLocation || 'not found'}, Username: ${result.usernameLocation || 'not found'}`
+          message: `Code "${verificationCode}" not found. Make sure it's visible in your bio.`
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
   } catch (error: any) {
-    console.error("[verify-screenshot] Exception:", error);
+    console.error("[verify-screenshot] Error:", error.message);
     return new Response(
-      JSON.stringify({ verified: false, message: "Server error: " + error.message }),
+      JSON.stringify({ verified: false, message: "Server error. Try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
