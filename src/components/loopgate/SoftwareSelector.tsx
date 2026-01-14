@@ -56,19 +56,26 @@ export default function SoftwareSelector({ value, onChange, onClose, isOpen = tr
     >
       {/* Header - Fixed */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-display font-semibold uppercase">Select Software</h2>
-        <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground">
+        <button onClick={onClose} className="p-2 -ml-2 text-muted-foreground hover:text-foreground">
           <X size={20} />
         </button>
+        <h2 className="text-base font-display font-semibold uppercase">Select Software</h2>
+        <Button 
+          onClick={handleSave}
+          size="sm"
+          className="bg-gold hover:bg-gold/90 text-background font-semibold px-4"
+        >
+          Save
+        </Button>
       </div>
       
       {/* Subtitle - Fixed */}
-      <div className="flex-shrink-0 px-4 py-3">
+      <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Select all the editing software you use. You can choose multiple options.
+          Select all the software you use.
         </p>
         {selected.length > 0 && (
-          <span className="text-xs text-gold font-medium mt-1 block">
+          <span className="text-xs text-gold font-medium">
             {selected.length} selected
           </span>
         )}
@@ -108,16 +115,6 @@ export default function SoftwareSelector({ value, onChange, onClose, isOpen = tr
             );
           })}
         </div>
-      </div>
-      
-      {/* Footer - Fixed */}
-      <div className="flex-shrink-0 p-4 border-t border-border bg-background safe-area-bottom">
-        <Button 
-          onClick={handleSave}
-          className="w-full bg-gold hover:bg-gold/90 text-background font-semibold h-12"
-        >
-          Save Software ({selected.length})
-        </Button>
       </div>
     </motion.div>
   );
