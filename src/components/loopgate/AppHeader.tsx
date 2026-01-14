@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import NotificationCenter from './NotificationCenter';
+import BeginnerGuideModal from './BeginnerGuideModal';
+
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
   { to: '/', icon: Calendar, label: 'Events' },
@@ -108,6 +110,18 @@ export default function AppHeader() {
                     </SheetClose>
                   );
                 })}
+
+                {/* How It Works Guide */}
+                <div className="px-4 py-3">
+                  <BeginnerGuideModal
+                    trigger={
+                      <button className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors w-full">
+                        <BookOpen className="w-5 h-5" />
+                        <span className="font-display text-sm">How It Works</span>
+                      </button>
+                    }
+                  />
+                </div>
 
                 {isEnterprise && (
                   <>
