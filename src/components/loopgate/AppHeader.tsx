@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2 } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
@@ -13,6 +13,7 @@ const menuItems = [
   { to: '/rankings', icon: Trophy, label: 'Rankings' },
   { to: '/leagues', icon: Shield, label: 'Leagues' },
   { to: '/index', icon: Search, label: 'Index' },
+  { to: '/shop', icon: ShoppingBag, label: 'Shop', highlight: true },
   { to: '/profile', icon: User, label: 'Profile' },
   { divider: true },
   { to: '/support', icon: HelpCircle, label: 'Support' },
@@ -84,6 +85,7 @@ export default function AppHeader() {
                   }
                   const Icon = item.icon!;
                   const isActive = location.pathname === item.to;
+                  const isHighlight = 'highlight' in item && item.highlight;
                   return (
                     <SheetClose asChild key={item.to}>
                       <Link
@@ -91,7 +93,9 @@ export default function AppHeader() {
                         className={`flex items-center gap-3 px-4 py-3 transition-colors ${
                           isActive 
                             ? 'bg-gold/10 text-gold border-l-2 border-gold' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
+                            : isHighlight
+                              ? 'text-gold hover:bg-gold/10'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
                         }`}
                       >
                         <Icon className="w-5 h-5" />
