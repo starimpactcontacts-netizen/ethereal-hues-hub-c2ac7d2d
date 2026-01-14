@@ -48,15 +48,22 @@ export default function ArchetypeSelector({ value, onChange, onClose, isOpen = t
     >
       {/* Header - Fixed */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-display font-semibold uppercase">Select Your Archetype</h2>
-        <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground">
+        <button onClick={onClose} className="p-2 -ml-2 text-muted-foreground hover:text-foreground">
           <X size={20} />
         </button>
+        <h2 className="text-base font-display font-semibold uppercase">Select Archetype</h2>
+        <Button 
+          onClick={handleSave}
+          size="sm"
+          className="bg-gold hover:bg-gold/90 text-background font-semibold px-4"
+        >
+          Save
+        </Button>
       </div>
       
       {/* Subtitle - Fixed */}
       <p className="flex-shrink-0 px-4 py-3 text-sm text-muted-foreground">
-        Choose your primary editing identity. This defines your main focus as an editor.
+        Choose your primary editing identity.
       </p>
       
       {/* Options - Scrollable */}
@@ -96,16 +103,6 @@ export default function ArchetypeSelector({ value, onChange, onClose, isOpen = t
             );
           })}
         </div>
-      </div>
-      
-      {/* Footer - Fixed */}
-      <div className="flex-shrink-0 p-4 border-t border-border bg-background safe-area-bottom">
-        <Button 
-          onClick={handleSave}
-          className="w-full bg-gold hover:bg-gold/90 text-background font-semibold h-12"
-        >
-          Save Archetype
-        </Button>
       </div>
     </motion.div>
   );
