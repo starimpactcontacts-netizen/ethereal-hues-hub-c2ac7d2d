@@ -2697,6 +2697,305 @@ export default function OpsPanel() {
           )}
         </section>
 
+        {/* GQT Submissions Section */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Sparkles size={14} className="text-gold" />
+              Global QOI Test (GQT)
+            </h2>
+            <span className="text-xs text-gold">
+              {gqtSubmissions.filter(s => s.status === 'pending').length} pending
+            </span>
+          </div>
+
+          {gqtSubmissions.length === 0 ? (
+            <div className="bg-card border border-border rounded-lg p-6 text-center">
+              <Sparkles className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">No GQT submissions yet</p>
+            </div>
+          ) : (
+            <Tabs defaultValue="pending" className="w-full">
+              <TabsList className="w-full grid grid-cols-2 mb-4">
+                <TabsTrigger value="pending" className="text-xs">
+                  Pending ({gqtSubmissions.filter(s => s.status === 'pending').length})
+                </TabsTrigger>
+                <TabsTrigger value="scored" className="text-xs">
+                  Scored ({gqtSubmissions.filter(s => s.status === 'scored').length})
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="pending">
+                {gqtSubmissions.filter(s => s.status === 'pending').length === 0 ? (
+                  <div className="bg-card border border-border rounded-lg p-6 text-center">
+                    <Check className="w-8 h-8 mx-auto text-green-400 mb-2" />
+                    <p className="text-sm text-muted-foreground">All caught up!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {gqtSubmissions
+                      .filter(s => s.status === 'pending')
+                      .map((submission) => (
+                        <div
+                          key={submission.id}
+                          className="bg-card border border-gold/30 rounded-lg overflow-hidden"
+                        >
+                          <div className="p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-semibold">{submission.username}</p>
+                                  {submission.verification_status && <VerifiedBadge size="sm" />}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                    {submission.platform}
+                                  </span>
+                                  <a 
+                                    href={submission.submission_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-gold text-xs hover:underline"
+                                  >
+                                    View Edit →
+                                  </a>
+                                </div>
+                                {/* Interrogation answers */}
+                                <div className="mt-3 grid grid-cols-2 gap-2 text-[10px]">
+                                  {submission.editor_type && (
+                                    <div className="bg-surface-1 rounded px-2 py-1">
+                                      <span className="text-muted-foreground">Type:</span> {submission.editor_type}
+                                    </div>
+                                  )}
+                                  {submission.years_editing && (
+                                    <div className="bg-surface-1 rounded px-2 py-1">
+                                      <span className="text-muted-foreground">Exp:</span> {submission.years_editing}
+                                    </div>
+                                  )}
+                                  {submission.editing_software && (
+                                    <div className="bg-surface-1 rounded px-2 py-1">
+                                      <span className="text-muted-foreground">Software:</span> {submission.editing_software}
+                                    </div>
+                                  )}
+                                  {submission.editing_speed && (
+                                    <div className="bg-surface-1 rounded px-2 py-1">
+                                      <span className="text-muted-foreground">Speed:</span> {submission.editing_speed}
+                                    </div>
+                                  )}
+                                  {submission.test_purpose && (
+                                    <div className="bg-surface-1 rounded px-2 py-1">
+                                      <span className="text-muted-foreground">Purpose:</span> {submission.test_purpose}
+                                    </div>
+                                  )}
+                                  {submission.editing_goal && (
+                                    <div className="bg-surface-1 rounded px-2 py-1">
+                                      <span className="text-muted-foreground">Goal:</span> {submission.editing_goal}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => setGqtScoring(
+                                  gqtScoring === submission.id ? null : submission.id
+                                )}
+                                className="px-3 py-2 bg-gold text-black rounded-lg text-xs font-semibold flex items-center gap-1"
+                              >
+                                Judge
+                                {gqtScoring === submission.id ? (
+                                  <ChevronUp size={14} />
+                                ) : (
+                                  <ChevronDown size={14} />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* GQT Scoring Panel */}
+                          {gqtScoring === submission.id && (
+                            <div className="border-t border-border p-4 bg-surface-1 space-y-4 animate-in slide-in-from-top-2 duration-200">
+                              <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                                5-Pillar Scoring (out of 20 each = 100 total)
+                              </p>
+                              
+                              {/* Rhythm */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-sm font-medium">🎵 Rhythm</label>
+                                  <span className="text-gold font-bold">{gqtScores.rhythm}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="20"
+                                  value={gqtScores.rhythm}
+                                  onChange={(e) => setGqtScores({ ...gqtScores, rhythm: Number(e.target.value) })}
+                                  className="w-full accent-gold"
+                                />
+                              </div>
+
+                              {/* Creativity */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-sm font-medium">💡 Creativity</label>
+                                  <span className="text-gold font-bold">{gqtScores.creativity}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="20"
+                                  value={gqtScores.creativity}
+                                  onChange={(e) => setGqtScores({ ...gqtScores, creativity: Number(e.target.value) })}
+                                  className="w-full accent-gold"
+                                />
+                              </div>
+
+                              {/* Technical */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-sm font-medium">⚙️ Technical</label>
+                                  <span className="text-gold font-bold">{gqtScores.technical}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="20"
+                                  value={gqtScores.technical}
+                                  onChange={(e) => setGqtScores({ ...gqtScores, technical: Number(e.target.value) })}
+                                  className="w-full accent-gold"
+                                />
+                              </div>
+
+                              {/* Emotional */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-sm font-medium">❤️ Emotional</label>
+                                  <span className="text-gold font-bold">{gqtScores.emotional}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="20"
+                                  value={gqtScores.emotional}
+                                  onChange={(e) => setGqtScores({ ...gqtScores, emotional: Number(e.target.value) })}
+                                  className="w-full accent-gold"
+                                />
+                              </div>
+
+                              {/* Style */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <label className="text-sm font-medium">✨ Style</label>
+                                  <span className="text-gold font-bold">{gqtScores.style}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="20"
+                                  value={gqtScores.style}
+                                  onChange={(e) => setGqtScores({ ...gqtScores, style: Number(e.target.value) })}
+                                  className="w-full accent-gold"
+                                />
+                              </div>
+
+                              {/* Total Score */}
+                              <div className="flex items-center justify-between py-3 border-t border-border">
+                                <span className="text-sm text-muted-foreground">Total Score</span>
+                                <div className="text-right">
+                                  <span className="text-2xl font-black text-gold">
+                                    {gqtScores.rhythm + gqtScores.creativity + gqtScores.technical + gqtScores.emotional + gqtScores.style}
+                                  </span>
+                                  <span className="text-muted-foreground text-sm">/100</span>
+                                  <p className="text-[10px] text-muted-foreground">
+                                    Rank: {(() => {
+                                      const total = gqtScores.rhythm + gqtScores.creativity + gqtScores.technical + gqtScores.emotional + gqtScores.style;
+                                      if (total >= 96) return 'S++';
+                                      if (total >= 90) return 'S+';
+                                      if (total >= 80) return 'S';
+                                      if (total >= 70) return 'A';
+                                      if (total >= 60) return 'B';
+                                      if (total >= 50) return 'C';
+                                      if (total >= 40) return 'D';
+                                      return 'F';
+                                    })()}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Judge Commentary */}
+                              <div>
+                                <Label className="text-sm font-medium mb-2 block">Judge Commentary (Optional)</Label>
+                                <Textarea
+                                  value={gqtCommentary}
+                                  onChange={(e) => setGqtCommentary(e.target.value)}
+                                  placeholder="Custom feedback or select archetype quote..."
+                                  rows={2}
+                                  className="text-sm"
+                                />
+                              </div>
+
+                              <button
+                                onClick={() => handleGQTScore(submission)}
+                                disabled={gqtSaving}
+                                className="w-full py-3 bg-gold text-black font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                              >
+                                <Save size={16} />
+                                {gqtSaving ? 'Saving...' : 'Submit GQT Score'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="scored">
+                {gqtSubmissions.filter(s => s.status === 'scored').length === 0 ? (
+                  <div className="bg-card border border-border rounded-lg p-6 text-center">
+                    <Sparkles className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">No scored submissions yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {gqtSubmissions
+                      .filter(s => s.status === 'scored')
+                      .map((submission) => (
+                        <div
+                          key={submission.id}
+                          className="bg-card border border-gold/30 rounded-lg p-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-sm">{submission.username}</p>
+                                {submission.verification_status && <VerifiedBadge size="sm" />}
+                                <Badge className="bg-gold/20 text-gold text-[10px]">
+                                  {submission.gqt_rank}
+                                </Badge>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">
+                                {submission.platform} • Scored {submission.judged_at ? new Date(submission.judged_at).toLocaleDateString() : ''}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-gold">{submission.qoi_score}</p>
+                              <p className="text-[10px] text-muted-foreground">QOI</p>
+                            </div>
+                          </div>
+                          {submission.judge_commentary && (
+                            <p className="mt-2 text-xs text-muted-foreground italic border-t border-border pt-2">
+                              "{submission.judge_commentary}"
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
+        </section>
+
         {/* Admin: House Management */}
         <section>
           <div className="flex items-center justify-between mb-4">
