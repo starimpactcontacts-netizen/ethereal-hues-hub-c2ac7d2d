@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle } from "lucide-react";
+import { useState, useCallback } from "react";
+import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw } from "lucide-react";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 
 // Extract thumbnail from platform URL
 function getThumbnailUrl(url: string, platform: string): string | null {
@@ -26,8 +26,35 @@ const platformColors: Record<string, string> = {
   youtube: "from-red-600 to-red-400",
 };
 
+const PULL_THRESHOLD = 80;
+
 export default function SubmissionGrid() {
-  const { submissions, loading } = useUserSubmissions();
+  const { submissions, loading, refetch } = useUserSubmissions();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  
+  const y = useMotionValue(0);
+  const opacity = useTransform(y, [0, PULL_THRESHOLD], [0, 1]);
+  const scale = useTransform(y, [0, PULL_THRESHOLD], [0.5, 1]);
+  const rotate = useTransform(y, [0, PULL_THRESHOLD], [0, 180]);
+
+  const handlePanEnd = useCallback(async (event: any, info: PanInfo) => {
+    if (info.offset.y > PULL_THRESHOLD && !isRefreshing) {
+      setIsRefreshing(true);
+      await refetch();
+      setIsRefreshing(false);
+    }
+    setPullDistance(0);
+    y.set(0);
+  }, [isRefreshing, refetch, y]);
+
+  const handlePan = useCallback((event: any, info: PanInfo) => {
+    if (info.offset.y > 0 && !isRefreshing) {
+      const distance = Math.min(info.offset.y, PULL_THRESHOLD * 1.5);
+      setPullDistance(distance);
+      y.set(distance);
+    }
+  }, [isRefreshing, y]);
   const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
 
   if (loading) {
@@ -62,8 +89,26 @@ export default function SubmissionGrid() {
 
   return (
     <>
-      {/* TikTok-style Grid */}
-      <div className="grid grid-cols-3 gap-0.5">
+      {/* Pull to Refresh Indicator */}
+      <motion.div 
+        style={{ opacity, scale }}
+        className="flex items-center justify-center py-3"
+      >
+        <motion.div style={{ rotate }}>
+          <RefreshCw className={`w-5 h-5 text-gold ${isRefreshing ? 'animate-spin' : ''}`} />
+        </motion.div>
+        <span className="ml-2 text-xs text-muted-foreground">
+          {pullDistance >= PULL_THRESHOLD ? 'Release to refresh' : 'Pull to refresh'}
+        </span>
+      </motion.div>
+
+      {/* TikTok-style Grid with pull gesture */}
+      <motion.div 
+        className="grid grid-cols-3 gap-0.5"
+        onPan={handlePan}
+        onPanEnd={handlePanEnd}
+        style={{ touchAction: 'pan-x' }}
+      >
         {submissions.map((submission, index) => {
           const thumbnail = getThumbnailUrl(submission.submission_url, submission.platform);
           const gradient = platformColors[submission.platform] || "from-gray-600 to-gray-400";
@@ -134,7 +179,7 @@ export default function SubmissionGrid() {
             </motion.button>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Detail Modal */}
       <AnimatePresence>

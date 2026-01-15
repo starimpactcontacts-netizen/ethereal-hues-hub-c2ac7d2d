@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -287,16 +287,29 @@ export default function ProfilePage() {
         
         {/* Content */}
         <div className="relative pt-6 pb-4 px-4">
-          {/* Top row: League + Settings */}
+          {/* Top row: League + Share + Settings */}
           <div className="flex items-center justify-between mb-6">
             <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}>
               {league}
             </span>
-            <ActivityStatusSelector
-              userId={profile.id}
-              currentStatus={(profile as any).activity_status || "online"}
-              onStatusChange={refreshProfile}
-            />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const profileUrl = `${window.location.origin}/editor/${profile.id}`;
+                  navigator.clipboard.writeText(profileUrl);
+                  toast.success("Profile link copied!");
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 border border-gold/30 text-gold text-xs font-medium hover:bg-gold/20 transition-colors"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                Share
+              </button>
+              <ActivityStatusSelector
+                userId={profile.id}
+                currentStatus={(profile as any).activity_status || "online"}
+                onStatusChange={refreshProfile}
+              />
+            </div>
           </div>
           
           {/* Avatar */}
