@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play, Target, Zap, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
@@ -356,6 +356,82 @@ export default function LandingPage() {
               ))
             )}
           </div>
+        </div>
+      </section>
+
+      {/* GQT Marketing Section - Trojan Horse */}
+      <section className="py-24 px-4 bg-gradient-to-b from-background via-surface-0 to-background border-t border-border relative overflow-hidden">
+        {/* Background accent */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold/5 rounded-full blur-[100px]" />
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/30 mb-6">
+              <Target className="w-4 h-4 text-gold" />
+              <span className="text-sm font-semibold tracking-widest uppercase text-gold">Free Test</span>
+            </div>
+            
+            <h2 className="font-display text-4xl sm:text-5xl mb-4">
+              What's Your <span className="text-gold">QOI Score</span>?
+            </h2>
+            
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+              Submit any edit. Get brutally judged by real judges. 
+              Find out if you're F-tier or S++ in under 48 hours.
+            </p>
+            
+            <div className="grid sm:grid-cols-3 gap-4 mb-10 max-w-2xl mx-auto">
+              <div className="bg-surface-1 border border-border p-4">
+                <p className="font-display text-3xl text-gold mb-1">100</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Point Scale</p>
+              </div>
+              <div className="bg-surface-1 border border-border p-4">
+                <p className="font-display text-3xl text-gold mb-1">5</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Scoring Pillars</p>
+              </div>
+              <div className="bg-surface-1 border border-border p-4">
+                <p className="font-display text-3xl text-gold mb-1">8</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Class Ranks</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Link to="/gqt">
+                <Button size="lg" className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl px-8 py-6 h-auto">
+                  <Zap className="mr-2 h-5 w-5" />
+                  Take the Test
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-gold/30 text-gold hover:bg-gold/10 font-display px-6 py-5 h-auto"
+                onClick={() => {
+                  const url = `${window.location.origin}/gqt`;
+                  navigator.clipboard.writeText(url);
+                  // Simple feedback
+                  const btn = document.activeElement as HTMLButtonElement;
+                  if (btn) {
+                    const original = btn.innerHTML;
+                    btn.innerHTML = '<span class="flex items-center gap-2">✓ Link Copied!</span>';
+                    setTimeout(() => { btn.innerHTML = original; }, 2000);
+                  }
+                }}
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Share Test
+              </Button>
+            </div>
+            
+            <p className="text-xs text-muted-foreground mt-6">
+              No account needed to start. Sign up only when you're ready to submit.
+            </p>
+          </motion.div>
         </div>
       </section>
 

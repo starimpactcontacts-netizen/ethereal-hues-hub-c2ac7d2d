@@ -583,10 +583,11 @@ export default function GQTPage() {
               <LogIn className="w-10 h-10 text-gold" />
             </div>
             <DialogTitle className="font-display text-3xl text-center text-gold">
-              READY TO GET RANKED?
+              YOU'RE SO CLOSE
             </DialogTitle>
-            <DialogDescription className="text-center text-muted-foreground">
-              Sign in or create an account to submit your edit and get your official rank from a real judge.
+            <DialogDescription className="text-center text-muted-foreground space-y-2">
+              <p>You've answered the interrogation. Your edit is ready.</p>
+              <p className="text-gold font-semibold">Create a free account to submit and get your official rank from a real judge.</p>
             </DialogDescription>
           </DialogHeader>
           
@@ -596,19 +597,19 @@ export default function GQTPage() {
               className="w-full bg-gold hover:bg-gold/90 text-background font-display h-14 text-lg"
             >
               <LogIn className="w-5 h-5 mr-2" />
-              SIGN IN / SIGN UP
+              CREATE FREE ACCOUNT
             </Button>
             <Button 
               variant="outline" 
               onClick={() => setShowAuthPrompt(false)}
               className="w-full border-border text-muted-foreground h-12"
             >
-              Keep Browsing
+              I'll Come Back Later
             </Button>
           </div>
           
           <p className="text-xs text-center text-muted-foreground pt-2">
-            Your form data is saved — just sign in and hit submit again.
+            ✓ Your answers are saved — just sign up and hit submit.
           </p>
         </DialogContent>
       </Dialog>
