@@ -45,7 +45,6 @@ import AppPage from "./pages/AppPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import FAQPage from "./pages/FAQPage";
 import NotFound from "./pages/NotFound";
-import PosterPage from "./pages/PosterPage";
 
 // Components
 import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
@@ -283,9 +282,6 @@ export default function App() {
             
             {/* Enterprise Portal - NO DEV MODE BYPASS - requires enterprise role only */}
             <Route path="/enterprise" element={<EnterprisePage />} />
-            
-            {/* Temporary poster page */}
-            <Route path="/poster" element={<PosterPage />} />
             
             {/* 404 - public */}
             <Route path="*" element={<NotFound />} />
