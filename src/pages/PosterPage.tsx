@@ -1,83 +1,72 @@
 import { motion } from "framer-motion";
 import screenHub from "@/assets/poster-screen-hub.png";
 import screenDiscover from "@/assets/poster-screen-discover.png";
-import loopgateWordmark from "@/assets/loopgate-wordmark-glow.jpg";
 
 const PosterPage = () => {
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 overflow-hidden"
+      className="min-h-screen flex items-center justify-center p-0 overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, #0a0a14 0%, #14142a 50%, #0a0a14 100%)'
+        background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a35 40%, #252550 70%, #1a1a30 100%)'
       }}
     >
       {/* Instagram Post Container - 1:1 aspect ratio */}
       <div 
-        className="relative w-full max-w-[600px] aspect-square overflow-hidden"
+        className="relative w-full max-w-[700px] aspect-square overflow-hidden"
         style={{
-          background: 'linear-gradient(160deg, #08080f 0%, #12122a 50%, #0a0a18 100%)'
+          background: 'linear-gradient(150deg, #0c0c18 0%, #1a1a38 35%, #2a2a55 60%, #181830 100%)'
         }}
       >
-        {/* Subtle ambient glow behind phones */}
+        {/* Ambient purple glow */}
         <div 
-          className="absolute top-1/2 right-[30%] -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none opacity-60"
+          className="absolute top-[40%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
           style={{
-            background: 'radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(99,102,241,0.06) 40%, transparent 65%)'
+            background: 'radial-gradient(circle, rgba(100,80,180,0.15) 0%, rgba(80,60,160,0.08) 35%, transparent 60%)'
+          }}
+        />
+        
+        {/* Secondary glow near phones */}
+        <div 
+          className="absolute top-[55%] right-[25%] w-[400px] h-[400px] rounded-full pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 50%)'
           }}
         />
 
-        {/* Left side - Just wordmark logo */}
-        <motion.div 
-          className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-[180px]"
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          <img 
-            src={loopgateWordmark} 
-            alt="LOOPGATE" 
-            className="w-full h-auto"
-          />
-          
-          {/* App Store text below */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="mt-6 flex items-center gap-3"
-          >
-            <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-            </svg>
-            <div className="text-left">
-              <div className="text-[9px] text-white/50 uppercase tracking-wide">Download on the</div>
-              <div className="text-base font-semibold text-white -mt-0.5">App Store</div>
-            </div>
-          </motion.div>
-        </motion.div>
+        {/* LEFT SIDE EMPTY - Add your own branding */}
+        {/* The left 40% is intentionally empty for custom branding */}
 
-        {/* Right side - Realistic iPhone Mockups */}
-        <div className="absolute right-[-60px] top-1/2 -translate-y-1/2 flex items-end">
+        {/* iPhone Mockups - Right side positioned like Epic reference */}
+        <div className="absolute inset-0">
           
-          {/* Back iPhone - Discover (tilted, behind) */}
+          {/* Back iPhone - Tilted, positioned behind and to right */}
           <motion.div 
-            className="relative -mr-16 z-10"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            style={{ transform: 'rotate(-12deg) translateY(20px)' }}
+            className="absolute z-10"
+            style={{
+              right: '-30px',
+              top: '50%',
+              transform: 'translateY(-45%) rotate(8deg)',
+            }}
+            initial={{ opacity: 0, y: 100, x: 50 }}
+            animate={{ opacity: 1, y: 0, x: 0 }}
+            transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
           >
-            <RealisticIPhone screenshot={screenDiscover} />
+            <PremiumIPhone screenshot={screenDiscover} size="small" />
           </motion.div>
 
-          {/* Front iPhone - Hub (straight, in front) */}
+          {/* Front iPhone - Straight, larger, in front */}
           <motion.div 
-            className="relative z-20"
-            initial={{ opacity: 0, y: 80 }}
+            className="absolute z-20"
+            style={{
+              right: '120px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+            }}
+            initial={{ opacity: 0, y: 120 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
+            transition={{ delay: 0.1, duration: 0.7, ease: "easeOut" }}
           >
-            <RealisticIPhone screenshot={screenHub} isPrimary />
+            <PremiumIPhone screenshot={screenHub} size="large" isPrimary />
           </motion.div>
         </div>
       </div>
@@ -85,86 +74,165 @@ const PosterPage = () => {
   );
 };
 
-// Realistic iPhone 15 Pro Mockup
-const RealisticIPhone = ({ screenshot, isPrimary = false }: { screenshot: string; isPrimary?: boolean }) => (
-  <div 
-    className="relative"
-    style={{
-      filter: isPrimary ? 'none' : 'brightness(0.85)',
-    }}
-  >
-    {/* Phone body with titanium frame */}
+// Premium iPhone 15 Pro Max Mockup with animated shine
+const PremiumIPhone = ({ 
+  screenshot, 
+  size = "large",
+  isPrimary = false 
+}: { 
+  screenshot: string; 
+  size?: "large" | "small";
+  isPrimary?: boolean;
+}) => {
+  const dimensions = size === "large" 
+    ? { width: 260, height: 530, radius: 52, island: { w: 110, h: 32 }, homeBar: 130 }
+    : { width: 220, height: 450, radius: 46, island: { w: 95, h: 28 }, homeBar: 110 };
+
+  return (
     <div 
-      className="relative rounded-[44px] p-[2px]"
+      className="relative group"
       style={{
-        width: isPrimary ? '220px' : '200px',
-        height: isPrimary ? '450px' : '410px',
-        background: 'linear-gradient(145deg, #3a3a42 0%, #1f1f24 30%, #0d0d10 100%)',
-        boxShadow: isPrimary 
-          ? '0 50px 100px -20px rgba(0,0,0,0.8), 0 30px 60px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1)'
-          : '0 40px 80px -20px rgba(0,0,0,0.7), 0 25px 50px -25px rgba(0,0,0,0.6)',
+        filter: isPrimary ? 'none' : 'brightness(0.9)',
       }}
     >
-      {/* Inner frame/bezel */}
+      {/* Phone shadow */}
       <div 
-        className="relative w-full h-full rounded-[42px] p-[2px]"
+        className="absolute inset-0 rounded-[52px]"
         style={{
-          background: 'linear-gradient(180deg, #2a2a30 0%, #18181c 100%)',
+          boxShadow: isPrimary 
+            ? '0 60px 120px -30px rgba(0,0,0,0.9), 0 40px 80px -40px rgba(0,0,0,0.8)'
+            : '0 50px 100px -30px rgba(0,0,0,0.8), 0 35px 70px -35px rgba(0,0,0,0.7)',
+          transform: 'translateY(10px)',
+        }}
+      />
+      
+      {/* Phone body - titanium frame */}
+      <div 
+        className="relative overflow-hidden"
+        style={{
+          width: `${dimensions.width}px`,
+          height: `${dimensions.height}px`,
+          borderRadius: `${dimensions.radius}px`,
+          background: 'linear-gradient(160deg, #4a4a55 0%, #2a2a32 20%, #1a1a22 50%, #0f0f14 100%)',
+          padding: '3px',
         }}
       >
-        {/* Screen */}
-        <div className="relative w-full h-full rounded-[40px] bg-black overflow-hidden">
-          {/* Dynamic Island */}
+        {/* Animated shine effect on frame */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none z-30"
+          style={{
+            background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)',
+            borderRadius: `${dimensions.radius}px`,
+          }}
+          animate={{
+            x: ['-200%', '200%'],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            repeatDelay: 4,
+            ease: "easeInOut",
+          }}
+        />
+        
+        {/* Inner bezel */}
+        <div 
+          className="relative w-full h-full overflow-hidden"
+          style={{
+            borderRadius: `${dimensions.radius - 3}px`,
+            background: 'linear-gradient(180deg, #222228 0%, #151518 100%)',
+            padding: '2px',
+          }}
+        >
+          {/* Screen container */}
           <div 
-            className="absolute top-[10px] left-1/2 -translate-x-1/2 z-50 bg-black rounded-full"
+            className="relative w-full h-full overflow-hidden bg-black"
             style={{
-              width: isPrimary ? '100px' : '90px',
-              height: isPrimary ? '28px' : '25px',
+              borderRadius: `${dimensions.radius - 5}px`,
             }}
-          />
-          
-          {/* Screenshot content */}
-          <img 
-            src={screenshot} 
-            alt="App Screen" 
-            className="w-full h-full object-cover object-top"
-          />
-          
-          {/* Screen glare overlay */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%, transparent 100%)',
-            }}
-          />
-          
-          {/* Home indicator */}
-          <div 
-            className="absolute bottom-[6px] left-1/2 -translate-x-1/2 h-[4px] bg-white/40 rounded-full"
-            style={{ width: isPrimary ? '120px' : '100px' }}
-          />
+          >
+            {/* Dynamic Island */}
+            <div 
+              className="absolute left-1/2 -translate-x-1/2 z-50 bg-black"
+              style={{
+                top: '12px',
+                width: `${dimensions.island.w}px`,
+                height: `${dimensions.island.h}px`,
+                borderRadius: '20px',
+              }}
+            />
+            
+            {/* Screenshot */}
+            <img 
+              src={screenshot} 
+              alt="App Screen" 
+              className="w-full h-full object-cover object-top"
+            />
+            
+            {/* Screen glass reflection */}
+            <div 
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: 'linear-gradient(165deg, rgba(255,255,255,0.04) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.05) 100%)',
+              }}
+            />
+            
+            {/* Home indicator */}
+            <div 
+              className="absolute bottom-[8px] left-1/2 -translate-x-1/2 h-[5px] bg-white/50 rounded-full"
+              style={{ width: `${dimensions.homeBar}px` }}
+            />
+          </div>
         </div>
       </div>
+      
+      {/* Physical buttons */}
+      {/* Power button - right */}
+      <div 
+        className="absolute top-[120px] -right-[1px] w-[4px] h-[70px] rounded-l-sm"
+        style={{ 
+          background: 'linear-gradient(180deg, #3a3a45 0%, #25252c 50%, #1a1a20 100%)',
+          boxShadow: '-1px 0 2px rgba(0,0,0,0.3)',
+        }}
+      />
+      
+      {/* Silent switch - left */}
+      <div 
+        className="absolute top-[90px] -left-[1px] w-[4px] h-[28px] rounded-r-sm"
+        style={{ 
+          background: 'linear-gradient(180deg, #3a3a45 0%, #25252c 50%, #1a1a20 100%)',
+          boxShadow: '1px 0 2px rgba(0,0,0,0.3)',
+        }}
+      />
+      
+      {/* Volume up - left */}
+      <div 
+        className="absolute top-[135px] -left-[1px] w-[4px] h-[55px] rounded-r-sm"
+        style={{ 
+          background: 'linear-gradient(180deg, #3a3a45 0%, #25252c 50%, #1a1a20 100%)',
+          boxShadow: '1px 0 2px rgba(0,0,0,0.3)',
+        }}
+      />
+      
+      {/* Volume down - left */}
+      <div 
+        className="absolute top-[200px] -left-[1px] w-[4px] h-[55px] rounded-r-sm"
+        style={{ 
+          background: 'linear-gradient(180deg, #3a3a45 0%, #25252c 50%, #1a1a20 100%)',
+          boxShadow: '1px 0 2px rgba(0,0,0,0.3)',
+        }}
+      />
+      
+      {/* Frame edge highlight */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          borderRadius: `${dimensions.radius}px`,
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.2)',
+        }}
+      />
     </div>
-    
-    {/* Side button hints */}
-    <div 
-      className="absolute right-0 top-[100px] w-[3px] h-[60px] rounded-l-sm"
-      style={{ background: 'linear-gradient(180deg, #3a3a42 0%, #1a1a20 100%)' }}
-    />
-    <div 
-      className="absolute left-0 top-[80px] w-[3px] h-[30px] rounded-r-sm"
-      style={{ background: 'linear-gradient(180deg, #3a3a42 0%, #1a1a20 100%)' }}
-    />
-    <div 
-      className="absolute left-0 top-[120px] w-[3px] h-[50px] rounded-r-sm"
-      style={{ background: 'linear-gradient(180deg, #3a3a42 0%, #1a1a20 100%)' }}
-    />
-    <div 
-      className="absolute left-0 top-[180px] w-[3px] h-[50px] rounded-r-sm"
-      style={{ background: 'linear-gradient(180deg, #3a3a42 0%, #1a1a20 100%)' }}
-    />
-  </div>
-);
+  );
+};
 
 export default PosterPage;
