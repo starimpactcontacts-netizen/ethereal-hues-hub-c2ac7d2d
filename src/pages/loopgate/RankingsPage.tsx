@@ -18,21 +18,21 @@ const getRankStyle = (rank: number) => {
   if (rank === 1) return {
     bg: "bg-gradient-to-r from-yellow-500/30 via-amber-400/20 to-yellow-500/30",
     border: "border-l-4 border-yellow-400",
-    glow: "shadow-[0_0_30px_rgba(250,204,21,0.4)]",
+    glow: "shadow-[0_0_15px_rgba(250,204,21,0.25)]",
     text: "text-yellow-400",
     icon: Crown,
   };
   if (rank === 2) return {
     bg: "bg-gradient-to-r from-slate-400/20 via-gray-300/15 to-slate-400/20",
     border: "border-l-4 border-slate-300",
-    glow: "shadow-[0_0_20px_rgba(203,213,225,0.3)]",
+    glow: "shadow-[0_0_12px_rgba(203,213,225,0.2)]",
     text: "text-slate-300",
     icon: Medal,
   };
   if (rank === 3) return {
     bg: "bg-gradient-to-r from-amber-700/25 via-orange-600/15 to-amber-700/25",
     border: "border-l-4 border-amber-600",
-    glow: "shadow-[0_0_20px_rgba(217,119,6,0.3)]",
+    glow: "shadow-[0_0_12px_rgba(217,119,6,0.2)]",
     text: "text-amber-500",
     icon: Medal,
   };
