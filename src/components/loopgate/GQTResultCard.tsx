@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Star, Quote, Share2, Crown, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { getRankFromScore, getPercentile, getProjectedLeagueFromScore, scoringPillars, GQTRank, getIndexFloorFromRank, gqtLeagues } from '@/data/gqtConfig';
+import { getRankFromScore, getPercentile, getClassFromScore, scoringPillars, GQTRank, getIndexFloorFromRank, gqtClasses } from '@/data/gqtConfig';
 import GQTShareCard from './GQTShareCard';
 
 interface GQTResultCardProps {
@@ -39,14 +39,16 @@ const pillarIcons: Record<string, any> = {
   fingerprint: Fingerprint,
 };
 
-// League icons
-const leagueIcons: Record<string, any> = {
-  legend: Flame,
-  master: Crown,
-  advanced: Zap,
-  skilled: Star,
-  contributor: Shield,
-  rookie: Shield,
+// Class icons
+const classIcons: Record<string, any> = {
+  's++': Flame,
+  's+': Flame,
+  's': Crown,
+  'a': Zap,
+  'b': Star,
+  'c': Shield,
+  'd': Shield,
+  'f': Shield,
 };
 
 // Score color based on percentage of max
@@ -147,7 +149,7 @@ export default function GQTResultCard({ submission, username, displayName }: GQT
   const totalScore = qoi_score ?? 0;
   const rank = gqt_rank ? getRankFromScore(totalScore) : (totalScore > 0 ? getRankFromScore(totalScore) : null);
   const percentile = totalScore > 0 ? getPercentile(totalScore) : null;
-  const projectedLeague = totalScore > 0 ? getProjectedLeagueFromScore(totalScore) : null;
+  const projectedClass = totalScore > 0 ? getClassFromScore(totalScore) : null;
   
   // Build pillars array with scores
   const pillarsWithScores = [
@@ -161,7 +163,7 @@ export default function GQTResultCard({ submission, username, displayName }: GQT
   const handleShare = async () => {
     const shareText = `My GQT Score: ${totalScore.toFixed(0)} / 100
 Rank: ${rank?.rank || 'N/A'}
-${projectedLeague ? `Projected League: ${projectedLeague.name}` : ''}
+${projectedClass ? `Class: ${projectedClass.name}` : ''}
 
 Take the Global QOI Test at loopgate.io/gqt`;
 
@@ -182,7 +184,7 @@ Take the Global QOI Test at loopgate.io/gqt`;
   
   const cardStyle = rank ? getRankCardStyle(rank.rank) : null;
   const indexFloor = rank ? getIndexFloorFromRank(rank.rank) : 0;
-  const LeagueIcon = projectedLeague ? (leagueIcons[projectedLeague.id] || Shield) : Shield;
+  const ClassIcon = projectedClass ? (classIcons[projectedClass.id] || Shield) : Shield;
   
   return (
     <motion.div
@@ -314,22 +316,22 @@ Take the Global QOI Test at loopgate.io/gqt`;
         </div>
       </div>
       
-      {/* Projected League */}
-      {projectedLeague && (
+      {/* Projected Class */}
+      {projectedClass && (
         <div className="p-5 border-b border-border/50">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3">PROJECTED LEAGUE</p>
-          <div className={`${projectedLeague.bgClass} border border-border p-4 flex items-center gap-4`}>
-            <div className={`w-12 h-12 ${projectedLeague.bgClass} border border-current flex items-center justify-center ${projectedLeague.color}`}>
-              <LeagueIcon className="w-6 h-6" />
+          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3">YOUR CLASS</p>
+          <div className={`${projectedClass.bgClass} border border-border p-4 flex items-center gap-4`}>
+            <div className={`w-12 h-12 ${projectedClass.bgClass} border border-current flex items-center justify-center ${projectedClass.color}`}>
+              <ClassIcon className="w-6 h-6" />
             </div>
             <div className="flex-1">
-              <p className={`font-display text-2xl ${projectedLeague.color}`}>{projectedLeague.name}</p>
-              <p className="text-xs text-muted-foreground">{projectedLeague.subtitle}</p>
+              <p className={`font-display text-2xl ${projectedClass.color}`}>{projectedClass.name}</p>
+              <p className="text-xs text-muted-foreground">{projectedClass.subtitle}</p>
             </div>
             {indexFloor > 0 && (
               <div className="text-right">
                 <p className="text-xs text-muted-foreground">Index Floor</p>
-                <p className={`font-display text-xl ${projectedLeague.color}`}>+{indexFloor}</p>
+                <p className={`font-display text-xl ${projectedClass.color}`}>+{indexFloor}</p>
               </div>
             )}
           </div>
