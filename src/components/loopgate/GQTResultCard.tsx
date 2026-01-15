@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, Quote, Share2, Crown, Skull, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap } from 'lucide-react';
+import { Star, Quote, Share2, Crown, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getRankFromScore, getPercentile, getProjectedLeagueFromScore, scoringPillars, GQTRank, getIndexFloorFromRank, gqtLeagues } from '@/data/gqtConfig';
+import GQTShareCard from './GQTShareCard';
 
 interface GQTResultCardProps {
   submission: {
@@ -21,7 +23,11 @@ interface GQTResultCardProps {
     rank_projection: string | null;
     suggested_action: string | null;
     house_fit: { houseId: string; houseName: string; fitLevel: string }[] | null;
+    editing_software?: string | null;
+    years_editing?: string | null;
   };
+  username?: string;
+  displayName?: string;
 }
 
 // Icon mapping for pillars
@@ -117,7 +123,9 @@ const getRankCardStyle = (rank: GQTRank) => {
   }
 };
 
-export default function GQTResultCard({ submission }: GQTResultCardProps) {
+export default function GQTResultCard({ submission, username, displayName }: GQTResultCardProps) {
+  const [showShareCard, setShowShareCard] = useState(false);
+  
   const { 
     qoi_score, 
     rhythm_score,
@@ -130,7 +138,9 @@ export default function GQTResultCard({ submission }: GQTResultCardProps) {
     judge_archetype,
     rank_projection,
     suggested_action,
-    house_fit
+    house_fit,
+    editing_software,
+    years_editing,
   } = submission;
   
   // Use the new 100-point score if available, otherwise calculate from pillars or use legacy
@@ -377,18 +387,46 @@ Take the Global QOI Test at loopgate.io/gqt`;
       
       {/* Share Card */}
       <div className="p-5">
-        <Button
-          onClick={handleShare}
-          variant="outline"
-          className="w-full border-gold/50 text-gold hover:bg-gold/10 h-12"
-        >
-          <Share2 className="w-4 h-4 mr-2" />
-          Share Your Rank
-        </Button>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            onClick={() => setShowShareCard(true)}
+            className="h-12 bg-gold text-background hover:bg-gold/90"
+          >
+            <Share2 className="w-4 h-4 mr-2" />
+            Share Card
+          </Button>
+          <Button
+            onClick={handleShare}
+            variant="outline"
+            className="h-12 border-gold/50 text-gold hover:bg-gold/10"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Challenge Friend
+          </Button>
+        </div>
         <p className="text-[10px] text-center text-muted-foreground mt-3">
           Flex your score on TikTok / Instagram
         </p>
       </div>
+      
+      {/* Share Card Modal */}
+      <GQTShareCard
+        isOpen={showShareCard}
+        onClose={() => setShowShareCard(false)}
+        data={{
+          username: username || 'editor',
+          displayName: displayName,
+          score: totalScore,
+          rhythmScore: rhythm_score ?? undefined,
+          creativityScore: creativity_score ?? undefined,
+          technicalScore: technical_score ?? undefined,
+          emotionalScore: emotional_score ?? undefined,
+          styleScore: style_score ?? undefined,
+          judgeQuote: judge_commentary ?? undefined,
+          software: editing_software ?? undefined,
+          yearsEditing: years_editing ?? undefined,
+        }}
+      />
     </motion.div>
   );
 }
