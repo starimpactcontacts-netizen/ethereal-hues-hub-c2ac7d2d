@@ -36,38 +36,37 @@ const PosterPage = () => {
         {/* LEFT SIDE EMPTY - Add your own branding */}
         {/* The left 40% is intentionally empty for custom branding */}
 
-        {/* iPhone Mockups - Right side positioned like Epic reference */}
-        <div className="absolute inset-0">
+        {/* iPhone Mockups - Positioned like Epic reference: center-right, front phone left */}
+        <div className="absolute inset-0 flex items-center justify-center">
           
-          {/* Back iPhone - Tilted, positioned behind and to right */}
-          <motion.div 
-            className="absolute z-10"
-            style={{
-              right: '-30px',
-              top: '50%',
-              transform: 'translateY(-45%) rotate(8deg)',
-            }}
-            initial={{ opacity: 0, y: 100, x: 50 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
-          >
-            <PremiumIPhone screenshot={screenDiscover} size="small" />
-          </motion.div>
+          {/* Phone group container - offset right from center */}
+          <div className="relative ml-[15%]" style={{ transform: 'translateY(-5%)' }}>
+            
+            {/* Front iPhone - Left position, straight, larger */}
+            <motion.div
+              className="relative z-20"
+              initial={{ opacity: 0, y: 80 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.7, ease: "easeOut" }}
+            >
+              <PremiumIPhone screenshot={screenHub} size="large" isPrimary />
+            </motion.div>
 
-          {/* Front iPhone - Straight, larger, in front */}
-          <motion.div 
-            className="absolute z-20"
-            style={{
-              right: '120px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-            }}
-            initial={{ opacity: 0, y: 120 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.7, ease: "easeOut" }}
-          >
-            <PremiumIPhone screenshot={screenHub} size="large" isPrimary />
-          </motion.div>
+            {/* Back iPhone - Right position, tilted, behind */}
+            <motion.div
+              className="absolute z-10"
+              style={{
+                left: '180px',
+                top: '30px',
+                transform: 'rotate(12deg)',
+              }}
+              initial={{ opacity: 0, y: 100, x: 30 }}
+              animate={{ opacity: 1, y: 0, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
+            >
+              <PremiumIPhone screenshot={screenDiscover} size="small" />
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
