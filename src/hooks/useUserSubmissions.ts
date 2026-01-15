@@ -22,13 +22,16 @@ export interface UserSubmission {
   };
 }
 
-export function useUserSubmissions() {
+export function useUserSubmissions(targetUserId?: string) {
   const { user } = useAuth();
   const [submissions, setSubmissions] = useState<UserSubmission[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Use targetUserId if provided, otherwise use current user
+  const userId = targetUserId || user?.id;
+
   const fetchSubmissions = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setSubmissions([]);
       setLoading(false);
       return;
@@ -38,14 +41,14 @@ export function useUserSubmissions() {
     const { data: standardData, error: standardError } = await supabase
       .from('event_participations')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .order('submitted_at', { ascending: false });
 
     // Fetch Open Arena round submissions
     const { data: roundData, error: roundError } = await supabase
       .from('round_participations')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .not('submission_url', 'is', null)
       .order('submitted_at', { ascending: false });
 
@@ -115,21 +118,21 @@ export function useUserSubmissions() {
 
     setSubmissions(submissionsWithEvents);
     setLoading(false);
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
     fetchSubmissions();
 
-    if (!user) return;
+    if (!userId) return;
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel('user-submissions-changes')
+      .channel(`user-submissions-${userId}`)
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
         table: 'event_participations',
-        filter: `user_id=eq.${user.id}`
+        filter: `user_id=eq.${userId}`
       }, () => {
         fetchSubmissions();
       })
@@ -138,7 +141,7 @@ export function useUserSubmissions() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchSubmissions]);
+  }, [userId, fetchSubmissions]);
 
   return { submissions, loading, refetch: fetchSubmissions };
 }
