@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Target, ArrowRight, Crown, Shield, Users, Play, Trophy, 
-  MessageCircle, Users2, Zap, TrendingUp, Star, Award
+  Target, ArrowRight, Crown, Shield, Users, Trophy, 
+  Users2, Zap, TrendingUp, Star, Coins, ShoppingBag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -70,43 +70,64 @@ export default function HubPage() {
 
         {/* Hero Content */}
         <div className="relative px-4 pt-10 pb-6">
-          {/* User Identity Badge */}
+          {/* User Identity + Shop Balance Row */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 mb-8"
+            className="flex items-center justify-between mb-8"
           >
-            {/* Avatar with league ring */}
-            <div className="relative">
-              <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow}`}>
-                <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="font-display text-xl text-foreground">
-                      {profile?.username?.charAt(0).toUpperCase() || 'E'}
-                    </span>
-                  )}
+            {/* Left: User Identity Badge */}
+            <div className="flex items-center gap-3">
+              {/* Avatar with league ring */}
+              <div className="relative">
+                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow}`}>
+                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="font-display text-xl text-foreground">
+                        {profile?.username?.charAt(0).toUpperCase() || 'E'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {/* League indicator */}
+                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br ${league.gradient} flex items-center justify-center shadow-lg`}>
+                  <LeagueIcon className="w-3 h-3 text-background" />
                 </div>
               </div>
-              {/* League indicator */}
-              <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br ${league.gradient} flex items-center justify-center shadow-lg`}>
-                <LeagueIcon className="w-3 h-3 text-background" />
+              
+              <div>
+                <h1 className="font-display text-2xl text-foreground leading-none">
+                  {profile?.username || 'EDITOR'}
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`text-[10px] font-bold tracking-widest uppercase bg-gradient-to-r ${league.gradient} bg-clip-text text-transparent`}>
+                    {league.label} LEAGUE
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">•</span>
+                  <span className="text-[10px] text-muted-foreground">LVL {profile?.level || 1}</span>
+                </div>
               </div>
             </div>
-            
-            <div>
-              <h1 className="font-display text-2xl text-foreground leading-none">
-                {profile?.username || 'EDITOR'}
-              </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={`text-[10px] font-bold tracking-widest uppercase bg-gradient-to-r ${league.gradient} bg-clip-text text-transparent`}>
-                  {league.label} LEAGUE
-                </span>
-                <span className="text-[10px] text-muted-foreground">•</span>
-                <span className="text-[10px] text-muted-foreground">LVL {profile?.level || 1}</span>
+
+            {/* Right: Shop Balance */}
+            <Link to="/shop" className="group">
+              <div className="flex items-center gap-2 bg-surface-1/80 backdrop-blur border border-border hover:border-gold/50 px-3 py-2 transition-colors">
+                <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                  <ShoppingBag className="w-4 h-4 text-gold" />
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1">
+                    <Coins className="w-3 h-3 text-gold" />
+                    <span className="font-display text-lg text-gold leading-none">
+                      {(profile as any)?.spendable_index || 0}
+                    </span>
+                  </div>
+                  <p className="text-[8px] text-muted-foreground uppercase tracking-widest">INDEX</p>
+                </div>
               </div>
-            </div>
+            </Link>
           </motion.div>
 
           {/* ═══════════════════════════════════════════════════════════════════
