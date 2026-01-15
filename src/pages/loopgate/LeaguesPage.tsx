@@ -1,9 +1,7 @@
 import { motion } from 'framer-motion';
-import { Shield, Star, Crown, Skull, Lock, TrendingUp, Info } from 'lucide-react';
+import { Shield, Star, Crown, Skull, Lock, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealRankings } from '@/hooks/useRealData';
-import loopgateLogo from '@/assets/loopgate-logo.png';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const leagues = [
   {
@@ -126,39 +124,15 @@ export default function LeaguesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
-          <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">
-            Leagues
-          </span>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <div className="px-4 pt-8 pb-6">
+      {/* Hero Section - no sticky header here since we're inside Index */}
+      <div className="px-4 pt-6 pb-4">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="font-display text-4xl text-foreground mb-2">THE HIERARCHY</h1>
-          <p className="text-sm text-muted-foreground">
-            Climb the ranks. Prove your skill. Earn your place.
+          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] mb-2">
+            COMPETITIVE TIERS BASED ON PERFORMANCE
           </p>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground cursor-help">
-                  <Info className="w-3 h-3" />
-                  <span>Leagues update automatically based on your Index score</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="bg-surface-1 border-border">
-                <p className="text-xs">Your league is calculated in real-time based on your global ranking percentage and event wins.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </motion.div>
       </div>
 
@@ -243,6 +217,11 @@ export default function LeaguesPage() {
             </motion.div>
           );
         })}
+        
+        {/* Footer tooltip */}
+        <p className="text-center text-[10px] text-muted-foreground uppercase tracking-widest mt-6 px-4">
+          Leagues update automatically based on your Index score
+        </p>
       </div>
 
       {/* User Status & Progression */}
