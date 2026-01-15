@@ -335,7 +335,11 @@ export default function GQTPage() {
                 Retake Test
               </Button>
             </div>
-            <GQTResultCard submission={latestSubmission} />
+            <GQTResultCard 
+              submission={latestSubmission} 
+              username={profile?.username}
+              displayName={profile?.display_name}
+            />
             
             <div className="grid grid-cols-2 gap-3 pt-4">
               <Link to="/arenas">
