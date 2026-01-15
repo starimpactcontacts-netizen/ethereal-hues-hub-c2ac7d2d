@@ -227,9 +227,9 @@ export default function HubPage() {
             transition={{ delay: 0.2 }}
           >
             <div className="flex items-center justify-between px-4 mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <h3 className="font-display text-lg text-foreground">LIVE NOW</h3>
+              <div className="flex items-center gap-2 py-1">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
+                <h3 className="font-display text-lg text-foreground leading-normal">LIVE NOW</h3>
               </div>
               <Link to="/events" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
                 VIEW ALL <ArrowRight size={10} />
