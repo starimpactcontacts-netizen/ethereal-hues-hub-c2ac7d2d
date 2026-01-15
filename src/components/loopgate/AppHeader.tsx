@@ -12,7 +12,7 @@ import InviteModal from './InviteModal';
 
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
-  { to: '/hub', icon: Calendar, label: 'Events', primary: true },
+  { to: '/arena', icon: Calendar, label: 'Arena', primary: true },
   { to: '/rankings', icon: Trophy, label: 'Rankings' },
   { to: '/class', icon: Shield, label: 'Class' },
   { to: '/index', icon: Search, label: 'Index' },
