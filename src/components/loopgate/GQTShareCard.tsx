@@ -2,9 +2,8 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, X, Copy, Check, Download, Music, Lightbulb, Settings, Heart, Fingerprint, Star, Flame, Crown, Zap, Shield } from 'lucide-react';
 import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
-import { getRankFromScore, getClassFromScore, scoringPillars, GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
+import { getRankFromScore, getClassFromScore, scoringPillars, type GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface GQTShareCardProps {
@@ -26,7 +25,7 @@ interface GQTShareCardProps {
 }
 
 // Icon mapping for pillars
-const pillarIcons: Record<string, any> = {
+const pillarIcons: Record<string, typeof Music> = {
   music: Music,
   lightbulb: Lightbulb,
   settings: Settings,
@@ -35,7 +34,7 @@ const pillarIcons: Record<string, any> = {
 };
 
 // Class icons
-const classIcons: Record<string, any> = {
+const classIcons: Record<string, typeof Flame> = {
   's++': Flame,
   's+': Flame,
   's': Crown,
@@ -119,6 +118,7 @@ const getRankCardStyle = (rank: GQTRank) => {
 
 export default function GQTShareCard({ isOpen, onClose, data }: GQTShareCardProps) {
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   if (!isOpen) return null;
@@ -173,12 +173,15 @@ Take the Global QOI Test → loopgate.io/gqt
   const handleDownload = async () => {
     if (!cardRef.current) return;
     
+    setDownloading(true);
     try {
-      toast.loading('Generating image...', { id: 'download' });
+      // Dynamic import to avoid TypeScript issues
+      const html2canvasModule = await import('html2canvas');
+      const html2canvas = html2canvasModule.default;
       
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: '#000000',
-        scale: 2, // Higher quality
+        scale: 2,
         useCORS: true,
         logging: false,
       });
@@ -188,10 +191,12 @@ Take the Global QOI Test → loopgate.io/gqt
       link.href = canvas.toDataURL('image/png');
       link.click();
       
-      toast.success('Card downloaded!', { id: 'download' });
+      toast.success('Card downloaded!');
     } catch (error) {
       console.error('Download error:', error);
-      toast.error('Could not download. Try screenshotting instead.', { id: 'download' });
+      toast.error('Screenshot the card instead!');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -257,7 +262,6 @@ Take the Global QOI Test → loopgate.io/gqt
 
             {/* Main Rank Display */}
             <div className="relative px-4 sm:px-6 py-5 sm:py-8 text-center">
-              {/* Big Rank Letter */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -267,13 +271,11 @@ Take the Global QOI Test → loopgate.io/gqt
                 {rank.rank}
               </motion.div>
               
-              {/* Score */}
               <div className="mt-1 sm:mt-2 flex items-baseline justify-center gap-2">
                 <span className="font-display text-3xl sm:text-4xl text-foreground">{data.score.toFixed(0)}</span>
                 <span className="text-lg sm:text-xl text-muted-foreground">/ 100</span>
               </div>
               
-              {/* Rank Description */}
               <p className={`text-xs sm:text-sm uppercase tracking-widest mt-1 sm:mt-2 ${cardStyle.textColor}`}>
                 {rank.description}
               </p>
@@ -362,12 +364,17 @@ Take the Global QOI Test → loopgate.io/gqt
             </Button>
             <Button
               onClick={handleDownload}
+              disabled={downloading}
               variant="outline"
               className="flex-1 h-10 sm:h-12 border-border text-xs sm:text-sm px-2 sm:px-4"
             >
-              <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Screenshot</span>
-              <span className="sm:hidden">Save</span>
+              {downloading ? (
+                <div className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              )}
+              <span className="hidden sm:inline">{downloading ? 'Saving...' : 'Download'}</span>
+              <span className="sm:hidden">{downloading ? '...' : 'Save'}</span>
             </Button>
             <Button
               onClick={handleShare}
@@ -380,7 +387,7 @@ Take the Global QOI Test → loopgate.io/gqt
 
           {/* Share hint */}
           <p className="text-center text-[9px] sm:text-[10px] text-muted-foreground mt-3 sm:mt-4 pb-2">
-            Screenshot the card above & post to TikTok / Instagram
+            Download or screenshot to post on TikTok / Instagram
           </p>
         </motion.div>
       </motion.div>
