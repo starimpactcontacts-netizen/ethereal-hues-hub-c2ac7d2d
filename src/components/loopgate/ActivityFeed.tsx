@@ -108,10 +108,12 @@ export default function ActivityFeed({ limit = 20, compact = false }: ActivityFe
   if (activities.length === 0) {
     return (
       <div className="text-center py-8">
-        <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-        <p className="text-sm text-muted-foreground">No activity yet</p>
+        <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
+          <Activity className="w-5 h-5 text-gold animate-pulse" />
+        </div>
+        <p className="text-sm font-medium text-foreground">Arena warming up</p>
         <p className="text-xs text-muted-foreground mt-1">
-          Activity will appear here when editors submit entries
+          Be the first to submit an edit
         </p>
       </div>
     );
