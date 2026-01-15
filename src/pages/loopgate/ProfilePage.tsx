@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXP } from "@/hooks/useXP";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import { useUserSubmissions } from "@/hooks/useUserSubmissions";
+import { motion, AnimatePresence } from "framer-motion";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
 import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
@@ -19,7 +21,7 @@ import LevelBadge from "@/components/loopgate/LevelBadge";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
 import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
-import MySubmissions from "@/components/loopgate/MySubmissions";
+import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import ArchetypeSelector from "@/components/loopgate/ArchetypeSelector";
 import SoftwareSelector from "@/components/loopgate/SoftwareSelector";
@@ -53,12 +55,16 @@ interface EditingPlatform {
   follower_count: number;
 }
 
+type ProfileTab = "submissions" | "settings";
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { profile, platforms, refreshProfile, signOut } = useAuth();
   const { isGuest, clearGuest } = useGuestMode();
   const { rankings } = useRealRankings();
   const { xp, level, streak } = useXP();
+  const { submissions } = useUserSubmissions();
+  const [activeTab, setActiveTab] = useState<ProfileTab>("submissions");
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
   const [showAddPlatform, setShowAddPlatform] = useState(false);
@@ -143,9 +149,9 @@ export default function ProfilePage() {
   }, [profile?.id]);
 
   const leagueColors: Record<string, string> = {
-    elite: "text-gold border-gold",
-    pro: "text-blue-400 border-blue-400",
-    open: "text-muted-foreground border-muted-foreground",
+    elite: "text-gold border-gold bg-gold/10",
+    pro: "text-blue-400 border-blue-400 bg-blue-400/10",
+    open: "text-muted-foreground border-muted-foreground bg-muted/10",
   };
 
   // Get platform for verification (prioritize TikTok, then others)
@@ -205,8 +211,10 @@ export default function ProfilePage() {
         .eq("id", profile.id);
       setContactEdited(false);
       refreshProfile();
+      toast.success("Profile saved");
     } catch (error) {
       console.error("Failed to save contact:", error);
+      toast.error("Failed to save");
     } finally {
       setIsSavingContact(false);
     }
@@ -269,633 +277,684 @@ export default function ProfilePage() {
       {/* Password Setup Banner for magic-link users */}
       <PasswordSetupBanner />
 
-      {/* Profile Hero */}
-      <div className="p-4">
-        <div className="bg-surface-1 border border-border p-6">
-          {/* Avatar */}
-          <div className="flex justify-center mb-4">
-            <div className="relative">
-              <button
-                onClick={() => setShowAvatarModal(true)}
-                className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gold group"
-              >
-                {profile.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt={profile.username}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <span className="font-display text-2xl text-muted-foreground">
-                      {profile.username?.charAt(0).toUpperCase() || '?'}
-                    </span>
-                  </div>
-                )}
-                
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="w-6 h-6 text-white" />
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Display Name + Username + League + Verified */}
-          <div className="flex items-start justify-between mb-1">
-            <div className="flex flex-col">
-              {(profile as any).display_name && (
-                <h1 className="font-display text-4xl flex items-center gap-2">
-                  {(profile as any).display_name}
-                  {level > 1 && <LevelBadge level={level} size="md" />}
-                  {profile.verification_status && <VerifiedBadge size="lg" />}
-                </h1>
-              )}
-              <div className="flex items-center gap-2">
-                {isEditingUsername ? (
-                  <div className="flex items-center gap-2 mt-1">
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      className="bg-background border border-gold px-2 py-1 text-sm font-medium outline-none w-32"
-                      maxLength={20}
-                      autoFocus
-                    />
-                    <button
-                      onClick={handleSaveUsername}
-                      disabled={isSavingUsername}
-                      className="p-1 text-gold hover:bg-gold/10"
-                    >
-                      <Check size={16} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setUsername(profile.username || '');
-                        setIsEditingUsername(false);
-                      }}
-                      className="p-1 text-muted-foreground hover:text-foreground"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    {!(profile as any).display_name ? (
-                      <h1 className="font-display text-4xl flex items-center gap-2">
-                        {profile.username}
-                        {level > 1 && <LevelBadge level={level} size="md" />}
-                        {profile.verification_status && <VerifiedBadge size="lg" />}
-                      </h1>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">@{profile.username}</span>
-                    )}
-                    {daysUntilUsernameChange === 0 ? (
-                      <button
-                        onClick={() => setIsEditingUsername(true)}
-                        className="p-1 text-muted-foreground hover:text-gold transition-colors"
-                        title="Edit username"
-                      >
-                        <Pencil size={12} />
-                      </button>
-                    ) : (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground" title={`Can change in ${daysUntilUsernameChange} days`}>
-                        <Clock size={10} />
-                        {daysUntilUsernameChange}d
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* CINEMATIC HERO HEADER */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      <div className="relative">
+        {/* Background layers */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-background to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(250,204,21,0.08),transparent_60%)]" />
+        
+        {/* Content */}
+        <div className="relative pt-6 pb-4 px-4">
+          {/* Top row: League + Settings */}
+          <div className="flex items-center justify-between mb-6">
             <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 ${leagueColors[league]}`}>
               {league}
             </span>
-          </div>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-2">
-            Global Editor{profile.created_at && ` since ${formatJoinDate(profile.created_at)}`}
-          </p>
-
-          {/* Archetype Badge */}
-          {(profile as any).archetype && (
-            <div className="mt-4">
-              <ArchetypeBadge archetype={(profile as any).archetype} size="lg" />
-            </div>
-          )}
-
-          {/* Software Badges */}
-          {(profile as any).software && (profile as any).software.length > 0 && (
-            <div className="mt-3">
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-1.5">Software</p>
-              <SoftwareBadges software={(profile as any).software} size="sm" />
-            </div>
-          )}
-
-          {/* Global Rank */}
-          <div className="my-6 py-6 border-y border-border text-center">
-            <p className="font-display text-7xl text-gold">#{userRank}</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-2">Global Rank</p>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-3 bg-background">
-              <p className="font-display text-2xl">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">Index</p>
-            </div>
-            <div className="text-center p-3 bg-background">
-              <p className="font-display text-2xl">{Number(profile.win_rate || 0).toFixed(0)}%</p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">Win Rate</p>
-            </div>
-            <div className="text-center p-3 bg-background">
-              <p className="font-display text-2xl">{profile.total_events || 0}</p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">Events</p>
-            </div>
-          </div>
-
-          {/* Spendable Index / Shop CTA */}
-          <Link to="/shop" className="block mt-4">
-            <div className="bg-gradient-to-r from-gold/15 to-gold/5 border border-gold/40 p-4 flex items-center justify-between hover:border-gold transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gold/20 border border-gold/50 flex items-center justify-center">
-                  <Coins className="w-5 h-5 text-gold" />
-                </div>
-                <div>
-                  <p className="font-display text-2xl text-gold">{(profile as any)?.spendable_index || 0}</p>
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Spendable Index</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-gold">
-                <ShoppingBag className="w-5 h-5" />
-                <span className="font-display text-sm">Shop</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Activity Status */}
-          <div className="pt-5 mt-5 border-t border-border flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Status</span>
             <ActivityStatusSelector
               userId={profile.id}
               currentStatus={(profile as any).activity_status || "online"}
               onStatusChange={refreshProfile}
             />
           </div>
-
-          {/* House */}
-          <div className="pt-5 mt-5 border-t border-border">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-2 mb-2">
-              House
-            </span>
-            {userHouse ? (
-              <HouseIdentityStrip house={userHouse} size="md" />
-            ) : (
-              <button
-                onClick={() => navigate("/houses")}
-                className="text-[10px] text-gold uppercase tracking-wider hover:underline"
-              >
-                Join a house
-              </button>
-            )}
-          </div>
-
-          {/* Crew */}
-          <div className="pt-5 mt-5 border-t border-border flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <Users size={12} />
-              Crew
-            </span>
-            {userCrew ? (
-              <CrewBadge crew={userCrew} size="md" />
-            ) : (
-              <button
-                onClick={() => navigate("/crews")}
-                className="text-[10px] text-gold uppercase tracking-wider hover:underline"
-              >
-                Join a crew
-              </button>
-            )}
-          </div>
-
-          {/* Invite Friends */}
-          <div className="pt-5 mt-5 border-t border-border">
+          
+          {/* Avatar */}
+          <div className="flex justify-center mb-4">
             <button
-              onClick={() => setShowInviteModal(true)}
-              className="w-full bg-gradient-to-r from-gold/20 to-gold/5 border border-gold/40 p-4 flex items-center justify-between hover:border-gold transition-colors"
+              onClick={() => setShowAvatarModal(true)}
+              className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-gold group shadow-[0_0_20px_rgba(250,204,21,0.2)]"
             >
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.username}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <span className="font-display text-3xl text-muted-foreground">
+                    {profile.username?.charAt(0).toUpperCase() || '?'}
+                  </span>
+                </div>
+              )}
+              
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
+            </button>
+          </div>
+          
+          {/* Name + Badges */}
+          <div className="text-center mb-4">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h1 className="font-display text-3xl">
+                {(profile as any).display_name || profile.username}
+              </h1>
+              {level > 1 && <LevelBadge level={level} size="md" />}
+              {profile.verification_status && <VerifiedBadge size="lg" />}
+            </div>
+            
+            {(profile as any).display_name && (
+              <p className="text-sm text-muted-foreground">@{profile.username}</p>
+            )}
+            
+            {/* Bio */}
+            {(profile as any).bio && (
+              <p className="text-sm text-muted-foreground mt-2 max-w-xs mx-auto">
+                {(profile as any).bio}
+              </p>
+            )}
+          </div>
+          
+          {/* Stats Row - TikTok style */}
+          <div className="flex items-center justify-center gap-8 mb-4">
+            <div className="text-center">
+              <p className="font-display text-2xl">{submissions.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Edits</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-2xl text-gold">#{userRank}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-2xl">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Index</p>
+            </div>
+          </div>
+          
+          {/* Archetype + House */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+            {(profile as any).archetype && (
+              <ArchetypeBadge archetype={(profile as any).archetype} size="sm" />
+            )}
+            {userHouse && (
+              <HouseBadge house={userHouse} size="sm" />
+            )}
+            {userCrew && (
+              <CrewBadge crew={userCrew} size="sm" />
+            )}
+          </div>
+          
+          {/* Shop Balance Strip */}
+          <Link to="/shop" className="block">
+            <div className="bg-gradient-to-r from-gold/15 via-gold/10 to-gold/5 border border-gold/30 px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gold/20 border border-gold/50 flex items-center justify-center">
-                  <Send className="w-5 h-5 text-gold" />
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold text-gold">Invite Friends</p>
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Earn XP for referrals</p>
-                </div>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gold" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Editor Identity Section */}
-      <section className="px-4 py-4">
-        <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
-          <Palette size={14} />
-          Editor Identity
-        </h3>
-        <div className="bg-surface-1 border border-border p-4 space-y-4">
-          {/* Archetype */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Archetype</label>
-              <button
-                onClick={() => setShowArchetypeSelector(true)}
-                className="text-[10px] text-gold uppercase tracking-wider hover:underline flex items-center gap-1"
-              >
-                <Pencil size={10} />
-                {(profile as any).archetype ? 'Change' : 'Set'}
-              </button>
-            </div>
-            {(profile as any).archetype ? (
-              <ArchetypeBadge archetype={(profile as any).archetype} size="md" animate={false} />
-            ) : (
-              <button
-                onClick={() => setShowArchetypeSelector(true)}
-                className="text-sm text-muted-foreground hover:text-gold transition-colors"
-              >
-                + Select your archetype
-              </button>
-            )}
-          </div>
-
-          {/* Software */}
-          <div className="pt-4 border-t border-border">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Wrench size={10} />
-                Software
-              </label>
-              <button
-                onClick={() => setShowSoftwareSelector(true)}
-                className="text-[10px] text-gold uppercase tracking-wider hover:underline flex items-center gap-1"
-              >
-                <Pencil size={10} />
-                Edit
-              </button>
-            </div>
-            {(profile as any).software && (profile as any).software.length > 0 ? (
-              <SoftwareBadges software={(profile as any).software} size="md" animate={false} />
-            ) : (
-              <button
-                onClick={() => setShowSoftwareSelector(true)}
-                className="text-sm text-muted-foreground hover:text-gold transition-colors"
-              >
-                + Add your software
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Verification Status Card */}
-      <section className="px-4 py-2">
-        <div className={`border p-4 ${profile.verification_status ? 'bg-gold/10 border-gold' : 'bg-surface-1 border-border'}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ShieldCheck size={20} className={profile.verification_status ? 'text-gold' : 'text-muted-foreground'} />
-              <div>
-                <p className="text-sm font-medium">
-                  {profile.verification_status ? 'VERIFIED' : 'UNVERIFIED'}
-                </p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  {profile.verification_status ? 'Account verified' : 'Verify to unlock features'}
-                </p>
-              </div>
-            </div>
-            {canVerify && (
-              <button
-                onClick={() => setShowVerificationModal(true)}
-                className="px-4 py-2 bg-gold text-black text-xs font-semibold uppercase tracking-wider"
-              >
-                Verify
-              </button>
-            )}
-            {!verifiablePlatform && !profile.verification_status && (
-              <span className="text-[10px] text-muted-foreground">Connect a platform first</span>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* XP & Level Section */}
-      <section className="px-4 py-4">
-        <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
-          <Zap size={14} />
-          Level & XP
-        </h3>
-        <div className="bg-surface-1 border border-border p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <LevelBadge level={level} size="lg" />
-              <div>
-                <p className="text-sm font-semibold">Level {level}</p>
-                <p className="text-[10px] text-muted-foreground">{xp.toLocaleString()} Total XP</p>
-              </div>
-            </div>
-            {streak && streak.current_streak > 0 && (
-              <div className="text-right">
-                <p className="text-gold font-semibold">🔥 {streak.current_streak} Day{streak.current_streak !== 1 ? 's' : ''}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Login Streak</p>
-              </div>
-            )}
-          </div>
-          <XPProgressBar xp={xp} level={level} size="md" />
-        </div>
-      </section>
-
-      {/* XP Activity */}
-      <section className="px-4 py-4">
-        <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
-          <Zap size={14} />
-          XP Activity
-        </h3>
-        <XPHistory limit={10} />
-      </section>
-
-      {/* Contact & Bio */}
-      <section className="px-4 py-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
-            <Pencil size={14} />
-            Contact & Bio
-          </h3>
-        </div>
-        <div className="bg-surface-1 border border-border p-4 space-y-4">
-          {/* Display Name */}
-          <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Display Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => {
-                if (e.target.value.length <= 50) {
-                  setDisplayName(e.target.value);
-                  setContactEdited(true);
-                }
-              }}
-              placeholder="Your public name"
-              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
-            />
-            <p className="text-[9px] text-muted-foreground mt-1">This is your public display name (can be changed anytime)</p>
-          </div>
-
-          {/* Bio */}
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Bio</label>
-              <span className="text-[10px] text-muted-foreground">{bio.length}/200</span>
-            </div>
-            <textarea
-              value={bio}
-              onChange={(e) => {
-                if (e.target.value.length <= 200) {
-                  setBio(e.target.value);
-                  setContactEdited(true);
-                }
-              }}
-              placeholder="Video Editor | Open to commissions"
-              className="w-full bg-background border border-border p-2 text-sm resize-none outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
-              rows={2}
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setContactEdited(true);
-              }}
-              placeholder="work@example.com"
-              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
-            />
-          </div>
-
-          {/* Discord */}
-          <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Discord</label>
-            <input
-              type="text"
-              value={discord}
-              onChange={(e) => {
-                setDiscord(e.target.value);
-                setContactEdited(true);
-              }}
-              placeholder="username#1234"
-              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
-            />
-          </div>
-
-          {/* Portfolio */}
-          <div>
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Portfolio (optional)</label>
-            <input
-              type="url"
-              value={portfolioUrl}
-              onChange={(e) => {
-                setPortfolioUrl(e.target.value);
-                setContactEdited(true);
-              }}
-              placeholder="https://yourportfolio.com"
-              className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
-            />
-          </div>
-
-          {contactEdited && (
-            <div className="flex justify-end pt-2 border-t border-border">
-              <button
-                onClick={handleSaveContact}
-                disabled={isSavingContact}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gold text-black text-[10px] font-semibold uppercase tracking-wider disabled:opacity-50"
-              >
-                <Save size={12} />
-                {isSavingContact ? "Saving..." : "Save"}
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Platforms */}
-      <section className="px-4 py-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
-            <ExternalLink size={14} />
-            Platforms
-          </h3>
-          {platforms.length < 3 && (
-            <button
-              onClick={() => setShowAddPlatform(true)}
-              className="flex items-center gap-1 text-[10px] text-gold uppercase tracking-wider hover:underline"
-            >
-              <Plus size={12} />
-              Add
-            </button>
-          )}
-        </div>
-        {platforms.length > 0 ? (
-          <div className="space-y-2">
-            {platforms.map((platform) => (
-              <button
-                key={platform.id}
-                onClick={() => setEditingPlatform({
-                  id: platform.id,
-                  platform: platform.platform,
-                  platform_username: platform.platform_username,
-                  platform_url: platform.platform_url,
-                  follower_count: platform.follower_count,
-                })}
-                className="w-full bg-surface-1 border border-border p-3 flex items-center justify-between hover:border-gold transition-colors text-left group"
-              >
+                <Coins className="w-5 h-5 text-gold" />
                 <div>
-                  <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
-                  <p className="text-xs text-muted-foreground">@{platform.platform_username}</p>
+                  <p className="font-display text-xl text-gold">{(profile as any)?.spendable_index || 0}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Spendable Index</p>
                 </div>
-                <Pencil size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-            ))}
-          </div>
-        ) : (
-          <button
-            onClick={() => setShowAddPlatform(true)}
-            className="w-full border border-dashed border-border p-4 text-center text-sm text-muted-foreground hover:border-gold hover:text-gold transition-colors"
-          >
-            + Add your first platform
-          </button>
-        )}
-      </section>
-
-      {/* My Submissions */}
-      <section className="px-4 py-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
-            <Send size={14} />
-            My Submissions
-          </h3>
-          <Link to="/events" className="text-[10px] text-gold uppercase tracking-wider hover:underline">
-            Browse Events →
+              </div>
+              <div className="flex items-center gap-1 text-gold text-xs">
+                <ShoppingBag className="w-4 h-4" />
+                <span>Shop</span>
+                <ChevronRight className="w-3 h-3" />
+              </div>
+            </div>
           </Link>
         </div>
-        <MySubmissions />
-      </section>
+      </div>
+      
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* TAB NAVIGATION */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      <div className="border-b border-border sticky top-0 bg-background z-10">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab("submissions")}
+            className={`flex-1 py-3 flex items-center justify-center gap-2 text-sm font-medium transition-colors relative ${
+              activeTab === "submissions" ? "text-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <Grid3X3 className="w-4 h-4" />
+            <span>Edits</span>
+            {activeTab === "submissions" && (
+              <motion.div
+                layoutId="profile-tab-indicator"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold"
+              />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`flex-1 py-3 flex items-center justify-center gap-2 text-sm font-medium transition-colors relative ${
+              activeTab === "settings" ? "text-foreground" : "text-muted-foreground"
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            <span>Settings</span>
+            {activeTab === "settings" && (
+              <motion.div
+                layoutId="profile-tab-indicator"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold"
+              />
+            )}
+          </button>
+        </div>
+      </div>
+      
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* TAB CONTENT */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      <AnimatePresence mode="wait">
+        {activeTab === "submissions" ? (
+          <motion.div
+            key="submissions"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <SubmissionGrid />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="settings"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="p-4 space-y-6"
+          >
+            {/* ─── Editor Identity ─── */}
+            <section>
+              <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+                <Palette size={14} />
+                Editor Identity
+              </h3>
+              <div className="bg-surface-1 border border-border p-4 space-y-4">
+                {/* Archetype */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Archetype</label>
+                    <button
+                      onClick={() => setShowArchetypeSelector(true)}
+                      className="text-[10px] text-gold uppercase tracking-wider hover:underline flex items-center gap-1"
+                    >
+                      <Pencil size={10} />
+                      {(profile as any).archetype ? 'Change' : 'Set'}
+                    </button>
+                  </div>
+                  {(profile as any).archetype ? (
+                    <ArchetypeBadge archetype={(profile as any).archetype} size="md" animate={false} />
+                  ) : (
+                    <button
+                      onClick={() => setShowArchetypeSelector(true)}
+                      className="text-sm text-muted-foreground hover:text-gold transition-colors"
+                    >
+                      + Select your archetype
+                    </button>
+                  )}
+                </div>
 
-      {/* Account Deletion Section */}
-      <section className="px-4 py-4 mt-8 mb-8">
-        <div className="bg-destructive/5 border border-destructive/20 p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-display text-lg text-destructive mb-1">Danger Zone</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="gap-2">
-                    <Trash2 className="w-4 h-4" />
-                    Delete Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="bg-surface-0 border-border">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-destructive flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5" />
-                      Delete Account
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="space-y-4">
-                      <p>This will permanently delete:</p>
-                      <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-                        <li>Your profile and all personal data</li>
-                        <li>Your connected platforms</li>
-                        <li>Your event participations and rankings</li>
-                        <li>Your XP history and achievements</li>
-                        <li>Your crew membership</li>
-                      </ul>
-                      <p className="font-semibold text-foreground">This action cannot be undone.</p>
-                      <div className="pt-2">
-                        <label className="text-sm text-muted-foreground">
-                          Type <span className="font-mono text-destructive">DELETE</span> to confirm:
-                        </label>
+                {/* Software */}
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      <Wrench size={10} />
+                      Software
+                    </label>
+                    <button
+                      onClick={() => setShowSoftwareSelector(true)}
+                      className="text-[10px] text-gold uppercase tracking-wider hover:underline flex items-center gap-1"
+                    >
+                      <Pencil size={10} />
+                      Edit
+                    </button>
+                  </div>
+                  {(profile as any).software && (profile as any).software.length > 0 ? (
+                    <SoftwareBadges software={(profile as any).software} size="md" animate={false} />
+                  ) : (
+                    <button
+                      onClick={() => setShowSoftwareSelector(true)}
+                      className="text-sm text-muted-foreground hover:text-gold transition-colors"
+                    >
+                      + Add your software
+                    </button>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* ─── Verification ─── */}
+            <section>
+              <div className={`border p-4 ${profile.verification_status ? 'bg-gold/10 border-gold' : 'bg-surface-1 border-border'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <ShieldCheck size={20} className={profile.verification_status ? 'text-gold' : 'text-muted-foreground'} />
+                    <div>
+                      <p className="text-sm font-medium">
+                        {profile.verification_status ? 'VERIFIED' : 'UNVERIFIED'}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                        {profile.verification_status ? 'Account verified' : 'Verify to unlock features'}
+                      </p>
+                    </div>
+                  </div>
+                  {canVerify && (
+                    <button
+                      onClick={() => setShowVerificationModal(true)}
+                      className="px-4 py-2 bg-gold text-black text-xs font-semibold uppercase tracking-wider"
+                    >
+                      Verify
+                    </button>
+                  )}
+                  {!verifiablePlatform && !profile.verification_status && (
+                    <span className="text-[10px] text-muted-foreground">Connect a platform first</span>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* ─── Level & XP ─── */}
+            <section>
+              <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+                <Zap size={14} />
+                Level & XP
+              </h3>
+              <div className="bg-surface-1 border border-border p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <LevelBadge level={level} size="lg" />
+                    <div>
+                      <p className="text-sm font-semibold">Level {level}</p>
+                      <p className="text-[10px] text-muted-foreground">{xp.toLocaleString()} Total XP</p>
+                    </div>
+                  </div>
+                  {streak && streak.current_streak > 0 && (
+                    <div className="text-right">
+                      <p className="text-gold font-semibold">🔥 {streak.current_streak} Day{streak.current_streak !== 1 ? 's' : ''}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Login Streak</p>
+                    </div>
+                  )}
+                </div>
+                <XPProgressBar xp={xp} level={level} size="md" />
+              </div>
+            </section>
+
+            {/* ─── XP Activity ─── */}
+            <section>
+              <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+                <Zap size={14} />
+                XP Activity
+              </h3>
+              <XPHistory limit={5} />
+            </section>
+
+            {/* ─── House & Crew ─── */}
+            <section>
+              <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+                <Users size={14} />
+                Affiliations
+              </h3>
+              <div className="bg-surface-1 border border-border p-4 space-y-4">
+                {/* House */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">House</span>
+                  {userHouse ? (
+                    <HouseIdentityStrip house={userHouse} size="sm" />
+                  ) : (
+                    <button
+                      onClick={() => navigate("/houses")}
+                      className="text-[10px] text-gold uppercase tracking-wider hover:underline"
+                    >
+                      Join a house
+                    </button>
+                  )}
+                </div>
+                
+                {/* Crew */}
+                <div className="pt-4 border-t border-border flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Crew</span>
+                  {userCrew ? (
+                    <CrewBadge crew={userCrew} size="md" />
+                  ) : (
+                    <button
+                      onClick={() => navigate("/crews")}
+                      className="text-[10px] text-gold uppercase tracking-wider hover:underline"
+                    >
+                      Join a crew
+                    </button>
+                  )}
+                </div>
+              </div>
+            </section>
+
+            {/* ─── Invite Friends ─── */}
+            <section>
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="w-full bg-gradient-to-r from-gold/20 to-gold/5 border border-gold/40 p-4 flex items-center justify-between hover:border-gold transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gold/20 border border-gold/50 flex items-center justify-center">
+                    <Send className="w-5 h-5 text-gold" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-gold">Invite Friends</p>
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Earn XP for referrals</p>
+                  </div>
+                </div>
+                <ArrowRight className="w-5 h-5 text-gold" />
+              </button>
+            </section>
+
+            {/* ─── Contact & Bio ─── */}
+            <section>
+              <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
+                <Pencil size={14} />
+                Profile Details
+              </h3>
+              <div className="bg-surface-1 border border-border p-4 space-y-4">
+                {/* Username */}
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Username</label>
+                  <div className="flex items-center gap-2">
+                    {isEditingUsername ? (
+                      <>
                         <input
                           type="text"
-                          value={deleteConfirmText}
-                          onChange={(e) => setDeleteConfirmText(e.target.value)}
-                          placeholder="DELETE"
-                          className="w-full mt-2 px-3 py-2 bg-background border border-border text-sm outline-none focus:border-destructive"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                          className="flex-1 bg-background border border-gold px-2 py-1.5 text-sm outline-none"
+                          maxLength={20}
+                          autoFocus
                         />
-                      </div>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel 
-                      onClick={() => setDeleteConfirmText("")}
-                      className="border-border"
-                    >
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      disabled={deleteConfirmText !== "DELETE" || isDeletingAccount}
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        if (deleteConfirmText !== "DELETE") return;
-                        
-                        setIsDeletingAccount(true);
-                        try {
-                          // Delete user data from all tables
-                          const userId = profile.id;
-                          
-                          // Delete in order to respect foreign key constraints
-                          await supabase.from("xp_history").delete().eq("user_id", userId);
-                          await supabase.from("daily_xp_tracking").delete().eq("user_id", userId);
-                          await supabase.from("login_streaks").delete().eq("user_id", userId);
-                          await supabase.from("event_participations").delete().eq("user_id", userId);
-                          await supabase.from("connected_platforms").delete().eq("user_id", userId);
-                          await supabase.from("crew_messages").delete().eq("user_id", userId);
-                          await supabase.from("crew_join_requests").delete().eq("user_id", userId);
-                          await supabase.from("crew_members").delete().eq("user_id", userId);
-                          await supabase.from("arena_messages").delete().eq("user_id", userId);
-                          await supabase.from("active_sessions").delete().eq("user_id", userId);
-                          await supabase.from("user_roles").delete().eq("user_id", userId);
-                          await supabase.from("profiles").delete().eq("id", userId);
-                          
-                          // Sign out and redirect
-                          await signOut();
-                          toast.success("Account deleted successfully");
-                          navigate("/");
-                        } catch (error) {
-                          console.error("Failed to delete account:", error);
-                          toast.error("Failed to delete account. Please contact support.");
-                        } finally {
-                          setIsDeletingAccount(false);
-                          setDeleteConfirmText("");
-                        }
-                      }}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      {isDeletingAccount ? "Deleting..." : "Delete My Account"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </div>
-      </section>
+                        <button
+                          onClick={handleSaveUsername}
+                          disabled={isSavingUsername}
+                          className="p-1.5 text-gold hover:bg-gold/10"
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setUsername(profile.username || '');
+                            setIsEditingUsername(false);
+                          }}
+                          className="p-1.5 text-muted-foreground hover:text-foreground"
+                        >
+                          <X size={16} />
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex-1 text-sm">@{profile.username}</span>
+                        {daysUntilUsernameChange === 0 ? (
+                          <button
+                            onClick={() => setIsEditingUsername(true)}
+                            className="p-1 text-muted-foreground hover:text-gold transition-colors"
+                          >
+                            <Pencil size={12} />
+                          </button>
+                        ) : (
+                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                            <Clock size={10} />
+                            {daysUntilUsernameChange}d
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
 
+                {/* Display Name */}
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Display Name</label>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 50) {
+                        setDisplayName(e.target.value);
+                        setContactEdited(true);
+                      }
+                    }}
+                    placeholder="Your public name"
+                    className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+                  />
+                </div>
+
+                {/* Bio */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Bio</label>
+                    <span className="text-[10px] text-muted-foreground">{bio.length}/200</span>
+                  </div>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 200) {
+                        setBio(e.target.value);
+                        setContactEdited(true);
+                      }
+                    }}
+                    placeholder="Video Editor | Open to commissions"
+                    className="w-full bg-background border border-border p-2 text-sm resize-none outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+                    rows={2}
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setContactEdited(true);
+                    }}
+                    placeholder="work@example.com"
+                    className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+                  />
+                </div>
+
+                {/* Discord */}
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Discord</label>
+                  <input
+                    type="text"
+                    value={discord}
+                    onChange={(e) => {
+                      setDiscord(e.target.value);
+                      setContactEdited(true);
+                    }}
+                    placeholder="username"
+                    className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+                  />
+                </div>
+
+                {/* Portfolio */}
+                <div>
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1 block">Portfolio (optional)</label>
+                  <input
+                    type="url"
+                    value={portfolioUrl}
+                    onChange={(e) => {
+                      setPortfolioUrl(e.target.value);
+                      setContactEdited(true);
+                    }}
+                    placeholder="https://yourportfolio.com"
+                    className="w-full bg-background border border-border p-2 text-sm outline-none placeholder:text-muted-foreground/50 focus:border-gold transition-colors"
+                  />
+                </div>
+
+                {contactEdited && (
+                  <div className="flex justify-end pt-2 border-t border-border">
+                    <button
+                      onClick={handleSaveContact}
+                      disabled={isSavingContact}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gold text-black text-[10px] font-semibold uppercase tracking-wider disabled:opacity-50"
+                    >
+                      <Save size={12} />
+                      {isSavingContact ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* ─── Platforms ─── */}
+            <section>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-display text-lg text-muted-foreground flex items-center gap-2">
+                  <ExternalLink size={14} />
+                  Platforms
+                </h3>
+                {platforms.length < 3 && (
+                  <button
+                    onClick={() => setShowAddPlatform(true)}
+                    className="flex items-center gap-1 text-[10px] text-gold uppercase tracking-wider hover:underline"
+                  >
+                    <Plus size={12} />
+                    Add
+                  </button>
+                )}
+              </div>
+              {platforms.length > 0 ? (
+                <div className="space-y-2">
+                  {platforms.map((platform) => (
+                    <button
+                      key={platform.id}
+                      onClick={() => setEditingPlatform({
+                        id: platform.id,
+                        platform: platform.platform,
+                        platform_username: platform.platform_username,
+                        platform_url: platform.platform_url,
+                        follower_count: platform.follower_count,
+                      })}
+                      className="w-full bg-surface-1 border border-border p-3 flex items-center justify-between hover:border-gold transition-colors text-left group"
+                    >
+                      <div>
+                        <p className="font-semibold text-sm">{platformLabels[platform.platform]}</p>
+                        <p className="text-xs text-muted-foreground">@{platform.platform_username}</p>
+                      </div>
+                      <Pencil size={14} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAddPlatform(true)}
+                  className="w-full border border-dashed border-border p-4 text-center text-sm text-muted-foreground hover:border-gold hover:text-gold transition-colors"
+                >
+                  + Add your first platform
+                </button>
+              )}
+            </section>
+
+            {/* ─── Danger Zone ─── */}
+            <section className="mt-8">
+              <div className="bg-destructive/5 border border-destructive/20 p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-display text-lg text-destructive mb-1">Danger Zone</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="gap-2">
+                          <Trash2 className="w-4 h-4" />
+                          Delete Account
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-surface-0 border-border">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-destructive flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5" />
+                            Delete Account
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="space-y-4">
+                            <p>This will permanently delete:</p>
+                            <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                              <li>Your profile and all personal data</li>
+                              <li>Your connected platforms</li>
+                              <li>Your event participations and rankings</li>
+                              <li>Your XP history and achievements</li>
+                              <li>Your crew membership</li>
+                            </ul>
+                            <p className="font-semibold text-foreground">This action cannot be undone.</p>
+                            <div className="pt-2">
+                              <label className="text-sm text-muted-foreground">
+                                Type <span className="font-mono text-destructive">DELETE</span> to confirm:
+                              </label>
+                              <input
+                                type="text"
+                                value={deleteConfirmText}
+                                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                placeholder="DELETE"
+                                className="w-full mt-2 px-3 py-2 bg-background border border-border text-sm outline-none focus:border-destructive"
+                              />
+                            </div>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel 
+                            onClick={() => setDeleteConfirmText("")}
+                            className="border-border"
+                          >
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            disabled={deleteConfirmText !== "DELETE" || isDeletingAccount}
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              if (deleteConfirmText !== "DELETE") return;
+                              
+                              setIsDeletingAccount(true);
+                              try {
+                                // Delete user data from all tables
+                                const userId = profile.id;
+                                
+                                // Delete in order to respect foreign key constraints
+                                await supabase.from("xp_history").delete().eq("user_id", userId);
+                                await supabase.from("daily_xp_tracking").delete().eq("user_id", userId);
+                                await supabase.from("login_streaks").delete().eq("user_id", userId);
+                                await supabase.from("event_participations").delete().eq("user_id", userId);
+                                await supabase.from("connected_platforms").delete().eq("user_id", userId);
+                                await supabase.from("crew_messages").delete().eq("user_id", userId);
+                                await supabase.from("crew_join_requests").delete().eq("user_id", userId);
+                                await supabase.from("crew_members").delete().eq("user_id", userId);
+                                await supabase.from("arena_messages").delete().eq("user_id", userId);
+                                await supabase.from("active_sessions").delete().eq("user_id", userId);
+                                await supabase.from("user_roles").delete().eq("user_id", userId);
+                                await supabase.from("profiles").delete().eq("id", userId);
+                                
+                                // Sign out and redirect
+                                await signOut();
+                                toast.success("Account deleted successfully");
+                                navigate("/");
+                              } catch (error) {
+                                console.error("Failed to delete account:", error);
+                                toast.error("Failed to delete account. Please contact support.");
+                              } finally {
+                                setIsDeletingAccount(false);
+                                setDeleteConfirmText("");
+                              }
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            {isDeletingAccount ? "Deleting..." : "Delete My Account"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* MODALS */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      
       {/* Verification Modal */}
       {verifiablePlatform && (
         <VerificationModal
