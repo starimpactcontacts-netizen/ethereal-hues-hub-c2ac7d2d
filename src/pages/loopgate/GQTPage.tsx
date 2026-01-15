@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink, LogIn, Zap, RefreshCw, Play, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink, LogIn, Zap, RefreshCw, ChevronRight, ChevronLeft } from 'lucide-react';
 import { validatePlatformUrl, detectPlatform, type PlatformType } from '@/lib/urlValidation';
 import { toast } from 'sonner';
 import GQTResultCard from '@/components/loopgate/GQTResultCard';
@@ -358,10 +358,10 @@ export default function GQTPage() {
             />
             
             <div className="grid grid-cols-2 gap-3 pt-4">
-              <Link to="/arenas">
+              <Link to="/arena">
                 <Button className="w-full bg-gold hover:bg-gold/90 text-background font-display">
-                  <Play className="w-4 h-4 mr-2" />
-                  Join Event
+                  <Zap className="w-4 h-4 mr-2" />
+                  Open Arena
                 </Button>
               </Link>
               <Button

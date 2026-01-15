@@ -179,20 +179,20 @@ Take the Global QOI Test → loopgate.io/gqt
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-start md:items-center justify-center p-2 sm:p-4 pt-8 sm:pt-4 bg-black/95 backdrop-blur-sm overflow-y-auto"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="relative max-w-sm w-full"
+          className="relative max-w-[320px] sm:max-w-sm w-full my-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute -top-12 right-0 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
+            className="absolute -top-10 sm:-top-12 right-0 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
           >
             <X size={24} />
           </button>
@@ -224,66 +224,66 @@ Take the Global QOI Test → loopgate.io/gqt
             </div>
 
             {/* Header with Logo */}
-            <div className="relative px-6 pt-6 pb-4 border-b border-border/30">
+            <div className="relative px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border/30">
               <div className="flex items-center justify-between">
-                <img src={loopgateLogo} alt="Loopgate" className="h-6 opacity-70" />
-                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.3em]">
+                <img src={loopgateLogo} alt="Loopgate" className="h-5 sm:h-6 opacity-70" />
+                <span className="text-[8px] sm:text-[9px] text-muted-foreground uppercase tracking-[0.2em] sm:tracking-[0.3em]">
                   GLOBAL QOI TEST
                 </span>
               </div>
             </div>
 
             {/* Main Rank Display */}
-            <div className="relative px-6 py-8 text-center">
+            <div className="relative px-4 sm:px-6 py-5 sm:py-8 text-center">
               {/* Big Rank Letter */}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', delay: 0.2 }}
-                className={`font-display text-[120px] leading-none ${cardStyle.textColor}`}
+                className={`font-display text-[80px] sm:text-[120px] leading-none ${cardStyle.textColor}`}
               >
                 {rank.rank}
               </motion.div>
               
               {/* Score */}
-              <div className="mt-2 flex items-baseline justify-center gap-2">
-                <span className="font-display text-4xl text-foreground">{data.score.toFixed(0)}</span>
-                <span className="text-xl text-muted-foreground">/ 100</span>
+              <div className="mt-1 sm:mt-2 flex items-baseline justify-center gap-2">
+                <span className="font-display text-3xl sm:text-4xl text-foreground">{data.score.toFixed(0)}</span>
+                <span className="text-lg sm:text-xl text-muted-foreground">/ 100</span>
               </div>
               
               {/* Rank Description */}
-              <p className={`text-sm uppercase tracking-widest mt-2 ${cardStyle.textColor}`}>
+              <p className={`text-xs sm:text-sm uppercase tracking-widest mt-1 sm:mt-2 ${cardStyle.textColor}`}>
                 {rank.description}
               </p>
             </div>
 
             {/* User + League */}
-            <div className="relative px-6 py-4 border-y border-border/30 flex items-center justify-between">
-              <div>
-                <p className="font-display text-lg text-foreground">
+            <div className="relative px-4 sm:px-6 py-3 sm:py-4 border-y border-border/30 flex items-center justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="font-display text-base sm:text-lg text-foreground truncate">
                   {data.displayName || data.username}
                 </p>
                 {data.displayName && (
-                  <p className="text-xs text-muted-foreground">@{data.username}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">@{data.username}</p>
                 )}
               </div>
-              <div className={`px-3 py-2 ${cardStyle.accentBg} border ${cardStyle.borderColor} flex items-center gap-2`}>
-                <ClassIcon className={`w-4 h-4 ${gqtClass.color}`} />
-                <span className={`text-xs font-display uppercase ${gqtClass.color}`}>{gqtClass.name}</span>
+              <div className={`px-2 sm:px-3 py-1.5 sm:py-2 ${cardStyle.accentBg} border ${cardStyle.borderColor} flex items-center gap-1.5 sm:gap-2 shrink-0`}>
+                <ClassIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${gqtClass.color}`} />
+                <span className={`text-[10px] sm:text-xs font-display uppercase ${gqtClass.color}`}>{gqtClass.name}</span>
               </div>
             </div>
 
             {/* Score Breakdown */}
-            <div className="relative px-6 py-4 grid grid-cols-5 gap-1">
+            <div className="relative px-3 sm:px-6 py-3 sm:py-4 grid grid-cols-5 gap-0.5 sm:gap-1">
               {pillarsWithScores.map((pillar) => {
                 const Icon = pillarIcons[pillar.icon] || Star;
                 return (
                   <div key={pillar.key} className="text-center">
-                    <Icon className="w-3 h-3 mx-auto mb-1 text-muted-foreground" />
-                    <p className="font-display text-sm text-foreground">
+                    <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 mx-auto mb-0.5 sm:mb-1 text-muted-foreground" />
+                    <p className="font-display text-xs sm:text-sm text-foreground">
                       {pillar.score?.toFixed(0) ?? '--'}
                     </p>
-                    <p className="text-[7px] text-muted-foreground uppercase tracking-wider">
+                    <p className="text-[6px] sm:text-[7px] text-muted-foreground uppercase tracking-wider">
                       /{pillar.maxPoints}
                     </p>
                   </div>
@@ -293,70 +293,72 @@ Take the Global QOI Test → loopgate.io/gqt
 
             {/* Judge Quote */}
             {data.judgeQuote && (
-              <div className="relative px-6 py-4 border-t border-border/30">
-                <p className="text-sm text-foreground/80 italic text-center leading-relaxed">
+              <div className="relative px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30">
+                <p className="text-xs sm:text-sm text-foreground/80 italic text-center leading-relaxed">
                   "{data.judgeQuote}"
                 </p>
               </div>
             )}
 
             {/* Badges */}
-            <div className="relative px-6 py-4 border-t border-border/30 flex items-center justify-center gap-3">
+            <div className="relative px-3 sm:px-6 py-3 sm:py-4 border-t border-border/30 flex items-center justify-center gap-1.5 sm:gap-3 flex-wrap">
               {indexFloor > 0 && (
-                <span className="text-[9px] uppercase tracking-wider px-2 py-1 bg-gold/10 text-gold border border-gold/30">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gold/10 text-gold border border-gold/30">
                   +{indexFloor} INDEX
                 </span>
               )}
               {data.software && (
-                <span className="text-[9px] uppercase tracking-wider px-2 py-1 bg-surface-1 text-muted-foreground border border-border">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface-1 text-muted-foreground border border-border">
                   {data.software}
                 </span>
               )}
               {data.yearsEditing && (
-                <span className="text-[9px] uppercase tracking-wider px-2 py-1 bg-surface-1 text-muted-foreground border border-border">
+                <span className="text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2 py-0.5 sm:py-1 bg-surface-1 text-muted-foreground border border-border">
                   {data.yearsEditing}
                 </span>
               )}
             </div>
 
             {/* Footer CTA */}
-            <div className="relative px-6 py-4 border-t border-border/30 bg-black/30">
-              <p className="text-center text-xs text-muted-foreground">
+            <div className="relative px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30 bg-black/30">
+              <p className="text-center text-[10px] sm:text-xs text-muted-foreground">
                 Take the test → <span className="text-gold font-semibold">loopgate.io/gqt</span>
               </p>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 mt-4">
+          <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
             <Button
               onClick={handleCopy}
               variant="outline"
-              className="flex-1 h-12 border-border"
+              className="flex-1 h-10 sm:h-12 border-border text-xs sm:text-sm px-2 sm:px-4"
             >
-              {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
-              {copied ? 'Copied!' : 'Copy Text'}
+              {copied ? <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 text-green-500" /> : <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />}
+              <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy Text'}</span>
+              <span className="sm:hidden">{copied ? '✓' : 'Copy'}</span>
             </Button>
             <Button
               onClick={handleDownload}
               variant="outline"
-              className="flex-1 h-12 border-border"
+              className="flex-1 h-10 sm:h-12 border-border text-xs sm:text-sm px-2 sm:px-4"
             >
-              <Download className="w-4 h-4 mr-2" />
-              Screenshot
+              <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Screenshot</span>
+              <span className="sm:hidden">Save</span>
             </Button>
             <Button
               onClick={handleShare}
-              className="flex-1 h-12 bg-gold text-background hover:bg-gold/90"
+              className="flex-1 h-10 sm:h-12 bg-gold text-background hover:bg-gold/90 text-xs sm:text-sm px-2 sm:px-4"
             >
-              <Share2 className="w-4 h-4 mr-2" />
+              <Share2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Share
             </Button>
           </div>
 
           {/* Share hint */}
-          <p className="text-center text-[10px] text-muted-foreground mt-4">
-            Screenshot & post to TikTok / Instagram
+          <p className="text-center text-[9px] sm:text-[10px] text-muted-foreground mt-3 sm:mt-4 pb-2">
+            Screenshot the card above & post to TikTok / Instagram
           </p>
         </motion.div>
       </motion.div>
