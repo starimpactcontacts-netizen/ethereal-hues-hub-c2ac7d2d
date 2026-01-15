@@ -1,12 +1,11 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Trophy, Search, Users, User, LogIn } from "lucide-react";
+import { Home, Trophy, Search, User, LogIn, Zap } from "lucide-react";
 import { useGuestMode } from "@/hooks/useGuestMode";
 
 const navItems = [
   { to: "/hub", icon: Home, label: "Hub" },
   { to: "/rankings", icon: Trophy, label: "Rankings" },
-  { to: "/index", icon: Search, label: "Index" },
-  { to: "/crews", icon: Users, label: "Crews" },
+  { to: "/index", icon: Search, label: "Discover" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
 
@@ -17,6 +16,10 @@ export default function BottomNav() {
   const handleSignIn = () => {
     clearGuest();
     navigate("/auth");
+  };
+
+  const handleArenaClick = () => {
+    navigate("/hub");
   };
 
   return (
@@ -38,12 +41,51 @@ export default function BottomNav() {
       )}
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-bottom">
-        <div className="flex items-center justify-around h-14 max-w-lg mx-auto">
-          {navItems.map((item) => (
+        <div className="flex items-center justify-around h-16 max-w-lg mx-auto relative">
+          {/* Left side items (Hub, Rankings) */}
+          {navItems.slice(0, 2).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.to === "/"}
+              className={({ isActive }) =>
+                `flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
+                  isActive ? "text-gold" : "text-muted-foreground"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <span className="text-[9px] font-semibold uppercase tracking-[0.1em]">
+                    {item.label}
+                  </span>
+                </>
+              )}
+            </NavLink>
+          ))}
+
+          {/* Center Arena Button - THE ACTION BUTTON */}
+          <button
+            onClick={handleArenaClick}
+            className="relative flex flex-col items-center justify-center -mt-5"
+          >
+            {/* Glow effect */}
+            <div className="absolute inset-0 -top-3 w-16 h-16 bg-gold/30 rounded-full blur-xl" />
+            
+            {/* Button circle */}
+            <div className="relative w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-full flex items-center justify-center shadow-lg shadow-gold/40 border-2 border-gold/60">
+              <Zap className="w-6 h-6 text-black fill-black" />
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-[0.15em] text-gold mt-1">
+              Arena
+            </span>
+          </button>
+
+          {/* Right side items (Discover, Profile) */}
+          {navItems.slice(2).map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
                   isActive ? "text-gold" : "text-muted-foreground"

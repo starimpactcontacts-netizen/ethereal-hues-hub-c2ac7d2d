@@ -137,6 +137,9 @@ export default function IndexPage() {
     { id: "class", label: "CLASS", icon: Target },
   ];
 
+  // Crews tab handler - navigate to crews page
+  const handleCrewsTab = () => navigate("/crews");
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <SEO {...pageSEO.index} />
@@ -198,6 +201,14 @@ export default function IndexPage() {
                 </button>
               );
             })}
+            {/* Crews tab - separate navigation */}
+            <button
+              onClick={handleCrewsTab}
+              className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold tracking-wider transition-all text-muted-foreground hover:text-white hover:bg-white/5"
+            >
+              <Users className="w-4 h-4" />
+              CREWS
+            </button>
           </div>
         </div>
       </div>
