@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, Shield, Crown, Lock, Star, Zap, Award, ChevronRight } from "lucide-react";
+import { Plus, Search, Users, Shield, Crown, Lock, Star, Zap, Award, ChevronRight, Trophy } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import PageTransition from "@/components/loopgate/PageTransition";
 import HouseCard from "@/components/loopgate/houses/HouseCard";
 import HouseIcon from "@/components/loopgate/houses/HouseIcon";
+import loopgateLogo from "@/assets/loopgate-logo.png";
 import { toast } from "sonner";
 
 interface House {
@@ -75,7 +76,6 @@ export default function CrewsPage() {
   const fetchCrews = async () => {
     setLoading(true);
 
-    // Fetch all crews
     const { data: allCrews, error } = await supabase
       .from("crews")
       .select("*")
@@ -89,7 +89,6 @@ export default function CrewsPage() {
 
     setCrews(allCrews || []);
 
-    // If user has a crew, find it
     if (profile?.crew_id) {
       const userCrew = allCrews?.find((c) => c.id === profile.crew_id);
       setMyCrew(userCrew || null);
@@ -97,7 +96,6 @@ export default function CrewsPage() {
       setMyCrew(null);
     }
 
-    // Count crews owned by user (max 2 allowed)
     if (user) {
       const ownedCount = allCrews?.filter((c) => c.owner_id === user.id).length || 0;
       setOwnedCrewsCount(ownedCount);
@@ -109,7 +107,6 @@ export default function CrewsPage() {
   const fetchHouses = async () => {
     setHousesLoading(true);
     
-    // Fetch all houses
     const { data: housesData, error } = await supabase
       .from("houses")
       .select("*")
@@ -122,14 +119,12 @@ export default function CrewsPage() {
       return;
     }
 
-    // Fetch all house members with their index scores in a single query
     const houseIds = (housesData || []).map(h => h.id);
     const { data: allMembers } = await supabase
       .from("house_members")
       .select("house_id, user_id, profile:profiles!house_members_user_id_fkey(global_index_score)")
       .in("house_id", houseIds.length > 0 ? houseIds : ['']);
 
-    // Group members by house and calculate stats
     const membersByHouse = new Map<string, number>();
     (allMembers || []).forEach((m: any) => {
       const current = membersByHouse.get(m.house_id) || 0;
@@ -143,12 +138,10 @@ export default function CrewsPage() {
 
     setHouses(housesWithIndex);
     
-    // Set user's current house
     if (profile?.house_id) {
       setUserHouseId(profile.house_id);
     }
     
-    // Check for pending applications
     if (user) {
       const { data: pendingApp } = await supabase
         .from("house_applications")
@@ -181,7 +174,6 @@ export default function CrewsPage() {
     const house = houses.find(h => h.id === houseId);
     
     if (house?.requires_approval) {
-      // Create application
       const { error } = await supabase
         .from("house_applications")
         .insert({
@@ -200,7 +192,6 @@ export default function CrewsPage() {
         toast.success("Application submitted!");
       }
     } else {
-      // Direct join
       const { error } = await supabase
         .from("house_members")
         .insert({
@@ -212,7 +203,6 @@ export default function CrewsPage() {
       if (error) {
         toast.error("Failed to join house");
       } else {
-        // Update profile
         await supabase
           .from("profiles")
           .update({ house_id: houseId, house_changed_at: new Date().toISOString() })
@@ -237,7 +227,6 @@ export default function CrewsPage() {
     if (!user) return;
 
     if (crew.join_type === "invite_only") {
-      // Create join request
       const { error } = await supabase.from("crew_join_requests").insert({
         crew_id: crew.id,
         user_id: user.id,
@@ -245,15 +234,14 @@ export default function CrewsPage() {
 
       if (error) {
         if (error.code === "23505") {
-          alert("You already have a pending request for this crew.");
+          toast.error("You already have a pending request for this crew.");
         } else {
           console.error("Error requesting to join:", error);
         }
       } else {
-        alert("Join request sent!");
+        toast.success("Join request sent!");
       }
     } else {
-      // Direct join for open crews
       const { error } = await supabase.from("crew_members").insert({
         crew_id: crew.id,
         user_id: user.id,
@@ -268,39 +256,60 @@ export default function CrewsPage() {
     }
   };
 
-  // Get user's house for display
   const userHouse = houses.find(h => h.id === userHouseId);
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-background pb-24">
-        {/* Header */}
-        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-          <div className="px-4 py-4">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-xl font-bold tracking-tight">Crews & Houses</h1>
-              <div className="flex items-center gap-2">
-                {ownedCrewsCount < 2 && (
-                  <Button
-                    size="sm"
-                    onClick={() => navigate("/crews/create")}
-                    className="bg-gold text-black hover:bg-gold/90"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Create Crew
-                  </Button>
-                )}
-              </div>
+        {/* Cinematic Hero Header */}
+        <div className="relative overflow-hidden">
+          {/* Multi-layer gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-gold/10 via-gold/3 to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.15),transparent_60%)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-gold/8 blur-[80px] rounded-full" />
+          
+          {/* Decorative lines */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+          
+          <header className="relative z-10 px-4 pt-5 pb-6">
+            <div className="flex items-center justify-between mb-5">
+              <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" />
+              {ownedCrewsCount < 2 && (
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/crews/create")}
+                  className="bg-gold text-background hover:bg-gold/90 font-bold"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Create Crew
+                </Button>
+              )}
             </div>
+            
+            {/* Hero Title */}
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4 text-gold" />
+                <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-medium">Community</span>
+              </div>
+              <h1 className="font-display text-4xl tracking-wider text-white mb-1">CREWS & HOUSES</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
+                Find your tribe
+              </p>
+            </div>
+          </header>
 
-            {/* Search */}
+          {/* Search */}
+          <div className="relative z-10 px-4 pb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
                 placeholder="Search crews..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-muted/50 border-border"
+                className="w-full bg-surface-0/50 backdrop-blur-sm border border-border/50 pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-gold/50 transition-colors"
               />
             </div>
           </div>
@@ -312,7 +321,7 @@ export default function CrewsPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-gold" />
-                <h2 className="text-lg font-bold tracking-tight">Houses</h2>
+                <h2 className="font-display text-lg font-bold tracking-wide uppercase">Houses</h2>
               </div>
               <Button
                 variant="ghost"
@@ -326,50 +335,43 @@ export default function CrewsPage() {
             </div>
 
             {/* User's House Banner */}
-            {userHouse && (
-              <div
-                onClick={() => navigate(`/houses/${userHouse.id}`)}
-                className="relative overflow-hidden rounded-xl p-5 mb-4 cursor-pointer transition-transform hover:scale-[1.01]"
-                style={{
-                  background: `linear-gradient(135deg, ${userHouse.primary_color}20, ${userHouse.secondary_color}40)`,
-                  border: `1px solid ${userHouse.primary_color}50`,
-                }}
-              >
-                <div
-                  className="absolute inset-0 opacity-20"
+            <AnimatePresence>
+              {userHouse && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => navigate(`/houses/${userHouse.id}`)}
+                  className="relative overflow-hidden p-5 mb-4 cursor-pointer transition-all hover:scale-[1.01] border border-gold/30"
                   style={{
-                    background: `radial-gradient(ellipse at top right, ${userHouse.primary_color}60, transparent 60%)`,
+                    background: `linear-gradient(135deg, hsl(var(--gold) / 0.15), hsl(var(--gold) / 0.05))`,
                   }}
-                />
-                <div className="relative flex items-center gap-4">
+                >
                   <div
-                    className="w-16 h-16 rounded-xl flex items-center justify-center"
+                    className="absolute inset-0 opacity-30"
                     style={{
-                      background: `linear-gradient(135deg, ${userHouse.primary_color}30, ${userHouse.secondary_color}30)`,
-                      border: `2px solid ${userHouse.primary_color}`,
+                      background: `radial-gradient(ellipse at top right, hsl(var(--gold) / 0.3), transparent 60%)`,
                     }}
-                  >
-                    <HouseIcon symbol={userHouse.symbol} size={32} style={{ color: userHouse.primary_color }} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-                        style={{
-                          backgroundColor: `${userHouse.primary_color}30`,
-                          color: userHouse.primary_color,
-                        }}
-                      >
-                        Your House
-                      </span>
+                  />
+                  <div className="relative flex items-center gap-4">
+                    <div
+                      className="w-16 h-16 flex items-center justify-center bg-gold/10 border border-gold/30"
+                    >
+                      <HouseIcon symbol={userHouse.symbol} size={32} className="text-gold" />
                     </div>
-                    <h3 className="font-display font-bold text-lg mt-1">{userHouse.name}</h3>
-                    <p className="text-xs text-muted-foreground">{userHouse.description}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 bg-gold/20 text-gold border border-gold/30">
+                          Your House
+                        </span>
+                      </div>
+                      <h3 className="font-display font-bold text-lg mt-1 tracking-wide">{userHouse.name}</h3>
+                      <p className="text-xs text-muted-foreground">{userHouse.description}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Houses Grid */}
             {housesLoading ? (
@@ -379,16 +381,22 @@ export default function CrewsPage() {
                 {houses
                   .filter(h => h.id !== userHouseId)
                   .slice(0, 4)
-                  .map((house) => (
-                    <HouseCard
+                  .map((house, index) => (
+                    <motion.div
                       key={house.id}
-                      house={house}
-                      userHouseId={userHouseId}
-                      pendingApplicationId={pendingApplicationId}
-                      onApply={handleApplyToHouse}
-                      onViewDetails={(id) => navigate(`/houses/${id}`)}
-                      isApplying={applyingHouseId === house.id}
-                    />
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <HouseCard
+                        house={house}
+                        userHouseId={userHouseId}
+                        pendingApplicationId={pendingApplicationId}
+                        onApply={handleApplyToHouse}
+                        onViewDetails={(id) => navigate(`/houses/${id}`)}
+                        isApplying={applyingHouseId === house.id}
+                      />
+                    </motion.div>
                   ))}
               </div>
             )}
@@ -413,67 +421,93 @@ export default function CrewsPage() {
           ) : (
             <>
               {/* My Crew */}
-              {myCrew && (
-                <section>
-                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    My Crew
-                  </h2>
-                  <div
-                    onClick={() => navigate(`/crews/${myCrew.id}`)}
-                    className="p-4 bg-muted/30 border border-gold/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+              <AnimatePresence>
+                {myCrew && (
+                  <motion.section
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full overflow-hidden bg-gold/10 flex items-center justify-center text-gold">
-                        {myCrew.avatar_url ? (
-                          <img src={myCrew.avatar_url} alt={myCrew.name} className="w-full h-full object-cover" />
-                        ) : (
-                          emblemIcons[myCrew.emblem] || <Shield className="w-8 h-8" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold truncate">{myCrew.name}</h3>
-                        <p className="text-xs text-muted-foreground line-clamp-1">
-                          {myCrew.description || "No description"}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-muted-foreground">
-                            {myCrew.member_count} members
-                          </span>
-                          <span
-                            className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${
-                              leagueColors[myCrew.min_league]
-                            }`}
-                          >
-                            {myCrew.min_league}+
-                          </span>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="w-4 h-4 text-gold" />
+                      <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                        My Crew
+                      </h2>
+                    </div>
+                    <div
+                      onClick={() => navigate(`/crews/${myCrew.id}`)}
+                      className="relative overflow-hidden p-4 border border-gold/30 cursor-pointer hover:border-gold/50 transition-colors"
+                      style={{
+                        background: `linear-gradient(135deg, hsl(var(--gold) / 0.1), transparent)`,
+                      }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 overflow-hidden bg-gold/10 flex items-center justify-center text-gold border border-gold/30">
+                          {myCrew.avatar_url ? (
+                            <img src={myCrew.avatar_url} alt={myCrew.name} className="w-full h-full object-cover" />
+                          ) : (
+                            emblemIcons[myCrew.emblem] || <Shield className="w-8 h-8" />
+                          )}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-display font-semibold tracking-wide truncate">{myCrew.name}</h3>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {myCrew.description || "No description"}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] text-muted-foreground">
+                              {myCrew.member_count} members
+                            </span>
+                            <span
+                              className={`text-[9px] font-bold uppercase tracking-wider border px-1.5 py-0.5 ${
+                                leagueColors[myCrew.min_league]
+                              }`}
+                            >
+                              {myCrew.min_league}+
+                            </span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
                     </div>
-                  </div>
-                </section>
-              )}
+                  </motion.section>
+                )}
+              </AnimatePresence>
 
               {/* Recommended / All Crews */}
               <section>
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  {myCrew ? "Other Crews" : "Recommended Crews"}
-                </h2>
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-4 h-4 text-gold" />
+                  <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    {myCrew ? "Other Crews" : "Recommended Crews"}
+                  </h2>
+                </div>
 
                 {filteredCrews.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {searchQuery ? "No crews found" : "No crews yet. Create the first one!"}
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
+                      <Users className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                    <p className="text-muted-foreground font-medium">
+                      {searchQuery ? "No crews found" : "No crews yet"}
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">
+                      {!searchQuery && "Create the first one!"}
+                    </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {filteredCrews.map((crew) => (
-                      <div
+                  <div className="space-y-2">
+                    {filteredCrews.map((crew, index) => (
+                      <motion.div
                         key={crew.id}
-                        className="p-4 bg-muted/30 border border-border rounded-lg"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        className="relative overflow-hidden p-4 bg-surface-0/50 border border-border/50 backdrop-blur-sm hover:border-gold/30 transition-colors"
                       >
                         <div className="flex items-center gap-4">
                           <div
                             onClick={() => navigate(`/crews/${crew.id}`)}
-                            className="w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center text-muted-foreground cursor-pointer hover:opacity-80"
+                            className="w-12 h-12 overflow-hidden bg-muted/50 flex items-center justify-center text-muted-foreground cursor-pointer hover:opacity-80 border border-border"
                           >
                             {crew.avatar_url ? (
                               <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
@@ -486,17 +520,20 @@ export default function CrewsPage() {
                             onClick={() => navigate(`/crews/${crew.id}`)}
                           >
                             <div className="flex items-center gap-2">
-                              <h3 className="font-semibold truncate">{crew.name}</h3>
+                              <h3 className="font-display font-semibold tracking-wide truncate text-sm">{crew.name}</h3>
                               {crew.join_type === "invite_only" && (
-                                <Lock className="w-3 h-3 text-muted-foreground" />
+                                <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                               )}
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-xs text-muted-foreground">
+                            <p className="text-[10px] text-muted-foreground line-clamp-1">
+                              {crew.description || "No description"}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] text-muted-foreground">
                                 {crew.member_count} members
                               </span>
                               <span
-                                className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${
+                                className={`text-[8px] font-bold uppercase tracking-wider border px-1 py-0.5 ${
                                   leagueColors[crew.min_league]
                                 }`}
                               >
@@ -504,18 +541,18 @@ export default function CrewsPage() {
                               </span>
                             </div>
                           </div>
-                          {!myCrew && (
+                          {!profile?.crew_id && (
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleJoinCrew(crew)}
-                              className="shrink-0"
+                              className="text-xs font-bold border-gold/30 text-foreground hover:bg-gold/10 hover:border-gold/50"
                             >
                               {crew.join_type === "invite_only" ? "Request" : "Join"}
                             </Button>
                           )}
                         </div>
-                      </div>
+                      </motion.div>
                     ))}
                   </div>
                 )}
