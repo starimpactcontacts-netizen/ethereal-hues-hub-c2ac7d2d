@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink, LogIn, Zap, RefreshCw, Play, ChevronRight, ChevronLeft } from 'lucide-react';
 import { validatePlatformUrl, detectPlatform, type PlatformType } from '@/lib/urlValidation';
@@ -76,6 +77,14 @@ export default function GQTPage() {
   const [testPurpose, setTestPurpose] = useState('');
   const [confidenceLevel, setConfidenceLevel] = useState(5);
   const [editingGoal, setEditingGoal] = useState('');
+  
+  // "Other" notes state
+  const [editorTypeNote, setEditorTypeNote] = useState('');
+  const [yearsEditingNote, setYearsEditingNote] = useState('');
+  const [editingSoftwareNote, setEditingSoftwareNote] = useState('');
+  const [editingSpeedNote, setEditingSpeedNote] = useState('');
+  const [testPurposeNote, setTestPurposeNote] = useState('');
+  const [editingGoalNote, setEditingGoalNote] = useState('');
   
   // UI state
   const [step, setStep] = useState<'form' | 'interrogation'>('form');
@@ -166,13 +175,13 @@ export default function GQTPage() {
           user_id: profile.id,
           submission_url: url,
           platform: detected,
-          editor_type: editorType || null,
-          years_editing: yearsEditing || null,
-          editing_software: editingSoftware || null,
-          editing_speed: editingSpeed || null,
-          test_purpose: testPurpose || null,
+          editor_type: editorType === 'other' && editorTypeNote ? `other:${editorTypeNote}` : editorType || null,
+          years_editing: yearsEditing === 'other' && yearsEditingNote ? `other:${yearsEditingNote}` : yearsEditing || null,
+          editing_software: editingSoftware === 'other' && editingSoftwareNote ? `other:${editingSoftwareNote}` : editingSoftware || null,
+          editing_speed: editingSpeed === 'other' && editingSpeedNote ? `other:${editingSpeedNote}` : editingSpeed || null,
+          test_purpose: testPurpose === 'other' && testPurposeNote ? `other:${testPurposeNote}` : testPurpose || null,
           confidence_level: confidenceLevel,
-          editing_goal: editingGoal || null,
+          editing_goal: editingGoal === 'other' && editingGoalNote ? `other:${editingGoalNote}` : editingGoal || null,
         })
         .select()
         .single();
@@ -204,6 +213,13 @@ export default function GQTPage() {
     setTestPurpose('');
     setConfidenceLevel(5);
     setEditingGoal('');
+    // Reset notes
+    setEditorTypeNote('');
+    setYearsEditingNote('');
+    setEditingSoftwareNote('');
+    setEditingSpeedNote('');
+    setTestPurposeNote('');
+    setEditingGoalNote('');
     setStep('form');
   };
 
@@ -448,6 +464,15 @@ export default function GQTPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {editorType === 'other' && (
+                      <Textarea
+                        placeholder="Tell us what type of editor you are... (optional)"
+                        value={editorTypeNote}
+                        onChange={(e) => setEditorTypeNote(e.target.value)}
+                        className="mt-2 text-sm resize-none"
+                        rows={2}
+                      />
+                    )}
                   </div>
                   
                   {/* Question 2: Years Editing */}
@@ -463,6 +488,15 @@ export default function GQTPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {yearsEditing === 'other' && (
+                      <Textarea
+                        placeholder="Explain your editing experience... (optional)"
+                        value={yearsEditingNote}
+                        onChange={(e) => setYearsEditingNote(e.target.value)}
+                        className="mt-2 text-sm resize-none"
+                        rows={2}
+                      />
+                    )}
                   </div>
                   
                   {/* Question 3: Software */}
@@ -478,6 +512,15 @@ export default function GQTPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {editingSoftware === 'other' && (
+                      <Textarea
+                        placeholder="What software do you use? (optional)"
+                        value={editingSoftwareNote}
+                        onChange={(e) => setEditingSoftwareNote(e.target.value)}
+                        className="mt-2 text-sm resize-none"
+                        rows={2}
+                      />
+                    )}
                   </div>
                   
                   {/* Question 4: Editing Speed */}
@@ -493,6 +536,15 @@ export default function GQTPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {editingSpeed === 'other' && (
+                      <Textarea
+                        placeholder="Describe your editing pace... (optional)"
+                        value={editingSpeedNote}
+                        onChange={(e) => setEditingSpeedNote(e.target.value)}
+                        className="mt-2 text-sm resize-none"
+                        rows={2}
+                      />
+                    )}
                   </div>
                   
                   {/* Question 5: Test Purpose */}
@@ -508,6 +560,15 @@ export default function GQTPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {testPurpose === 'other' && (
+                      <Textarea
+                        placeholder="What's your intention for this test? (optional)"
+                        value={testPurposeNote}
+                        onChange={(e) => setTestPurposeNote(e.target.value)}
+                        className="mt-2 text-sm resize-none"
+                        rows={2}
+                      />
+                    )}
                   </div>
                   
                   {/* Question 6: Confidence Level */}
@@ -544,6 +605,15 @@ export default function GQTPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {editingGoal === 'other' && (
+                      <Textarea
+                        placeholder="What's your editing goal? (optional)"
+                        value={editingGoalNote}
+                        onChange={(e) => setEditingGoalNote(e.target.value)}
+                        className="mt-2 text-sm resize-none"
+                        rows={2}
+                      />
+                    )}
                   </div>
                   
                   <Button
