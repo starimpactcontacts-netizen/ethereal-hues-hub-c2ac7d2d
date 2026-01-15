@@ -24,17 +24,15 @@ interface GQTShareCardProps {
   };
 }
 
-// Icon mapping for pillars
-const pillarIcons: Record<string, typeof Music> = {
+const pillarIcons = {
   music: Music,
   lightbulb: Lightbulb,
   settings: Settings,
   heart: Heart,
   fingerprint: Fingerprint,
-};
+} as const;
 
-// Class icons
-const classIcons: Record<string, typeof Flame> = {
+const classIcons = {
   's++': Flame,
   's+': Flame,
   's': Crown,
@@ -43,10 +41,9 @@ const classIcons: Record<string, typeof Flame> = {
   'c': Shield,
   'd': Shield,
   'f': Shield,
-};
+} as const;
 
-// Rank-specific card styling
-const getRankCardStyle = (rank: GQTRank) => {
+function getRankCardStyle(rank: GQTRank) {
   switch (rank) {
     case 'S++':
       return {
@@ -114,7 +111,7 @@ const getRankCardStyle = (rank: GQTRank) => {
         accentBg: 'bg-red-500/15',
       };
   }
-};
+}
 
 export default function GQTShareCard({ isOpen, onClose, data }: GQTShareCardProps) {
   const [copied, setCopied] = useState(false);
@@ -127,7 +124,7 @@ export default function GQTShareCard({ isOpen, onClose, data }: GQTShareCardProp
   const gqtClass = getClassFromScore(data.score);
   const indexFloor = getIndexFloorFromRank(rank.rank);
   const cardStyle = getRankCardStyle(rank.rank);
-  const ClassIcon = classIcons[gqtClass.id] || Shield;
+  const ClassIcon = classIcons[gqtClass.id as keyof typeof classIcons] || Shield;
 
   const pillarsWithScores = [
     { ...scoringPillars[0], score: data.rhythmScore },
@@ -175,7 +172,6 @@ Take the Global QOI Test → loopgate.io/gqt
     
     setDownloading(true);
     try {
-      // Dynamic import to avoid TypeScript issues
       const html2canvasModule = await import('html2canvas');
       const html2canvas = html2canvasModule.default;
       
@@ -216,7 +212,6 @@ Take the Global QOI Test → loopgate.io/gqt
           className="relative max-w-[320px] sm:max-w-sm w-full my-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close Button */}
           <button
             onClick={onClose}
             className="absolute -top-10 sm:-top-12 right-0 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
@@ -224,12 +219,10 @@ Take the Global QOI Test → loopgate.io/gqt
             <X size={24} />
           </button>
 
-          {/* The Shareable Card */}
           <div 
             ref={cardRef}
             className={`relative overflow-hidden border-2 ${cardStyle.borderColor} ${cardStyle.glowColor} bg-gradient-to-br ${cardStyle.bgGradient}`}
           >
-            {/* Animated background for S-tier */}
             {rank.rank.includes('S') && (
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <motion.div
@@ -240,7 +233,6 @@ Take the Global QOI Test → loopgate.io/gqt
               </div>
             )}
 
-            {/* Background Pattern */}
             <div className="absolute inset-0 opacity-[0.03]">
               <div 
                 className="absolute inset-0"
@@ -250,7 +242,6 @@ Take the Global QOI Test → loopgate.io/gqt
               />
             </div>
 
-            {/* Header with Logo */}
             <div className="relative px-4 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b border-border/30">
               <div className="flex items-center justify-between">
                 <img src={loopgateLogo} alt="Loopgate" className="h-5 sm:h-6 opacity-70" />
@@ -260,7 +251,6 @@ Take the Global QOI Test → loopgate.io/gqt
               </div>
             </div>
 
-            {/* Main Rank Display */}
             <div className="relative px-4 sm:px-6 py-5 sm:py-8 text-center">
               <motion.div
                 initial={{ scale: 0 }}
@@ -281,7 +271,6 @@ Take the Global QOI Test → loopgate.io/gqt
               </p>
             </div>
 
-            {/* User + League */}
             <div className="relative px-4 sm:px-6 py-3 sm:py-4 border-y border-border/30 flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <p className="font-display text-base sm:text-lg text-foreground truncate">
@@ -297,10 +286,9 @@ Take the Global QOI Test → loopgate.io/gqt
               </div>
             </div>
 
-            {/* Score Breakdown */}
             <div className="relative px-3 sm:px-6 py-3 sm:py-4 grid grid-cols-5 gap-0.5 sm:gap-1">
               {pillarsWithScores.map((pillar) => {
-                const Icon = pillarIcons[pillar.icon] || Star;
+                const Icon = pillarIcons[pillar.icon as keyof typeof pillarIcons] || Star;
                 return (
                   <div key={pillar.key} className="text-center">
                     <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 mx-auto mb-0.5 sm:mb-1 text-muted-foreground" />
@@ -315,7 +303,6 @@ Take the Global QOI Test → loopgate.io/gqt
               })}
             </div>
 
-            {/* Judge Quote */}
             {data.judgeQuote && (
               <div className="relative px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30">
                 <p className="text-xs sm:text-sm text-foreground/80 italic text-center leading-relaxed">
@@ -324,7 +311,6 @@ Take the Global QOI Test → loopgate.io/gqt
               </div>
             )}
 
-            {/* Badges */}
             <div className="relative px-3 sm:px-6 py-3 sm:py-4 border-t border-border/30 flex items-center justify-center gap-1.5 sm:gap-3 flex-wrap">
               {indexFloor > 0 && (
                 <span className="text-[8px] sm:text-[9px] uppercase tracking-wider px-1.5 sm:px-2 py-0.5 sm:py-1 bg-gold/10 text-gold border border-gold/30">
@@ -343,7 +329,6 @@ Take the Global QOI Test → loopgate.io/gqt
               )}
             </div>
 
-            {/* Footer CTA */}
             <div className="relative px-4 sm:px-6 py-3 sm:py-4 border-t border-border/30 bg-black/30">
               <p className="text-center text-[10px] sm:text-xs text-muted-foreground">
                 Take the test → <span className="text-gold font-semibold">loopgate.io/gqt</span>
@@ -351,7 +336,6 @@ Take the Global QOI Test → loopgate.io/gqt
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
             <Button
               onClick={handleCopy}
@@ -385,7 +369,6 @@ Take the Global QOI Test → loopgate.io/gqt
             </Button>
           </div>
 
-          {/* Share hint */}
           <p className="text-center text-[9px] sm:text-[10px] text-muted-foreground mt-3 sm:mt-4 pb-2">
             Download or screenshot to post on TikTok / Instagram
           </p>
