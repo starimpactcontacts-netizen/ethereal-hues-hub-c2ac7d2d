@@ -14,6 +14,7 @@ export const editorTypes = [
   { value: 'fx', label: 'FX / After Effects' },
   { value: 'character', label: 'Character Edits' },
   { value: 'gaming', label: 'Gaming Edits' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 export const yearsEditingOptions = [
@@ -22,6 +23,7 @@ export const yearsEditingOptions = [
   { value: '1-2y', label: '1-2 years' },
   { value: '2-4y', label: '2-4 years' },
   { value: '5+', label: '5+ years' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 export const softwareOptions = [
@@ -32,6 +34,7 @@ export const softwareOptions = [
   { value: 'vegas', label: 'Sony Vegas' },
   { value: 'alight', label: 'Alight Motion' },
   { value: 'finalcut', label: 'Final Cut Pro' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 export const editingSpeedOptions = [
@@ -39,6 +42,7 @@ export const editingSpeedOptions = [
   { value: 'average', label: "I'm average" },
   { value: 'fast', label: "I'm fast" },
   { value: 'built_different', label: "I'm built different" },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 export const testPurposeOptions = [
@@ -47,6 +51,7 @@ export const testPurposeOptions = [
   { value: 'standing', label: 'See where I stand' },
   { value: 'challenge', label: 'Challenge myself' },
   { value: 'curious', label: 'Just curious' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 export const editingGoalOptions = [
@@ -54,6 +59,7 @@ export const editingGoalOptions = [
   { value: 'freelance', label: 'Go freelance' },
   { value: 'improve', label: 'Just improve' },
   { value: 'fun', label: 'For fun' },
+  { value: 'other', label: 'Other' },
 ] as const;
 
 export const confidenceLabels: Record<number, string> = {

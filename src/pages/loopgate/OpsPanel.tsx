@@ -346,6 +346,40 @@ export default function OpsPanel() {
   const [selectedArenaEventId, setSelectedArenaEventId] = useState<string | null>(null);
   const [roundActionLoading, setRoundActionLoading] = useState<string | null>(null);
 
+  // GQT Submissions state
+  interface GQTSubmission {
+    id: string;
+    user_id: string;
+    submission_url: string;
+    platform: string;
+    status: string;
+    qoi_score: number | null;
+    rhythm_score: number | null;
+    creativity_score: number | null;
+    technical_score: number | null;
+    emotional_score: number | null;
+    style_score: number | null;
+    gqt_rank: string | null;
+    judge_commentary: string | null;
+    created_at: string;
+    judged_at: string | null;
+    editor_type: string | null;
+    years_editing: string | null;
+    editing_software: string | null;
+    editing_speed: string | null;
+    test_purpose: string | null;
+    confidence_level: number | null;
+    editing_goal: string | null;
+    username?: string;
+    verification_status?: boolean;
+  }
+  const [gqtSubmissions, setGqtSubmissions] = useState<GQTSubmission[]>([]);
+  const [gqtScoring, setGqtScoring] = useState<string | null>(null);
+  const [gqtScores, setGqtScores] = useState({
+    rhythm: 5, creativity: 5, technical: 5, emotional: 3, style: 2
+  });
+  const [gqtCommentary, setGqtCommentary] = useState('');
+  const [gqtSaving, setGqtSaving] = useState(false);
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
     if (!hasOpsAccess && !loading && !(window as any).__LOOPGATE_DEV_AUTH__) {
@@ -695,11 +729,95 @@ export default function OpsPanel() {
           invitee_username: invite.invitee_id ? inviteProfileMap.get(invite.invitee_id) || 'Unknown' : undefined,
         })));
       }
+
+      // Fetch GQT submissions
+      const { data: gqtData } = await supabase
+        .from('gatekeeper_submissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (gqtData) {
+        const gqtUserIds = [...new Set(gqtData.map(s => s.user_id))];
+        const { data: gqtProfiles } = await supabase
+          .from('profiles')
+          .select('id, username, verification_status')
+          .in('id', gqtUserIds.length > 0 ? gqtUserIds : ['']);
+
+        const gqtProfileMap = new Map((gqtProfiles || []).map(p => [p.id, p]));
+        
+        setGqtSubmissions(gqtData.map(s => ({
+          ...s,
+          username: gqtProfileMap.get(s.user_id)?.username || 'Unknown',
+          verification_status: gqtProfileMap.get(s.user_id)?.verification_status || false,
+        })));
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
     } finally {
       setLoading(false);
+    }
+  }
+
+  // GQT Scoring function
+  async function handleGQTScore(submission: GQTSubmission) {
+    setGqtSaving(true);
+    const totalScore = gqtScores.rhythm + gqtScores.creativity + gqtScores.technical + gqtScores.emotional + gqtScores.style;
+    
+    // Determine rank based on score
+    let rank = 'F';
+    if (totalScore >= 96) rank = 'S++';
+    else if (totalScore >= 90) rank = 'S+';
+    else if (totalScore >= 80) rank = 'S';
+    else if (totalScore >= 70) rank = 'A';
+    else if (totalScore >= 60) rank = 'B';
+    else if (totalScore >= 50) rank = 'C';
+    else if (totalScore >= 40) rank = 'D';
+
+    try {
+      const { error } = await supabase
+        .from('gatekeeper_submissions')
+        .update({
+          status: 'scored',
+          qoi_score: totalScore,
+          rhythm_score: gqtScores.rhythm,
+          creativity_score: gqtScores.creativity,
+          technical_score: gqtScores.technical,
+          emotional_score: gqtScores.emotional,
+          style_score: gqtScores.style,
+          gqt_rank: rank,
+          judge_commentary: gqtCommentary || null,
+          judged_at: new Date().toISOString(),
+          judge_id: user?.id,
+        })
+        .eq('id', submission.id);
+
+      if (error) throw error;
+
+      // Update user's best GQT score if this is higher
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('best_gatekeeper_qoi')
+        .eq('id', submission.user_id)
+        .single();
+
+      if (!currentProfile?.best_gatekeeper_qoi || totalScore > currentProfile.best_gatekeeper_qoi) {
+        await supabase
+          .from('profiles')
+          .update({ best_gatekeeper_qoi: totalScore })
+          .eq('id', submission.user_id);
+      }
+
+      toast.success(`GQT scored: ${totalScore}/100 (${rank})`);
+      setGqtScoring(null);
+      setGqtScores({ rhythm: 5, creativity: 5, technical: 5, emotional: 3, style: 2 });
+      setGqtCommentary('');
+      fetchData();
+    } catch (error) {
+      console.error('Error scoring GQT:', error);
+      toast.error('Failed to score GQT submission');
+    } finally {
+      setGqtSaving(false);
     }
   }
 
