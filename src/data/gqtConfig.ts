@@ -113,21 +113,71 @@ export function getPercentile(score: number): number {
 }
 
 // ====================
-// PROJECTED LEAGUES
+// PROJECTED LEAGUES (GQT-Based)
 // ====================
 
 export interface ProjectedLeague {
+  id: string;
   name: string;
   subtitle: string;
   color: string;
   bgClass: string;
+  indexFloor: number;
 }
 
+// New GQT-based league system: Rookie → Contributor → Skilled → Advanced → Master → Legend
+export const gqtLeagues: ProjectedLeague[] = [
+  { id: 'legend', name: 'LEGEND', subtitle: 'S+ / S++ Tier', color: 'text-gold', bgClass: 'bg-gold/10', indexFloor: 200 },
+  { id: 'master', name: 'MASTER', subtitle: 'S Tier', color: 'text-amber-400', bgClass: 'bg-amber-400/10', indexFloor: 120 },
+  { id: 'advanced', name: 'ADVANCED', subtitle: 'A Tier', color: 'text-emerald-400', bgClass: 'bg-emerald-400/10', indexFloor: 75 },
+  { id: 'skilled', name: 'SKILLED', subtitle: 'B Tier', color: 'text-blue-400', bgClass: 'bg-blue-400/10', indexFloor: 40 },
+  { id: 'contributor', name: 'CONTRIBUTOR', subtitle: 'C Tier', color: 'text-slate-300', bgClass: 'bg-slate-300/10', indexFloor: 20 },
+  { id: 'rookie', name: 'ROOKIE', subtitle: 'F / D Tier', color: 'text-muted-foreground', bgClass: 'bg-muted/20', indexFloor: 0 },
+];
+
+// Index floor values by GQT rank (determines starting Index power)
+export const indexFloorByRank: Record<GQTRank, number> = {
+  'F': 0,
+  'D': 10,
+  'C': 20,
+  'B': 40,
+  'A': 75,
+  'S': 120,
+  'S+': 200,
+  'S++': 300,
+};
+
 export function getProjectedLeagueFromScore(score: number): ProjectedLeague {
-  if (score >= 96) return { name: 'CARTEL', subtitle: 'The Blacklist', color: 'text-gold', bgClass: 'bg-gold/10' };
-  if (score >= 90) return { name: 'ELITE', subtitle: 'The 1%', color: 'text-gold', bgClass: 'bg-gold/10' };
-  if (score >= 70) return { name: 'PRO', subtitle: 'The Ascended', color: 'text-blue-400', bgClass: 'bg-blue-400/10' };
-  return { name: 'OPEN', subtitle: 'The Pit', color: 'text-muted-foreground', bgClass: 'bg-muted/20' };
+  if (score >= 90) return gqtLeagues[0]; // LEGEND (S+, S++)
+  if (score >= 80) return gqtLeagues[1]; // MASTER (S)
+  if (score >= 70) return gqtLeagues[2]; // ADVANCED (A)
+  if (score >= 60) return gqtLeagues[3]; // SKILLED (B)
+  if (score >= 50) return gqtLeagues[4]; // CONTRIBUTOR (C)
+  return gqtLeagues[5]; // ROOKIE (F, D)
+}
+
+export function getProjectedLeagueFromRank(rank: GQTRank): ProjectedLeague {
+  switch (rank) {
+    case 'S++':
+    case 'S+':
+      return gqtLeagues[0]; // LEGEND
+    case 'S':
+      return gqtLeagues[1]; // MASTER
+    case 'A':
+      return gqtLeagues[2]; // ADVANCED
+    case 'B':
+      return gqtLeagues[3]; // SKILLED
+    case 'C':
+      return gqtLeagues[4]; // CONTRIBUTOR
+    case 'D':
+    case 'F':
+    default:
+      return gqtLeagues[5]; // ROOKIE
+  }
+}
+
+export function getIndexFloorFromRank(rank: GQTRank): number {
+  return indexFloorByRank[rank] || 0;
 }
 
 // ====================

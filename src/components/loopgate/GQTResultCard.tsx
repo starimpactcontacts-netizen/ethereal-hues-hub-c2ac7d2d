@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { Star, Sparkles, Zap, Quote, Share2, Crown, Skull, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint } from 'lucide-react';
+import { Star, Quote, Share2, Crown, Skull, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { getRankFromScore, getPercentile, getProjectedLeagueFromScore, scoringPillars } from '@/data/gqtConfig';
+import { getRankFromScore, getPercentile, getProjectedLeagueFromScore, scoringPillars, GQTRank, getIndexFloorFromRank, gqtLeagues } from '@/data/gqtConfig';
 
 interface GQTResultCardProps {
   submission: {
@@ -33,6 +33,16 @@ const pillarIcons: Record<string, any> = {
   fingerprint: Fingerprint,
 };
 
+// League icons
+const leagueIcons: Record<string, any> = {
+  legend: Flame,
+  master: Crown,
+  advanced: Zap,
+  skilled: Star,
+  contributor: Shield,
+  rookie: Shield,
+};
+
 // Score color based on percentage of max
 const getScoreColor = (score: number | null, max: number) => {
   if (score === null) return 'text-muted-foreground';
@@ -42,6 +52,69 @@ const getScoreColor = (score: number | null, max: number) => {
   if (pct >= 50) return 'text-blue-400';
   if (pct >= 30) return 'text-orange-400';
   return 'text-red-400';
+};
+
+// Rank-specific card styling
+const getRankCardStyle = (rank: GQTRank) => {
+  switch (rank) {
+    case 'S++':
+      return {
+        containerClass: 'border-2 border-gold shadow-lg shadow-gold/30',
+        headerBg: 'bg-gradient-to-br from-gold/30 via-amber-500/20 to-gold/10',
+        hasGlow: true,
+        hasParticles: true,
+      };
+    case 'S+':
+      return {
+        containerClass: 'border-2 border-gold/80 shadow-md shadow-gold/20',
+        headerBg: 'bg-gradient-to-br from-gold/20 to-gold/5',
+        hasGlow: true,
+        hasParticles: true,
+      };
+    case 'S':
+      return {
+        containerClass: 'border-2 border-amber-400',
+        headerBg: 'bg-gradient-to-br from-amber-400/20 to-amber-400/5',
+        hasGlow: false,
+        hasParticles: false,
+      };
+    case 'A':
+      return {
+        containerClass: 'border-2 border-emerald-400',
+        headerBg: 'bg-gradient-to-br from-emerald-400/15 to-emerald-400/5',
+        hasGlow: false,
+        hasParticles: false,
+      };
+    case 'B':
+      return {
+        containerClass: 'border border-blue-400',
+        headerBg: 'bg-gradient-to-br from-blue-400/15 to-blue-400/5',
+        hasGlow: false,
+        hasParticles: false,
+      };
+    case 'C':
+      return {
+        containerClass: 'border border-slate-400/50',
+        headerBg: 'bg-surface-1',
+        hasGlow: false,
+        hasParticles: false,
+      };
+    case 'D':
+      return {
+        containerClass: 'border border-orange-500/40',
+        headerBg: 'bg-gradient-to-br from-orange-500/10 to-surface-1',
+        hasGlow: false,
+        hasParticles: false,
+      };
+    case 'F':
+    default:
+      return {
+        containerClass: 'border border-red-500/30',
+        headerBg: 'bg-gradient-to-br from-red-500/10 to-surface-1',
+        hasGlow: false,
+        hasParticles: false,
+      };
+  }
 };
 
 export default function GQTResultCard({ submission }: GQTResultCardProps) {
@@ -97,24 +170,39 @@ Take the Global QOI Test at loopgate.io/gqt`;
     }
   };
   
+  const cardStyle = rank ? getRankCardStyle(rank.rank) : null;
+  const indexFloor = rank ? getIndexFloorFromRank(rank.rank) : 0;
+  const LeagueIcon = projectedLeague ? (leagueIcons[projectedLeague.id] || Shield) : Shield;
+  
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative overflow-hidden bg-gradient-to-br from-surface-0 via-background to-surface-0 border-2 border-border"
+      className={`relative overflow-hidden bg-gradient-to-br from-surface-0 via-background to-surface-0 ${cardStyle?.containerClass || 'border-2 border-border'}`}
     >
+      {/* Animated glow for S-tier */}
+      {cardStyle?.hasGlow && (
+        <div className="absolute inset-0 pointer-events-none">
+          <motion.div
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/10 to-transparent"
+          />
+        </div>
+      )}
+      
       {/* Animated energy line */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div 
           initial={{ x: '-100%' }}
           animate={{ x: '200%' }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-          className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-transparent via-gold/10 to-transparent skew-x-12"
+          className={`absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-transparent ${rank?.rank.includes('S') ? 'via-gold/20' : 'via-gold/10'} to-transparent skew-x-12`}
         />
       </div>
       
       {/* Header with Score + Rank */}
-      <div className={`relative ${rank?.bgClass || 'bg-surface-1'} border-b-2 ${rank?.borderClass || 'border-border'} p-6`}>
+      <div className={`relative ${cardStyle?.headerBg || rank?.bgClass || 'bg-surface-1'} border-b-2 ${rank?.borderClass || 'border-border'} p-6`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] mb-2">FINAL SCORE</p>
@@ -142,7 +230,7 @@ Take the Global QOI Test at loopgate.io/gqt`;
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className={`px-5 py-3 ${rank.bgClass} border-2 ${rank.borderClass} flex flex-col items-center`}
+              className={`px-5 py-3 ${rank.bgClass} border-2 ${rank.borderClass} flex flex-col items-center ${rank.rank.includes('S') ? 'shadow-lg' : ''}`}
             >
               <motion.span 
                 initial={{ scale: 0, rotate: -180 }}
@@ -158,6 +246,22 @@ Take the Global QOI Test at loopgate.io/gqt`;
             </motion.div>
           )}
         </div>
+        
+        {/* Index Floor Badge */}
+        {indexFloor > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mt-4 pt-4 border-t border-border/30 flex items-center gap-3"
+          >
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gold/10 border border-gold/30">
+              <Zap className="w-3 h-3 text-gold" />
+              <span className="text-xs font-display text-gold">+{indexFloor} INDEX FLOOR</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground">Starting power unlocked</span>
+          </motion.div>
+        )}
       </div>
       
       {/* 5-Pillar Breakdown */}
@@ -206,15 +310,18 @@ Take the Global QOI Test at loopgate.io/gqt`;
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3">PROJECTED LEAGUE</p>
           <div className={`${projectedLeague.bgClass} border border-border p-4 flex items-center gap-4`}>
             <div className={`w-12 h-12 ${projectedLeague.bgClass} border border-current flex items-center justify-center ${projectedLeague.color}`}>
-              {projectedLeague.name === 'CARTEL' ? <Skull className="w-6 h-6" /> : 
-               projectedLeague.name === 'ELITE' ? <Crown className="w-6 h-6" /> :
-               projectedLeague.name === 'PRO' ? <Star className="w-6 h-6" /> :
-               <Trophy className="w-6 h-6" />}
+              <LeagueIcon className="w-6 h-6" />
             </div>
-            <div>
+            <div className="flex-1">
               <p className={`font-display text-2xl ${projectedLeague.color}`}>{projectedLeague.name}</p>
               <p className="text-xs text-muted-foreground">{projectedLeague.subtitle}</p>
             </div>
+            {indexFloor > 0 && (
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Index Floor</p>
+                <p className={`font-display text-xl ${projectedLeague.color}`}>+{indexFloor}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
