@@ -11,6 +11,7 @@ import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import HouseBadge from "@/components/loopgate/houses/HouseBadge";
 import HouseAvatarRing from "@/components/loopgate/houses/HouseAvatarRing";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+import { getRankFromScore, type GQTRank } from "@/data/gqtConfig";
 
 interface PublicProfile {
   id: string;
@@ -35,6 +36,7 @@ interface PublicProfile {
   level: number;
   archetype: string | null;
   software: string[] | null;
+  best_gatekeeper_qoi: number | null;
 }
 
 interface UserHouse {
@@ -86,7 +88,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, house_id, xp, level, archetype, software")
+        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, house_id, xp, level, archetype, software, best_gatekeeper_qoi")
         .eq("id", userId)
         .single();
 
@@ -166,6 +168,23 @@ export default function PublicProfilePage() {
 
   const authorityRole = getAuthorityRole();
   const isEnterprise = roles.includes('enterprise');
+
+  // Calculate GQT Class letter
+  const getEditorClass = (): { letter: string; color: string } => {
+    // If they have a GQT score, use that rank
+    if (profile?.best_gatekeeper_qoi && profile.best_gatekeeper_qoi > 0) {
+      const rankConfig = getRankFromScore(profile.best_gatekeeper_qoi);
+      return { letter: rankConfig.rank, color: rankConfig.color };
+    }
+    // If Level 2+, they get D class
+    if (profile && profile.level >= 2) {
+      return { letter: 'D', color: 'text-orange-400' };
+    }
+    // Default: F class
+    return { letter: 'F', color: 'text-muted-foreground' };
+  };
+
+  const editorClass = profile ? getEditorClass() : { letter: 'F', color: 'text-muted-foreground' };
 
   if (loading) {
     return (
@@ -293,7 +312,15 @@ export default function PublicProfilePage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
+            <div className="text-center p-3 bg-background">
+              <p className={`font-display text-2xl ${editorClass.color}`}>
+                {editorClass.letter}
+              </p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+                Class
+              </p>
+            </div>
             <div className="text-center p-3 bg-background">
               <p className="font-display text-2xl">
                 {Number(profile.global_index_score || 0).toFixed(1)}

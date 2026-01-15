@@ -25,6 +25,7 @@ export default function IndexPage() {
   const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [leagueFilter, setLeagueFilter] = useState<LeagueFilter>("all");
+  const [rankFilter, setRankFilter] = useState<RankFilter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("editors");
 
   const { rankings, loading, error } = useRealRankings();
