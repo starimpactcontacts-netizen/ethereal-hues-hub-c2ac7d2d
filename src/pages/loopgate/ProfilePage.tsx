@@ -84,6 +84,8 @@ export default function ProfilePage() {
   const [userHouse, setUserHouse] = useState<{ id: string; name: string; symbol: string; primary_color: string; secondary_color: string } | null>(null);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteStep, setDeleteStep] = useState<1 | 2 | 3>(1);
+  const [deleteCooldown, setDeleteCooldown] = useState(0);
   const [showArchetypeSelector, setShowArchetypeSelector] = useState(false);
   const [showSoftwareSelector, setShowSoftwareSelector] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -866,93 +868,188 @@ export default function ProfilePage() {
                   <div className="flex-1">
                     <h3 className="font-display text-lg text-destructive mb-1">Danger Zone</h3>
                     <p className="text-sm text-muted-foreground mb-4">
-                      Permanently delete your account and all associated data. This action cannot be undone.
+                      Once you delete your account, there is no going back. Please be certain.
                     </p>
-                    <AlertDialog>
+                    <AlertDialog onOpenChange={(open) => {
+                      if (!open) {
+                        setDeleteStep(1);
+                        setDeleteConfirmText("");
+                        setDeleteCooldown(0);
+                      }
+                    }}>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="sm" className="gap-2">
                           <Trash2 className="w-4 h-4" />
                           Delete Account
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-surface-0 border-border">
+                      <AlertDialogContent className="bg-surface-0 border-border max-w-md">
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-destructive flex items-center gap-2">
                             <AlertTriangle className="w-5 h-5" />
-                            Delete Account
+                            {deleteStep === 1 && "Are you sure?"}
+                            {deleteStep === 2 && "This is permanent"}
+                            {deleteStep === 3 && "Final confirmation"}
                           </AlertDialogTitle>
-                          <AlertDialogDescription className="space-y-4">
-                            <p>This will permanently delete:</p>
-                            <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
-                              <li>Your profile and all personal data</li>
-                              <li>Your connected platforms</li>
-                              <li>Your event participations and rankings</li>
-                              <li>Your XP history and achievements</li>
-                              <li>Your crew membership</li>
-                            </ul>
-                            <p className="font-semibold text-foreground">This action cannot be undone.</p>
-                            <div className="pt-2">
-                              <label className="text-sm text-muted-foreground">
-                                Type <span className="font-mono text-destructive">DELETE</span> to confirm:
-                              </label>
-                              <input
-                                type="text"
-                                value={deleteConfirmText}
-                                onChange={(e) => setDeleteConfirmText(e.target.value)}
-                                placeholder="DELETE"
-                                className="w-full mt-2 px-3 py-2 bg-background border border-border text-sm outline-none focus:border-destructive"
-                              />
+                          <AlertDialogDescription className="space-y-4" asChild>
+                            <div>
+                              {deleteStep === 1 && (
+                                <>
+                                  <p className="text-foreground font-medium">
+                                    You're about to erase everything you've built.
+                                  </p>
+                                  <p className="text-muted-foreground text-sm">
+                                    Every edit you've submitted, every rank you've earned, every connection you've made - gone forever. 
+                                    Your journey on LOOPGATE ends here.
+                                  </p>
+                                  <div className="bg-gold/10 border border-gold/30 p-3 mt-4">
+                                    <p className="text-gold text-sm font-medium">
+                                      💡 Feeling frustrated? Take a break instead.
+                                    </p>
+                                    <p className="text-muted-foreground text-xs mt-1">
+                                      Your progress will be here when you come back.
+                                    </p>
+                                  </div>
+                                </>
+                              )}
+                              {deleteStep === 2 && (
+                                <>
+                                  <p className="text-foreground font-medium">
+                                    Your legacy will be completely erased:
+                                  </p>
+                                  <ul className="space-y-2 text-sm mt-3">
+                                    <li className="flex items-start gap-2 text-muted-foreground">
+                                      <span className="text-destructive">✕</span>
+                                      <span><strong className="text-foreground">{submissions.length} submissions</strong> - Every edit you've poured hours into</span>
+                                    </li>
+                                    <li className="flex items-start gap-2 text-muted-foreground">
+                                      <span className="text-destructive">✕</span>
+                                      <span><strong className="text-foreground">Level {level}</strong> - {xp.toLocaleString()} XP earned over time</span>
+                                    </li>
+                                    <li className="flex items-start gap-2 text-muted-foreground">
+                                      <span className="text-destructive">✕</span>
+                                      <span><strong className="text-foreground">Global ranking</strong> - Your spot on the leaderboard</span>
+                                    </li>
+                                    {userCrew && (
+                                      <li className="flex items-start gap-2 text-muted-foreground">
+                                        <span className="text-destructive">✕</span>
+                                        <span><strong className="text-foreground">{userCrew.name}</strong> - Your crew will lose a member</span>
+                                      </li>
+                                    )}
+                                    {streak.current_streak > 0 && (
+                                      <li className="flex items-start gap-2 text-muted-foreground">
+                                        <span className="text-destructive">✕</span>
+                                        <span><strong className="text-foreground">{streak.current_streak}-day streak</strong> - Dedication gone</span>
+                                      </li>
+                                    )}
+                                  </ul>
+                                  <p className="text-destructive text-sm font-semibold mt-4 pt-3 border-t border-border">
+                                    This cannot be undone. Ever.
+                                  </p>
+                                </>
+                              )}
+                              {deleteStep === 3 && (
+                                <>
+                                  <p className="text-foreground font-medium">
+                                    Type your username to confirm deletion:
+                                  </p>
+                                  <p className="text-muted-foreground text-sm mb-3">
+                                    Type <span className="font-mono text-destructive font-bold">{profile?.username}</span> exactly to proceed.
+                                  </p>
+                                  <input
+                                    type="text"
+                                    value={deleteConfirmText}
+                                    onChange={(e) => {
+                                      setDeleteConfirmText(e.target.value);
+                                      if (e.target.value === profile?.username && deleteCooldown === 0) {
+                                        setDeleteCooldown(5);
+                                        const interval = setInterval(() => {
+                                          setDeleteCooldown(prev => {
+                                            if (prev <= 1) {
+                                              clearInterval(interval);
+                                              return 0;
+                                            }
+                                            return prev - 1;
+                                          });
+                                        }, 1000);
+                                      }
+                                    }}
+                                    placeholder={profile?.username}
+                                    className="w-full px-3 py-2 bg-background border border-border text-sm outline-none focus:border-destructive font-mono"
+                                  />
+                                  {deleteConfirmText === profile?.username && deleteCooldown > 0 && (
+                                    <p className="text-gold text-sm mt-2 flex items-center gap-2">
+                                      <Clock className="w-4 h-4" />
+                                      Please wait {deleteCooldown}s before confirming...
+                                    </p>
+                                  )}
+                                </>
+                              )}
                             </div>
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter>
+                        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
                           <AlertDialogCancel 
-                            onClick={() => setDeleteConfirmText("")}
+                            onClick={() => {
+                              setDeleteStep(1);
+                              setDeleteConfirmText("");
+                              setDeleteCooldown(0);
+                            }}
                             className="border-border"
                           >
-                            Cancel
+                            {deleteStep === 1 ? "Keep My Account" : "Go Back"}
                           </AlertDialogCancel>
-                          <AlertDialogAction
-                            disabled={deleteConfirmText !== "DELETE" || isDeletingAccount}
-                            onClick={async (e) => {
-                              e.preventDefault();
-                              if (deleteConfirmText !== "DELETE") return;
-                              
-                              setIsDeletingAccount(true);
-                              try {
-                                // Delete user data from all tables
-                                const userId = profile.id;
+                          {deleteStep < 3 ? (
+                            <Button
+                              variant="destructive"
+                              onClick={() => setDeleteStep(prev => (prev + 1) as 1 | 2 | 3)}
+                            >
+                              {deleteStep === 1 ? "Yes, I want to delete" : "I understand, continue"}
+                            </Button>
+                          ) : (
+                            <AlertDialogAction
+                              disabled={deleteConfirmText !== profile?.username || isDeletingAccount || deleteCooldown > 0}
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                if (deleteConfirmText !== profile?.username || deleteCooldown > 0) return;
                                 
-                                // Delete in order to respect foreign key constraints
-                                await supabase.from("xp_history").delete().eq("user_id", userId);
-                                await supabase.from("daily_xp_tracking").delete().eq("user_id", userId);
-                                await supabase.from("login_streaks").delete().eq("user_id", userId);
-                                await supabase.from("event_participations").delete().eq("user_id", userId);
-                                await supabase.from("connected_platforms").delete().eq("user_id", userId);
-                                await supabase.from("crew_messages").delete().eq("user_id", userId);
-                                await supabase.from("crew_join_requests").delete().eq("user_id", userId);
-                                await supabase.from("crew_members").delete().eq("user_id", userId);
-                                await supabase.from("arena_messages").delete().eq("user_id", userId);
-                                await supabase.from("active_sessions").delete().eq("user_id", userId);
-                                await supabase.from("user_roles").delete().eq("user_id", userId);
-                                await supabase.from("profiles").delete().eq("id", userId);
-                                
-                                // Sign out and redirect
-                                await signOut();
-                                toast.success("Account deleted successfully");
-                                navigate("/");
-                              } catch (error) {
-                                console.error("Failed to delete account:", error);
-                                toast.error("Failed to delete account. Please contact support.");
-                              } finally {
-                                setIsDeletingAccount(false);
-                                setDeleteConfirmText("");
-                              }
-                            }}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            {isDeletingAccount ? "Deleting..." : "Delete My Account"}
-                          </AlertDialogAction>
+                                setIsDeletingAccount(true);
+                                try {
+                                  const userId = profile.id;
+                                  
+                                  // Delete in order to respect foreign key constraints
+                                  await supabase.from("xp_history").delete().eq("user_id", userId);
+                                  await supabase.from("daily_xp_tracking").delete().eq("user_id", userId);
+                                  await supabase.from("login_streaks").delete().eq("user_id", userId);
+                                  await supabase.from("event_participations").delete().eq("user_id", userId);
+                                  await supabase.from("round_participations").delete().eq("user_id", userId);
+                                  await supabase.from("connected_platforms").delete().eq("user_id", userId);
+                                  await supabase.from("crew_messages").delete().eq("user_id", userId);
+                                  await supabase.from("crew_join_requests").delete().eq("user_id", userId);
+                                  await supabase.from("crew_members").delete().eq("user_id", userId);
+                                  await supabase.from("arena_messages").delete().eq("user_id", userId);
+                                  await supabase.from("active_sessions").delete().eq("user_id", userId);
+                                  await supabase.from("user_roles").delete().eq("user_id", userId);
+                                  await supabase.from("profiles").delete().eq("id", userId);
+                                  
+                                  await signOut();
+                                  toast.success("Account deleted");
+                                  navigate("/");
+                                } catch (error) {
+                                  console.error("Failed to delete account:", error);
+                                  toast.error("Failed to delete account. Please contact support.");
+                                } finally {
+                                  setIsDeletingAccount(false);
+                                  setDeleteConfirmText("");
+                                  setDeleteStep(1);
+                                  setDeleteCooldown(0);
+                                }
+                              }}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {isDeletingAccount ? "Deleting..." : deleteCooldown > 0 ? `Wait ${deleteCooldown}s` : "Delete Forever"}
+                            </AlertDialogAction>
+                          )}
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
