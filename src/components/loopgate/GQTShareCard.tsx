@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, X, Copy, Check, Download, Flame, Crown, Star, Zap, Shield, Music, Lightbulb, Settings, Heart, Fingerprint } from 'lucide-react';
+import { Share2, X, Copy, Check, Download, Music, Lightbulb, Settings, Heart, Fingerprint, Star, Flame, Crown, Zap, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { getRankFromScore, getClassFromScore, scoringPillars, GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
 import loopgateLogo from '@/assets/loopgate-logo.png';
@@ -170,7 +171,28 @@ Take the Global QOI Test → loopgate.io/gqt
   };
 
   const handleDownload = async () => {
-    toast.success('Screenshot this card to share!');
+    if (!cardRef.current) return;
+    
+    try {
+      toast.loading('Generating image...', { id: 'download' });
+      
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: '#000000',
+        scale: 2, // Higher quality
+        useCORS: true,
+        logging: false,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `gqt-${data.username}-${rank.rank}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast.success('Card downloaded!', { id: 'download' });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error('Could not download. Try screenshotting instead.', { id: 'download' });
+    }
   };
 
   return (
