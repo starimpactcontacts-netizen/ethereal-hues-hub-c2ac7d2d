@@ -28,8 +28,12 @@ const platformColors: Record<string, string> = {
 
 const PULL_THRESHOLD = 80;
 
-export default function SubmissionGrid() {
-  const { submissions, loading, refetch } = useUserSubmissions();
+interface SubmissionGridProps {
+  userId?: string;
+}
+
+export default function SubmissionGrid({ userId }: SubmissionGridProps) {
+  const { submissions, loading, refetch } = useUserSubmissions(userId);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   
