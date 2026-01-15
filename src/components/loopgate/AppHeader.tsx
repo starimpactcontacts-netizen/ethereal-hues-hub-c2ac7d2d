@@ -12,7 +12,7 @@ import InviteModal from './InviteModal';
 
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
-  { to: '/', icon: Calendar, label: 'Events' },
+  { to: '/hub', icon: Calendar, label: 'Events', primary: true },
   { to: '/rankings', icon: Trophy, label: 'Rankings' },
   { to: '/class', icon: Shield, label: 'Class' },
   { to: '/index', icon: Search, label: 'Index' },
@@ -106,6 +106,23 @@ export default function AppHeader() {
                   const Icon = item.icon!;
                   const isActive = location.pathname === item.to;
                   const isHighlight = 'highlight' in item && item.highlight;
+                  const isPrimary = 'primary' in item && item.primary;
+                  
+                  // Primary action button (Events)
+                  if (isPrimary) {
+                    return (
+                      <SheetClose asChild key={item.to}>
+                        <Link
+                          to={item.to!}
+                          className="mx-4 my-2 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-gold via-amber-400 to-gold text-black font-bold rounded-sm transition-all hover:shadow-lg hover:shadow-gold/30 animate-pulse-slow"
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="font-display text-sm uppercase tracking-wider">Enter Arena</span>
+                        </Link>
+                      </SheetClose>
+                    );
+                  }
+                  
                   return (
                     <SheetClose asChild key={item.to}>
                       <Link
