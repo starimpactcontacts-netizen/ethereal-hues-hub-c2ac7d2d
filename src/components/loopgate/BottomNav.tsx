@@ -19,7 +19,7 @@ export default function BottomNav() {
   };
 
   const handleArenaClick = () => {
-    navigate("/hub");
+    navigate("/arena");
   };
 
   return (

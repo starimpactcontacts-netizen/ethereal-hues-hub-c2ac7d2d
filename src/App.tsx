@@ -19,6 +19,7 @@ import PublicProfilePage from "./pages/loopgate/PublicProfilePage";
 import ClassPage from "./pages/loopgate/ClassPage";
 import IndexPage from "./pages/loopgate/IndexPage";
 import ArenasPage from "./pages/loopgate/ArenasPage";
+import ArenaPage from "./pages/loopgate/ArenaPage";
 import ArenaChatPage from "./pages/loopgate/ArenaChatPage";
 import CrewsPage from "./pages/loopgate/CrewsPage";
 import CreateCrewPage from "./pages/loopgate/CreateCrewPage";
@@ -249,8 +250,9 @@ export default function App() {
               <Route path="/gqt" element={<GQTPage />} />
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
+              <Route path="/arena" element={<ArenaPage />} />
             </Route>
-            
+
             {/* Protected routes - auth required */}
             <Route element={
               <ProtectedRoute>
