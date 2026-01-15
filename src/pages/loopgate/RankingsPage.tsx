@@ -1,29 +1,70 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { RefreshCw, ChevronRight, Lock, TrendingUp, TrendingDown, Minus, ArrowLeft, Zap, Users } from "lucide-react";
+import { RefreshCw, ChevronRight, Lock, ArrowLeft, Zap, Users, Trophy, Crown, Medal, Target, Flame } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import HouseAvatarRing from "@/components/loopgate/houses/HouseAvatarRing";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import SEO, { pageSEO } from "@/components/SEO";
 
-type TabType = "global" | "xp" | "crews" | "history";
+type TabType = "index" | "xp" | "crews" | "events";
+
+// Rank tier colors for visual hierarchy
+const getRankStyle = (rank: number) => {
+  if (rank === 1) return {
+    bg: "bg-gradient-to-r from-yellow-500/30 via-amber-400/20 to-yellow-500/30",
+    border: "border-l-4 border-yellow-400",
+    glow: "shadow-[0_0_30px_rgba(250,204,21,0.4)]",
+    text: "text-yellow-400",
+    icon: Crown,
+  };
+  if (rank === 2) return {
+    bg: "bg-gradient-to-r from-slate-400/20 via-gray-300/15 to-slate-400/20",
+    border: "border-l-4 border-slate-300",
+    glow: "shadow-[0_0_20px_rgba(203,213,225,0.3)]",
+    text: "text-slate-300",
+    icon: Medal,
+  };
+  if (rank === 3) return {
+    bg: "bg-gradient-to-r from-amber-700/25 via-orange-600/15 to-amber-700/25",
+    border: "border-l-4 border-amber-600",
+    glow: "shadow-[0_0_20px_rgba(217,119,6,0.3)]",
+    text: "text-amber-500",
+    icon: Medal,
+  };
+  if (rank <= 10) return {
+    bg: "bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10",
+    border: "border-l-2 border-gold/60",
+    glow: "",
+    text: "text-gold",
+    icon: null,
+  };
+  return {
+    bg: "bg-surface-1/80",
+    border: "border-l-2 border-border",
+    glow: "",
+    text: "text-muted-foreground",
+    icon: null,
+  };
+};
 
 export default function RankingsPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const eventIdFromUrl = searchParams.get("event");
   
-  const [activeTab, setActiveTab] = useState<TabType>("global");
+  const [activeTab, setActiveTab] = useState<TabType>("index");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
 
-  const tabs: { id: TabType; label: string }[] = [
-    { id: "global", label: "Index" },
-    { id: "xp", label: "XP" },
-    { id: "crews", label: "Crews" },
-    { id: "history", label: "History" },
+  const tabs: { id: TabType; label: string; icon: React.ElementType }[] = [
+    { id: "index", label: "INDEX", icon: Target },
+    { id: "xp", label: "XP", icon: Zap },
+    { id: "crews", label: "CREWS", icon: Users },
+    { id: "events", label: "EVENTS", icon: Trophy },
   ];
 
   // Keep session active
@@ -44,319 +85,510 @@ export default function RankingsPage() {
   // Event-specific leaderboard view
   if (selectedEvent) {
     return (
-      <div className="min-h-screen pb-20 bg-background">
-        {/* Header */}
-        <header className="sticky top-0 z-40 bg-background border-b border-border">
-          <div className="px-4 py-3 flex items-center gap-3">
-            <button onClick={() => setSelectedEventId(null)} className="p-1 -ml-1">
-              <ArrowLeft size={20} />
-            </button>
-            <div className="flex-1">
-              <h1 className="font-display text-2xl">{selectedEvent.title}</h1>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
-                Leaderboard
-              </p>
+      <div className="min-h-screen pb-24 bg-background">
+        {/* Cinematic Header */}
+        <div className="relative overflow-hidden">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-gold/10 via-background to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.15),transparent_70%)]" />
+          
+          <header className="relative z-10 px-4 pt-4 pb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <button onClick={() => setSelectedEventId(null)} className="p-2 -ml-2 hover:bg-white/5 rounded-lg transition-colors">
+                <ArrowLeft size={20} />
+              </button>
+              <StatusBadge status={selectedEvent.status} />
             </div>
-            <StatusBadge status={selectedEvent.status} />
-          </div>
+            
+            <h1 className="font-display text-3xl tracking-wide text-white mb-1">{selectedEvent.title}</h1>
+            <p className="text-xs text-gold uppercase tracking-[0.3em]">
+              {selectedEvent.league} League • Leaderboard
+            </p>
+          </header>
 
-          {/* QOI Legend (only for live events) */}
+          {/* Live Pulse Bar */}
           {isLiveEvent && (
-            <div className="px-4 pb-3 flex items-center gap-4 text-[10px] text-muted-foreground uppercase tracking-[0.15em]">
-              <span className="text-gold">Q</span> Quality
-              <span className="text-gold">O</span> Originality
-              <span className="text-gold">I</span> Impact
+            <div className="relative px-4 pb-4">
+              <div className="flex items-center gap-2 text-green-400">
+                <div className="relative">
+                  <div className="w-2 h-2 rounded-full bg-green-400" />
+                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-green-400 animate-ping" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest">Live Rankings</span>
+                <RefreshCw size={12} className="animate-spin ml-auto opacity-50" style={{ animationDuration: "3s" }} />
+              </div>
             </div>
           )}
-        </header>
 
-        {/* Live Update Indicator */}
+          {isClosedEvent && (
+            <div className="px-4 pb-4 flex items-center gap-2 text-muted-foreground">
+              <Lock size={14} />
+              <span className="text-xs uppercase tracking-widest">Final Results</span>
+            </div>
+          )}
+        </div>
+
+        {/* QOI Legend */}
         {isLiveEvent && (
-          <div className="px-4 py-3 bg-green-500/10 border-b border-green-500/30 flex items-center gap-2 text-green-500">
-            <RefreshCw size={14} className="animate-spin" style={{ animationDuration: "3s" }} />
-            <span className="text-xs font-semibold uppercase tracking-wider">Live • Updated now</span>
-          </div>
-        )}
-
-        {/* Closed Event Notice */}
-        {isClosedEvent && (
-          <div className="px-4 py-3 bg-surface-1 border-b border-border flex items-center gap-2">
-            <Lock size={14} className="text-muted-foreground" />
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">Rankings locked • Final</span>
+          <div className="px-4 py-3 bg-surface-0/50 border-y border-border/50 flex items-center justify-center gap-6 text-[10px] uppercase tracking-[0.2em]">
+            <span><span className="text-gold font-bold">Q</span> <span className="text-muted-foreground">Quality</span></span>
+            <span><span className="text-gold font-bold">O</span> <span className="text-muted-foreground">Originality</span></span>
+            <span><span className="text-gold font-bold">I</span> <span className="text-muted-foreground">Impact</span></span>
           </div>
         )}
 
         {/* Leaderboard */}
-        <div className="px-3 py-4">
+        <div className="px-4 py-6">
           {eventRankings.length === 0 && !eventRankingsLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No rankings yet</p>
-              <p className="text-xs text-muted-foreground mt-2">Submissions are being reviewed</p>
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground font-medium">No rankings yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Submissions are being reviewed</p>
             </div>
           ) : (
-            <>
-              {/* Column Headers */}
-              <div className="flex items-center gap-2 py-2 text-[9px] text-muted-foreground uppercase tracking-widest border-b border-border mb-1 px-2">
-                <span className="w-10 text-center">#</span>
-                <span className="flex-1">Editor</span>
-                {isLiveEvent ? (
-                  <>
-                    <span className="w-8 text-center">Q</span>
-                    <span className="w-8 text-center">O</span>
-                    <span className="w-8 text-center">I</span>
-                    <span className="w-14 text-right">QOI</span>
-                  </>
-                ) : (
-                  <span className="w-16 text-right">Index</span>
-                )}
-              </div>
-
-              {/* Rankings Rows */}
-              <div className="space-y-1">
-                {eventRankings.map((ranking, index) => {
-                  const isTop3 = index < 3;
-                  const displayRank = ranking.final_rank || index + 1;
-                  return (
-                    <div
-                      key={ranking.id}
-                      className={`flex items-center gap-2 py-3 px-2 ${
-                        isTop3 ? "bg-gold/10 border-l-2 border-gold" : "bg-surface-1"
-                      }`}
-                    >
-                      <div className="w-10 flex items-center justify-center">
-                        <span className={`font-display text-xl ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
-                          {displayRank}
-                        </span>
-                      </div>
-                      <div className="flex-1 flex items-center gap-2">
-                        <span className="font-semibold text-sm">{ranking.profile?.username || 'Unknown'}</span>
-                      </div>
-                      {isLiveEvent ? (
-                        <>
-                          <span className="w-8 text-center text-xs text-muted-foreground">{ranking.quality_score || '—'}</span>
-                          <span className="w-8 text-center text-xs text-muted-foreground">{ranking.originality_score || '—'}</span>
-                          <span className="w-8 text-center text-xs text-muted-foreground">{ranking.impact_score || '—'}</span>
-                          <span className="w-14 text-right font-display text-xl text-gold">{ranking.qoi_score?.toFixed(1) || '—'}</span>
-                        </>
+            <div className="space-y-2">
+              {eventRankings.map((ranking, index) => {
+                const displayRank = ranking.final_rank || index + 1;
+                const style = getRankStyle(displayRank);
+                const IconComponent = style.icon;
+                
+                return (
+                  <motion.div
+                    key={ranking.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className={`relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4`}
+                  >
+                    {/* Rank */}
+                    <div className="w-12 flex items-center justify-center">
+                      {IconComponent ? (
+                        <IconComponent className={`w-6 h-6 ${style.text}`} />
                       ) : (
-                        <span className="w-16 text-right font-display text-xl text-gold">{ranking.qoi_score?.toFixed(1) || '—'}</span>
+                        <span className={`font-display text-2xl ${style.text}`}>{displayRank}</span>
                       )}
                     </div>
-                  );
-                })}
-              </div>
-            </>
+                    
+                    {/* Username */}
+                    <div className="flex-1">
+                      <span className="font-semibold text-white">{ranking.profile?.username || 'Unknown'}</span>
+                    </div>
+                    
+                    {/* Scores */}
+                    {isLiveEvent ? (
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span>{ranking.quality_score || '—'}</span>
+                          <span>{ranking.originality_score || '—'}</span>
+                          <span>{ranking.impact_score || '—'}</span>
+                        </div>
+                        <div className="w-px h-6 bg-border" />
+                        <span className="font-display text-2xl text-gold min-w-[50px] text-right">
+                          {ranking.qoi_score?.toFixed(1) || '—'}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-display text-2xl text-gold">
+                        {ranking.qoi_score?.toFixed(1) || '—'}
+                      </span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-4 py-6 text-center border-t border-border">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
-            {isClosedEvent ? "Rankings are final" : "Rankings update in real-time"}
-          </p>
         </div>
       </div>
     );
   }
 
-  // Event selection view
+  // Main Rankings View
   return (
-    <div className="min-h-screen pb-20 bg-background">
+    <div className="min-h-screen pb-24 bg-background">
       <SEO {...pageSEO.rankings} />
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="px-4 py-3 flex items-center justify-between">
-          <img src={loopgateLogo} alt="LOOPGATE" className="h-6" />
-          <span className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">
-            Rankings
-          </span>
-        </div>
+      
+      {/* Cinematic Hero Header */}
+      <div className="relative overflow-hidden">
+        {/* Multi-layer gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/15 via-gold/5 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.2),transparent_60%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/10 blur-[100px] rounded-full" />
+        
+        {/* Decorative lines */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        
+        <header className="relative z-10 px-4 pt-6 pb-8">
+          <div className="flex items-center justify-between mb-6">
+            <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" />
+            <div className="flex items-center gap-2 text-green-400">
+              <div className="relative">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" />
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-widest">Live</span>
+            </div>
+          </div>
+          
+          {/* Hero Title */}
+          <div className="text-center">
+            <div className="inline-flex items-center gap-2 mb-3">
+              <Trophy className="w-5 h-5 text-gold" />
+              <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-medium">Global</span>
+            </div>
+            <h1 className="font-display text-5xl tracking-wider text-white mb-2">RANKINGS</h1>
+            <p className="text-xs text-muted-foreground uppercase tracking-[0.2em]">
+              Where legends are made
+            </p>
+          </div>
+        </header>
 
-        {/* Tabs */}
-        <div className="px-4 pb-3 flex gap-1 overflow-x-auto scrollbar-hide">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 font-display text-sm tracking-wide transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "bg-gold text-background"
-                  : "bg-surface-1 text-muted-foreground"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      {/* Live Update Indicator */}
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2 text-green-500">
-        <RefreshCw size={12} className="animate-spin" style={{ animationDuration: "3s" }} />
-        <span className="text-[10px] font-semibold uppercase tracking-wider">Updated live</span>
-      </div>
-
-      {/* Event Selection */}
-      {rankedEvents.length > 0 && (
-        <div className="p-4">
-          <p className="font-display text-lg text-muted-foreground mb-4">
-            Select Event
-          </p>
-
-          <div className="space-y-2">
-            {rankedEvents.map((event) => (
-              <button
-                key={event.id}
-                onClick={() => setSelectedEventId(event.id)}
-                className="w-full bg-surface-1 border border-border p-4 text-left flex items-center gap-3"
-              >
-                {event.poster_url && (
-                  <div
-                    className="w-14 h-20 bg-cover bg-center flex-shrink-0"
-                    style={{ backgroundImage: `url(${event.poster_url})` }}
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-display text-xl truncate">{event.title}</h3>
-                    <StatusBadge status={event.status} small />
-                  </div>
-                  {event.subtitle && <p className="text-xs text-muted-foreground">{event.subtitle}</p>}
-                  <p className="text-[10px] text-gold uppercase tracking-[0.15em] mt-1">
-                    {event.league} League
-                  </p>
-                </div>
-                <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
-              </button>
-            ))}
+        {/* Tab Navigation */}
+        <div className="relative z-10 px-4 pb-4">
+          <div className="flex gap-1 bg-surface-0/50 backdrop-blur-sm p-1 border border-border/50">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold tracking-wider transition-all ${
+                    isActive
+                      ? "bg-gold text-background"
+                      : "text-muted-foreground hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Global Index Rankings */}
-      {activeTab === "global" && (
-        <div className="px-4 pb-6">
-          <p className="font-display text-lg text-muted-foreground mb-4 mt-2">
-            Global Index
-          </p>
-          
-          {globalRankings.length === 0 && !rankingsLoading ? (
-            <div className="bg-surface-1 border border-border p-8 text-center">
-              <p className="text-muted-foreground">No rankings yet</p>
+      {/* Content */}
+      <AnimatePresence mode="wait">
+        {/* INDEX Leaderboard */}
+        {activeTab === "index" && (
+          <motion.div
+            key="index"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="px-4 py-4"
+          >
+            {/* Section Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-gold" />
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Skill Index</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground">Top 50</span>
             </div>
-          ) : (
-            <div className="space-y-1">
-              {globalRankings.slice(0, 10).map((editor) => {
-                const isTop3 = (editor.rank || 0) <= 3;
-                return (
-                  <div
-                    key={editor.id}
-                    className={`bg-surface-1 p-3 flex items-center gap-3 ${
-                      isTop3 ? "border-l-2 border-gold" : "border-l-2 border-transparent"
-                    }`}
-                  >
-                    <div className={`w-10 font-display text-xl ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
-                      {editor.rank}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">{editor.username}</p>
-                    </div>
-                    <span className="font-display text-2xl text-gold">{editor.global_index_score?.toFixed(1) || '0.0'}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+            
+            {globalRankings.length === 0 && !rankingsLoading ? (
+              <EmptyState icon={Target} message="No rankings yet" />
+            ) : (
+              <div className="space-y-2">
+                {globalRankings.slice(0, 50).map((editor, index) => {
+                  const rank = editor.rank || index + 1;
+                  const style = getRankStyle(rank);
+                  const IconComponent = style.icon;
+                  
+                  return (
+                    <motion.button
+                      key={editor.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      onClick={() => navigate(`/editor/${editor.id}`)}
+                      className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                    >
+                      {/* Rank */}
+                      <div className="w-10 flex items-center justify-center">
+                        {IconComponent ? (
+                          <IconComponent className={`w-5 h-5 ${style.text}`} />
+                        ) : (
+                          <span className={`font-display text-xl ${style.text}`}>{rank}</span>
+                        )}
+                      </div>
+                      
+                      {/* Avatar with House Ring */}
+                      <HouseAvatarRing 
+                        house={editor.house} 
+                        size="sm"
+                        avatarUrl={editor.avatar_url}
+                        username={editor.username}
+                      />
+                      
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-white truncate">{editor.username}</span>
+                          {editor.verification_status && (
+                            <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                              <span className="text-[8px] text-white font-bold">✓</span>
+                            </div>
+                          )}
+                          <LevelBadge level={editor.level || 1} size="sm" />
+                        </div>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span className="uppercase tracking-wider">{editor.league}</span>
+                          {editor.crew && (
+                            <>
+                              <span>•</span>
+                              <span className="text-gold">{editor.crew.name}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Score */}
+                      <div className="text-right">
+                        <span className="font-display text-3xl text-gold">
+                          {editor.global_index_score?.toFixed(1) || '0.0'}
+                        </span>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Index</p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
 
-      {/* XP Leaderboard */}
-      {activeTab === "xp" && (
-        <div className="px-4 pb-6">
-          <p className="font-display text-lg text-muted-foreground mb-4 mt-2 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-gold" />
-            User XP Rankings
-          </p>
-          
-          {xpUsers.length === 0 && !xpLoading ? (
-            <div className="bg-surface-1 border border-border p-8 text-center">
-              <p className="text-muted-foreground">No XP rankings yet</p>
+        {/* XP Leaderboard */}
+        {activeTab === "xp" && (
+          <motion.div
+            key="xp"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="px-4 py-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-gold" />
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Experience Points</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground">Top Grinders</span>
             </div>
-          ) : (
-            <div className="space-y-1">
-              {xpUsers.map((user) => {
-                const isTop3 = (user.rank || 0) <= 3;
-                return (
-                  <div
-                    key={user.id}
-                    onClick={() => navigate(`/editor/${user.id}`)}
-                    className={`bg-surface-1 p-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 ${
-                      isTop3 ? "border-l-2 border-gold" : "border-l-2 border-transparent"
-                    }`}
-                  >
-                    <div className={`w-8 font-display text-lg ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
-                      {user.rank}
-                    </div>
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.avatar_url || undefined} />
-                      <AvatarFallback>{user.username[0]?.toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 flex items-center gap-2">
-                      <p className="font-semibold text-sm">{user.username}</p>
-                      <LevelBadge level={user.level} size="sm" showAura />
-                    </div>
-                    <span className="font-display text-xl">{user.xp.toLocaleString()} XP</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+            
+            {xpUsers.length === 0 && !xpLoading ? (
+              <EmptyState icon={Zap} message="No XP rankings yet" />
+            ) : (
+              <div className="space-y-2">
+                {xpUsers.map((user, index) => {
+                  const rank = user.rank || index + 1;
+                  const style = getRankStyle(rank);
+                  const IconComponent = style.icon;
+                  
+                  return (
+                    <motion.button
+                      key={user.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      onClick={() => navigate(`/editor/${user.id}`)}
+                      className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                    >
+                      {/* Rank */}
+                      <div className="w-10 flex items-center justify-center">
+                        {IconComponent ? (
+                          <IconComponent className={`w-5 h-5 ${style.text}`} />
+                        ) : (
+                          <span className={`font-display text-xl ${style.text}`}>{rank}</span>
+                        )}
+                      </div>
+                      
+                      {/* Avatar */}
+                      <Avatar className="w-10 h-10 border-2 border-border">
+                        <AvatarImage src={user.avatar_url || undefined} />
+                        <AvatarFallback className="bg-surface-1 text-xs">
+                          {user.username[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-white truncate">{user.username}</span>
+                          <LevelBadge level={user.level} size="sm" showAura />
+                        </div>
+                      </div>
+                      
+                      {/* XP */}
+                      <div className="text-right">
+                        <span className="font-display text-2xl text-white">
+                          {user.xp.toLocaleString()}
+                        </span>
+                        <p className="text-[9px] text-gold uppercase tracking-wider">XP</p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
 
-      {/* Crew XP Leaderboard */}
-      {activeTab === "crews" && (
-        <div className="px-4 pb-6">
-          <p className="font-display text-lg text-muted-foreground mb-4 mt-2 flex items-center gap-2">
-            <Users className="w-5 h-5 text-gold" />
-            Crew XP Rankings
-          </p>
-          
-          {xpCrews.length === 0 && !crewsLoading ? (
-            <div className="bg-surface-1 border border-border p-8 text-center">
-              <p className="text-muted-foreground">No crews yet</p>
+        {/* Crews Leaderboard */}
+        {activeTab === "crews" && (
+          <motion.div
+            key="crews"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="px-4 py-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-gold" />
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Crew Rankings</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground">Combined XP</span>
             </div>
-          ) : (
-            <div className="space-y-1">
-              {xpCrews.map((crew) => {
-                const isTop3 = (crew.rank || 0) <= 3;
-                return (
-                  <div
-                    key={crew.id}
-                    onClick={() => navigate(`/crews/${crew.id}`)}
-                    className={`bg-surface-1 p-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 ${
-                      isTop3 ? "border-l-2 border-gold" : "border-l-2 border-transparent"
-                    }`}
+            
+            {xpCrews.length === 0 && !crewsLoading ? (
+              <EmptyState icon={Users} message="No crews yet" />
+            ) : (
+              <div className="space-y-2">
+                {xpCrews.map((crew, index) => {
+                  const rank = crew.rank || index + 1;
+                  const style = getRankStyle(rank);
+                  const IconComponent = style.icon;
+                  
+                  return (
+                    <motion.button
+                      key={crew.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      onClick={() => navigate(`/crews/${crew.id}`)}
+                      className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                    >
+                      {/* Rank */}
+                      <div className="w-10 flex items-center justify-center">
+                        {IconComponent ? (
+                          <IconComponent className={`w-5 h-5 ${style.text}`} />
+                        ) : (
+                          <span className={`font-display text-xl ${style.text}`}>{rank}</span>
+                        )}
+                      </div>
+                      
+                      {/* Crew Avatar */}
+                      <Avatar className="w-10 h-10 border-2 border-gold/30">
+                        <AvatarImage src={crew.avatar_url || undefined} />
+                        <AvatarFallback className="bg-surface-1 text-lg">
+                          {crew.emblem}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-white truncate block">{crew.name}</span>
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                          <span>{crew.member_count} members</span>
+                          <span>•</span>
+                          <span className="text-gold">Lv {crew.crewLevel}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Total XP */}
+                      <div className="text-right">
+                        <span className="font-display text-2xl text-white">
+                          {crew.totalXP.toLocaleString()}
+                        </span>
+                        <p className="text-[9px] text-gold uppercase tracking-wider">Total XP</p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Events Tab */}
+        {activeTab === "events" && (
+          <motion.div
+            key="events"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="px-4 py-4"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-gold" />
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Event Leaderboards</span>
+              </div>
+            </div>
+            
+            {rankedEvents.length === 0 ? (
+              <EmptyState icon={Trophy} message="No ranked events yet" />
+            ) : (
+              <div className="space-y-3">
+                {rankedEvents.map((event, index) => (
+                  <motion.button
+                    key={event.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => setSelectedEventId(event.id)}
+                    className="w-full bg-surface-1/80 backdrop-blur-sm border border-border/50 hover:border-gold/30 p-4 text-left flex items-center gap-4 transition-all hover:scale-[1.01]"
                   >
-                    <div className={`w-8 font-display text-lg ${isTop3 ? "text-gold" : "text-muted-foreground"}`}>
-                      {crew.rank}
+                    {/* Poster */}
+                    {event.poster_url ? (
+                      <div
+                        className="w-14 h-20 bg-cover bg-center flex-shrink-0 border border-border/50"
+                        style={{ backgroundImage: `url(${event.poster_url})` }}
+                      />
+                    ) : (
+                      <div className="w-14 h-20 bg-surface-0 flex-shrink-0 flex items-center justify-center border border-border/50">
+                        <Trophy className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-display text-xl text-white truncate">{event.title}</h3>
+                        <StatusBadge status={event.status} small />
+                      </div>
+                      {event.subtitle && (
+                        <p className="text-xs text-muted-foreground truncate mb-1">{event.subtitle}</p>
+                      )}
+                      <p className="text-[10px] text-gold uppercase tracking-[0.15em]">
+                        {event.league} League
+                      </p>
                     </div>
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={crew.avatar_url || undefined} />
-                      <AvatarFallback>{crew.name[0]?.toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">{crew.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{crew.member_count} members • Lv {crew.crewLevel}</p>
-                    </div>
-                    <span className="font-display text-xl">{crew.totalXP.toLocaleString()}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+                    
+                    <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
+                  </motion.button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Empty state component
+function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
+  return (
+    <div className="text-center py-16">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
+        <Icon className="w-8 h-8 text-muted-foreground" />
+      </div>
+      <p className="text-muted-foreground font-medium">{message}</p>
     </div>
   );
 }
