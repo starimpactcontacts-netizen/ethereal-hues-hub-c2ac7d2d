@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, X, Copy, Check, Download, Music, Lightbulb, Settings, Heart, Fingerprint, Star, Flame, Crown, Zap, Shield } from 'lucide-react';
+import { Share2, X, Copy, Check, Download, Music, Lightbulb, Settings, Heart, Fingerprint, Star, Flame, Crown, Zap, Shield, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { getRankFromScore, getClassFromScore, scoringPillars, type GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
@@ -116,6 +116,7 @@ function getRankCardStyle(rank: GQTRank) {
 export default function GQTShareCard({ isOpen, onClose, data }: GQTShareCardProps) {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [screenshotMode, setScreenshotMode] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   if (!isOpen) return null;
@@ -190,12 +191,156 @@ Take the Global QOI Test → loopgate.io/gqt
       toast.success('Card downloaded!');
     } catch (error) {
       console.error('Download error:', error);
-      toast.error('Screenshot the card instead!');
+      toast.error('Use Screenshot Mode instead!');
     } finally {
       setDownloading(false);
     }
   };
 
+  const handleScreenshotMode = () => {
+    setScreenshotMode(true);
+    toast.success('Screenshot Mode - Tap anywhere when done', { duration: 3000 });
+  };
+
+  const exitScreenshotMode = () => {
+    setScreenshotMode(false);
+  };
+
+  // Screenshot Mode - fullscreen card only
+  if (screenshotMode) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+        onClick={exitScreenshotMode}
+      >
+        <div 
+          className={`relative overflow-hidden border-2 ${cardStyle.borderColor} ${cardStyle.glowColor} bg-gradient-to-br ${cardStyle.bgGradient} w-[90vw] max-w-[360px]`}
+        >
+          {rank.rank.includes('S') && (
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <motion.div
+                animate={{ opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute inset-0 bg-gradient-to-br from-gold/10 via-transparent to-gold/5"
+              />
+            </div>
+          )}
+
+          <div className="absolute inset-0 opacity-[0.03]">
+            <div 
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 20px, currentColor 20px, currentColor 21px)',
+              }}
+            />
+          </div>
+
+          <div className="relative px-6 pt-6 pb-4 border-b border-border/30">
+            <div className="flex items-center justify-between">
+              <img src={loopgateLogo} alt="Loopgate" className="h-6 opacity-70" />
+              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.3em]">
+                GLOBAL QOI TEST
+              </span>
+            </div>
+          </div>
+
+          <div className="relative px-6 py-8 text-center">
+            <div className={`font-display text-[120px] leading-none ${cardStyle.textColor}`}>
+              {rank.rank}
+            </div>
+            
+            <div className="mt-2 flex items-baseline justify-center gap-2">
+              <span className="font-display text-4xl text-foreground">{data.score.toFixed(0)}</span>
+              <span className="text-xl text-muted-foreground">/ 100</span>
+            </div>
+            
+            <p className={`text-sm uppercase tracking-widest mt-2 ${cardStyle.textColor}`}>
+              {rank.description}
+            </p>
+          </div>
+
+          <div className="relative px-6 py-4 border-y border-border/30 flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-lg text-foreground truncate">
+                {data.displayName || data.username}
+              </p>
+              {data.displayName && (
+                <p className="text-xs text-muted-foreground truncate">@{data.username}</p>
+              )}
+            </div>
+            <div className={`px-3 py-2 ${cardStyle.accentBg} border ${cardStyle.borderColor} flex items-center gap-2 shrink-0`}>
+              <ClassIcon className={`w-4 h-4 ${gqtClass.color}`} />
+              <span className={`text-xs font-display uppercase ${gqtClass.color}`}>{gqtClass.name}</span>
+            </div>
+          </div>
+
+          <div className="relative px-6 py-4 grid grid-cols-5 gap-1">
+            {pillarsWithScores.map((pillar) => {
+              const Icon = pillarIcons[pillar.icon as keyof typeof pillarIcons] || Star;
+              return (
+                <div key={pillar.key} className="text-center">
+                  <Icon className="w-3 h-3 mx-auto mb-1 text-muted-foreground" />
+                  <p className="font-display text-sm text-foreground">
+                    {pillar.score?.toFixed(0) ?? '--'}
+                  </p>
+                  <p className="text-[7px] text-muted-foreground uppercase tracking-wider">
+                    /{pillar.maxPoints}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          {data.judgeQuote && (
+            <div className="relative px-6 py-4 border-t border-border/30">
+              <p className="text-sm text-foreground/80 italic text-center leading-relaxed">
+                "{data.judgeQuote}"
+              </p>
+            </div>
+          )}
+
+          <div className="relative px-6 py-4 border-t border-border/30 flex items-center justify-center gap-3 flex-wrap">
+            {indexFloor > 0 && (
+              <span className="text-[9px] uppercase tracking-wider px-2 py-1 bg-gold/10 text-gold border border-gold/30">
+                +{indexFloor} INDEX
+              </span>
+            )}
+            {data.software && (
+              <span className="text-[9px] uppercase tracking-wider px-2 py-1 bg-surface-1 text-muted-foreground border border-border">
+                {data.software}
+              </span>
+            )}
+            {data.yearsEditing && (
+              <span className="text-[9px] uppercase tracking-wider px-2 py-1 bg-surface-1 text-muted-foreground border border-border">
+                {data.yearsEditing}
+              </span>
+            )}
+          </div>
+
+          <div className="relative px-6 py-4 border-t border-border/30 bg-black/30">
+            <p className="text-center text-xs text-muted-foreground">
+              Take the test → <span className="text-gold font-semibold">loopgate.io/gqt</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Subtle hint at bottom */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="absolute bottom-8 left-0 right-0 text-center text-xs text-white/30"
+        >
+          Tap anywhere to exit
+        </motion.p>
+      </motion.div>
+    );
+  }
+
+  // Normal modal view
   return (
     <AnimatePresence>
       <motion.div
@@ -369,7 +514,17 @@ Take the Global QOI Test → loopgate.io/gqt
             </Button>
           </div>
 
-          <p className="text-center text-[9px] sm:text-[10px] text-muted-foreground mt-3 sm:mt-4 pb-2">
+          {/* Screenshot Mode button for iOS */}
+          <Button
+            onClick={handleScreenshotMode}
+            variant="ghost"
+            className="w-full mt-2 h-10 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <Camera className="w-3 h-3 mr-2" />
+            Screenshot Mode (iOS)
+          </Button>
+
+          <p className="text-center text-[9px] sm:text-[10px] text-muted-foreground mt-2 sm:mt-3 pb-2">
             Download or screenshot to post on TikTok / Instagram
           </p>
         </motion.div>
