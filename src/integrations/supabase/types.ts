@@ -575,9 +575,16 @@ export type Database = {
       gatekeeper_submissions: {
         Row: {
           age_range: string | null
+          confidence_level: number | null
           created_at: string
+          creativity_score: number | null
+          editing_goal: string | null
           editing_software: string | null
+          editing_speed: string | null
           editing_style: string | null
+          editor_type: string | null
+          emotional_score: number | null
+          gqt_rank: string | null
           house_fit: Json | null
           id: string
           impact_score: number | null
@@ -590,18 +597,29 @@ export type Database = {
           qoi_score: number | null
           quality_score: number | null
           rank_projection: string | null
+          rhythm_score: number | null
           status: string
+          style_score: number | null
           submission_url: string
           suggested_action: string | null
+          technical_score: number | null
+          test_purpose: string | null
           updated_at: string
           user_id: string
           years_editing: string | null
         }
         Insert: {
           age_range?: string | null
+          confidence_level?: number | null
           created_at?: string
+          creativity_score?: number | null
+          editing_goal?: string | null
           editing_software?: string | null
+          editing_speed?: string | null
           editing_style?: string | null
+          editor_type?: string | null
+          emotional_score?: number | null
+          gqt_rank?: string | null
           house_fit?: Json | null
           id?: string
           impact_score?: number | null
@@ -614,18 +632,29 @@ export type Database = {
           qoi_score?: number | null
           quality_score?: number | null
           rank_projection?: string | null
+          rhythm_score?: number | null
           status?: string
+          style_score?: number | null
           submission_url: string
           suggested_action?: string | null
+          technical_score?: number | null
+          test_purpose?: string | null
           updated_at?: string
           user_id: string
           years_editing?: string | null
         }
         Update: {
           age_range?: string | null
+          confidence_level?: number | null
           created_at?: string
+          creativity_score?: number | null
+          editing_goal?: string | null
           editing_software?: string | null
+          editing_speed?: string | null
           editing_style?: string | null
+          editor_type?: string | null
+          emotional_score?: number | null
+          gqt_rank?: string | null
           house_fit?: Json | null
           id?: string
           impact_score?: number | null
@@ -638,9 +667,13 @@ export type Database = {
           qoi_score?: number | null
           quality_score?: number | null
           rank_projection?: string | null
+          rhythm_score?: number | null
           status?: string
+          style_score?: number | null
           submission_url?: string
           suggested_action?: string | null
+          technical_score?: number | null
+          test_purpose?: string | null
           updated_at?: string
           user_id?: string
           years_editing?: string | null

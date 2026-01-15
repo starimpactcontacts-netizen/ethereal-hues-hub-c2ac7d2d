@@ -8,12 +8,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink, LogIn, Zap, RefreshCw, Play } from 'lucide-react';
+import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink, LogIn, Zap, RefreshCw, Play, ChevronRight, ChevronLeft } from 'lucide-react';
 import { validatePlatformUrl, detectPlatform, type PlatformType } from '@/lib/urlValidation';
 import { toast } from 'sonner';
 import GQTResultCard from '@/components/loopgate/GQTResultCard';
-import type { Json } from '@/integrations/supabase/types';
+import { 
+  editorTypes, 
+  yearsEditingOptions, 
+  softwareOptions, 
+  editingSpeedOptions, 
+  testPurposeOptions, 
+  editingGoalOptions,
+  confidenceLabels,
+  getRankFromScore
+} from '@/data/gqtConfig';
 
 interface GQTSubmission {
   id: string;
@@ -24,6 +34,12 @@ interface GQTSubmission {
   quality_score: number | null;
   originality_score: number | null;
   impact_score: number | null;
+  rhythm_score?: number | null;
+  creativity_score?: number | null;
+  technical_score?: number | null;
+  emotional_score?: number | null;
+  style_score?: number | null;
+  gqt_rank?: string | null;
   judge_commentary: string | null;
   judge_archetype: string | null;
   created_at: string;
@@ -31,6 +47,11 @@ interface GQTSubmission {
   editing_software: string | null;
   years_editing: string | null;
   editing_style: string | null;
+  editor_type?: string | null;
+  editing_speed?: string | null;
+  test_purpose?: string | null;
+  confidence_level?: number | null;
+  editing_goal?: string | null;
   age_range: string | null;
   rank_projection: string | null;
   suggested_action: string | null;
@@ -41,22 +62,30 @@ export default function GQTPage() {
   const { user, profile } = useAuth();
   const { isGuest } = useGuestMode();
   const navigate = useNavigate();
+  
+  // Form state
   const [url, setUrl] = useState('');
   const [platform, setPlatform] = useState<PlatformType>('tiktok');
-  const [editingSoftware, setEditingSoftware] = useState('');
-  const [yearsEditing, setYearsEditing] = useState('');
-  const [editingStyle, setEditingStyle] = useState('');
-  const [ageRange, setAgeRange] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
+  
+  // Interrogation state
+  const [editorType, setEditorType] = useState('');
+  const [yearsEditing, setYearsEditing] = useState('');
+  const [editingSoftware, setEditingSoftware] = useState('');
+  const [editingSpeed, setEditingSpeed] = useState('');
+  const [testPurpose, setTestPurpose] = useState('');
+  const [confidenceLevel, setConfidenceLevel] = useState(5);
+  const [editingGoal, setEditingGoal] = useState('');
+  
+  // UI state
+  const [step, setStep] = useState<'form' | 'interrogation'>('form');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [latestSubmission, setLatestSubmission] = useState<GQTSubmission | null>(null);
   const [pendingSubmission, setPendingSubmission] = useState<GQTSubmission | null>(null);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   
-  // Check if user is authenticated (not guest)
   const isAuthenticated = !!user && !isGuest;
   
-  // Load latest submission on mount
   useEffect(() => {
     if (profile?.id) {
       loadLatestSubmission();
@@ -91,12 +120,8 @@ export default function GQTPage() {
   const handleUrlChange = (value: string) => {
     setUrl(value);
     setUrlError(null);
-    
-    // Auto-detect platform
     const detected = detectPlatform(value);
-    if (detected) {
-      setPlatform(detected);
-    }
+    if (detected) setPlatform(detected);
   };
   
   const validateUrl = (): boolean => {
@@ -105,18 +130,20 @@ export default function GQTPage() {
       setUrlError('Please enter a valid TikTok, Instagram, or YouTube URL');
       return false;
     }
-    
     const validation = validatePlatformUrl(detected, url);
     if (!validation.valid) {
       setUrlError(validation.error || 'Invalid URL');
       return false;
     }
-    
     return true;
   };
   
+  const handleProceedToInterrogation = () => {
+    if (!validateUrl()) return;
+    setStep('interrogation');
+  };
+  
   const handleSubmit = async () => {
-    // Guest users: show auth prompt instead of submitting
     if (!isAuthenticated || !profile?.id) {
       setShowAuthPrompt(true);
       return;
@@ -124,16 +151,9 @@ export default function GQTPage() {
     
     if (!validateUrl()) return;
     
-    // Validate platform
     const detected = detectPlatform(url);
     if (!detected) {
       toast.error('Could not detect platform from URL');
-      return;
-    }
-    
-    const validation = validatePlatformUrl(detected, url);
-    if (!validation.valid) {
-      toast.error(validation.error || 'Invalid URL');
       return;
     }
     
@@ -146,10 +166,13 @@ export default function GQTPage() {
           user_id: profile.id,
           submission_url: url,
           platform: detected,
-          editing_software: editingSoftware || null,
+          editor_type: editorType || null,
           years_editing: yearsEditing || null,
-          editing_style: editingStyle || null,
-          age_range: ageRange || null,
+          editing_software: editingSoftware || null,
+          editing_speed: editingSpeed || null,
+          test_purpose: testPurpose || null,
+          confidence_level: confidenceLevel,
+          editing_goal: editingGoal || null,
         })
         .select()
         .single();
@@ -163,11 +186,7 @@ export default function GQTPage() {
       
       setPendingSubmission(submission);
       setLatestSubmission(null);
-      setUrl('');
-      setEditingSoftware('');
-      setYearsEditing('');
-      setEditingStyle('');
-      setAgeRange('');
+      resetForm();
       toast.success('Submission received! A judge will review it soon.');
     } catch (error: any) {
       toast.error(error.message || 'Failed to submit');
@@ -176,16 +195,30 @@ export default function GQTPage() {
     }
   };
 
+  const resetForm = () => {
+    setUrl('');
+    setEditorType('');
+    setYearsEditing('');
+    setEditingSoftware('');
+    setEditingSpeed('');
+    setTestPurpose('');
+    setConfidenceLevel(5);
+    setEditingGoal('');
+    setStep('form');
+  };
+
   const handleRetake = () => {
     setLatestSubmission(null);
     setPendingSubmission(null);
+    resetForm();
   };
+  
+  const canProceed = editorType && yearsEditing && editingSoftware && editingSpeed && testPurpose && editingGoal;
   
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header with hazard stripes */}
+      {/* Header */}
       <div className="relative border-b border-gold/30 bg-gradient-to-r from-background via-surface-0 to-background overflow-hidden">
-        {/* Hazard stripe pattern */}
         <div className="absolute inset-0 opacity-[0.03]">
           <div 
             className="absolute inset-0"
@@ -201,7 +234,6 @@ export default function GQTPage() {
               <div className="w-16 h-16 bg-gold/10 border-2 border-gold flex items-center justify-center">
                 <Target className="w-8 h-8 text-gold" />
               </div>
-              {/* Pulse effect */}
               <div className="absolute inset-0 border-2 border-gold/50 animate-ping opacity-30" />
             </div>
             <div>
@@ -210,7 +242,7 @@ export default function GQTPage() {
                 <Zap className="w-5 h-5 text-gold/60" />
               </div>
               <p className="text-sm text-muted-foreground italic mt-1">
-                "Submit an edit. Get your score."
+                "Submit an edit. Get your rank."
               </p>
             </div>
           </div>
@@ -229,18 +261,23 @@ export default function GQTPage() {
               <div className="flex items-center gap-3">
                 <Trophy className="w-8 h-8 text-gold" />
                 <div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Your Best QOI Score</p>
-                  <p className="font-display text-4xl text-gold">{profile.best_gatekeeper_qoi.toFixed(1)}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Your Best Score</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="font-display text-4xl text-gold">{profile.best_gatekeeper_qoi.toFixed(0)}</p>
+                    <span className="text-lg text-muted-foreground font-display">/100</span>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Personal Record</p>
+              <div className={`px-3 py-1.5 ${getRankFromScore(profile.best_gatekeeper_qoi).bgClass} border ${getRankFromScore(profile.best_gatekeeper_qoi).borderClass}`}>
+                <span className={`font-display text-2xl ${getRankFromScore(profile.best_gatekeeper_qoi).color}`}>
+                  {getRankFromScore(profile.best_gatekeeper_qoi).rank}
+                </span>
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* Pending Submission - Awaiting Judgment */}
+        {/* Pending Submission */}
         <AnimatePresence mode="wait">
           {pendingSubmission && (
             <motion.div
@@ -249,7 +286,6 @@ export default function GQTPage() {
               exit={{ opacity: 0, y: -20 }}
               className="bg-gradient-to-br from-gold/10 via-surface-0 to-surface-1 border-2 border-gold/50 p-6"
             >
-              {/* Pulsing clock icon */}
               <div className="flex items-center gap-4 mb-4">
                 <div className="relative">
                   <div className="w-12 h-12 bg-gold/10 border border-gold/50 flex items-center justify-center">
@@ -301,7 +337,6 @@ export default function GQTPage() {
             </div>
             <GQTResultCard submission={latestSubmission} />
             
-            {/* CTAs */}
             <div className="grid grid-cols-2 gap-3 pt-4">
               <Link to="/arenas">
                 <Button className="w-full bg-gold hover:bg-gold/90 text-background font-display">
@@ -321,141 +356,218 @@ export default function GQTPage() {
           </motion.div>
         )}
         
-        {/* Submit Form */}
+        {/* Submit Flow */}
         {!pendingSubmission && !latestSubmission && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6"
-          >
-            <div className="bg-surface-0 border border-border p-5 space-y-5">
-              <h2 className="font-display text-xl text-foreground">SUBMIT YOUR EDIT</h2>
-              
-              {/* URL Input */}
-              <div className="space-y-2">
-                <Label htmlFor="url" className="text-sm font-semibold">Video URL *</Label>
-                <Input
-                  id="url"
-                  value={url}
-                  onChange={(e) => handleUrlChange(e.target.value)}
-                  placeholder="https://tiktok.com/@handle/video/..."
-                  className={`h-12 ${urlError ? 'border-destructive' : 'border-border focus:border-gold'}`}
-                />
-                {urlError && (
-                  <p className="text-xs text-destructive flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {urlError}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Supports TikTok, Instagram Reels, and YouTube Shorts
-                </p>
-              </div>
-              
-              {/* Platform Display */}
-              <div className="flex items-center gap-2 text-sm px-3 py-2 bg-surface-1 border border-border">
-                <span className="text-muted-foreground">Platform detected:</span>
-                <span className="text-foreground font-semibold capitalize">{platform}</span>
-              </div>
-              
-              {/* Optional Fields */}
-              <div className="pt-4 border-t border-border space-y-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">
-                  Optional — helps judges provide better feedback
-                </p>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="software" className="text-xs">Editing Software</Label>
-                    <Select value={editingSoftware} onValueChange={setEditingSoftware}>
-                      <SelectTrigger id="software" className="h-10">
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="premiere">Premiere Pro</SelectItem>
-                        <SelectItem value="aftereffects">After Effects</SelectItem>
-                        <SelectItem value="finalcut">Final Cut Pro</SelectItem>
-                        <SelectItem value="davinci">DaVinci Resolve</SelectItem>
-                        <SelectItem value="capcut">CapCut</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="years" className="text-xs">Years Editing</Label>
-                    <Select value={yearsEditing} onValueChange={setYearsEditing}>
-                      <SelectTrigger id="years" className="h-10">
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="<1">Less than 1 year</SelectItem>
-                        <SelectItem value="1-2">1-2 years</SelectItem>
-                        <SelectItem value="3-5">3-5 years</SelectItem>
-                        <SelectItem value="5+">5+ years</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="style" className="text-xs">Editing Style</Label>
-                    <Select value={editingStyle} onValueChange={setEditingStyle}>
-                      <SelectTrigger id="style" className="h-10">
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="amv">AMV</SelectItem>
-                        <SelectItem value="gaming">Gaming</SelectItem>
-                        <SelectItem value="sports">Sports</SelectItem>
-                        <SelectItem value="cinematic">Cinematic</SelectItem>
-                        <SelectItem value="meme">Meme/Comedy</SelectItem>
-                        <SelectItem value="vlog">Vlog</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="age" className="text-xs">Age Range</Label>
-                    <Select value={ageRange} onValueChange={setAgeRange}>
-                      <SelectTrigger id="age" className="h-10">
-                        <SelectValue placeholder="Select..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="13-17">13-17</SelectItem>
-                        <SelectItem value="18-24">18-24</SelectItem>
-                        <SelectItem value="25-34">25-34</SelectItem>
-                        <SelectItem value="35+">35+</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting || !url}
-                className="w-full bg-gold hover:bg-gold/90 text-background font-display text-lg h-14"
+          <AnimatePresence mode="wait">
+            {step === 'form' ? (
+              <motion.div
+                key="form"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
               >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
-                    Submitting...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Send className="w-5 h-5" />
-                    SUBMIT FOR REVIEW
-                  </span>
-                )}
-              </Button>
-            </div>
-            
-            {/* Info Section */}
-            <div className="text-center space-y-2 text-sm text-muted-foreground px-4">
-              <p>Submissions are reviewed by real judges.</p>
-              <p className="text-gold">Your best QOI score is saved to your profile.</p>
-            </div>
-          </motion.div>
+                <div className="bg-surface-0 border border-border p-5 space-y-5">
+                  <h2 className="font-display text-xl text-foreground">SUBMIT YOUR EDIT</h2>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="url" className="text-sm font-semibold">Video URL *</Label>
+                    <Input
+                      id="url"
+                      value={url}
+                      onChange={(e) => handleUrlChange(e.target.value)}
+                      placeholder="https://tiktok.com/@handle/video/..."
+                      className={`h-12 ${urlError ? 'border-destructive' : 'border-border focus:border-gold'}`}
+                    />
+                    {urlError && (
+                      <p className="text-xs text-destructive flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" /> {urlError}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Supports TikTok, Instagram Reels, and YouTube Shorts
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm px-3 py-2 bg-surface-1 border border-border">
+                    <span className="text-muted-foreground">Platform detected:</span>
+                    <span className="text-foreground font-semibold capitalize">{platform}</span>
+                  </div>
+                  
+                  <Button
+                    onClick={handleProceedToInterrogation}
+                    disabled={!url}
+                    className="w-full bg-gold hover:bg-gold/90 text-background font-display text-lg h-14"
+                  >
+                    <span className="flex items-center gap-2">
+                      Continue to Interrogation
+                      <ChevronRight className="w-5 h-5" />
+                    </span>
+                  </Button>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="interrogation"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="space-y-6"
+              >
+                <div className="bg-surface-0 border border-gold/30 p-5 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-display text-xl text-gold">INTERROGATION</h2>
+                      <p className="text-xs text-muted-foreground mt-1">Answer honestly. This helps judges give better feedback.</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setStep('form')}
+                      className="text-muted-foreground"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-1" />
+                      Back
+                    </Button>
+                  </div>
+                  
+                  {/* Question 1: Editor Type */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">What type of editor are you? *</Label>
+                    <Select value={editorType} onValueChange={setEditorType}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Select your style..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {editorTypes.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Question 2: Years Editing */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">How long have you been editing? *</Label>
+                    <Select value={yearsEditing} onValueChange={setYearsEditing}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Select experience..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {yearsEditingOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Question 3: Software */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">What's your weapon? (Software) *</Label>
+                    <Select value={editingSoftware} onValueChange={setEditingSoftware}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Select software..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {softwareOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Question 4: Editing Speed */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">How fast do you edit? *</Label>
+                    <Select value={editingSpeed} onValueChange={setEditingSpeed}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Select speed..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {editingSpeedOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Question 5: Test Purpose */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">What's your intention? *</Label>
+                    <Select value={testPurpose} onValueChange={setTestPurpose}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Why are you here..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {testPurposeOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Question 6: Confidence Level */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">How confident are you in this edit? *</Label>
+                      <span className={`text-sm font-display ${confidenceLevel >= 7 ? 'text-gold' : 'text-muted-foreground'}`}>
+                        {confidenceLevel}/10
+                      </span>
+                    </div>
+                    <Slider
+                      value={[confidenceLevel]}
+                      onValueChange={(v) => setConfidenceLevel(v[0])}
+                      min={1}
+                      max={10}
+                      step={1}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground text-center italic">
+                      "{confidenceLabels[confidenceLevel]}"
+                    </p>
+                  </div>
+                  
+                  {/* Question 7: Editing Goal */}
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">What's your editing goal? *</Label>
+                    <Select value={editingGoal} onValueChange={setEditingGoal}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Select goal..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {editingGoalOptions.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !canProceed}
+                    className="w-full bg-gold hover:bg-gold/90 text-background font-display text-lg h-14"
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                        Submitting...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <Send className="w-5 h-5" />
+                        SUBMIT FOR JUDGMENT
+                      </span>
+                    )}
+                  </Button>
+                </div>
+                
+                <div className="text-center space-y-2 text-sm text-muted-foreground px-4">
+                  <p>Submissions are reviewed by real judges.</p>
+                  <p className="text-gold">Your best score is saved to your profile.</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
       </div>
       
@@ -467,10 +579,10 @@ export default function GQTPage() {
               <LogIn className="w-10 h-10 text-gold" />
             </div>
             <DialogTitle className="font-display text-3xl text-center text-gold">
-              READY TO GET SCORED?
+              READY TO GET RANKED?
             </DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">
-              Sign in or create an account to submit your edit and get your official QOI score from a real judge.
+              Sign in or create an account to submit your edit and get your official rank from a real judge.
             </DialogDescription>
           </DialogHeader>
           

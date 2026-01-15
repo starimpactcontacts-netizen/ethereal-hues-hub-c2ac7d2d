@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Target, ArrowRight, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { getRankFromScore } from '@/data/gqtConfig';
 
 export default function GQTCard() {
   const { profile } = useAuth();
   const bestScore = profile?.best_gatekeeper_qoi;
+  const rank = bestScore ? getRankFromScore(bestScore) : null;
   
   return (
     <Link to="/gqt">
@@ -33,12 +35,10 @@ export default function GQTCard() {
         <div className="relative p-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
-              {/* Icon with pulse */}
               <div className="relative">
                 <div className="w-16 h-16 bg-gold/10 border-2 border-gold flex items-center justify-center group-hover:bg-gold/20 transition-colors">
                   <Target className="w-8 h-8 text-gold" />
                 </div>
-                {/* Pulse ring */}
                 <div className="absolute inset-0 border-2 border-gold/50 animate-ping opacity-20" />
               </div>
               
@@ -48,16 +48,20 @@ export default function GQTCard() {
                   <Zap className="w-5 h-5 text-gold animate-pulse" />
                 </div>
                 <p className="text-sm text-muted-foreground italic">
-                  "Submit an edit. Get your score."
+                  "Submit an edit. Get your rank."
                 </p>
               </div>
             </div>
             
             <div className="flex flex-col items-end gap-2">
-              {bestScore && (
-                <div className="text-right bg-gold/10 px-3 py-2 border border-gold/50">
+              {bestScore && rank && (
+                <div className={`text-right ${rank.bgClass} px-3 py-2 border ${rank.borderClass}`}>
                   <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best Score</p>
-                  <p className="font-display text-2xl text-gold">{bestScore.toFixed(1)}</p>
+                  <div className="flex items-baseline gap-1">
+                    <p className={`font-display text-2xl ${rank.color}`}>{bestScore.toFixed(0)}</p>
+                    <span className="text-xs text-muted-foreground">/100</span>
+                  </div>
+                  <p className={`font-display text-sm ${rank.color}`}>{rank.rank}</p>
                 </div>
               )}
             </div>
@@ -66,11 +70,11 @@ export default function GQTCard() {
           {/* Bottom bar */}
           <div className="mt-5 pt-4 border-t border-gold/30 flex items-center justify-between">
             <span className="text-xs text-muted-foreground uppercase tracking-[0.15em]">
-              Get real feedback on your edits
+              Get ranked by real judges
             </span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gold uppercase tracking-wider font-bold px-3 py-1.5 bg-gold/20 border border-gold group-hover:bg-gold group-hover:text-background transition-colors">
-                TEST NOW
+                START TEST
               </span>
               <ArrowRight className="w-5 h-5 text-gold opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
             </div>

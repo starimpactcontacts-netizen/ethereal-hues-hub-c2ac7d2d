@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { Star, Sparkles, Zap, Quote, ChevronRight, Share2, Shield, Crown, Skull, Trophy, TrendingUp } from 'lucide-react';
+import { Star, Sparkles, Zap, Quote, Share2, Crown, Skull, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { getRankFromScore, getPercentile, getProjectedLeagueFromScore, scoringPillars } from '@/data/gqtConfig';
 
 interface GQTResultCardProps {
   submission: {
@@ -9,6 +10,12 @@ interface GQTResultCardProps {
     quality_score: number | null;
     originality_score: number | null;
     impact_score: number | null;
+    rhythm_score?: number | null;
+    creativity_score?: number | null;
+    technical_score?: number | null;
+    emotional_score?: number | null;
+    style_score?: number | null;
+    gqt_rank?: string | null;
     judge_commentary: string | null;
     judge_archetype: string | null;
     rank_projection: string | null;
@@ -17,39 +24,35 @@ interface GQTResultCardProps {
   };
 }
 
-// QOI Tier system (0-15 scale)
-const getQOITier = (score: number) => {
-  if (score >= 15) return { label: 'APEX', color: 'text-gold', bg: 'bg-gradient-to-r from-gold/30 to-gold/10', border: 'border-gold' };
-  if (score >= 13) return { label: 'DIAMOND', color: 'text-cyan-400', bg: 'bg-gradient-to-r from-cyan-400/20 to-cyan-400/5', border: 'border-cyan-400' };
-  if (score >= 10) return { label: 'PLATINUM', color: 'text-purple-400', bg: 'bg-gradient-to-r from-purple-400/20 to-purple-400/5', border: 'border-purple-400' };
-  if (score >= 7) return { label: 'GOLD', color: 'text-amber-400', bg: 'bg-gradient-to-r from-amber-400/20 to-amber-400/5', border: 'border-amber-400' };
-  if (score >= 4) return { label: 'SILVER', color: 'text-slate-300', bg: 'bg-gradient-to-r from-slate-300/20 to-slate-300/5', border: 'border-slate-300' };
-  return { label: 'BRONZE', color: 'text-orange-600', bg: 'bg-gradient-to-r from-orange-600/20 to-orange-600/5', border: 'border-orange-600' };
+// Icon mapping for pillars
+const pillarIcons: Record<string, any> = {
+  music: Music,
+  lightbulb: Lightbulb,
+  settings: Settings,
+  heart: Heart,
+  fingerprint: Fingerprint,
 };
 
-// Score color coding
-const getScoreColor = (score: number) => {
-  if (score >= 13) return 'text-gold';
-  if (score >= 10) return 'text-green-400';
-  if (score >= 7) return 'text-yellow-400';
-  if (score >= 4) return 'text-orange-400';
+// Score color based on percentage of max
+const getScoreColor = (score: number | null, max: number) => {
+  if (score === null) return 'text-muted-foreground';
+  const pct = (score / max) * 100;
+  if (pct >= 85) return 'text-gold';
+  if (pct >= 70) return 'text-emerald-400';
+  if (pct >= 50) return 'text-blue-400';
+  if (pct >= 30) return 'text-orange-400';
   return 'text-red-400';
-};
-
-// Projected league from score
-const getProjectedLeague = (score: number) => {
-  if (score >= 14.5) return { name: 'CARTEL', subtitle: 'Blacklist Potential', icon: Skull, color: 'text-gold', bg: 'bg-gold/10' };
-  if (score >= 12) return { name: 'ELITE', subtitle: 'The 1%', icon: Crown, color: 'text-gold', bg: 'bg-gold/10' };
-  if (score >= 8) return { name: 'PRO', subtitle: 'The Ascended', icon: Star, color: 'text-blue-400', bg: 'bg-blue-400/10' };
-  return { name: 'OPEN', subtitle: 'The Pit', icon: Shield, color: 'text-muted-foreground', bg: 'bg-muted/20' };
 };
 
 export default function GQTResultCard({ submission }: GQTResultCardProps) {
   const { 
     qoi_score, 
-    quality_score, 
-    originality_score, 
-    impact_score,
+    rhythm_score,
+    creativity_score,
+    technical_score,
+    emotional_score,
+    style_score,
+    gqt_rank,
     judge_commentary,
     judge_archetype,
     rank_projection,
@@ -57,14 +60,25 @@ export default function GQTResultCard({ submission }: GQTResultCardProps) {
     house_fit
   } = submission;
   
-  const tier = qoi_score !== null ? getQOITier(qoi_score) : null;
-  const projectedLeague = qoi_score !== null ? getProjectedLeague(qoi_score) : null;
-  const percentile = qoi_score !== null ? Math.min(99, Math.round((qoi_score / 15) * 100)) : null;
+  // Use the new 100-point score if available, otherwise calculate from pillars or use legacy
+  const totalScore = qoi_score ?? 0;
+  const rank = gqt_rank ? getRankFromScore(totalScore) : (totalScore > 0 ? getRankFromScore(totalScore) : null);
+  const percentile = totalScore > 0 ? getPercentile(totalScore) : null;
+  const projectedLeague = totalScore > 0 ? getProjectedLeagueFromScore(totalScore) : null;
+  
+  // Build pillars array with scores
+  const pillarsWithScores = [
+    { ...scoringPillars[0], score: rhythm_score },
+    { ...scoringPillars[1], score: creativity_score },
+    { ...scoringPillars[2], score: technical_score },
+    { ...scoringPillars[3], score: emotional_score },
+    { ...scoringPillars[4], score: style_score },
+  ];
   
   const handleShare = async () => {
-    const shareText = `My QOI Score: ${qoi_score?.toFixed(1)} / 15
-Tier: ${tier?.label}
-Projected League: ${projectedLeague?.name}
+    const shareText = `My GQT Score: ${totalScore.toFixed(0)} / 100
+Rank: ${rank?.rank || 'N/A'}
+${projectedLeague ? `Projected League: ${projectedLeague.name}` : ''}
 
 Take the Global QOI Test at loopgate.io/gqt`;
 
@@ -89,7 +103,7 @@ Take the Global QOI Test at loopgate.io/gqt`;
       animate={{ opacity: 1, scale: 1 }}
       className="relative overflow-hidden bg-gradient-to-br from-surface-0 via-background to-surface-0 border-2 border-border"
     >
-      {/* Animated energy lines (UFC/anime style) */}
+      {/* Animated energy line */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div 
           initial={{ x: '-100%' }}
@@ -99,8 +113,8 @@ Take the Global QOI Test at loopgate.io/gqt`;
         />
       </div>
       
-      {/* Header with QOI Score - BATTLE RESULT STYLE */}
-      <div className={`relative ${tier?.bg || 'bg-surface-1'} border-b-2 ${tier?.border || 'border-border'} p-6`}>
+      {/* Header with Score + Rank */}
+      <div className={`relative ${rank?.bgClass || 'bg-surface-1'} border-b-2 ${rank?.borderClass || 'border-border'} p-6`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] mb-2">FINAL SCORE</p>
@@ -109,60 +123,80 @@ Take the Global QOI Test at loopgate.io/gqt`;
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', delay: 0.2 }}
-                className={`font-display text-7xl ${tier?.color || 'text-foreground'}`}
+                className={`font-display text-7xl ${rank?.color || 'text-foreground'}`}
               >
-                {qoi_score?.toFixed(1) || '--'}
+                {totalScore.toFixed(0)}
               </motion.span>
-              <span className="text-2xl text-muted-foreground font-display">/ 15</span>
+              <span className="text-2xl text-muted-foreground font-display">/ 100</span>
             </div>
             {percentile !== null && (
               <p className="text-xs text-muted-foreground mt-1">
-                Top {100 - percentile}% globally
+                Top {percentile}% globally
               </p>
             )}
           </div>
           
-          {/* QOI Tier Badge */}
-          {tier && (
+          {/* Rank Badge */}
+          {rank && (
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
-              className={`px-4 py-2 ${tier.bg} border ${tier.border} flex flex-col items-center`}
+              className={`px-5 py-3 ${rank.bgClass} border-2 ${rank.borderClass} flex flex-col items-center`}
             >
-              <Trophy className={`w-6 h-6 ${tier.color} mb-1`} />
-              <span className={`font-display text-lg ${tier.color}`}>{tier.label}</span>
-              <span className="text-[8px] text-muted-foreground uppercase tracking-widest">QOI TIER</span>
+              <motion.span 
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', delay: 0.5 }}
+                className={`font-display text-5xl ${rank.color}`}
+              >
+                {rank.rank}
+              </motion.span>
+              <span className="text-[8px] text-muted-foreground uppercase tracking-widest mt-1">
+                {rank.description}
+              </span>
             </motion.div>
           )}
         </div>
       </div>
       
-      {/* Score Breakdown */}
+      {/* 5-Pillar Breakdown */}
       <div className="p-5 border-b border-border/50">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-4">BREAKDOWN</p>
-        <div className="grid grid-cols-3 gap-6">
-          <div className="text-center">
-            <Star className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-            <p className={`font-display text-3xl ${quality_score ? getScoreColor(quality_score) : 'text-muted-foreground'}`}>
-              {quality_score?.toFixed(0) || '--'}
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Quality</p>
-          </div>
-          <div className="text-center">
-            <Sparkles className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-            <p className={`font-display text-3xl ${originality_score ? getScoreColor(originality_score) : 'text-muted-foreground'}`}>
-              {originality_score?.toFixed(0) || '--'}
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Originality</p>
-          </div>
-          <div className="text-center">
-            <Zap className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-            <p className={`font-display text-3xl ${impact_score ? getScoreColor(impact_score) : 'text-muted-foreground'}`}>
-              {impact_score?.toFixed(0) || '--'}
-            </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Impact</p>
-          </div>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-4">SCORE BREAKDOWN</p>
+        <div className="space-y-3">
+          {pillarsWithScores.map((pillar, i) => {
+            const Icon = pillarIcons[pillar.icon] || Star;
+            const score = pillar.score;
+            const pct = score !== null ? (score / pillar.maxPoints) * 100 : 0;
+            
+            return (
+              <motion.div 
+                key={pillar.key}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * i }}
+                className="flex items-center gap-3"
+              >
+                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-muted-foreground">{pillar.label}</span>
+                    <span className={`text-sm font-display ${getScoreColor(score ?? null, pillar.maxPoints)}`}>
+                      {score?.toFixed(0) ?? '--'} / {pillar.maxPoints}
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-surface-1 overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ delay: 0.2 + 0.1 * i, duration: 0.5 }}
+                      className={`h-full ${score !== null && pct >= 70 ? 'bg-gold' : 'bg-muted-foreground/50'}`}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
       
@@ -170,9 +204,12 @@ Take the Global QOI Test at loopgate.io/gqt`;
       {projectedLeague && (
         <div className="p-5 border-b border-border/50">
           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3">PROJECTED LEAGUE</p>
-          <div className={`${projectedLeague.bg} border border-border p-4 flex items-center gap-4`}>
-            <div className={`w-12 h-12 ${projectedLeague.bg} border border-current flex items-center justify-center ${projectedLeague.color}`}>
-              <projectedLeague.icon className="w-6 h-6" />
+          <div className={`${projectedLeague.bgClass} border border-border p-4 flex items-center gap-4`}>
+            <div className={`w-12 h-12 ${projectedLeague.bgClass} border border-current flex items-center justify-center ${projectedLeague.color}`}>
+              {projectedLeague.name === 'CARTEL' ? <Skull className="w-6 h-6" /> : 
+               projectedLeague.name === 'ELITE' ? <Crown className="w-6 h-6" /> :
+               projectedLeague.name === 'PRO' ? <Star className="w-6 h-6" /> :
+               <Trophy className="w-6 h-6" />}
             </div>
             <div>
               <p className={`font-display text-2xl ${projectedLeague.color}`}>{projectedLeague.name}</p>
@@ -182,7 +219,7 @@ Take the Global QOI Test at loopgate.io/gqt`;
         </div>
       )}
       
-      {/* Judge Commentary - BRUTAL MODE */}
+      {/* Judge Commentary */}
       {judge_commentary && (
         <div className="p-5 border-b border-border/50 bg-surface-1/50">
           <div className="flex items-start gap-3">
@@ -239,10 +276,10 @@ Take the Global QOI Test at loopgate.io/gqt`;
           className="w-full border-gold/50 text-gold hover:bg-gold/10 h-12"
         >
           <Share2 className="w-4 h-4 mr-2" />
-          Share Your Results
+          Share Your Rank
         </Button>
         <p className="text-[10px] text-center text-muted-foreground mt-3">
-          Show off your score on TikTok / Instagram
+          Flex your score on TikTok / Instagram
         </p>
       </div>
     </motion.div>
