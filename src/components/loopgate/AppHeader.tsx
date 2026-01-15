@@ -14,7 +14,7 @@ const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
   { to: '/', icon: Calendar, label: 'Events' },
   { to: '/rankings', icon: Trophy, label: 'Rankings' },
-  { to: '/leagues', icon: Shield, label: 'Leagues' },
+  { to: '/class', icon: Shield, label: 'Class' },
   { to: '/index', icon: Search, label: 'Index' },
   { to: '/shop', icon: ShoppingBag, label: 'Shop', highlight: true },
   { to: '/profile', icon: User, label: 'Profile' },

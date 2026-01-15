@@ -5,16 +5,25 @@ import AuthorityBadge from "./AuthorityBadge";
 import CrewBadge from "./CrewBadge";
 import LevelBadge from "./LevelBadge";
 import HouseBadge from "./houses/HouseBadge";
+import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
+
+// Get class letter from GQT score or level
+function getClassLetter(bestGQT: number | null | undefined, level: number | undefined): GQTRank {
+  if (bestGQT && bestGQT > 0) {
+    return getRankFromScore(bestGQT).rank;
+  }
+  // Level 2+ without GQT = D class
+  if ((level || 1) >= 2) return 'D';
+  return 'F';
+}
 
 interface EditorCardProps {
   editor: RealEditor;
 }
 
-const leagueColors: Record<string, string> = {
-  elite: "text-gold border-gold",
-  pro: "text-blue-400 border-blue-400",
-  open: "text-muted-foreground border-muted-foreground/50",
-};
+interface EditorCardProps {
+  editor: RealEditor;
+}
 
 // Get authority role for display (prioritize dev over judge)
 function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | null {
@@ -29,6 +38,18 @@ export default function EditorCard({ editor }: EditorCardProps) {
   const navigate = useNavigate();
   const isTop10 = (editor.rank || 999) <= 10;
   const authorityRole = getAuthorityRole(editor.roles);
+  const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
+  
+  const classColors: Record<string, string> = {
+    'S++': 'text-gold border-gold bg-gold/10',
+    'S+': 'text-gold border-gold/80 bg-gold/10',
+    'S': 'text-amber-400 border-amber-400 bg-amber-400/10',
+    'A': 'text-emerald-400 border-emerald-400 bg-emerald-400/10',
+    'B': 'text-blue-400 border-blue-400 bg-blue-400/10',
+    'C': 'text-slate-300 border-slate-400/50 bg-slate-400/10',
+    'D': 'text-orange-400 border-orange-500/40 bg-orange-500/10',
+    'F': 'text-muted-foreground border-border bg-muted/10',
+  };
 
   const handleClick = () => {
     navigate(`/editor/${editor.id}`);
@@ -72,8 +93,8 @@ export default function EditorCard({ editor }: EditorCardProps) {
               {editor.level && editor.level > 1 && <LevelBadge level={editor.level} size="xs" />}
               {editor.verification_status && <VerifiedBadge size="sm" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
-              <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${leagueColors[editor.league] || leagueColors.open}`}>
-                {editor.league}
+              <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${classColors[classLetter]}`}>
+                {classLetter}
               </span>
             </div>
             {editor.display_name && (

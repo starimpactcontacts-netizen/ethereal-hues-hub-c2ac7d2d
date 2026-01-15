@@ -1,124 +1,154 @@
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Star, Crown, Flame, Lock, TrendingUp, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRealRankings } from '@/hooks/useRealData';
-import { gqtLeagues, getRankFromScore, getProjectedLeagueFromRank, GQTRank } from '@/data/gqtConfig';
+import { getRankFromScore, GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
+import { Button } from '@/components/ui/button';
 
-// New GQT-based league system: Rookie → Contributor → Skilled → Advanced → Master → Legend
-const leagues = [
+// GQT Class System - Your class is your rank letter (F through S++)
+const classes = [
   {
-    id: 'legend',
-    name: 'LEGEND',
-    subtitle: 'S+ / S++ TIER',
+    rank: 'S++' as GQTRank,
+    name: 'S++ CLASS',
+    subtitle: 'LEGENDARY',
     icon: Flame,
-    description: 'The apex of the editing world. Reserved for S+ and S++ ranked editors who have proven absolute mastery. Maximum prestige and recognition.',
-    badge: 'Score 90+',
-    accentColor: 'gold',
+    description: 'The apex of the editing world. Reserved for editors who have proven absolute mastery. Maximum prestige and recognition.',
+    badge: 'Score 96+',
     bgGradient: 'from-gold/20 via-black to-gold/10',
     borderColor: 'border-gold',
     textColor: 'text-gold',
     glowColor: 'shadow-gold/30',
-    indexFloor: 200,
-    minRank: 'S+' as GQTRank,
+    indexFloor: 300,
   },
   {
-    id: 'master',
-    name: 'MASTER',
-    subtitle: 'S TIER',
+    rank: 'S+' as GQTRank,
+    name: 'S+ CLASS',
+    subtitle: 'ELITE',
+    icon: Flame,
+    description: 'Elite editors at the peak of competitive editing. Your work stands among the very best in the world.',
+    badge: 'Score 90-95',
+    bgGradient: 'from-gold/15 via-black to-gold/5',
+    borderColor: 'border-gold/80',
+    textColor: 'text-gold',
+    glowColor: 'shadow-gold/20',
+    indexFloor: 200,
+  },
+  {
+    rank: 'S' as GQTRank,
+    name: 'S CLASS',
+    subtitle: 'MASTER',
     icon: Crown,
-    description: 'Top-tier editors with professional-grade work. You\'ve proven you can compete with the best. Events and opportunities await.',
+    description: 'Top-tier editors with professional-grade work. You\'ve proven you can compete with the best.',
     badge: 'Score 80-89',
-    accentColor: 'amber-400',
     bgGradient: 'from-amber-400/10 via-surface-1 to-amber-400/5',
     borderColor: 'border-amber-400',
     textColor: 'text-amber-400',
     glowColor: 'shadow-amber-400/20',
     indexFloor: 120,
-    minRank: 'S' as GQTRank,
   },
   {
-    id: 'advanced',
-    name: 'ADVANCED',
-    subtitle: 'A TIER',
+    rank: 'A' as GQTRank,
+    name: 'A CLASS',
+    subtitle: 'ADVANCED',
     icon: Zap,
-    description: 'Skilled editors entering the pro conversation. Clear artistic intention with solid execution. Keep pushing.',
+    description: 'Skilled editors entering the pro conversation. Clear artistic intention with solid execution.',
     badge: 'Score 70-79',
-    accentColor: 'emerald-400',
     bgGradient: 'from-emerald-400/10 via-surface-1 to-emerald-400/5',
     borderColor: 'border-emerald-400',
     textColor: 'text-emerald-400',
     glowColor: 'shadow-emerald-400/20',
     indexFloor: 75,
-    minRank: 'A' as GQTRank,
   },
   {
-    id: 'skilled',
-    name: 'SKILLED',
-    subtitle: 'B TIER',
+    rank: 'B' as GQTRank,
+    name: 'B CLASS',
+    subtitle: 'SKILLED',
     icon: Star,
-    description: 'Above-average editors with solid fundamentals. You understand the rules — now learn to break them intentionally.',
+    description: 'Above-average editors with solid fundamentals. You understand the rules — now learn to break them.',
     badge: 'Score 60-69',
-    accentColor: 'blue-500',
     bgGradient: 'from-blue-500/10 via-surface-1 to-blue-500/5',
     borderColor: 'border-blue-500/50',
     textColor: 'text-blue-400',
-    glowColor: 'shadow-blue-500/20',
+    glowColor: '',
     indexFloor: 40,
-    minRank: 'B' as GQTRank,
   },
   {
-    id: 'contributor',
-    name: 'CONTRIBUTOR',
-    subtitle: 'C TIER',
+    rank: 'C' as GQTRank,
+    name: 'C CLASS',
+    subtitle: 'CONTRIBUTOR',
     icon: Shield,
     description: 'Average editors building their foundation. Technically competent work that needs more soul and identity.',
     badge: 'Score 50-59',
-    accentColor: 'slate-400',
     bgGradient: 'from-slate-400/10 via-surface-0 to-slate-400/5',
     borderColor: 'border-slate-400/50',
     textColor: 'text-slate-300',
     glowColor: '',
     indexFloor: 20,
-    minRank: 'C' as GQTRank,
   },
   {
-    id: 'rookie',
-    name: 'ROOKIE',
-    subtitle: 'F / D TIER',
+    rank: 'D' as GQTRank,
+    name: 'D CLASS',
+    subtitle: 'BEGINNER',
     icon: Shield,
-    description: 'Entry tier for all editors. This is where you prove yourself. Master the basics, develop discipline, and climb.',
-    badge: 'Score 0-49',
-    accentColor: 'gray',
+    description: 'Developing editors learning the craft. Keep practicing and experimenting with your style.',
+    badge: 'Score 40-49',
+    bgGradient: 'from-orange-500/10 via-surface-0 to-orange-500/5',
+    borderColor: 'border-orange-500/40',
+    textColor: 'text-orange-400',
+    glowColor: '',
+    indexFloor: 10,
+  },
+  {
+    rank: 'F' as GQTRank,
+    name: 'F CLASS',
+    subtitle: 'UNRANKED',
+    icon: Shield,
+    description: 'Default class for all new editors. Take the Global QOI Test or reach Level 2 to get classified.',
+    badge: 'Score 0-39',
     bgGradient: 'from-surface-1 via-surface-0 to-surface-1',
     borderColor: 'border-border',
     textColor: 'text-muted-foreground',
     glowColor: '',
     indexFloor: 0,
-    minRank: 'F' as GQTRank,
   },
 ];
 
-// Determine user's league from their best GQT score
-const getLeagueFromScore = (score: number | null): typeof leagues[0] => {
-  if (!score) return leagues[leagues.length - 1]; // Rookie
-  if (score >= 90) return leagues[0]; // Legend
-  if (score >= 80) return leagues[1]; // Master
-  if (score >= 70) return leagues[2]; // Advanced
-  if (score >= 60) return leagues[3]; // Skilled
-  if (score >= 50) return leagues[4]; // Contributor
-  return leagues[5]; // Rookie
+// Get user's class from their best GQT score
+const getClassFromScore = (score: number | null, level: number): typeof classes[0] => {
+  // Users at level 2+ without a score get D class minimum
+  if (!score || score === 0) {
+    if (level >= 2) return classes.find(c => c.rank === 'D')!;
+    return classes[classes.length - 1]; // F
+  }
+  if (score >= 96) return classes[0]; // S++
+  if (score >= 90) return classes[1]; // S+
+  if (score >= 80) return classes[2]; // S
+  if (score >= 70) return classes[3]; // A
+  if (score >= 60) return classes[4]; // B
+  if (score >= 50) return classes[5]; // C
+  if (score >= 40) return classes[6]; // D
+  return classes[7]; // F
 };
 
-const getProgressInfo = (currentScore: number | null) => {
+const getProgressInfo = (currentScore: number | null, level: number) => {
   const score = currentScore || 0;
   
-  if (score >= 90) {
-    const progress = score >= 96 ? 100 : Math.round(((score - 90) / 6) * 100);
+  if (score >= 96) {
     return { 
-      current: progress, 
+      current: 100, 
       target: 100, 
-      label: score >= 96 ? 'S++ ACHIEVED — Maximum tier' : 'Reach S++ (96+) for absolute legend status',
-      nextTier: score >= 96 ? null : 'S++',
+      label: 'S++ CLASS — Maximum tier achieved',
+      nextClass: null,
+      requirement: 'You are at the top'
+    };
+  }
+  if (score >= 90) {
+    return { 
+      current: Math.round(((score - 90) / 6) * 100), 
+      target: 100, 
+      label: 'Reach S++ CLASS (96+)', 
+      nextClass: 'S++',
       requirement: 'Score 96+ on GQT'
     };
   }
@@ -126,8 +156,8 @@ const getProgressInfo = (currentScore: number | null) => {
     return { 
       current: Math.round(((score - 80) / 10) * 100), 
       target: 100, 
-      label: 'Reach LEGEND (90+)', 
-      nextTier: 'LEGEND',
+      label: 'Reach S+ CLASS (90+)', 
+      nextClass: 'S+',
       requirement: 'Score 90+ on GQT'
     };
   }
@@ -135,8 +165,8 @@ const getProgressInfo = (currentScore: number | null) => {
     return { 
       current: Math.round(((score - 70) / 10) * 100), 
       target: 100, 
-      label: 'Reach MASTER (80+)', 
-      nextTier: 'MASTER',
+      label: 'Reach S CLASS (80+)', 
+      nextClass: 'S',
       requirement: 'Score 80+ on GQT'
     };
   }
@@ -144,8 +174,8 @@ const getProgressInfo = (currentScore: number | null) => {
     return { 
       current: Math.round(((score - 60) / 10) * 100), 
       target: 100, 
-      label: 'Reach ADVANCED (70+)', 
-      nextTier: 'ADVANCED',
+      label: 'Reach A CLASS (70+)', 
+      nextClass: 'A',
       requirement: 'Score 70+ on GQT'
     };
   }
@@ -153,8 +183,8 @@ const getProgressInfo = (currentScore: number | null) => {
     return { 
       current: Math.round(((score - 50) / 10) * 100), 
       target: 100, 
-      label: 'Reach SKILLED (60+)', 
-      nextTier: 'SKILLED',
+      label: 'Reach B CLASS (60+)', 
+      nextClass: 'B',
       requirement: 'Score 60+ on GQT'
     };
   }
@@ -162,30 +192,41 @@ const getProgressInfo = (currentScore: number | null) => {
     return { 
       current: Math.round(((score - 40) / 10) * 100), 
       target: 100, 
-      label: 'Reach CONTRIBUTOR (50+)', 
-      nextTier: 'CONTRIBUTOR',
+      label: 'Reach C CLASS (50+)', 
+      nextClass: 'C',
+      requirement: 'Score 50+ on GQT'
+    };
+  }
+  if (level >= 2) {
+    return { 
+      current: Math.round((score / 40) * 100), 
+      target: 100, 
+      label: 'Take the GQT to unlock higher classes', 
+      nextClass: 'C',
       requirement: 'Score 50+ on GQT'
     };
   }
   return { 
-    current: Math.round((score / 40) * 100), 
+    current: 0, 
     target: 100, 
-    label: 'Take the GQT to get ranked', 
-    nextTier: 'CONTRIBUTOR',
-    requirement: 'Complete your first GQT'
+    label: 'Take the GQT or reach Level 2 to get classified', 
+    nextClass: 'D',
+    requirement: 'Complete GQT or reach Level 2'
   };
 };
 
-export default function LeaguesPage() {
+export default function ClassPage() {
+  const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
   const { rankings, loading: rankingsLoading } = useRealRankings();
 
   const loading = authLoading || rankingsLoading;
 
-  // Get user's best GQT score
+  // Get user's best GQT score and level
   const userBestGQT = profile?.best_gatekeeper_qoi || null;
-  const userLeague = getLeagueFromScore(userBestGQT);
-  const progressInfo = getProgressInfo(userBestGQT);
+  const userLevel = profile?.level || 1;
+  const userClass = getClassFromScore(userBestGQT, userLevel);
+  const progressInfo = getProgressInfo(userBestGQT, userLevel);
 
   // Find user's rank position
   const userRank = profile 
@@ -200,41 +241,41 @@ export default function LeaguesPage() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] mb-2">
-            GQT-BASED COMPETITIVE TIERS
-          </p>
+          <h1 className="font-display text-2xl text-gold mb-2">CLASS SYSTEM</h1>
           <p className="text-xs text-muted-foreground">
-            Your league is determined by your best Global QOI Test score
+            Your class is determined by your best Global QOI Test score. Everyone starts at F Class until they take the GQT or reach Level 2.
           </p>
         </motion.div>
       </div>
 
-      {/* League Cards */}
+      {/* Class Cards */}
       <div className="px-4 space-y-4">
-        {leagues.map((league, index) => {
-          const isCurrentLeague = userLeague.id === league.id;
+        {classes.map((classItem, index) => {
+          const isCurrentClass = userClass.rank === classItem.rank;
           const userScore = userBestGQT || 0;
-          const isLocked = !isCurrentLeague && (
-            (league.id === 'legend' && userScore < 90) ||
-            (league.id === 'master' && userScore < 80) ||
-            (league.id === 'advanced' && userScore < 70) ||
-            (league.id === 'skilled' && userScore < 60) ||
-            (league.id === 'contributor' && userScore < 50)
+          const isLocked = !isCurrentClass && (
+            (classItem.rank === 'S++' && userScore < 96) ||
+            (classItem.rank === 'S+' && userScore < 90) ||
+            (classItem.rank === 'S' && userScore < 80) ||
+            (classItem.rank === 'A' && userScore < 70) ||
+            (classItem.rank === 'B' && userScore < 60) ||
+            (classItem.rank === 'C' && userScore < 50) ||
+            (classItem.rank === 'D' && userScore < 40 && userLevel < 2)
           );
-          const showGlow = league.id === 'legend' || league.id === 'master';
+          const showGlow = classItem.rank === 'S++' || classItem.rank === 'S+' || classItem.rank === 'S';
           
           return (
             <motion.div
-              key={league.id}
+              key={classItem.rank}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.05 }}
               className={`
                 relative overflow-hidden
-                bg-gradient-to-br ${league.bgGradient}
-                border-l-4 ${league.borderColor}
-                ${isCurrentLeague ? 'ring-2 ring-gold/50' : ''}
-                ${showGlow && !isLocked ? `shadow-lg ${league.glowColor}` : ''}
+                bg-gradient-to-br ${classItem.bgGradient}
+                border-l-4 ${classItem.borderColor}
+                ${isCurrentClass ? 'ring-2 ring-gold/50' : ''}
+                ${showGlow && !isLocked ? `shadow-lg ${classItem.glowColor}` : ''}
               `}
             >
               {/* Animated glow for top tiers */}
@@ -244,9 +285,9 @@ export default function LeaguesPage() {
               
               <div className="relative p-5">
                 {/* Current / Locked Badge */}
-                {isCurrentLeague ? (
+                {isCurrentClass ? (
                   <div className="absolute top-4 right-4 flex items-center gap-1.5 text-gold">
-                    <span className="text-[10px] uppercase tracking-wider font-bold bg-gold/20 px-2 py-1">Your League</span>
+                    <span className="text-[10px] uppercase tracking-wider font-bold bg-gold/20 px-2 py-1">Your Class</span>
                   </div>
                 ) : isLocked && (
                   <div className="absolute top-4 right-4 flex items-center gap-1.5 text-muted-foreground">
@@ -257,35 +298,32 @@ export default function LeaguesPage() {
 
                 {/* Icon + Name */}
                 <div className="flex items-center gap-4 mb-3">
-                  <div className={`w-12 h-12 bg-surface-0 border ${league.borderColor} flex items-center justify-center`}>
-                    <league.icon size={24} className={league.textColor} strokeWidth={2} />
+                  <div className={`w-12 h-12 bg-surface-0 border ${classItem.borderColor} flex items-center justify-center`}>
+                    <classItem.icon size={24} className={classItem.textColor} strokeWidth={2} />
                   </div>
                   <div>
-                    <h2 className={`font-display text-3xl ${league.textColor}`}>{league.name}</h2>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest">{league.subtitle}</p>
+                    <h2 className={`font-display text-3xl ${classItem.textColor}`}>{classItem.name}</h2>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest">{classItem.subtitle}</p>
                   </div>
                 </div>
 
                 {/* Description */}
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  {league.description}
+                  {classItem.description}
                 </p>
 
                 {/* Badge + Index Floor */}
                 <div className="flex items-center justify-between pt-4 border-t border-border/50">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] uppercase tracking-wider px-2 py-1 border ${league.borderColor} ${league.textColor} bg-surface-0`}>
-                      {league.badge}
+                    <span className={`text-[10px] uppercase tracking-wider px-2 py-1 border ${classItem.borderColor} ${classItem.textColor} bg-surface-0`}>
+                      {classItem.badge}
                     </span>
-                    {league.indexFloor > 0 && (
+                    {classItem.indexFloor > 0 && (
                       <span className="text-[10px] uppercase tracking-wider px-2 py-1 bg-gold/10 text-gold border border-gold/30">
-                        +{league.indexFloor} INDEX
+                        +{classItem.indexFloor} INDEX
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    Tier {leagues.length - index}
-                  </span>
                 </div>
               </div>
             </motion.div>
@@ -294,7 +332,7 @@ export default function LeaguesPage() {
         
         {/* Footer tooltip */}
         <p className="text-center text-[10px] text-muted-foreground uppercase tracking-widest mt-6 px-4">
-          Leagues update automatically based on your GQT score
+          Class updates automatically based on your GQT score
         </p>
       </div>
 
@@ -319,14 +357,14 @@ export default function LeaguesPage() {
               </div>
             </div>
           ) : profile ? (
-            <div className={`bg-surface-1 border-l-4 ${userLeague.borderColor} p-5`}>
-              {/* Current League */}
+            <div className={`bg-surface-1 border-l-4 ${userClass.borderColor} p-5`}>
+              {/* Current Class */}
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">
-                    Current League
+                    Current Class
                   </p>
-                  <p className={`font-display text-3xl ${userLeague.textColor}`}>{userLeague.name}</p>
+                  <p className={`font-display text-3xl ${userClass.textColor}`}>{userClass.name}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-1">Best GQT Score</p>
@@ -340,12 +378,12 @@ export default function LeaguesPage() {
               <div className="grid grid-cols-3 gap-4 mb-6 py-4 border-y border-border/50">
                 <div className="text-center">
                   <p className="font-display text-xl text-foreground">
-                    {userBestGQT ? getRankFromScore(userBestGQT).rank : '--'}
+                    {userBestGQT ? getRankFromScore(userBestGQT).rank : userLevel >= 2 ? 'D' : 'F'}
                   </p>
-                  <p className="text-[10px] text-muted-foreground uppercase">GQT Rank</p>
+                  <p className="text-[10px] text-muted-foreground uppercase">Class</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-display text-xl text-foreground">+{userLeague.indexFloor}</p>
+                  <p className="font-display text-xl text-foreground">+{userClass.indexFloor}</p>
                   <p className="text-[10px] text-muted-foreground uppercase">Index Floor</p>
                 </div>
                 <div className="text-center">
@@ -355,11 +393,11 @@ export default function LeaguesPage() {
               </div>
 
               {/* Progress Bar */}
-              {progressInfo.nextTier && (
+              {progressInfo.nextClass && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground uppercase tracking-wider">
-                      Next: {progressInfo.nextTier}
+                      Next: {progressInfo.nextClass} Class
                     </span>
                     <span className="text-gold font-semibold">
                       {progressInfo.requirement}
@@ -379,19 +417,31 @@ export default function LeaguesPage() {
                 </div>
               )}
 
-              {!progressInfo.nextTier && (
+              {!progressInfo.nextClass && (
                 <div className="py-2 text-center">
-                  <span className="text-gold font-display text-lg">S++ — Maximum tier reached</span>
+                  <span className="text-gold font-display text-lg">S++ CLASS — Maximum tier reached</span>
+                </div>
+              )}
+              
+              {/* Take GQT CTA */}
+              {!userBestGQT && (
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <Button 
+                    onClick={() => navigate('/gqt')}
+                    className="w-full bg-gold text-background hover:bg-gold/90"
+                  >
+                    Take the Global QOI Test
+                  </Button>
                 </div>
               )}
             </div>
           ) : (
             <div className="bg-surface-1 border border-border p-6 text-center">
               <p className="text-sm text-muted-foreground mb-2">
-                Take the Global QOI Test to get ranked
+                Take the Global QOI Test to get classified
               </p>
               <p className="text-xs text-gold">
-                Your league is determined by your best GQT score
+                Your class is determined by your best GQT score
               </p>
             </div>
           )}

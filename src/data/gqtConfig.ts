@@ -113,10 +113,10 @@ export function getPercentile(score: number): number {
 }
 
 // ====================
-// PROJECTED LEAGUES (GQT-Based)
+// GQT CLASS SYSTEM
 // ====================
 
-export interface ProjectedLeague {
+export interface GQTClass {
   id: string;
   name: string;
   subtitle: string;
@@ -125,14 +125,16 @@ export interface ProjectedLeague {
   indexFloor: number;
 }
 
-// New GQT-based league system: Rookie → Contributor → Skilled → Advanced → Master → Legend
-export const gqtLeagues: ProjectedLeague[] = [
-  { id: 'legend', name: 'LEGEND', subtitle: 'S+ / S++ Tier', color: 'text-gold', bgClass: 'bg-gold/10', indexFloor: 200 },
-  { id: 'master', name: 'MASTER', subtitle: 'S Tier', color: 'text-amber-400', bgClass: 'bg-amber-400/10', indexFloor: 120 },
-  { id: 'advanced', name: 'ADVANCED', subtitle: 'A Tier', color: 'text-emerald-400', bgClass: 'bg-emerald-400/10', indexFloor: 75 },
-  { id: 'skilled', name: 'SKILLED', subtitle: 'B Tier', color: 'text-blue-400', bgClass: 'bg-blue-400/10', indexFloor: 40 },
-  { id: 'contributor', name: 'CONTRIBUTOR', subtitle: 'C Tier', color: 'text-slate-300', bgClass: 'bg-slate-300/10', indexFloor: 20 },
-  { id: 'rookie', name: 'ROOKIE', subtitle: 'F / D Tier', color: 'text-muted-foreground', bgClass: 'bg-muted/20', indexFloor: 0 },
+// GQT-based class system: F → D → C → B → A → S → S+ → S++
+export const gqtClasses: GQTClass[] = [
+  { id: 's++', name: 'S++ CLASS', subtitle: 'Legendary', color: 'text-gold', bgClass: 'bg-gold/10', indexFloor: 300 },
+  { id: 's+', name: 'S+ CLASS', subtitle: 'Elite', color: 'text-gold', bgClass: 'bg-gold/10', indexFloor: 200 },
+  { id: 's', name: 'S CLASS', subtitle: 'Master', color: 'text-amber-400', bgClass: 'bg-amber-400/10', indexFloor: 120 },
+  { id: 'a', name: 'A CLASS', subtitle: 'Advanced', color: 'text-emerald-400', bgClass: 'bg-emerald-400/10', indexFloor: 75 },
+  { id: 'b', name: 'B CLASS', subtitle: 'Skilled', color: 'text-blue-400', bgClass: 'bg-blue-400/10', indexFloor: 40 },
+  { id: 'c', name: 'C CLASS', subtitle: 'Contributor', color: 'text-slate-300', bgClass: 'bg-slate-300/10', indexFloor: 20 },
+  { id: 'd', name: 'D CLASS', subtitle: 'Beginner', color: 'text-orange-400', bgClass: 'bg-orange-400/10', indexFloor: 10 },
+  { id: 'f', name: 'F CLASS', subtitle: 'Unranked', color: 'text-muted-foreground', bgClass: 'bg-muted/20', indexFloor: 0 },
 ];
 
 // Index floor values by GQT rank (determines starting Index power)
@@ -147,34 +149,36 @@ export const indexFloorByRank: Record<GQTRank, number> = {
   'S++': 300,
 };
 
-export function getProjectedLeagueFromScore(score: number): ProjectedLeague {
-  if (score >= 90) return gqtLeagues[0]; // LEGEND (S+, S++)
-  if (score >= 80) return gqtLeagues[1]; // MASTER (S)
-  if (score >= 70) return gqtLeagues[2]; // ADVANCED (A)
-  if (score >= 60) return gqtLeagues[3]; // SKILLED (B)
-  if (score >= 50) return gqtLeagues[4]; // CONTRIBUTOR (C)
-  return gqtLeagues[5]; // ROOKIE (F, D)
+export function getClassFromScore(score: number): GQTClass {
+  if (score >= 96) return gqtClasses[0]; // S++
+  if (score >= 90) return gqtClasses[1]; // S+
+  if (score >= 80) return gqtClasses[2]; // S
+  if (score >= 70) return gqtClasses[3]; // A
+  if (score >= 60) return gqtClasses[4]; // B
+  if (score >= 50) return gqtClasses[5]; // C
+  if (score >= 40) return gqtClasses[6]; // D
+  return gqtClasses[7]; // F
 }
 
-export function getProjectedLeagueFromRank(rank: GQTRank): ProjectedLeague {
+export function getClassFromRank(rank: GQTRank): GQTClass {
   switch (rank) {
-    case 'S++':
-    case 'S+':
-      return gqtLeagues[0]; // LEGEND
-    case 'S':
-      return gqtLeagues[1]; // MASTER
-    case 'A':
-      return gqtLeagues[2]; // ADVANCED
-    case 'B':
-      return gqtLeagues[3]; // SKILLED
-    case 'C':
-      return gqtLeagues[4]; // CONTRIBUTOR
-    case 'D':
+    case 'S++': return gqtClasses[0];
+    case 'S+': return gqtClasses[1];
+    case 'S': return gqtClasses[2];
+    case 'A': return gqtClasses[3];
+    case 'B': return gqtClasses[4];
+    case 'C': return gqtClasses[5];
+    case 'D': return gqtClasses[6];
     case 'F':
-    default:
-      return gqtLeagues[5]; // ROOKIE
+    default: return gqtClasses[7];
   }
 }
+
+// Legacy aliases for backwards compatibility
+export const gqtLeagues = gqtClasses;
+export type ProjectedLeague = GQTClass;
+export const getProjectedLeagueFromScore = getClassFromScore;
+export const getProjectedLeagueFromRank = getClassFromRank;
 
 export function getIndexFloorFromRank(rank: GQTRank): number {
   return indexFloorByRank[rank] || 0;

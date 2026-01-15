@@ -16,7 +16,7 @@ import EventDetailPage from "./pages/loopgate/EventDetailPage";
 import RankingsPage from "./pages/loopgate/RankingsPage";
 import ProfilePage from "./pages/loopgate/ProfilePage";
 import PublicProfilePage from "./pages/loopgate/PublicProfilePage";
-import LeaguesPage from "./pages/loopgate/LeaguesPage";
+import ClassPage from "./pages/loopgate/ClassPage";
 import IndexPage from "./pages/loopgate/IndexPage";
 import ArenasPage from "./pages/loopgate/ArenasPage";
 import ArenaChatPage from "./pages/loopgate/ArenaChatPage";
@@ -242,7 +242,7 @@ export default function App() {
               <Route path="/hub" element={<HubPage />} />
               <Route path="/editor/:userId" element={<PublicProfilePage />} />
               <Route path="/rankings" element={<RankingsPage />} />
-              <Route path="/leagues" element={<LeaguesPage />} />
+              <Route path="/class" element={<ClassPage />} />
               <Route path="/events" element={<HomePage />} />
               <Route path="/event/:id" element={<EventDetailPage />} />
               <Route path="/feed" element={<FeedPage />} />

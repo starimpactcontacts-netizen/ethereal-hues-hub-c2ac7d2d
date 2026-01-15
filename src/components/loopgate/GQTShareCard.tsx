@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, X, Copy, Check, Download, Flame, Crown, Star, Zap, Shield, Music, Lightbulb, Settings, Heart, Fingerprint } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { getRankFromScore, getProjectedLeagueFromScore, scoringPillars, GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
+import { getRankFromScore, getClassFromScore, scoringPillars, GQTRank, getIndexFloorFromRank } from '@/data/gqtConfig';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
 interface GQTShareCardProps {
@@ -33,14 +33,16 @@ const pillarIcons: Record<string, any> = {
   fingerprint: Fingerprint,
 };
 
-// League icons
-const leagueIcons: Record<string, any> = {
-  legend: Flame,
-  master: Crown,
-  advanced: Zap,
-  skilled: Star,
-  contributor: Shield,
-  rookie: Shield,
+// Class icons
+const classIcons: Record<string, any> = {
+  's++': Flame,
+  's+': Flame,
+  's': Crown,
+  'a': Zap,
+  'b': Star,
+  'c': Shield,
+  'd': Shield,
+  'f': Shield,
 };
 
 // Rank-specific card styling
@@ -121,10 +123,10 @@ export default function GQTShareCard({ isOpen, onClose, data }: GQTShareCardProp
   if (!isOpen) return null;
 
   const rank = getRankFromScore(data.score);
-  const league = getProjectedLeagueFromScore(data.score);
+  const gqtClass = getClassFromScore(data.score);
   const indexFloor = getIndexFloorFromRank(rank.rank);
   const cardStyle = getRankCardStyle(rank.rank);
-  const LeagueIcon = leagueIcons[league.id] || Shield;
+  const ClassIcon = classIcons[gqtClass.id] || Shield;
 
   const pillarsWithScores = [
     { ...scoringPillars[0], score: data.rhythmScore },
@@ -134,10 +136,10 @@ export default function GQTShareCard({ isOpen, onClose, data }: GQTShareCardProp
     { ...scoringPillars[4], score: data.styleScore },
   ];
 
-  const shareText = `🎬 GQT RESULT: ${rank.rank} RANK
+  const shareText = `🎬 GQT RESULT: ${rank.rank} CLASS
 
 Score: ${data.score.toFixed(0)}/100
-League: ${league.name}
+Class: ${gqtClass.name}
 ${data.judgeQuote ? `\n"${data.judgeQuote}"` : ''}
 
 Take the Global QOI Test → loopgate.io/gqt
@@ -266,8 +268,8 @@ Take the Global QOI Test → loopgate.io/gqt
                 )}
               </div>
               <div className={`px-3 py-2 ${cardStyle.accentBg} border ${cardStyle.borderColor} flex items-center gap-2`}>
-                <LeagueIcon className={`w-4 h-4 ${league.color}`} />
-                <span className={`text-xs font-display uppercase ${league.color}`}>{league.name}</span>
+                <ClassIcon className={`w-4 h-4 ${gqtClass.color}`} />
+                <span className={`text-xs font-display uppercase ${gqtClass.color}`}>{gqtClass.name}</span>
               </div>
             </div>
 

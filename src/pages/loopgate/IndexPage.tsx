@@ -9,40 +9,13 @@ import SEO, { pageSEO } from "@/components/SEO";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
-type ViewMode = "editors" | "arenas" | "leagues";
+type ViewMode = "editors" | "arenas";
 
 const arenas = [
   { id: 1, name: "Global", description: "Open to all editors", minLeague: "open" as const, icon: MessageCircle },
   { id: 2, name: "Open League", description: "Open League members", minLeague: "open" as const, icon: Shield },
   { id: 3, name: "Pro Arena", description: "Pro & Elite only", minLeague: "pro" as const, icon: Star },
   { id: 4, name: "Elite Arena", description: "Elite members only", minLeague: "elite" as const, icon: Crown },
-];
-
-const leagueInfo = [
-  { 
-    id: "open", 
-    name: "Open League", 
-    description: "Entry tier for all editors. Compete in events to build your Index score.", 
-    requirement: "Default tier",
-    color: "border-muted-foreground/30 text-muted-foreground",
-    bgColor: "bg-muted-foreground/5"
-  },
-  { 
-    id: "pro", 
-    name: "Pro League", 
-    description: "Top 15% of ranked editors with at least one event win.", 
-    requirement: "Top 15% + 1 Win",
-    color: "border-blue-500/50 text-blue-400",
-    bgColor: "bg-blue-500/5"
-  },
-  { 
-    id: "elite", 
-    name: "Elite League", 
-    description: "The top 1%. Exclusive access to Elite events and opportunities.", 
-    requirement: "Top 1%",
-    color: "border-gold/50 text-gold",
-    bgColor: "bg-gold/5"
-  },
 ];
 
 const leagueOrder = { elite: 0, pro: 1, open: 2 };
@@ -52,7 +25,6 @@ export default function IndexPage() {
   const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [leagueFilter, setLeagueFilter] = useState<LeagueFilter>("all");
-  const [rankFilter, setRankFilter] = useState<RankFilter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("editors");
 
   const { rankings, loading, error } = useRealRankings();
@@ -103,11 +75,11 @@ export default function IndexPage() {
           {[
             { id: "editors" as const, label: "Editors" },
             { id: "arenas" as const, label: "Arenas" },
-            { id: "leagues" as const, label: "Leagues" },
+            { id: "class" as const, label: "Class" },
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setViewMode(tab.id)}
+              onClick={() => tab.id === "class" ? navigate("/class") : setViewMode(tab.id as ViewMode)}
               className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
                 viewMode === tab.id
                   ? "bg-gold text-black"
@@ -257,49 +229,6 @@ export default function IndexPage() {
         </div>
       )}
 
-      {/* Leagues View */}
-      {viewMode === "leagues" && (
-        <div className="px-4 py-4 space-y-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
-            Competitive tiers based on performance
-          </p>
-          {leagueInfo.map((league) => {
-            const isCurrentLeague = userLeague === league.id;
-            
-            return (
-              <div
-                key={league.id}
-                className={`p-4 border rounded-lg ${league.bgColor} ${
-                  isCurrentLeague ? `${league.color} border-2` : "border-border"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className={`font-semibold ${isCurrentLeague ? league.color.split(" ")[1] : ""}`}>
-                    {league.name}
-                  </h3>
-                  {isCurrentLeague && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider bg-gold text-black px-2 py-0.5">
-                      Your League
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground mb-3">{league.description}</p>
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-semibold uppercase tracking-wider border px-2 py-0.5 ${league.color}`}>
-                    {league.requirement}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-          
-          <div className="pt-4 text-center">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              Leagues update automatically based on your Index score
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Footer */}
       <div className="p-4 text-center mt-4">
