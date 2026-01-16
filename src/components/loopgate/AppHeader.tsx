@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Send } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Send, Gavel } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
@@ -25,7 +25,7 @@ const menuItems = [
 
 export default function AppHeader() {
   const { user, profile, signOut, hasOpsAccess } = useAuth();
-  const { roles } = useUserRoles(user?.id);
+  const { roles, isJudge } = useUserRoles(user?.id);
   const { rankings } = useRealRankings();
   const location = useLocation();
   const navigate = useNavigate();
@@ -153,6 +153,21 @@ export default function AppHeader() {
                     }
                   />
                 </div>
+
+                {isJudge && (
+                  <>
+                    <div className="my-2 border-t border-border" />
+                    <SheetClose asChild>
+                      <Link
+                        to="/ops-panel/a7c92ff31b"
+                        className="flex items-center gap-3 px-4 py-3 text-gold hover:bg-gold/10 transition-colors"
+                      >
+                        <Gavel className="w-5 h-5" />
+                        <span className="font-display text-sm">QOI Judge Panel</span>
+                      </Link>
+                    </SheetClose>
+                  </>
+                )}
 
                 {isEnterprise && (
                   <>

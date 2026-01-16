@@ -1,5 +1,7 @@
 import { Shield, Building2 } from "lucide-react";
 
+import { Gavel } from "lucide-react";
+
 interface AuthorityBadgeProps {
   role: 'dev' | 'judge' | 'enterprise';
   size?: 'sm' | 'md';
@@ -8,7 +10,7 @@ interface AuthorityBadgeProps {
 export default function AuthorityBadge({ role, size = 'sm' }: AuthorityBadgeProps) {
   const config = {
     dev: { label: 'DEV', title: 'Loopgate Developer', icon: Shield, color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
-    judge: { label: 'JUDGE', title: 'Official Judge', icon: Shield, color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
+    judge: { label: 'QOI JUDGE', title: 'Official QOI Judge', icon: Gavel, color: 'bg-gold/20 text-gold border-gold/50' },
     enterprise: { label: 'ENTERPRISE', title: 'Enterprise Client', icon: Building2, color: 'bg-purple-500/20 text-purple-400 border-purple-500/50' },
   };
   

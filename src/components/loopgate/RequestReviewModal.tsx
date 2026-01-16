@@ -115,7 +115,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden"
+            className="w-full sm:max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden mb-safe max-h-[85vh] flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
@@ -134,7 +134,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
             </div>
 
             {/* Content */}
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 overflow-y-auto flex-1">
               {/* Daily limit warning */}
               {todayCount !== null && todayCount >= DAILY_LIMIT && (
                 <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 flex items-start gap-3">
