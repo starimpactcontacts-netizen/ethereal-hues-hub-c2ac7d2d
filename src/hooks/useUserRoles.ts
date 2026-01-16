@@ -11,6 +11,7 @@ interface UserRolesResult {
   isAdmin: boolean;
   isJudge: boolean;
   isDev: boolean;
+  isEnterprise: boolean;
 }
 
 // Hook to fetch roles for a specific user
@@ -48,6 +49,7 @@ export function useUserRoles(userId: string | undefined): UserRolesResult {
     isAdmin: roles.includes('admin'),
     isJudge: roles.includes('judge'),
     isDev: roles.includes('dev'),
+    isEnterprise: roles.includes('enterprise'),
   };
 }
 
