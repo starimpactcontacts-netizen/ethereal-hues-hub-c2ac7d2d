@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2 } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXP } from "@/hooks/useXP";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
+import { useReviewRequests } from "@/hooks/useReviewRequests";
 import { motion, AnimatePresence } from "framer-motion";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
@@ -27,6 +28,8 @@ import ArchetypeSelector from "@/components/loopgate/ArchetypeSelector";
 import SoftwareSelector from "@/components/loopgate/SoftwareSelector";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import InviteFriendsModal from "@/components/loopgate/InviteFriendsModal";
+import RequestReviewModal from "@/components/loopgate/RequestReviewModal";
+import ReviewResultCard from "@/components/loopgate/ReviewResultCard";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -64,11 +67,13 @@ export default function ProfilePage() {
   const { rankings } = useRealRankings();
   const { xp, level, streak } = useXP();
   const { submissions } = useUserSubmissions();
+  const { completedReviews, pendingReviews } = useReviewRequests();
   const [activeTab, setActiveTab] = useState<ProfileTab>("submissions");
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
   const [showAddPlatform, setShowAddPlatform] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [bio, setBio] = useState("");
   const [email, setEmail] = useState("");
   const [discord, setDiscord] = useState("");
@@ -408,6 +413,23 @@ export default function ProfilePage() {
               </div>
             </div>
           </Link>
+
+          {/* Request Review CTA */}
+          <button
+            onClick={() => setShowReviewModal(true)}
+            className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 px-4 py-3 flex items-center justify-between hover:border-purple-500/50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Star className="w-5 h-5 text-purple-400" />
+              <div className="text-left">
+                <p className="font-medium text-sm">Request Judge Review</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
+                  Get your edit rated by QOI Judges
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-4 h-4 text-purple-400" />
+          </button>
         </div>
       </div>
       
@@ -1152,6 +1174,12 @@ export default function ProfilePage() {
       <InviteFriendsModal
         open={showInviteModal}
         onOpenChange={setShowInviteModal}
+      />
+
+      {/* Request Review Modal */}
+      <RequestReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
       />
     </div>
   );

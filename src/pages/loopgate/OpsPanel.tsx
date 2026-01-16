@@ -380,6 +380,36 @@ export default function OpsPanel() {
   });
   const [gqtCommentary, setGqtCommentary] = useState('');
   const [gqtSaving, setGqtSaving] = useState(false);
+
+  // Review Requests state
+  interface ReviewRequest {
+    id: string;
+    user_id: string;
+    username: string;
+    avatar_url: string | null;
+    submission_url: string;
+    platform: string;
+    status: string;
+    total_score: number | null;
+    emotion_score: number | null;
+    creativity_score: number | null;
+    sync_score: number | null;
+    identity_score: number | null;
+    execution_score: number | null;
+    judge_comment: string | null;
+    judge_id: string | null;
+    judge_username: string | null;
+    requested_at: string;
+    reviewed_at: string | null;
+    verification_status?: boolean;
+  }
+  const [reviewRequests, setReviewRequests] = useState<ReviewRequest[]>([]);
+  const [reviewScoring, setReviewScoring] = useState<string | null>(null);
+  const [reviewScores, setReviewScores] = useState({
+    emotion: 8, creativity: 13, sync: 13, identity: 5, execution: 13
+  });
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSaving, setReviewSaving] = useState(false);
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
     if (!hasOpsAccess && !loading && !(window as any).__LOOPGATE_DEV_AUTH__) {
@@ -751,6 +781,27 @@ export default function OpsPanel() {
           verification_status: gqtProfileMap.get(s.user_id)?.verification_status || false,
         })));
       }
+
+      // Fetch Review Requests
+      const { data: reviewData } = await supabase
+        .from('review_requests')
+        .select('*')
+        .order('requested_at', { ascending: false });
+
+      if (reviewData) {
+        const reviewUserIds = [...new Set(reviewData.map(r => r.user_id))];
+        const { data: reviewProfiles } = await supabase
+          .from('profiles')
+          .select('id, username, verification_status')
+          .in('id', reviewUserIds.length > 0 ? reviewUserIds : ['']);
+
+        const reviewProfileMap = new Map((reviewProfiles || []).map(p => [p.id, p]));
+
+        setReviewRequests(reviewData.map(r => ({
+          ...r,
+          verification_status: reviewProfileMap.get(r.user_id)?.verification_status || false,
+        })));
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
@@ -821,7 +872,72 @@ export default function OpsPanel() {
     }
   }
 
-  async function handleManualVerify(userId: string) {
+  // Review Request Scoring function
+  async function handleReviewScore(request: ReviewRequest) {
+    setReviewSaving(true);
+    const totalScore = reviewScores.emotion + reviewScores.creativity + reviewScores.sync + reviewScores.identity + reviewScores.execution;
+
+    try {
+      // Get judge profile
+      const { data: judgeProfile } = await supabase
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('id', user?.id || '')
+        .single();
+
+      const { error } = await supabase
+        .from('review_requests')
+        .update({
+          status: 'reviewed',
+          total_score: totalScore,
+          emotion_score: reviewScores.emotion,
+          creativity_score: reviewScores.creativity,
+          sync_score: reviewScores.sync,
+          identity_score: reviewScores.identity,
+          execution_score: reviewScores.execution,
+          judge_comment: reviewComment || null,
+          judge_id: user?.id,
+          judge_username: judgeProfile?.username || 'QOI Judge',
+          judge_avatar_url: judgeProfile?.avatar_url || null,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', request.id);
+
+      if (error) throw error;
+
+      // Create notification for user
+      await supabase.from('notifications').insert({
+        user_id: request.user_id,
+        type: 'review_complete',
+        title: 'Review Complete!',
+        message: `Your edit has been reviewed. Score: ${totalScore}/100`,
+        data: { review_id: request.id, score: totalScore },
+      });
+
+      // Add to activity feed
+      await supabase.from('activity_feed').insert({
+        user_id: request.user_id,
+        username: request.username,
+        avatar_url: request.avatar_url,
+        activity_type: 'review_received',
+        title: `${request.username} received a judge review`,
+        description: `Score: ${totalScore}/100`,
+        data: { score: totalScore, platform: request.platform },
+      });
+
+      toast.success(`Review scored: ${totalScore}/100`);
+      setReviewScoring(null);
+      setReviewScores({ emotion: 8, creativity: 13, sync: 13, identity: 5, execution: 13 });
+      setReviewComment('');
+      fetchData();
+    } catch (error) {
+      console.error('Error scoring review:', error);
+      toast.error('Failed to score review');
+    } finally {
+      setReviewSaving(false);
+    }
+  }
+
     setVerifyingUserId(userId);
     try {
       const { error } = await supabase
@@ -2993,6 +3109,112 @@ export default function OpsPanel() {
                 )}
               </TabsContent>
             </Tabs>
+          )}
+        </section>
+
+        {/* Review Requests Section */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Send size={14} className="text-purple-400" />
+              Review Requests
+            </h2>
+            <span className="text-xs text-purple-400">
+              {reviewRequests.filter(r => r.status === 'pending').length} pending
+            </span>
+          </div>
+
+          {reviewRequests.filter(r => r.status === 'pending').length === 0 ? (
+            <div className="bg-card border border-border rounded-lg p-6 text-center">
+              <Send className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">No pending review requests</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {reviewRequests
+                .filter(r => r.status === 'pending')
+                .map((request) => (
+                  <div key={request.id} className="bg-card border border-purple-500/30 rounded-lg overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold">{request.username}</p>
+                            {request.verification_status && <VerifiedBadge size="sm" />}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                              {request.platform}
+                            </span>
+                            <a href={request.submission_url} target="_blank" rel="noopener noreferrer" className="text-purple-400 text-xs hover:underline">
+                              View Edit →
+                            </a>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setReviewScoring(reviewScoring === request.id ? null : request.id)}
+                          className="px-3 py-2 bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
+                        >
+                          Rate
+                          {reviewScoring === request.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {reviewScoring === request.id && (
+                      <div className="border-t border-border p-4 bg-surface-1 space-y-4">
+                        <p className="text-xs text-muted-foreground uppercase tracking-widest">5-Pillar Scoring (100 total)</p>
+                        
+                        {[
+                          { key: 'emotion', label: '❤️ Emotion', max: 15 },
+                          { key: 'creativity', label: '💡 Creativity', max: 25 },
+                          { key: 'sync', label: '🎵 Sync', max: 25 },
+                          { key: 'identity', label: '🎭 Identity', max: 10 },
+                          { key: 'execution', label: '⚙️ Execution', max: 25 },
+                        ].map((pillar) => (
+                          <div key={pillar.key}>
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-sm font-medium">{pillar.label}</label>
+                              <span className="text-purple-400 font-bold">{reviewScores[pillar.key as keyof typeof reviewScores]}/{pillar.max}</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0"
+                              max={pillar.max}
+                              value={reviewScores[pillar.key as keyof typeof reviewScores]}
+                              onChange={(e) => setReviewScores({ ...reviewScores, [pillar.key]: Number(e.target.value) })}
+                              className="w-full accent-purple-500"
+                            />
+                          </div>
+                        ))}
+
+                        <div className="pt-3 border-t border-border">
+                          <p className="text-lg font-bold text-center">
+                            Total: <span className="text-purple-400">{reviewScores.emotion + reviewScores.creativity + reviewScores.sync + reviewScores.identity + reviewScores.execution}/100</span>
+                          </p>
+                        </div>
+
+                        <Textarea
+                          value={reviewComment}
+                          onChange={(e) => setReviewComment(e.target.value)}
+                          placeholder="Judge comment (brutal feedback encouraged)..."
+                          rows={2}
+                          className="text-sm"
+                        />
+
+                        <button
+                          onClick={() => handleReviewScore(request)}
+                          disabled={reviewSaving}
+                          className="w-full py-3 bg-purple-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          <Save size={16} />
+                          {reviewSaving ? 'Saving...' : 'Submit Review'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+            </div>
           )}
         </section>
 
