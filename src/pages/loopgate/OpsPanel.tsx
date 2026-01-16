@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel, ExternalLink } from "lucide-react";
 import OpenArenaForm, { getDefaultOpenArenaConfig } from "@/components/loopgate/OpenArenaForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -380,6 +380,35 @@ export default function OpsPanel() {
   });
   const [gqtCommentary, setGqtCommentary] = useState('');
   const [gqtSaving, setGqtSaving] = useState(false);
+  
+  // Judge Review Requests state
+  interface ReviewRequest {
+    id: string;
+    user_id: string;
+    submission_url: string;
+    platform: string;
+    status: 'pending' | 'claimed' | 'reviewed';
+    requested_at: string;
+    username: string;
+    avatar_url: string | null;
+    judge_id: string | null;
+    claimed_at: string | null;
+    emotion_score: number | null;
+    creativity_score: number | null;
+    sync_score: number | null;
+    identity_score: number | null;
+    execution_score: number | null;
+    total_score: number | null;
+    judge_comment: string | null;
+    reviewed_at: string | null;
+  }
+  const [reviewRequests, setReviewRequests] = useState<ReviewRequest[]>([]);
+  const [reviewScoring, setReviewScoring] = useState<string | null>(null);
+  const [reviewScores, setReviewScores] = useState({
+    emotion: 8, creativity: 13, sync: 13, identity: 5, execution: 13
+  });
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSaving, setReviewSaving] = useState(false);
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
     if (!hasOpsAccess && !loading && !(window as any).__LOOPGATE_DEV_AUTH__) {
@@ -751,6 +780,16 @@ export default function OpsPanel() {
           verification_status: gqtProfileMap.get(s.user_id)?.verification_status || false,
         })));
       }
+
+      // Fetch Review Requests
+      const { data: reviewData } = await supabase
+        .from('review_requests')
+        .select('*')
+        .order('requested_at', { ascending: false });
+
+      if (reviewData) {
+        setReviewRequests(reviewData as ReviewRequest[]);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load data');
@@ -821,7 +860,84 @@ export default function OpsPanel() {
     }
   }
 
-  async function handleManualVerify(userId: string) {
+  // Judge Review scoring function
+  async function handleReviewScore(review: ReviewRequest) {
+    setReviewSaving(true);
+    const totalScore = reviewScores.emotion + reviewScores.creativity + reviewScores.sync + reviewScores.identity + reviewScores.execution;
+    
+    try {
+      // Get judge profile for attribution
+      const { data: judgeProfile } = await supabase
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('id', user?.id)
+        .single();
+
+      const { error } = await supabase
+        .from('review_requests')
+        .update({
+          status: 'reviewed',
+          emotion_score: reviewScores.emotion,
+          creativity_score: reviewScores.creativity,
+          sync_score: reviewScores.sync,
+          identity_score: reviewScores.identity,
+          execution_score: reviewScores.execution,
+          total_score: totalScore,
+          judge_comment: reviewComment || null,
+          judge_id: user?.id,
+          judge_username: judgeProfile?.username || 'QOI Judge',
+          judge_avatar_url: judgeProfile?.avatar_url || null,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', review.id);
+
+      if (error) throw error;
+
+      // Add to activity feed
+      await supabase
+        .from('activity_feed')
+        .insert({
+          user_id: review.user_id,
+          username: review.username,
+          avatar_url: review.avatar_url,
+          activity_type: 'review',
+          title: `${review.username} got reviewed by ${judgeProfile?.username || 'QOI Judge'}`,
+          description: `Scored ${totalScore}/100 – "${reviewComment || 'No comment'}"`,
+          data: { 
+            review_id: review.id,
+            total_score: totalScore,
+            judge_username: judgeProfile?.username,
+          },
+        });
+
+      // Send notification to user
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: review.user_id,
+          type: 'review_completed',
+          title: 'Your edit was reviewed!',
+          message: `QOI Judge ${judgeProfile?.username || ''} rated your edit ${totalScore}/100`,
+          data: { 
+            review_id: review.id,
+            total_score: totalScore,
+            judge_comment: reviewComment,
+          },
+        });
+
+      toast.success(`Review submitted: ${totalScore}/100`);
+      setReviewScoring(null);
+      setReviewScores({ emotion: 8, creativity: 13, sync: 13, identity: 5, execution: 13 });
+      setReviewComment('');
+      fetchData();
+    } catch (error) {
+      console.error('Error scoring review:', error);
+      toast.error('Failed to submit review');
+    } finally {
+      setReviewSaving(false);
+    }
+  }
+
     setVerifyingUserId(userId);
     try {
       const { error } = await supabase
@@ -2993,6 +3109,108 @@ export default function OpsPanel() {
                 )}
               </TabsContent>
             </Tabs>
+          )}
+        </section>
+
+        {/* Judge Review Requests */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Gavel size={14} className="text-amber-500" />
+              Judge Review Requests
+            </h2>
+            <span className="text-xs text-amber-500">
+              {reviewRequests.filter(r => r.status === 'pending').length} pending
+            </span>
+          </div>
+
+          {reviewRequests.length === 0 ? (
+            <div className="bg-card border border-border rounded-lg p-6 text-center">
+              <Gavel className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">No review requests yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {reviewRequests.filter(r => r.status === 'pending').map((review) => (
+                <div key={review.id} className="bg-card border border-amber-500/30 rounded-lg overflow-hidden">
+                  <div className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold">@{review.username}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {review.platform}
+                          </span>
+                          <a href={review.submission_url} target="_blank" rel="noopener noreferrer" className="text-amber-500 text-xs hover:underline flex items-center gap-1">
+                            View Edit <ExternalLink size={10} />
+                          </a>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          Requested {new Date(review.requested_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setReviewScoring(reviewScoring === review.id ? null : review.id)}
+                        className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                          reviewScoring === review.id ? 'bg-amber-500 text-black' : 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30'
+                        }`}
+                      >
+                        {reviewScoring === review.id ? 'Cancel' : 'Score'}
+                      </button>
+                    </div>
+
+                    {reviewScoring === review.id && (
+                      <div className="mt-4 pt-4 border-t border-border space-y-4">
+                        <div className="grid grid-cols-5 gap-2">
+                          {[
+                            { key: 'emotion', label: 'Emotion', max: 15 },
+                            { key: 'creativity', label: 'Creativity', max: 25 },
+                            { key: 'sync', label: 'Sync', max: 25 },
+                            { key: 'identity', label: 'Identity', max: 10 },
+                            { key: 'execution', label: 'Execution', max: 25 },
+                          ].map(({ key, label, max }) => (
+                            <div key={key} className="text-center">
+                              <input
+                                type="number"
+                                min={0}
+                                max={max}
+                                value={reviewScores[key as keyof typeof reviewScores]}
+                                onChange={(e) => setReviewScores(prev => ({
+                                  ...prev,
+                                  [key]: Math.min(max, Math.max(0, parseInt(e.target.value) || 0))
+                                }))}
+                                className="w-full text-center bg-background border border-border rounded p-2 text-lg font-bold"
+                              />
+                              <p className="text-[9px] text-muted-foreground mt-1">{label} /{max}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="text-center p-2 bg-amber-500/10 rounded">
+                          <span className="text-2xl font-bold text-amber-500">
+                            {reviewScores.emotion + reviewScores.creativity + reviewScores.sync + reviewScores.identity + reviewScores.execution}
+                          </span>
+                          <span className="text-muted-foreground"> / 100</span>
+                        </div>
+                        <Textarea
+                          value={reviewComment}
+                          onChange={(e) => setReviewComment(e.target.value)}
+                          placeholder="Brutal judge commentary... 💀"
+                          rows={2}
+                        />
+                        <button
+                          onClick={() => handleReviewScore(review)}
+                          disabled={reviewSaving}
+                          className="w-full py-3 bg-amber-500 text-black font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                          <Gavel size={16} />
+                          {reviewSaving ? 'Posting...' : 'Submit Review'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </section>
 
