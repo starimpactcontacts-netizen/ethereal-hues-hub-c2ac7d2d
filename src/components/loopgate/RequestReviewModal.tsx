@@ -35,10 +35,19 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
   const [todayCount, setTodayCount] = useState<number | null>(null);
 
   const DAILY_LIMIT = 3;
+  
+  // Judge account has unlimited requests
+  const isJudgeAccount = profile?.username?.toLowerCase() === 'loopgate_hub';
 
   // Check daily limit on open
   const checkDailyLimit = async () => {
     if (!profile?.id) return;
+    
+    // Skip limit check for judge account
+    if (isJudgeAccount) {
+      setTodayCount(0);
+      return;
+    }
     
     const today = new Date().toISOString().split('T')[0];
     const { count } = await supabase
@@ -64,7 +73,8 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
   const handleSubmit = async () => {
     if (!profile?.id || !url.trim() || !platform) return;
     
-    if (todayCount !== null && todayCount >= DAILY_LIMIT) {
+    // Judge account bypasses limit
+    if (!isJudgeAccount && todayCount !== null && todayCount >= DAILY_LIMIT) {
       toast.error(`You've reached the daily limit of ${DAILY_LIMIT} review requests`);
       return;
     }
@@ -97,8 +107,9 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
     }
   };
 
-  const canSubmit = url.trim() && platform && todayCount !== null && todayCount < DAILY_LIMIT;
-  const remainingRequests = todayCount !== null ? DAILY_LIMIT - todayCount : DAILY_LIMIT;
+  const hasReachedLimit = !isJudgeAccount && todayCount !== null && todayCount >= DAILY_LIMIT;
+  const canSubmit = url.trim() && platform && !hasReachedLimit;
+  const remainingRequests = isJudgeAccount ? '∞' : (todayCount !== null ? DAILY_LIMIT - todayCount : DAILY_LIMIT);
 
   return (
     <AnimatePresence>
@@ -122,7 +133,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
               <div>
                 <h2 className="font-display text-lg">Request Judge Review</h2>
                 <p className="text-xs text-muted-foreground">
-                  {remainingRequests} of {DAILY_LIMIT} requests remaining today
+                  {isJudgeAccount ? '∞ unlimited requests' : `${remainingRequests} of ${DAILY_LIMIT} requests remaining today`}
                 </p>
               </div>
               <button
@@ -136,7 +147,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
             {/* Content */}
             <div className="p-4 space-y-4 overflow-y-auto flex-1">
               {/* Daily limit warning */}
-              {todayCount !== null && todayCount >= DAILY_LIMIT && (
+              {hasReachedLimit && (
                 <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
                   <div>
@@ -158,7 +169,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
                   onChange={(e) => handleUrlChange(e.target.value)}
                   placeholder="Paste your TikTok, Instagram, or YouTube link..."
                   className="bg-surface-1 border-border"
-                  disabled={todayCount !== null && todayCount >= DAILY_LIMIT}
+                  disabled={hasReachedLimit}
                 />
               </div>
 
@@ -172,7 +183,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
                     <button
                       key={p.id}
                       onClick={() => setPlatform(p.id)}
-                      disabled={todayCount !== null && todayCount >= DAILY_LIMIT}
+                      disabled={hasReachedLimit}
                       className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all border ${
                         platform === p.id
                           ? `${p.color} text-white border-transparent`
