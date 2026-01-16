@@ -938,6 +938,7 @@ export default function OpsPanel() {
     }
   }
 
+  async function handleVerifyUser(userId: string) {
     setVerifyingUserId(userId);
     try {
       const { error } = await supabase
@@ -2798,7 +2799,7 @@ export default function OpsPanel() {
                         Reject
                       </button>
                       <button
-                        onClick={() => handleManualVerify(req.id)}
+                        onClick={() => handleVerifyUser(req.id)}
                         disabled={verifyingUserId === req.id}
                         className="px-3 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
                       >
