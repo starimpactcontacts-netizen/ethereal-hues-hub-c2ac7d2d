@@ -482,7 +482,60 @@ export default function ProfilePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
+            className="space-y-6"
           >
+            {/* Completed Reviews Section */}
+            {completedReviews.length > 0 && (
+              <div className="px-4 pt-4">
+                <h3 className="font-display text-sm text-muted-foreground mb-3 flex items-center gap-2">
+                  <Star size={14} className="text-purple-400" />
+                  Judge Reviews ({completedReviews.length})
+                </h3>
+                <div className="space-y-3">
+                  {completedReviews.map((review) => (
+                    <ReviewResultCard key={review.id} review={review} />
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Pending Reviews */}
+            {pendingReviews.length > 0 && (
+              <div className="px-4">
+                <h3 className="font-display text-sm text-muted-foreground mb-3 flex items-center gap-2">
+                  <Clock size={14} className="text-orange-400" />
+                  Pending Reviews ({pendingReviews.length})
+                </h3>
+                <div className="space-y-2">
+                  {pendingReviews.map((review) => (
+                    <div 
+                      key={review.id}
+                      className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-orange-500/10 flex items-center justify-center">
+                          <Clock size={14} className="text-orange-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Awaiting Review</p>
+                          <p className="text-[10px] text-muted-foreground capitalize">{review.platform}</p>
+                        </div>
+                      </div>
+                      <a
+                        href={review.submission_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-gold hover:underline flex items-center gap-1"
+                      >
+                        View <ExternalLink size={10} />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Submission Grid */}
             <SubmissionGrid />
           </motion.div>
         ) : (

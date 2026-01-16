@@ -19,6 +19,7 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string 
   achievement: { icon: Star, color: "text-purple-400", bg: "bg-purple-400/10" },
   house_accepted: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
   house_invited: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
+  review_complete: { icon: Star, color: "text-purple-400", bg: "bg-purple-400/10" },
 };
 
 interface NotificationItemProps {
@@ -31,6 +32,8 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
   const config = typeConfig[notification.type] || { icon: Bell, color: "text-foreground", bg: "bg-muted" };
   const Icon = config.icon;
   const eventId = (notification.data as { event_id?: string })?.event_id;
+  const reviewId = (notification.data as { review_id?: string })?.review_id;
+  const isReview = notification.type === 'review_complete';
 
   return (
     <div 
@@ -50,7 +53,16 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
           </p>
           
-          {eventId && (
+          {isReview && (
+            <Link 
+              to="/profile"
+              className="inline-block mt-2 text-[10px] text-purple-400 uppercase tracking-wider hover:underline"
+            >
+              View Review →
+            </Link>
+          )}
+          
+          {eventId && !isReview && (
             <Link 
               to={`/event/${eventId}`}
               className="inline-block mt-2 text-[10px] text-gold uppercase tracking-wider hover:underline"
