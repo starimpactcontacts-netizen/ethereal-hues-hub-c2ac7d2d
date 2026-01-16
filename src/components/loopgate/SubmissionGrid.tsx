@@ -3,7 +3,7 @@ import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw } from 
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import RequestReviewButton from "./RequestReviewButton";
+
 // Extract thumbnail from platform URL
 function getThumbnailUrl(url: string, platform: string): string | null {
   try {
@@ -301,13 +301,6 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Final Rank</p>
                         </div>
                       )}
-                      
-                      {/* Request Review button */}
-                      <RequestReviewButton
-                        submissionUrl={submission.submission_url}
-                        platform={submission.platform}
-                        className="mt-2"
-                      />
                       
                       {/* View button */}
                       <a

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import RequestReviewButton from "@/components/loopgate/RequestReviewButton";
+
 interface Submission {
   id: string;
   submission_url: string;
@@ -345,13 +345,6 @@ export default function FeedPage() {
                   <span className="text-white text-xs font-bold mt-1">#{currentSubmission.final_rank}</span>
                 </div>
               )}
-
-              {/* Request Review */}
-              <RequestReviewButton
-                submissionUrl={currentSubmission.submission_url}
-                platform={currentSubmission.platform}
-                variant="feed"
-              />
 
               {/* Share */}
               <button 
