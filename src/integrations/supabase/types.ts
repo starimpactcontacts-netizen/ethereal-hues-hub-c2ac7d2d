@@ -1117,6 +1117,81 @@ export type Database = {
           },
         ]
       }
+      review_requests: {
+        Row: {
+          avatar_url: string | null
+          claimed_at: string | null
+          created_at: string
+          creativity_score: number | null
+          emotion_score: number | null
+          execution_score: number | null
+          id: string
+          identity_score: number | null
+          judge_avatar_url: string | null
+          judge_comment: string | null
+          judge_id: string | null
+          judge_username: string | null
+          platform: string
+          requested_at: string
+          reviewed_at: string | null
+          status: string
+          submission_url: string
+          sync_score: number | null
+          total_score: number | null
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          creativity_score?: number | null
+          emotion_score?: number | null
+          execution_score?: number | null
+          id?: string
+          identity_score?: number | null
+          judge_avatar_url?: string | null
+          judge_comment?: string | null
+          judge_id?: string | null
+          judge_username?: string | null
+          platform: string
+          requested_at?: string
+          reviewed_at?: string | null
+          status?: string
+          submission_url: string
+          sync_score?: number | null
+          total_score?: number | null
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          creativity_score?: number | null
+          emotion_score?: number | null
+          execution_score?: number | null
+          id?: string
+          identity_score?: number | null
+          judge_avatar_url?: string | null
+          judge_comment?: string | null
+          judge_id?: string | null
+          judge_username?: string | null
+          platform?: string
+          requested_at?: string
+          reviewed_at?: string | null
+          status?: string
+          submission_url?: string
+          sync_score?: number | null
+          total_score?: number | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       round_participations: {
         Row: {
           created_at: string | null
