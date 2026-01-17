@@ -7,13 +7,14 @@ import BeginnerGuideModal from './BeginnerGuideModal';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
-  const hideNavPaths = ['/admin', '/onboarding'];
-  const showNav = !hideNavPaths.some(path => location.pathname.startsWith(path));
+  const hideNavPaths = ['/admin', '/onboarding', '/feed'];
+  const hideNav = hideNavPaths.some(path => location.pathname.startsWith(path));
+  const showNav = !hideNav;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <AppHeader />
-      <main className="flex-1 pb-14">
+      {!hideNav && <AppHeader />}
+      <main className={`flex-1 ${!hideNav ? 'pb-14' : ''}`}>
         <Suspense fallback={<LoadingScreen minimal />}>
           <Outlet />
         </Suspense>

@@ -258,6 +258,14 @@ export default function FeedPage() {
     <div 
       ref={containerRef}
       className="fixed inset-0 bg-black z-50 overflow-hidden"
+      style={{ 
+        width: '100vw', 
+        height: '100dvh',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+      }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
