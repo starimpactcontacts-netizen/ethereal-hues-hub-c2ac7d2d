@@ -15,11 +15,11 @@ export default function FoundingBadge({ size = 'sm', animate = true }: FoundingB
   
   const badge = (
     <span 
-      className={`inline-flex items-center ${sizeClasses} bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border border-amber-500/50 rounded-full font-semibold uppercase tracking-wider`}
-      title="Zero Hour - First Loopgate Competitors"
+      className={`inline-flex items-center ${sizeClasses} bg-black text-gold border border-gold/60 rounded-full font-semibold uppercase tracking-wider`}
+      title="First Circle - Founding Loopgate Competitor"
     >
       <Rocket className={iconSize} />
-      ZERO HOUR
+      FIRST CIRCLE
     </span>
   );
   
