@@ -1214,6 +1214,7 @@ export type Database = {
           submitted_at: string | null
           updated_at: string | null
           user_id: string
+          xp_awarded: number | null
         }
         Insert: {
           created_at?: string | null
@@ -1233,6 +1234,7 @@ export type Database = {
           submitted_at?: string | null
           updated_at?: string | null
           user_id: string
+          xp_awarded?: number | null
         }
         Update: {
           created_at?: string | null
@@ -1252,6 +1254,7 @@ export type Database = {
           submitted_at?: string | null
           updated_at?: string | null
           user_id?: string
+          xp_awarded?: number | null
         }
         Relationships: [
           {
