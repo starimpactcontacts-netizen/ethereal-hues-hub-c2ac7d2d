@@ -1,10 +1,23 @@
-import { Rocket } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface FoundingBadgeProps {
   size?: 'sm' | 'md';
   animate?: boolean;
 }
+
+// Custom zero hour ring icon - circle with break at top
+const ZeroHourIcon = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2.5" 
+    strokeLinecap="round"
+    className={className}
+  >
+    <path d="M12 3.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17" />
+  </svg>
+);
 
 export default function FoundingBadge({ size = 'sm', animate = true }: FoundingBadgeProps) {
   const sizeClasses = size === 'sm' 
@@ -18,7 +31,7 @@ export default function FoundingBadge({ size = 'sm', animate = true }: FoundingB
       className={`inline-flex items-center ${sizeClasses} bg-black text-gold border border-gold/60 rounded-full font-semibold uppercase tracking-wider`}
       title="First Circle - Founding Loopgate Competitor"
     >
-      <Rocket className={iconSize} />
+      <ZeroHourIcon className={iconSize} />
       FIRST CIRCLE
     </span>
   );
