@@ -1,7 +1,8 @@
 import { useRef, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Activity, Play, ExternalLink, ChevronLeft, ChevronRight, Trophy, Zap, Clock } from "lucide-react";
-import { useRecentSubmissions, RecentSubmission, getVideoThumbnail } from "@/hooks/useRecentSubmissions";
+import { useRecentSubmissions, RecentSubmission } from "@/hooks/useRecentSubmissions";
+import { useThumbnail } from "@/hooks/useThumbnail";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,7 +23,7 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
   const hasScore = submission.qoi_score !== null;
   const isAdvanced = submission.status === 'advanced';
   const isTrending = hasScore && (submission.qoi_score || 0) >= 80;
-  const thumbnail = getVideoThumbnail(submission.submission_url, submission.platform);
+  const { thumbnail, loading: thumbnailLoading } = useThumbnail(submission.submission_url, submission.platform);
   
   return (
     <motion.div
@@ -39,8 +40,10 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
       >
         {/* Thumbnail / Visual */}
         <div className="aspect-[9/16] relative bg-surface-1 border border-border group-hover:border-gold/40 transition-all overflow-hidden">
-          {/* Background - thumbnail or gradient */}
-          {thumbnail ? (
+        {/* Background - thumbnail or gradient */}
+          {thumbnailLoading ? (
+            <div className="absolute inset-0 bg-surface-1 animate-pulse" />
+          ) : thumbnail ? (
             <img 
               src={thumbnail} 
               alt=""
