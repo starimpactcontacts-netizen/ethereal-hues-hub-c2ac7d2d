@@ -1415,6 +1415,11 @@ export default function OpsPanel() {
         p_action: 'event_submission',
         p_description: `Approved submission for ${event?.title || 'event'}`,
       });
+      
+      // Check for invite submission bonus (awards XP to inviter if applicable)
+      await supabase.rpc('check_invite_submission_bonus', {
+        p_user_id: submission.user_id,
+      });
 
       toast.success(`Submission approved! +${xpReward} XP awarded`);
       fetchData();
