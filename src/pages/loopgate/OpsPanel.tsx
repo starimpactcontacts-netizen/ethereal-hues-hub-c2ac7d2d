@@ -1303,6 +1303,11 @@ export default function OpsPanel() {
     const qoiTotal = scores.quality + scores.originality + scores.impact;
     
     try {
+      // Get event XP reward for Open Arena submissions
+      const event = events.find(e => e.id === submission.event_id);
+      const xpReward = event?.xp_reward || 50;
+      const previouslyAwarded = submission.xp_awarded || 0;
+      
       // For Open Arena (round_participations), keep status as 'active' since the enum
       // only supports: 'active' | 'advanced' | 'eliminated' | 'pending'
       // For standard events (event_participations), use 'scored' status
@@ -1314,6 +1319,7 @@ export default function OpsPanel() {
             originality_score: scores.originality,
             impact_score: scores.impact,
             qoi_score: qoiTotal,
+            xp_awarded: previouslyAwarded > 0 ? previouslyAwarded : xpReward,
             // Keep status as 'active' - having qoi_score means it's been scored
             judged_at: new Date().toISOString(),
             judge_id: user?.id,
@@ -1321,6 +1327,25 @@ export default function OpsPanel() {
           .eq('id', submission.id);
         
         if (error) throw error;
+        
+        // Award XP if not already awarded for this submission
+        if (previouslyAwarded === 0) {
+          await supabase.rpc('award_xp', {
+            p_user_id: submission.user_id,
+            p_amount: xpReward,
+            p_action: 'event_submission',
+            p_description: `Scored submission for ${event?.title || 'Open Arena'}`,
+          });
+          
+          // Also check for invite submission bonus
+          await supabase.rpc('check_invite_submission_bonus', {
+            p_user_id: submission.user_id,
+          });
+          
+          toast.success(`Score saved! +${xpReward} XP awarded`);
+        } else {
+          toast.success('Score saved');
+        }
       } else {
         const { error } = await supabase
           .from('event_participations')
@@ -1336,9 +1361,9 @@ export default function OpsPanel() {
           .eq('id', submission.id);
         
         if (error) throw error;
+        toast.success('Score saved');
       }
       
-      toast.success('Score saved');
       setScoringSubmission(null);
       setScores({ quality: 80, originality: 80, impact: 80 });
       fetchData();
