@@ -3,12 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
-  Play, Star, ExternalLink, ChevronUp, ChevronDown, 
-  X, Volume2, VolumeX, Heart, MessageCircle, Share2,
-  Trophy, User
+  Play, Star, ChevronUp, ChevronDown, 
+  X, Share2, Trophy, Loader2
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { useThumbnail } from "@/hooks/useThumbnail";
 
 interface Submission {
   id: string;
@@ -26,25 +26,164 @@ interface Submission {
   final_rank: number | null;
 }
 
-// Platform colors
-const platformColors: Record<string, string> = {
-  tiktok: "from-pink-500 to-cyan-400",
-  instagram: "from-purple-500 via-pink-500 to-orange-400",
-  youtube: "from-red-600 to-red-400",
+const platformLabels: Record<string, string> = {
+  tiktok: "TikTok",
+  instagram: "Instagram",
+  youtube: "YouTube",
 };
 
-const platformIcons: Record<string, string> = {
-  tiktok: "TikTok",
-  instagram: "IG",
-  youtube: "YT",
-};
+// Full-screen feed card with thumbnail background
+function FeedCard({ 
+  submission, 
+  onOpen, 
+  onProfile 
+}: { 
+  submission: Submission; 
+  onOpen: () => void;
+  onProfile: () => void;
+}) {
+  const { thumbnail, loading: thumbLoading } = useThumbnail(submission.submission_url, submission.platform);
+  const navigate = useNavigate();
+
+  return (
+    <div className="absolute inset-0 flex flex-col">
+      {/* Fullscreen thumbnail background */}
+      <div 
+        className="absolute inset-0 cursor-pointer"
+        onClick={onOpen}
+      >
+        {/* Thumbnail or loading state */}
+        {thumbLoading ? (
+          <div className="absolute inset-0 bg-black flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-gold animate-spin" />
+          </div>
+        ) : thumbnail ? (
+          <img 
+            src={thumbnail} 
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-800" />
+        )}
+        
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
+        
+        {/* Center play indicator */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center gap-3"
+          >
+            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+              <Play className="w-7 h-7 text-white ml-1" fill="white" />
+            </div>
+            <span className="text-white/80 text-xs font-medium">
+              Watch on {platformLabels[submission.platform] || submission.platform}
+            </span>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Right side actions */}
+      <div className="absolute right-3 bottom-28 flex flex-col items-center gap-5 z-20">
+        {/* Profile */}
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            onProfile();
+          }}
+          className="flex flex-col items-center gap-1"
+        >
+          <Avatar className="w-11 h-11 border-2 border-white shadow-lg">
+            <AvatarImage src={submission.avatar_url || undefined} />
+            <AvatarFallback className="bg-gold text-black font-bold">
+              {submission.username[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+
+        {/* QOI Score */}
+        <div className="flex flex-col items-center">
+          <div className="w-11 h-11 rounded-full bg-gold flex items-center justify-center shadow-lg">
+            <Star className="w-5 h-5 text-black" fill="currentColor" />
+          </div>
+          <span className="text-white text-xs font-bold mt-1 drop-shadow-lg">
+            {Math.round(submission.qoi_score || 0)}
+          </span>
+        </div>
+
+        {/* Rank if available */}
+        {submission.final_rank && (
+          <div className="flex flex-col items-center">
+            <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-lg">
+              <Trophy className="w-5 h-5 text-gold" />
+            </div>
+            <span className="text-white text-xs font-bold mt-1 drop-shadow-lg">
+              #{submission.final_rank}
+            </span>
+          </div>
+        )}
+
+        {/* Share */}
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            navigator.share?.({ url: submission.submission_url });
+          }}
+          className="flex flex-col items-center"
+        >
+          <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <Share2 className="w-5 h-5 text-white" />
+          </div>
+        </button>
+      </div>
+
+      {/* Bottom info */}
+      <div className="absolute bottom-0 left-0 right-16 p-4 z-10">
+        {/* Username */}
+        <button 
+          onClick={onProfile}
+          className="flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity"
+        >
+          <span className="text-white font-bold text-base drop-shadow-lg">@{submission.username}</span>
+        </button>
+
+        {/* Event */}
+        <p className="text-white/90 text-sm mb-3 drop-shadow-lg line-clamp-2">
+          {submission.event_title}
+        </p>
+
+        {/* Score breakdown */}
+        {submission.quality_score !== null && (
+          <div className="flex gap-2 text-xs">
+            <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
+              <span className="text-white/60">Q</span>
+              <span className="text-white font-bold ml-1">{submission.quality_score}</span>
+            </div>
+            <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
+              <span className="text-white/60">O</span>
+              <span className="text-white font-bold ml-1">{submission.originality_score}</span>
+            </div>
+            <div className="bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
+              <span className="text-white/60">I</span>
+              <span className="text-white font-bold ml-1">{submission.impact_score}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function FeedPage() {
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [muted, setMuted] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -278,140 +417,37 @@ export default function FeedPage() {
       </button>
 
       {/* Progress indicator */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/50 backdrop-blur-sm rounded-full px-2 py-0.5 sm:px-3 sm:py-1">
-        <span className="text-white text-xs sm:text-sm font-medium">
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
+        <span className="text-white text-xs font-medium">
           {currentIndex + 1} / {submissions.length}
         </span>
       </div>
-
-      {/* Mute toggle */}
-      <button
-        onClick={() => setMuted(!muted)}
-        className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 p-1.5 sm:p-2 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors"
-      >
-        {muted ? <VolumeX className="w-5 h-5 sm:w-6 sm:h-6" /> : <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" />}
-      </button>
 
       {/* Main content */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSubmission.id}
-          initial={{ opacity: 0, y: 100 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -100 }}
-          transition={{ duration: 0.3 }}
-          className="absolute inset-0 flex flex-col"
+          exit={{ opacity: 0, y: -50 }}
+          transition={{ duration: 0.25 }}
+          className="absolute inset-0"
         >
-          {/* Video/Content area - tappable to open */}
-          <div 
-            className="flex-1 flex items-center justify-center relative cursor-pointer"
-            onClick={() => openSubmission(currentSubmission.submission_url)}
-          >
-            {/* Platform gradient background */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${platformColors[currentSubmission.platform] || 'from-gray-800 to-gray-600'} opacity-30`} />
-            
-            {/* Center play button */}
-            <div className="relative z-10 flex flex-col items-center gap-3 sm:gap-4">
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br ${platformColors[currentSubmission.platform] || 'from-gray-600 to-gray-400'} flex items-center justify-center shadow-2xl`}>
-                <ExternalLink className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
-              </div>
-              <p className="text-white/80 text-xs sm:text-sm">Tap to watch on {platformIcons[currentSubmission.platform] || currentSubmission.platform}</p>
-            </div>
-
-            {/* Right side actions */}
-            <div className="absolute right-2 sm:right-4 bottom-24 sm:bottom-32 flex flex-col items-center gap-4 sm:gap-6 z-20">
-              {/* Profile */}
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/editor/${currentSubmission.user_id}`);
-                }}
-                className="flex flex-col items-center gap-1"
-              >
-                <Avatar className="w-9 h-9 sm:w-12 sm:h-12 border-2 border-white">
-                  <AvatarImage src={currentSubmission.avatar_url || undefined} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs sm:text-sm">
-                    {currentSubmission.username[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </button>
-
-              {/* QOI Score */}
-              <div className="flex flex-col items-center">
-                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-primary/90 flex items-center justify-center">
-                  <Star className="w-4 h-4 sm:w-6 sm:h-6 text-primary-foreground fill-primary-foreground" />
-                </div>
-                <span className="text-white text-[10px] sm:text-xs font-bold mt-1">{Math.round(currentSubmission.qoi_score || 0)}</span>
-              </div>
-
-              {/* Rank if available */}
-              {currentSubmission.final_rank && (
-                <div className="flex flex-col items-center">
-                  <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-yellow-500/90 flex items-center justify-center">
-                    <Trophy className="w-4 h-4 sm:w-6 sm:h-6 text-black" />
-                  </div>
-                  <span className="text-white text-[10px] sm:text-xs font-bold mt-1">#{currentSubmission.final_rank}</span>
-                </div>
-              )}
-
-              {/* Share */}
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.share?.({ url: currentSubmission.submission_url });
-                }}
-                className="flex flex-col items-center"
-              >
-                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <Share2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Bottom info */}
-          <div className="absolute bottom-0 left-0 right-12 sm:right-16 p-3 sm:p-4 bg-gradient-to-t from-black via-black/80 to-transparent">
-            {/* Username */}
-            <button 
-              onClick={() => navigate(`/editor/${currentSubmission.user_id}`)}
-              className="flex items-center gap-2 mb-1.5 sm:mb-2 hover:opacity-80"
-            >
-              <span className="text-white font-bold text-sm sm:text-base">@{currentSubmission.username}</span>
-            </button>
-
-            {/* Event */}
-            <p className="text-white/80 text-xs sm:text-sm mb-2 sm:mb-3">
-              {currentSubmission.event_title}
-            </p>
-
-            {/* Score breakdown */}
-            {currentSubmission.quality_score && (
-              <div className="flex gap-2 sm:gap-4 text-[10px] sm:text-xs">
-                <div className="bg-white/10 rounded px-1.5 py-0.5 sm:px-2 sm:py-1">
-                  <span className="text-white/60">Q</span>
-                  <span className="text-white font-bold ml-0.5 sm:ml-1">{currentSubmission.quality_score}</span>
-                </div>
-                <div className="bg-white/10 rounded px-1.5 py-0.5 sm:px-2 sm:py-1">
-                  <span className="text-white/60">O</span>
-                  <span className="text-white font-bold ml-0.5 sm:ml-1">{currentSubmission.originality_score}</span>
-                </div>
-                <div className="bg-white/10 rounded px-1.5 py-0.5 sm:px-2 sm:py-1">
-                  <span className="text-white/60">I</span>
-                  <span className="text-white font-bold ml-0.5 sm:ml-1">{currentSubmission.impact_score}</span>
-                </div>
-              </div>
-            )}
-          </div>
+          <FeedCard 
+            submission={currentSubmission}
+            onOpen={() => openSubmission(currentSubmission.submission_url)}
+            onProfile={() => navigate(`/editor/${currentSubmission.user_id}`)}
+          />
         </motion.div>
       </AnimatePresence>
 
       {/* Navigation hints */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-2 sm:bottom-4 flex flex-col items-center gap-0.5 sm:gap-1 z-30 pointer-events-none">
+      <div className="absolute left-1/2 -translate-x-1/2 bottom-4 flex flex-col items-center gap-1 z-30 pointer-events-none">
         {currentIndex > 0 && (
-          <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-white/50 animate-bounce" />
+          <ChevronUp className="w-5 h-5 text-white/40" />
         )}
         {currentIndex < submissions.length - 1 && (
-          <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 text-white/50 animate-bounce" />
+          <ChevronDown className="w-5 h-5 text-white/40 animate-bounce" />
         )}
       </div>
     </div>
