@@ -92,6 +92,7 @@ export default function GQTPage() {
   const [latestSubmission, setLatestSubmission] = useState<GQTSubmission | null>(null);
   const [pendingSubmission, setPendingSubmission] = useState<GQTSubmission | null>(null);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [cooldownDays, setCooldownDays] = useState<number | null>(null);
   
   const isAuthenticated = !!user && !isGuest;
   
@@ -104,6 +105,7 @@ export default function GQTPage() {
   const loadLatestSubmission = async () => {
     if (!profile?.id) return;
     
+    // Get the most recent submission (any status)
     const { data } = await supabase
       .from('gatekeeper_submissions')
       .select('*')
@@ -120,9 +122,21 @@ export default function GQTPage() {
       
       if (data.status === 'pending') {
         setPendingSubmission(submission);
+        setCooldownDays(null);
       } else if (data.status === 'scored') {
         setLatestSubmission(submission);
+        
+        // Check 7-day cooldown from judged_at or created_at
+        const lastScoredDate = new Date(data.judged_at || data.created_at);
+        const daysSinceScored = Math.floor((Date.now() - lastScoredDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysSinceScored < 7) {
+          setCooldownDays(7 - daysSinceScored);
+        } else {
+          setCooldownDays(null);
+        }
       }
+    } else {
+      setCooldownDays(null);
     }
   };
   
@@ -155,6 +169,12 @@ export default function GQTPage() {
   const handleSubmit = async () => {
     if (!isAuthenticated || !profile?.id) {
       setShowAuthPrompt(true);
+      return;
+    }
+    
+    // Check cooldown
+    if (cooldownDays !== null && cooldownDays > 0) {
+      toast.error(`You must wait ${cooldownDays} more day${cooldownDays === 1 ? '' : 's'} before taking the GQT again`);
       return;
     }
     
@@ -341,15 +361,22 @@ export default function GQTPage() {
           >
             <div className="flex items-center justify-between">
               <h2 className="font-display text-xl text-foreground">YOUR RESULTS</h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRetake}
-                className="border-gold/50 text-gold hover:bg-gold/10"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Retake Test
-              </Button>
+              {cooldownDays !== null && cooldownDays > 0 ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  <span>Retake in {cooldownDays} day{cooldownDays === 1 ? '' : 's'}</span>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetake}
+                  className="border-gold/50 text-gold hover:bg-gold/10"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Retake Test
+                </Button>
+              )}
             </div>
             <GQTResultCard 
               submission={latestSubmission} 
@@ -364,14 +391,25 @@ export default function GQTPage() {
                   Open Arena
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                onClick={handleRetake}
-                className="w-full border-border hover:border-gold/50"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                New Edit
-              </Button>
+              {cooldownDays !== null && cooldownDays > 0 ? (
+                <Button
+                  variant="outline"
+                  disabled
+                  className="w-full border-border text-muted-foreground"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  {cooldownDays}d Cooldown
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={handleRetake}
+                  className="w-full border-border hover:border-gold/50"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  New Edit
+                </Button>
+              )}
             </div>
           </motion.div>
         )}

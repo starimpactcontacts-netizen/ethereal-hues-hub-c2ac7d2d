@@ -45,6 +45,21 @@ function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | nu
   return null;
 }
 
+// Get class colors - red F for tested, grey for untested
+function getClassColors(classLetter: GQTRank, hasTakenGQT: boolean): string {
+  const colors: Record<string, string> = {
+    'S++': 'text-gold border-gold bg-gold/10',
+    'S+': 'text-gold border-gold/80 bg-gold/10',
+    'S': 'text-amber-400 border-amber-400 bg-amber-400/10',
+    'A': 'text-emerald-400 border-emerald-400 bg-emerald-400/10',
+    'B': 'text-blue-400 border-blue-400 bg-blue-400/10',
+    'C': 'text-slate-300 border-slate-400/50 bg-slate-400/10',
+    'D': 'text-orange-400 border-orange-500/40 bg-orange-500/10',
+    'F': hasTakenGQT ? 'text-red-500 border-red-500/50 bg-red-500/10' : 'text-muted-foreground border-border bg-muted/10',
+  };
+  return colors[classLetter] || colors['F'];
+}
+
 // Rank tier styles for visual hierarchy
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
@@ -84,16 +99,6 @@ const getRankStyle = (rank: number) => {
   };
 };
 
-const classColors: Record<string, string> = {
-  'S++': 'text-gold border-gold bg-gold/10',
-  'S+': 'text-gold border-gold/80 bg-gold/10',
-  'S': 'text-amber-400 border-amber-400 bg-amber-400/10',
-  'A': 'text-emerald-400 border-emerald-400 bg-emerald-400/10',
-  'B': 'text-blue-400 border-blue-400 bg-blue-400/10',
-  'C': 'text-slate-300 border-slate-400/50 bg-slate-400/10',
-  'D': 'text-orange-400 border-orange-500/40 bg-orange-500/10',
-  'F': 'text-muted-foreground border-border bg-muted/10',
-};
 
 export default function IndexPage() {
   const navigate = useNavigate();
@@ -312,6 +317,8 @@ export default function IndexPage() {
                   const style = getRankStyle(rank);
                   const IconComponent = style.icon;
                   const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
+                  const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
+                  const classColorStyle = getClassColors(classLetter, hasTakenGQT);
                   const authorityRole = getAuthorityRole(editor.roles);
                   
                   return (
@@ -350,7 +357,7 @@ export default function IndexPage() {
                           {editor.verification_status && <VerifiedBadge size="sm" />}
                           {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
                           {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
-                          <span className={`text-[8px] font-bold uppercase tracking-wider border px-1.5 py-0.5 ${classColors[classLetter]}`}>
+                          <span className={`text-[8px] font-bold uppercase tracking-wider border px-1.5 py-0.5 ${classColorStyle}`}>
                             {classLetter}
                           </span>
                         </div>
