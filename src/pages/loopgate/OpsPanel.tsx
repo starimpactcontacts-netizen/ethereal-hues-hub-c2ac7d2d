@@ -845,21 +845,55 @@ export default function OpsPanel() {
 
       if (error) throw error;
 
-      // Update user's best GQT score if this is higher
+      // Index floor based on rank (F: 0, D: 10, C: 20, B: 40, A: 75, S: 120, S+: 200, S++: 300)
+      const indexFloorByRank: Record<string, number> = {
+        'F': 0, 'D': 10, 'C': 20, 'B': 40, 'A': 75, 'S': 120, 'S+': 200, 'S++': 300,
+      };
+      const newIndexFloor = indexFloorByRank[rank] || 0;
+
+      // Update user's best GQT score and index floor if this is higher
       const { data: currentProfile } = await supabase
         .from('profiles')
-        .select('best_gatekeeper_qoi')
+        .select('best_gatekeeper_qoi, global_index_score, spendable_index')
         .eq('id', submission.user_id)
         .single();
 
-      if (!currentProfile?.best_gatekeeper_qoi || totalScore > currentProfile.best_gatekeeper_qoi) {
+      const currentBestScore = currentProfile?.best_gatekeeper_qoi || 0;
+      const currentIndexScore = currentProfile?.global_index_score || 0;
+      const currentSpendableIndex = currentProfile?.spendable_index || 0;
+
+      // Only update if this score is higher than their previous best
+      if (totalScore > currentBestScore) {
+        // Calculate their previous index floor to determine the delta
+        let previousRank = 'F';
+        if (currentBestScore >= 96) previousRank = 'S++';
+        else if (currentBestScore >= 90) previousRank = 'S+';
+        else if (currentBestScore >= 80) previousRank = 'S';
+        else if (currentBestScore >= 70) previousRank = 'A';
+        else if (currentBestScore >= 60) previousRank = 'B';
+        else if (currentBestScore >= 50) previousRank = 'C';
+        else if (currentBestScore >= 40) previousRank = 'D';
+        const previousIndexFloor = indexFloorByRank[previousRank] || 0;
+        
+        // Calculate the index delta (new floor minus old floor)
+        const indexDelta = newIndexFloor - previousIndexFloor;
+
         await supabase
           .from('profiles')
-          .update({ best_gatekeeper_qoi: totalScore })
+          .update({ 
+            best_gatekeeper_qoi: totalScore,
+            global_index_score: currentIndexScore + indexDelta,
+            spendable_index: currentSpendableIndex + indexDelta,
+          })
           .eq('id', submission.user_id);
-      }
-
-      toast.success(`GQT scored: ${totalScore}/100 (${rank})`);
+        
+        if (indexDelta > 0) {
+          toast.success(`GQT scored: ${totalScore}/100 (${rank}) - +${indexDelta} Index awarded!`);
+        } else {
+          toast.success(`GQT scored: ${totalScore}/100 (${rank})`);
+        }
+      } else {
+        toast.success(`GQT scored: ${totalScore}/100 (${rank}) - Previous score was higher`);
       setGqtScoring(null);
       setGqtScores({ rhythm: 5, creativity: 5, technical: 5, emotional: 3, style: 2 });
       setGqtCommentary('');
