@@ -894,6 +894,8 @@ export default function OpsPanel() {
         }
       } else {
         toast.success(`GQT scored: ${totalScore}/100 (${rank}) - Previous score was higher`);
+      }
+
       setGqtScoring(null);
       setGqtScores({ rhythm: 5, creativity: 5, technical: 5, emotional: 3, style: 2 });
       setGqtCommentary('');
