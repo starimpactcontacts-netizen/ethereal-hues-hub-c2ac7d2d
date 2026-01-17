@@ -5,7 +5,9 @@ export interface RecentSubmission {
   id: string;
   user_id: string;
   username: string;
+  display_name: string | null;
   avatar_url: string | null;
+  global_index_score: number;
   event_id: string;
   event_title: string;
   submission_url: string;
@@ -13,7 +15,25 @@ export interface RecentSubmission {
   qoi_score: number | null;
   status: string;
   submitted_at: string;
+  round_number: number | null;
   type: 'round' | 'standard';
+}
+
+// Extract video thumbnail from URL
+export function getVideoThumbnail(url: string, platform: string): string | null {
+  try {
+    if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
+      // Extract YouTube video ID
+      const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+      if (match) {
+        return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
+      }
+    }
+    // TikTok and Instagram don't have easy thumbnail APIs
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function useRecentSubmissions(limit: number = 10) {
@@ -25,7 +45,7 @@ export function useRecentSubmissions(limit: number = 10) {
       // Fetch round participations with submissions
       const { data: roundData, error: roundError } = await supabase
         .from('round_participations')
-        .select('id, user_id, event_id, submission_url, platform, qoi_score, status, submitted_at')
+        .select('id, user_id, event_id, submission_url, platform, qoi_score, status, submitted_at, round_number')
         .not('submission_url', 'is', null)
         .order('submitted_at', { ascending: false, nullsFirst: false })
         .limit(limit);
@@ -42,8 +62,8 @@ export function useRecentSubmissions(limit: number = 10) {
       if (eventError) console.error('Event fetch error:', eventError);
 
       const allData = [
-        ...(roundData || []).map(d => ({ ...d, type: 'round' as const })),
-        ...(eventData || []).map(d => ({ ...d, type: 'standard' as const })),
+        ...(roundData || []).map(d => ({ ...d, type: 'round' as const, round_number: d.round_number })),
+        ...(eventData || []).map(d => ({ ...d, type: 'standard' as const, round_number: null })),
       ];
 
       if (allData.length === 0) {
@@ -58,7 +78,7 @@ export function useRecentSubmissions(limit: number = 10) {
 
       // Fetch profiles and events in parallel
       const [profilesRes, eventsRes] = await Promise.all([
-        supabase.from('profiles').select('id, username, avatar_url').in('id', userIds),
+        supabase.from('profiles').select('id, username, display_name, avatar_url, global_index_score').in('id', userIds),
         supabase.from('events').select('id, title').in('id', eventIds)
       ]);
 
@@ -69,7 +89,9 @@ export function useRecentSubmissions(limit: number = 10) {
         id: s.id,
         user_id: s.user_id,
         username: profileMap.get(s.user_id)?.username || 'editor',
+        display_name: profileMap.get(s.user_id)?.display_name || null,
         avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
+        global_index_score: profileMap.get(s.user_id)?.global_index_score || 0,
         event_id: s.event_id,
         event_title: eventMap.get(s.event_id)?.title || 'Event',
         submission_url: s.submission_url!,
@@ -77,6 +99,7 @@ export function useRecentSubmissions(limit: number = 10) {
         qoi_score: s.qoi_score,
         status: s.status || 'pending',
         submitted_at: s.submitted_at || new Date().toISOString(),
+        round_number: s.round_number,
         type: s.type,
       }));
 
