@@ -137,6 +137,7 @@ export function useRealRankings() {
         crews:crew_id (id, name, emblem, avatar_url),
         houses:house_id (id, name, symbol, primary_color, secondary_color)
       `)
+      .eq('is_hidden', false)
       .order('global_index_score', { ascending: false })
       .order('best_gatekeeper_qoi', { ascending: false, nullsFirst: false })
       .order('level', { ascending: false })
