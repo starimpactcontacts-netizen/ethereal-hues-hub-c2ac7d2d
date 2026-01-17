@@ -8,6 +8,7 @@ import loopgateLogo from "@/assets/loopgate-logo.png";
 import SEO, { pageSEO } from "@/components/SEO";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
+import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import HouseBadge from "@/components/loopgate/houses/HouseBadge";
 import HouseAvatarRing from "@/components/loopgate/houses/HouseAvatarRing";
@@ -348,6 +349,7 @@ export default function IndexPage() {
                           </h3>
                           {editor.verification_status && <VerifiedBadge size="sm" />}
                           {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+                          {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
                           <span className={`text-[8px] font-bold uppercase tracking-wider border px-1.5 py-0.5 ${classColors[classLetter]}`}>
                             {classLetter}
                           </span>

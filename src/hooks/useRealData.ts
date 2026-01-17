@@ -41,6 +41,7 @@ export interface RealEditor {
   xp?: number;
   level?: number;
   best_gatekeeper_qoi?: number | null;
+  is_founding_member?: boolean;
   roles?: ('admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise')[];
   crew_id?: string | null;
   crew?: {
@@ -132,7 +133,7 @@ export function useRealRankings() {
     const { data, error } = await supabase
       .from('profiles')
       .select(`
-        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id, house_id, xp, level, best_gatekeeper_qoi,
+        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id, house_id, xp, level, best_gatekeeper_qoi, is_founding_member,
         crews:crew_id (id, name, emblem, avatar_url),
         houses:house_id (id, name, symbol, primary_color, secondary_color)
       `)
