@@ -49,10 +49,13 @@ export function useXPUserLeaderboard(limit: number = 50) {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, username, display_name, avatar_url, xp, level")
+      .select("id, username, display_name, avatar_url, xp, level, best_gatekeeper_qoi, global_index_score")
       .eq("is_hidden", false)
       .gt("xp", 0)
       .order("xp", { ascending: false })
+      .order("level", { ascending: false })
+      .order("best_gatekeeper_qoi", { ascending: false, nullsFirst: false })
+      .order("global_index_score", { ascending: false })
       .limit(limit);
 
     if (!error && data) {

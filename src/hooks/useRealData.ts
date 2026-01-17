@@ -137,7 +137,10 @@ export function useRealRankings() {
         crews:crew_id (id, name, emblem, avatar_url),
         houses:house_id (id, name, symbol, primary_color, secondary_color)
       `)
-      .order('global_index_score', { ascending: false });
+      .order('global_index_score', { ascending: false })
+      .order('best_gatekeeper_qoi', { ascending: false, nullsFirst: false })
+      .order('level', { ascending: false })
+      .order('xp', { ascending: false });
 
     if (error) {
       setError(error.message);
