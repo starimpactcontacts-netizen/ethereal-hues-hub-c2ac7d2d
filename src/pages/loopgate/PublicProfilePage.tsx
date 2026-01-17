@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
+import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
@@ -39,6 +40,7 @@ interface PublicProfile {
   archetype: string | null;
   software: string[] | null;
   best_gatekeeper_qoi: number | null;
+  is_founding_member: boolean;
 }
 
 interface UserHouse {
@@ -278,11 +280,12 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Name & Badges */}
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap justify-center">
               <h1 className="font-display text-3xl">{profile.display_name || profile.username}</h1>
               {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
               {profile.verification_status && <VerifiedBadge size="lg" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
+              {profile.is_founding_member && <FoundingBadge size="md" />}
             </div>
             
             {profile.display_name && (

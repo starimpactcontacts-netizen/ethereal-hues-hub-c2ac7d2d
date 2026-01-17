@@ -954,6 +954,7 @@ export type Database = {
           house_id: string | null
           id: string
           is_banned: boolean
+          is_founding_member: boolean | null
           is_hidden: boolean
           league: Database["public"]["Enums"]["league_tier"]
           level: number
@@ -992,6 +993,7 @@ export type Database = {
           house_id?: string | null
           id: string
           is_banned?: boolean
+          is_founding_member?: boolean | null
           is_hidden?: boolean
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
@@ -1030,6 +1032,7 @@ export type Database = {
           house_id?: string | null
           id?: string
           is_banned?: boolean
+          is_founding_member?: boolean | null
           is_hidden?: boolean
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number

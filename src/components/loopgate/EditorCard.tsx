@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { RealEditor } from "@/hooks/useRealData";
 import VerifiedBadge from "./VerifiedBadge";
 import AuthorityBadge from "./AuthorityBadge";
+import FoundingBadge from "./FoundingBadge";
 import CrewBadge from "./CrewBadge";
 import LevelBadge from "./LevelBadge";
 import HouseBadge from "./houses/HouseBadge";
@@ -93,6 +94,7 @@ export default function EditorCard({ editor }: EditorCardProps) {
               {editor.level && editor.level > 1 && <LevelBadge level={editor.level} size="xs" />}
               {editor.verification_status && <VerifiedBadge size="sm" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+              {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
               <span className={`text-[9px] font-semibold uppercase tracking-wider border px-1.5 py-0.5 ${classColors[classLetter]}`}>
                 {classLetter}
               </span>
