@@ -34,12 +34,12 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
     >
       <Link 
         to={`/editor/${submission.user_id}`}
-        className={`block w-[140px] group relative ${
+        className={`block w-[100px] sm:w-[120px] md:w-[140px] group relative ${
           isTrending ? 'ring-1 ring-gold/50 shadow-[0_0_20px_rgba(212,175,55,0.15)]' : ''
         }`}
       >
         {/* Thumbnail / Visual */}
-        <div className="aspect-[9/16] relative bg-surface-1 border border-border group-hover:border-gold/40 transition-all overflow-hidden">
+        <div className="aspect-[9/16] relative bg-surface-1 border border-border group-hover:border-gold/40 transition-all overflow-hidden rounded-sm">
         {/* Background - thumbnail or gradient */}
           {thumbnailLoading ? (
             <div className="absolute inset-0 bg-surface-1 animate-pulse" />
@@ -58,31 +58,31 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
           
           {/* Play indicator */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <div className="w-10 h-10 rounded-full bg-gold/90 flex items-center justify-center">
-              <Play size={16} className="text-black ml-0.5" fill="currentColor" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gold/90 flex items-center justify-center">
+              <Play size={14} className="text-black ml-0.5" fill="currentColor" />
             </div>
           </div>
           
           {/* Top badges */}
-          <div className="absolute top-2 left-2 right-2 flex items-start justify-between">
+          <div className="absolute top-1.5 left-1.5 right-1.5 flex items-start justify-between">
             {/* Platform badge */}
-            <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 border ${platformColors[submission.platform] || platformColors.tiktok}`}>
+            <span className={`text-[6px] sm:text-[8px] font-bold uppercase tracking-wider px-1 py-0.5 border rounded-sm ${platformColors[submission.platform] || platformColors.tiktok}`}>
               {submission.platform.slice(0, 2)}
             </span>
             
             {/* Score badge if judged */}
             {hasScore && (
-              <div className="flex items-center gap-0.5 bg-black/80 border border-gold/50 px-1.5 py-0.5">
-                <Trophy size={8} className="text-gold" />
-                <span className="text-[10px] font-bold text-gold">{Math.round(submission.qoi_score!)}</span>
+              <div className="flex items-center gap-0.5 bg-black/80 border border-gold/50 px-1 py-0.5 rounded-sm">
+                <Trophy size={6} className="text-gold sm:w-2 sm:h-2" />
+                <span className="text-[8px] sm:text-[10px] font-bold text-gold">{Math.round(submission.qoi_score!)}</span>
               </div>
             )}
           </div>
           
           {/* Round indicator */}
           {submission.round_number && (
-            <div className="absolute top-2 left-1/2 -translate-x-1/2">
-              <span className="text-[8px] font-bold text-muted-foreground bg-black/60 px-1.5 py-0.5">
+            <div className="absolute top-1.5 left-1/2 -translate-x-1/2">
+              <span className="text-[6px] sm:text-[8px] font-bold text-muted-foreground bg-black/60 px-1 py-0.5 rounded-sm">
                 R{submission.round_number}
               </span>
             </div>
@@ -90,9 +90,9 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
           
           {/* Advanced badge */}
           {isAdvanced && (
-            <div className="absolute top-8 right-2">
-              <span className="text-[8px] font-bold text-green-400 bg-green-500/20 border border-green-500/30 px-1.5 py-0.5 flex items-center gap-0.5">
-                <Zap size={6} /> ADV
+            <div className="absolute top-6 sm:top-8 right-1.5">
+              <span className="text-[6px] sm:text-[8px] font-bold text-green-400 bg-green-500/20 border border-green-500/30 px-1 py-0.5 flex items-center gap-0.5 rounded-sm">
+                <Zap size={5} /> ADV
               </span>
             </div>
           )}
@@ -103,47 +103,47 @@ function EditCard({ submission, index }: { submission: RecentSubmission; index: 
           )}
           
           {/* Bottom info */}
-          <div className="absolute bottom-0 left-0 right-0 p-2">
+          <div className="absolute bottom-0 left-0 right-0 p-1.5 sm:p-2">
             {/* Avatar + Name */}
-            <div className="flex items-center gap-1.5 mb-1">
+            <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
               {submission.avatar_url ? (
                 <img 
                   src={submission.avatar_url} 
                   alt=""
-                  className="w-5 h-5 rounded-full object-cover border border-border"
+                  className="w-4 h-4 sm:w-5 sm:h-5 rounded-full object-cover border border-border"
                 />
               ) : (
-                <div className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center border border-gold/30">
-                  <span className="text-[8px] font-bold text-gold">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gold/20 flex items-center justify-center border border-gold/30">
+                  <span className="text-[6px] sm:text-[8px] font-bold text-gold">
                     {(submission.display_name || submission.username).charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
-              <span className="text-[10px] font-semibold text-white truncate flex-1">
+              <span className="text-[8px] sm:text-[10px] font-semibold text-white truncate flex-1">
                 {submission.display_name || submission.username}
               </span>
             </div>
             
             {/* Index score */}
             {submission.global_index_score > 0 && (
-              <div className="flex items-center gap-1 mb-1">
-                <span className="text-[8px] text-gold font-bold">
+              <div className="flex items-center gap-1 mb-0.5">
+                <span className="text-[6px] sm:text-[8px] text-gold font-bold">
                   {submission.global_index_score.toFixed(0)} IDX
                 </span>
               </div>
             )}
             
             {/* Time */}
-            <div className="flex items-center gap-1 text-[8px] text-muted-foreground">
-              <Clock size={8} />
+            <div className="flex items-center gap-0.5 text-[6px] sm:text-[8px] text-muted-foreground">
+              <Clock size={6} className="sm:w-2 sm:h-2" />
               <span>{formatDistanceToNow(new Date(submission.submitted_at), { addSuffix: false })}</span>
             </div>
           </div>
         </div>
         
         {/* Event name below card */}
-        <div className="mt-1.5 px-0.5">
-          <p className="text-[9px] text-muted-foreground truncate">{submission.event_title}</p>
+        <div className="mt-1 px-0.5">
+          <p className="text-[7px] sm:text-[9px] text-muted-foreground truncate">{submission.event_title}</p>
         </div>
       </Link>
     </motion.div>
@@ -196,7 +196,7 @@ export default function ActivityFeed({ limit = 10, compact = false }: ActivityFe
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
-      const cardWidth = 156; // 140px card + 16px gap
+      const cardWidth = window.innerWidth < 640 ? 112 : 156; // 100px + 12px gap on mobile, 140px + 16px gap on desktop
       const scrollAmount = direction === 'left' ? -cardWidth * 2 : cardWidth * 2;
       scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
@@ -274,7 +274,7 @@ export default function ActivityFeed({ limit = 10, compact = false }: ActivityFe
       {/* Visual Carousel */}
       <div 
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory -mx-1 px-1"
+        className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory -mx-1 px-1"
         style={{ scrollSnapType: 'x mandatory' }}
       >
         {submissions.map((submission, index) => (
