@@ -515,6 +515,35 @@ export default function JudgeHubPage() {
       {/* Live Reviews Feed */}
       <JudgeReviewsFeed />
 
+      {/* Become a Judge CTA - only show if not already a judge */}
+      {!isJudge && (
+        <div className="px-4 py-4">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-surface-1 via-surface-1 to-gold/5 border border-gold/30 rounded-xl p-4"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gold/20 flex items-center justify-center shrink-0">
+                <Sparkles className="w-6 h-6 text-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-display text-sm mb-0.5">Become a QOI Judge</h3>
+                <p className="text-xs text-muted-foreground line-clamp-1">
+                  Join the elite. Rate and review the community's best work.
+                </p>
+              </div>
+              <Link
+                to="/judges/apply"
+                className="shrink-0 px-4 py-2 bg-gold hover:bg-gold/90 text-black rounded-lg text-xs font-bold transition-colors"
+              >
+                Apply
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* Search & Filters */}
       <div className="px-4 pb-3">
         {/* Search */}
