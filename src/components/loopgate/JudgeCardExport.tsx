@@ -35,6 +35,7 @@ const TEMPLATES: { id: CardTemplate; label: string; preview: string }[] = [
 
 const DISPLAY_FORMATS: { id: CardDisplayFormat; label: string; description: string }[] = [
   { id: 'full', label: 'Full', description: 'Grade + Score + Breakdown' },
+  { id: 'verdict', label: 'Verdict', description: 'Grade + Score + Comment' },
   { id: 'compact', label: 'Compact', description: 'Grade + Score only' },
   { id: 'score-only', label: 'Score Only', description: 'Just 60/100' },
   { id: 'class-only', label: 'Class Only', description: 'Just the grade' },

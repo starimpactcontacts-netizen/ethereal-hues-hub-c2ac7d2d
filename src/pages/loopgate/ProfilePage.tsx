@@ -396,40 +396,51 @@ export default function ProfilePage() {
             )}
           </div>
           
-          {/* Shop Balance Strip */}
-          <Link to="/shop" className="block">
-            <div className="bg-gradient-to-r from-gold/15 via-gold/10 to-gold/5 border border-gold/30 px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Coins className="w-5 h-5 text-gold" />
-                <div>
-                  <p className="font-display text-xl text-gold">{(profile as any)?.spendable_index || 0}</p>
-                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Spendable Index</p>
+          {/* Premium Action Cards */}
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            {/* Spendable Index Card */}
+            <Link to="/shop" className="group">
+              <div className="relative overflow-hidden bg-gradient-to-br from-gold/5 to-transparent border border-gold/20 rounded-xl p-4 h-full hover:border-gold/40 transition-all duration-300">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-gold/10 to-transparent rounded-bl-full" />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                      <Coins className="w-4 h-4 text-gold" />
+                    </div>
+                  </div>
+                  <p className="font-display text-3xl text-gold leading-none">{(profile as any)?.spendable_index || 0}</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">Index Points</p>
+                  <div className="flex items-center gap-1 text-gold/70 text-[10px] mt-3 group-hover:text-gold transition-colors">
+                    <span>Shop</span>
+                    <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-gold text-xs">
-                <ShoppingBag className="w-4 h-4" />
-                <span>Shop</span>
-                <ChevronRight className="w-3 h-3" />
-              </div>
-            </div>
-          </Link>
+            </Link>
 
-          {/* Request Review CTA */}
-          <button
-            onClick={() => setShowReviewModal(true)}
-            className="w-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 px-4 py-3 flex items-center justify-between hover:border-purple-500/50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <Star className="w-5 h-5 text-purple-400" />
-              <div className="text-left">
-                <p className="font-medium text-sm">Request Judge Review</p>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-widest">
-                  Get your edit rated by QOI Judges
-                </p>
+            {/* Request Review Card */}
+            <button
+              onClick={() => setShowReviewModal(true)}
+              className="group text-left"
+            >
+              <div className="relative overflow-hidden bg-gradient-to-br from-purple-500/5 to-transparent border border-purple-500/20 rounded-xl p-4 h-full hover:border-purple-500/40 transition-all duration-300">
+                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-purple-500/10 to-transparent rounded-bl-full" />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-purple-400" />
+                    </div>
+                  </div>
+                  <p className="font-display text-sm leading-tight">Get Rated</p>
+                  <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">By QOI Judges</p>
+                  <div className="flex items-center gap-1 text-purple-400/70 text-[10px] mt-3 group-hover:text-purple-400 transition-colors">
+                    <span>Request</span>
+                    <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
               </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-purple-400" />
-          </button>
+            </button>
+          </div>
         </div>
       </div>
       
