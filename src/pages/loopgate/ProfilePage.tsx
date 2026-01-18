@@ -23,6 +23,7 @@ import LevelBadge from "@/components/loopgate/LevelBadge";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
 import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
+import EmailSecurityBanner from "@/components/loopgate/EmailSecurityBanner";
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import ArchetypeSelector from "@/components/loopgate/ArchetypeSelector";
@@ -425,6 +426,9 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background pb-20">
       {/* Password Setup Banner for magic-link users */}
       <PasswordSetupBanner />
+      
+      {/* Email Security Banner for username-only accounts */}
+      <EmailSecurityBanner />
 
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {/* CINEMATIC HERO HEADER */}
