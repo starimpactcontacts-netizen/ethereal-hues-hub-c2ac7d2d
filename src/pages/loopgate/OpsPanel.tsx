@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection";
+import { awardReviewXP } from "@/hooks/useJudgeXP";
 
 interface RealEvent {
   id: string;
@@ -961,6 +962,11 @@ export default function OpsPanel() {
         description: `Score: ${totalScore}/100`,
         data: { score: totalScore, platform: request.platform },
       });
+
+      // Award XP to both judge and editor
+      if (user?.id && judgeProfile?.username) {
+        await awardReviewXP(user.id, judgeProfile.username, request.user_id);
+      }
 
       toast.success(`Review scored: ${totalScore}/100`);
       setReviewScoring(null);

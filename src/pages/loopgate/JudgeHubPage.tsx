@@ -17,6 +17,7 @@ import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
 import BottomNav from '@/components/loopgate/BottomNav';
 import RequestJudgeReviewModal from '@/components/loopgate/RequestJudgeReviewModal';
 import JudgeBadge, { JUDGE_BADGES } from '@/components/loopgate/JudgeBadge';
+import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 
 interface JudgeProfile {
   id: string;
@@ -454,6 +455,11 @@ export default function JudgeHubPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Live Reviews Feed */}
+      <div className="border-t border-border bg-surface-1/30">
+        <JudgeReviewsFeed />
       </div>
 
       {/* Judges List */}
