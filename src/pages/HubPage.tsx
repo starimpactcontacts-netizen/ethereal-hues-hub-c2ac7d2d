@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -7,12 +7,15 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
+import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
+import { supabase } from '@/integrations/supabase/client';
 
 const leagueConfig = {
   cartel: { label: 'CARTEL', icon: Crown, gradient: 'from-gold via-amber-400 to-gold', glow: 'shadow-gold/30' },
@@ -22,12 +25,28 @@ const leagueConfig = {
 };
 
 export default function HubPage() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const { isJudge } = useUserRoles(user?.id);
   const { events } = useRealEvents();
   const { stats } = useGlobalStats();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   
   useActiveSession();
+
+  // Fetch judge review count if user is a judge
+  useEffect(() => {
+    if (isJudge && user?.id) {
+      supabase
+        .from('review_requests')
+        .select('id', { count: 'exact', head: true })
+        .eq('judge_id', user.id)
+        .eq('status', 'reviewed')
+        .then(({ count }) => {
+          setJudgeReviewCount(count || 0);
+        });
+    }
+  }, [isJudge, user?.id]);
 
   const userLeague = (profile?.league?.toLowerCase() || 'open') as keyof typeof leagueConfig;
   const league = leagueConfig[userLeague] || leagueConfig.open;
@@ -99,9 +118,15 @@ export default function HubPage() {
               </div>
               
               <div>
-                <h1 className="font-display text-2xl text-foreground leading-none">
-                  {profile?.username || 'EDITOR'}
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="font-display text-2xl text-foreground leading-none">
+                    {profile?.username || 'EDITOR'}
+                  </h1>
+                  {/* Judge Class Badge - Only visible to judges */}
+                  {isJudge && (
+                    <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   <span className={`text-[10px] font-bold tracking-widest uppercase bg-gradient-to-r ${league.gradient} bg-clip-text text-transparent`}>
                     {league.label} LEAGUE
