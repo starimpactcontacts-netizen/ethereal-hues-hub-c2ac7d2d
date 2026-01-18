@@ -6,11 +6,14 @@ interface TempProfile {
   avatarUrl?: string;
   region?: string;
   createdAt: string;
+  inviteCode?: string; // Code they used to join
+  pendingCrewId?: string; // Crew to auto-join when verified
 }
 
 interface TempProfileState {
   profile: TempProfile | null;
   setProfile: (profile: TempProfile) => void;
+  updateProfile: (updates: Partial<TempProfile>) => void;
   clearProfile: () => void;
   isTemp: boolean;
 }
@@ -24,6 +27,9 @@ export const useTempProfile = create<TempProfileState>()(
       profile: null,
       isTemp: false,
       setProfile: (profile) => set({ profile, isTemp: true }),
+      updateProfile: (updates) => set((state) => ({
+        profile: state.profile ? { ...state.profile, ...updates } : null,
+      })),
       clearProfile: () => set({ profile: null, isTemp: false }),
     }),
     {
@@ -32,13 +38,10 @@ export const useTempProfile = create<TempProfileState>()(
   )
 );
 
-// Actions that require a real account
+// Actions that TRULY require a real account (security-critical only)
 export const PROTECTED_ACTIONS = [
-  'submit_edit',
-  'join_crew',
   'apply_judge',
   'request_review',
-  'enter_arena',
   'save_score',
   'redeem_shop',
   'send_message',
@@ -49,11 +52,8 @@ export type ProtectedAction = typeof PROTECTED_ACTIONS[number];
 // Helper to check if action requires account
 export const requiresAccount = (action: ProtectedAction): string => {
   const messages: Record<ProtectedAction, string> = {
-    submit_edit: 'Create an account to save your score',
-    join_crew: 'Create an account to join a crew',
     apply_judge: 'Create an account to apply as a judge',
     request_review: 'Create an account to request a review',
-    enter_arena: 'Create an account to enter the arena',
     save_score: 'Create an account to save your progress',
     redeem_shop: 'Create an account to redeem items',
     send_message: 'Create an account to send messages',
