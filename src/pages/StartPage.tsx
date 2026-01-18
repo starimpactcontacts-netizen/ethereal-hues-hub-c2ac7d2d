@@ -109,7 +109,7 @@ export default function StartPage() {
               Create Your Profile
             </h1>
             <p className="text-muted-foreground">
-              No email. No password. Just you.
+              Start in seconds. Secure your account anytime.
             </p>
           </div>
 
