@@ -48,7 +48,7 @@ export default function LandingPage() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="font-display text-5xl sm:text-7xl md:text-8xl leading-none tracking-tight mb-6">
-            Get Your Edit Rated.<br />
+            Prove Your Rank.<br />
             <span className="text-gold">S++ or F-Tier?</span>
           </h1>
           
