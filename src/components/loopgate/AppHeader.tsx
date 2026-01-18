@@ -154,12 +154,12 @@ export default function AppHeader() {
                   />
                 </div>
 
-                {/* Judge Leaderboard - visible to everyone */}
+                {/* Judge Hub - visible to everyone */}
                 <div className="my-2 border-t border-border" />
                 <SheetClose asChild>
                   <Link
                     to="/judges"
-                    className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-surface-1 transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 text-gold hover:text-gold hover:bg-gold/10 transition-colors"
                   >
                     <Gavel className="w-5 h-5" />
                     <span className="font-display text-sm">QOI Judges</span>
