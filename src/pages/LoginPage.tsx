@@ -42,8 +42,21 @@ export default function LoginPage() {
       .ilike('username', identifier.trim())
       .maybeSingle();
     
-    if (lookupError || !profile?.email) {
+    if (lookupError) {
+      toast.error('Something went wrong');
+      setLoading(false);
+      return;
+    }
+
+    if (!profile) {
       toast.error('Username not found');
+      setLoading(false);
+      return;
+    }
+
+    if (!profile.email) {
+      // This is a temp profile that was never verified
+      toast.error('This profile needs to be secured first. Create an account at /start');
       setLoading(false);
       return;
     }
