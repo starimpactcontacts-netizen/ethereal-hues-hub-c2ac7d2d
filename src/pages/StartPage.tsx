@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, User, MapPin, Ticket, Users, Mail, Lock, Swords, Scale, Check, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, ArrowLeft, User, MapPin, Ticket, Users, Mail, Lock, Swords, Scale, Check, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTempProfile } from '@/hooks/useTempProfile';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
 
 const REGIONS = [
@@ -33,13 +34,14 @@ interface FormData {
 const STEPS = [
   { id: 'role', title: 'Choose Your Path' },
   { id: 'username', title: 'Claim Your Name' },
-  { id: 'account', title: 'Secure Your Account' },
+  { id: 'email', title: 'Add Email' },
   { id: 'invite', title: 'Got an Invite?' },
 ];
 
 export default function StartPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { setProfile: setTempProfile } = useTempProfile();
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -138,6 +140,7 @@ export default function StartPage() {
   };
 
   const validateEmail = (email: string): boolean => {
+    if (!email) return true; // Email is optional
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setErrors(prev => ({ ...prev, email: 'Enter a valid email' }));
@@ -148,6 +151,7 @@ export default function StartPage() {
   };
 
   const validatePassword = (password: string): boolean => {
+    if (!formData.email) return true; // No password needed without email
     if (password.length < 6) {
       setErrors(prev => ({ ...prev, password: 'At least 6 characters' }));
       return false;
@@ -161,7 +165,7 @@ export default function StartPage() {
     
     try {
       if (step === 0) {
-        // Role selection - just proceed
+        // Role selection
         if (!formData.role) {
           toast.error('Choose a path to continue');
           setLoading(false);
@@ -177,12 +181,14 @@ export default function StartPage() {
         }
         setStep(2);
       } else if (step === 2) {
-        // Email/Password validation
-        const emailValid = validateEmail(formData.email.trim());
-        const passwordValid = validatePassword(formData.password);
-        if (!emailValid || !passwordValid) {
-          setLoading(false);
-          return;
+        // Optional Email/Password - validate if provided
+        if (formData.email) {
+          const emailValid = validateEmail(formData.email.trim());
+          const passwordValid = validatePassword(formData.password);
+          if (!emailValid || !passwordValid) {
+            setLoading(false);
+            return;
+          }
         }
         setStep(3);
       } else if (step === 3) {
@@ -198,99 +204,122 @@ export default function StartPage() {
     setLoading(true);
     
     try {
-      // 1. Sign up with Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
-        options: {
-          data: {
-            username: formData.username.trim(),
+      const hasEmail = formData.email.trim().length > 0;
+      
+      if (hasEmail) {
+        // Create full Supabase account with email/password
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: formData.email.trim().toLowerCase(),
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              username: formData.username.trim(),
+            },
           },
-        },
-      });
+        });
 
-      if (authError) {
-        if (authError.message.includes('already registered')) {
-          setErrors(prev => ({ ...prev, email: 'Email already registered' }));
-          setStep(2);
-        } else {
-          toast.error(authError.message);
+        if (authError) {
+          if (authError.message.includes('already registered')) {
+            setErrors(prev => ({ ...prev, email: 'Email already registered' }));
+            setStep(2);
+          } else {
+            toast.error(authError.message);
+          }
+          return;
         }
-        return;
-      }
 
-      if (!authData.user) {
-        toast.error('Something went wrong');
-        return;
-      }
+        if (!authData.user) {
+          toast.error('Something went wrong');
+          return;
+        }
 
-      // 2. Update the profile with username and region
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          username: formData.username.trim(),
-          region: formData.region || null,
-          onboarding_completed: true,
-          rules_accepted: true,
-        })
-        .eq('id', authData.user.id);
+        // Update profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            username: formData.username.trim(),
+            region: formData.region || null,
+            onboarding_completed: true,
+            rules_accepted: true,
+          })
+          .eq('id', authData.user.id);
 
-      if (profileError) {
-        console.error('Profile update error:', profileError);
-      }
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
 
-      // 3. If judge role, we can add a flag or redirect to judge application
-      // For now, all users start as editors
-
-      // 4. Handle invite code redemption
-      if (formData.inviteCode && codeInfo) {
-        if (codeInfo.type === 'personal') {
-          await supabase.rpc('redeem_invite', {
-            p_code: formData.inviteCode,
-            p_user_id: authData.user.id,
-          });
-        } else if (codeInfo.type === 'crew') {
-          // Auto-join crew
-          const { data: crew } = await supabase
-            .from('crews')
-            .select('id')
-            .ilike('name', formData.inviteCode.replace(/-/g, ' '))
-            .maybeSingle();
-          
-          if (crew) {
-            await supabase.from('crew_members').insert({
-              crew_id: crew.id,
-              user_id: authData.user.id,
-              role: 'member',
+        // Handle invite code redemption
+        if (formData.inviteCode && codeInfo) {
+          if (codeInfo.type === 'personal') {
+            await supabase.rpc('redeem_invite', {
+              p_code: formData.inviteCode,
+              p_user_id: authData.user.id,
             });
+          } else if (codeInfo.type === 'crew') {
+            const { data: crew } = await supabase
+              .from('crews')
+              .select('id')
+              .ilike('name', formData.inviteCode.replace(/-/g, ' '))
+              .maybeSingle();
+            
+            if (crew) {
+              await supabase.from('crew_members').insert({
+                crew_id: crew.id,
+                user_id: authData.user.id,
+                role: 'member',
+              });
+            }
           }
         }
-      }
 
-      // Success!
-      if (codeInfo?.inviterName) {
-        toast.success(`Welcome, ${formData.username}!`, {
-          description: `Invited by ${codeInfo.inviterName}`,
-        });
-      } else if (codeInfo?.crewName) {
-        toast.success(`Welcome, ${formData.username}!`, {
-          description: `Joined ${codeInfo.crewName}`,
-        });
-      } else {
-        toast.success(`Welcome to Loopgate, ${formData.username}!`);
-      }
+        // Success toast
+        showSuccessToast();
 
-      // Navigate based on role
-      if (formData.role === 'judge') {
-        navigate('/judge-application');
+        // Navigate based on role
+        if (formData.role === 'judge') {
+          navigate('/judge-application');
+        } else {
+          navigate('/hub');
+        }
       } else {
-        navigate('/hub');
+        // Create temp profile (no email - username-first flow)
+        setTempProfile({
+          username: formData.username.trim(),
+          region: formData.region || undefined,
+          role: formData.role || 'editor',
+          inviteCode: formData.inviteCode || undefined,
+        });
+
+        // Success toast
+        showSuccessToast();
+
+        // Navigate based on role
+        if (formData.role === 'judge') {
+          navigate('/judge-application');
+        } else {
+          navigate('/hub');
+        }
       }
     } catch (err) {
       console.error('Account creation error:', err);
       toast.error('Failed to create account');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const showSuccessToast = () => {
+    if (codeInfo?.inviterName) {
+      toast.success(`Welcome, ${formData.username}!`, {
+        description: `Invited by ${codeInfo.inviterName}`,
+      });
+    } else if (codeInfo?.crewName) {
+      toast.success(`Welcome, ${formData.username}!`, {
+        description: `Joined ${codeInfo.crewName}`,
+      });
+    } else {
+      toast.success(`Welcome to Loopgate, ${formData.username}!`);
     }
   };
 
@@ -303,9 +332,18 @@ export default function StartPage() {
   const canProceed = () => {
     if (step === 0) return !!formData.role;
     if (step === 1) return formData.username.trim().length >= 3;
-    if (step === 2) return formData.email.trim().length > 0 && formData.password.length >= 6;
+    if (step === 2) {
+      // If email is provided, password is required
+      if (formData.email.trim()) {
+        return formData.password.length >= 6;
+      }
+      return true; // Can skip email entirely
+    }
     return true;
   };
+
+  const isEmailStep = step === 2;
+  const hasEmail = formData.email.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-hidden">
@@ -489,10 +527,10 @@ export default function StartPage() {
             </motion.div>
           )}
 
-          {/* Step 2: Email & Password */}
+          {/* Step 2: Optional Email & Password */}
           {step === 2 && (
             <motion.div
-              key="account"
+              key="email"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -501,14 +539,21 @@ export default function StartPage() {
             >
               <div className="text-center mb-10">
                 <h1 className="font-display text-4xl sm:text-5xl tracking-tight mb-3">
-                  SECURE YOUR ACCOUNT
+                  LOCK IT IN?
                 </h1>
                 <p className="text-muted-foreground">
-                  Lock in your progress and identity
+                  Add email to save progress across devices
                 </p>
               </div>
 
               <div className="space-y-4">
+                {/* Optional badge */}
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <span className="px-3 py-1 rounded-full bg-surface-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Optional
+                  </span>
+                </div>
+
                 <div className="space-y-2">
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -535,37 +580,54 @@ export default function StartPage() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => {
-                        setFormData(prev => ({ ...prev, password: e.target.value }));
-                        setErrors(prev => ({ ...prev, password: '' }));
-                      }}
-                      placeholder="Password"
-                      className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg rounded-xl"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                {/* Only show password if email is entered */}
+                <AnimatePresence>
+                  {hasEmail && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-2 overflow-hidden"
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <motion.p
-                      initial={{ opacity: 0, y: -4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-destructive pl-1"
-                    >
-                      {errors.password}
-                    </motion.p>
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          value={formData.password}
+                          onChange={(e) => {
+                            setFormData(prev => ({ ...prev, password: e.target.value }));
+                            setErrors(prev => ({ ...prev, password: '' }));
+                          }}
+                          placeholder="Password (6+ characters)"
+                          className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg rounded-xl"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        </button>
+                      </div>
+                      {errors.password && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-sm text-destructive pl-1"
+                        >
+                          {errors.password}
+                        </motion.p>
+                      )}
+                    </motion.div>
                   )}
-                </div>
+                </AnimatePresence>
+
+                {/* Skip hint */}
+                {!hasEmail && (
+                  <p className="text-center text-sm text-muted-foreground mt-4">
+                    Skip for now — you can add email later
+                  </p>
+                )}
               </div>
             </motion.div>
           )}
@@ -590,6 +652,13 @@ export default function StartPage() {
               </div>
 
               <div className="space-y-6">
+                {/* Optional badge */}
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="px-3 py-1 rounded-full bg-surface-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Optional
+                  </span>
+                </div>
+
                 <div className="space-y-2">
                   <div className="relative">
                     <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -658,7 +727,12 @@ export default function StartPage() {
             {loading ? (
               <div className="h-5 w-5 border-2 border-gold-foreground/30 border-t-gold-foreground rounded-full animate-spin" />
             ) : step === 3 ? (
-              'CREATE ACCOUNT'
+              <>
+                <Sparkles className="mr-2 h-5 w-5" />
+                LET'S GO
+              </>
+            ) : isEmailStep && !hasEmail ? (
+              'SKIP'
             ) : (
               <>
                 CONTINUE
