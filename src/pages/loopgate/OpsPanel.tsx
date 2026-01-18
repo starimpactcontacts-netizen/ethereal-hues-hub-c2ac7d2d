@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel } from "lucide-react";
 import OpenArenaForm, { getDefaultOpenArenaConfig } from "@/components/loopgate/OpenArenaForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -274,6 +274,7 @@ export default function OpsPanel() {
   const [banningUserId, setBanningUserId] = useState<string | null>(null);
   const [banReason, setBanReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [userJudgeRoles, setUserJudgeRoles] = useState<Set<string>>(new Set());
 
   // Shop management state
   const [shopItems, setShopItems] = useState<ShopItem[]>([]);
@@ -603,6 +604,16 @@ export default function OpsPanel() {
       
       if (usersData) {
         setUsers(usersData);
+        
+        // Fetch judge roles for all users
+        const { data: judgeRolesData } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'judge');
+        
+        if (judgeRolesData) {
+          setUserJudgeRoles(new Set(judgeRolesData.map(r => r.user_id)));
+        }
       }
 
       // Fetch shop items
@@ -1621,6 +1632,44 @@ export default function OpsPanel() {
     } catch (error) {
       console.error('Error updating user:', error);
       toast.error('Failed to update user');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleToggleJudge(userId: string, makeJudge: boolean) {
+    setActionLoading(true);
+    try {
+      if (makeJudge) {
+        // Add judge role
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: 'judge' });
+        
+        if (error) {
+          if (error.code === '23505') {
+            toast.info('User is already a judge');
+          } else {
+            throw error;
+          }
+        } else {
+          toast.success('User is now a QOI Judge!');
+        }
+      } else {
+        // Remove judge role
+        const { error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId)
+          .eq('role', 'judge');
+        
+        if (error) throw error;
+        toast.success('Judge role removed');
+      }
+      fetchData();
+    } catch (error) {
+      console.error('Error updating judge role:', error);
+      toast.error('Failed to update judge role');
     } finally {
       setActionLoading(false);
     }
@@ -3484,12 +3533,14 @@ export default function OpsPanel() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-sm">{u.display_name || u.username}</p>
+                      {userJudgeRoles.has(u.id) && <Badge className="bg-gold text-black text-[9px]">JUDGE</Badge>}
                       {u.is_banned && <Badge variant="destructive" className="text-[9px]">BANNED</Badge>}
                       {u.is_hidden && <Badge className="bg-orange-500 text-[9px]">HIDDEN</Badge>}
                     </div>
                     <p className="text-[10px] text-muted-foreground">@{u.username}</p>
                   </div>
                   <div className="flex gap-1">
+                    <button onClick={() => handleToggleJudge(u.id, !userJudgeRoles.has(u.id))} disabled={actionLoading} className={`p-2 rounded-lg ${userJudgeRoles.has(u.id) ? 'bg-gold text-black' : 'bg-surface-1 text-gold'}`} title={userJudgeRoles.has(u.id) ? 'Remove Judge' : 'Make Judge'}><Gavel size={14} /></button>
                     <button onClick={() => handleToggleHidden(u.id, !u.is_hidden)} disabled={actionLoading} className={`p-2 rounded-lg ${u.is_hidden ? 'bg-orange-500 text-white' : 'bg-surface-1'}`} title={u.is_hidden ? 'Unhide' : 'Hide'}><EyeOff size={14} /></button>
                     <button onClick={() => u.is_banned ? handleBanUser(u.id, false) : setBanningUserId(u.id)} disabled={actionLoading} className={`p-2 rounded-lg ${u.is_banned ? 'bg-destructive text-white' : 'bg-surface-1 text-destructive'}`} title={u.is_banned ? 'Unban' : 'Ban'}><Ban size={14} /></button>
                   </div>
