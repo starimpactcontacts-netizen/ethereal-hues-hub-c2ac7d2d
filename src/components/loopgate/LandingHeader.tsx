@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import { Button } from '@/components/ui/button';
 
 const navLinks = [
-  { to: '/auth', label: 'Login' },
+  { to: '/start', label: 'Login' },
   { to: '/rules', label: 'Rules' },
   { to: '/privacy', label: 'Privacy' },
   { to: '/support', label: 'Support' },

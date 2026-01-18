@@ -15,7 +15,7 @@ export default function BottomNav() {
 
   const handleSignIn = () => {
     clearGuest();
-    navigate("/auth");
+    navigate("/start");
   };
 
   const handleArenaClick = () => {

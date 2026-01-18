@@ -128,7 +128,7 @@ export default function HouseDetailPage() {
 
   async function handleApply() {
     if (!user) {
-      navigate("/auth");
+      navigate("/start");
       return;
     }
 

@@ -701,7 +701,7 @@ export default function GQTPage() {
           
           <div className="space-y-3 pt-4">
             <Button 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/start')}
               className="w-full bg-gold hover:bg-gold/90 text-background font-display h-14 text-lg"
             >
               <LogIn className="w-5 h-5 mr-2" />

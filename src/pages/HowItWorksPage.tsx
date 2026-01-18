@@ -149,7 +149,7 @@ export default function HowItWorksPage() {
         <section className="text-center py-12 border-t border-border">
           <h2 className="font-display text-3xl mb-4">Ready to Start?</h2>
           <p className="text-muted-foreground mb-8">Create your profile and enter your first competition.</p>
-          <Link to="/auth">
+          <Link to="/start">
             <Button size="lg" className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl px-8 py-6 h-auto">
               Get Started
               <ArrowRight className="ml-2 h-5 w-5" />

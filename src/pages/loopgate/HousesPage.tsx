@@ -140,7 +140,7 @@ export default function HousesPage() {
   async function handleApply(houseId: string) {
     if (!user) {
       toast.error("Sign in to apply");
-      navigate("/auth");
+      navigate("/start");
       return;
     }
 

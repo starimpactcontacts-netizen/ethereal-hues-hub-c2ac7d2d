@@ -51,8 +51,8 @@ export default function ProtectedRoute({
     if (allowGuest || tempProfile || isGuest) {
       return <>{children}</>;
     }
-    // Otherwise redirect to auth
-    return <Navigate to="/auth" replace />;
+    // Otherwise redirect to start
+    return <Navigate to="/start" replace />;
   }
   
   // Dev account (dev@loopgate.io) bypasses ALL onboarding - App Store review account

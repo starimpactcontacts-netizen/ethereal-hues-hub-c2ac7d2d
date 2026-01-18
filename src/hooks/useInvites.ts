@@ -133,7 +133,7 @@ export function useInvites() {
   };
 
   const shareInvite = async (code: string) => {
-    const shareUrl = `${window.location.origin}/auth?invite=${code}`;
+    const shareUrl = `${window.location.origin}/start?invite=${code}`;
     const shareText = `Join me on Loopgate and compete in editing events! Use my invite code: ${code}`;
     
     if (navigator.share) {

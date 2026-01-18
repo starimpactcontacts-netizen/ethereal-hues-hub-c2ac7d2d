@@ -169,7 +169,7 @@ export default function LandingPage() {
                     <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Editors Competing</p>
                     <p className="font-display text-3xl">{stats.totalCompeting}</p>
                   </div>
-                  <Link to="/auth">
+                  <Link to="/start">
                     <Button className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg">
                       <Play className="mr-2 h-4 w-4" />
                       View Event
@@ -187,7 +187,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="font-display text-4xl">Global Rankings</h2>
-            <Link to="/auth" className="text-gold hover:text-gold/80 text-sm font-semibold uppercase tracking-widest">
+            <Link to="/start" className="text-gold hover:text-gold/80 text-sm font-semibold uppercase tracking-widest">
               View All →
             </Link>
           </div>
@@ -277,7 +277,7 @@ export default function LandingPage() {
                   viewport={{ once: true }}
                   transition={{ delay: 0.5 }}
                 >
-                  <Link to="/auth">
+                  <Link to="/start">
                     <Button className="bg-gold hover:bg-gold/90 text-gold-foreground font-display">
                       Claim Your Rank
                       <ArrowRight className="ml-2 h-4 w-4" />
@@ -444,7 +444,7 @@ export default function LandingPage() {
           <p className="text-lg text-muted-foreground mb-10">
             Create your editor profile and join the global competition.
           </p>
-          <Link to="/auth">
+          <Link to="/start">
             <Button size="lg" className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl px-8 py-6 h-auto">
               Create Your Profile
               <ArrowRight className="ml-2 h-5 w-5" />
