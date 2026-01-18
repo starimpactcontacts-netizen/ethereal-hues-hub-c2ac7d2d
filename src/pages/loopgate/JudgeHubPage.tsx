@@ -423,86 +423,85 @@ export default function JudgeHubPage() {
         </div>
       </div>
 
-      {/* Featured Judges Hero Section */}
+      {/* Featured Judges - Horizontal Scroll */}
       {featuredJudges.length > 0 && (
-        <div className="px-4 py-4">
-          <div className="flex items-center gap-2 mb-3">
+        <div className="py-4">
+          <div className="flex items-center gap-2 mb-3 px-4">
             <Crown className="w-4 h-4 text-gold" />
             <h2 className="font-display text-sm tracking-wide">HOT THIS WEEK</h2>
           </div>
           
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4">
             {featuredJudges.map((judge, index) => (
               <motion.button
                 key={judge.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => handleJudgeSelect(judge)}
-                className={`relative overflow-hidden rounded-xl border transition-all ${
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate(`/judge/${judge.username}`)}
+                className={`relative flex-shrink-0 w-[160px] overflow-hidden rounded-2xl transition-all ${
                   index === 0 
-                    ? 'bg-gradient-to-br from-gold/20 via-surface-1 to-amber-500/10 border-gold/50' 
-                    : 'bg-surface-1 border-border hover:border-gold/30'
+                    ? 'bg-gradient-to-br from-gold/30 via-black to-amber-900/20 ring-2 ring-gold/60 shadow-xl shadow-gold/20' 
+                    : 'bg-gradient-to-br from-surface-1 to-black ring-1 ring-border hover:ring-gold/40'
                 }`}
               >
-                {/* Rank badge */}
-                <div className={`absolute top-2 left-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                {/* Top rank strip */}
+                <div className={`absolute top-0 left-0 right-0 h-6 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider ${
                   index === 0 ? 'bg-gold text-black' : 
-                  index === 1 ? 'bg-zinc-400 text-black' : 
-                  'bg-amber-700 text-white'
+                  index === 1 ? 'bg-zinc-600 text-white' : 
+                  'bg-amber-800 text-white'
                 }`}>
-                  {index + 1}
+                  {index === 0 && <Flame size={10} />}
+                  #{index + 1} Judge
                 </div>
                 
-                {/* Glow for #1 */}
-                {index === 0 && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-gold/10 to-transparent pointer-events-none" />
-                )}
-                
-                <div className="p-3 pt-8 text-center">
-                  {/* Avatar */}
-                  <div className="relative mx-auto mb-2">
+                <div className="pt-8 pb-4 px-3">
+                  {/* Avatar with glow */}
+                  <div className="relative mx-auto mb-3 w-16 h-16">
+                    {index === 0 && (
+                      <div className="absolute inset-0 bg-gold/40 rounded-full blur-xl animate-pulse" />
+                    )}
                     {judge.avatar_url ? (
                       <img 
                         src={judge.avatar_url} 
                         alt={judge.username}
-                        className={`w-14 h-14 rounded-full object-cover mx-auto border-2 ${
-                          index === 0 ? 'border-gold shadow-lg shadow-gold/30' : 'border-border'
+                        className={`relative w-16 h-16 rounded-full object-cover border-2 ${
+                          index === 0 ? 'border-gold' : 'border-border'
                         }`}
                       />
                     ) : (
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto border-2 ${
+                      <div className={`relative w-16 h-16 rounded-full flex items-center justify-center border-2 ${
                         index === 0 ? 'bg-gold/20 border-gold' : 'bg-surface-2 border-border'
                       }`}>
-                        <span className={`text-lg font-bold ${index === 0 ? 'text-gold' : 'text-muted-foreground'}`}>
+                        <span className={`text-xl font-bold ${index === 0 ? 'text-gold' : 'text-muted-foreground'}`}>
                           {(judge.display_name || judge.username).charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
-                    {/* Level badge */}
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-                      <LevelBadge level={judge.level} size="xs" />
-                    </div>
                   </div>
                   
                   {/* Name */}
-                  <p className="font-medium text-xs truncate mb-0.5">
+                  <p className="font-display text-sm truncate text-center mb-1">
                     {judge.display_name || judge.username}
                   </p>
                   
-                  {/* Weekly count */}
-                  <div className="flex items-center justify-center gap-1">
-                    <Flame size={10} className="text-orange-400" />
-                    <span className="text-[10px] text-orange-400 font-medium">
-                      {judge.thisWeek} this week
-                    </span>
+                  {/* Stats row */}
+                  <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Flame size={10} className="text-orange-400" />
+                      <span className="text-orange-400 font-medium">{judge.thisWeek}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Star size={10} className="text-gold" />
+                      <span>{judge.avgScore.toFixed(0)}</span>
+                    </div>
                   </div>
                   
-                  {/* Badge if exists */}
+                  {/* Badge */}
                   {judge.judge_badge && JUDGE_BADGES[judge.judge_badge] && (
-                    <div className="mt-1.5">
+                    <div className="mt-2 flex justify-center">
                       <JudgeBadge badge={JUDGE_BADGES[judge.judge_badge]} size="sm" showTooltip={false} animate={false} />
                     </div>
                   )}
