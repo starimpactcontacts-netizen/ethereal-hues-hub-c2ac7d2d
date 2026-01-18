@@ -45,7 +45,7 @@ export default function StartPage() {
     // Check if username is taken
     const { data, error } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, email')
       .ilike('username', name)
       .maybeSingle();
 
@@ -55,6 +55,12 @@ export default function StartPage() {
     }
 
     if (data) {
+      // Check if this user has an email (verified account)
+      if (data.email) {
+        setUsernameError('Account exists — use email to log in');
+        return false;
+      }
+      // Username taken but no email (shouldn't happen, but handle it)
       setUsernameError('Username is taken');
       return false;
     }
