@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins } from "lucide-react";
+import { ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins, Copy, Link2, Calendar, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
+import CrewBadge from "@/components/loopgate/CrewBadge";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -261,6 +263,20 @@ export default function CrewDetailPage() {
   const isStaff = myRole === "owner" || myRole === "officer";
   const isOwner = myRole === "owner";
 
+  // Get owner profile
+  const owner = members.find(m => m.role === 'owner');
+  const crewSlug = crew?.name?.toLowerCase().replace(/\s+/g, '-') || '';
+  const publicLink = `loopgate.io/join/${crewSlug}`;
+
+  const copyLink = async () => {
+    const fullLink = `${window.location.origin}/join/${crewSlug}?crew=${crewId}`;
+    await navigator.clipboard.writeText(fullLink);
+    toast.success("Link copied!");
+  };
+
+  // Sort members by XP for leaderboard
+  const membersByXP = [...members].sort((a, b) => (b.profile?.xp || 0) - (a.profile?.xp || 0));
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background">
@@ -282,25 +298,57 @@ export default function CrewDetailPage() {
         </div>
 
         <div className="px-4 py-6 space-y-6">
-          {/* Crew Header */}
-          <div className="text-center">
-            <div className="w-20 h-20 mx-auto rounded-full overflow-hidden border-2 border-gold bg-gold/10 flex items-center justify-center text-gold mb-4">
-              {crew.avatar_url ? (
-                <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
-              ) : (
-                emblemIcons[crew.emblem] || <Shield className="w-12 h-12" />
-              )}
+          {/* Crew Header with Banner */}
+          <div className="relative">
+            {/* Banner placeholder */}
+            <div className="h-24 bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-border rounded-lg" />
+            
+            {/* Avatar overlapping banner */}
+            <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-background bg-gold/10 flex items-center justify-center text-gold shadow-lg">
+                {crew.avatar_url ? (
+                  <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+                ) : (
+                  emblemIcons[crew.emblem] || <Shield className="w-10 h-10" />
+                )}
+              </div>
             </div>
-            <h2 className="text-xl font-bold">{crew.name}</h2>
-            <p className="text-sm text-muted-foreground mt-1">
+          </div>
+          
+          {/* Crew Info - below avatar */}
+          <div className="text-center pt-8">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h2 className="font-display text-2xl">{crew.name}</h2>
+              <CrewBadge crew={{ id: crew.id, name: crew.name, emblem: crew.emblem, avatar_url: crew.avatar_url }} size="sm" clickable={false} />
+            </div>
+            
+            {/* Owner */}
+            {owner?.profile && (
+              <p className="text-xs text-muted-foreground mb-2">
+                Owner: <span className="text-foreground">@{owner.profile.username}</span>
+              </p>
+            )}
+            
+            <p className="text-sm text-muted-foreground">
               {crew.description || "No description"}
             </p>
+            
+            {/* Public Link */}
+            <button 
+              onClick={copyLink}
+              className="flex items-center gap-2 mx-auto mt-3 px-3 py-1.5 bg-surface-1 border border-border rounded-lg hover:border-gold/50 transition-colors group"
+            >
+              <Link2 className="w-3 h-3 text-muted-foreground group-hover:text-gold" />
+              <span className="text-xs font-mono text-muted-foreground group-hover:text-foreground">{publicLink}</span>
+              <Copy className="w-3 h-3 text-muted-foreground group-hover:text-gold" />
+            </button>
+            
             <div className="flex items-center justify-center gap-3 mt-3">
               <span className="text-xs text-muted-foreground">
                 {crew.member_count} members
               </span>
               <span
-                className={`text-[9px] font-semibold uppercase tracking-wider border px-2 py-0.5 ${
+                className={`text-[9px] font-semibold uppercase tracking-wider border px-2 py-0.5 rounded ${
                   leagueColors[crew.min_league]
                 }`}
               >
@@ -311,21 +359,21 @@ export default function CrewDetailPage() {
 
           {/* Crew Stats */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-muted/30 border border-border p-3 text-center">
+            <div className="bg-surface-1 border border-border p-3 text-center rounded-lg">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <TrendingUp className="w-4 h-4 text-gold" />
               </div>
               <p className="font-display text-xl text-gold">{crewStats.crewLevel}</p>
               <p className="text-[10px] text-muted-foreground uppercase">Crew Level</p>
             </div>
-            <div className="bg-muted/30 border border-border p-3 text-center">
+            <div className="bg-surface-1 border border-border p-3 text-center rounded-lg">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Zap className="w-4 h-4 text-gold" />
               </div>
               <p className="font-display text-xl">{crewStats.totalXP.toLocaleString()}</p>
               <p className="text-[10px] text-muted-foreground uppercase">Total XP</p>
             </div>
-            <div className="bg-muted/30 border border-border p-3 text-center">
+            <div className="bg-surface-1 border border-border p-3 text-center rounded-lg">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Coins className="w-4 h-4 text-gold" />
               </div>
@@ -426,16 +474,74 @@ export default function CrewDetailPage() {
             </section>
           )}
 
-          {/* Members */}
+          {/* XP Leaderboard */}
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-gold" />
+              Top Members (XP)
+            </h3>
+            <div className="space-y-2">
+              {membersByXP.slice(0, 5).map((member, index) => (
+                <div
+                  key={member.id}
+                  className="p-3 bg-surface-1 border border-border rounded-lg flex items-center gap-3"
+                >
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    index === 0 ? 'bg-gold text-background' : 
+                    index === 1 ? 'bg-gray-400 text-background' : 
+                    index === 2 ? 'bg-amber-600 text-background' : 
+                    'bg-surface-2 text-muted-foreground'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={member.profile?.avatar_url || undefined} />
+                    <AvatarFallback>
+                      {(member.profile?.username || "?")[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">
+                      {member.profile?.display_name || member.profile?.username}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-gold">{(member.profile?.xp || 0).toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">XP</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Crew Events Placeholder */}
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Crew Challenges
+            </h3>
+            <div className="p-6 bg-surface-1 border border-dashed border-border rounded-lg text-center">
+              <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
+                <Trophy className="w-6 h-6 text-gold/50" />
+              </div>
+              <h4 className="font-display text-lg text-muted-foreground mb-1">CREW-ONLY CHALLENGES</h4>
+              <p className="text-xs text-muted-foreground mb-3">Coming Soon</p>
+              <p className="text-[10px] text-muted-foreground/60 max-w-xs mx-auto">
+                Exclusive challenges for {crew.name} members. Compete together, earn crew XP, and climb the leaderboard.
+              </p>
+            </div>
+          </section>
+
+          {/* All Members */}
           <section>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Members ({members.length})
+              All Members ({members.length})
             </h3>
             <div className="space-y-2">
               {members.map((member) => (
                 <div
                   key={member.id}
-                  className="p-3 bg-muted/30 border border-border rounded-lg flex items-center gap-3"
+                  className="p-3 bg-surface-1 border border-border rounded-lg flex items-center gap-3"
                 >
                   <Avatar className="w-10 h-10">
                     <AvatarImage src={member.profile?.avatar_url || undefined} />
@@ -452,7 +558,11 @@ export default function CrewDetailPage() {
                         {roleLabels[member.role]}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">@{member.profile?.username}</p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>@{member.profile?.username}</span>
+                      <span>•</span>
+                      <span className="text-gold">{(member.profile?.xp || 0).toLocaleString()} XP</span>
+                    </div>
                   </div>
                   {/* Owner controls */}
                   {isOwner && member.role !== "owner" && (

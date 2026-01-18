@@ -5,13 +5,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import PageTransition from "@/components/loopgate/PageTransition";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowRight, Check } from "lucide-react";
+import { Users, ArrowRight, Check, Zap, UserPlus } from "lucide-react";
 
 export default function JoinCrewPage() {
   const { crewSlug } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   
   const via = searchParams.get("via");
   const crewId = searchParams.get("crew");
@@ -51,11 +51,64 @@ export default function JoinCrewPage() {
     setLoading(false);
   };
 
+  const awardXPAndPostFeed = async (userId: string, crewName: string, crewIdToUse: string, referrerUsername?: string) => {
+    // Award XP to the joiner (15 XP for joining crew)
+    await supabase.rpc('award_xp', {
+      p_user_id: userId,
+      p_amount: 15,
+      p_action: 'join_crew',
+      p_description: `Joined ${crewName}`,
+    });
+
+    // If there's a referrer (via), find them and award XP
+    if (referrerUsername) {
+      const { data: referrer } = await supabase
+        .from("profiles")
+        .select("id, avatar_url")
+        .eq("username", referrerUsername)
+        .single();
+
+      if (referrer) {
+        // Award 50 XP to the referrer for successful recruit
+        await supabase.rpc('award_xp', {
+          p_user_id: referrer.id,
+          p_amount: 50,
+          p_action: 'crew_recruit',
+          p_description: `Recruited member to ${crewName}`,
+        });
+      }
+    }
+
+    // Post to activity feed
+    const { data: joinerProfile } = await supabase
+      .from("profiles")
+      .select("username, display_name, avatar_url")
+      .eq("id", userId)
+      .single();
+
+    if (joinerProfile) {
+      await supabase.from("activity_feed").insert({
+        activity_type: "crew_join",
+        user_id: userId,
+        username: joinerProfile.username,
+        avatar_url: joinerProfile.avatar_url,
+        title: `Joined ${crewName}`,
+        description: referrerUsername ? `via @${referrerUsername}'s invite link` : "Joined the crew",
+        data: {
+          crew_id: crewIdToUse,
+          crew_name: crewName,
+          referrer: referrerUsername || null,
+        },
+      });
+    }
+  };
+
   const handleJoin = async () => {
     if (!user) {
       // Store invite info and redirect to start
       localStorage.setItem("pending_crew_invite", JSON.stringify({
         crewId: crew?.id,
+        crewName: crew?.name,
         via,
       }));
       navigate(`/start?redirect=/join/${crewSlug}?via=${via}&crew=${crew?.id}`);
@@ -67,7 +120,37 @@ export default function JoinCrewPage() {
     setJoining(true);
 
     try {
+      // Check if already a member
+      const { data: existingMember } = await supabase
+        .from("crew_members")
+        .select("id")
+        .eq("crew_id", crew.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existingMember) {
+        toast.error("You're already in this crew");
+        navigate(`/crews/${crew.id}`);
+        setJoining(false);
+        return;
+      }
+
       if (crew.join_type === "invite_only") {
+        // Check for existing pending request
+        const { data: existingRequest } = await supabase
+          .from("crew_join_requests")
+          .select("id")
+          .eq("crew_id", crew.id)
+          .eq("user_id", user.id)
+          .eq("status", "pending")
+          .maybeSingle();
+
+        if (existingRequest) {
+          toast.error("You already have a pending request");
+          setJoining(false);
+          return;
+        }
+
         // Create join request
         const { error } = await supabase.from("crew_join_requests").insert({
           crew_id: crew.id,
@@ -75,11 +158,7 @@ export default function JoinCrewPage() {
         });
 
         if (error) {
-          if (error.code === "23505") {
-            toast.error("You already have a pending request");
-          } else {
-            toast.error("Failed to send request");
-          }
+          toast.error("Failed to send request");
         } else {
           toast.success("Request sent! Crew owner will review it.");
           setJoined(true);
@@ -93,13 +172,14 @@ export default function JoinCrewPage() {
         });
 
         if (error) {
-          if (error.code === "23505") {
-            toast.error("You're already in this crew");
-          } else {
-            toast.error("Failed to join crew");
-          }
+          toast.error("Failed to join crew");
         } else {
-          toast.success(`Welcome to ${crew.name}!`);
+          // Award XP and post to feed
+          await awardXPAndPostFeed(user.id, crew.name, crew.id, via || undefined);
+          
+          toast.success(`Welcome to ${crew.name}!`, {
+            description: "+15 XP for joining",
+          });
           setJoined(true);
           
           // Navigate to crew page after delay
@@ -170,6 +250,32 @@ export default function JoinCrewPage() {
             </div>
           </div>
 
+          {/* XP Rewards info */}
+          {!joined && (
+            <div className="grid grid-cols-2 gap-3 py-2">
+              <div className="flex items-center gap-2 p-3 bg-surface-1 border border-border rounded-lg">
+                <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center">
+                  <UserPlus className="w-4 h-4 text-gold" />
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-semibold">You Get</p>
+                  <p className="text-xs text-gold">+15 XP</p>
+                </div>
+              </div>
+              {via && (
+                <div className="flex items-center gap-2 p-3 bg-surface-1 border border-border rounded-lg">
+                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-gold" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-xs font-semibold">@{via} Gets</p>
+                    <p className="text-xs text-gold">+50 XP</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Join Button */}
           {joined ? (
             <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-lg">
@@ -203,12 +309,6 @@ export default function JoinCrewPage() {
                 </>
               )}
             </Button>
-          )}
-
-          {via && !joined && (
-            <p className="text-xs text-muted-foreground">
-              @{via} will earn XP when you join
-            </p>
           )}
         </div>
       </div>
