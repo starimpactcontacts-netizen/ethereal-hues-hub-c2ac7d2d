@@ -16,6 +16,7 @@ import LevelBadge from '@/components/loopgate/LevelBadge';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
 import BottomNav from '@/components/loopgate/BottomNav';
 import RequestJudgeReviewModal from '@/components/loopgate/RequestJudgeReviewModal';
+import JudgeBadge, { JUDGE_BADGES } from '@/components/loopgate/JudgeBadge';
 
 interface JudgeProfile {
   id: string;
@@ -26,6 +27,7 @@ interface JudgeProfile {
   level: number;
   xp: number;
   verification_status: boolean;
+  judge_badge: string | null;
   totalReviews: number;
   avgScore: number;
   thisWeek: number;
@@ -100,12 +102,14 @@ function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge:
           </div>
           <p className="text-xs text-muted-foreground mb-2">@{judge.username}</p>
           
-          {/* Vibe tag */}
-          {judge.vibe && (
+          {/* Badge */}
+          {judge.judge_badge && JUDGE_BADGES[judge.judge_badge] ? (
+            <JudgeBadge badge={JUDGE_BADGES[judge.judge_badge]} size="sm" showTooltip={false} animate={false} />
+          ) : judge.vibe ? (
             <Badge variant="outline" className="text-[10px] mb-2 border-gold/30 text-gold">
               {judge.vibe}
             </Badge>
-          )}
+          ) : null}
 
           {/* Stats row */}
           <div className="flex items-center gap-3 text-[10px]">
@@ -278,7 +282,7 @@ export default function JudgeHubPage() {
       // Get judge profiles
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, bio, level, xp, verification_status')
+        .select('id, username, display_name, avatar_url, bio, level, xp, verification_status, judge_badge')
         .in('id', judgeIds);
 
       if (!profiles) {
@@ -311,8 +315,6 @@ export default function JudgeHubPage() {
           totalReviews: judgeReviews.length,
           avgScore,
           thisWeek: weeklyReviews.length,
-          // Assign random vibe for now (could be stored in profile later)
-          vibe: JUDGE_VIBES[Math.floor(Math.random() * JUDGE_VIBES.length)],
         };
       });
 

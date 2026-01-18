@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
+import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection";
 
 interface RealEvent {
   id: string;
@@ -3491,6 +3492,9 @@ export default function OpsPanel() {
             ))}
           </div>
         </section>
+
+        {/* Judge Badge Management */}
+        <JudgeManagementSection />
 
         {/* Shop Management */}
         <section>

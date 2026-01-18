@@ -867,6 +867,30 @@ export type Database = {
           },
         ]
       }
+      judge_badges: {
+        Row: {
+          color: string
+          description: string | null
+          emoji: string
+          id: string
+          label: string
+        }
+        Insert: {
+          color?: string
+          description?: string | null
+          emoji: string
+          id: string
+          label: string
+        }
+        Update: {
+          color?: string
+          description?: string | null
+          emoji?: string
+          id?: string
+          label?: string
+        }
+        Relationships: []
+      }
       login_streaks: {
         Row: {
           current_streak: number
@@ -956,11 +980,15 @@ export type Database = {
           is_banned: boolean
           is_founding_member: boolean | null
           is_hidden: boolean
+          judge_badge: string | null
+          judge_bio: string | null
+          judge_specialty: string | null
           league: Database["public"]["Enums"]["league_tier"]
           level: number
           onboarding_completed: boolean | null
           portfolio_url: string | null
           region: string | null
+          review_style: string | null
           rules_accepted: boolean | null
           software: string[] | null
           spendable_index: number
@@ -995,11 +1023,15 @@ export type Database = {
           is_banned?: boolean
           is_founding_member?: boolean | null
           is_hidden?: boolean
+          judge_badge?: string | null
+          judge_bio?: string | null
+          judge_specialty?: string | null
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           region?: string | null
+          review_style?: string | null
           rules_accepted?: boolean | null
           software?: string[] | null
           spendable_index?: number
@@ -1034,11 +1066,15 @@ export type Database = {
           is_banned?: boolean
           is_founding_member?: boolean | null
           is_hidden?: boolean
+          judge_badge?: string | null
+          judge_bio?: string | null
+          judge_specialty?: string | null
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           region?: string | null
+          review_style?: string | null
           rules_accepted?: boolean | null
           software?: string[] | null
           spendable_index?: number
@@ -1192,6 +1228,27 @@ export type Database = {
           updated_at?: string
           user_id?: string
           username?: string
+        }
+        Relationships: []
+      }
+      review_styles: {
+        Row: {
+          description: string | null
+          id: string
+          label: string
+          pillars: Json
+        }
+        Insert: {
+          description?: string | null
+          id: string
+          label: string
+          pillars?: Json
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          label?: string
+          pillars?: Json
         }
         Relationships: []
       }
