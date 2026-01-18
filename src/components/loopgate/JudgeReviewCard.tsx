@@ -16,7 +16,8 @@ export type CardDisplayFormat =
   | 'full'           // Grade + Score + Breakdown
   | 'score-only'     // Just the score (60/100)
   | 'class-only'     // Just the grade (B)
-  | 'compact';       // Grade + Score (no breakdown)
+  | 'compact'        // Grade + Score (no breakdown)
+  | 'verdict';       // Grade + Score + Comment (no breakdown)
 
 interface JudgeReviewCardProps {
   editorUsername: string;
@@ -164,11 +165,13 @@ const JudgeReviewCard = forwardRef<HTMLDivElement, JudgeReviewCardProps>(({
   const showGrade = displayFormat !== 'score-only';
   const showScore = displayFormat !== 'class-only';
   const showBreakdown = displayFormat === 'full';
-  const showComment = displayFormat === 'full' && comment;
+  const showComment = (displayFormat === 'full' || displayFormat === 'verdict') && comment;
 
   // Adjust width based on format
-  const cardWidth = displayFormat === 'class-only' || displayFormat === 'score-only' 
+  const cardWidth = displayFormat === 'class-only' || displayFormat === 'score-only'
     ? 'w-[280px]' 
+    : displayFormat === 'compact'
+    ? 'w-[320px]'
     : 'w-[400px]';
 
   return (
