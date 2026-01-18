@@ -33,13 +33,13 @@ const SCORING_MODES = [
   { id: 'tier_only' as const, label: 'Tier', desc: 'S-F only' },
 ];
 
-// Score pillars for full mode
+// Score pillars for full mode (matching JudgeReviewCard: 15+25+25+10+25=100)
 const PILLARS = [
-  { id: 'emotion', label: 'Emotion', max: 20, icon: Heart, color: 'text-pink-400' },
+  { id: 'emotion', label: 'Emotion', max: 15, icon: Heart, color: 'text-pink-400' },
   { id: 'creativity', label: 'Creativity', max: 25, icon: Lightbulb, color: 'text-yellow-400' },
   { id: 'sync', label: 'Sync', max: 25, icon: Music, color: 'text-purple-400' },
   { id: 'identity', label: 'Identity', max: 10, icon: Fingerprint, color: 'text-blue-400' },
-  { id: 'execution', label: 'Execution', max: 20, icon: Zap, color: 'text-green-400' },
+  { id: 'execution', label: 'Execution', max: 25, icon: Zap, color: 'text-green-400' },
 ];
 
 const TIERS = ['S', 'A', 'B', 'C', 'D', 'F'] as const;
@@ -59,11 +59,11 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
   
   const [mode, setMode] = useState<ScoringMode>('full');
   const [scores, setScores] = useState({
-    emotion: 10,
+    emotion: 8,
     creativity: 15,
     sync: 15,
     identity: 5,
-    execution: 12,
+    execution: 15,
   });
   const [vibesScore, setVibesScore] = useState(70);
   const [selectedTier, setSelectedTier] = useState<string>('B');
@@ -140,18 +140,23 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
 
       toast.success(`Review submitted! Score: ${totalScore}/100`);
 
-      // Store data for export modal
+      // Store data for export modal - ensure all scores have defaults for card display
+      const emotionFinal = mode === 'full' ? scores.emotion : Math.round(totalScore * 0.15);
+      const creativityFinal = mode === 'full' ? scores.creativity : Math.round(totalScore * 0.25);
+      const syncFinal = mode === 'full' || mode === 'two_pillar' ? scores.sync : Math.round(totalScore * 0.25);
+      const identityFinal = mode === 'full' ? scores.identity : Math.round(totalScore * 0.10);
+      const executionFinal = mode === 'full' || mode === 'two_pillar' ? scores.execution : Math.round(totalScore * 0.25);
+
       setCompletedReviewData({
         editorUsername: request.username,
-        editorAvatarUrl: request.avatar_url,
         judgeUsername: profile.username,
         judgeAvatarUrl: profile.avatar_url,
         totalScore,
-        emotionScore: mode === 'full' ? scores.emotion : null,
-        creativityScore: mode === 'full' ? scores.creativity : null,
-        syncScore: mode === 'full' || mode === 'two_pillar' ? scores.sync : null,
-        identityScore: mode === 'full' ? scores.identity : null,
-        executionScore: mode === 'full' || mode === 'two_pillar' ? scores.execution : null,
+        emotionScore: emotionFinal,
+        creativityScore: creativityFinal,
+        syncScore: syncFinal,
+        identityScore: identityFinal,
+        executionScore: executionFinal,
         comment,
       });
 
