@@ -166,11 +166,11 @@ export default function AppHeader() {
                   </Link>
                 </SheetClose>
 
-                {/* QOI Judge Panel - judges and devs only */}
-                {(isJudge || isDev) && (
+                {/* Judge Panel - judges, devs, and admins */}
+                {(isJudge || isDev || isAdmin) && (
                   <SheetClose asChild>
                     <Link
-                      to="/ops-panel/a7c92ff31b"
+                      to="/judge-panel"
                       className="flex items-center gap-3 px-4 py-3 text-gold hover:bg-gold/10 transition-colors"
                     >
                       <Shield className="w-5 h-5" />

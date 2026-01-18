@@ -36,6 +36,7 @@ import JoinCrewPage from "./pages/loopgate/JoinCrewPage";
 import JudgeProfilePage from "./pages/loopgate/JudgeProfilePage";
 import JudgeLeaderboardPage from "./pages/loopgate/JudgeLeaderboardPage";
 import JudgeHubPage from "./pages/loopgate/JudgeHubPage";
+import JudgePanelPage from "./pages/loopgate/JudgePanelPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -279,7 +280,14 @@ export default function App() {
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             
-            {/* Hidden secure ops panel - requires judge/dev/admin role */}
+            {/* Judge Panel - requires judge/dev/admin role */}
+            <Route path="/judge-panel" element={
+              <ProtectedRoute requireJudge={true}>
+                <JudgePanelPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin Ops Panel - requires admin/dev role ONLY (NOT judges) */}
             <Route path="/ops-panel/a7c92ff31b" element={
               <ProtectedRoute requireOpsAccess={true}>
                 <OpsPanel />
