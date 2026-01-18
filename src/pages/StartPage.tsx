@@ -761,10 +761,8 @@ export default function StartPage() {
             ) : step === 3 ? (
               <>
                 <Sparkles className="mr-2 h-5 w-5" />
-                LET'S GO
+                CREATE ACCOUNT
               </>
-            ) : isEmailStep && !hasEmail ? (
-              'SKIP'
             ) : (
               <>
                 CONTINUE
