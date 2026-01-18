@@ -10,8 +10,8 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
-import HouseBadge from "@/components/loopgate/houses/HouseBadge";
-import HouseAvatarRing from "@/components/loopgate/houses/HouseAvatarRing";
+import CrewBadge from "@/components/loopgate/CrewBadge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
@@ -330,13 +330,13 @@ export default function IndexPage() {
                       onClick={() => navigate(`/editor/${editor.id}`)}
                       className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-3 text-left hover:scale-[1.005] transition-transform active:scale-[0.995]`}
                     >
-                      {/* Avatar with House Ring */}
-                      <HouseAvatarRing 
-                        house={editor.house} 
-                        size="sm"
-                        avatarUrl={editor.avatar_url}
-                        username={editor.username}
-                      />
+                      {/* Avatar */}
+                      <Avatar className="w-10 h-10 border-2 border-border">
+                        <AvatarImage src={editor.avatar_url || undefined} />
+                        <AvatarFallback className="bg-surface-1 text-xs">
+                          {editor.username[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       
                       {/* Rank */}
                       <div className="w-12 text-center">
@@ -367,7 +367,7 @@ export default function IndexPage() {
                         <div className="flex items-center gap-2 text-[9px] text-muted-foreground uppercase tracking-wider flex-wrap">
                           <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
                           <span>{editor.total_events || 0} Events</span>
-                          {editor.house && <HouseBadge house={editor.house} size="sm" />}
+                          {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
                         </div>
                       </div>
 
