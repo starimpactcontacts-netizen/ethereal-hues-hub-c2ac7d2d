@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import JudgeReviewCard, { CardTemplate } from './JudgeReviewCard';
+import JudgeReviewCard, { CardTemplate, CardDisplayFormat } from './JudgeReviewCard';
 
 interface JudgeCardExportProps {
   isOpen: boolean;
@@ -33,8 +33,16 @@ const TEMPLATES: { id: CardTemplate; label: string; preview: string }[] = [
   { id: 'clean-white', label: 'Clean White', preview: '⬜' },
 ];
 
+const DISPLAY_FORMATS: { id: CardDisplayFormat; label: string; description: string }[] = [
+  { id: 'full', label: 'Full', description: 'Grade + Score + Breakdown' },
+  { id: 'compact', label: 'Compact', description: 'Grade + Score only' },
+  { id: 'score-only', label: 'Score Only', description: 'Just 60/100' },
+  { id: 'class-only', label: 'Class Only', description: 'Just the grade' },
+];
+
 export default function JudgeCardExport({ isOpen, onClose, data, onSubmitToEditor }: JudgeCardExportProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<CardTemplate>('dark-minimal');
+  const [selectedFormat, setSelectedFormat] = useState<CardDisplayFormat>('full');
   const [downloading, setDownloading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -124,21 +132,42 @@ export default function JudgeCardExport({ isOpen, onClose, data, onSubmitToEdito
         </DialogHeader>
 
         {/* Template Selection */}
-        <div className="mb-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Select Template</p>
+        <div className="mb-3">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Template</p>
           <div className="grid grid-cols-3 gap-2">
             {TEMPLATES.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setSelectedTemplate(t.id)}
-                className={`p-3 rounded-lg border-2 transition-all text-center ${
+                className={`p-2 rounded-lg border-2 transition-all text-center ${
                   selectedTemplate === t.id
                     ? 'border-gold bg-gold/10'
                     : 'border-border hover:border-border/80 bg-surface-0'
                 }`}
               >
-                <span className="text-xl">{t.preview}</span>
-                <p className="text-xs mt-1 text-muted-foreground">{t.label}</p>
+                <span className="text-lg">{t.preview}</span>
+                <p className="text-[10px] mt-0.5 text-muted-foreground">{t.label}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Display Format Selection */}
+        <div className="mb-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Display Format</p>
+          <div className="grid grid-cols-2 gap-2">
+            {DISPLAY_FORMATS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setSelectedFormat(f.id)}
+                className={`p-2 rounded-lg border-2 transition-all text-left ${
+                  selectedFormat === f.id
+                    ? 'border-gold bg-gold/10'
+                    : 'border-border hover:border-border/80 bg-surface-0'
+                }`}
+              >
+                <p className="text-sm font-medium text-foreground">{f.label}</p>
+                <p className="text-[10px] text-muted-foreground">{f.description}</p>
               </button>
             ))}
           </div>
@@ -150,6 +179,7 @@ export default function JudgeCardExport({ isOpen, onClose, data, onSubmitToEdito
             ref={cardRef}
             {...data}
             template={selectedTemplate}
+            displayFormat={selectedFormat}
           />
         </div>
 
