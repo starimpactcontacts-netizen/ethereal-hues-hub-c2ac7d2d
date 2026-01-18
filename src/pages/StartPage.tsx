@@ -34,7 +34,7 @@ interface FormData {
 const STEPS = [
   { id: 'role', title: 'Choose Your Path' },
   { id: 'username', title: 'Claim Your Name' },
-  { id: 'email', title: 'Add Email' },
+  { id: 'account', title: 'Secure Account' },
   { id: 'invite', title: 'Got an Invite?' },
 ];
 
@@ -151,7 +151,7 @@ export default function StartPage() {
   };
 
   const validatePassword = (password: string): boolean => {
-    if (!formData.email) return true; // No password needed without email
+    // Password is ALWAYS required for account creation
     if (password.length < 6) {
       setErrors(prev => ({ ...prev, password: 'At least 6 characters' }));
       return false;
@@ -181,11 +181,15 @@ export default function StartPage() {
         }
         setStep(2);
       } else if (step === 2) {
-        // Optional Email/Password - validate if provided
+        // Password is required, email is optional
+        const passwordValid = validatePassword(formData.password);
+        if (!passwordValid) {
+          setLoading(false);
+          return;
+        }
         if (formData.email) {
           const emailValid = validateEmail(formData.email.trim());
-          const passwordValid = validatePassword(formData.password);
-          if (!emailValid || !passwordValid) {
+          if (!emailValid) {
             setLoading(false);
             return;
           }
@@ -207,7 +211,7 @@ export default function StartPage() {
       const hasEmail = formData.email.trim().length > 0;
       
       if (hasEmail) {
-        // Create full Supabase account with email/password
+        // Create Supabase account with email/password
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
@@ -235,77 +239,121 @@ export default function StartPage() {
         }
 
         // Update profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            username: formData.username.trim(),
-            region: formData.region || null,
-            onboarding_completed: true,
-            rules_accepted: true,
-          })
-          .eq('id', authData.user.id);
-
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-        }
-
-        // Handle invite code redemption
-        if (formData.inviteCode && codeInfo) {
-          if (codeInfo.type === 'personal') {
-            await supabase.rpc('redeem_invite', {
-              p_code: formData.inviteCode,
-              p_user_id: authData.user.id,
-            });
-          } else if (codeInfo.type === 'crew') {
-            const { data: crew } = await supabase
-              .from('crews')
-              .select('id')
-              .ilike('name', formData.inviteCode.replace(/-/g, ' '))
-              .maybeSingle();
-            
-            if (crew) {
-              await supabase.from('crew_members').insert({
-                crew_id: crew.id,
-                user_id: authData.user.id,
-                role: 'member',
-              });
-            }
-          }
-        }
-
-        // Success toast
-        showSuccessToast();
-
-        // Navigate based on role
-        if (formData.role === 'judge') {
-          navigate('/judge-application');
-        } else {
-          navigate('/hub');
-        }
+        await updateProfileAndRedeem(authData.user.id);
       } else {
-        // Create temp profile (no email - username-first flow)
-        setTempProfile({
-          username: formData.username.trim(),
-          region: formData.region || undefined,
-          role: formData.role || 'editor',
-          inviteCode: formData.inviteCode || undefined,
+        // No email - create anonymous account with password stored as username auth
+        // Generate a unique placeholder email for auth purposes
+        const placeholderEmail = `${formData.username.trim().toLowerCase()}@loopgate.local`;
+        
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: placeholderEmail,
+          password: formData.password,
+          options: {
+            data: {
+              username: formData.username.trim(),
+              is_username_only: true,
+            },
+          },
         });
 
-        // Success toast
-        showSuccessToast();
-
-        // Navigate based on role
-        if (formData.role === 'judge') {
-          navigate('/judge-application');
-        } else {
-          navigate('/hub');
+        if (authError) {
+          // If placeholder email somehow exists, add random suffix
+          if (authError.message.includes('already registered')) {
+            const suffix = Math.random().toString(36).substring(2, 8);
+            const altEmail = `${formData.username.trim().toLowerCase()}_${suffix}@loopgate.local`;
+            
+            const { data: retryData, error: retryError } = await supabase.auth.signUp({
+              email: altEmail,
+              password: formData.password,
+              options: {
+                data: {
+                  username: formData.username.trim(),
+                  is_username_only: true,
+                },
+              },
+            });
+            
+            if (retryError) {
+              toast.error('Failed to create account');
+              return;
+            }
+            
+            if (!retryData.user) {
+              toast.error('Something went wrong');
+              return;
+            }
+            
+            await updateProfileAndRedeem(retryData.user.id);
+            return;
+          }
+          
+          toast.error(authError.message);
+          return;
         }
+
+        if (!authData.user) {
+          toast.error('Something went wrong');
+          return;
+        }
+
+        await updateProfileAndRedeem(authData.user.id);
       }
     } catch (err) {
       console.error('Account creation error:', err);
       toast.error('Failed to create account');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateProfileAndRedeem = async (userId: string) => {
+    // Update profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        username: formData.username.trim(),
+        region: formData.region || null,
+        onboarding_completed: true,
+        rules_accepted: true,
+      })
+      .eq('id', userId);
+
+    if (profileError) {
+      console.error('Profile update error:', profileError);
+    }
+
+    // Handle invite code redemption
+    if (formData.inviteCode && codeInfo) {
+      if (codeInfo.type === 'personal') {
+        await supabase.rpc('redeem_invite', {
+          p_code: formData.inviteCode,
+          p_user_id: userId,
+        });
+      } else if (codeInfo.type === 'crew') {
+        const { data: crew } = await supabase
+          .from('crews')
+          .select('id')
+          .ilike('name', formData.inviteCode.replace(/-/g, ' '))
+          .maybeSingle();
+        
+        if (crew) {
+          await supabase.from('crew_members').insert({
+            crew_id: crew.id,
+            user_id: userId,
+            role: 'member',
+          });
+        }
+      }
+    }
+
+    // Success toast
+    showSuccessToast();
+
+    // Navigate based on role
+    if (formData.role === 'judge') {
+      navigate('/judge-application');
+    } else {
+      navigate('/hub');
     }
   };
 
@@ -333,11 +381,8 @@ export default function StartPage() {
     if (step === 0) return !!formData.role;
     if (step === 1) return formData.username.trim().length >= 3;
     if (step === 2) {
-      // If email is provided, password is required
-      if (formData.email.trim()) {
-        return formData.password.length >= 6;
-      }
-      return true; // Can skip email entirely
+      // Password is always required, email is optional
+      return formData.password.length >= 6;
     }
     return true;
   };
@@ -527,10 +572,10 @@ export default function StartPage() {
             </motion.div>
           )}
 
-          {/* Step 2: Optional Email & Password */}
+          {/* Step 2: Password + Optional Email */}
           {step === 2 && (
             <motion.div
-              key="email"
+              key="account"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -539,22 +584,56 @@ export default function StartPage() {
             >
               <div className="text-center mb-10">
                 <h1 className="font-display text-4xl sm:text-5xl tracking-tight mb-3">
-                  LOCK IT IN?
+                  SECURE YOUR ACCOUNT
                 </h1>
                 <p className="text-muted-foreground">
-                  Add email to save progress across devices
+                  Create a password to protect your profile
                 </p>
               </div>
 
               <div className="space-y-4">
-                {/* Optional badge */}
-                <div className="flex items-center justify-center gap-2 mb-6">
-                  <span className="px-3 py-1 rounded-full bg-surface-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Optional
-                  </span>
+                {/* Password - REQUIRED */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-widest pl-1">
+                    Password <span className="text-gold">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => {
+                        setFormData(prev => ({ ...prev, password: e.target.value }));
+                        setErrors(prev => ({ ...prev, password: '' }));
+                      }}
+                      placeholder="6+ characters"
+                      className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg rounded-xl"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-sm text-destructive pl-1"
+                    >
+                      {errors.password}
+                    </motion.p>
+                  )}
                 </div>
 
+                {/* Email - OPTIONAL */}
                 <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-widest pl-1">
+                    Email <span className="text-muted-foreground/60">(optional)</span>
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
@@ -564,9 +643,8 @@ export default function StartPage() {
                         setFormData(prev => ({ ...prev, email: e.target.value }));
                         setErrors(prev => ({ ...prev, email: '' }));
                       }}
-                      placeholder="Email address"
+                      placeholder="For login across devices"
                       className="pl-12 h-14 bg-surface-1 border-border text-lg rounded-xl"
-                      autoFocus
                     />
                   </div>
                   {errors.email && (
@@ -578,56 +656,10 @@ export default function StartPage() {
                       {errors.email}
                     </motion.p>
                   )}
-                </div>
-
-                {/* Only show password if email is entered */}
-                <AnimatePresence>
-                  {hasEmail && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-2 overflow-hidden"
-                    >
-                      <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <Input
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={(e) => {
-                            setFormData(prev => ({ ...prev, password: e.target.value }));
-                            setErrors(prev => ({ ...prev, password: '' }));
-                          }}
-                          placeholder="Password (6+ characters)"
-                          className="pl-12 pr-12 h-14 bg-surface-1 border-border text-lg rounded-xl"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
-                      </div>
-                      {errors.password && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-sm text-destructive pl-1"
-                        >
-                          {errors.password}
-                        </motion.p>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Skip hint */}
-                {!hasEmail && (
-                  <p className="text-center text-sm text-muted-foreground mt-4">
-                    Skip for now — you can add email later
+                  <p className="text-xs text-muted-foreground pl-1">
+                    Add email to recover your account & sync across devices
                   </p>
-                )}
+                </div>
               </div>
             </motion.div>
           )}
