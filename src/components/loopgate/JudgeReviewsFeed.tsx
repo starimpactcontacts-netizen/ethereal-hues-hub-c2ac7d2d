@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, ChevronLeft, ChevronRight, Star, ExternalLink, X, Play } from 'lucide-react';
+import { Flame, ChevronLeft, ChevronRight, Star, ExternalLink, X, Play, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useThumbnail } from '@/hooks/useThumbnail';
 import { formatDistanceToNow } from 'date-fns';
@@ -341,9 +342,9 @@ export default function JudgeReviewsFeed() {
             <Flame className="w-4 h-4 text-orange-400" />
             <h2 className="font-display text-sm tracking-wide">REVIEWS</h2>
           </div>
-          <span className="text-xs text-muted-foreground">
-            {reviews.length} recent
-          </span>
+          <Link to="/judges" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+            ALL JUDGES <ArrowRight size={10} />
+          </Link>
         </div>
 
         {/* Carousel */}
