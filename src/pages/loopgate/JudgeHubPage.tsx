@@ -349,9 +349,9 @@ export default function JudgeHubPage() {
       }
     });
 
-  // Get featured judges for hero section
+  // Get featured judges - top 3 most active this week
   const featuredJudges = [...judges]
-    .sort((a, b) => b.totalReviews - a.totalReviews)
+    .sort((a, b) => b.thisWeek - a.thisWeek || b.totalReviews - a.totalReviews)
     .slice(0, 3);
 
   const handleJudgeSelect = (judge: JudgeProfile) => {
@@ -423,7 +423,97 @@ export default function JudgeHubPage() {
         </div>
       </div>
 
-      {/* Live Reviews Feed - Featured Section */}
+      {/* Featured Judges Hero Section */}
+      {featuredJudges.length > 0 && (
+        <div className="px-4 py-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Crown className="w-4 h-4 text-gold" />
+            <h2 className="font-display text-sm tracking-wide">HOT THIS WEEK</h2>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2">
+            {featuredJudges.map((judge, index) => (
+              <motion.button
+                key={judge.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => handleJudgeSelect(judge)}
+                className={`relative overflow-hidden rounded-xl border transition-all ${
+                  index === 0 
+                    ? 'bg-gradient-to-br from-gold/20 via-surface-1 to-amber-500/10 border-gold/50' 
+                    : 'bg-surface-1 border-border hover:border-gold/30'
+                }`}
+              >
+                {/* Rank badge */}
+                <div className={`absolute top-2 left-2 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                  index === 0 ? 'bg-gold text-black' : 
+                  index === 1 ? 'bg-zinc-400 text-black' : 
+                  'bg-amber-700 text-white'
+                }`}>
+                  {index + 1}
+                </div>
+                
+                {/* Glow for #1 */}
+                {index === 0 && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-gold/10 to-transparent pointer-events-none" />
+                )}
+                
+                <div className="p-3 pt-8 text-center">
+                  {/* Avatar */}
+                  <div className="relative mx-auto mb-2">
+                    {judge.avatar_url ? (
+                      <img 
+                        src={judge.avatar_url} 
+                        alt={judge.username}
+                        className={`w-14 h-14 rounded-full object-cover mx-auto border-2 ${
+                          index === 0 ? 'border-gold shadow-lg shadow-gold/30' : 'border-border'
+                        }`}
+                      />
+                    ) : (
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center mx-auto border-2 ${
+                        index === 0 ? 'bg-gold/20 border-gold' : 'bg-surface-2 border-border'
+                      }`}>
+                        <span className={`text-lg font-bold ${index === 0 ? 'text-gold' : 'text-muted-foreground'}`}>
+                          {(judge.display_name || judge.username).charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    {/* Level badge */}
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                      <LevelBadge level={judge.level} size="xs" />
+                    </div>
+                  </div>
+                  
+                  {/* Name */}
+                  <p className="font-medium text-xs truncate mb-0.5">
+                    {judge.display_name || judge.username}
+                  </p>
+                  
+                  {/* Weekly count */}
+                  <div className="flex items-center justify-center gap-1">
+                    <Flame size={10} className="text-orange-400" />
+                    <span className="text-[10px] text-orange-400 font-medium">
+                      {judge.thisWeek} this week
+                    </span>
+                  </div>
+                  
+                  {/* Badge if exists */}
+                  {judge.judge_badge && JUDGE_BADGES[judge.judge_badge] && (
+                    <div className="mt-1.5">
+                      <JudgeBadge badge={JUDGE_BADGES[judge.judge_badge]} size="sm" showTooltip={false} animate={false} />
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Live Reviews Feed */}
       <JudgeReviewsFeed />
 
       {/* Search & Filters */}
