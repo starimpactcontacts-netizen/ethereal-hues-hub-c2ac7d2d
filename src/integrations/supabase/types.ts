@@ -867,6 +867,78 @@ export type Database = {
           },
         ]
       }
+      judge_applications: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          experience_years: string | null
+          id: string
+          motivation: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          specialty: string | null
+          status: string
+          test_accuracy: number | null
+          test_edit_1_baseline: number | null
+          test_edit_1_score: number | null
+          test_edit_2_baseline: number | null
+          test_edit_2_score: number | null
+          test_edit_3_baseline: number | null
+          test_edit_3_score: number | null
+          updated_at: string
+          user_id: string
+          video_platform: string
+          video_url: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          experience_years?: string | null
+          id?: string
+          motivation?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          specialty?: string | null
+          status?: string
+          test_accuracy?: number | null
+          test_edit_1_baseline?: number | null
+          test_edit_1_score?: number | null
+          test_edit_2_baseline?: number | null
+          test_edit_2_score?: number | null
+          test_edit_3_baseline?: number | null
+          test_edit_3_score?: number | null
+          updated_at?: string
+          user_id: string
+          video_platform: string
+          video_url: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          experience_years?: string | null
+          id?: string
+          motivation?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          specialty?: string | null
+          status?: string
+          test_accuracy?: number | null
+          test_edit_1_baseline?: number | null
+          test_edit_1_score?: number | null
+          test_edit_2_baseline?: number | null
+          test_edit_2_score?: number | null
+          test_edit_3_baseline?: number | null
+          test_edit_3_score?: number | null
+          updated_at?: string
+          user_id?: string
+          video_platform?: string
+          video_url?: string
+        }
+        Relationships: []
+      }
       judge_badges: {
         Row: {
           color: string

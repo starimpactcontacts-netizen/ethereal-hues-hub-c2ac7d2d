@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection";
+import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 
 interface RealEvent {
@@ -3552,6 +3553,15 @@ export default function OpsPanel() {
 
         {/* Judge Badge Management */}
         <JudgeManagementSection />
+
+        {/* Judge Applications */}
+        <section>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4">
+            <Gavel size={14} className="text-gold" />
+            Judge Applications
+          </h2>
+          <JudgeApplicationsSection />
+        </section>
 
         {/* Shop Management */}
         <section>
