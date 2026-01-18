@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import { Gavel, Star, Sparkles, Flame, Zap, Crown, Skull, Award } from 'lucide-react';
+import loopgateLogo from '@/assets/loopgate-logo.png';
 
 // Card template types
 export type CardTemplate = 
@@ -9,6 +10,13 @@ export type CardTemplate =
   | 's-class-gold' 
   | 'f-class-red' 
   | 'clean-white';
+
+// Display format types
+export type CardDisplayFormat = 
+  | 'full'           // Grade + Score + Breakdown
+  | 'score-only'     // Just the score (60/100)
+  | 'class-only'     // Just the grade (B)
+  | 'compact';       // Grade + Score (no breakdown)
 
 interface JudgeReviewCardProps {
   editorUsername: string;
@@ -22,6 +30,7 @@ interface JudgeReviewCardProps {
   executionScore: number;
   comment?: string;
   template: CardTemplate;
+  displayFormat?: CardDisplayFormat;
   className?: string;
 }
 
@@ -54,6 +63,7 @@ const TEMPLATE_STYLES: Record<CardTemplate, {
   gradeBg: string;
   gradeText: string;
   icon: typeof Star;
+  logoFilter?: string;
 }> = {
   'dark-minimal': {
     bg: 'bg-[#0a0a0a]',
@@ -120,6 +130,7 @@ const TEMPLATE_STYLES: Record<CardTemplate, {
     gradeBg: 'bg-black',
     gradeText: 'text-white',
     icon: Sparkles,
+    logoFilter: 'invert(1)',
   },
 };
 
@@ -135,6 +146,7 @@ const JudgeReviewCard = forwardRef<HTMLDivElement, JudgeReviewCardProps>(({
   executionScore,
   comment,
   template,
+  displayFormat = 'full',
   className = '',
 }, ref) => {
   const style = TEMPLATE_STYLES[template];
@@ -149,21 +161,34 @@ const JudgeReviewCard = forwardRef<HTMLDivElement, JudgeReviewCardProps>(({
     execution: executionScore,
   };
 
+  const showGrade = displayFormat !== 'score-only';
+  const showScore = displayFormat !== 'class-only';
+  const showBreakdown = displayFormat === 'full';
+  const showComment = displayFormat === 'full' && comment;
+
+  // Adjust width based on format
+  const cardWidth = displayFormat === 'class-only' || displayFormat === 'score-only' 
+    ? 'w-[280px]' 
+    : 'w-[400px]';
+
   return (
     <div
       ref={ref}
-      className={`${style.bg} ${style.border} border-2 rounded-2xl p-6 w-[400px] ${className}`}
+      className={`${style.bg} ${style.border} border-2 rounded-2xl p-6 ${cardWidth} ${className}`}
       style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
-      {/* Header - Loopgate branding */}
+      {/* Header - Loopgate branding with LOGO */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-lg ${style.pillBg} flex items-center justify-center`}>
-            <Gavel className={`w-4 h-4 ${style.accent}`} />
-          </div>
+          <img 
+            src={loopgateLogo} 
+            alt="Loopgate"
+            className="w-8 h-8 object-contain"
+            style={{ filter: style.logoFilter }}
+          />
           <div>
             <p className={`text-xs font-bold uppercase tracking-widest ${style.muted}`}>
-              LOOPGATE REVIEW
+              LOOPGATE
             </p>
           </div>
         </div>
@@ -171,51 +196,57 @@ const JudgeReviewCard = forwardRef<HTMLDivElement, JudgeReviewCardProps>(({
       </div>
 
       {/* Grade - Big and prominent */}
-      <div className="text-center mb-6">
-        <div className={`inline-block ${style.gradeBg} px-8 py-3 rounded-xl`}>
-          <p className={`text-5xl font-black ${style.gradeText}`} style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-            {grade}
+      {showGrade && (
+        <div className="text-center mb-4">
+          <div className={`inline-block ${style.gradeBg} px-8 py-3 rounded-xl`}>
+            <p className={`text-5xl font-black ${style.gradeText}`} style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+              {grade}
+            </p>
+          </div>
+          <p className={`text-xs mt-2 font-bold uppercase tracking-widest ${style.muted}`}>
+            {label}
           </p>
         </div>
-        <p className={`text-xs mt-2 font-bold uppercase tracking-widest ${style.muted}`}>
-          {label}
-        </p>
-      </div>
+      )}
 
       {/* Total Score */}
-      <div className="text-center mb-4">
-        <p className={`text-6xl font-black ${style.text}`} style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-          {totalScore}
-        </p>
-        <p className={`text-sm ${style.muted}`}>/ 100</p>
-      </div>
+      {showScore && (
+        <div className="text-center mb-4">
+          <p className={`${displayFormat === 'score-only' ? 'text-7xl' : 'text-6xl'} font-black ${style.text}`} style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+            {totalScore}
+          </p>
+          <p className={`text-sm ${style.muted}`}>/ 100</p>
+        </div>
+      )}
 
       {/* Score Breakdown */}
-      <div className="space-y-2 mb-4">
-        {SCORE_PILLARS.map((pillar) => {
-          const score = scores[pillar.key as keyof typeof scores];
-          const percentage = (score / pillar.max) * 100;
-          return (
-            <div key={pillar.key} className={`${style.pillBg} rounded-lg px-3 py-2 flex items-center justify-between`}>
-              <span className={`text-xs font-medium uppercase ${style.muted}`}>{pillar.label}</span>
-              <div className="flex items-center gap-2">
-                <div className="w-20 h-1.5 bg-black/20 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full ${style.gradeBg} rounded-full`}
-                    style={{ width: `${percentage}%` }}
-                  />
+      {showBreakdown && (
+        <div className="space-y-2 mb-4">
+          {SCORE_PILLARS.map((pillar) => {
+            const score = scores[pillar.key as keyof typeof scores];
+            const percentage = (score / pillar.max) * 100;
+            return (
+              <div key={pillar.key} className={`${style.pillBg} rounded-lg px-3 py-2 flex items-center justify-between`}>
+                <span className={`text-xs font-medium uppercase ${style.muted}`}>{pillar.label}</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-20 h-1.5 bg-black/20 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${style.gradeBg} rounded-full`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <span className={`text-sm font-bold ${style.text} w-12 text-right`}>
+                    {score}/{pillar.max}
+                  </span>
                 </div>
-                <span className={`text-sm font-bold ${style.text} w-12 text-right`}>
-                  {score}/{pillar.max}
-                </span>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Comment */}
-      {comment && (
+      {showComment && (
         <div className={`${style.pillBg} rounded-lg p-3 mb-4`}>
           <p className={`text-xs italic ${style.text} line-clamp-3`}>
             "{comment}"
