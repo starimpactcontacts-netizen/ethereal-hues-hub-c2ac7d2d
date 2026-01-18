@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Play, Target, Zap, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -7,12 +7,20 @@ import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
 import { useRealRankings, useRealEvents, useGlobalStats } from '@/hooks/useRealData';
 import SEO, { pageSEO } from '@/components/SEO';
+import { useGuestMode } from '@/hooks/useGuestMode';
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+  const { setGuest } = useGuestMode();
   const { rankings, loading: rankingsLoading } = useRealRankings();
   const { events } = useRealEvents();
   const { stats } = useGlobalStats();
   const [bannerVisible, setBannerVisible] = useState(false);
+  
+  const handleGuestExplore = () => {
+    setGuest(true);
+    navigate('/hub');
+  };
   
   // Get top 5 editors from real data
   const topEditors = rankings.slice(0, 5);
@@ -27,7 +35,7 @@ export default function LandingPage() {
       <div className="min-h-screen bg-background text-foreground">
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
-      {/* Hero Section */}
+      {/* Hero Section - Rating Focused */}
       <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-4 overflow-hidden pt-[72px]">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-surface-0 via-background to-background" />
@@ -39,45 +47,37 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold tracking-widest uppercase bg-gold/10 border border-gold/20 text-gold">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              Live Competition
-            </span>
-          </div>
-          
           <h1 className="font-display text-5xl sm:text-7xl md:text-8xl leading-none tracking-tight mb-6">
-            Turn Editing Into<br />
-            <span className="text-gold">A Competitive League</span>
+            Get Your Edit Rated.<br />
+            <span className="text-gold">S++ or F-Tier?</span>
           </h1>
           
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            The global ranking system for video editors. Compete in live events, 
-            climb the index, and prove you're the best.
+            Find out where you rank among the world's best editors.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
             <Link to="/auth">
               <Button size="lg" className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl px-8 py-6 h-auto">
-                Enter Loopgate
+                <Target className="mr-2 h-5 w-5" />
+                Rate My Edit
+              </Button>
+            </Link>
+            <Link to="/gqt">
+              <Button size="lg" variant="outline" className="border-border hover:bg-surface-1 font-display text-xl px-8 py-6 h-auto">
+                Take the QOI Test
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <a 
-              href="https://apps.apple.com/app/loopgate/id6757446330" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-white text-black rounded-lg hover:bg-white/90 transition-colors"
-            >
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
-              <div className="text-left">
-                <p className="text-[10px] leading-none">Download on the</p>
-                <p className="text-sm font-semibold leading-tight">App Store</p>
-              </div>
-            </a>
           </div>
+          
+          {/* Guest explore link */}
+          <button 
+            onClick={handleGuestExplore}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+          >
+            Explore as Guest
+          </button>
         </motion.div>
       </section>
 
@@ -97,9 +97,9 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mb-6">
                 <span className="font-display text-2xl text-gold">01</span>
               </div>
-              <h3 className="font-display text-2xl mb-3">Sign Up</h3>
+              <h3 className="font-display text-2xl mb-3">Submit Your Edit</h3>
               <p className="text-muted-foreground">
-                Create your editor profile and connect your TikTok account to verify your identity.
+                Paste a TikTok, Reels, or YouTube link. No account needed to get rated.
               </p>
             </motion.div>
             
@@ -113,9 +113,9 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mb-6">
                 <span className="font-display text-2xl text-gold">02</span>
               </div>
-              <h3 className="font-display text-2xl mb-3">Submit Edits</h3>
+              <h3 className="font-display text-2xl mb-3">Get Your Score</h3>
               <p className="text-muted-foreground">
-                Enter live competitions by submitting your best edits. Judges score on Quality, Originality, and Impact.
+                QOI Judges rate your edit on Sync, Creativity, Flow, and Impact. See your class rank instantly.
               </p>
             </motion.div>
             
@@ -129,9 +129,9 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mb-6">
                 <span className="font-display text-2xl text-gold">03</span>
               </div>
-              <h3 className="font-display text-2xl mb-3">Rank Globally</h3>
+              <h3 className="font-display text-2xl mb-3">Level Up</h3>
               <p className="text-muted-foreground">
-                Climb the global index, unlock higher leagues, and get discovered by studios worldwide.
+                Save your score, climb the global index, and prove you're S++ tier.
               </p>
             </motion.div>
           </div>
