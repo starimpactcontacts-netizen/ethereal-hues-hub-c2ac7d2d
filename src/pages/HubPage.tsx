@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
-  Users2, Zap, TrendingUp, Star, Coins, ShoppingBag
+  Users2, Zap, TrendingUp, Star, Coins, ShoppingBag, Gavel
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -327,26 +327,28 @@ export default function HubPage() {
           transition={{ delay: 0.3 }}
           className="px-4"
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <Link to="/rankings">
-              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group">
-                <div className="flex items-center justify-between mb-3">
-                  <Trophy className="w-5 h-5 text-gold" />
-                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
-                </div>
-                <p className="font-display text-sm">RANKINGS</p>
-                <p className="text-[9px] text-muted-foreground mt-0.5">Global Index</p>
+              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-3 group h-full">
+                <Trophy className="w-5 h-5 text-gold mb-2" />
+                <p className="font-display text-xs">RANKINGS</p>
+                <p className="text-[8px] text-muted-foreground mt-0.5">Global Index</p>
+              </div>
+            </Link>
+            
+            <Link to="/judges">
+              <div className="bg-gradient-to-br from-purple-500/10 to-surface-1/60 backdrop-blur border border-purple-500/30 hover:border-purple-400/50 transition-colors p-3 group h-full">
+                <Gavel className="w-5 h-5 text-purple-400 mb-2" />
+                <p className="font-display text-xs text-purple-300">QOI JUDGES</p>
+                <p className="text-[8px] text-muted-foreground mt-0.5">Get rated</p>
               </div>
             </Link>
             
             <Link to="/crews">
-              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group">
-                <div className="flex items-center justify-between mb-3">
-                  <Users2 className="w-5 h-5 text-muted-foreground" />
-                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
-                </div>
-                <p className="font-display text-sm">CREWS</p>
-                <p className="text-[9px] text-muted-foreground mt-0.5">Join a team</p>
+              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-3 group h-full">
+                <Users2 className="w-5 h-5 text-muted-foreground mb-2" />
+                <p className="font-display text-xs">CREWS</p>
+                <p className="text-[8px] text-muted-foreground mt-0.5">Join a team</p>
               </div>
             </Link>
           </div>

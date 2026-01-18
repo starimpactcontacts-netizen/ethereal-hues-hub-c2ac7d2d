@@ -492,11 +492,8 @@ export default function ProfilePage() {
               </div>
             </Link>
 
-            {/* Request Review Card */}
-            <button
-              onClick={() => setShowReviewModal(true)}
-              className="group text-left"
-            >
+            {/* QOI Judges Card */}
+            <Link to="/judges" className="group">
               <div className="relative overflow-hidden bg-gradient-to-br from-purple-500/5 to-transparent border border-purple-500/20 rounded-xl p-4 h-full hover:border-purple-500/40 transition-all duration-300">
                 <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-purple-500/10 to-transparent rounded-bl-full" />
                 <div className="relative">
@@ -508,12 +505,12 @@ export default function ProfilePage() {
                   <p className="font-display text-sm leading-tight">Get Rated</p>
                   <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-1">By QOI Judges</p>
                   <div className="flex items-center gap-1 text-purple-400/70 text-[10px] mt-3 group-hover:text-purple-400 transition-colors">
-                    <span>Request</span>
+                    <span>View Judges</span>
                     <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
               </div>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
