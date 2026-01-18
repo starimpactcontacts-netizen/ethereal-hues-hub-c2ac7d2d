@@ -415,51 +415,52 @@ export default function JudgeHubPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleQuickSubmit}
-            className="w-full py-4 bg-gradient-to-r from-gold via-gold to-amber-500 text-black rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-gold/20 mb-6"
+            className="w-full py-4 bg-gradient-to-r from-gold via-gold to-amber-500 text-black rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
           >
             <Send size={16} />
             Request Judge Review
           </motion.button>
-
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search judges by name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-surface-1 border-border"
-            />
-          </div>
-
-          {/* Featured section tabs */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-            {[
-              { id: 'trending' as const, label: 'Trending', icon: Flame },
-              { id: 'top_xp' as const, label: 'Top XP', icon: Crown },
-              { id: 'active' as const, label: 'Most Active', icon: Zap },
-              { id: 'elite' as const, label: 'Elite', icon: Award },
-            ].map((section) => (
-              <button
-                key={section.id}
-                onClick={() => setFeaturedSection(section.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                  featuredSection === section.id
-                    ? 'bg-gold text-black'
-                    : 'bg-surface-1 border border-border text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <section.icon size={12} />
-                {section.label}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
-      {/* Live Reviews Feed */}
-      <div className="border-t border-border bg-surface-1/30">
-        <JudgeReviewsFeed />
+      {/* Live Reviews Feed - Featured Section */}
+      <JudgeReviewsFeed />
+
+      {/* Search & Filters */}
+      <div className="px-4 pb-3">
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search judges by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 bg-surface-1 border-border"
+          />
+        </div>
+
+        {/* Featured section tabs */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+          {[
+            { id: 'trending' as const, label: 'Trending', icon: Flame },
+            { id: 'top_xp' as const, label: 'Top XP', icon: Crown },
+            { id: 'active' as const, label: 'Most Active', icon: Zap },
+            { id: 'elite' as const, label: 'Elite', icon: Award },
+          ].map((section) => (
+            <button
+              key={section.id}
+              onClick={() => setFeaturedSection(section.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                featuredSection === section.id
+                  ? 'bg-gold text-black'
+                  : 'bg-surface-1 border border-border text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <section.icon size={12} />
+              {section.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Judges List */}
