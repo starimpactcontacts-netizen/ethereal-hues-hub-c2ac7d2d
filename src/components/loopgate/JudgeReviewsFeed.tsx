@@ -339,11 +339,7 @@ export default function JudgeReviewsFeed() {
         <div className="flex items-center justify-between mb-3 px-4">
           <div className="flex items-center gap-2">
             <Flame className="w-4 h-4 text-orange-400" />
-            <h2 className="font-display text-sm tracking-wide">LIVE REVIEWS</h2>
-            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 border border-red-500/30 rounded text-[10px] text-red-400">
-              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-              LIVE
-            </div>
+            <h2 className="font-display text-sm tracking-wide">REVIEWS</h2>
           </div>
           <span className="text-xs text-muted-foreground">
             {reviews.length} recent
