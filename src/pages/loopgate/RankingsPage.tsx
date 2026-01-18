@@ -6,8 +6,8 @@ import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } fr
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
+import CrewBadge from "@/components/loopgate/CrewBadge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import HouseAvatarRing from "@/components/loopgate/houses/HouseAvatarRing";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import SEO, { pageSEO } from "@/components/SEO";
 
@@ -317,13 +317,13 @@ export default function RankingsPage() {
                         )}
                       </div>
                       
-                      {/* Avatar with House Ring */}
-                      <HouseAvatarRing 
-                        house={editor.house} 
-                        size="sm"
-                        avatarUrl={editor.avatar_url}
-                        username={editor.username}
-                      />
+                      {/* Avatar */}
+                      <Avatar className="w-8 h-8 border-2 border-border">
+                        <AvatarImage src={editor.avatar_url || undefined} />
+                        <AvatarFallback className="bg-surface-1 text-xs">
+                          {editor.username[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       
                       {/* Info */}
                       <div className="flex-1 min-w-0">

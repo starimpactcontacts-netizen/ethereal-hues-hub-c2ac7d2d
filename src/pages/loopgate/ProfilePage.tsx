@@ -17,8 +17,6 @@ import AddPlatformModal from "@/components/loopgate/AddPlatformModal";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import CrewBadge from "@/components/loopgate/CrewBadge";
-import HouseIdentityStrip from "@/components/loopgate/houses/HouseIdentityStrip";
-import HouseBadge from "@/components/loopgate/houses/HouseBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";

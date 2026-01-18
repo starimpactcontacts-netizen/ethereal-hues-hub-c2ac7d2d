@@ -29,8 +29,6 @@ import CrewDetailPage from "./pages/loopgate/CrewDetailPage";
 import CrewChatPage from "./pages/loopgate/CrewChatPage";
 import CrewSettingsPage from "./pages/loopgate/CrewSettingsPage";
 import ShopPage from "./pages/loopgate/ShopPage";
-import HousesPage from "./pages/loopgate/HousesPage";
-import HouseDetailPage from "./pages/loopgate/HouseDetailPage";
 import FeedPage from "./pages/loopgate/FeedPage";
 import GQTPage from "./pages/loopgate/GQTPage";
 import JoinCrewPage from "./pages/loopgate/JoinCrewPage";
@@ -289,8 +287,6 @@ export default function App() {
               <Route path="/crews/:crewId" element={<CrewDetailPage />} />
               <Route path="/crews/:crewId/chat" element={<CrewChatPage />} />
               <Route path="/crews/:crewId/settings" element={<CrewSettingsPage />} />
-              <Route path="/houses" element={<HousesPage />} />
-              <Route path="/houses/:houseId" element={<HouseDetailPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>

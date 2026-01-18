@@ -5,7 +5,6 @@ import AuthorityBadge from "./AuthorityBadge";
 import FoundingBadge from "./FoundingBadge";
 import CrewBadge from "./CrewBadge";
 import LevelBadge from "./LevelBadge";
-import HouseBadge from "./houses/HouseBadge";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 
 // Get class letter from GQT score or level
@@ -113,9 +112,6 @@ export default function EditorCard({ editor }: EditorCardProps) {
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider flex-wrap">
             <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
             <span>{editor.total_events || 0} Events</span>
-            {editor.house && (
-              <HouseBadge house={editor.house} size="sm" />
-            )}
             {editor.crew && (
               <CrewBadge crew={editor.crew} size="sm" />
             )}
