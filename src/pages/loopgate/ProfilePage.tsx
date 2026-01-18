@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2, Star } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2, Star, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
@@ -30,6 +30,7 @@ import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import InviteFriendsModal from "@/components/loopgate/InviteFriendsModal";
 import RequestReviewModal from "@/components/loopgate/RequestReviewModal";
 import ReviewResultCard from "@/components/loopgate/ReviewResultCard";
+import { getRankFromScore } from "@/data/gqtConfig";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -367,8 +368,40 @@ export default function ProfilePage() {
             )}
           </div>
           
-          {/* Stats Row - TikTok style */}
-          <div className="flex items-center justify-center gap-8 mb-4">
+          {/* Stats Row with Class Badge */}
+          <div className="flex items-center justify-center gap-6 mb-4">
+            {/* Class Badge - Prominent */}
+            {(() => {
+              const bestGQT = (profile as any).best_gatekeeper_qoi;
+              const hasTakenGQT = bestGQT && bestGQT > 0;
+              const rankConfig = hasTakenGQT ? getRankFromScore(bestGQT) : null;
+              const classLetter = rankConfig?.rank || (level >= 2 ? 'D' : 'F');
+              
+              const classColors: Record<string, { text: string; border: string; bg: string; glow?: string }> = {
+                'S++': { text: 'text-gold', border: 'border-gold', bg: 'bg-gold/15', glow: 'shadow-[0_0_20px_rgba(212,175,55,0.4)]' },
+                'S+': { text: 'text-gold', border: 'border-gold/80', bg: 'bg-gold/10', glow: 'shadow-[0_0_15px_rgba(212,175,55,0.3)]' },
+                'S': { text: 'text-amber-400', border: 'border-amber-400', bg: 'bg-amber-400/10' },
+                'A': { text: 'text-emerald-400', border: 'border-emerald-400', bg: 'bg-emerald-400/10' },
+                'B': { text: 'text-blue-400', border: 'border-blue-400', bg: 'bg-blue-400/10' },
+                'C': { text: 'text-slate-300', border: 'border-slate-400/50', bg: 'bg-slate-400/10' },
+                'D': { text: 'text-orange-400', border: 'border-orange-500/40', bg: 'bg-orange-500/10' },
+                'F': { text: hasTakenGQT ? 'text-red-500' : 'text-muted-foreground', border: hasTakenGQT ? 'border-red-500/50' : 'border-border', bg: hasTakenGQT ? 'bg-red-500/10' : 'bg-muted/10' },
+              };
+              
+              const colors = classColors[classLetter] || classColors['F'];
+              
+              return (
+                <Link to="/gqt" className="group">
+                  <div className={`relative flex flex-col items-center justify-center w-16 h-16 rounded-xl border-2 ${colors.border} ${colors.bg} ${colors.glow || ''} transition-all group-hover:scale-105`}>
+                    <Award className={`w-3 h-3 ${colors.text} absolute top-1 right-1 opacity-50`} />
+                    <p className={`font-display text-2xl ${colors.text}`}>{classLetter}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Class</p>
+                  </div>
+                </Link>
+              );
+            })()}
+            
+            {/* Stats */}
             <div className="text-center">
               <p className="font-display text-2xl">{submissions.length}</p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Edits</p>
