@@ -12,6 +12,7 @@ import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
+import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 
 const leagueConfig = {
   cartel: { label: 'CARTEL', icon: Crown, gradient: 'from-gold via-amber-400 to-gold', glow: 'shadow-gold/30' },
@@ -415,6 +416,18 @@ export default function HubPage() {
           
           <ActivityFeed limit={6} compact />
         </div>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          JUDGE ECONOMY - Live Reviews Feed
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.45 }}
+        className="mt-6"
+      >
+        <JudgeReviewsFeed />
       </motion.div>
 
       {/* Invite CTA - Subtle but present */}
