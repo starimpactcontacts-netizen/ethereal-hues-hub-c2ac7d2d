@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, User, MapPin, Camera } from 'lucide-react';
+import { ArrowRight, User, MapPin, Ticket, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,11 +22,64 @@ const REGIONS = [
 
 export default function StartPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setProfile } = useTempProfile();
   const [username, setUsername] = useState('');
   const [region, setRegion] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [usernameError, setUsernameError] = useState('');
+  const [codeInfo, setCodeInfo] = useState<{ type: 'personal' | 'crew'; crewName?: string; inviterName?: string } | null>(null);
+  
+  // Check for invite code in URL params
+  useEffect(() => {
+    const codeFromUrl = searchParams.get('code') || searchParams.get('invite');
+    if (codeFromUrl) {
+      setInviteCode(codeFromUrl.toUpperCase());
+      validateInviteCode(codeFromUrl.toUpperCase());
+    }
+  }, [searchParams]);
+
+  const validateInviteCode = async (code: string) => {
+    if (!code || code.length < 4) {
+      setCodeInfo(null);
+      return;
+    }
+
+    // Check if it's a personal invite code
+    const { data: invite } = await supabase
+      .from('invites')
+      .select('inviter_id, status')
+      .eq('invite_code', code.toUpperCase())
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    if (invite) {
+      // Get inviter username
+      const { data: inviter } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', invite.inviter_id)
+        .single();
+      
+      setCodeInfo({ type: 'personal', inviterName: inviter?.username });
+      return;
+    }
+
+    // Check if it's a crew invite (crew name as code)
+    const { data: crew } = await supabase
+      .from('crews')
+      .select('id, name')
+      .ilike('name', code.replace(/-/g, ' '))
+      .maybeSingle();
+
+    if (crew) {
+      setCodeInfo({ type: 'crew', crewName: crew.name });
+      return;
+    }
+
+    setCodeInfo(null);
+  };
 
   const validateUsername = async (name: string): Promise<boolean> => {
     if (name.length < 3) {
@@ -83,14 +136,39 @@ export default function StartPage() {
       return;
     }
 
-    // Create temp profile
+    // Get pending crew ID if it's a crew code
+    let pendingCrewId: string | undefined;
+    if (codeInfo?.type === 'crew' && inviteCode) {
+      const { data: crew } = await supabase
+        .from('crews')
+        .select('id')
+        .ilike('name', inviteCode.replace(/-/g, ' '))
+        .maybeSingle();
+      pendingCrewId = crew?.id;
+    }
+
+    // Create temp profile with invite code
     setProfile({
       username: username.trim(),
       region: region || undefined,
       createdAt: new Date().toISOString(),
+      inviteCode: inviteCode.trim() || undefined,
+      pendingCrewId,
     });
 
-    toast.success(`Welcome, ${username}!`);
+    // Show welcome message
+    if (codeInfo?.inviterName) {
+      toast.success(`Welcome, ${username}!`, { 
+        description: `Invited by ${codeInfo.inviterName}` 
+      });
+    } else if (codeInfo?.crewName) {
+      toast.success(`Welcome, ${username}!`, { 
+        description: `Joining ${codeInfo.crewName}` 
+      });
+    } else {
+      toast.success(`Welcome, ${username}!`);
+    }
+    
     navigate('/hub');
     setLoading(false);
   };
@@ -164,6 +242,47 @@ export default function StartPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Invite Code (optional) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                Invite Code
+                <span className="text-xs text-muted-foreground/60 normal-case">(optional)</span>
+              </label>
+              <div className="relative">
+                <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  value={inviteCode}
+                  onChange={(e) => {
+                    const code = e.target.value.toUpperCase();
+                    setInviteCode(code);
+                    validateInviteCode(code);
+                  }}
+                  placeholder="Friend or crew code"
+                  className="pl-12 h-14 bg-surface-1 border-border text-lg uppercase"
+                  maxLength={20}
+                />
+              </div>
+              {codeInfo && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 text-sm text-gold"
+                >
+                  {codeInfo.type === 'personal' ? (
+                    <>
+                      <User className="h-4 w-4" />
+                      <span>Invited by {codeInfo.inviterName}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Users className="h-4 w-4" />
+                      <span>Joining {codeInfo.crewName}</span>
+                    </>
+                  )}
+                </motion.div>
+              )}
             </div>
 
             {/* Continue button */}
