@@ -1,6 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
+import { useTempProfile } from '@/hooks/useTempProfile';
+import { useGuestMode } from '@/hooks/useGuestMode';
 import LoadingScreen from './LoadingScreen';
 
 interface ProtectedRouteProps {
@@ -20,6 +22,8 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, profile, loading, isAdmin } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles(user?.id);
+  const { profile: tempProfile } = useTempProfile();
+  const { isGuest } = useGuestMode();
   
   const isEnterprise = roles.includes('enterprise');
   const isDev = roles.includes('dev');
@@ -43,8 +47,8 @@ export default function ProtectedRoute({
   
   // Not authenticated
   if (!user) {
-    // If guest access allowed, let them through
-    if (allowGuest) {
+    // If guest access allowed OR has temp profile OR is guest mode, let them through
+    if (allowGuest || tempProfile || isGuest) {
       return <>{children}</>;
     }
     // Otherwise redirect to auth

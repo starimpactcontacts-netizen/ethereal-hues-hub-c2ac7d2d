@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
+import { useTempProfile } from '@/hooks/useTempProfile';
+import { useGuestMode } from '@/hooks/useGuestMode';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
@@ -27,12 +29,19 @@ const leagueConfig = {
 export default function HubPage() {
   const { profile, user } = useAuth();
   const { isJudge } = useUserRoles(user?.id);
+  const { profile: tempProfile } = useTempProfile();
+  const { isGuest } = useGuestMode();
   const { events } = useRealEvents();
   const { stats } = useGlobalStats();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   
   useActiveSession();
+  
+  // Determine display identity (real profile OR temp profile OR guest)
+  const displayUsername = profile?.username || tempProfile?.username || (isGuest ? 'Guest' : 'EDITOR');
+  const displayAvatar = profile?.avatar_url || tempProfile?.avatarUrl;
+  const isTemporaryUser = !user && (tempProfile || isGuest);
 
   // Fetch judge review count if user is a judge
   useEffect(() => {
@@ -102,11 +111,11 @@ export default function HubPage() {
               <div className="relative">
                 <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow}`}>
                   <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    {displayAvatar ? (
+                      <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <span className="font-display text-xl text-foreground">
-                        {profile?.username?.charAt(0).toUpperCase() || 'E'}
+                        {displayUsername?.charAt(0).toUpperCase() || 'E'}
                       </span>
                     )}
                   </div>
@@ -120,7 +129,7 @@ export default function HubPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="font-display text-2xl text-foreground leading-none">
-                    {profile?.username || 'EDITOR'}
+                    {displayUsername}
                   </h1>
                   {/* Judge Class Badge - Only visible to judges */}
                   {isJudge && (

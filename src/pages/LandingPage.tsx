@@ -57,13 +57,13 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-            <Link to="/auth">
+            <Link to="/start">
               <Button size="lg" className="bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl px-8 py-6 h-auto">
                 <Target className="mr-2 h-5 w-5" />
                 Rate My Edit
               </Button>
             </Link>
-            <Link to="/gqt">
+            <Link to="/start">
               <Button size="lg" variant="outline" className="border-border hover:bg-surface-1 font-display text-xl px-8 py-6 h-auto">
                 Take the QOI Test
                 <ArrowRight className="ml-2 h-5 w-5" />

@@ -48,6 +48,7 @@ import DownloadPage from "./pages/DownloadPage";
 import AppPage from "./pages/AppPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import FAQPage from "./pages/FAQPage";
+import StartPage from "./pages/StartPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -55,6 +56,7 @@ import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
 import ProtectedRoute from "./components/loopgate/ProtectedRoute";
 import DevModeBadge from "./components/loopgate/DevModeBadge";
 import LoadingScreen from "./components/loopgate/LoadingScreen";
+import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import { isNativeApp } from "./lib/native";
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
@@ -94,6 +96,11 @@ function RootRedirect() {
   const { user, profile, loading } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles(user?.id);
   
+  // Import temp profile check
+  const tempProfile = typeof window !== 'undefined' 
+    ? JSON.parse(localStorage.getItem('loopgate-temp-profile') || '{}')?.state?.profile 
+    : null;
+  
   const isEnterprise = roles.includes('enterprise');
   
   // In dev mode, always go to hub immediately
@@ -108,9 +115,13 @@ function RootRedirect() {
   
   // Not logged in
   if (!user) {
-    // Native app: skip landing, go straight to auth
+    // If user has a temp profile, go to hub
+    if (tempProfile) {
+      return <Navigate to="/hub" replace />;
+    }
+    // Native app: skip landing, go straight to start (username-first)
     if (isNativeApp()) {
-      return <Navigate to="/auth" replace />;
+      return <Navigate to="/start" replace />;
     }
     // Web: show landing page
     return <LandingPage />;
@@ -238,6 +249,7 @@ export default function App() {
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/join/:crewSlug" element={<JoinCrewPage />} />
+            <Route path="/start" element={<StartPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
             <Route element={
@@ -300,6 +312,7 @@ export default function App() {
             {/* 404 - public */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <GlobalAccountPrompt />
           <DevModeBadge />
           <Toaster 
             position="top-center" 
