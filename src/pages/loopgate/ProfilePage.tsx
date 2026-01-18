@@ -370,7 +370,7 @@ export default function ProfilePage() {
           
           {/* Stats Row with Class Badge */}
           <div className="flex items-center justify-center gap-6 mb-4">
-            {/* Class Badge - Prominent */}
+            {/* Class Badge - Prominent with Tooltip */}
             {(() => {
               const bestGQT = (profile as any).best_gatekeeper_qoi;
               const hasTakenGQT = bestGQT && bestGQT > 0;
@@ -391,13 +391,54 @@ export default function ProfilePage() {
               const colors = classColors[classLetter] || classColors['F'];
               
               return (
-                <Link to="/gqt" className="group">
-                  <div className={`relative flex flex-col items-center justify-center w-16 h-16 rounded-xl border-2 ${colors.border} ${colors.bg} ${colors.glow || ''} transition-all group-hover:scale-105`}>
-                    <Award className={`w-3 h-3 ${colors.text} absolute top-1 right-1 opacity-50`} />
-                    <p className={`font-display text-2xl ${colors.text}`}>{classLetter}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Class</p>
+                <div className="relative group">
+                  <Link to="/arena" className="block">
+                    <div className={`relative flex flex-col items-center justify-center w-16 h-16 rounded-xl border-2 ${colors.border} ${colors.bg} ${colors.glow || ''} transition-all group-hover:scale-105`}>
+                      <Award className={`w-3 h-3 ${colors.text} absolute top-1 right-1 opacity-50`} />
+                      <p className={`font-display text-2xl ${colors.text}`}>{classLetter}</p>
+                      <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Class</p>
+                    </div>
+                  </Link>
+                  
+                  {/* Tooltip */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-50">
+                    <div className="bg-surface-1 border border-border rounded-lg p-3 shadow-xl min-w-[180px]">
+                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-surface-1 border-l border-t border-border rotate-45" />
+                      
+                      {hasTakenGQT ? (
+                        <>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-muted-foreground">GQT Score</span>
+                            <span className={`font-display text-lg ${colors.text}`}>{bestGQT}/100</span>
+                          </div>
+                          <div className="border-t border-border pt-2 mt-2">
+                            <Link to="/arena" className="flex items-center justify-between text-xs text-gold hover:text-gold/80 transition-colors">
+                              <span>Enter Arena</span>
+                              <ChevronRight className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {level >= 2 ? 'Default D Class' : 'Unranked'}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground/70 mb-3">
+                            Take the GQT to get your official Class rank
+                          </p>
+                          <div className="flex gap-2">
+                            <Link to="/gqt" className="flex-1 text-center text-[10px] py-1.5 bg-gold/10 border border-gold/30 text-gold rounded hover:bg-gold/20 transition-colors">
+                              Take GQT
+                            </Link>
+                            <Link to="/arena" className="flex-1 text-center text-[10px] py-1.5 bg-purple-500/10 border border-purple-500/30 text-purple-400 rounded hover:bg-purple-500/20 transition-colors">
+                              Arena
+                            </Link>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </Link>
+                </div>
               );
             })()}
             
