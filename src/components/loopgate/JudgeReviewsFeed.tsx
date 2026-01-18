@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Sparkles, ChevronLeft, ChevronRight, Star, Flame, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Flame, ChevronLeft, ChevronRight, Star, ExternalLink, X, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useThumbnail } from '@/hooks/useThumbnail';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,6 +14,7 @@ interface ReviewItem {
   total_score: number | null;
   judge_username: string | null;
   judge_avatar_url: string | null;
+  judge_comment: string | null;
   reviewed_at: string | null;
 }
 
@@ -36,22 +36,30 @@ function getScoreColor(score: number): string {
   return 'text-red-400';
 }
 
-function ReviewCard({ review }: { review: ReviewItem }) {
+function getScoreBg(score: number): string {
+  if (score >= 90) return 'bg-gold/20 border-gold/50';
+  if (score >= 80) return 'bg-emerald-500/20 border-emerald-500/50';
+  if (score >= 70) return 'bg-blue-500/20 border-blue-500/50';
+  if (score >= 60) return 'bg-purple-500/20 border-purple-500/50';
+  if (score >= 50) return 'bg-orange-500/20 border-orange-500/50';
+  return 'bg-red-500/20 border-red-500/50';
+}
+
+function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (review: ReviewItem) => void }) {
   const { thumbnail, loading } = useThumbnail(review.submission_url, review.platform);
   const scoreClass = review.total_score ? getScoreClass(review.total_score) : null;
   
   return (
-    <Link
-      to={`/editor/${review.username}`}
-      className="flex-shrink-0 w-[140px] group"
+    <motion.button
+      onClick={() => onSelect(review)}
+      whileHover={{ scale: 1.03, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      className="flex-shrink-0 w-[120px] text-left group"
     >
-      <motion.div
-        whileHover={{ scale: 1.03 }}
-        className="relative aspect-[9/16] rounded-xl overflow-hidden bg-surface-1 border border-border group-hover:border-gold/50 transition-colors"
-      >
+      <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-black ring-1 ring-border group-hover:ring-gold/60 transition-all shadow-lg group-hover:shadow-gold/20">
         {/* Thumbnail */}
         {loading ? (
-          <div className="absolute inset-0 bg-gradient-to-br from-surface-1 to-surface-2 animate-pulse" />
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black animate-pulse" />
         ) : thumbnail ? (
           <img
             src={thumbnail}
@@ -59,76 +67,186 @@ function ReviewCard({ review }: { review: ReviewItem }) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-gold/20 via-surface-1 to-purple-500/20" />
+          <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-black to-purple-900/20" />
         )}
         
-        {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
         
-        {/* Score badge */}
+        {/* Play indicator */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <Play size={16} className="text-white ml-0.5" fill="white" />
+          </div>
+        </div>
+        
+        {/* Score badge - top right */}
         {scoreClass && review.total_score && (
-          <div className="absolute top-2 right-2">
-            <div className={`w-8 h-8 rounded-lg bg-black/80 backdrop-blur-sm border border-gold/30 flex items-center justify-center ${getScoreColor(review.total_score)}`}>
-              <span className="text-sm font-bold">{scoreClass}</span>
-            </div>
+          <div className={`absolute top-2 right-2 px-2 py-1 rounded-md border backdrop-blur-sm ${getScoreBg(review.total_score)}`}>
+            <span className={`text-sm font-bold ${getScoreColor(review.total_score)}`}>{scoreClass}</span>
           </div>
         )}
         
-        {/* Judge avatar */}
+        {/* Judge avatar - top left */}
         {review.judge_avatar_url && (
           <div className="absolute top-2 left-2">
             <img
               src={review.judge_avatar_url}
               alt={review.judge_username || 'Judge'}
-              className="w-6 h-6 rounded-full border border-gold/50 object-cover"
+              className="w-6 h-6 rounded-full border-2 border-gold/60 object-cover"
             />
           </div>
         )}
         
         {/* Bottom info */}
-        <div className="absolute bottom-0 left-0 right-0 p-2">
-          <div className="flex items-center gap-1.5">
+        <div className="absolute bottom-0 left-0 right-0 p-2.5">
+          <div className="flex items-center gap-1.5 mb-1">
             {review.avatar_url ? (
               <img
                 src={review.avatar_url}
                 alt={review.username}
-                className="w-5 h-5 rounded-full object-cover border border-white/20"
+                className="w-4 h-4 rounded-full object-cover ring-1 ring-white/30"
               />
             ) : (
-              <div className="w-5 h-5 rounded-full bg-gold/30 flex items-center justify-center">
+              <div className="w-4 h-4 rounded-full bg-gold/40 flex items-center justify-center">
                 <span className="text-[8px] font-bold text-gold">
                   {review.username.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <span className="text-[10px] font-medium truncate text-white">
+            <span className="text-[10px] font-medium truncate text-white/90">
               @{review.username}
             </span>
           </div>
           
-          {/* Score */}
+          {/* Score number */}
           {review.total_score && (
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1">
               <Star size={10} className="text-gold fill-gold" />
               <span className={`text-xs font-bold ${getScoreColor(review.total_score)}`}>
-                {review.total_score}
+                {review.total_score}/100
               </span>
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
       
       {/* Time ago */}
       <p className="text-[10px] text-muted-foreground text-center mt-1.5 truncate">
         {review.reviewed_at ? formatDistanceToNow(new Date(review.reviewed_at), { addSuffix: true }) : 'Recently'}
       </p>
-    </Link>
+    </motion.button>
+  );
+}
+
+function ReviewPreviewModal({ review, onClose }: { review: ReviewItem; onClose: () => void }) {
+  const { thumbnail } = useThumbnail(review.submission_url, review.platform);
+  const scoreClass = review.total_score ? getScoreClass(review.total_score) : null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-black rounded-2xl overflow-hidden ring-1 ring-border"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-3 border-b border-border">
+          <div className="flex items-center gap-2">
+            {review.judge_avatar_url ? (
+              <img src={review.judge_avatar_url} alt="" className="w-8 h-8 rounded-full object-cover border border-gold/50" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+                <Star size={14} className="text-gold" />
+              </div>
+            )}
+            <div>
+              <p className="text-xs text-muted-foreground">Reviewed by</p>
+              <p className="text-sm font-medium">@{review.judge_username || 'QOI Judge'}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-surface-1 rounded-full transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+        
+        {/* Thumbnail */}
+        <div className="relative aspect-video bg-surface-1">
+          {thumbnail ? (
+            <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-gold/10 to-purple-900/20" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          
+          {/* Score overlay */}
+          {scoreClass && review.total_score && (
+            <div className="absolute bottom-3 right-3">
+              <div className={`px-3 py-1.5 rounded-lg border backdrop-blur-sm ${getScoreBg(review.total_score)}`}>
+                <span className={`text-2xl font-bold ${getScoreColor(review.total_score)}`}>{scoreClass}</span>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Content */}
+        <div className="p-4">
+          {/* Editor info */}
+          <div className="flex items-center gap-2 mb-3">
+            {review.avatar_url ? (
+              <img src={review.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border border-border" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
+                <span className="font-bold text-gold">{review.username.charAt(0).toUpperCase()}</span>
+              </div>
+            )}
+            <div>
+              <p className="font-medium">@{review.username}</p>
+              <p className="text-xs text-muted-foreground">
+                {review.reviewed_at ? formatDistanceToNow(new Date(review.reviewed_at), { addSuffix: true }) : 'Recently'}
+              </p>
+            </div>
+            {review.total_score && (
+              <div className="ml-auto text-right">
+                <p className={`text-xl font-bold ${getScoreColor(review.total_score)}`}>{review.total_score}</p>
+                <p className="text-[10px] text-muted-foreground uppercase">/100</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Comment */}
+          {review.judge_comment && (
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-3">"{review.judge_comment}"</p>
+          )}
+          
+          {/* CTA */}
+          <a
+            href={review.submission_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3 bg-gold text-black rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gold/90 transition-colors"
+          >
+            <ExternalLink size={14} />
+            Watch Edit
+          </a>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 
 export default function JudgeReviewsFeed() {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedReview, setSelectedReview] = useState<ReviewItem | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -215,62 +333,71 @@ export default function JudgeReviewsFeed() {
   }
 
   return (
-    <div className="py-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3 px-4">
-        <div className="flex items-center gap-2">
-          <Flame className="w-4 h-4 text-orange-400" />
-          <h2 className="font-display text-sm tracking-wide">LIVE REVIEWS</h2>
-          <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 border border-red-500/30 rounded text-[10px] text-red-400">
-            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-            LIVE
+    <>
+      <div className="py-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3 px-4">
+          <div className="flex items-center gap-2">
+            <Flame className="w-4 h-4 text-orange-400" />
+            <h2 className="font-display text-sm tracking-wide">LIVE REVIEWS</h2>
+            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-red-500/20 border border-red-500/30 rounded text-[10px] text-red-400">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+              LIVE
+            </div>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {reviews.length} recent
+          </span>
+        </div>
+
+        {/* Carousel */}
+        <div className="relative">
+          {/* Left scroll button */}
+          {canScrollLeft && (
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-black/80 backdrop-blur-sm border border-border rounded-full flex items-center justify-center hover:bg-surface-1 transition-colors"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          )}
+
+          {/* Right scroll button */}
+          {canScrollRight && (
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-black/80 backdrop-blur-sm border border-border rounded-full flex items-center justify-center hover:bg-surface-1 transition-colors"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
+
+          {/* Scrollable container */}
+          <div
+            ref={scrollRef}
+            className="flex gap-3 overflow-x-auto scrollbar-hide px-4"
+            onScroll={updateScrollButtons}
+          >
+            {reviews.map((review, index) => (
+              <motion.div
+                key={review.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <ReviewCard review={review} onSelect={setSelectedReview} />
+              </motion.div>
+            ))}
           </div>
         </div>
-        <span className="text-xs text-muted-foreground">
-          {reviews.length} recent
-        </span>
       </div>
-
-      {/* Carousel */}
-      <div className="relative">
-        {/* Left scroll button */}
-        {canScrollLeft && (
-          <button
-            onClick={() => scroll('left')}
-            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-black/80 backdrop-blur-sm border border-border rounded-full flex items-center justify-center hover:bg-surface-1 transition-colors"
-          >
-            <ChevronLeft size={16} />
-          </button>
+      
+      {/* Preview Modal */}
+      <AnimatePresence>
+        {selectedReview && (
+          <ReviewPreviewModal review={selectedReview} onClose={() => setSelectedReview(null)} />
         )}
-
-        {/* Right scroll button */}
-        {canScrollRight && (
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-black/80 backdrop-blur-sm border border-border rounded-full flex items-center justify-center hover:bg-surface-1 transition-colors"
-          >
-            <ChevronRight size={16} />
-          </button>
-        )}
-
-        {/* Scrollable container */}
-        <div
-          ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide px-4"
-          onScroll={updateScrollButtons}
-        >
-          {reviews.map((review, index) => (
-            <motion.div
-              key={review.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <ReviewCard review={review} />
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </div>
+      </AnimatePresence>
+    </>
   );
 }
