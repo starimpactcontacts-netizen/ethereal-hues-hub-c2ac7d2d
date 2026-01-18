@@ -332,7 +332,7 @@ export default function StartPage() {
       } else if (codeInfo.type === 'crew') {
         const { data: crew } = await supabase
           .from('crews')
-          .select('id')
+          .select('id, name')
           .ilike('name', formData.inviteCode.replace(/-/g, ' '))
           .maybeSingle();
         
@@ -342,8 +342,102 @@ export default function StartPage() {
             user_id: userId,
             role: 'member',
           });
+          // Award XP for joining crew
+          await supabase.rpc('award_xp', {
+            p_user_id: userId,
+            p_amount: 15,
+            p_action: 'join_crew',
+            p_description: `Joined ${crew.name}`,
+          });
         }
       }
+    }
+
+    // Handle pending crew invite from localStorage
+    const pendingCrewInvite = localStorage.getItem('pending_crew_invite');
+    if (pendingCrewInvite) {
+      try {
+        const { crewId, crewName, via } = JSON.parse(pendingCrewInvite);
+        if (crewId) {
+          // Check if not already in crew
+          const { data: existing } = await supabase
+            .from('crew_members')
+            .select('id')
+            .eq('crew_id', crewId)
+            .eq('user_id', userId)
+            .maybeSingle();
+
+          if (!existing) {
+            // Get crew info
+            const { data: crew } = await supabase
+              .from('crews')
+              .select('id, name, join_type')
+              .eq('id', crewId)
+              .single();
+
+            if (crew && crew.join_type !== 'invite_only') {
+              // Join the crew
+              await supabase.from('crew_members').insert({
+                crew_id: crewId,
+                user_id: userId,
+                role: 'member',
+              });
+
+              // Award XP to new member
+              await supabase.rpc('award_xp', {
+                p_user_id: userId,
+                p_amount: 15,
+                p_action: 'join_crew',
+                p_description: `Joined ${crew.name}`,
+              });
+
+              // Award XP to referrer if exists
+              if (via) {
+                const { data: referrer } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('username', via)
+                  .single();
+
+                if (referrer) {
+                  await supabase.rpc('award_xp', {
+                    p_user_id: referrer.id,
+                    p_amount: 50,
+                    p_action: 'crew_recruit',
+                    p_description: `Recruited member to ${crew.name}`,
+                  });
+                }
+              }
+
+              // Post to activity feed
+              const { data: newProfile } = await supabase
+                .from('profiles')
+                .select('username, avatar_url')
+                .eq('id', userId)
+                .single();
+
+              if (newProfile) {
+                await supabase.from('activity_feed').insert({
+                  activity_type: 'crew_join',
+                  user_id: userId,
+                  username: newProfile.username,
+                  avatar_url: newProfile.avatar_url,
+                  title: `Joined ${crew.name}`,
+                  description: via ? `via @${via}'s invite link` : 'Joined the crew',
+                  data: {
+                    crew_id: crewId,
+                    crew_name: crew.name,
+                    referrer: via || null,
+                  },
+                });
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error processing pending crew invite:', e);
+      }
+      localStorage.removeItem('pending_crew_invite');
     }
 
     // Success toast
