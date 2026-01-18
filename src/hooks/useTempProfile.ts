@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface TempProfile {
+export interface TempProfile {
   username: string;
   avatarUrl?: string;
   region?: string;
-  createdAt: string;
+  role?: 'editor' | 'judge';
+  createdAt?: string;
   inviteCode?: string; // Code they used to join
   pendingCrewId?: string; // Crew to auto-join when verified
 }
