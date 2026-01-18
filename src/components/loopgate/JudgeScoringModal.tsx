@@ -392,7 +392,6 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
           onClose={handleExportClose}
           data={completedReviewData}
           onSubmitToEditor={async () => { handleExportClose(); }}
-          onSubmitToEditor={handleExportClose}
         />
       )}
     </>
