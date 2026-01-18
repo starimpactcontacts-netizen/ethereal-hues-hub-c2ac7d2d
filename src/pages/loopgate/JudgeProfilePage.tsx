@@ -16,6 +16,7 @@ import AuthorityBadge from '@/components/loopgate/AuthorityBadge';
 import LevelBadge from '@/components/loopgate/LevelBadge';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
 import JudgeBadge, { JUDGE_BADGES, REVIEW_STYLES } from '@/components/loopgate/JudgeBadge';
+import JudgeClassBadge, { getJudgeClassFromReviews } from '@/components/loopgate/JudgeClassBadge';
 import { detectPlatform } from '@/lib/urlValidation';
 
 interface JudgeProfile {
@@ -317,11 +318,23 @@ export default function JudgeProfilePage() {
             )}
             
             {/* Role badges */}
-            <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
+            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
               <AuthorityBadge role="judge" size="sm" />
               <LevelBadge level={judge.level} size="sm" />
               {judgeBadge && <JudgeBadge badge={judgeBadge} size="sm" />}
             </div>
+
+            {/* Judge Class Badge - based on reviews completed */}
+            {stats && (
+              <div className="flex justify-center mb-3">
+                <JudgeClassBadge 
+                  reviewCount={stats.totalReviews} 
+                  size="lg" 
+                  showLabel 
+                  showProgress 
+                />
+              </div>
+            )}
 
             {/* Review Style */}
             {reviewStyle && (
