@@ -9,6 +9,7 @@ import { useUserRoles } from "./hooks/useUserRoles";
 // Pages
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
+import LoginPage from "./pages/LoginPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import EnterpriseOnboardingPage from "./pages/EnterpriseOnboardingPage";
 import HubPage from "./pages/HubPage";
@@ -179,7 +180,7 @@ function OnboardingWrapper() {
   }
   
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/start" replace />;
   }
   
   // Dev account bypasses onboarding entirely - straight to hub
@@ -212,7 +213,7 @@ function EnterpriseOnboardingWrapper() {
   }
   
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/start" replace />;
   }
   
   // Non-enterprise users go to regular onboarding
@@ -237,7 +238,7 @@ export default function App() {
             {/* Public routes - no auth required */}
             <Route path="/" element={<RootRedirect />} />
             <Route path="/auth" element={<AuthPageWrapper />} />
-            <Route path="/login" element={<AuthPageWrapper />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/onboarding" element={<OnboardingWrapper />} />
             <Route path="/enterprise-onboarding" element={<EnterpriseOnboardingWrapper />} />
             <Route path="/rules" element={<RulesPage />} />

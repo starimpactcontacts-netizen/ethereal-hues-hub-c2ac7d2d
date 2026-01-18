@@ -121,7 +121,7 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
   };
   
   const handleCopyCode = async (code: string) => {
-    const shareUrl = `${window.location.origin}/auth?invite=${code}`;
+    const shareUrl = `${window.location.origin}/start?invite=${code}`;
     await navigator.clipboard.writeText(shareUrl);
     setCopiedCode(code);
     toast.success('Invite link copied!');

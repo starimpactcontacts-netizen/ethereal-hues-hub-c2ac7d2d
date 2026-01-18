@@ -83,7 +83,7 @@ export default function AppPage() {
                 </div>
               </a>
               
-              <Link to="/auth">
+              <Link to="/start">
                 <Button size="lg" className="w-full sm:w-auto h-14 px-8 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg">
                   Open Web App
                   <ArrowRight className="ml-2 w-5 h-5" />

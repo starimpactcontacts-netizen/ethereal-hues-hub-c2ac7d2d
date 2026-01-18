@@ -95,7 +95,7 @@ export default function DownloadPage() {
               </li>
             </ul>
 
-            <Link to="/auth">
+            <Link to="/start">
               <Button className="w-full py-6 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-lg">
                 Open Web App
               </Button>

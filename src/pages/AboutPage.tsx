@@ -113,7 +113,7 @@ export default function AboutPage() {
           <h2 className="font-display text-3xl mb-4">Ready to Compete?</h2>
           <p className="text-muted-foreground mb-8">Join the global competition and prove you're the best.</p>
           <Link 
-            to="/auth" 
+            to="/start" 
             className="inline-flex items-center gap-2 px-8 py-4 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
           >
             Create Your Profile

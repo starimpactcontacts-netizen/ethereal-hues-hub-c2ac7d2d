@@ -180,7 +180,7 @@ export default function ProfilePage() {
           <Button
             onClick={() => {
               clearGuest();
-              navigate("/auth");
+              navigate("/start");
             }}
             className="bg-gold text-black hover:bg-gold/90 font-semibold"
           >

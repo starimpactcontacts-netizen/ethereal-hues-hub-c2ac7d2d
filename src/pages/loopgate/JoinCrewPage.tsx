@@ -53,12 +53,12 @@ export default function JoinCrewPage() {
 
   const handleJoin = async () => {
     if (!user) {
-      // Store invite info and redirect to auth
+      // Store invite info and redirect to start
       localStorage.setItem("pending_crew_invite", JSON.stringify({
         crewId: crew?.id,
         via,
       }));
-      navigate(`/auth?redirect=/join/${crewSlug}?via=${via}&crew=${crew?.id}`);
+      navigate(`/start?redirect=/join/${crewSlug}?via=${via}&crew=${crew?.id}`);
       return;
     }
 

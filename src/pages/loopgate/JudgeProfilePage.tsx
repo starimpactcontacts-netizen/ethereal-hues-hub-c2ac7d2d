@@ -460,7 +460,7 @@ export default function JudgeProfilePage() {
               </Button>
             </div>
           ) : (
-            <Link to="/auth">
+            <Link to="/start">
               <Button className="w-full bg-gold hover:bg-gold/90 text-black font-semibold">
                 Login to Submit
               </Button>

@@ -173,7 +173,7 @@ export default function StartPage() {
             {/* Already have account */}
             <div className="text-center pt-4">
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/login')}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Already have an account? <span className="text-gold">Sign in</span>
