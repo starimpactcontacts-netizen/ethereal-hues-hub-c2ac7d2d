@@ -1,30 +1,80 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Lock, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, User, Mail, Lock, Loader2, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
 
+type LoginMethod = 'username' | 'email' | 'magic';
+
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signInWithPassword } = useAuth();
-  const [email, setEmail] = useState('');
+  const { signInWithPassword, signInWithMagicLink, signInWithOtp } = useAuth();
+  
+  const [method, setMethod] = useState<LoginMethod>('username');
+  const [identifier, setIdentifier] = useState(''); // username or email
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // Magic link state
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [tokenHash, setTokenHash] = useState<string | undefined>();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleUsernameLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim() || !password.trim()) {
+    if (!identifier.trim() || !password.trim()) {
+      toast.error('Please enter username and password');
+      return;
+    }
+
+    setLoading(true);
+    
+    // First, look up the email by username
+    const { data: profile, error: lookupError } = await supabase
+      .from('profiles')
+      .select('email')
+      .ilike('username', identifier.trim())
+      .maybeSingle();
+    
+    if (lookupError || !profile?.email) {
+      toast.error('Username not found');
+      setLoading(false);
+      return;
+    }
+
+    // Now sign in with the email
+    const { error } = await signInWithPassword(profile.email, password);
+    
+    if (error) {
+      if (error.message.includes('Invalid login credentials')) {
+        toast.error('Wrong password');
+      } else {
+        toast.error(error.message);
+      }
+      setLoading(false);
+      return;
+    }
+
+    toast.success('Welcome back!');
+    navigate('/hub');
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!identifier.trim() || !password.trim()) {
       toast.error('Please enter email and password');
       return;
     }
 
     setLoading(true);
-    const { error } = await signInWithPassword(email.trim(), password);
+    const { error } = await signInWithPassword(identifier.trim(), password);
     
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
@@ -38,6 +88,59 @@ export default function LoginPage() {
 
     toast.success('Welcome back!');
     navigate('/hub');
+  };
+
+  const handleMagicLinkRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!identifier.trim()) {
+      toast.error('Please enter your email');
+      return;
+    }
+
+    setLoading(true);
+    const { error, tokenHash: hash } = await signInWithMagicLink(identifier.trim());
+    
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+      return;
+    }
+
+    setTokenHash(hash);
+    setMagicLinkSent(true);
+    toast.success('Magic link sent! Check your email.');
+    setLoading(false);
+  };
+
+  const handleOtpVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!otpCode.trim()) {
+      toast.error('Please enter the code');
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await signInWithOtp(identifier.trim(), otpCode.trim(), tokenHash);
+    
+    if (error) {
+      toast.error('Invalid or expired code');
+      setLoading(false);
+      return;
+    }
+
+    toast.success('Welcome back!');
+    navigate('/hub');
+  };
+
+  const resetMethod = (newMethod: LoginMethod) => {
+    setMethod(newMethod);
+    setIdentifier('');
+    setPassword('');
+    setMagicLinkSent(false);
+    setOtpCode('');
+    setTokenHash(undefined);
   };
 
   return (
@@ -62,71 +165,284 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="text-center mb-10">
+          <div className="text-center mb-8">
             <h1 className="font-display text-4xl sm:text-5xl mb-3">
-              Welcome Back
+              Log In
             </h1>
             <p className="text-muted-foreground">
-              Sign in to your account
+              Welcome back, editor
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="pl-12 h-14 bg-surface-1 border-border text-lg"
-                  autoComplete="email"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="pl-12 h-14 bg-surface-1 border-border text-lg"
-                  autoComplete="current-password"
-                />
-              </div>
-            </div>
-
-            {/* Submit button */}
-            <Button
-              type="submit"
-              disabled={loading || !email.trim() || !password.trim()}
-              className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
+          {/* Method Tabs */}
+          <div className="flex gap-1 p-1 bg-surface-1 rounded-lg mb-6">
+            <button
+              onClick={() => resetMethod('username')}
+              className={`flex-1 py-2.5 px-3 text-sm font-medium rounded-md transition-all ${
+                method === 'username' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </Button>
-          </form>
+              <User className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+              Username
+            </button>
+            <button
+              onClick={() => resetMethod('email')}
+              className={`flex-1 py-2.5 px-3 text-sm font-medium rounded-md transition-all ${
+                method === 'email' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Mail className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+              Email
+            </button>
+            <button
+              onClick={() => resetMethod('magic')}
+              className={`flex-1 py-2.5 px-3 text-sm font-medium rounded-md transition-all ${
+                method === 'magic' 
+                  ? 'bg-background text-foreground shadow-sm' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Sparkles className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+              Magic
+            </button>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {/* Username + Password */}
+            {method === 'username' && (
+              <motion.form
+                key="username"
+                onSubmit={handleUsernameLogin}
+                className="space-y-5"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+                    Username
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="your_username"
+                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
+                      autoComplete="username"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !identifier.trim() || !password.trim()}
+                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      Log In
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              </motion.form>
+            )}
+
+            {/* Email + Password */}
+            {method === 'email' && (
+              <motion.form
+                key="email"
+                onSubmit={handleEmailLogin}
+                className="space-y-5"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="you@example.com"
+                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
+                      autoComplete="email"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !identifier.trim() || !password.trim()}
+                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      Log In
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              </motion.form>
+            )}
+
+            {/* Magic Link */}
+            {method === 'magic' && !magicLinkSent && (
+              <motion.form
+                key="magic-request"
+                onSubmit={handleMagicLinkRequest}
+                className="space-y-5"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="you@example.com"
+                      className="pl-12 h-14 bg-surface-1 border-border text-lg"
+                      autoComplete="email"
+                    />
+                  </div>
+                </div>
+
+                <p className="text-sm text-muted-foreground text-center">
+                  We'll send you a magic link and code. One tap to log in.
+                </p>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !identifier.trim()}
+                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Send Magic Link
+                    </>
+                  )}
+                </Button>
+              </motion.form>
+            )}
+
+            {/* OTP Verification */}
+            {method === 'magic' && magicLinkSent && (
+              <motion.form
+                key="magic-verify"
+                onSubmit={handleOtpVerify}
+                className="space-y-5"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="text-center mb-4">
+                  <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
+                    <Mail className="h-8 w-8 text-gold" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Check your email for a magic link, or enter the code below:
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center block">
+                    Enter Code
+                  </label>
+                  <Input
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    placeholder="123456"
+                    className="h-14 bg-surface-1 border-border text-2xl text-center tracking-[0.5em] font-mono"
+                    maxLength={8}
+                    autoComplete="one-time-code"
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={loading || !otpCode.trim()}
+                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
+                >
+                  {loading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    'Verify Code'
+                  )}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => setMagicLinkSent(false)}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Didn't receive it? Try again
+                </button>
+              </motion.form>
+            )}
+          </AnimatePresence>
 
           {/* New user */}
-          <div className="text-center pt-6">
+          <div className="text-center pt-8">
             <button
               onClick={() => navigate('/start')}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
