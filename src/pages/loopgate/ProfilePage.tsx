@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2, Star, Award } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2, Star, Award, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTempProfile } from "@/hooks/useTempProfile";
 import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXP } from "@/hooks/useXP";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -63,7 +64,8 @@ type ProfileTab = "submissions" | "settings";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { profile, platforms, refreshProfile, signOut } = useAuth();
+  const { profile, platforms, refreshProfile, signOut, loading: authLoading } = useAuth();
+  const { profile: tempProfile, isTemp, clearProfile: clearTempProfile } = useTempProfile();
   const { isGuest, clearGuest } = useGuestMode();
   const { rankings } = useRealRankings();
   const { xp, level, streak } = useXP();
@@ -187,6 +189,145 @@ export default function ProfilePage() {
             Sign In
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  // TEMP PROFILE MODE - Show limited profile for username-only users
+  if (isTemp && tempProfile && !profile) {
+    const joinDate = new Date(tempProfile.createdAt);
+    const formattedDate = `${String(joinDate.getMonth() + 1).padStart(2, '0')}/${String(joinDate.getDate()).padStart(2, '0')}/${joinDate.getFullYear()}`;
+    
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-background to-background pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(250,204,21,0.08),transparent_60%)] pointer-events-none" />
+        
+        <div className="relative pt-6 pb-4 px-4">
+          {/* League badge */}
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 text-muted-foreground border-muted-foreground bg-muted/10">
+              OPEN
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                clearTempProfile();
+                navigate('/start');
+              }}
+              className="text-muted-foreground text-xs"
+            >
+              Sign Out
+            </Button>
+          </div>
+          
+          {/* Avatar */}
+          <div className="flex justify-center mb-4">
+            <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-border">
+              {tempProfile.avatarUrl ? (
+                <img
+                  src={tempProfile.avatarUrl}
+                  alt={tempProfile.username}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <span className="font-display text-3xl text-muted-foreground">
+                    {tempProfile.username.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Name */}
+          <div className="text-center mb-6">
+            <h1 className="font-display text-3xl mb-1">{tempProfile.username}</h1>
+            {tempProfile.region && (
+              <p className="text-sm text-muted-foreground capitalize">{tempProfile.region}</p>
+            )}
+            <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
+              <Calendar className="w-3 h-3" />
+              Joined {formattedDate}
+            </p>
+          </div>
+
+          {/* Secure Account CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10 border border-gold/30 rounded-xl p-6 mb-6"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
+                <Lock className="w-6 h-6 text-gold" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-lg text-gold mb-1">Secure Your Account</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add an email to save your progress, compete in arenas, and unlock all features.
+                </p>
+                <Button
+                  onClick={() => navigate('/login')}
+                  className="bg-gold text-black hover:bg-gold/90 font-semibold"
+                >
+                  Create Full Account
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Stats Preview */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="bg-surface-1 border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-display text-muted-foreground">—</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
+            </div>
+            <div className="bg-surface-1 border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-display text-muted-foreground">0</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">XP</p>
+            </div>
+            <div className="bg-surface-1 border border-border rounded-xl p-4 text-center">
+              <p className="text-2xl font-display text-muted-foreground">F</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Class</p>
+            </div>
+          </div>
+
+          {/* Locked Features */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Unlock with Account</h3>
+            {[
+              { icon: "🏆", label: "Compete in Arenas", desc: "Enter ranked competitions" },
+              { icon: "👥", label: "Join Crews", desc: "Team up with other editors" },
+              { icon: "⚖️", label: "Get Judged", desc: "Request professional reviews" },
+              { icon: "🛒", label: "Shop Access", desc: "Spend your earned index" },
+            ].map((feature) => (
+              <div
+                key={feature.label}
+                className="flex items-center gap-3 p-3 bg-surface-1/50 border border-border/50 rounded-lg opacity-60"
+              >
+                <span className="text-xl">{feature.icon}</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{feature.label}</p>
+                  <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                </div>
+                <Lock className="w-4 h-4 text-muted-foreground" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     );
   }
