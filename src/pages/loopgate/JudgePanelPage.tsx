@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import JudgeInbox from '@/components/loopgate/JudgeInbox';
 import JudgeLiveFeed from '@/components/loopgate/JudgeLiveFeed';
+import CompletedReviewsList from '@/components/loopgate/CompletedReviewsList';
+import CardTemplatePreview from '@/components/loopgate/CardTemplatePreview';
 
 export default function JudgePanelPage() {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState('inbox');
+  const [showTemplates, setShowTemplates] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -34,12 +37,23 @@ export default function JudgePanelPage() {
             </div>
           </div>
           
-          <Link to={`/judge/${profile?.username}`}>
-            <Button variant="outline" size="sm" className="border-gold/30 text-gold hover:bg-gold/10">
-              <Star className="w-3 h-3 mr-1" />
-              My Profile
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setShowTemplates(true)}
+              variant="outline" 
+              size="sm" 
+              className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+            >
+              <Palette className="w-3 h-3 mr-1" />
+              Cards
             </Button>
-          </Link>
+            <Link to={`/judge/${profile?.username}`}>
+              <Button variant="outline" size="sm" className="border-gold/30 text-gold hover:bg-gold/10">
+                <Star className="w-3 h-3 mr-1" />
+                Profile
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -90,29 +104,19 @@ export default function JudgePanelPage() {
         </TabsContent>
 
         <TabsContent value="completed" className="mt-0">
-          <div className="p-4 space-y-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center py-16 text-center"
-            >
-              <div className="w-16 h-16 rounded-full bg-surface-1 flex items-center justify-center mb-4">
-                <CheckCircle className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-                No Completed Reviews Yet
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-xs">
-                Start reviewing submissions from your inbox to see them here.
-              </p>
-            </motion.div>
-          </div>
+          <CompletedReviewsList />
         </TabsContent>
 
         <TabsContent value="feed" className="mt-0">
           <JudgeLiveFeed />
         </TabsContent>
       </Tabs>
+
+      {/* Card Template Preview Modal */}
+      <CardTemplatePreview 
+        isOpen={showTemplates} 
+        onClose={() => setShowTemplates(false)} 
+      />
     </div>
   );
 }
