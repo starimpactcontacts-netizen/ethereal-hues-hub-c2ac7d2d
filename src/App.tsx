@@ -33,6 +33,8 @@ import HouseDetailPage from "./pages/loopgate/HouseDetailPage";
 import FeedPage from "./pages/loopgate/FeedPage";
 import GQTPage from "./pages/loopgate/GQTPage";
 import JoinCrewPage from "./pages/loopgate/JoinCrewPage";
+import JudgeProfilePage from "./pages/loopgate/JudgeProfilePage";
+import JudgeLeaderboardPage from "./pages/loopgate/JudgeLeaderboardPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -252,6 +254,8 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
               <Route path="/arena" element={<ArenaPage />} />
+              <Route path="/judges" element={<JudgeLeaderboardPage />} />
+              <Route path="/judge/:username" element={<JudgeProfilePage />} />
             </Route>
 
             {/* Protected routes - auth required */}
