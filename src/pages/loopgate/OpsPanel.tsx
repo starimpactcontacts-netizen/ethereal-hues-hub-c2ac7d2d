@@ -80,6 +80,8 @@ interface AdminCrew {
   owner_id: string;
   owner_username?: string;
   created_at: string;
+  is_featured?: boolean;
+  discord_url?: string | null;
 }
 
 interface AdminUser {

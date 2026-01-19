@@ -22,6 +22,8 @@ interface Crew {
   avatar_url: string | null;
   owner_id: string;
   total_xp?: number;
+  discord_url?: string | null;
+  is_featured?: boolean;
 }
 
 const leagueColors = {
@@ -334,6 +336,44 @@ export default function CrewsPage() {
                 animate={{ opacity: 1 }}
                 className="space-y-6"
               >
+                {/* Featured Crews */}
+                {crews.filter(c => c.is_featured).length > 0 && (
+                  <section className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Star className="w-4 h-4 text-gold fill-gold" />
+                      <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Featured</h2>
+                    </div>
+                    <div className="grid gap-3">
+                      {crews.filter(c => c.is_featured).map((crew) => (
+                        <div
+                          key={crew.id}
+                          onClick={() => navigate(`/crews/${crew.id}`)}
+                          className="relative overflow-hidden p-4 rounded-xl border border-gold/30 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 cursor-pointer hover:border-gold/50 transition-all"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-xl overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center">
+                              {crew.avatar_url ? (
+                                <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="text-gold">{emblemIcons[crew.emblem]}</div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold truncate">{crew.name}</h3>
+                                <Star className="w-3 h-3 text-gold fill-gold" />
+                              </div>
+                              <p className="text-xs text-muted-foreground line-clamp-1">{crew.description || "Featured crew"}</p>
+                              <p className="text-xs text-gold mt-1">{crew.member_count} members • {(crew.total_xp || 0).toLocaleString()} XP</p>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-gold/50" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
                 {/* Studios Coming Soon */}
                 <StudiosTeaser variant="compact" />
 

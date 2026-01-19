@@ -600,13 +600,10 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          {/* Archetype + House */}
+          {/* Archetype + Crew */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
             {(profile as any).archetype && (
               <ArchetypeBadge archetype={(profile as any).archetype} size="sm" />
-            )}
-            {userHouse && (
-              <HouseBadge house={userHouse} size="sm" />
             )}
             {userCrew && (
               <CrewBadge crew={userCrew} size="sm" />
@@ -897,30 +894,14 @@ export default function ProfilePage() {
               <XPHistory limit={5} />
             </section>
 
-            {/* ─── House & Crew ─── */}
+            {/* ─── Crew ─── */}
             <section>
               <h3 className="font-display text-lg text-muted-foreground mb-3 flex items-center gap-2">
                 <Users size={14} />
-                Affiliations
+                Crew
               </h3>
-              <div className="bg-surface-1 border border-border p-4 space-y-4">
-                {/* House */}
+              <div className="bg-surface-1 border border-border p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">House</span>
-                  {userHouse ? (
-                    <HouseIdentityStrip house={userHouse} size="sm" />
-                  ) : (
-                    <button
-                      onClick={() => navigate("/houses")}
-                      className="text-[10px] text-gold uppercase tracking-wider hover:underline"
-                    >
-                      Join a house
-                    </button>
-                  )}
-                </div>
-                
-                {/* Crew */}
-                <div className="pt-4 border-t border-border flex items-center justify-between">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Crew</span>
                   {userCrew ? (
                     <CrewBadge crew={userCrew} size="md" />
