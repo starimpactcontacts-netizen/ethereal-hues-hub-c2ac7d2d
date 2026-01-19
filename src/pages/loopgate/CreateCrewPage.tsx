@@ -81,7 +81,7 @@ export default function CreateCrewPage() {
         .eq("id", user.id)
         .single();
 
-      if (existingProfile?.crew_id) {
+      if (existingProfile?.crew_id && !canBypassLimit) {
         alert("You are already in a crew. Leave your current crew before creating a new one.");
         setLoading(false);
         return;
