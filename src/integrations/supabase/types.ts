@@ -134,6 +134,47 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_activity: {
+        Row: {
+          activity_type: string
+          created_at: string
+          crew_id: string
+          data: Json | null
+          description: string | null
+          id: string
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          crew_id: string
+          data?: Json | null
+          description?: string | null
+          id?: string
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          crew_id?: string
+          data?: Json | null
+          description?: string | null
+          id?: string
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_activity_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_announcement_reads: {
         Row: {
           crew_id: string
@@ -230,6 +271,9 @@ export type Database = {
       crew_members: {
         Row: {
           crew_id: string
+          extended_role:
+            | Database["public"]["Enums"]["crew_extended_role"]
+            | null
           id: string
           joined_at: string
           role: Database["public"]["Enums"]["crew_role"]
@@ -237,6 +281,9 @@ export type Database = {
         }
         Insert: {
           crew_id: string
+          extended_role?:
+            | Database["public"]["Enums"]["crew_extended_role"]
+            | null
           id?: string
           joined_at?: string
           role?: Database["public"]["Enums"]["crew_role"]
@@ -244,6 +291,9 @@ export type Database = {
         }
         Update: {
           crew_id?: string
+          extended_role?:
+            | Database["public"]["Enums"]["crew_extended_role"]
+            | null
           id?: string
           joined_at?: string
           role?: Database["public"]["Enums"]["crew_role"]
@@ -294,6 +344,45 @@ export type Database = {
           {
             foreignKeyName: "crew_messages_crew_id_fkey"
             columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_rivalries: {
+        Row: {
+          created_at: string
+          created_by: string
+          crew_id: string
+          id: string
+          rival_crew_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          crew_id: string
+          id?: string
+          rival_crew_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          crew_id?: string
+          id?: string
+          rival_crew_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_rivalries_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_rivalries_rival_crew_id_fkey"
+            columns: ["rival_crew_id"]
             isOneToOne: false
             referencedRelation: "crews"
             referencedColumns: ["id"]
@@ -1690,6 +1779,12 @@ export type Database = {
     Enums: {
       advancement_type: "top_x" | "percentage" | "manual" | "none"
       app_role: "admin" | "moderator" | "user" | "judge" | "dev" | "enterprise"
+      crew_extended_role:
+        | "ace_editor"
+        | "veteran"
+        | "challenger"
+        | "recruiter"
+        | "judge"
       crew_role: "owner" | "officer" | "member"
       event_mode: "standard" | "open_arena"
       house_role: "member" | "captain" | "judge"
@@ -1831,6 +1926,13 @@ export const Constants = {
     Enums: {
       advancement_type: ["top_x", "percentage", "manual", "none"],
       app_role: ["admin", "moderator", "user", "judge", "dev", "enterprise"],
+      crew_extended_role: [
+        "ace_editor",
+        "veteran",
+        "challenger",
+        "recruiter",
+        "judge",
+      ],
       crew_role: ["owner", "officer", "member"],
       event_mode: ["standard", "open_arena"],
       house_role: ["member", "captain", "judge"],

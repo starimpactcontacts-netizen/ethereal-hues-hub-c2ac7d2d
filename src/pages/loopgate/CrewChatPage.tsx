@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
+import CrewTypingIndicator from "@/components/loopgate/CrewTypingIndicator";
+import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -39,6 +41,9 @@ export default function CrewChatPage() {
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  // Typing indicators
+  const { typingUsers, broadcastTyping } = useCrewPresence(crewId);
 
   useEffect(() => {
     if (crewId) {
@@ -257,13 +262,19 @@ export default function CrewChatPage() {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Typing Indicator */}
+        <CrewTypingIndicator typingUsers={typingUsers} />
+
         {/* Input */}
         <div className="sticky bottom-0 bg-background border-t border-border p-4 safe-bottom shrink-0">
           <div className="flex gap-3">
             <Input
               placeholder="Type a message..."
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                broadcastTyping();
+              }}
               onKeyDown={handleKeyDown}
               className="flex-1 bg-muted/50"
               disabled={sending}

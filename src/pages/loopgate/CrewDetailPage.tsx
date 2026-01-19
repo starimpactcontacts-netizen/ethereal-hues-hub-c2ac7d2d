@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { 
   ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, 
   LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins, Copy, Link2, Calendar, 
-  Trophy, Hash, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight, Send, Trash2
+  Trophy, Hash, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight, Send, Trash2,
+  Swords, Circle
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +15,12 @@ import { Progress } from "@/components/ui/progress";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
 import CrewBadge from "@/components/loopgate/CrewBadge";
+import CrewLiveFeed from "@/components/loopgate/CrewLiveFeed";
+import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
+import CrewExtendedRoleBadge from "@/components/loopgate/CrewExtendedRoleBadge";
+import CrewRivalCard from "@/components/loopgate/CrewRivalCard";
+import { useCrewRivalries } from "@/hooks/useCrewRivalries";
+import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -47,6 +54,7 @@ interface Member {
   id: string;
   user_id: string;
   role: "owner" | "officer" | "member";
+  extended_role: "ace_editor" | "veteran" | "challenger" | "recruiter" | "judge" | null;
   joined_at: string;
   profile: {
     username: string;
@@ -116,7 +124,7 @@ interface CrewSubmission {
   };
 }
 
-type ChannelType = 'announcements' | 'events' | 'leaderboard' | 'members' | 'submissions';
+type ChannelType = 'announcements' | 'events' | 'leaderboard' | 'members' | 'submissions' | 'feed' | 'rivals';
 
 const emblemIcons: Record<string, React.ReactNode> = {
   shield: <Shield className="w-12 h-12" />,
@@ -176,7 +184,7 @@ export default function CrewDetailPage() {
   const [loading, setLoading] = useState(true);
   const [crewStats, setCrewStats] = useState<CrewStats>({ totalXP: 0, totalIndex: 0, crewLevel: 1 });
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [activeChannel, setActiveChannel] = useState<ChannelType>('announcements');
+  const [activeChannel, setActiveChannel] = useState<ChannelType>('feed');
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [newAnnouncement, setNewAnnouncement] = useState("");
@@ -184,6 +192,10 @@ export default function CrewDetailPage() {
   const [unreadAnnouncementCount, setUnreadAnnouncementCount] = useState(0);
   const [crewSubmissions, setCrewSubmissions] = useState<CrewSubmission[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
+
+  // Use custom hooks
+  const { rivalries, addRival, removeRival } = useCrewRivalries(crewId);
+  const { onlineCount } = useCrewPresence(crewId);
 
   useEffect(() => {
     if (crewId) {
@@ -214,7 +226,7 @@ export default function CrewDetailPage() {
     // Fetch members with profiles
     const { data: membersData, error: membersError } = await supabase
       .from("crew_members")
-      .select("id, user_id, role, joined_at")
+      .select("id, user_id, role, extended_role, joined_at")
       .eq("crew_id", crewId)
       .order("role", { ascending: true });
 
@@ -227,6 +239,7 @@ export default function CrewDetailPage() {
 
       const membersWithProfiles = membersData.map((member) => ({
         ...member,
+        extended_role: member.extended_role as Member["extended_role"],
         profile: profiles?.find((p) => p.id === member.user_id) || null,
       })) as Member[];
 
@@ -587,12 +600,14 @@ export default function CrewDetailPage() {
   // Show at least 3% progress if there's any XP, so the bar is visible
   const progressToNext = crewStats.totalXP > 0 ? Math.max(3, rawProgress) : 0;
 
-  const channels: { id: ChannelType; icon: React.ReactNode; label: string }[] = [
-    { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'Announcements' },
-    { id: 'events', icon: <Calendar className="w-4 h-4" />, label: 'Events' },
+  const channels: { id: ChannelType; icon: React.ReactNode; label: string; badge?: number }[] = [
+    { id: 'feed', icon: <Zap className="w-4 h-4" />, label: 'Live Feed' },
+    { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'Announcements', badge: unreadAnnouncementCount },
+    { id: 'rivals', icon: <Swords className="w-4 h-4" />, label: 'Rivals', badge: rivalries.length },
     { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Leaderboard' },
     { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Members' },
     { id: 'submissions', icon: <FileVideo className="w-4 h-4" />, label: 'Submissions' },
+    { id: 'events', icon: <Calendar className="w-4 h-4" />, label: 'Challenges' },
   ];
 
   return (
@@ -698,9 +713,9 @@ export default function CrewDetailPage() {
                   >
                     <Hash className="w-4 h-4 opacity-60" />
                     <span className="flex-1 text-left">{channel.label}</span>
-                    {channel.id === 'announcements' && unreadAnnouncementCount > 0 && (
+                    {channel.badge && channel.badge > 0 && (
                       <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
-                        {unreadAnnouncementCount > 9 ? '9+' : unreadAnnouncementCount}
+                        {channel.badge > 9 ? '9+' : channel.badge}
                       </span>
                     )}
                   </button>
@@ -740,6 +755,58 @@ export default function CrewDetailPage() {
 
             {/* Channel Content */}
             <div className="flex-1 overflow-y-auto p-4">
+              {activeChannel === 'feed' && crewId && (
+                <div className="space-y-4">
+                  {/* Online Indicator */}
+                  <div className="bg-surface-1 border border-border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+                      <span className="text-xs font-medium">{onlineCount} Online Now</span>
+                    </div>
+                    <CrewOnlineIndicator crewId={crewId} />
+                  </div>
+                  
+                  {/* Live Feed */}
+                  <div className="bg-surface-1 border border-border rounded-lg p-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-gold" />
+                      Live Activity
+                    </h3>
+                    <CrewLiveFeed crewId={crewId} members={members} />
+                  </div>
+                </div>
+              )}
+
+              {activeChannel === 'rivals' && (
+                <div className="space-y-4">
+                  <div className="bg-surface-1 border border-red-500/20 rounded-lg p-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-2">
+                      <Swords className="w-4 h-4" />
+                      Crew Rivalries
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Mark rival crews to track your competition and fuel the beef.
+                    </p>
+                    
+                    {rivalries.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-6">No rivals yet. Visit other crews to mark them!</p>
+                    ) : (
+                      <div className="space-y-3">
+                        {rivalries.map((rivalry) => (
+                          <CrewRivalCard
+                            key={rivalry.id}
+                            rivalry={rivalry}
+                            ownCrewXP={crewStats.totalXP}
+                            isStaff={isStaff}
+                            onRemove={removeRival}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {activeChannel === 'announcements' && (
                 <div className="space-y-4">
                   {/* Crew Info Card */}
