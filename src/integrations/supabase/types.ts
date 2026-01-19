@@ -242,6 +242,8 @@ export type Database = {
       crews: {
         Row: {
           avatar_url: string | null
+          banner_color: string | null
+          banner_url: string | null
           created_at: string
           description: string | null
           discord_url: string | null
@@ -258,6 +260,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          banner_color?: string | null
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           discord_url?: string | null
@@ -274,6 +278,8 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          banner_color?: string | null
+          banner_url?: string | null
           created_at?: string
           description?: string | null
           discord_url?: string | null

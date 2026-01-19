@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog } from "lucide-react";
+import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog, ImagePlus, Palette, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewAvatarUploadModal from "@/components/loopgate/CrewAvatarUploadModal";
 import { toast } from "sonner";
+import { Capacitor } from "@capacitor/core";
+import { Camera as CapCamera, CameraResultType, CameraSource } from "@capacitor/camera";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,7 +73,10 @@ export default function CrewSettingsPage() {
     emblem: "shield",
     min_league: "open" as "open" | "pro" | "elite",
     join_type: "open",
+    banner_url: null as string | null,
+    banner_color: "#d4af37",
   });
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   useEffect(() => {
     if (crewId && user) {
@@ -106,6 +111,8 @@ export default function CrewSettingsPage() {
       emblem: crew.emblem,
       min_league: crew.min_league as "open" | "pro" | "elite",
       join_type: crew.join_type,
+      banner_url: crew.banner_url || null,
+      banner_color: crew.banner_color || "#d4af37",
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
@@ -186,6 +193,8 @@ export default function CrewSettingsPage() {
         emblem: formData.emblem,
         min_league: formData.min_league,
         join_type: formData.join_type,
+        banner_url: formData.banner_url,
+        banner_color: formData.banner_color,
       })
       .eq("id", crewId);
 
@@ -221,6 +230,69 @@ export default function CrewSettingsPage() {
     }
 
     navigate("/crews");
+  };
+
+  const handleBannerUpload = async () => {
+    if (!crewId) return;
+    setUploadingBanner(true);
+    
+    try {
+      let file: File;
+      
+      if (Capacitor.isNativePlatform()) {
+        const photo = await CapCamera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.Base64,
+          source: CameraSource.Photos,
+        });
+        
+        const response = await fetch(`data:image/${photo.format};base64,${photo.base64String}`);
+        const blob = await response.blob();
+        file = new File([blob], `banner.${photo.format}`, { type: `image/${photo.format}` });
+      } else {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        
+        file = await new Promise<File>((resolve, reject) => {
+          input.onchange = (e) => {
+            const f = (e.target as HTMLInputElement).files?.[0];
+            if (f) resolve(f);
+            else reject(new Error("No file selected"));
+          };
+          input.click();
+        });
+      }
+      
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${crewId}/banner.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("crew-avatars")
+        .upload(fileName, file, { upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: urlData } = supabase.storage
+        .from("crew-avatars")
+        .getPublicUrl(fileName);
+      
+      const bannerUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+      setFormData({ ...formData, banner_url: bannerUrl });
+      toast.success("Banner uploaded!");
+    } catch (error: any) {
+      if (error.message !== "No file selected") {
+        console.error("Error uploading banner:", error);
+        toast.error("Failed to upload banner");
+      }
+    } finally {
+      setUploadingBanner(false);
+    }
+  };
+
+  const removeBanner = () => {
+    setFormData({ ...formData, banner_url: null });
   };
 
   if (loading) {
@@ -271,6 +343,70 @@ export default function CrewSettingsPage() {
                 </div>
               </button>
               <p className="text-xs text-muted-foreground">Click to upload a crew avatar</p>
+            </div>
+          </div>
+
+          {/* Crew Banner */}
+          <div className="space-y-3">
+            <Label>Crew Banner</Label>
+            <div 
+              className="h-20 rounded-lg overflow-hidden relative group"
+              style={{
+                background: formData.banner_url 
+                  ? `url(${formData.banner_url}) center/cover` 
+                  : `linear-gradient(135deg, ${formData.banner_color}40, ${formData.banner_color}20)`
+              }}
+            >
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <button 
+                  onClick={handleBannerUpload}
+                  disabled={uploadingBanner}
+                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+                >
+                  <ImagePlus className="w-5 h-5 text-white" />
+                </button>
+                {formData.banner_url && (
+                  <button 
+                    onClick={removeBanner}
+                    className="p-2 rounded-full bg-red-500/50 hover:bg-red-500/70 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-white" />
+                  </button>
+                )}
+              </div>
+              {uploadingBanner && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {formData.banner_url ? "Click to change or remove banner image" : "Click to upload a banner image, or choose a color below"}
+            </p>
+            
+            {/* Banner Color Picker */}
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Banner Color (used if no image)</Label>
+              <div className="flex items-center gap-3">
+                <div className="flex gap-2">
+                  {["#d4af37", "#3b82f6", "#8b5cf6", "#ef4444", "#22c55e", "#f97316", "#06b6d4", "#ec4899"].map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setFormData({ ...formData, banner_color: color })}
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        formData.banner_color === color ? "border-white scale-110" : "border-transparent"
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+                <input 
+                  type="color" 
+                  value={formData.banner_color}
+                  onChange={(e) => setFormData({ ...formData, banner_color: e.target.value })}
+                  className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
+                />
+              </div>
             </div>
           </div>
 

@@ -38,6 +38,8 @@ interface Crew {
   avatar_url: string | null;
   discord_url: string | null;
   is_featured: boolean;
+  banner_url: string | null;
+  banner_color: string | null;
 }
 
 interface Member {
@@ -127,7 +129,8 @@ function calculateCrewLevel(xp: number): number {
 }
 
 function getXPForLevel(level: number): number {
-  const thresholds = [0, 100, 1000, 3000, 6000, 10000, 15000, 22000, 32000, 45000, 70000];
+  // Level 1 starts at 0, level 2 at 1000, etc.
+  const thresholds = [0, 0, 1000, 3000, 6000, 10000, 15000, 22000, 32000, 45000, 70000];
   return thresholds[level] || 70000;
 }
 
@@ -315,10 +318,12 @@ export default function CrewDetailPage() {
 
   const membersByXP = [...members].sort((a, b) => (b.profile?.xp || 0) - (a.profile?.xp || 0));
 
-  // XP progress calculation
+  // XP progress calculation - ensure minimum visible progress when XP > 0
   const currentLevelXP = getXPForLevel(crewStats.crewLevel);
   const nextLevelXP = getXPForLevel(crewStats.crewLevel + 1);
-  const progressToNext = ((crewStats.totalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+  const rawProgress = ((crewStats.totalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+  // Show at least 3% progress if there's any XP, so the bar is visible
+  const progressToNext = crewStats.totalXP > 0 ? Math.max(3, rawProgress) : 0;
 
   const channels: { id: ChannelType; icon: React.ReactNode; label: string }[] = [
     { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'Announcements' },
@@ -365,10 +370,21 @@ export default function CrewDetailPage() {
           <div className="w-full md:w-56 bg-surface-1 border-b md:border-b-0 md:border-r border-border shrink-0">
             {/* Crew Header in Sidebar */}
             <div className="p-4 border-b border-border">
-              <div className="relative mb-4">
+            <div className="relative mb-4">
                 {/* Banner */}
-                <div className="h-16 rounded-lg bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20 overflow-hidden">
-                  <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.2),transparent)]" />
+                <div 
+                  className="h-16 rounded-lg overflow-hidden"
+                  style={{
+                    background: crew.banner_url 
+                      ? `url(${crew.banner_url}) center/cover` 
+                      : crew.banner_color 
+                        ? `linear-gradient(135deg, ${crew.banner_color}40, ${crew.banner_color}20)` 
+                        : 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))'
+                  }}
+                >
+                  {!crew.banner_url && (
+                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1),transparent)]" />
+                  )}
                 </div>
                 {/* Avatar overlay */}
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
