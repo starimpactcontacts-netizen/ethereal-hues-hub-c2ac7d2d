@@ -236,6 +236,96 @@ export type Database = {
           },
         ]
       }
+      crew_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed_at: string | null
+          crew_id: string
+          current_value: number
+          id: string
+          started_at: string
+          updated_at: string
+          xp_claimed: boolean
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string | null
+          crew_id: string
+          current_value?: number
+          id?: string
+          started_at?: string
+          updated_at?: string
+          xp_claimed?: boolean
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string | null
+          crew_id?: string
+          current_value?: number
+          id?: string
+          started_at?: string
+          updated_at?: string
+          xp_claimed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "crew_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_challenge_progress_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_challenges: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          description: string
+          ends_at: string
+          id: string
+          is_active: boolean
+          starts_at: string
+          target_metric: string
+          target_value: number
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          description: string
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          starts_at?: string
+          target_metric?: string
+          target_value?: number
+          title: string
+          xp_reward?: number
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          description?: string
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          starts_at?: string
+          target_metric?: string
+          target_value?: number
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       crew_join_requests: {
         Row: {
           created_at: string

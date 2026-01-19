@@ -19,6 +19,8 @@ import CrewLiveFeed from "@/components/loopgate/CrewLiveFeed";
 import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
 import CrewExtendedRoleBadge from "@/components/loopgate/CrewExtendedRoleBadge";
 import CrewRivalCard from "@/components/loopgate/CrewRivalCard";
+import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
+import CrewChallengesPanel from "@/components/loopgate/CrewChallengesPanel";
 import { useCrewRivalries } from "@/hooks/useCrewRivalries";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { toast } from "sonner";
@@ -684,11 +686,11 @@ export default function CrewDetailPage() {
                 </div>
                 <p className="text-xs text-muted-foreground">{crew.member_count} members</p>
                 
-                {/* XP Bar */}
+                {/* XP Bar with Level Badge */}
                 <div className="mt-3">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                    <span>Level {crewStats.crewLevel}</span>
-                    <span>{crewStats.totalXP.toLocaleString()} XP</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <CrewLevelBadge level={crewStats.crewLevel} size="sm" showLabel />
+                    <span className="text-[10px] text-muted-foreground">{crewStats.totalXP.toLocaleString()} XP</span>
                   </div>
                   <Progress value={progressToNext} className="h-1.5" />
                 </div>
@@ -815,9 +817,9 @@ export default function CrewDetailPage() {
                     
                     {/* Stats Row */}
                     <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div className="text-center p-2 bg-background rounded-lg">
-                        <p className="font-display text-lg text-gold">{crewStats.crewLevel}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase">Level</p>
+                      <div className="flex flex-col items-center justify-center p-2 bg-background rounded-lg">
+                        <CrewLevelBadge level={crewStats.crewLevel} size="md" animate />
+                        <p className="text-[10px] text-muted-foreground uppercase mt-1">Level</p>
                       </div>
                       <div className="text-center p-2 bg-background rounded-lg">
                         <p className="font-display text-lg">{crewStats.totalXP.toLocaleString()}</p>
@@ -1006,17 +1008,8 @@ export default function CrewDetailPage() {
                 </div>
               )}
 
-              {activeChannel === 'events' && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mb-4">
-                    <Trophy className="w-8 h-8 text-gold/50" />
-                  </div>
-                  <h3 className="font-display text-xl text-muted-foreground mb-2">CREW-ONLY CHALLENGES</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Coming Soon</p>
-                  <p className="text-xs text-muted-foreground/60 max-w-xs">
-                    Exclusive challenges for {crew.name} members. Compete together, earn crew XP, and climb the leaderboard.
-                  </p>
-                </div>
+              {activeChannel === 'events' && crewId && (
+                <CrewChallengesPanel crewId={crewId} />
               )}
 
               {activeChannel === 'leaderboard' && (
