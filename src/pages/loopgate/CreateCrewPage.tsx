@@ -70,44 +70,72 @@ export default function CreateCrewPage() {
 
     setLoading(true);
 
-    // Create the crew
-    const { data: crew, error: crewError } = await supabase
-      .from("crews")
-      .insert({
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        emblem: formData.emblem,
-        min_league: formData.min_league,
-        join_type: formData.join_type,
-        owner_id: user.id,
-        member_count: 0, // Will be incremented by trigger
-      })
-      .select()
-      .single();
+    try {
+      // Check if user is already in a crew
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("crew_id")
+        .eq("id", user.id)
+        .single();
 
-    if (crewError) {
-      console.error("Error creating crew:", crewError);
-      if (crewError.code === "23505") {
-        alert("A crew with this name already exists.");
+      if (existingProfile?.crew_id) {
+        alert("You are already in a crew. Leave your current crew before creating a new one.");
+        setLoading(false);
+        return;
       }
+
+      // Create the crew with member_count 1 (owner)
+      const { data: crew, error: crewError } = await supabase
+        .from("crews")
+        .insert({
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          emblem: formData.emblem,
+          min_league: formData.min_league,
+          join_type: formData.join_type,
+          owner_id: user.id,
+          member_count: 1, // Start with owner
+        })
+        .select()
+        .single();
+
+      if (crewError) {
+        console.error("Error creating crew:", crewError);
+        if (crewError.code === "23505") {
+          alert("A crew with this name already exists.");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Add creator as owner member
+      const { error: memberError } = await supabase.from("crew_members").insert({
+        crew_id: crew.id,
+        user_id: user.id,
+        role: "owner",
+      });
+
+      if (memberError) {
+        console.error("Error adding owner to crew_members:", memberError);
+        // Try to clean up the crew if member insert failed
+        await supabase.from("crews").delete().eq("id", crew.id);
+        alert("Failed to create crew. Please try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Update profile with crew_id (trigger should do this, but ensure it's set)
+      await supabase
+        .from("profiles")
+        .update({ crew_id: crew.id })
+        .eq("id", user.id);
+
+      navigate(`/crews/${crew.id}`);
+    } catch (error) {
+      console.error("Unexpected error creating crew:", error);
+      alert("An unexpected error occurred. Please try again.");
       setLoading(false);
-      return;
     }
-
-    // Add creator as owner
-    const { error: memberError } = await supabase.from("crew_members").insert({
-      crew_id: crew.id,
-      user_id: user.id,
-      role: "owner",
-    });
-
-    if (memberError) {
-      console.error("Error adding owner:", memberError);
-      setLoading(false);
-      return;
-    }
-
-    navigate(`/crews/${crew.id}`);
   };
 
   return (
