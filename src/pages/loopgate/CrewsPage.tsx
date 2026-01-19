@@ -43,7 +43,7 @@ const emblemIcons: Record<string, React.ReactNode> = {
 
 export default function CrewsPage() {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [crews, setCrews] = useState<Crew[]>([]);
   const [myCrew, setMyCrew] = useState<Crew | null>(null);
@@ -172,7 +172,7 @@ export default function CrewsPage() {
           <header className="relative z-10 px-4 pt-5 pb-6">
             <div className="flex items-center justify-between mb-5">
               <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" />
-              {ownedCrewsCount < 2 && (
+              {isAdmin && (
                 <Button
                   size="sm"
                   onClick={() => navigate("/crews/create")}

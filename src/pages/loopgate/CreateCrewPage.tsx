@@ -31,7 +31,7 @@ const joinTypes = [
 
 export default function CreateCrewPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [ownedCrewsCount, setOwnedCrewsCount] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -41,6 +41,13 @@ export default function CreateCrewPage() {
     min_league: "open" as "open" | "pro" | "elite",
     join_type: "open",
   });
+
+  // Only admins can create crews
+  useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      navigate('/crews');
+    }
+  }, [authLoading, isAdmin, navigate]);
 
   // Check how many crews user already owns
   useEffect(() => {
