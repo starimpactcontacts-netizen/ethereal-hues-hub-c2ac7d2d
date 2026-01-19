@@ -491,7 +491,13 @@ export default function StartPage() {
       
       {/* Header */}
       <div className="relative z-10 p-6 flex items-center justify-between">
-        <img src={loopgateLogo} alt="Loopgate" className="h-6 opacity-80" />
+        <button 
+          onClick={() => navigate('/')} 
+          className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity"
+        >
+          <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+          <img src={loopgateLogo} alt="Loopgate" className="h-6" />
+        </button>
         
         {/* Step indicator */}
         <div className="flex items-center gap-1.5">
