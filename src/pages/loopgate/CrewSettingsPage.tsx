@@ -119,26 +119,33 @@ export default function CrewSettingsPage() {
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
-    // Fetch members for ownership transfer
-    const { data: membersData } = await supabase
+    // Fetch ALL members for ownership transfer (including those we'll filter later for UI)
+    const { data: membersData, error: membersError } = await supabase
       .from("crew_members")
       .select("id, user_id, role")
       .eq("crew_id", crewId);
 
-    if (membersData) {
+    if (membersError) {
+      console.error("Error fetching crew members:", membersError);
+    }
+
+    if (membersData && membersData.length > 0) {
       const memberIds = membersData.map(m => m.user_id);
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, username, display_name, avatar_url")
         .in("id", memberIds);
 
+      // For transfer ownership, show all members EXCEPT the current owner
       const membersWithProfiles = membersData
-        .filter(m => m.user_id !== user?.id) // Exclude current owner
+        .filter(m => m.user_id !== user?.id) // Exclude current owner for transfer list
         .map(member => ({
           ...member,
           profile: profiles?.find(p => p.id === member.user_id) || null,
         }));
       setMembers(membersWithProfiles);
+    } else {
+      setMembers([]);
     }
 
     setLoading(false);
@@ -188,30 +195,39 @@ export default function CrewSettingsPage() {
 
     setSaving(true);
 
-    const { error } = await supabase
-      .from("crews")
-      .update({
-        name: formData.name.trim(),
-        description: formData.description.trim() || null,
-        emblem: formData.emblem,
-        min_league: formData.min_league,
-        join_type: formData.join_type,
-        banner_url: formData.banner_url,
-        banner_color: formData.banner_color,
-        discord_url: formData.discord_url.trim() || null,
-      })
-      .eq("id", crewId);
+    try {
+      const { error } = await supabase
+        .from("crews")
+        .update({
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          emblem: formData.emblem,
+          min_league: formData.min_league,
+          join_type: formData.join_type,
+          banner_url: formData.banner_url,
+          banner_color: formData.banner_color,
+          discord_url: formData.discord_url.trim() || null,
+        })
+        .eq("id", crewId);
 
-    if (error) {
-      console.error("Error updating crew:", error);
-      if (error.code === "23505") {
-        alert("A crew with this name already exists.");
+      if (error) {
+        console.error("Error updating crew:", error);
+        if (error.code === "23505") {
+          toast.error("A crew with this name already exists.");
+        } else {
+          toast.error("Failed to save changes: " + error.message);
+        }
+        setSaving(false);
+        return;
       }
-      setSaving(false);
-      return;
-    }
 
-    navigate(`/crews/${crewId}`);
+      toast.success("Crew settings saved!");
+      navigate(`/crews/${crewId}`);
+    } catch (err) {
+      console.error("Unexpected error saving crew:", err);
+      toast.error("An unexpected error occurred.");
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
