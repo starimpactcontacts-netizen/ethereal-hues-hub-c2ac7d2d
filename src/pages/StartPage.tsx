@@ -445,7 +445,7 @@ export default function StartPage() {
 
     // Navigate based on role
     if (formData.role === 'judge') {
-      navigate('/judge-application');
+      navigate('/judges/apply');
     } else {
       navigate('/hub');
     }
