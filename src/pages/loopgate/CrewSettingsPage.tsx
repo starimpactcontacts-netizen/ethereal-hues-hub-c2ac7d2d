@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera } from "lucide-react";
+import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewAvatarUploadModal from "@/components/loopgate/CrewAvatarUploadModal";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +22,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+interface Member {
+  id: string;
+  user_id: string;
+  role: string;
+  profile: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
+}
 
 const emblems = [
   { id: "shield", icon: Shield, label: "Shield" },
@@ -50,6 +63,8 @@ export default function CrewSettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [crewAvatarUrl, setCrewAvatarUrl] = useState<string | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [transferringTo, setTransferringTo] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -94,7 +109,68 @@ export default function CrewSettingsPage() {
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
+    // Fetch members for ownership transfer
+    const { data: membersData } = await supabase
+      .from("crew_members")
+      .select("id, user_id, role")
+      .eq("crew_id", crewId);
+
+    if (membersData) {
+      const memberIds = membersData.map(m => m.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .in("id", memberIds);
+
+      const membersWithProfiles = membersData
+        .filter(m => m.user_id !== user?.id) // Exclude current owner
+        .map(member => ({
+          ...member,
+          profile: profiles?.find(p => p.id === member.user_id) || null,
+        }));
+      setMembers(membersWithProfiles);
+    }
+
     setLoading(false);
+  };
+
+  const handleTransferOwnership = async (newOwnerId: string) => {
+    if (!crewId || !user) return;
+
+    setTransferringTo(newOwnerId);
+
+    try {
+      // Update crew owner_id
+      const { error: crewError } = await supabase
+        .from("crews")
+        .update({ owner_id: newOwnerId })
+        .eq("id", crewId);
+
+      if (crewError) throw crewError;
+
+      // Update crew_members roles
+      // Make current owner a regular member
+      await supabase
+        .from("crew_members")
+        .update({ role: "member" })
+        .eq("crew_id", crewId)
+        .eq("user_id", user.id);
+
+      // Make new owner the owner
+      await supabase
+        .from("crew_members")
+        .update({ role: "owner" })
+        .eq("crew_id", crewId)
+        .eq("user_id", newOwnerId);
+
+      toast.success("Ownership transferred successfully");
+      navigate(`/crews/${crewId}`);
+    } catch (error) {
+      console.error("Error transferring ownership:", error);
+      toast.error("Failed to transfer ownership");
+    } finally {
+      setTransferringTo(null);
+    }
   };
 
   const handleSave = async () => {
@@ -297,8 +373,62 @@ export default function CrewSettingsPage() {
           </Button>
 
           {/* Danger Zone */}
-          <div className="pt-6 border-t border-border">
-            <h3 className="text-sm font-semibold text-red-500 mb-3">Danger Zone</h3>
+          <div className="pt-6 border-t border-border space-y-4">
+            <h3 className="text-sm font-semibold text-red-500">Danger Zone</h3>
+            
+            {/* Transfer Ownership */}
+            {members.length > 0 && (
+              <div className="space-y-3">
+                <Label className="text-muted-foreground">Transfer Ownership</Label>
+                <p className="text-xs text-muted-foreground">
+                  Transfer this crew to another member. You will become a regular member.
+                </p>
+                <div className="space-y-2">
+                  {members.map((member) => (
+                    <AlertDialog key={member.id}>
+                      <AlertDialogTrigger asChild>
+                        <button className="w-full flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border hover:border-gold/50 transition-all text-left">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={member.profile?.avatar_url || undefined} />
+                            <AvatarFallback className="bg-gold/10 text-gold text-xs">
+                              {member.profile?.username?.charAt(0).toUpperCase() || "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">
+                              {member.profile?.display_name || member.profile?.username || "Unknown"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">@{member.profile?.username}</p>
+                          </div>
+                          <UserCog className="w-4 h-4 text-muted-foreground" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Transfer Ownership?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to transfer ownership to <strong>@{member.profile?.username}</strong>? 
+                            You will become a regular member and lose all owner privileges.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleTransferOwnership(member.user_id)}
+                            disabled={transferringTo === member.user_id}
+                            className="bg-gold text-black hover:bg-gold/90"
+                          >
+                            {transferringTo === member.user_id ? "Transferring..." : "Transfer"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Delete Crew */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full" disabled={deleting}>
