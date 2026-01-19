@@ -157,28 +157,32 @@ export default function CrewSettingsPage() {
     setTransferringTo(newOwnerId);
 
     try {
-      // Update crew owner_id
+      // IMPORTANT: Update crew_members roles FIRST (while current user is still owner)
+      // Make new owner the owner role in crew_members
+      const { error: newOwnerRoleError } = await supabase
+        .from("crew_members")
+        .update({ role: "owner" })
+        .eq("crew_id", crewId)
+        .eq("user_id", newOwnerId);
+
+      if (newOwnerRoleError) throw newOwnerRoleError;
+
+      // Demote current owner to regular member
+      const { error: oldOwnerRoleError } = await supabase
+        .from("crew_members")
+        .update({ role: "member" })
+        .eq("crew_id", crewId)
+        .eq("user_id", user.id);
+
+      if (oldOwnerRoleError) throw oldOwnerRoleError;
+
+      // LAST: Update crew owner_id (after role updates are complete)
       const { error: crewError } = await supabase
         .from("crews")
         .update({ owner_id: newOwnerId })
         .eq("id", crewId);
 
       if (crewError) throw crewError;
-
-      // Update crew_members roles
-      // Make current owner a regular member
-      await supabase
-        .from("crew_members")
-        .update({ role: "member" })
-        .eq("crew_id", crewId)
-        .eq("user_id", user.id);
-
-      // Make new owner the owner
-      await supabase
-        .from("crew_members")
-        .update({ role: "owner" })
-        .eq("crew_id", crewId)
-        .eq("user_id", newOwnerId);
 
       toast.success("Ownership transferred successfully");
       navigate(`/crews/${crewId}`);
