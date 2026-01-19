@@ -49,7 +49,7 @@ export default function CrewsPage() {
   const [myCrew, setMyCrew] = useState<Crew | null>(null);
   const [ownedCrewsCount, setOwnedCrewsCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"discover" | "my-crew">("discover");
+  const [activeTab, setActiveTab] = useState<"discover" | "my-crew">(profile?.crew_id ? "my-crew" : "discover");
 
   useEffect(() => {
     fetchCrews();
