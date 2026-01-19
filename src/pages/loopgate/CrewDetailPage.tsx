@@ -300,8 +300,9 @@ export default function CrewDetailPage() {
     );
   }
 
-  const isStaff = myRole === "owner" || myRole === "officer";
-  const isOwner = myRole === "owner";
+  // Use crew.owner_id as source of truth for ownership
+  const isOwner = crew.owner_id === user?.id;
+  const isStaff = isOwner || myRole === "officer";
   const owner = members.find(m => m.role === 'owner');
   const crewSlug = crew?.name?.toLowerCase().replace(/\s+/g, '-') || '';
   const publicLink = `loopgate.io/join/${crewSlug}`;
@@ -329,26 +330,26 @@ export default function CrewDetailPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col pb-20">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-surface-1/95 backdrop-blur-sm border-b border-border">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate("/crews")} className="text-muted-foreground hover:text-foreground">
+          <div className="px-4 py-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <button onClick={() => navigate("/crews")} className="text-muted-foreground hover:text-foreground shrink-0">
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gold/10 flex items-center justify-center text-gold">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-gold/10 flex items-center justify-center text-gold shrink-0">
                   {crew.avatar_url ? (
                     <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
                   ) : (
                     <Shield className="w-4 h-4" />
                   )}
                 </div>
-                <h1 className="font-bold truncate">{crew.name}</h1>
+                <h1 className="font-bold truncate max-w-[200px]">{crew.name}</h1>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               {isOwner && (
                 <Button variant="ghost" size="icon" onClick={() => navigate(`/crews/${crewId}/settings`)}>
                   <Settings className="w-5 h-5" />
