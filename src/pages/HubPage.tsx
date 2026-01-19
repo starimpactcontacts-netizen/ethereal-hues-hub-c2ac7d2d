@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
-  Users2, Zap, TrendingUp, Star, Coins, ShoppingBag, Gavel
+  Users2, Zap, TrendingUp, Star, Coins, ShoppingBag, Gavel,
+  ChevronRight, Plus, Swords
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { useRealEvents, useGlobalStats, useActiveSession } from '@/hooks/useRealData';
+import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings } from '@/hooks/useRealData';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import LoopMonster from '@/components/loopgate/LoopMonster';
@@ -17,6 +18,8 @@ import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
+import XPProgressBar from '@/components/loopgate/XPProgressBar';
+import CrewBadge from '@/components/loopgate/CrewBadge';
 import { supabase } from '@/integrations/supabase/client';
 
 const leagueConfig = {
@@ -26,6 +29,13 @@ const leagueConfig = {
   open: { label: 'OPEN', icon: Users, gradient: 'from-zinc-500 to-zinc-600', glow: 'shadow-zinc-500/10' },
 };
 
+interface UserCrew {
+  id: string;
+  name: string;
+  emblem: string;
+  avatar_url: string | null;
+}
+
 export default function HubPage() {
   const { profile, user } = useAuth();
   const { isJudge } = useUserRoles(user?.id);
@@ -33,8 +43,11 @@ export default function HubPage() {
   const { isGuest } = useGuestMode();
   const { events } = useRealEvents();
   const { stats } = useGlobalStats();
+  const { rankings } = useRealRankings();
+  const navigate = useNavigate();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
+  const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
   
   useActiveSession();
   
@@ -42,6 +55,25 @@ export default function HubPage() {
   const displayUsername = profile?.username || tempProfile?.username || (isGuest ? 'Guest' : 'EDITOR');
   const displayAvatar = profile?.avatar_url || tempProfile?.avatarUrl;
   const isTemporaryUser = !user && (tempProfile || isGuest);
+
+  // Calculate global rank
+  const globalRank = rankings.findIndex(r => r.id === user?.id) + 1 || null;
+
+  // Fetch user's crew
+  useEffect(() => {
+    if (profile?.crew_id) {
+      supabase
+        .from('crews')
+        .select('id, name, emblem, avatar_url')
+        .eq('id', profile.crew_id)
+        .single()
+        .then(({ data }) => {
+          if (data) setUserCrew(data);
+        });
+    } else {
+      setUserCrew(null);
+    }
+  }, [profile?.crew_id]);
 
   // Fetch judge review count if user is a judge
   useEffect(() => {
@@ -99,70 +131,153 @@ export default function HubPage() {
 
         {/* Hero Content */}
         <div className="relative px-4 pt-10 pb-6">
-          {/* User Identity + Shop Balance Row */}
+          {/* EXPANDED USER PROFILE CARD */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center justify-between mb-8"
+            className="relative"
           >
-            {/* Left: User Identity Badge */}
-            <div className="flex items-center gap-3">
-              {/* Avatar with league ring */}
-              <div className="relative">
-                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow}`}>
-                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                    {displayAvatar ? (
-                      <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="font-display text-xl text-foreground">
-                        {displayUsername?.charAt(0).toUpperCase() || 'E'}
-                      </span>
-                    )}
+            {/* Main profile card */}
+            <div className="bg-surface-1/80 backdrop-blur-xl border border-border/50 overflow-hidden">
+              {/* Top Row: Avatar + Identity + Shop Balance */}
+              <div className="p-4 flex items-start justify-between gap-4">
+                {/* Left: Avatar + Identity */}
+                <button 
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center gap-3 group text-left"
+                >
+                  {/* Avatar with league ring + level badge */}
+                  <div className="relative shrink-0">
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
+                      <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                        {displayAvatar ? (
+                          <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-display text-2xl text-foreground">
+                            {displayUsername?.charAt(0).toUpperCase() || 'E'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Level badge */}
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border-2 border-gold flex items-center justify-center shadow-lg">
+                      <span className="font-display text-xs text-gold">{profile?.level || 1}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="font-display text-2xl text-foreground leading-none truncate max-w-[140px]">
+                        {displayUsername}
+                      </h1>
+                      {isJudge && (
+                        <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
+                      )}
+                    </div>
+                    {/* League + Rank Row */}
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
+                        <LeagueIcon className="w-3 h-3 text-background" />
+                        <span className="text-[9px] font-bold tracking-wider text-background uppercase">
+                          {league.label}
+                        </span>
+                      </div>
+                      {globalRank && globalRank <= 500 && (
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gold/10 border border-gold/30">
+                          <Trophy className="w-3 h-3 text-gold" />
+                          <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+
+                {/* Right: Shop Balance */}
+                <Link to="/shop" className="group shrink-0">
+                  <div className="flex items-center gap-2 bg-gold/5 border border-gold/30 hover:bg-gold/10 hover:border-gold/50 px-3 py-2 transition-colors">
+                    <div className="w-9 h-9 bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                      <ShoppingBag className="w-4 h-4 text-gold" />
+                    </div>
+                    <div className="text-right">
+                      <div className="flex items-center gap-1">
+                        <Coins className="w-3 h-3 text-gold" />
+                        <span className="font-display text-xl text-gold leading-none">
+                          {(profile as any)?.spendable_index || 0}
+                        </span>
+                      </div>
+                      <p className="text-[8px] text-muted-foreground uppercase tracking-widest">INDEX</p>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+
+              {/* XP Progress Bar */}
+              <div className="px-4 pb-3">
+                <XPProgressBar 
+                  xp={profile?.xp || 0} 
+                  level={profile?.level || 1} 
+                  size="sm"
+                  showNumbers={true}
+                />
+              </div>
+
+              {/* Stats Row */}
+              <div className="border-t border-border/30 px-4 py-3">
+                <div className="grid grid-cols-4 gap-3 text-center">
+                  <div>
+                    <p className="font-display text-lg text-foreground">{profile?.total_events || 0}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Events</p>
+                  </div>
+                  <div>
+                    <p className="font-display text-lg text-foreground">{profile?.total_wins || 0}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Wins</p>
+                  </div>
+                  <div>
+                    <p className="font-display text-lg text-gold">{bestScore?.toFixed(0) || '—'}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best QOI</p>
+                  </div>
+                  <div>
+                    <p className="font-display text-lg text-foreground">{profile?.win_rate ? `${(profile.win_rate * 100).toFixed(0)}%` : '—'}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Win Rate</p>
                   </div>
                 </div>
-                {/* League indicator */}
-                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gradient-to-br ${league.gradient} flex items-center justify-center shadow-lg`}>
-                  <LeagueIcon className="w-3 h-3 text-background" />
-                </div>
               </div>
-              
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="font-display text-2xl text-foreground leading-none">
-                    {displayUsername}
-                  </h1>
-                  {/* Judge Class Badge - Only visible to judges */}
-                  {isJudge && (
-                    <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className={`text-[10px] font-bold tracking-widest uppercase bg-gradient-to-r ${league.gradient} bg-clip-text text-transparent`}>
-                    {league.label} LEAGUE
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">•</span>
-                  <span className="text-[10px] text-muted-foreground">LVL {profile?.level || 1}</span>
-                </div>
+
+              {/* Crew Section - Prominent */}
+              <div className="border-t border-border/30 px-4 py-3">
+                {userCrew ? (
+                  <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center overflow-hidden">
+                        {userCrew.avatar_url ? (
+                          <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Users2 className="w-5 h-5 text-gold" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
+                        <p className="font-display text-sm text-gold">{userCrew.name}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+                ) : (
+                  <Link to="/crews" className="flex items-center justify-between group">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center">
+                        <Plus className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Join a Crew</p>
+                        <p className="text-sm text-foreground group-hover:text-gold transition-colors">Find your squad</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+                )}
               </div>
             </div>
-
-            {/* Right: Shop Balance */}
-            <Link to="/shop" className="group">
-              <div className="flex items-center gap-2 bg-surface-1/80 backdrop-blur border border-border hover:border-gold/50 px-3 py-2 transition-colors">
-                <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                  <ShoppingBag className="w-4 h-4 text-gold" />
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1">
-                    <Coins className="w-3 h-3 text-gold" />
-                    <span className="font-display text-lg text-gold leading-none">
-                      {(profile as any)?.spendable_index || 0}
-                    </span>
-                  </div>
-                  <p className="text-[8px] text-muted-foreground uppercase tracking-widest">INDEX</p>
-                </div>
-              </div>
-            </Link>
           </motion.div>
 
           {/* ═══════════════════════════════════════════════════════════════════
@@ -355,35 +470,39 @@ export default function HubPage() {
           </motion.div>
         )}
 
-        {/* Quick Access Row - Rankings, Crews */}
+        {/* Quick Access Row - Rankings, Judges - 2 col now since Crews is in profile */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
           className="px-4"
         >
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <Link to="/rankings">
-              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-3 group h-full">
-                <Trophy className="w-5 h-5 text-gold mb-2" />
-                <p className="font-display text-xs">RANKINGS</p>
-                <p className="text-[8px] text-muted-foreground mt-0.5">Global Index</p>
+              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group h-full">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-gold" />
+                  </div>
+                  <div>
+                    <p className="font-display text-sm">RANKINGS</p>
+                    <p className="text-[9px] text-muted-foreground">Global Index</p>
+                  </div>
+                </div>
               </div>
             </Link>
             
             <Link to="/judges">
-              <div className="bg-gradient-to-br from-purple-500/10 to-surface-1/60 backdrop-blur border border-purple-500/30 hover:border-purple-400/50 transition-colors p-3 group h-full">
-                <Gavel className="w-5 h-5 text-purple-400 mb-2" />
-                <p className="font-display text-xs text-purple-300">QOI JUDGES</p>
-                <p className="text-[8px] text-muted-foreground mt-0.5">Get rated</p>
-              </div>
-            </Link>
-            
-            <Link to="/crews">
-              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-3 group h-full">
-                <Users2 className="w-5 h-5 text-muted-foreground mb-2" />
-                <p className="font-display text-xs">CREWS</p>
-                <p className="text-[8px] text-muted-foreground mt-0.5">Join a team</p>
+              <div className="bg-gradient-to-br from-purple-500/10 to-surface-1/60 backdrop-blur border border-purple-500/30 hover:border-purple-400/50 transition-colors p-4 group h-full">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
+                    <Gavel className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="font-display text-sm text-purple-300">QOI JUDGES</p>
+                    <p className="text-[9px] text-muted-foreground">Get rated</p>
+                  </div>
+                </div>
               </div>
             </Link>
           </div>
