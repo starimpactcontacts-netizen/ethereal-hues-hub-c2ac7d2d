@@ -282,21 +282,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null, tokenHash: data?.tokenHash };
   };
 
-  const signInWithOtp = async (email: string, token: string, tokenHash?: string) => {
-    // Use token_hash for verification (PKCE flow)
-    if (tokenHash) {
-      const { error } = await supabase.auth.verifyOtp({
-        token_hash: tokenHash,
-        type: 'magiclink',
-      });
-      return { error };
-    }
-    
-    // Fallback to email + token (shouldn't be used but kept for safety)
+  const signInWithOtp = async (email: string, token: string, _tokenHash?: string) => {
+    // Always use email + token for OTP verification
+    // The token is the 6-8 character code the user enters
     const { error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: 'magiclink',
+      type: 'email',
     });
     return { error };
   };
