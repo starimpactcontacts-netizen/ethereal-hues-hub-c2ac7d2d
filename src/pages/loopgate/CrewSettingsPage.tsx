@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog, ImagePlus, Palette, X } from "lucide-react";
+import { SiDiscord } from "@icons-pack/react-simple-icons";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -75,6 +76,7 @@ export default function CrewSettingsPage() {
     join_type: "open",
     banner_url: null as string | null,
     banner_color: "#d4af37",
+    discord_url: "",
   });
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -113,6 +115,7 @@ export default function CrewSettingsPage() {
       join_type: crew.join_type,
       banner_url: crew.banner_url || null,
       banner_color: crew.banner_color || "#d4af37",
+      discord_url: crew.discord_url || "",
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
@@ -195,6 +198,7 @@ export default function CrewSettingsPage() {
         join_type: formData.join_type,
         banner_url: formData.banner_url,
         banner_color: formData.banner_color,
+        discord_url: formData.discord_url.trim() || null,
       })
       .eq("id", crewId);
 
@@ -433,6 +437,23 @@ export default function CrewSettingsPage() {
               className="bg-muted/50 resize-none"
               rows={3}
             />
+          </div>
+
+          {/* Discord Server */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <SiDiscord className="w-4 h-4 text-[#5865F2]" />
+              Discord Server
+            </Label>
+            <Input
+              placeholder="https://discord.gg/your-invite"
+              value={formData.discord_url}
+              onChange={(e) => setFormData({ ...formData, discord_url: e.target.value })}
+              className="bg-muted/50"
+            />
+            <p className="text-xs text-muted-foreground">
+              Add your Discord invite link so members can join your server
+            </p>
           </div>
 
           {/* Emblem */}
