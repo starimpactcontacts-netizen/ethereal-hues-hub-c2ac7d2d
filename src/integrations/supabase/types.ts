@@ -244,8 +244,11 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           description: string | null
+          discord_url: string | null
           emblem: string
+          featured_at: string | null
           id: string
+          is_featured: boolean | null
           join_type: string
           member_count: number
           min_league: Database["public"]["Enums"]["league_tier"]
@@ -257,8 +260,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           description?: string | null
+          discord_url?: string | null
           emblem?: string
+          featured_at?: string | null
           id?: string
+          is_featured?: boolean | null
           join_type?: string
           member_count?: number
           min_league?: Database["public"]["Enums"]["league_tier"]
@@ -270,8 +276,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           description?: string | null
+          discord_url?: string | null
           emblem?: string
+          featured_at?: string | null
           id?: string
+          is_featured?: boolean | null
           join_type?: string
           member_count?: number
           min_league?: Database["public"]["Enums"]["league_tier"]

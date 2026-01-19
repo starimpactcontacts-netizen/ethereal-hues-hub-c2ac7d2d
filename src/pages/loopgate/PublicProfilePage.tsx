@@ -10,10 +10,10 @@ import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
-import CrewBadge from "@/components/loopgate/CrewBadge";
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import { getRankFromScore } from "@/data/gqtConfig";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PublicProfile {
   id: string;
@@ -33,21 +33,12 @@ interface PublicProfile {
   portfolio_url: string | null;
   created_at: string | null;
   crew_id: string | null;
-  house_id: string | null;
   xp: number;
   level: number;
   archetype: string | null;
   software: string[] | null;
   best_gatekeeper_qoi: number | null;
   is_founding_member: boolean;
-}
-
-interface UserHouse {
-  id: string;
-  name: string;
-  symbol: string;
-  primary_color: string;
-  secondary_color: string;
 }
 
 interface ConnectedPlatform {
@@ -79,7 +70,6 @@ export default function PublicProfilePage() {
   const [rank, setRank] = useState<number | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
-  const [userHouse, setUserHouse] = useState<UserHouse | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'edits' | 'about'>('edits');
   const [submissionCount, setSubmissionCount] = useState(0);
@@ -93,7 +83,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, house_id, xp, level, archetype, software, best_gatekeeper_qoi")
+        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi")
         .eq("id", userId)
         .single();
 
@@ -108,16 +98,6 @@ export default function PublicProfilePage() {
             .eq("id", profileData.crew_id)
             .single();
           setUserCrew(crewData);
-        }
-
-        // Fetch house if user has one
-        if (profileData.house_id) {
-          const { data: houseData } = await supabase
-            .from("houses")
-            .select("id, name, symbol, primary_color, secondary_color")
-            .eq("id", profileData.house_id)
-            .single();
-          setUserHouse(houseData);
         }
       }
 
@@ -268,14 +248,14 @@ export default function PublicProfilePage() {
 
           {/* Profile Info */}
           <div className="px-4 pt-6 pb-4 flex flex-col items-center text-center">
-            {/* Avatar with House Ring */}
+            {/* Avatar */}
             <div className="mb-4">
-              <HouseAvatarRing 
-                house={userHouse}
-                size="xl"
-                avatarUrl={profile.avatar_url}
-                username={profile.username}
-              />
+              <Avatar className="w-24 h-24 border-4 border-gold/30">
+                <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
+                <AvatarFallback className="bg-gold/10 text-gold text-3xl font-display">
+                  {profile.username[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
             </div>
 
             {/* Name & Badges */}
@@ -479,13 +459,6 @@ export default function PublicProfilePage() {
             </div>
           )}
 
-          {/* House */}
-          {userHouse && (
-            <div className="flex items-center justify-between pt-4 border-t border-border">
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">House</span>
-              <HouseBadge house={userHouse} size="md" />
-            </div>
-          )}
         </div>
       )}
     </div>
