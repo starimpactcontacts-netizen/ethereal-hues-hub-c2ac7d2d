@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { 
   ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, 
   LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins, Copy, Link2, Calendar, 
-  Trophy, Hash, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight
+  Trophy, Hash, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight, Send, Trash2
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,36 @@ interface ActivityItem {
   timestamp: string;
 }
 
+interface Announcement {
+  id: string;
+  crew_id: string;
+  author_id: string;
+  message: string;
+  created_at: string;
+  author?: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+}
+
+interface CrewSubmission {
+  id: string;
+  user_id: string;
+  event_id: string;
+  submission_url: string;
+  platform: string;
+  qoi_score: number | null;
+  submitted_at: string;
+  user?: {
+    username: string;
+    avatar_url: string | null;
+  };
+  event?: {
+    title: string;
+  };
+}
+
 type ChannelType = 'announcements' | 'events' | 'leaderboard' | 'members' | 'submissions';
 
 const emblemIcons: Record<string, React.ReactNode> = {
@@ -147,6 +178,12 @@ export default function CrewDetailPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [activeChannel, setActiveChannel] = useState<ChannelType>('announcements');
   const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [newAnnouncement, setNewAnnouncement] = useState("");
+  const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
+  const [unreadAnnouncementCount, setUnreadAnnouncementCount] = useState(0);
+  const [crewSubmissions, setCrewSubmissions] = useState<CrewSubmission[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
 
   useEffect(() => {
     if (crewId) {
@@ -293,6 +330,231 @@ export default function CrewDetailPage() {
     fetchCrewData();
   };
 
+  // Fetch announcements
+  const fetchAnnouncements = useCallback(async () => {
+    if (!crewId) return;
+    
+    const { data: announcementsData, error } = await supabase
+      .from("crew_announcements")
+      .select("*")
+      .eq("crew_id", crewId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error("Error fetching announcements:", error);
+      return;
+    }
+
+    if (announcementsData && announcementsData.length > 0) {
+      const authorIds = [...new Set(announcementsData.map((a) => a.author_id))];
+      const { data: authorProfiles } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .in("id", authorIds);
+
+      const announcementsWithAuthors = announcementsData.map((a) => ({
+        ...a,
+        author: authorProfiles?.find((p) => p.id === a.author_id) || undefined,
+      }));
+
+      setAnnouncements(announcementsWithAuthors);
+    } else {
+      setAnnouncements([]);
+    }
+  }, [crewId]);
+
+  // Fetch unread count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!crewId || !user) return;
+
+    // Get user's last read time
+    const { data: readData } = await supabase
+      .from("crew_announcement_reads")
+      .select("last_read_at")
+      .eq("crew_id", crewId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const lastReadAt = readData?.last_read_at || new Date(0).toISOString();
+
+    // Count announcements after last read
+    const { count } = await supabase
+      .from("crew_announcements")
+      .select("*", { count: "exact", head: true })
+      .eq("crew_id", crewId)
+      .gt("created_at", lastReadAt);
+
+    setUnreadAnnouncementCount(count || 0);
+  }, [crewId, user]);
+
+  // Mark announcements as read
+  const markAnnouncementsAsRead = useCallback(async () => {
+    if (!crewId || !user) return;
+
+    await supabase
+      .from("crew_announcement_reads")
+      .upsert({
+        user_id: user.id,
+        crew_id: crewId,
+        last_read_at: new Date().toISOString(),
+      }, { onConflict: "user_id,crew_id" });
+
+    setUnreadAnnouncementCount(0);
+  }, [crewId, user]);
+
+  // Post announcement
+  const handlePostAnnouncement = async () => {
+    if (!crewId || !user || !newAnnouncement.trim()) return;
+
+    setSendingAnnouncement(true);
+    const { error } = await supabase.from("crew_announcements").insert({
+      crew_id: crewId,
+      author_id: user.id,
+      message: newAnnouncement.trim(),
+    });
+
+    if (error) {
+      console.error("Error posting announcement:", error);
+      toast.error("Failed to post announcement");
+    } else {
+      setNewAnnouncement("");
+      toast.success("Announcement posted!");
+      fetchAnnouncements();
+    }
+    setSendingAnnouncement(false);
+  };
+
+  // Delete announcement
+  const handleDeleteAnnouncement = async (announcementId: string) => {
+    const { error } = await supabase
+      .from("crew_announcements")
+      .delete()
+      .eq("id", announcementId);
+
+    if (error) {
+      toast.error("Failed to delete announcement");
+    } else {
+      fetchAnnouncements();
+    }
+  };
+
+  // Fetch crew submissions
+  const fetchCrewSubmissions = useCallback(async () => {
+    if (!crewId || members.length === 0) return;
+
+    setLoadingSubmissions(true);
+    const memberIds = members.map((m) => m.user_id);
+
+    // Get both round participations and event participations
+    const [{ data: roundData }, { data: eventData }] = await Promise.all([
+      supabase
+        .from("round_participations")
+        .select("id, user_id, event_id, submission_url, platform, qoi_score, submitted_at")
+        .in("user_id", memberIds)
+        .not("submission_url", "is", null)
+        .order("submitted_at", { ascending: false })
+        .limit(30),
+      supabase
+        .from("event_participations")
+        .select("id, user_id, event_id, submission_url, platform, qoi_score, submitted_at")
+        .in("user_id", memberIds)
+        .order("submitted_at", { ascending: false })
+        .limit(30),
+    ]);
+
+    const allSubmissions = [
+      ...(roundData || []).map((s) => ({ ...s, platform: s.platform || "tiktok" })),
+      ...(eventData || []),
+    ];
+
+    // Sort by submitted_at descending
+    allSubmissions.sort((a, b) => {
+      const dateA = new Date(a.submitted_at || "").getTime();
+      const dateB = new Date(b.submitted_at || "").getTime();
+      return dateB - dateA;
+    });
+
+    // Get unique event IDs
+    const eventIds = [...new Set(allSubmissions.map((s) => s.event_id))];
+    
+    const { data: eventsData } = await supabase
+      .from("events")
+      .select("id, title")
+      .in("id", eventIds);
+
+    const eventsMap = new Map((eventsData || []).map((e) => [e.id, e]));
+    const membersMap = new Map(members.map((m) => [m.user_id, m.profile]));
+
+    const submissionsWithDetails: CrewSubmission[] = allSubmissions.slice(0, 30).map((s) => ({
+      id: s.id,
+      user_id: s.user_id,
+      event_id: s.event_id,
+      submission_url: s.submission_url!,
+      platform: s.platform,
+      qoi_score: s.qoi_score,
+      submitted_at: s.submitted_at || "",
+      user: membersMap.get(s.user_id) ? {
+        username: membersMap.get(s.user_id)!.username,
+        avatar_url: membersMap.get(s.user_id)!.avatar_url,
+      } : undefined,
+      event: eventsMap.get(s.event_id) ? { title: eventsMap.get(s.event_id)!.title } : undefined,
+    }));
+
+    setCrewSubmissions(submissionsWithDetails);
+    setLoadingSubmissions(false);
+  }, [crewId, members]);
+
+  // Load announcements and unread count when crew loads
+  useEffect(() => {
+    if (crewId && myRole) {
+      fetchAnnouncements();
+      fetchUnreadCount();
+    }
+  }, [crewId, myRole, fetchAnnouncements, fetchUnreadCount]);
+
+  // Load submissions when switching to submissions channel
+  useEffect(() => {
+    if (activeChannel === "submissions" && crewSubmissions.length === 0 && members.length > 0) {
+      fetchCrewSubmissions();
+    }
+  }, [activeChannel, crewSubmissions.length, members.length, fetchCrewSubmissions]);
+
+  // Mark as read when viewing announcements channel
+  useEffect(() => {
+    if (activeChannel === "announcements" && unreadAnnouncementCount > 0) {
+      markAnnouncementsAsRead();
+    }
+  }, [activeChannel, unreadAnnouncementCount, markAnnouncementsAsRead]);
+
+  // Subscribe to realtime announcements
+  useEffect(() => {
+    if (!crewId) return;
+
+    const channel = supabase
+      .channel(`crew-announcements-${crewId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "crew_announcements",
+          filter: `crew_id=eq.${crewId}`,
+        },
+        () => {
+          fetchAnnouncements();
+          if (activeChannel !== "announcements") {
+            fetchUnreadCount();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [crewId, activeChannel, fetchAnnouncements, fetchUnreadCount]);
+
   if (loading || !crew) {
     return (
       <PageTransition>
@@ -435,7 +697,12 @@ export default function CrewDetailPage() {
                     }`}
                   >
                     <Hash className="w-4 h-4 opacity-60" />
-                    {channel.label}
+                    <span className="flex-1 text-left">{channel.label}</span>
+                    {channel.id === 'announcements' && unreadAnnouncementCount > 0 && (
+                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
+                        {unreadAnnouncementCount > 9 ? '9+' : unreadAnnouncementCount}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -580,6 +847,73 @@ export default function CrewDetailPage() {
                     </div>
                   )}
 
+                  {/* Post Announcement - Staff Only */}
+                  {isStaff && (
+                    <div className="bg-surface-1 border border-border rounded-lg p-4">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                        <Bell className="w-4 h-4" />
+                        Post Announcement
+                      </h3>
+                      <div className="space-y-2">
+                        <Textarea
+                          value={newAnnouncement}
+                          onChange={(e) => setNewAnnouncement(e.target.value)}
+                          placeholder="Write an announcement for crew members..."
+                          className="min-h-[80px] resize-none"
+                        />
+                        <Button
+                          onClick={handlePostAnnouncement}
+                          disabled={sendingAnnouncement || !newAnnouncement.trim()}
+                          className="w-full bg-gold text-black hover:bg-gold/90"
+                        >
+                          {sendingAnnouncement ? (
+                            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4 mr-2" />
+                              Post
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Announcements List */}
+                  {announcements.length > 0 && (
+                    <div className="space-y-3">
+                      {announcements.map((announcement) => (
+                        <div key={announcement.id} className="bg-surface-1 border border-border rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage src={announcement.author?.avatar_url || undefined} />
+                              <AvatarFallback>{(announcement.author?.username || "?")[0].toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold text-sm">{announcement.author?.display_name || announcement.author?.username || "Staff"}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(announcement.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{announcement.message}</p>
+                            </div>
+                            {(isOwner || announcement.author_id === user?.id) && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-red-500 shrink-0"
+                                onClick={() => handleDeleteAnnouncement(announcement.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Activity Feed */}
                   <div className="bg-surface-1 border border-border rounded-lg p-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
@@ -694,14 +1028,56 @@ export default function CrewDetailPage() {
               )}
 
               {activeChannel === 'submissions' && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                    <FileVideo className="w-8 h-8 text-muted-foreground/50" />
-                  </div>
-                  <h3 className="font-display text-lg text-muted-foreground mb-2">Crew Submissions</h3>
-                  <p className="text-xs text-muted-foreground/60 max-w-xs">
-                    See all submissions from crew members in one place. Coming soon.
-                  </p>
+                <div className="space-y-3">
+                  {loadingSubmissions ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : crewSubmissions.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                        <FileVideo className="w-8 h-8 text-muted-foreground/50" />
+                      </div>
+                      <h3 className="font-display text-lg text-muted-foreground mb-2">No Submissions Yet</h3>
+                      <p className="text-xs text-muted-foreground/60 max-w-xs">
+                        When crew members submit to arenas, their submissions will appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    crewSubmissions.map((submission) => (
+                      <a
+                        key={submission.id}
+                        href={submission.submission_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block bg-surface-1 border border-border rounded-lg p-4 hover:border-gold/30 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-9 h-9">
+                            <AvatarImage src={submission.user?.avatar_url || undefined} />
+                            <AvatarFallback>{(submission.user?.username || "?")[0].toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">{submission.user?.username || "Unknown"}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {submission.event?.title || "Arena Submission"}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            {submission.qoi_score ? (
+                              <p className="text-sm font-bold text-gold">{Math.round(submission.qoi_score)} QOI</p>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">Pending</p>
+                            )}
+                            <p className="text-[10px] text-muted-foreground">
+                              {new Date(submission.submitted_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
+                        </div>
+                      </a>
+                    ))
+                  )}
                 </div>
               )}
             </div>
