@@ -134,6 +134,67 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_announcement_reads: {
+        Row: {
+          crew_id: string
+          id: string
+          last_read_at: string
+          user_id: string
+        }
+        Insert: {
+          crew_id: string
+          id?: string
+          last_read_at?: string
+          user_id: string
+        }
+        Update: {
+          crew_id?: string
+          id?: string
+          last_read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_announcement_reads_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_announcements: {
+        Row: {
+          author_id: string
+          created_at: string
+          crew_id: string
+          id: string
+          message: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          crew_id: string
+          id?: string
+          message: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          crew_id?: string
+          id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_announcements_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_join_requests: {
         Row: {
           created_at: string
