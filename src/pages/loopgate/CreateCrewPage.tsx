@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +33,8 @@ const joinTypes = [
 export default function CreateCrewPage() {
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading } = useAuth();
+  const { isAdmin: hasAdminRole, isDev } = useUserRoles(user?.id);
+  const canBypassLimit = hasAdminRole || isDev;
   const [loading, setLoading] = useState(false);
   const [ownedCrewsCount, setOwnedCrewsCount] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -66,7 +69,7 @@ export default function CreateCrewPage() {
   }, [user]);
 
   const handleCreate = async () => {
-    if (!user || !formData.name.trim() || (ownedCrewsCount !== null && ownedCrewsCount >= 2)) return;
+    if (!user || !formData.name.trim() || (!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2)) return;
 
     setLoading(true);
 
@@ -152,8 +155,8 @@ export default function CreateCrewPage() {
         </div>
 
         <div className="px-4 py-6 space-y-6">
-          {/* Max crews limit warning */}
-          {ownedCrewsCount !== null && ownedCrewsCount >= 2 && (
+          {/* Max crews limit warning - admins/devs bypass */}
+          {!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2 && (
             <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
               <p className="text-sm text-destructive">
                 You already own 2 crews (maximum limit). Delete one to create a new crew.
@@ -170,7 +173,7 @@ export default function CreateCrewPage() {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               maxLength={24}
               className="bg-muted/50"
-              disabled={ownedCrewsCount !== null && ownedCrewsCount >= 2}
+              disabled={!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2}
             />
           </div>
 
@@ -254,7 +257,7 @@ export default function CreateCrewPage() {
           {/* Create Button */}
           <Button
             onClick={handleCreate}
-            disabled={loading || !formData.name.trim() || (ownedCrewsCount !== null && ownedCrewsCount >= 2)}
+            disabled={loading || !formData.name.trim() || (!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2)}
             className="w-full bg-gold text-black hover:bg-gold/90"
           >
             {loading ? "Creating..." : "Create Crew"}
