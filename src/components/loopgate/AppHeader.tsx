@@ -38,10 +38,16 @@ export default function AppHeader() {
   const userRanking = profile ? rankings.find(r => r.id === profile.id) : null;
   const userRank = userRanking?.rank || (rankings.length > 0 ? rankings.length + 1 : '—');
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setOpen(false);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+    navigate('/');
   };
 
   return (
