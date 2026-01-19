@@ -345,6 +345,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setPlatforms([]);
     setRoles([]);
+    // Clear any temp profile from localStorage
+    localStorage.removeItem('loopgate-temp-profile');
   };
 
   // Detect if user needs to set up a password (signed up via magic link/OTP only)
