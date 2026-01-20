@@ -181,7 +181,7 @@ export default function CrewDetailPage() {
   const { crewId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isAdmin, isDev } = useUserRoles(user?.id);
+  const { isAdmin, isDev, loading: rolesLoading } = useUserRoles(user?.id);
   const [crew, setCrew] = useState<Crew | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
@@ -583,9 +583,12 @@ export default function CrewDetailPage() {
     );
   }
 
-  // Use crew.owner_id as source of truth for ownership
+  // Use crew.owner_id OR crew_members role as source of truth for ownership
+  // This handles edge cases where transfer may have partially completed
   // Admin/dev can also access settings
-  const isOwner = crew.owner_id === user?.id;
+  const isOwnerByCrewTable = crew.owner_id === user?.id;
+  const isOwnerByMemberRole = myRole === "owner";
+  const isOwner = isOwnerByCrewTable || isOwnerByMemberRole;
   const canAccessSettings = isOwner || isAdmin || isDev;
   const isStaff = isOwner || myRole === "officer";
   const owner = members.find(m => m.role === 'owner');
