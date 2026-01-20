@@ -10,6 +10,7 @@ import { SiDiscord } from "@icons-pack/react-simple-icons";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -180,6 +181,7 @@ export default function CrewDetailPage() {
   const { crewId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin, isDev } = useUserRoles(user?.id);
   const [crew, setCrew] = useState<Crew | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
@@ -582,7 +584,9 @@ export default function CrewDetailPage() {
   }
 
   // Use crew.owner_id as source of truth for ownership
+  // Admin/dev can also access settings
   const isOwner = crew.owner_id === user?.id;
+  const canAccessSettings = isOwner || isAdmin || isDev;
   const isStaff = isOwner || myRole === "officer";
   const owner = members.find(m => m.role === 'owner');
   const crewSlug = crew?.name?.toLowerCase().replace(/\s+/g, '-') || '';

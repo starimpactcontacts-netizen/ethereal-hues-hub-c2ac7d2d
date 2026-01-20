@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog, ImagePlus, Palette, X } from "lucide-react";
+import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog, ImagePlus, X, Eye, EyeOff, UserMinus, ChevronDown, ChevronUp } from "lucide-react";
 import { SiDiscord } from "@icons-pack/react-simple-icons";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewAvatarUploadModal from "@/components/loopgate/CrewAvatarUploadModal";
 import { toast } from "sonner";
@@ -25,11 +27,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Member {
   id: string;
   user_id: string;
-  role: string;
+  role: "owner" | "officer" | "member";
+  extended_role: string | null;
   profile: {
     username: string;
     display_name: string | null;
@@ -61,6 +71,9 @@ export default function CrewSettingsPage() {
   const { crewId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin, isDev, loading: rolesLoading } = useUserRoles(user?.id);
+  const canBypass = isAdmin || isDev;
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -68,6 +81,9 @@ export default function CrewSettingsPage() {
   const [crewAvatarUrl, setCrewAvatarUrl] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [transferringTo, setTransferringTo] = useState<string | null>(null);
+  const [removingMember, setRemovingMember] = useState<string | null>(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>("basic");
+  
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -77,14 +93,15 @@ export default function CrewSettingsPage() {
     banner_url: null as string | null,
     banner_color: "#d4af37",
     discord_url: "",
+    is_public: true,
   });
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
   useEffect(() => {
-    if (crewId && user) {
+    if (crewId && user && !rolesLoading) {
       fetchCrew();
     }
-  }, [crewId, user]);
+  }, [crewId, user, rolesLoading]);
 
   const fetchCrew = async () => {
     if (!crewId) return;
@@ -101,8 +118,10 @@ export default function CrewSettingsPage() {
       return;
     }
 
-    // Verify user is the owner
-    if (crew.owner_id !== user?.id) {
+    // Verify user is the owner OR has admin/dev bypass
+    const isOwner = crew.owner_id === user?.id;
+    if (!isOwner && !canBypass) {
+      toast.error("You don't have permission to access crew settings");
       navigate(`/crews/${crewId}`);
       return;
     }
@@ -116,13 +135,14 @@ export default function CrewSettingsPage() {
       banner_url: crew.banner_url || null,
       banner_color: crew.banner_color || "#d4af37",
       discord_url: crew.discord_url || "",
+      is_public: true, // Default to public
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
-    // Fetch ALL members for ownership transfer (including those we'll filter later for UI)
+    // Fetch ALL members for management
     const { data: membersData, error: membersError } = await supabase
       .from("crew_members")
-      .select("id, user_id, role")
+      .select("id, user_id, role, extended_role")
       .eq("crew_id", crewId);
 
     if (membersError) {
@@ -136,13 +156,11 @@ export default function CrewSettingsPage() {
         .select("id, username, display_name, avatar_url")
         .in("id", memberIds);
 
-      // For transfer ownership, show all members EXCEPT the current owner
-      const membersWithProfiles = membersData
-        .filter(m => m.user_id !== user?.id) // Exclude current owner for transfer list
-        .map(member => ({
-          ...member,
-          profile: profiles?.find(p => p.id === member.user_id) || null,
-        }));
+      const membersWithProfiles = membersData.map(member => ({
+        ...member,
+        role: member.role as "owner" | "officer" | "member",
+        profile: profiles?.find(p => p.id === member.user_id) || null,
+      }));
       setMembers(membersWithProfiles);
     } else {
       setMembers([]);
@@ -158,7 +176,6 @@ export default function CrewSettingsPage() {
 
     try {
       // IMPORTANT: Update crew_members roles FIRST (while current user is still owner)
-      // Make new owner the owner role in crew_members
       const { error: newOwnerRoleError } = await supabase
         .from("crew_members")
         .update({ role: "owner" })
@@ -176,7 +193,7 @@ export default function CrewSettingsPage() {
 
       if (oldOwnerRoleError) throw oldOwnerRoleError;
 
-      // LAST: Update crew owner_id (after role updates are complete)
+      // LAST: Update crew owner_id
       const { error: crewError } = await supabase
         .from("crews")
         .update({ owner_id: newOwnerId })
@@ -191,6 +208,54 @@ export default function CrewSettingsPage() {
       toast.error("Failed to transfer ownership");
     } finally {
       setTransferringTo(null);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string, userId: string) => {
+    if (!crewId) return;
+    
+    setRemovingMember(memberId);
+    
+    try {
+      const { error } = await supabase
+        .from("crew_members")
+        .delete()
+        .eq("id", memberId);
+      
+      if (error) throw error;
+      
+      // Update profiles to remove crew_id
+      await supabase
+        .from("profiles")
+        .update({ crew_id: null })
+        .eq("id", userId);
+      
+      setMembers(prev => prev.filter(m => m.id !== memberId));
+      toast.success("Member removed");
+    } catch (error) {
+      console.error("Error removing member:", error);
+      toast.error("Failed to remove member");
+    } finally {
+      setRemovingMember(null);
+    }
+  };
+
+  const handleUpdateMemberRole = async (memberId: string, newRole: "officer" | "member") => {
+    try {
+      const { error } = await supabase
+        .from("crew_members")
+        .update({ role: newRole })
+        .eq("id", memberId);
+      
+      if (error) throw error;
+      
+      setMembers(prev => prev.map(m => 
+        m.id === memberId ? { ...m, role: newRole } : m
+      ));
+      toast.success("Role updated");
+    } catch (error) {
+      console.error("Error updating role:", error);
+      toast.error("Failed to update role");
     }
   };
 
@@ -239,12 +304,10 @@ export default function CrewSettingsPage() {
 
     setDeleting(true);
 
-    // Delete all members first (this will cascade via foreign key, but let's be explicit)
     await supabase.from("crew_members").delete().eq("crew_id", crewId);
     await supabase.from("crew_messages").delete().eq("crew_id", crewId);
     await supabase.from("crew_join_requests").delete().eq("crew_id", crewId);
 
-    // Delete the crew
     const { error } = await supabase.from("crews").delete().eq("id", crewId);
 
     if (error) {
@@ -315,11 +378,28 @@ export default function CrewSettingsPage() {
     }
   };
 
-  const removeBanner = () => {
-    setFormData({ ...formData, banner_url: null });
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
   };
 
-  if (loading) {
+  const SectionHeader = ({ id, title, icon: Icon }: { id: string; title: string; icon: any }) => (
+    <button
+      onClick={() => toggleSection(id)}
+      className="w-full flex items-center justify-between p-4 bg-surface-1 rounded-lg border border-border hover:border-gold/30 transition-colors"
+    >
+      <div className="flex items-center gap-3">
+        <Icon className="w-5 h-5 text-gold" />
+        <span className="font-semibold">{title}</span>
+      </div>
+      {expandedSection === id ? (
+        <ChevronUp className="w-5 h-5 text-muted-foreground" />
+      ) : (
+        <ChevronDown className="w-5 h-5 text-muted-foreground" />
+      )}
+    </button>
+  );
+
+  if (loading || rolesLoading) {
     return (
       <PageTransition>
         <div className="min-h-screen bg-background flex items-center justify-center">
@@ -329,215 +409,327 @@ export default function CrewSettingsPage() {
     );
   }
 
+  const owner = members.find(m => m.role === "owner");
+  const nonOwnerMembers = members.filter(m => m.role !== "owner");
+
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pb-20">
         {/* Header */}
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-          <div className="px-4 py-4 flex items-center gap-4">
-            <button onClick={() => navigate(`/crews/${crewId}`)} className="text-muted-foreground">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <h1 className="text-lg font-bold">Crew Settings</h1>
+          <div className="px-4 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button onClick={() => navigate(`/crews/${crewId}`)} className="text-muted-foreground">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h1 className="text-lg font-bold">Crew Settings</h1>
+            </div>
+            {canBypass && (
+              <span className="text-xs px-2 py-1 rounded bg-gold/20 text-gold">Admin Access</span>
+            )}
           </div>
         </div>
 
-        <div className="px-4 py-6 space-y-6">
-          {/* Crew Avatar */}
-          <div className="space-y-2">
-            <Label>Crew Avatar</Label>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setShowAvatarModal(true)}
-                className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border hover:border-gold transition-colors group"
-              >
-                {crewAvatarUrl ? (
-                  <img
-                    src={crewAvatarUrl}
-                    alt="Crew avatar"
-                    className="w-full h-full object-cover"
+        <div className="px-4 py-6 space-y-4 max-w-2xl mx-auto">
+          
+          {/* ==================== BASIC INFO SECTION ==================== */}
+          <div className="space-y-4">
+            <SectionHeader id="basic" title="Basic Info" icon={Shield} />
+            
+            {expandedSection === "basic" && (
+              <div className="space-y-6 p-4 bg-muted/30 rounded-lg border border-border">
+                {/* Crew Name */}
+                <div className="space-y-2">
+                  <Label>Crew Name</Label>
+                  <Input
+                    placeholder="Enter crew name..."
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    maxLength={24}
+                    className="bg-muted/50"
                   />
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <Camera className="w-6 h-6 text-muted-foreground" />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea
+                    placeholder="Tell others about your crew..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    maxLength={200}
+                    className="bg-muted/50 resize-none"
+                    rows={3}
+                  />
+                </div>
+
+                {/* Crew Avatar */}
+                <div className="space-y-2">
+                  <Label>Logo</Label>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => setShowAvatarModal(true)}
+                      className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border hover:border-gold transition-colors group"
+                    >
+                      {crewAvatarUrl ? (
+                        <img src={crewAvatarUrl} alt="Crew avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-muted flex items-center justify-center">
+                          <Camera className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Camera className="w-5 h-5 text-white" />
+                      </div>
+                    </button>
+                    <p className="text-xs text-muted-foreground">Click to upload logo</p>
+                  </div>
+                </div>
+
+                {/* Crew Banner */}
+                <div className="space-y-3">
+                  <Label>Banner</Label>
+                  <div 
+                    className="h-20 rounded-lg overflow-hidden relative group cursor-pointer"
+                    onClick={handleBannerUpload}
+                    style={{
+                      background: formData.banner_url 
+                        ? `url(${formData.banner_url}) center/cover` 
+                        : `linear-gradient(135deg, ${formData.banner_color}40, ${formData.banner_color}20)`
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <ImagePlus className="w-5 h-5 text-white" />
+                    </div>
+                    {uploadingBanner && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  {formData.banner_url && (
+                    <Button variant="ghost" size="sm" onClick={() => setFormData({ ...formData, banner_url: null })}>
+                      <X className="w-4 h-4 mr-2" /> Remove Banner
+                    </Button>
+                  )}
+                  
+                  {/* Banner Color Picker */}
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Banner Color (if no image)</Label>
+                    <div className="flex items-center gap-3">
+                      <div className="flex gap-2">
+                        {["#d4af37", "#3b82f6", "#8b5cf6", "#ef4444", "#22c55e", "#f97316", "#06b6d4", "#ec4899"].map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => setFormData({ ...formData, banner_color: color })}
+                            className={`w-7 h-7 rounded-full border-2 transition-all ${
+                              formData.banner_color === color ? "border-white scale-110" : "border-transparent"
+                            }`}
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Discord */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <SiDiscord className="w-4 h-4 text-[#5865F2]" />
+                    Discord Server
+                  </Label>
+                  <Input
+                    placeholder="https://discord.gg/your-invite"
+                    value={formData.discord_url}
+                    onChange={(e) => setFormData({ ...formData, discord_url: e.target.value })}
+                    className="bg-muted/50"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ==================== MEMBER MANAGEMENT SECTION ==================== */}
+          <div className="space-y-4">
+            <SectionHeader id="members" title="Member Management" icon={Users} />
+            
+            {expandedSection === "members" && (
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
+                <p className="text-sm text-muted-foreground">
+                  Manage member roles and remove members from the crew.
+                </p>
+                
+                {/* Owner - Can't be modified */}
+                {owner && (
+                  <div className="p-3 rounded-lg bg-gold/10 border border-gold/30">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={owner.profile?.avatar_url || undefined} />
+                        <AvatarFallback className="bg-gold/20 text-gold">
+                          {owner.profile?.username?.charAt(0).toUpperCase() || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-medium">{owner.profile?.display_name || owner.profile?.username}</p>
+                        <p className="text-xs text-muted-foreground">@{owner.profile?.username}</p>
+                      </div>
+                      <span className="flex items-center gap-1 text-xs bg-gold/20 text-gold px-2 py-1 rounded">
+                        <Crown className="w-3 h-3" /> Owner
+                      </span>
+                    </div>
                   </div>
                 )}
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="w-5 h-5 text-white" />
-                </div>
-              </button>
-              <p className="text-xs text-muted-foreground">Click to upload a crew avatar</p>
-            </div>
-          </div>
 
-          {/* Crew Banner */}
-          <div className="space-y-3">
-            <Label>Crew Banner</Label>
-            <div 
-              className="h-20 rounded-lg overflow-hidden relative group"
-              style={{
-                background: formData.banner_url 
-                  ? `url(${formData.banner_url}) center/cover` 
-                  : `linear-gradient(135deg, ${formData.banner_color}40, ${formData.banner_color}20)`
-              }}
-            >
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <button 
-                  onClick={handleBannerUpload}
-                  disabled={uploadingBanner}
-                  className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-                >
-                  <ImagePlus className="w-5 h-5 text-white" />
-                </button>
-                {formData.banner_url && (
-                  <button 
-                    onClick={removeBanner}
-                    className="p-2 rounded-full bg-red-500/50 hover:bg-red-500/70 transition-colors"
-                  >
-                    <X className="w-5 h-5 text-white" />
-                  </button>
+                {/* Other Members */}
+                {nonOwnerMembers.length > 0 ? (
+                  <div className="space-y-2">
+                    {nonOwnerMembers.map((member) => (
+                      <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border">
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={member.profile?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-muted text-muted-foreground">
+                            {member.profile?.username?.charAt(0).toUpperCase() || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{member.profile?.display_name || member.profile?.username}</p>
+                          <p className="text-xs text-muted-foreground">@{member.profile?.username}</p>
+                        </div>
+                        
+                        {/* Role Selector */}
+                        <Select
+                          value={member.role}
+                          onValueChange={(value) => handleUpdateMemberRole(member.id, value as "officer" | "member")}
+                        >
+                          <SelectTrigger className="w-28 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="officer">Officer</SelectItem>
+                            <SelectItem value="member">Member</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        
+                        {/* Remove Button */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+                              <UserMinus className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove Member?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Remove <strong>@{member.profile?.username}</strong> from the crew? They can rejoin if the crew is open.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleRemoveMember(member.id, member.user_id)}
+                                className="bg-red-500 hover:bg-red-600"
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">No other members yet</p>
                 )}
               </div>
-              {uploadingBanner && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {formData.banner_url ? "Click to change or remove banner image" : "Click to upload a banner image, or choose a color below"}
-            </p>
+            )}
+          </div>
+
+          {/* ==================== VISIBILITY CONTROLS SECTION ==================== */}
+          <div className="space-y-4">
+            <SectionHeader id="visibility" title="Visibility Controls" icon={Eye} />
             
-            {/* Banner Color Picker */}
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Banner Color (used if no image)</Label>
-              <div className="flex items-center gap-3">
-                <div className="flex gap-2">
-                  {["#d4af37", "#3b82f6", "#8b5cf6", "#ef4444", "#22c55e", "#f97316", "#06b6d4", "#ec4899"].map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setFormData({ ...formData, banner_color: color })}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        formData.banner_color === color ? "border-white scale-110" : "border-transparent"
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
+            {expandedSection === "visibility" && (
+              <div className="space-y-6 p-4 bg-muted/30 rounded-lg border border-border">
+                {/* Join Type */}
+                <div className="space-y-3">
+                  <Label>Join Type</Label>
+                  <div className="space-y-2">
+                    {joinTypes.map((type) => (
+                      <button
+                        key={type.id}
+                        onClick={() => setFormData({ ...formData, join_type: type.id })}
+                        className={`w-full p-3 rounded-lg text-left transition-all ${
+                          formData.join_type === type.id
+                            ? "bg-gold/10 border border-gold"
+                            : "bg-muted/50 border border-border hover:bg-muted"
+                        }`}
+                      >
+                        <p className="font-semibold text-sm">{type.label}</p>
+                        <p className="text-xs text-muted-foreground">{type.description}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <input 
-                  type="color" 
-                  value={formData.banner_color}
-                  onChange={(e) => setFormData({ ...formData, banner_color: e.target.value })}
-                  className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent"
-                />
+
+                {/* Minimum League */}
+                <div className="space-y-3">
+                  <Label>Minimum League Requirement</Label>
+                  <div className="space-y-2">
+                    {leagues.map((league) => (
+                      <button
+                        key={league.id}
+                        onClick={() => setFormData({ ...formData, min_league: league.id as "open" | "pro" | "elite" })}
+                        className={`w-full p-3 rounded-lg text-left transition-all ${
+                          formData.min_league === league.id
+                            ? "bg-gold/10 border border-gold"
+                            : "bg-muted/50 border border-border hover:bg-muted"
+                        }`}
+                      >
+                        <p className="font-semibold text-sm">{league.label}</p>
+                        <p className="text-xs text-muted-foreground">{league.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Emblem */}
+                <div className="space-y-3">
+                  <Label>Crew Emblem</Label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {emblems.map((emblem) => (
+                      <button
+                        key={emblem.id}
+                        onClick={() => setFormData({ ...formData, emblem: emblem.id })}
+                        className={`aspect-square rounded-lg flex items-center justify-center transition-all ${
+                          formData.emblem === emblem.id
+                            ? "bg-gold/20 border-2 border-gold text-gold"
+                            : "bg-muted/50 border border-border text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <emblem.icon className="w-6 h-6" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Crew Name */}
-          <div className="space-y-2">
-            <Label>Crew Name</Label>
-            <Input
-              placeholder="Enter crew name..."
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              maxLength={24}
-              className="bg-muted/50"
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label>Description</Label>
-            <Textarea
-              placeholder="Tell others about your crew..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              maxLength={200}
-              className="bg-muted/50 resize-none"
-              rows={3}
-            />
-          </div>
-
-          {/* Discord Server */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <SiDiscord className="w-4 h-4 text-[#5865F2]" />
-              Discord Server
-            </Label>
-            <Input
-              placeholder="https://discord.gg/your-invite"
-              value={formData.discord_url}
-              onChange={(e) => setFormData({ ...formData, discord_url: e.target.value })}
-              className="bg-muted/50"
-            />
-            <p className="text-xs text-muted-foreground">
-              Add your Discord invite link so members can join your server
-            </p>
-          </div>
-
-          {/* Emblem */}
-          <div className="space-y-3">
-            <Label>Emblem</Label>
-            <div className="grid grid-cols-6 gap-2">
-              {emblems.map((emblem) => (
-                <button
-                  key={emblem.id}
-                  onClick={() => setFormData({ ...formData, emblem: emblem.id })}
-                  className={`aspect-square rounded-lg flex items-center justify-center transition-all ${
-                    formData.emblem === emblem.id
-                      ? "bg-gold/20 border-2 border-gold text-gold"
-                      : "bg-muted/50 border border-border text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <emblem.icon className="w-6 h-6" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Minimum League */}
-          <div className="space-y-3">
-            <Label>Minimum League Requirement</Label>
-            <div className="space-y-2">
-              {leagues.map((league) => (
-                <button
-                  key={league.id}
-                  onClick={() =>
-                    setFormData({ ...formData, min_league: league.id as "open" | "pro" | "elite" })
-                  }
-                  className={`w-full p-3 rounded-lg text-left transition-all ${
-                    formData.min_league === league.id
-                      ? "bg-gold/10 border border-gold"
-                      : "bg-muted/50 border border-border hover:bg-muted"
-                  }`}
-                >
-                  <p className="font-semibold text-sm">{league.label}</p>
-                  <p className="text-xs text-muted-foreground">{league.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Join Type */}
-          <div className="space-y-3">
-            <Label>Join Type</Label>
-            <div className="space-y-2">
-              {joinTypes.map((type) => (
-                <button
-                  key={type.id}
-                  onClick={() => setFormData({ ...formData, join_type: type.id })}
-                  className={`w-full p-3 rounded-lg text-left transition-all ${
-                    formData.join_type === type.id
-                      ? "bg-gold/10 border border-gold"
-                      : "bg-muted/50 border border-border hover:bg-muted"
-                  }`}
-                >
-                  <p className="font-semibold text-sm">{type.label}</p>
-                  <p className="text-xs text-muted-foreground">{type.description}</p>
-                </button>
-              ))}
-            </div>
+          {/* ==================== EVENT BASICS SECTION (Coming Soon) ==================== */}
+          <div className="space-y-4">
+            <SectionHeader id="events" title="Event Basics" icon={Star} />
+            
+            {expandedSection === "events" && (
+              <div className="p-6 bg-muted/30 rounded-lg border border-border text-center">
+                <Zap className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                <h3 className="font-semibold mb-1">Coming Soon</h3>
+                <p className="text-sm text-muted-foreground">
+                  Create crew events, set rules, and configure prize pools. This feature is under development.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Save Button */}
@@ -549,19 +741,19 @@ export default function CrewSettingsPage() {
             {saving ? "Saving..." : "Save Changes"}
           </Button>
 
-          {/* Danger Zone */}
-          <div className="pt-6 border-t border-border space-y-4">
+          {/* ==================== DANGER ZONE ==================== */}
+          <div className="pt-6 border-t border-red-500/30 space-y-4">
             <h3 className="text-sm font-semibold text-red-500">Danger Zone</h3>
             
             {/* Transfer Ownership */}
-            {members.length > 0 && (
+            {nonOwnerMembers.length > 0 && (
               <div className="space-y-3">
                 <Label className="text-muted-foreground">Transfer Ownership</Label>
                 <p className="text-xs text-muted-foreground">
                   Transfer this crew to another member. You will become a regular member.
                 </p>
                 <div className="space-y-2">
-                  {members.map((member) => (
+                  {nonOwnerMembers.map((member) => (
                     <AlertDialog key={member.id}>
                       <AlertDialogTrigger asChild>
                         <button className="w-full flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border hover:border-gold/50 transition-all text-left">
