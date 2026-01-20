@@ -51,7 +51,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
 
   const handleStartGQT = () => {
     handleClose();
-    navigate("/arena");
+    navigate("/gqt");
   };
 
   const toggleStep = (step: number) => {
