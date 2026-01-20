@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -8,52 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import { 
   Trophy, 
-  Target, 
-  TrendingUp, 
-  ShoppingBag, 
-  Crown, 
-  Home, 
-  Zap,
-  HelpCircle
+  Users, 
+  Swords,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 // Increment this version to force show the guide to everyone again
-const GUIDE_VERSION = "v1.0";
+const GUIDE_VERSION = "v2.0";
 const GUIDE_STORAGE_KEY = "loopgate_guide_seen";
-
-const guideSteps = [
-  {
-    icon: Trophy,
-    title: "Enter Events",
-    description: "Submit edits in active competitions.",
-  },
-  {
-    icon: Target,
-    title: "Earn QOI Scores",
-    description: "Quality Of Impact: the metric that decides your influence.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Climb the Index",
-    description: "Higher QOI = more Index. Spend Index on cosmetics, digital rewards, physical gear.",
-  },
-  {
-    icon: Crown,
-    title: "Rise in Rank",
-    description: "Win events → move up global rankings.",
-  },
-  {
-    icon: Home,
-    title: "Join a House",
-    description: "Houses are identity groups. Prestige houses are invite-only.",
-    optional: true,
-  },
-  {
-    icon: Zap,
-    title: "Level Up",
-    description: "Your profile level increases through activity, streaks, and invites.",
-  },
-];
 
 interface BeginnerGuideModalProps {
   trigger?: React.ReactNode;
@@ -62,6 +26,8 @@ interface BeginnerGuideModalProps {
 
 export default function BeginnerGuideModal({ trigger, autoShow = false }: BeginnerGuideModalProps) {
   const [open, setOpen] = useState(false);
+  const [expandedSteps, setExpandedSteps] = useState<Set<number>>(new Set());
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!autoShow) return;
@@ -81,6 +47,23 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
     setOpen(false);
     // Mark as seen
     localStorage.setItem(GUIDE_STORAGE_KEY, GUIDE_VERSION);
+  };
+
+  const handleStartGQT = () => {
+    handleClose();
+    navigate("/arena");
+  };
+
+  const toggleStep = (step: number) => {
+    setExpandedSteps(prev => {
+      const next = new Set(prev);
+      if (next.has(step)) {
+        next.delete(step);
+      } else {
+        next.add(step);
+      }
+      return next;
+    });
   };
 
   return (
@@ -103,45 +86,99 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
         </DialogHeader>
 
         <div className="mt-4 space-y-1">
-          <p className="text-center text-muted-foreground text-sm mb-6">
-            Here's how it works:
+          <p className="text-center text-muted-foreground text-sm mb-6 uppercase tracking-widest font-semibold">
+            Start Here
           </p>
 
-          <div className="space-y-4">
-            {guideSteps.map((step, index) => (
-              <div
-                key={step.title}
-                className="flex items-start gap-4 p-3 rounded-lg bg-muted/30 border border-border/50"
-              >
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
-                  <step.icon size={18} className="text-gold" />
+          <div className="space-y-3">
+            {/* Step 1 - Primary CTA */}
+            <div className="p-4 rounded-xl bg-gold/10 border-2 border-gold/50">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gold/20 border-2 border-gold flex items-center justify-center">
+                  <Trophy size={22} className="text-gold" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] text-gold font-bold uppercase tracking-wider">Step 1</span>
+                  </div>
+                  <h3 className="font-bold text-base uppercase tracking-wide">Take the Global QOI Test</h3>
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    Get your first score and enter the rankings.
+                  </p>
+                  <button
+                    onClick={handleStartGQT}
+                    className="mt-4 w-full px-4 py-2.5 bg-gold text-background font-bold text-sm rounded-lg hover:bg-gold/90 transition-colors flex items-center justify-center gap-2"
+                  >
+                    👉 Start GQT
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2 - Collapsible */}
+            <div 
+              className="p-3 rounded-lg bg-muted/30 border border-border/50 cursor-pointer hover:bg-muted/40 transition-colors"
+              onClick={() => toggleStep(2)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center">
+                  <Users size={18} className="text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-sm">{step.title}</h3>
-                    {step.optional && (
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                        Optional
-                      </span>
-                    )}
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Step 2</span>
+                    <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Optional</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    {step.description}
-                  </p>
+                  <h3 className="font-semibold text-sm uppercase tracking-wide">Join a Crew</h3>
                 </div>
-                <span className="text-xs text-muted-foreground/50 font-mono">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
+                {expandedSteps.has(2) ? (
+                  <ChevronUp size={16} className="text-muted-foreground" />
+                ) : (
+                  <ChevronDown size={16} className="text-muted-foreground" />
+                )}
               </div>
-            ))}
+              {expandedSteps.has(2) && (
+                <p className="text-xs text-muted-foreground mt-2 ml-[52px] leading-relaxed">
+                  Crews unlock events, XP, and team rankings.
+                </p>
+              )}
+            </div>
+
+            {/* Step 3 - Collapsible */}
+            <div 
+              className="p-3 rounded-lg bg-muted/30 border border-border/50 cursor-pointer hover:bg-muted/40 transition-colors"
+              onClick={() => toggleStep(3)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center">
+                  <Swords size={18} className="text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Step 3</span>
+                  </div>
+                  <h3 className="font-semibold text-sm uppercase tracking-wide">Enter Events</h3>
+                </div>
+                {expandedSteps.has(3) ? (
+                  <ChevronUp size={16} className="text-muted-foreground" />
+                ) : (
+                  <ChevronDown size={16} className="text-muted-foreground" />
+                )}
+              </div>
+              {expandedSteps.has(3) && (
+                <p className="text-xs text-muted-foreground mt-2 ml-[52px] leading-relaxed">
+                  Compete in live drops to climb the index.
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="pt-6 text-center">
             <button
               onClick={handleClose}
-              className="px-6 py-2.5 bg-gold text-background font-semibold text-sm rounded-lg hover:bg-gold/90 transition-colors"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              Got It
+              Skip for now
             </button>
           </div>
         </div>
