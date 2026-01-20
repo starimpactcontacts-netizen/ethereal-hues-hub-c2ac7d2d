@@ -639,7 +639,7 @@ export default function CrewDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              {isOwner && (
+              {canAccessSettings && (
                 <Button variant="ghost" size="icon" onClick={() => navigate(`/crews/${crewId}/settings`)}>
                   <Settings className="w-5 h-5" />
                 </Button>
