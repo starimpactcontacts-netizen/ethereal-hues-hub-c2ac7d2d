@@ -106,21 +106,28 @@ export default function CrewSettingsPage() {
   const fetchCrew = async () => {
     if (!crewId) return;
 
-    const { data: crew, error } = await supabase
-      .from("crews")
-      .select("*")
-      .eq("id", crewId)
-      .single();
+    // Fetch crew AND members in parallel
+    const [crewResult, membersResult] = await Promise.all([
+      supabase.from("crews").select("*").eq("id", crewId).single(),
+      supabase.from("crew_members").select("id, user_id, role, extended_role").eq("crew_id", crewId)
+    ]);
 
-    if (error || !crew) {
-      console.error("Error fetching crew:", error);
+    if (crewResult.error || !crewResult.data) {
+      console.error("Error fetching crew:", crewResult.error);
       navigate("/crews");
       return;
     }
 
-    // Verify user is the owner OR has admin/dev bypass
-    const isOwner = crew.owner_id === user?.id;
-    if (!isOwner && !canBypass) {
+    const crew = crewResult.data;
+    const membersData = membersResult.data || [];
+
+    // Check access: owner by crews table, owner by crew_members role, OR admin/dev bypass
+    const isOwnerByTable = crew.owner_id === user?.id;
+    const myMembership = membersData.find(m => m.user_id === user?.id);
+    const isOwnerByRole = myMembership?.role === "owner";
+    const hasAccess = isOwnerByTable || isOwnerByRole || canBypass;
+
+    if (!hasAccess) {
       toast.error("You don't have permission to access crew settings");
       navigate(`/crews/${crewId}`);
       return;
@@ -139,17 +146,11 @@ export default function CrewSettingsPage() {
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
-    // Fetch ALL members for management
-    const { data: membersData, error: membersError } = await supabase
-      .from("crew_members")
-      .select("id, user_id, role, extended_role")
-      .eq("crew_id", crewId);
-
-    if (membersError) {
-      console.error("Error fetching crew members:", membersError);
+    if (membersResult.error) {
+      console.error("Error fetching crew members:", membersResult.error);
     }
 
-    if (membersData && membersData.length > 0) {
+    if (membersData.length > 0) {
       const memberIds = membersData.map(m => m.user_id);
       const { data: profiles } = await supabase
         .from("profiles")
