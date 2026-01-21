@@ -45,12 +45,12 @@ export default function CreateCrewPage() {
     join_type: "open",
   });
 
-  // Only admins can create crews
+  // Redirect if not logged in
   useEffect(() => {
-    if (!authLoading && !isAdmin) {
+    if (!authLoading && !user) {
       navigate('/crews');
     }
-  }, [authLoading, isAdmin, navigate]);
+  }, [authLoading, user, navigate]);
 
   // Check how many crews user already owns
   useEffect(() => {

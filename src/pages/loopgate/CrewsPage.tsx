@@ -179,16 +179,14 @@ export default function CrewsPage() {
           <header className="relative z-10 px-4 pt-5 pb-6">
             <div className="flex items-center justify-between mb-5">
               <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" />
-              {isAdmin && (
-                <Button
-                  size="sm"
-                  onClick={() => navigate("/crews/create")}
-                  className="bg-purple-600 text-white hover:bg-purple-700 font-bold"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Create
-                </Button>
-              )}
+              <Button
+                size="sm"
+                onClick={() => navigate("/crews/create")}
+                className="bg-purple-600 text-white hover:bg-purple-700 font-bold"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Create
+              </Button>
             </div>
             
             {/* Hero Title */}
