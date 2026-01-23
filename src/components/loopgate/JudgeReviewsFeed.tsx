@@ -244,7 +244,11 @@ function ReviewPreviewModal({ review, onClose }: { review: ReviewItem; onClose: 
   );
 }
 
-export default function JudgeReviewsFeed() {
+interface JudgeReviewsFeedProps {
+  embedded?: boolean;
+}
+
+export default function JudgeReviewsFeed({ embedded = false }: JudgeReviewsFeedProps) {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedReview, setSelectedReview] = useState<ReviewItem | null>(null);
@@ -335,17 +339,19 @@ export default function JudgeReviewsFeed() {
 
   return (
     <>
-      <div className="py-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3 px-4">
-          <div className="flex items-center gap-2">
-            <Flame className="w-4 h-4 text-orange-400" />
-            <h2 className="font-display text-sm tracking-wide">REVIEWS</h2>
+      <div className={embedded ? "" : "py-4"}>
+        {/* Header - only show when not embedded */}
+        {!embedded && (
+          <div className="flex items-center justify-between mb-3 px-4">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-orange-400" />
+              <h2 className="font-display text-sm tracking-wide">REVIEWS</h2>
+            </div>
+            <Link to="/judges" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+              ALL JUDGES <ArrowRight size={10} />
+            </Link>
           </div>
-          <Link to="/judges" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-            ALL JUDGES <ArrowRight size={10} />
-          </Link>
-        </div>
+        )}
 
         {/* Carousel */}
         <div className="relative">
@@ -372,7 +378,7 @@ export default function JudgeReviewsFeed() {
           {/* Scrollable container */}
           <div
             ref={scrollRef}
-            className="flex gap-3 overflow-x-auto scrollbar-hide px-4"
+            className={`flex gap-3 overflow-x-auto scrollbar-hide ${embedded ? '' : 'px-4'}`}
             onScroll={updateScrollButtons}
           >
             {reviews.map((review, index) => (
