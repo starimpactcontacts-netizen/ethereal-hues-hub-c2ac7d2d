@@ -10,10 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
+import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
+import PracticeModeView from "@/components/loopgate/PracticeModeView";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 interface Event {
   id: string;
   title: string;
@@ -108,7 +109,7 @@ export default function ArenaPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "sanctioned" | "practice">("all");
-
+  const [showPracticeMode, setShowPracticeMode] = useState(false);
   useEffect(() => {
     async function fetchEvents() {
       const { data, error } = await supabase
@@ -140,6 +141,10 @@ export default function ArenaPage() {
       (e.subtitle && e.subtitle.toLowerCase().includes(query))
     );
   }, [searchQuery, events]);
+  // Show Practice Mode view if active
+  if (showPracticeMode) {
+    return <PracticeModeView onBack={() => setShowPracticeMode(false)} />;
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -380,6 +385,29 @@ export default function ArenaPage() {
                 Crew-hosted competitive brackets with official prizes
               </p>
             </div>
+          </div>
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              PRACTICE MODE - Training gym section
+          ═══════════════════════════════════════════════════════════════════ */}
+          
+          {/* Section divider */}
+          <div className="px-4 mt-8 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">✨</span>
+                <span className="font-display text-sm text-foreground">PRACTICE MODE</span>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-emerald-500/30 to-transparent" />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Train, spar, and earn XP. No Index risk.
+            </p>
+          </div>
+
+          {/* Practice Mode Entry Card */}
+          <div className="px-4">
+            <PracticeModeCard onEnter={() => setShowPracticeMode(true)} />
           </div>
 
           {/* ═══════════════════════════════════════════════════════════════════
