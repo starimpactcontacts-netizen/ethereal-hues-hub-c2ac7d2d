@@ -334,69 +334,13 @@ export default function ArenaPage() {
       {!loading && !searchQuery && (
         <AnimatePresence mode="wait">
           {/* ═══════════════════════════════════════════════════════════════════
-              ALL TAB - Official Events + Overview
+              ALL TAB - Shows all sections stacked
           ═══════════════════════════════════════════════════════════════════ */}
-          {activeFilter === "all" && (
-            <motion.div
-              key="all"
+          {(activeFilter === "all" || activeFilter === "official") && (
+            <motion.section
+              key="official-section"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="px-4 mt-6"
-            >
-              <div className="text-center py-12">
-                <div className="w-16 h-16 rounded-full bg-surface-1 border border-border flex items-center justify-center mx-auto mb-4">
-                  <InfinityIcon className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="font-display text-lg text-foreground mb-2">Welcome to the Arena</h3>
-                <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
-                  Select a category above to explore events, tournaments, and practice modes.
-                </p>
-                <div className="flex flex-col gap-2 max-w-xs mx-auto">
-                  <button
-                    onClick={() => setActiveFilter("official")}
-                    className="flex items-center justify-between bg-gradient-to-r from-gold/10 to-transparent border border-gold/30 hover:border-gold/60 p-3 transition-all group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <InfinityIcon className="w-4 h-4 text-gold" />
-                      <span className="text-sm font-medium text-foreground">Official Events</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  <button
-                    onClick={() => setActiveFilter("sanctioned")}
-                    className="flex items-center justify-between bg-surface-1 border border-border hover:border-foreground/30 p-3 transition-all group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-foreground">Sanctioned</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  <button
-                    onClick={() => setActiveFilter("practice")}
-                    className="flex items-center justify-between bg-surface-1 border border-border hover:border-foreground/30 p-3 transition-all group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Target className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-foreground">Practice Mode</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ═══════════════════════════════════════════════════════════════════
-              OFFICIAL EVENTS TAB
-          ═══════════════════════════════════════════════════════════════════ */}
-          {activeFilter === "official" && (
-            <motion.div
-              key="official"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
               className="mt-4"
             >
               <div className="flex items-center justify-between px-4 mb-3">
@@ -412,6 +356,9 @@ export default function ArenaPage() {
                     </span>
                   )}
                 </div>
+                <Link to="/events" className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+                  View All
+                </Link>
               </div>
 
               {allActiveEvents.length > 0 ? (
@@ -440,19 +387,18 @@ export default function ArenaPage() {
                   </div>
                 </div>
               )}
-            </motion.div>
+            </motion.section>
           )}
 
           {/* ═══════════════════════════════════════════════════════════════════
-              SANCTIONED TAB - Community Tournaments
+              SANCTIONED SECTION - Shows in ALL and SANCTIONED tabs
           ═══════════════════════════════════════════════════════════════════ */}
-          {activeFilter === "sanctioned" && (
-            <motion.div
-              key="sanctioned"
+          {(activeFilter === "all" || activeFilter === "sanctioned") && (
+            <motion.section
+              key="sanctioned-section"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="px-4 mt-4"
+              className="px-4 mt-8"
             >
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="w-4 h-4 text-gold" />
@@ -461,6 +407,9 @@ export default function ArenaPage() {
                 </span>
                 <div className="flex-1 h-px bg-gradient-to-r from-gold/30 to-transparent" />
               </div>
+              <p className="text-[10px] text-muted-foreground mb-4">
+                Community-hosted tournaments with official backing
+              </p>
 
               {/* Coming Soon State */}
               <div className="bg-surface-1/50 border border-border border-dashed p-8 text-center">
@@ -472,22 +421,21 @@ export default function ArenaPage() {
                   Crew-hosted competitive brackets with official prizes
                 </p>
               </div>
-            </motion.div>
+            </motion.section>
           )}
 
           {/* ═══════════════════════════════════════════════════════════════════
-              PRACTICE TAB - Practice Mode Full View
+              PRACTICE SECTION - Shows in ALL and PRACTICE tabs
           ═══════════════════════════════════════════════════════════════════ */}
-          {activeFilter === "practice" && (
-            <motion.div
-              key="practice"
+          {(activeFilter === "all" || activeFilter === "practice") && (
+            <motion.section
+              key="practice-section"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="px-4 mt-4"
+              className="px-4 mt-8"
             >
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-lg">✨</span>
+                <Target className="w-4 h-4 text-emerald-400" />
                 <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                   Practice Mode
                 </span>
@@ -499,7 +447,7 @@ export default function ArenaPage() {
 
               {/* Practice Mode Entry Card */}
               <PracticeModeCard onEnter={() => setShowPracticeMode(true)} />
-            </motion.div>
+            </motion.section>
           )}
 
           {/* Bottom spacing for nav */}
