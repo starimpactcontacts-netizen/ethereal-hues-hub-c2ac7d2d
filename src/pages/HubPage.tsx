@@ -319,13 +319,13 @@ export default function HubPage() {
               <div className="flex items-center gap-2.5 py-2">
                 {/* Pulsing ring container */}
                 <div className="relative">
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500 shrink-0" />
-                  <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-green-500 animate-ping opacity-75" />
-                  <div className="absolute -inset-1 rounded-full bg-green-500/20 animate-pulse" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                  <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping opacity-75" />
+                  <div className="absolute -inset-1 rounded-full bg-emerald-500/20 animate-pulse" />
                 </div>
                 <h3 className="font-display text-xl text-foreground" style={{ lineHeight: 1.3 }}>LIVE NOW</h3>
               </div>
-              <Link to="/events" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+              <Link to="/arena" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
                 VIEW ALL <ArrowRight size={10} />
               </Link>
             </div>
@@ -337,7 +337,7 @@ export default function HubPage() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.05 }}
-                    className="w-[200px] bg-surface-1/80 backdrop-blur border border-border hover:border-gold/50 transition-colors overflow-hidden group"
+                    className="w-[200px] bg-surface-1/80 backdrop-blur border border-emerald-500/30 hover:border-emerald-500/50 transition-colors overflow-hidden group"
                   >
                     {/* Mini poster */}
                     {event.poster_url && (
@@ -351,8 +351,8 @@ export default function HubPage() {
                     )}
                     <div className="p-3">
                       <div className="flex items-center gap-1 mb-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                        <span className="text-[8px] text-green-500 uppercase tracking-widest font-bold">Live</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        <span className="text-[8px] text-emerald-400 uppercase tracking-widest font-bold">Live</span>
                       </div>
                       <p className="font-display text-sm text-foreground truncate">{event.title}</p>
                       <div className="mt-2 text-[10px] text-muted-foreground">
