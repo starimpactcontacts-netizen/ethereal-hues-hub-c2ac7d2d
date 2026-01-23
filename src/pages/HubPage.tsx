@@ -160,8 +160,8 @@ export default function HubPage() {
                       </div>
                     </div>
                     {/* Level badge */}
-                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border-2 border-gold flex items-center justify-center shadow-lg">
-                      <span className="font-display text-xs text-gold">{profile?.level || 1}</span>
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center shadow-lg">
+                      <span className="font-display text-xs text-foreground">{profile?.level || 1}</span>
                     </div>
                   </div>
                   
@@ -194,14 +194,14 @@ export default function HubPage() {
 
                 {/* Right: Shop Balance */}
                 <Link to="/shop" className="group shrink-0">
-                  <div className="flex items-center gap-2 bg-gold/5 border border-gold/30 hover:bg-gold/10 hover:border-gold/50 px-3 py-2 transition-colors">
-                    <div className="w-9 h-9 bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                      <ShoppingBag className="w-4 h-4 text-gold" />
+                  <div className="flex items-center gap-2 bg-surface-1 border border-border hover:border-gold/50 px-3 py-2 transition-colors">
+                    <div className="w-9 h-9 bg-muted/50 border border-border flex items-center justify-center group-hover:bg-gold/10 transition-colors">
+                      <ShoppingBag className="w-4 h-4 text-foreground group-hover:text-gold transition-colors" />
                     </div>
                     <div className="text-right">
                       <div className="flex items-center gap-1">
                         <Coins className="w-3 h-3 text-gold" />
-                        <span className="font-display text-xl text-gold leading-none">
+                        <span className="font-display text-xl text-foreground leading-none">
                           {(profile as any)?.spendable_index || 0}
                         </span>
                       </div>
@@ -233,7 +233,7 @@ export default function HubPage() {
                     <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Wins</p>
                   </div>
                   <div>
-                    <p className="font-display text-lg text-gold">{bestScore?.toFixed(0) || '—'}</p>
+                    <p className="font-display text-lg text-foreground">{bestScore?.toFixed(0) || '—'}</p>
                     <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best QOI</p>
                   </div>
                   <div>
@@ -250,24 +250,24 @@ export default function HubPage() {
                   {userCrew ? (
                     <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center overflow-hidden">
+                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center overflow-hidden">
                           {userCrew.avatar_url ? (
                             <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <Users2 className="w-5 h-5 text-gold" />
+                            <Users2 className="w-5 h-5 text-foreground" />
                           )}
                         </div>
                         <div>
                           <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
-                          <p className="font-display text-sm text-gold">{userCrew.name}</p>
+                          <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">{userCrew.name}</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                     </Link>
                   ) : (
                     <Link to="/crews" className="flex items-center justify-between group">
                       <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center">
                           <Plus className="w-5 h-5 text-muted-foreground" />
                         </div>
                         <div>
@@ -275,7 +275,7 @@ export default function HubPage() {
                           <p className="text-sm text-foreground group-hover:text-gold transition-colors">Find your squad</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                     </Link>
                   )}
                 </div>
@@ -284,8 +284,8 @@ export default function HubPage() {
                 <div className="px-4 py-3">
                   <Link to="/gqt" className="flex items-center justify-between group">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                        <Target className="w-5 h-5 text-gold" />
+                      <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center group-hover:border-gold/50 transition-colors">
+                        <Target className="w-5 h-5 text-foreground group-hover:text-gold transition-colors" />
                       </div>
                       <div>
                         <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Global QOI Test</p>
@@ -294,7 +294,7 @@ export default function HubPage() {
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 </div>
               </div>
