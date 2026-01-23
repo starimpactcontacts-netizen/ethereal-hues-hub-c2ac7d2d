@@ -108,7 +108,7 @@ export default function ArenaPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "sanctioned" | "practice">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "practice">("all");
   const [showPracticeMode, setShowPracticeMode] = useState(false);
   useEffect(() => {
     async function fetchEvents() {
@@ -233,10 +233,10 @@ export default function ArenaPage() {
           </div>
 
           {/* Quick Filters */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             <button
               onClick={() => setActiveFilter("all")}
-              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all ${
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0 ${
                 activeFilter === "all"
                   ? "bg-foreground text-background border-foreground"
                   : "bg-transparent text-muted-foreground border-border hover:border-foreground/50"
@@ -244,20 +244,35 @@ export default function ArenaPage() {
             >
               All
             </button>
+            
+            {/* OFFICIAL EVENTS - Prominent with gold accent */}
+            <button
+              onClick={() => setActiveFilter("official")}
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 shrink-0 ${
+                activeFilter === "official"
+                  ? "bg-gradient-to-r from-gold to-amber-500 text-background border-gold shadow-lg shadow-gold/30"
+                  : "bg-transparent text-gold border-gold/50 hover:border-gold hover:bg-gold/5"
+              }`}
+            >
+              <InfinityIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
+              Official Events
+            </button>
+            
             <button
               onClick={() => setActiveFilter("sanctioned")}
-              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 shrink-0 ${
                 activeFilter === "sanctioned"
-                  ? "bg-gold text-background border-gold"
-                  : "bg-transparent text-muted-foreground border-border hover:border-gold/50"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-transparent text-muted-foreground border-border hover:border-foreground/50"
               }`}
             >
               <Shield className="w-3 h-3" />
               Sanctioned
             </button>
+            
             <button
               onClick={() => setActiveFilter("practice")}
-              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all ${
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0 ${
                 activeFilter === "practice"
                   ? "bg-foreground text-background border-foreground"
                   : "bg-transparent text-muted-foreground border-border hover:border-foreground/50"
@@ -265,12 +280,6 @@ export default function ArenaPage() {
             >
               Practice
             </button>
-            
-            {/* Trending indicator */}
-            <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>{allActiveEvents.length} Active</span>
-            </div>
           </div>
         </div>
       </div>
@@ -333,67 +342,86 @@ export default function ArenaPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              className="px-4 mt-6"
             >
-              {allActiveEvents.length > 0 && (
-                <motion.section className="mt-4">
-                  <div className="flex items-center justify-between px-4 mb-3">
+              <div className="text-center py-12">
+                <div className="w-16 h-16 rounded-full bg-surface-1 border border-border flex items-center justify-center mx-auto mb-4">
+                  <InfinityIcon className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-display text-lg text-foreground mb-2">Welcome to the Arena</h3>
+                <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
+                  Select a category above to explore events, tournaments, and practice modes.
+                </p>
+                <div className="flex flex-col gap-2 max-w-xs mx-auto">
+                  <button
+                    onClick={() => setActiveFilter("official")}
+                    className="flex items-center justify-between bg-gradient-to-r from-gold/10 to-transparent border border-gold/30 hover:border-gold/60 p-3 transition-all group"
+                  >
                     <div className="flex items-center gap-2">
                       <InfinityIcon className="w-4 h-4 text-gold" />
-                      <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                        Official Events
-                      </span>
-                      {liveEvents.length > 0 && (
-                        <span className="flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[9px] text-emerald-400 uppercase">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          {liveEvents.length} Live
-                        </span>
-                      )}
+                      <span className="text-sm font-medium text-foreground">Official Events</span>
                     </div>
-                    <Link to="/events" className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">
-                      View All
-                    </Link>
-                  </div>
-                  
-                  <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
-                    {allActiveEvents.map((event) => (
-                      <OfficialEventCard key={event.id} event={event} />
-                    ))}
-                  </div>
-                </motion.section>
-              )}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter("sanctioned")}
+                    className="flex items-center justify-between bg-surface-1 border border-border hover:border-foreground/30 p-3 transition-all group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">Sanctioned</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter("practice")}
+                    className="flex items-center justify-between bg-surface-1 border border-border hover:border-foreground/30 p-3 transition-all group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-foreground">Practice Mode</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
 
-              {/* Quick Access Cards */}
-              <div className="px-4 mt-6 grid grid-cols-2 gap-3">
-                {/* Sanctioned Quick Access */}
-                <button
-                  onClick={() => setActiveFilter("sanctioned")}
-                  className="bg-surface-1 border border-gold/30 hover:border-gold/60 p-4 text-left transition-all group"
-                >
-                  <Shield className="w-6 h-6 text-gold mb-2" />
-                  <h4 className="text-sm font-medium text-foreground mb-1">Sanctioned</h4>
-                  <p className="text-[10px] text-muted-foreground">Community brackets</p>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground mt-2 group-hover:translate-x-1 transition-transform" />
-                </button>
-
-                {/* Practice Quick Access */}
-                <button
-                  onClick={() => setActiveFilter("practice")}
-                  className="bg-surface-1 border border-emerald-500/30 hover:border-emerald-500/60 p-4 text-left transition-all group"
-                >
-                  <span className="text-2xl mb-2 block">✨</span>
-                  <h4 className="text-sm font-medium text-foreground mb-1">Practice</h4>
-                  <p className="text-[10px] text-muted-foreground">1v1 & Friendly Comps</p>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground mt-2 group-hover:translate-x-1 transition-transform" />
-                </button>
+          {/* ═══════════════════════════════════════════════════════════════════
+              OFFICIAL EVENTS TAB
+          ═══════════════════════════════════════════════════════════════════ */}
+          {activeFilter === "official" && (
+            <motion.div
+              key="official"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-4"
+            >
+              <div className="flex items-center justify-between px-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <InfinityIcon className="w-4 h-4 text-gold" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Official Events
+                  </span>
+                  {liveEvents.length > 0 && (
+                    <span className="flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 text-[9px] text-emerald-400 uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      {liveEvents.length} Live
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Empty State */}
-              {allActiveEvents.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="px-4 mt-8"
-                >
+              {allActiveEvents.length > 0 ? (
+                <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+                  {allActiveEvents.map((event) => (
+                    <OfficialEventCard key={event.id} event={event} />
+                  ))}
+                </div>
+              ) : (
+                <div className="px-4">
                   <div className="bg-surface-1 border border-border p-8 text-center">
                     <div className="w-16 h-16 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center mx-auto mb-4">
                       <InfinityIcon className="w-8 h-8 text-gold/50" />
@@ -410,7 +438,7 @@ export default function ArenaPage() {
                       Take the GQT
                     </Button>
                   </div>
-                </motion.div>
+                </div>
               )}
             </motion.div>
           )}
