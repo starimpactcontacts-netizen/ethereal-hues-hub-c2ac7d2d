@@ -282,123 +282,73 @@ export default function HubPage() {
       {/* ═══════════════════════════════════════════════════════════════════
           🔥 ARENA CTA - CLEAN GATEWAY (No event mixed in)
       ═══════════════════════════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          🔥 COMPACT ARENA CTA + FEATURED (Impact Density)
+      ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+        transition={{ delay: 0.1 }}
         className="px-4 mt-2"
       >
+        {/* Main Arena Button - Slimmer */}
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold bg-gradient-to-r from-gold/5 via-background to-gold/5 transition-all duration-300">
-            {/* Subtle animated shimmer */}
+          <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold bg-gradient-to-r from-gold/5 via-background to-gold/5 transition-all">
             <motion.div
               className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/10 to-gold/0"
               animate={{ x: ['-100%', '100%'] }}
               transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
             />
-            
-            {/* Content */}
-            <div className="relative p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* Arena Icon */}
-                <div className="w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
-                  <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
+            <div className="relative px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-lg flex items-center justify-center shadow-lg shadow-gold/40">
+                  <InfinityIcon className="w-5 h-5 text-background" strokeWidth={2.5} />
                 </div>
-                
                 <div>
-                  <h2 className="font-display text-2xl text-foreground">ARENA</h2>
-                  <p className="text-sm text-muted-foreground">Enter the competition</p>
+                  <h2 className="font-display text-xl text-foreground leading-none">ARENA</h2>
+                  <p className="text-xs text-muted-foreground">Compete now</p>
                 </div>
               </div>
-              
-              {/* Enter Button */}
-              <div className="shrink-0">
-                <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-sm px-6 py-3 flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-gold/30 transition-all">
-                  <span>ENTER NOW</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </div>
+              <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-xs px-4 py-2 flex items-center gap-1.5">
+                <span>ENTER</span>
+                <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
           </div>
         </Link>
-      </motion.div>
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          📺 FEATURED SECTION - Roblox-style event carousel
-      ═══════════════════════════════════════════════════════════════════ */}
-      {liveEvents.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.15 }}
-          className="mt-4"
-        >
-          {/* Section Header */}
-          <div className="flex items-center justify-between px-4 mb-3">
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
-                <span className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-              </div>
-              <h3 className="font-display text-sm text-foreground">FEATURED</h3>
-              <span className="text-[9px] text-muted-foreground">({liveEvents.length} live)</span>
-            </div>
-            <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-              VIEW ALL <ArrowRight size={10} />
-            </Link>
-          </div>
-          
-          {/* Horizontal Carousel */}
-          <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
-            {liveEvents.map((event, i) => (
-              <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + i * 0.05 }}
-                  className="w-[280px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-emerald-500/50 transition-colors overflow-hidden group"
-                >
-                  {/* Event Poster */}
+        {/* Featured Events - Compact inline row */}
+        {liveEvents.length > 0 && (
+          <div className="mt-3 flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1">
+            <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-widest shrink-0 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              LIVE
+            </span>
+            {liveEvents.slice(0, 4).map((event) => (
+              <Link key={event.id} to={`/event/${event.id}`} className="shrink-0 group/card">
+                <div className="flex items-center gap-2 bg-surface-1/60 border border-border/50 hover:border-gold/40 px-2.5 py-1.5 transition-colors">
                   {event.poster_url && (
-                    <div className="h-32 overflow-hidden relative">
-                      <img 
-                        src={event.poster_url} 
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
-                      
-                      {/* Live badge */}
-                      <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500/90 px-2 py-0.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                        <span className="text-[8px] font-bold text-white uppercase tracking-wider">Live</span>
-                      </div>
-                      
-                      {/* Prize pool */}
-                      {event.prize_pool && (
-                        <div className="absolute top-2 right-2 bg-background/80 border border-gold/50 px-2 py-0.5">
-                          <span className="text-[10px] font-bold text-gold">{event.prize_pool}</span>
-                        </div>
-                      )}
-                    </div>
+                    <img src={event.poster_url} alt="" className="w-8 h-10 object-cover rounded-sm" />
                   )}
-                  
-                  {/* Event Info */}
-                  <div className="p-3">
-                    <p className="font-display text-sm text-foreground truncate">{event.title}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[9px] text-gold uppercase tracking-wider">{event.league} League</span>
-                      <div className="text-[10px] text-muted-foreground">
-                        <CountdownTimer endDate={event.end_date} />
-                      </div>
-                    </div>
+                  <div className="max-w-[100px]">
+                    <p className="font-display text-xs text-foreground truncate group-hover/card:text-gold transition-colors">
+                      {event.title}
+                    </p>
+                    {event.prize_pool && (
+                      <p className="text-[9px] text-gold">{event.prize_pool}</p>
+                    )}
                   </div>
-                </motion.div>
+                </div>
               </Link>
             ))}
+            {liveEvents.length > 4 && (
+              <Link to="/arena" className="text-[10px] text-muted-foreground hover:text-foreground shrink-0">
+                +{liveEvents.length - 4} more
+              </Link>
+            )}
           </div>
-        </motion.div>
-      )}
+        )}
+      </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
           QUICK ACCESS ROW
