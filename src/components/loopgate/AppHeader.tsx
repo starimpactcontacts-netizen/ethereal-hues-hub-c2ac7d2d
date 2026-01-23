@@ -53,8 +53,8 @@ export default function AppHeader() {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="flex items-center justify-between px-4 h-14">
-        {/* Logo */}
-        <Link to="/hub" className="font-display text-xl text-gold">
+        {/* Logo - Clean white, tall condensed */}
+        <Link to="/hub" className="font-display text-2xl text-white tracking-[-0.02em]" style={{ fontStretch: 'condensed' }}>
           LOOPGATE
         </Link>
 
@@ -64,7 +64,7 @@ export default function AppHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 text-gold hover:bg-gold/10"
+            className="h-9 w-9 text-foreground hover:text-gold hover:bg-gold/10"
             onClick={() => setInviteModalOpen(true)}
           >
             <Send className="h-5 w-5" />
@@ -86,7 +86,7 @@ export default function AppHeader() {
               {/* Header */}
               <div className="border-b border-border p-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-xl text-gold">MENU</span>
+                  <span className="font-display text-xl text-foreground">MENU</span>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <X className="h-5 w-5" />
