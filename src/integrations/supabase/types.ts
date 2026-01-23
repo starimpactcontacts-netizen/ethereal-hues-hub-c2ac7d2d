@@ -827,6 +827,110 @@ export type Database = {
         }
         Relationships: []
       }
+      friendly_tournament_participants: {
+        Row: {
+          avatar_url: string | null
+          bracket_position: number | null
+          eliminated_at: string | null
+          final_rank: number | null
+          id: string
+          joined_at: string
+          submission_platform: string | null
+          submission_url: string | null
+          submitted_at: string | null
+          tournament_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bracket_position?: number | null
+          eliminated_at?: string | null
+          final_rank?: number | null
+          id?: string
+          joined_at?: string
+          submission_platform?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          tournament_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bracket_position?: number | null
+          eliminated_at?: string | null
+          final_rank?: number | null
+          id?: string
+          joined_at?: string
+          submission_platform?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          tournament_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friendly_tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "friendly_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friendly_tournaments: {
+        Row: {
+          bracket_data: Json | null
+          completed_at: string | null
+          created_at: string
+          creator_id: string
+          current_players: number
+          description: string | null
+          duration_minutes: number
+          id: string
+          judge_id: string | null
+          judge_username: string | null
+          max_players: number
+          name: string
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          bracket_data?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          creator_id: string
+          current_players?: number
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          judge_id?: string | null
+          judge_username?: string | null
+          max_players?: number
+          name: string
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          bracket_data?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          creator_id?: string
+          current_players?: number
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          judge_id?: string | null
+          judge_username?: string | null
+          max_players?: number
+          name?: string
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       gatekeeper_submissions: {
         Row: {
           age_range: string | null

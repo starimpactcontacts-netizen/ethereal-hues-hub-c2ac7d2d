@@ -1,15 +1,20 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
-  ArrowLeft, Swords, Users, Scale,
+  ArrowLeft, Swords, Users, Scale, Trophy,
   Flame, Shield, Sparkles
 } from "lucide-react";
 import PracticeFormatCard, { PracticeFormat } from "./PracticeFormatCard";
 import Practice1v1Flow from "./Practice1v1Flow";
 import PracticeMatchView from "./PracticeMatchView";
 import PracticeJudgeQueue from "./PracticeJudgeQueue";
+import CreateFriendlyTournament from "./CreateFriendlyTournament";
+import FriendlyTournamentLobby from "./FriendlyTournamentLobby";
+import FriendlyTournamentActive from "./FriendlyTournamentActive";
+import FriendlyTournamentCard from "./FriendlyTournamentCard";
 import { useAuth } from "@/hooks/useAuth";
 import { usePracticeMatch } from "@/hooks/usePracticeMatch";
+import { useFriendlyTournamentList } from "@/hooks/useFriendlyTournament";
 import { toast } from "sonner";
 
 interface PracticeModeViewProps {
@@ -23,6 +28,14 @@ const practiceFormats = [
     description: "Get matched with similar skill. Both submit, judge picks winner.",
     icon: Swords,
     xpReward: "20-50",
+    isAvailable: true,
+  },
+  {
+    format: "friendly-comp" as PracticeFormat,
+    title: "Friendly Comp",
+    description: "Create your own tournament. Pick judge, invite friends, no XP.",
+    icon: Trophy,
+    xpReward: "—",
     isAvailable: true,
   },
   {
@@ -43,13 +56,15 @@ const practiceFormats = [
   },
 ];
 
-type ViewState = "menu" | "1v1-flow" | "match-view" | "judge-queue";
+type ViewState = "menu" | "1v1-flow" | "match-view" | "judge-queue" | "create-friendly" | "friendly-lobby" | "friendly-active";
 
 export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
   const [viewState, setViewState] = useState<ViewState>("menu");
   const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
+  const [activeTournamentId, setActiveTournamentId] = useState<string | null>(null);
   const { isJudge } = useAuth();
   const { activeMatch } = usePracticeMatch();
+  const { tournaments: openTournaments, myTournaments } = useFriendlyTournamentList();
 
   const handleFormatSelect = (format: PracticeFormat) => {
     if (format === "1v1") {
@@ -60,6 +75,8 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
       } else {
         setViewState("1v1-flow");
       }
+    } else if (format === "friendly-comp") {
+      setViewState("create-friendly");
     } else {
       toast.info("Coming soon!", {
         description: "This format is under development."
@@ -70,6 +87,20 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
   const handleMatchFound = (matchId: string) => {
     setActiveMatchId(matchId);
     setViewState("match-view");
+  };
+
+  const handleTournamentCreated = (tournamentId: string) => {
+    setActiveTournamentId(tournamentId);
+    setViewState("friendly-lobby");
+  };
+
+  const handleTournamentSelect = (tournament: { id: string; status: string }) => {
+    setActiveTournamentId(tournament.id);
+    if (tournament.status === 'live' || tournament.status === 'bracket') {
+      setViewState("friendly-active");
+    } else {
+      setViewState("friendly-lobby");
+    }
   };
 
   // Render different views based on state
@@ -97,6 +128,40 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
   if (viewState === "judge-queue") {
     return (
       <PracticeJudgeQueue onBack={() => setViewState("menu")} />
+    );
+  }
+
+  if (viewState === "create-friendly") {
+    return (
+      <CreateFriendlyTournament 
+        onBack={() => setViewState("menu")}
+        onCreated={handleTournamentCreated}
+      />
+    );
+  }
+
+  if (viewState === "friendly-lobby" && activeTournamentId) {
+    return (
+      <FriendlyTournamentLobby
+        tournamentId={activeTournamentId}
+        onBack={() => {
+          setActiveTournamentId(null);
+          setViewState("menu");
+        }}
+        onStarted={() => setViewState("friendly-active")}
+      />
+    );
+  }
+
+  if (viewState === "friendly-active" && activeTournamentId) {
+    return (
+      <FriendlyTournamentActive
+        tournamentId={activeTournamentId}
+        onBack={() => {
+          setActiveTournamentId(null);
+          setViewState("menu");
+        }}
+      />
     );
   }
 
@@ -218,6 +283,57 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
             </motion.div>
           ))}
         </motion.div>
+
+        {/* Judge callout - only for judges */}
+        {/* My Friendly Tournaments */}
+        {myTournaments.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-6"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Your Tournaments
+              </span>
+              <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+            </div>
+            <div className="space-y-2">
+              {myTournaments.slice(0, 3).map((tournament) => (
+                <FriendlyTournamentCard
+                  key={tournament.id}
+                  tournament={tournament}
+                  onClick={() => handleTournamentSelect(tournament)}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Open Friendly Tournaments */}
+        {openTournaments.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-6"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                Open Tournaments
+              </span>
+              <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
+            </div>
+            <div className="space-y-2">
+              {openTournaments.slice(0, 5).map((tournament) => (
+                <FriendlyTournamentCard
+                  key={tournament.id}
+                  tournament={tournament}
+                  onClick={() => handleTournamentSelect(tournament)}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
 
         {/* Judge callout - only for judges */}
         {isJudge && (
