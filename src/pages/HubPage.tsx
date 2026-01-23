@@ -243,68 +243,62 @@ export default function HubPage() {
                 </div>
               </div>
 
-              {/* Crew Section - Prominent */}
-              <div className="border-t border-border/30 px-4 py-3">
-                {userCrew ? (
-                  <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center overflow-hidden">
-                        {userCrew.avatar_url ? (
-                          <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <Users2 className="w-5 h-5 text-gold" />
-                        )}
+              {/* Quick Access Rows - Crew & GQT */}
+              <div className="border-t border-border/30 divide-y divide-border/20">
+                {/* Crew Row */}
+                <div className="px-4 py-3">
+                  {userCrew ? (
+                    <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center overflow-hidden">
+                          {userCrew.avatar_url ? (
+                            <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <Users2 className="w-5 h-5 text-gold" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
+                          <p className="font-display text-sm text-gold">{userCrew.name}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
-                        <p className="font-display text-sm text-gold">{userCrew.name}</p>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+                  ) : (
+                    <Link to="/crews" className="flex items-center justify-between group">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center">
+                          <Plus className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Join a Crew</p>
+                          <p className="text-sm text-foreground group-hover:text-gold transition-colors">Find your squad</p>
+                        </div>
                       </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
-                  </Link>
-                ) : (
-                  <Link to="/crews" className="flex items-center justify-between group">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center">
-                        <Plus className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Join a Crew</p>
-                        <p className="text-sm text-foreground group-hover:text-gold transition-colors">Find your squad</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
-                  </Link>
-                )}
-              </div>
-            </div>
-          </motion.div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+                  )}
+                </div>
 
-          {/* GQT Quick Access - Subtle secondary placement */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mt-4"
-          >
-            <Link to="/gqt" className="block group">
-              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/40 transition-colors p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                      <Target className="w-5 h-5 text-gold" />
+                {/* GQT Row */}
+                <div className="px-4 py-3">
+                  <Link to="/gqt" className="flex items-center justify-between group">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                        <Target className="w-5 h-5 text-gold" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Global QOI Test</p>
+                        <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">
+                          {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">GLOBAL QOI TEST</p>
-                      <p className="text-[9px] text-muted-foreground">
-                        {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                  </Link>
                 </div>
               </div>
-            </Link>
+            </div>
           </motion.div>
         </div>
       </div>
