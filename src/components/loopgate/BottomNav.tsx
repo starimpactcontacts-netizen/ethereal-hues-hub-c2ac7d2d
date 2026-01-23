@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Trophy, Search, User, LogIn, Zap } from "lucide-react";
+import { Home, Trophy, Search, User, LogIn, Infinity } from "lucide-react";
 import { useGuestMode } from "@/hooks/useGuestMode";
 
 const navItems = [
@@ -74,7 +74,7 @@ export default function BottomNav() {
             
             {/* Button circle */}
             <div className="relative w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-full flex items-center justify-center shadow-lg shadow-gold/40 border-2 border-gold/60">
-              <Zap className="w-6 h-6 text-black fill-black" />
+              <Infinity className="w-6 h-6 text-black" strokeWidth={2.5} />
             </div>
             <span className="text-[8px] font-bold uppercase tracking-[0.15em] text-gold mt-1">
               Arena
