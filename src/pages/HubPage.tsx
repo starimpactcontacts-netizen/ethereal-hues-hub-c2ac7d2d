@@ -280,42 +280,69 @@ export default function HubPage() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          🔥 ARENA CTA - CLEAN GATEWAY (No event mixed in)
+          🔥 ARENA CTA - Premium gateway
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold bg-gradient-to-r from-gold/5 via-background to-gold/5 transition-all duration-300">
-            {/* Subtle animated shimmer */}
+          <div className="relative overflow-hidden rounded-2xl">
+            {/* Multi-layer background for depth */}
+            <div className="absolute inset-0 bg-gradient-to-br from-surface-1 via-background to-surface-1" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold/8 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
+            
+            {/* Subtle grid texture */}
+            <div className="absolute inset-0 opacity-[0.03]" style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
+              backgroundSize: '20px 20px'
+            }} />
+            
+            {/* Animated glow pulse */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/10 to-gold/0"
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-20 -right-20 w-40 h-40 bg-gold/20 rounded-full blur-3xl"
+              animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
             
+            {/* Border glow on hover */}
+            <div className="absolute inset-0 rounded-2xl border border-gold/20 group-hover:border-gold/50 transition-colors duration-500" />
+            <div className="absolute inset-[1px] rounded-2xl border border-white/5" />
+            
             {/* Content */}
-            <div className="relative p-3 flex items-center justify-between">
+            <div className="relative p-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {/* Arena Icon */}
-                <div className="w-12 h-12 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
-                  <InfinityIcon className="w-6 h-6 text-background" strokeWidth={2.5} />
+                {/* Arena Icon - Enhanced */}
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gold/30 rounded-xl blur-md group-hover:blur-lg transition-all" />
+                  <div className="relative w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-amber-500 rounded-xl flex items-center justify-center shadow-xl">
+                    <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
+                  </div>
                 </div>
                 
                 <div>
-                  <h2 className="font-display text-2xl text-foreground">ARENA</h2>
+                  <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
                   <p className="text-sm text-muted-foreground">Enter the competition</p>
                 </div>
               </div>
               
-              {/* Enter Button */}
+              {/* Enter Button - Enhanced */}
               <div className="shrink-0">
-                <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-sm px-5 py-2.5 flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-gold/30 transition-all">
-                  <span>ENTER NOW</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <div className="relative overflow-hidden bg-gradient-to-r from-gold via-amber-400 to-gold text-background font-display text-sm px-6 py-3 rounded-xl shadow-lg shadow-gold/25 group-hover:shadow-gold/50 transition-all duration-300">
+                  {/* Button shimmer */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0"
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '100%' }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                  />
+                  <div className="relative flex items-center gap-2">
+                    <span>ENTER NOW</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </div>
             </div>
