@@ -280,83 +280,28 @@ export default function HubPage() {
             </div>
           </motion.div>
 
-          {/* ═══════════════════════════════════════════════════════════════════
-              PRIMARY ACTION - Global QOI Test Spotlight
-          ═══════════════════════════════════════════════════════════════════ */}
+          {/* GQT Quick Access - Subtle secondary placement */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+            className="mt-4"
           >
-            <Link to="/gqt" className="block">
-              <div className="relative group">
-                {/* Outer glow container */}
-                <div className="absolute -inset-[1px] bg-gradient-to-r from-gold/50 via-gold to-gold/50 opacity-60 blur-sm group-hover:opacity-100 transition-opacity" />
-                
-                {/* Main card with glass effect */}
-                <div className="relative bg-gradient-to-br from-surface-1/95 via-surface-0/95 to-background/95 backdrop-blur-xl border border-gold/30 overflow-hidden">
-                  {/* Inner gold accent line */}
-                  <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-gold to-transparent" />
-                  
-                  {/* Hazard pattern subtle overlay */}
-                  <div className="absolute inset-0 opacity-[0.03]">
-                    <div 
-                      className="absolute inset-0"
-                      style={{
-                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 20px, hsl(43 74% 49%) 20px, hsl(43 74% 49%) 40px)',
-                      }}
-                    />
-                  </div>
-                  
-                  <div className="relative p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        {/* Badge */}
-                        <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-gold/10 border border-gold/30 mb-3">
-                          <Zap className="w-3 h-3 text-gold" />
-                          <span className="text-[9px] font-bold tracking-widest text-gold uppercase">Featured</span>
-                        </div>
-                        
-                        <h2 className="font-display text-3xl text-gold mb-1">GLOBAL QOI TEST</h2>
-                        <p className="text-sm text-muted-foreground italic">"Submit an edit. Get your score."</p>
-                      </div>
-                      
-                      {/* Target icon with animation */}
-                      <div className="relative">
-                        <motion.div 
-                          className="w-16 h-16 border-2 border-gold/50 flex items-center justify-center"
-                          animate={{ rotate: [0, 5, 0, -5, 0] }}
-                          transition={{ duration: 4, repeat: Infinity }}
-                        >
-                          <Target className="w-8 h-8 text-gold" />
-                        </motion.div>
-                        {/* Ping effect */}
-                        <div className="absolute inset-0 border-2 border-gold/30 animate-ping opacity-20" />
-                      </div>
+            <Link to="/gqt" className="block group">
+              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/40 transition-colors p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                      <Target className="w-5 h-5 text-gold" />
                     </div>
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-5 pt-4 border-t border-border/50">
-                      {bestScore ? (
-                        <div className="flex items-center gap-3">
-                          <div className="text-center">
-                            <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Your Best</p>
-                            <p className="font-display text-2xl text-gold">{bestScore.toFixed(1)}</p>
-                          </div>
-                          <div className="w-px h-8 bg-border" />
-                          <span className="text-[10px] text-muted-foreground">Beat your score →</span>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest hidden sm:inline">
-                          Get real feedback on your edits
-                        </span>
-                      )}
-                      
-                      <Button className="w-full sm:w-auto bg-gold hover:bg-gold/90 text-background font-display h-10 px-6 group-hover:shadow-lg group-hover:shadow-gold/30 transition-shadow">
-                        START TEST
-                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                      </Button>
+                    <div>
+                      <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">GLOBAL QOI TEST</p>
+                      <p className="text-[9px] text-muted-foreground">
+                        {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
+                      </p>
                     </div>
                   </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
                 </div>
               </div>
             </Link>
