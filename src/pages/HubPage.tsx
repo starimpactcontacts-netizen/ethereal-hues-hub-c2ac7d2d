@@ -115,7 +115,7 @@ export default function HubPage() {
           />
         </div>
 
-        <div className="relative px-4 pt-10 pb-6">
+        <div className="relative px-4 pt-8 pb-3">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -286,7 +286,7 @@ export default function HubPage() {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-        className="px-4 mt-2"
+        className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
           <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold bg-gradient-to-r from-gold/5 via-background to-gold/5 transition-all duration-300">
@@ -298,11 +298,11 @@ export default function HubPage() {
             />
             
             {/* Content */}
-            <div className="relative p-4 flex items-center justify-between">
+            <div className="relative p-3 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Arena Icon */}
-                <div className="w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
-                  <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
+                <div className="w-12 h-12 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
+                  <InfinityIcon className="w-6 h-6 text-background" strokeWidth={2.5} />
                 </div>
                 
                 <div>
@@ -313,7 +313,7 @@ export default function HubPage() {
               
               {/* Enter Button */}
               <div className="shrink-0">
-                <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-sm px-6 py-3 flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-gold/30 transition-all">
+                <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-sm px-5 py-2.5 flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-gold/30 transition-all">
                   <span>ENTER NOW</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -331,7 +331,7 @@ export default function HubPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="mt-4"
+          className="mt-2"
         >
           {/* Section Header */}
           <div className="flex items-center justify-between px-4 mb-3">
