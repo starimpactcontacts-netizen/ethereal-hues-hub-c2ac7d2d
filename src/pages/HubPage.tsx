@@ -383,7 +383,7 @@ export default function HubPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + i * 0.05 }}
-                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-emerald-500/50 transition-colors overflow-hidden group rounded-lg"
+                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-emerald-500/50 transition-colors overflow-hidden group"
                 >
                   {/* Event Poster */}
                   {event.poster_url && (
