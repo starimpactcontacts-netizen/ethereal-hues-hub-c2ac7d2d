@@ -1286,6 +1286,166 @@ export type Database = {
         }
         Relationships: []
       }
+      practice_matches: {
+        Row: {
+          compensation_xp_awarded: number | null
+          created_at: string
+          duration_minutes: number
+          ends_at: string | null
+          id: string
+          judge_auto_assigned: boolean | null
+          judge_claimed_at: string | null
+          judge_id: string | null
+          judge_notes: string | null
+          judged_at: string | null
+          loser_xp_awarded: number | null
+          match_type: string
+          matched_at: string | null
+          player_1_id: string
+          player_1_platform: string | null
+          player_1_score: number | null
+          player_1_submission_url: string | null
+          player_1_submitted_at: string | null
+          player_2_id: string | null
+          player_2_platform: string | null
+          player_2_score: number | null
+          player_2_submission_url: string | null
+          player_2_submitted_at: string | null
+          starts_at: string | null
+          status: string
+          updated_at: string
+          winner_id: string | null
+          winner_xp_awarded: number | null
+        }
+        Insert: {
+          compensation_xp_awarded?: number | null
+          created_at?: string
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          judge_auto_assigned?: boolean | null
+          judge_claimed_at?: string | null
+          judge_id?: string | null
+          judge_notes?: string | null
+          judged_at?: string | null
+          loser_xp_awarded?: number | null
+          match_type?: string
+          matched_at?: string | null
+          player_1_id: string
+          player_1_platform?: string | null
+          player_1_score?: number | null
+          player_1_submission_url?: string | null
+          player_1_submitted_at?: string | null
+          player_2_id?: string | null
+          player_2_platform?: string | null
+          player_2_score?: number | null
+          player_2_submission_url?: string | null
+          player_2_submitted_at?: string | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+          winner_xp_awarded?: number | null
+        }
+        Update: {
+          compensation_xp_awarded?: number | null
+          created_at?: string
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          judge_auto_assigned?: boolean | null
+          judge_claimed_at?: string | null
+          judge_id?: string | null
+          judge_notes?: string | null
+          judged_at?: string | null
+          loser_xp_awarded?: number | null
+          match_type?: string
+          matched_at?: string | null
+          player_1_id?: string
+          player_1_platform?: string | null
+          player_1_score?: number | null
+          player_1_submission_url?: string | null
+          player_1_submitted_at?: string | null
+          player_2_id?: string | null
+          player_2_platform?: string | null
+          player_2_score?: number | null
+          player_2_submission_url?: string | null
+          player_2_submitted_at?: string | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+          winner_xp_awarded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_matches_judge_id_fkey"
+            columns: ["judge_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_matches_player_1_id_fkey"
+            columns: ["player_1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_matches_player_2_id_fkey"
+            columns: ["player_2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_matches_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_queue: {
+        Row: {
+          duration_minutes: number
+          expires_at: string
+          id: string
+          match_type: string
+          queued_at: string
+          skill_tier: string
+          user_id: string
+        }
+        Insert: {
+          duration_minutes?: number
+          expires_at?: string
+          id?: string
+          match_type?: string
+          queued_at?: string
+          skill_tier?: string
+          user_id: string
+        }
+        Update: {
+          duration_minutes?: number
+          expires_at?: string
+          id?: string
+          match_type?: string
+          queued_at?: string
+          skill_tier?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_queue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activity_status: string | null
@@ -1791,6 +1951,10 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
+      claim_practice_match: {
+        Args: { p_judge_id: string; p_match_id: string }
+        Returns: boolean
+      }
       create_invite:
         | {
             Args: { p_user_id: string }
@@ -1814,7 +1978,12 @@ export type Database = {
         Args: { p_event_id: string; p_round_number: number }
         Returns: number
       }
+      find_practice_match: {
+        Args: { p_duration: number; p_match_type: string; p_user_id: string }
+        Returns: string
+      }
       generate_invite_code: { Args: never; Returns: string }
+      get_skill_tier: { Args: { qoi_score: number }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
