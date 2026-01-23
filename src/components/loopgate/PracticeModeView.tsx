@@ -11,10 +11,10 @@ import PracticeJudgeQueue from "./PracticeJudgeQueue";
 import CreateFriendlyTournament from "./CreateFriendlyTournament";
 import FriendlyTournamentLobby from "./FriendlyTournamentLobby";
 import FriendlyTournamentActive from "./FriendlyTournamentActive";
-import FriendlyTournamentCard from "./FriendlyTournamentCard";
+import FriendlyTournamentList from "./FriendlyTournamentList";
 import { useAuth } from "@/hooks/useAuth";
 import { usePracticeMatch } from "@/hooks/usePracticeMatch";
-import { useFriendlyTournamentList } from "@/hooks/useFriendlyTournament";
+import { useFriendlyTournamentList, FriendlyTournament } from "@/hooks/useFriendlyTournament";
 import { toast } from "sonner";
 
 interface PracticeModeViewProps {
@@ -56,7 +56,7 @@ const practiceFormats = [
   },
 ];
 
-type ViewState = "menu" | "1v1-flow" | "match-view" | "judge-queue" | "create-friendly" | "friendly-lobby" | "friendly-active";
+type ViewState = "menu" | "1v1-flow" | "match-view" | "judge-queue" | "friendly-list" | "create-friendly" | "friendly-lobby" | "friendly-active";
 
 export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
   const [viewState, setViewState] = useState<ViewState>("menu");
@@ -76,7 +76,7 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
         setViewState("1v1-flow");
       }
     } else if (format === "friendly-comp") {
-      setViewState("create-friendly");
+      setViewState("friendly-list");
     } else {
       toast.info("Coming soon!", {
         description: "This format is under development."
@@ -94,7 +94,7 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
     setViewState("friendly-lobby");
   };
 
-  const handleTournamentSelect = (tournament: { id: string; status: string }) => {
+  const handleTournamentSelect = (tournament: FriendlyTournament) => {
     setActiveTournamentId(tournament.id);
     if (tournament.status === 'live' || tournament.status === 'bracket') {
       setViewState("friendly-active");
@@ -131,10 +131,20 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
     );
   }
 
+  if (viewState === "friendly-list") {
+    return (
+      <FriendlyTournamentList
+        onBack={() => setViewState("menu")}
+        onCreate={() => setViewState("create-friendly")}
+        onSelectTournament={handleTournamentSelect}
+      />
+    );
+  }
+
   if (viewState === "create-friendly") {
     return (
       <CreateFriendlyTournament 
-        onBack={() => setViewState("menu")}
+        onBack={() => setViewState("friendly-list")}
         onCreated={handleTournamentCreated}
       />
     );
@@ -146,7 +156,7 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
         tournamentId={activeTournamentId}
         onBack={() => {
           setActiveTournamentId(null);
-          setViewState("menu");
+          setViewState("friendly-list");
         }}
         onStarted={() => setViewState("friendly-active")}
       />
@@ -159,7 +169,7 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
         tournamentId={activeTournamentId}
         onBack={() => {
           setActiveTournamentId(null);
-          setViewState("menu");
+          setViewState("friendly-list");
         }}
       />
     );
@@ -283,57 +293,6 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
             </motion.div>
           ))}
         </motion.div>
-
-        {/* Judge callout - only for judges */}
-        {/* My Friendly Tournaments */}
-        {myTournaments.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-6"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Your Tournaments
-              </span>
-              <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
-            </div>
-            <div className="space-y-2">
-              {myTournaments.slice(0, 3).map((tournament) => (
-                <FriendlyTournamentCard
-                  key={tournament.id}
-                  tournament={tournament}
-                  onClick={() => handleTournamentSelect(tournament)}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Open Friendly Tournaments */}
-        {openTournaments.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mt-6"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                Open Tournaments
-              </span>
-              <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent" />
-            </div>
-            <div className="space-y-2">
-              {openTournaments.slice(0, 5).map((tournament) => (
-                <FriendlyTournamentCard
-                  key={tournament.id}
-                  tournament={tournament}
-                  onClick={() => handleTournamentSelect(tournament)}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
 
         {/* Judge callout - only for judges */}
         {isJudge && (
