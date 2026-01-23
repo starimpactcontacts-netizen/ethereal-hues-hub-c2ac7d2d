@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
-  Users2, TrendingUp, Coins, ShoppingBag, Gavel,
+  Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -401,7 +401,7 @@ export default function HubPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          QUICK ACCESS ROW
+          QUICK MENU - Soft rounded white pills
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -409,34 +409,44 @@ export default function HubPage() {
         transition={{ delay: 0.15 }}
         className="px-4 mt-4"
       >
-        <div className="grid grid-cols-2 gap-3">
-          <Link to="/rankings">
-            <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group h-full">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-gold" />
+        <div className="bg-surface-1/40 backdrop-blur-sm rounded-2xl p-2 border border-white/5">
+          <div className="grid grid-cols-4 gap-1.5">
+            <Link to="/rankings" className="group">
+              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                  <Trophy className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
                 </div>
-                <div>
-                  <p className="font-display text-sm">RANKINGS</p>
-                  <p className="text-[9px] text-muted-foreground">Global Index</p>
-                </div>
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Rankings</span>
               </div>
-            </div>
-          </Link>
-          
-          <Link to="/judges">
-            <div className="bg-gradient-to-br from-purple-500/10 to-surface-1/60 backdrop-blur border border-purple-500/30 hover:border-purple-400/50 transition-colors p-4 group h-full">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
-                  <Gavel className="w-5 h-5 text-purple-400" />
+            </Link>
+            
+            <Link to="/judges" className="group">
+              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                  <Gavel className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
                 </div>
-                <div>
-                  <p className="font-display text-sm text-purple-300">QOI JUDGES</p>
-                  <p className="text-[9px] text-muted-foreground">Get rated</p>
-                </div>
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Judges</span>
               </div>
-            </div>
-          </Link>
+            </Link>
+            
+            <Link to="/crews" className="group">
+              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                  <Users2 className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
+                </div>
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Crews</span>
+              </div>
+            </Link>
+            
+            <Link to="/shop" className="group">
+              <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
+                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                  <Gift className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
+                </div>
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Shop</span>
+              </div>
+            </Link>
+          </div>
         </div>
       </motion.div>
 
