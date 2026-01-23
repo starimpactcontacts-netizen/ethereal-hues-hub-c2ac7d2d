@@ -15,7 +15,7 @@ export default function VerifiedBadge({ size = "md", className = "" }: VerifiedB
   return (
     <BadgeCheck
       size={sizeMap[size]}
-      className={`text-gold fill-gold/20 ${className}`}
+      className={`text-[hsl(210,100%,52%)] fill-[hsl(210,100%,52%)]/20 ${className}`}
       aria-label="Verified"
     />
   );
