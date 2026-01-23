@@ -358,10 +358,31 @@ export default function HubPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="mt-2"
+          className="mt-2 relative"
         >
+          {/* Background Pattern */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {/* Diagonal lines pattern */}
+            <div 
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `repeating-linear-gradient(
+                  -45deg,
+                  transparent,
+                  transparent 10px,
+                  hsl(var(--foreground)) 10px,
+                  hsl(var(--foreground)) 11px
+                )`
+              }}
+            />
+            {/* Radial fade from left */}
+            <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-transparent" />
+            {/* Bottom fade to blend */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+          </div>
+
           {/* Section Header */}
-          <div className="flex items-center justify-between px-4 mb-3">
+          <div className="relative flex items-center justify-between px-4 mb-3">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
@@ -376,7 +397,7 @@ export default function HubPage() {
           </div>
           
           {/* Horizontal Carousel */}
-          <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
+          <div className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
             {liveEvents.map((event, i) => (
               <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
                 <motion.div
