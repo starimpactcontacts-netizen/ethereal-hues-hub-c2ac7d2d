@@ -376,18 +376,18 @@ export default function HubPage() {
           </div>
           
           {/* Horizontal Carousel */}
-          <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+          <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
             {liveEvents.map((event, i) => (
               <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + i * 0.05 }}
-                  className="w-[280px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-emerald-500/50 transition-colors overflow-hidden group"
+                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-emerald-500/50 transition-colors overflow-hidden group rounded-lg"
                 >
                   {/* Event Poster */}
                   {event.poster_url && (
-                    <div className="h-32 overflow-hidden relative">
+                    <div className="h-24 overflow-hidden relative">
                       <img 
                         src={event.poster_url} 
                         alt={event.title}
@@ -396,26 +396,26 @@ export default function HubPage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
                       
                       {/* Live badge */}
-                      <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500/90 px-2 py-0.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                        <span className="text-[8px] font-bold text-white uppercase tracking-wider">Live</span>
+                      <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-emerald-500/90 px-1.5 py-0.5 rounded-sm">
+                        <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                        <span className="text-[7px] font-bold text-white uppercase tracking-wider">Live</span>
                       </div>
                       
                       {/* Prize pool */}
                       {event.prize_pool && (
-                        <div className="absolute top-2 right-2 bg-background/80 border border-gold/50 px-2 py-0.5">
-                          <span className="text-[10px] font-bold text-gold">{event.prize_pool}</span>
+                        <div className="absolute top-1.5 right-1.5 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-sm">
+                          <span className="text-[8px] font-bold text-gold">{event.prize_pool}</span>
                         </div>
                       )}
                     </div>
                   )}
                   
                   {/* Event Info */}
-                  <div className="p-3">
-                    <p className="font-display text-sm text-foreground truncate">{event.title}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-[9px] text-gold uppercase tracking-wider">{event.league} League</span>
-                      <div className="text-[10px] text-muted-foreground">
+                  <div className="p-2.5">
+                    <p className="font-display text-xs text-foreground truncate">{event.title}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-[8px] text-gold uppercase tracking-wider">{event.league} League</span>
+                      <div className="text-[9px] text-muted-foreground">
                         <CountdownTimer endDate={event.end_date} />
                       </div>
                     </div>
