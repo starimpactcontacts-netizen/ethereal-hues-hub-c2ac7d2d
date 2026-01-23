@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 
-export type PracticeFormat = "1v1" | "crew-scrim" | "judge-drill";
+export type PracticeFormat = "1v1" | "friendly-comp" | "crew-scrim" | "judge-drill";
 
 interface PracticeFormatCardProps {
   format: PracticeFormat;
@@ -46,9 +46,15 @@ export default function PracticeFormatCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
             <h3 className="font-display text-sm text-foreground">{title}</h3>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5">
-              +{xpReward} XP
-            </span>
+            {xpReward !== "—" ? (
+              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5">
+                +{xpReward} XP
+              </span>
+            ) : (
+              <span className="text-[10px] text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5">
+                No XP
+              </span>
+            )}
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed">{description}</p>
         </div>
