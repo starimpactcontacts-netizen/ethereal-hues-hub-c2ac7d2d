@@ -88,8 +88,6 @@ export default function HubPage() {
   const bestScore = profile?.best_gatekeeper_qoi;
 
   const liveEvents = events.filter(e => e.status === 'live');
-  const primaryLiveEvent = liveEvents[0];
-  const hasLiveEvent = liveEvents.length > 0;
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
@@ -282,7 +280,7 @@ export default function HubPage() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          🔥 ARENA CTA - THE MAIN PLAY BUTTON
+          🔥 ARENA CTA - CLEAN GATEWAY (No event mixed in)
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
@@ -291,66 +289,32 @@ export default function HubPage() {
         className="px-4 mt-2"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold transition-all duration-300">
-            {/* Background */}
-            <div className="absolute inset-0">
-              {primaryLiveEvent?.poster_url ? (
-                <>
-                  <img 
-                    src={primaryLiveEvent.poster_url} 
-                    alt="" 
-                    className="w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/60" />
-                </>
-              ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-background to-gold/5" />
-              )}
-              {hasLiveEvent && (
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/10 to-gold/0"
-                  animate={{ x: ['-100%', '100%'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                />
-              )}
-            </div>
+          <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold bg-gradient-to-r from-gold/5 via-background to-gold/5 transition-all duration-300">
+            {/* Subtle animated shimmer */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/10 to-gold/0"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+            />
             
             {/* Content */}
-            <div className="relative p-5 flex items-center justify-between">
+            <div className="relative p-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
-                  <InfinityIcon className="w-8 h-8 text-background" strokeWidth={2.5} />
+                {/* Arena Icon */}
+                <div className="w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
+                  <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
                 </div>
                 
                 <div>
-                  {hasLiveEvent ? (
-                    <>
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="relative flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <div className="absolute left-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Live Now</span>
-                        </div>
-                      </div>
-                      <h2 className="font-display text-2xl text-foreground leading-tight">
-                        {primaryLiveEvent.title}
-                      </h2>
-                      <div className="mt-1 text-[10px] text-muted-foreground">
-                        <CountdownTimer endDate={primaryLiveEvent.end_date} />
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="font-display text-2xl text-foreground">ARENA</h2>
-                      <p className="text-sm text-muted-foreground">Enter the competition</p>
-                    </>
-                  )}
+                  <h2 className="font-display text-2xl text-foreground">ARENA</h2>
+                  <p className="text-sm text-muted-foreground">Enter the competition</p>
                 </div>
               </div>
               
+              {/* Enter Button */}
               <div className="shrink-0">
                 <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-sm px-6 py-3 flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-gold/30 transition-all">
-                  <span>{hasLiveEvent ? 'ENTER NOW' : 'VIEW ARENAS'}</span>
+                  <span>ENTER NOW</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -358,6 +322,83 @@ export default function HubPage() {
           </div>
         </Link>
       </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          📺 FEATURED SECTION - Roblox-style event carousel
+      ═══════════════════════════════════════════════════════════════════ */}
+      {liveEvents.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.15 }}
+          className="mt-4"
+        >
+          {/* Section Header */}
+          <div className="flex items-center justify-between px-4 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
+                <span className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              </div>
+              <h3 className="font-display text-sm text-foreground">FEATURED</h3>
+              <span className="text-[9px] text-muted-foreground">({liveEvents.length} live)</span>
+            </div>
+            <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+              VIEW ALL <ArrowRight size={10} />
+            </Link>
+          </div>
+          
+          {/* Horizontal Carousel */}
+          <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+            {liveEvents.map((event, i) => (
+              <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + i * 0.05 }}
+                  className="w-[280px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-emerald-500/50 transition-colors overflow-hidden group"
+                >
+                  {/* Event Poster */}
+                  {event.poster_url && (
+                    <div className="h-32 overflow-hidden relative">
+                      <img 
+                        src={event.poster_url} 
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
+                      
+                      {/* Live badge */}
+                      <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500/90 px-2 py-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        <span className="text-[8px] font-bold text-white uppercase tracking-wider">Live</span>
+                      </div>
+                      
+                      {/* Prize pool */}
+                      {event.prize_pool && (
+                        <div className="absolute top-2 right-2 bg-background/80 border border-gold/50 px-2 py-0.5">
+                          <span className="text-[10px] font-bold text-gold">{event.prize_pool}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Event Info */}
+                  <div className="p-3">
+                    <p className="font-display text-sm text-foreground truncate">{event.title}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[9px] text-gold uppercase tracking-wider">{event.league} League</span>
+                      <div className="text-[10px] text-muted-foreground">
+                        <CountdownTimer endDate={event.end_date} />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════
           QUICK ACCESS ROW
