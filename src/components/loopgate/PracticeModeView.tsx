@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
-  ArrowLeft, Swords, Users, Scale, Calendar,
+  ArrowLeft, Swords, Users, Scale,
   Flame, Shield, Sparkles
 } from "lucide-react";
 import PracticeFormatCard, { PracticeFormat } from "./PracticeFormatCard";
@@ -35,14 +35,6 @@ const practiceFormats = [
     description: "Get feedback from a certified judge. Learn what the pros look for.",
     icon: Scale,
     xpReward: "30",
-    isAvailable: true,
-  },
-  {
-    format: "daily-quest" as PracticeFormat,
-    title: "Daily Practice Quest",
-    description: "Complete today's editing challenge. New prompt every 24 hours.",
-    icon: Calendar,
-    xpReward: "50",
     isAvailable: true,
   },
 ];
