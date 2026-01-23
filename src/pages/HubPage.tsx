@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel,
-  ChevronRight, Plus, Infinity as InfinityIcon, Swords, Star
+  ChevronRight, Plus, Infinity as InfinityIcon, Star
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -49,14 +49,11 @@ export default function HubPage() {
   
   useActiveSession();
   
-  // Determine display identity (real profile OR temp profile OR guest)
   const displayUsername = profile?.username || tempProfile?.username || (isGuest ? 'Guest' : 'EDITOR');
   const displayAvatar = profile?.avatar_url || tempProfile?.avatarUrl;
 
-  // Calculate global rank
   const globalRank = rankings.findIndex(r => r.id === user?.id) + 1 || null;
 
-  // Fetch user's crew
   useEffect(() => {
     if (profile?.crew_id) {
       supabase
@@ -72,7 +69,6 @@ export default function HubPage() {
     }
   }, [profile?.crew_id]);
 
-  // Fetch judge review count if user is a judge
   useEffect(() => {
     if (isJudge && user?.id) {
       supabase
@@ -100,103 +96,193 @@ export default function HubPage() {
       <LoopMonster />
       
       {/* ═══════════════════════════════════════════════════════════════════
-          HERO LAYER - User Identity (Compact)
+          HERO LAYER - Profile Card (Original expanded version)
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="relative">
-        {/* Immersive background */}
-        <div className="absolute inset-0 h-[320px] overflow-hidden">
+        <div className="absolute inset-0 h-[420px] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-surface-1 via-background to-background" />
-          <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-gold/5 to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_top,_hsl(43_74%_49%_/_0.06)_0%,_transparent_50%)]" />
+          <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-gold/5 to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_top,_hsl(43_74%_49%_/_0.08)_0%,_transparent_60%)]" />
+          <motion.div 
+            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,_hsl(43_74%_49%_/_0.05)_0%,_transparent_50%)]"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div 
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage: `linear-gradient(hsl(var(--gold)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--gold)) 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }}
+          />
         </div>
 
-        {/* Compact Profile Card */}
-        <div className="relative px-4 pt-6 pb-4">
+        <div className="relative px-4 pt-10 pb-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-surface-1/80 backdrop-blur-xl border border-border/50 p-4"
+            className="relative"
           >
-            <div className="flex items-center justify-between gap-4">
-              {/* Left: Avatar + Identity */}
-              <button 
-                onClick={() => navigate('/profile')}
-                className="flex items-center gap-3 group text-left"
-              >
-                {/* Avatar with league ring */}
-                <div className="relative shrink-0">
-                  <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow}`}>
-                    <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                      {displayAvatar ? (
-                        <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="font-display text-xl text-foreground">
-                          {displayUsername?.charAt(0).toUpperCase() || 'E'}
+            <div className="bg-surface-1/80 backdrop-blur-xl border border-border/50 overflow-hidden">
+              {/* Top Row: Avatar + Identity + Shop Balance */}
+              <div className="p-4 flex items-start justify-between gap-4">
+                <button 
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center gap-3 group text-left"
+                >
+                  <div className="relative shrink-0">
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
+                      <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                        {displayAvatar ? (
+                          <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-display text-2xl text-foreground">
+                            {displayUsername?.charAt(0).toUpperCase() || 'E'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center shadow-lg">
+                      <span className="font-display text-xs text-foreground">{profile?.level || 1}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="font-display text-2xl text-foreground leading-none truncate max-w-[140px]">
+                        {displayUsername}
+                      </h1>
+                      {isJudge && (
+                        <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
+                        <LeagueIcon className="w-3 h-3 text-background" />
+                        <span className="text-[9px] font-bold tracking-wider text-background uppercase">
+                          {league.label}
                         </span>
+                      </div>
+                      {globalRank && globalRank <= 500 && (
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gold/10 border border-gold/30">
+                          <Trophy className="w-3 h-3 text-gold" />
+                          <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
+                        </div>
                       )}
                     </div>
                   </div>
-                  {/* Level badge */}
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-background border-2 border-border flex items-center justify-center">
-                    <span className="font-display text-[10px] text-foreground">{profile?.level || 1}</span>
-                  </div>
-                </div>
-                
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h1 className="font-display text-xl text-foreground leading-none truncate max-w-[120px]">
-                      {displayUsername}
-                    </h1>
-                    {isJudge && <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
-                      <LeagueIcon className="w-2.5 h-2.5 text-background" />
-                      <span className="text-[8px] font-bold tracking-wider text-background uppercase">
-                        {league.label}
-                      </span>
+                </button>
+
+                <Link to="/shop" className="group shrink-0">
+                  <div className="flex items-center gap-2 bg-surface-1 border border-border hover:border-gold/50 px-3 py-2 transition-colors">
+                    <div className="w-9 h-9 bg-muted/50 border border-border flex items-center justify-center group-hover:bg-gold/10 transition-colors">
+                      <ShoppingBag className="w-4 h-4 text-foreground group-hover:text-gold transition-colors" />
                     </div>
-                    {globalRank && globalRank <= 500 && (
-                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gold/10 border border-gold/30">
-                        <Trophy className="w-2.5 h-2.5 text-gold" />
-                        <span className="text-[8px] font-bold text-gold">#{globalRank}</span>
+                    <div className="text-right">
+                      <div className="flex items-center gap-1">
+                        <Coins className="w-3 h-3 text-gold" />
+                        <span className="font-display text-xl text-foreground leading-none">
+                          {(profile as any)?.spendable_index || 0}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </button>
-
-              {/* Right: Shop Balance */}
-              <Link to="/shop" className="group shrink-0">
-                <div className="flex items-center gap-2 bg-surface-1 border border-border hover:border-gold/50 px-3 py-2 transition-colors">
-                  <ShoppingBag className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
-                  <div className="text-right">
-                    <div className="flex items-center gap-1">
-                      <Coins className="w-3 h-3 text-gold" />
-                      <span className="font-display text-lg text-foreground leading-none">
-                        {(profile as any)?.spendable_index || 0}
-                      </span>
+                      <p className="text-[8px] text-muted-foreground uppercase tracking-widest">INDEX</p>
                     </div>
                   </div>
-                </div>
-              </Link>
-            </div>
+                </Link>
+              </div>
 
-            {/* XP Progress Bar */}
-            <div className="mt-3">
-              <XPProgressBar 
-                xp={profile?.xp || 0} 
-                level={profile?.level || 1} 
-                size="sm"
-                showNumbers={true}
-              />
+              {/* XP Progress Bar */}
+              <div className="px-4 pb-3">
+                <XPProgressBar 
+                  xp={profile?.xp || 0} 
+                  level={profile?.level || 1} 
+                  size="sm"
+                  showNumbers={true}
+                />
+              </div>
+
+              {/* Stats Row */}
+              <div className="border-t border-border/30 px-4 py-3">
+                <div className="grid grid-cols-4 gap-3 text-center">
+                  <div>
+                    <p className="font-display text-lg text-foreground">{profile?.total_events || 0}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Events</p>
+                  </div>
+                  <div>
+                    <p className="font-display text-lg text-foreground">{profile?.total_wins || 0}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Wins</p>
+                  </div>
+                  <div>
+                    <p className="font-display text-lg text-foreground">{bestScore?.toFixed(0) || '—'}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best QOI</p>
+                  </div>
+                  <div>
+                    <p className="font-display text-lg text-foreground">{profile?.win_rate ? `${(profile.win_rate * 100).toFixed(0)}%` : '—'}</p>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Win Rate</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Access Rows - Crew & GQT */}
+              <div className="border-t border-border/30 divide-y divide-border/20">
+                <div className="px-4 py-3">
+                  {userCrew ? (
+                    <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center overflow-hidden">
+                          {userCrew.avatar_url ? (
+                            <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <Users2 className="w-5 h-5 text-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
+                          <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">{userCrew.name}</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+                  ) : (
+                    <Link to="/crews" className="flex items-center justify-between group">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center">
+                          <Plus className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Join a Crew</p>
+                          <p className="text-sm text-foreground group-hover:text-gold transition-colors">Find your squad</p>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                    </Link>
+                  )}
+                </div>
+
+                <div className="px-4 py-3">
+                  <Link to="/gqt" className="flex items-center justify-between group">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center group-hover:border-gold/50 transition-colors">
+                        <Target className="w-5 h-5 text-foreground group-hover:text-gold transition-colors" />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Global QOI Test</p>
+                        <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">
+                          {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          🔥 ARENA - THE MAIN CTA - FORTNITE PLAY BUTTON
+          🔥 ARENA CTA - THE MAIN PLAY BUTTON
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
@@ -206,7 +292,7 @@ export default function HubPage() {
       >
         <Link to="/arena" className="block group">
           <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold transition-all duration-300">
-            {/* Dynamic Background based on live status */}
+            {/* Background */}
             <div className="absolute inset-0">
               {primaryLiveEvent?.poster_url ? (
                 <>
@@ -220,7 +306,6 @@ export default function HubPage() {
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-background to-gold/5" />
               )}
-              {/* Animated pulse overlay when live */}
               {hasLiveEvent && (
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/10 to-gold/0"
@@ -233,7 +318,6 @@ export default function HubPage() {
             {/* Content */}
             <div className="relative p-5 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {/* Arena Icon - Large */}
                 <div className="w-16 h-16 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
                   <InfinityIcon className="w-8 h-8 text-background" strokeWidth={2.5} />
                 </div>
@@ -244,7 +328,7 @@ export default function HubPage() {
                       <div className="flex items-center gap-2 mb-1">
                         <div className="relative flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                          <div className="absolute w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                          <div className="absolute left-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
                           <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Live Now</span>
                         </div>
                       </div>
@@ -264,7 +348,6 @@ export default function HubPage() {
                 </div>
               </div>
               
-              {/* CTA Button */}
               <div className="shrink-0">
                 <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-sm px-6 py-3 flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-gold/30 transition-all">
                   <span>{hasLiveEvent ? 'ENTER NOW' : 'VIEW ARENAS'}</span>
@@ -277,7 +360,7 @@ export default function HubPage() {
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          QUICK ACCESS GRID - Compact 4-item grid
+          QUICK ACCESS ROW
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -285,95 +368,44 @@ export default function HubPage() {
         transition={{ delay: 0.15 }}
         className="px-4 mt-4"
       >
-        <div className="grid grid-cols-4 gap-2">
-          {/* Rankings */}
-          <Link to="/rankings" className="group">
-            <div className="bg-surface-1/60 border border-border/50 hover:border-gold/30 transition-colors p-3 text-center">
-              <Trophy className="w-5 h-5 text-gold mx-auto mb-1" />
-              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">Rankings</p>
+        <div className="grid grid-cols-2 gap-3">
+          <Link to="/rankings">
+            <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group h-full">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
+                  <Trophy className="w-5 h-5 text-gold" />
+                </div>
+                <div>
+                  <p className="font-display text-sm">RANKINGS</p>
+                  <p className="text-[9px] text-muted-foreground">Global Index</p>
+                </div>
+              </div>
             </div>
           </Link>
           
-          {/* Judges */}
-          <Link to="/judges" className="group">
-            <div className="bg-surface-1/60 border border-border/50 hover:border-purple-500/30 transition-colors p-3 text-center">
-              <Gavel className="w-5 h-5 text-purple-400 mx-auto mb-1" />
-              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">Judges</p>
-            </div>
-          </Link>
-          
-          {/* Crews */}
-          <Link to="/crews" className="group">
-            <div className="bg-surface-1/60 border border-border/50 hover:border-foreground/30 transition-colors p-3 text-center">
-              <Users2 className="w-5 h-5 text-foreground mx-auto mb-1" />
-              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">Crews</p>
-            </div>
-          </Link>
-          
-          {/* GQT */}
-          <Link to="/gqt" className="group">
-            <div className="bg-surface-1/60 border border-border/50 hover:border-foreground/30 transition-colors p-3 text-center">
-              <Target className="w-5 h-5 text-foreground mx-auto mb-1" />
-              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">GQT</p>
+          <Link to="/judges">
+            <div className="bg-gradient-to-br from-purple-500/10 to-surface-1/60 backdrop-blur border border-purple-500/30 hover:border-purple-400/50 transition-colors p-4 group h-full">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
+                  <Gavel className="w-5 h-5 text-purple-400" />
+                </div>
+                <div>
+                  <p className="font-display text-sm text-purple-300">QOI JUDGES</p>
+                  <p className="text-[9px] text-muted-foreground">Get rated</p>
+                </div>
+              </div>
             </div>
           </Link>
         </div>
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          YOUR CREW / GQT Status (if applicable)
-      ═══════════════════════════════════════════════════════════════════ */}
-      {(userCrew || bestScore) && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="px-4 mt-4"
-        >
-          <div className="bg-surface-1/40 border border-border/30 divide-y divide-border/20">
-            {userCrew && (
-              <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between p-3 hover:bg-surface-1/60 transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-muted/50 border border-border flex items-center justify-center overflow-hidden">
-                    {userCrew.avatar_url ? (
-                      <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Users2 className="w-4 h-4 text-foreground" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
-                    <p className="font-display text-sm text-foreground">{userCrew.name}</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
-            )}
-            {bestScore && (
-              <Link to="/gqt" className="flex items-center justify-between p-3 hover:bg-surface-1/60 transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-muted/50 border border-border flex items-center justify-center">
-                    <Target className="w-4 h-4 text-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best GQT Score</p>
-                    <p className="font-display text-sm text-gold">{bestScore.toFixed(0)}</p>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </Link>
-            )}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          STATS STRIP - Global pulse
+          GLOBAL PULSE - Stats Strip (minimal)
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
+        transition={{ delay: 0.2 }}
         className="px-4 mt-4"
       >
         <div className="bg-surface-1/30 border border-border/20 p-3">
@@ -395,45 +427,62 @@ export default function HubPage() {
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          LIVE FEED - Compact activity log
+          ACTIVITY SECTION - Unified container for Feed + Reviews
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+        className="mt-6"
+      >
+        {/* Section Header */}
+        <div className="px-4 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5 bg-gold rounded-full" />
+            <h2 className="font-display text-lg text-foreground">ACTIVITY</h2>
+          </div>
+        </div>
+
+        {/* Unified container with shared border */}
+        <div className="mx-4 bg-surface-1/40 border border-border/30 overflow-hidden">
+          {/* Live Feed Section */}
+          <div className="p-4 border-b border-border/20">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-gold" />
+                <span className="text-xs text-foreground font-medium uppercase tracking-wide">Live Feed</span>
+              </div>
+              <Link to="/feed" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+                VIEW ALL <ArrowRight size={10} />
+              </Link>
+            </div>
+            <ActivityFeed limit={5} compact />
+          </div>
+
+          {/* Reviews Section */}
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Gavel className="w-4 h-4 text-purple-400" />
+                <span className="text-xs text-foreground font-medium uppercase tracking-wide">Reviews</span>
+              </div>
+              <Link to="/judges" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+                ALL JUDGES <ArrowRight size={10} />
+              </Link>
+            </div>
+            {/* Inline reviews carousel without external container styling */}
+            <JudgeReviewsFeed embedded />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          INVITE FRIENDS - Subtle inline CTA
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="mt-6 px-4"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-gold" />
-            <h3 className="font-display text-sm text-foreground">LIVE FEED</h3>
-          </div>
-          <Link to="/feed" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-            FULL FEED <ArrowRight size={10} />
-          </Link>
-        </div>
-        <ActivityFeed limit={5} compact />
-      </motion.div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          REVIEWS CAROUSEL
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.35 }}
-        className="mt-6"
-      >
-        <JudgeReviewsFeed />
-      </motion.div>
-
-      {/* ═══════════════════════════════════════════════════════════════════
-          INVITE FRIENDS - Subtle inline CTA (not a blockade)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
         className="mt-6 px-4"
       >
         <button
