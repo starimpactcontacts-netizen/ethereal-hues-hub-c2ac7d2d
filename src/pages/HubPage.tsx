@@ -3,10 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
-  Users2, Zap, TrendingUp, Star, Coins, ShoppingBag, Gavel,
-  ChevronRight, Plus, Swords
+  Users2, TrendingUp, Coins, ShoppingBag, Gavel,
+  ChevronRight, Plus, Infinity as InfinityIcon, Swords, Star
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings } from '@/hooks/useRealData';
@@ -19,7 +18,6 @@ import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import XPProgressBar from '@/components/loopgate/XPProgressBar';
-import CrewBadge from '@/components/loopgate/CrewBadge';
 import { supabase } from '@/integrations/supabase/client';
 
 const leagueConfig = {
@@ -54,7 +52,6 @@ export default function HubPage() {
   // Determine display identity (real profile OR temp profile OR guest)
   const displayUsername = profile?.username || tempProfile?.username || (isGuest ? 'Guest' : 'EDITOR');
   const displayAvatar = profile?.avatar_url || tempProfile?.avatarUrl;
-  const isTemporaryUser = !user && (tempProfile || isGuest);
 
   // Calculate global rank
   const globalRank = rankings.findIndex(r => r.id === user?.id) + 1 || null;
@@ -94,455 +91,361 @@ export default function HubPage() {
   const LeagueIcon = league.icon;
   const bestScore = profile?.best_gatekeeper_qoi;
 
-  const liveEvents = events.filter(e => e.status === 'live').slice(0, 3);
-  const upcomingEvents = events.filter(e => e.status === 'pending').slice(0, 3);
+  const liveEvents = events.filter(e => e.status === 'live');
+  const primaryLiveEvent = liveEvents[0];
+  const hasLiveEvent = liveEvents.length > 0;
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
       <LoopMonster />
       
       {/* ═══════════════════════════════════════════════════════════════════
-          HERO LAYER - Immersive gradient + user identity + QOI spotlight
+          HERO LAYER - User Identity (Compact)
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="relative">
-        {/* Immersive background with radial gradient and subtle noise */}
-        <div className="absolute inset-0 h-[420px] overflow-hidden">
-          {/* Deep radial gradient */}
+        {/* Immersive background */}
+        <div className="absolute inset-0 h-[320px] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-surface-1 via-background to-background" />
-          {/* Gold accent glow from top */}
-          <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-gold/5 to-transparent" />
-          {/* Subtle radial spotlight */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_top,_hsl(43_74%_49%_/_0.08)_0%,_transparent_60%)]" />
-          {/* Animated pulse overlay */}
-          <motion.div 
-            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,_hsl(43_74%_49%_/_0.05)_0%,_transparent_50%)]"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          />
-          {/* Grid overlay for depth */}
-          <div 
-            className="absolute inset-0 opacity-[0.02]"
-            style={{
-              backgroundImage: `linear-gradient(hsl(var(--gold)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--gold)) 1px, transparent 1px)`,
-              backgroundSize: '40px 40px'
-            }}
-          />
+          <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-gold/5 to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_top,_hsl(43_74%_49%_/_0.06)_0%,_transparent_50%)]" />
         </div>
 
-        {/* Hero Content */}
-        <div className="relative px-4 pt-10 pb-6">
-          {/* EXPANDED USER PROFILE CARD */}
+        {/* Compact Profile Card */}
+        <div className="relative px-4 pt-6 pb-4">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative"
+            className="bg-surface-1/80 backdrop-blur-xl border border-border/50 p-4"
           >
-            {/* Main profile card */}
-            <div className="bg-surface-1/80 backdrop-blur-xl border border-border/50 overflow-hidden">
-              {/* Top Row: Avatar + Identity + Shop Balance */}
-              <div className="p-4 flex items-start justify-between gap-4">
-                {/* Left: Avatar + Identity */}
-                <button 
-                  onClick={() => navigate('/profile')}
-                  className="flex items-center gap-3 group text-left"
-                >
-                  {/* Avatar with league ring + level badge */}
-                  <div className="relative shrink-0">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
-                      <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                        {displayAvatar ? (
-                          <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="font-display text-2xl text-foreground">
-                            {displayUsername?.charAt(0).toUpperCase() || 'E'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {/* Level badge */}
-                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center shadow-lg">
-                      <span className="font-display text-xs text-foreground">{profile?.level || 1}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h1 className="font-display text-2xl text-foreground leading-none truncate max-w-[140px]">
-                        {displayUsername}
-                      </h1>
-                      {isJudge && (
-                        <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
-                      )}
-                    </div>
-                    {/* League + Rank Row */}
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
-                        <LeagueIcon className="w-3 h-3 text-background" />
-                        <span className="text-[9px] font-bold tracking-wider text-background uppercase">
-                          {league.label}
+            <div className="flex items-center justify-between gap-4">
+              {/* Left: Avatar + Identity */}
+              <button 
+                onClick={() => navigate('/profile')}
+                className="flex items-center gap-3 group text-left"
+              >
+                {/* Avatar with league ring */}
+                <div className="relative shrink-0">
+                  <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow}`}>
+                    <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                      {displayAvatar ? (
+                        <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-display text-xl text-foreground">
+                          {displayUsername?.charAt(0).toUpperCase() || 'E'}
                         </span>
-                      </div>
-                      {globalRank && globalRank <= 500 && (
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gold/10 border border-gold/30">
-                          <Trophy className="w-3 h-3 text-gold" />
-                          <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
-                        </div>
                       )}
                     </div>
                   </div>
-                </button>
-
-                {/* Right: Shop Balance */}
-                <Link to="/shop" className="group shrink-0">
-                  <div className="flex items-center gap-2 bg-surface-1 border border-border hover:border-gold/50 px-3 py-2 transition-colors">
-                    <div className="w-9 h-9 bg-muted/50 border border-border flex items-center justify-center group-hover:bg-gold/10 transition-colors">
-                      <ShoppingBag className="w-4 h-4 text-foreground group-hover:text-gold transition-colors" />
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        <Coins className="w-3 h-3 text-gold" />
-                        <span className="font-display text-xl text-foreground leading-none">
-                          {(profile as any)?.spendable_index || 0}
-                        </span>
-                      </div>
-                      <p className="text-[8px] text-muted-foreground uppercase tracking-widest">INDEX</p>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-
-              {/* XP Progress Bar */}
-              <div className="px-4 pb-3">
-                <XPProgressBar 
-                  xp={profile?.xp || 0} 
-                  level={profile?.level || 1} 
-                  size="sm"
-                  showNumbers={true}
-                />
-              </div>
-
-              {/* Stats Row */}
-              <div className="border-t border-border/30 px-4 py-3">
-                <div className="grid grid-cols-4 gap-3 text-center">
-                  <div>
-                    <p className="font-display text-lg text-foreground">{profile?.total_events || 0}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Events</p>
-                  </div>
-                  <div>
-                    <p className="font-display text-lg text-foreground">{profile?.total_wins || 0}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Wins</p>
-                  </div>
-                  <div>
-                    <p className="font-display text-lg text-foreground">{bestScore?.toFixed(0) || '—'}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best QOI</p>
-                  </div>
-                  <div>
-                    <p className="font-display text-lg text-foreground">{profile?.win_rate ? `${(profile.win_rate * 100).toFixed(0)}%` : '—'}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Win Rate</p>
+                  {/* Level badge */}
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-background border-2 border-border flex items-center justify-center">
+                    <span className="font-display text-[10px] text-foreground">{profile?.level || 1}</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Quick Access Rows - Crew & GQT */}
-              <div className="border-t border-border/30 divide-y divide-border/20">
-                {/* Crew Row */}
-                <div className="px-4 py-3">
-                  {userCrew ? (
-                    <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center overflow-hidden">
-                          {userCrew.avatar_url ? (
-                            <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <Users2 className="w-5 h-5 text-foreground" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
-                          <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">{userCrew.name}</p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                    </Link>
-                  ) : (
-                    <Link to="/crews" className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center">
-                          <Plus className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Join a Crew</p>
-                          <p className="text-sm text-foreground group-hover:text-gold transition-colors">Find your squad</p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                    </Link>
-                  )}
-                </div>
-
-                {/* GQT Row */}
-                <div className="px-4 py-3">
-                  <Link to="/gqt" className="flex items-center justify-between group">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center group-hover:border-gold/50 transition-colors">
-                        <Target className="w-5 h-5 text-foreground group-hover:text-gold transition-colors" />
-                      </div>
-                      <div>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Global QOI Test</p>
-                        <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">
-                          {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
-                        </p>
-                      </div>
+                
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="font-display text-xl text-foreground leading-none truncate max-w-[120px]">
+                      {displayUsername}
+                    </h1>
+                    {isJudge && <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />}
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
+                      <LeagueIcon className="w-2.5 h-2.5 text-background" />
+                      <span className="text-[8px] font-bold tracking-wider text-background uppercase">
+                        {league.label}
+                      </span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                  </Link>
+                    {globalRank && globalRank <= 500 && (
+                      <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gold/10 border border-gold/30">
+                        <Trophy className="w-2.5 h-2.5 text-gold" />
+                        <span className="text-[8px] font-bold text-gold">#{globalRank}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </button>
+
+              {/* Right: Shop Balance */}
+              <Link to="/shop" className="group shrink-0">
+                <div className="flex items-center gap-2 bg-surface-1 border border-border hover:border-gold/50 px-3 py-2 transition-colors">
+                  <ShoppingBag className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
+                  <div className="text-right">
+                    <div className="flex items-center gap-1">
+                      <Coins className="w-3 h-3 text-gold" />
+                      <span className="font-display text-lg text-foreground leading-none">
+                        {(profile as any)?.spendable_index || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* XP Progress Bar */}
+            <div className="mt-3">
+              <XPProgressBar 
+                xp={profile?.xp || 0} 
+                level={profile?.level || 1} 
+                size="sm"
+                showNumbers={true}
+              />
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          SECONDARY LAYER - Horizontal scroll modules
+          🔥 ARENA - THE MAIN CTA - FORTNITE PLAY BUTTON
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="mt-8 space-y-6">
-        
-        {/* Live Events Scroll */}
-        {liveEvents.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="flex items-center justify-between px-4 mb-3">
-              <div className="flex items-center gap-2.5 py-2">
-                {/* Pulsing ring container */}
-                <div className="relative">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
-                  <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping opacity-75" />
-                  <div className="absolute -inset-1 rounded-full bg-emerald-500/20 animate-pulse" />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+        className="px-4 mt-2"
+      >
+        <Link to="/arena" className="block group">
+          <div className="relative overflow-hidden border-2 border-gold/50 hover:border-gold transition-all duration-300">
+            {/* Dynamic Background based on live status */}
+            <div className="absolute inset-0">
+              {primaryLiveEvent?.poster_url ? (
+                <>
+                  <img 
+                    src={primaryLiveEvent.poster_url} 
+                    alt="" 
+                    className="w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/60" />
+                </>
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-background to-gold/5" />
+              )}
+              {/* Animated pulse overlay when live */}
+              {hasLiveEvent && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-gold/0 via-gold/10 to-gold/0"
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                />
+              )}
+            </div>
+            
+            {/* Content */}
+            <div className="relative p-5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {/* Arena Icon - Large */}
+                <div className="w-16 h-16 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-xl flex items-center justify-center shadow-lg shadow-gold/40 group-hover:shadow-gold/60 transition-shadow">
+                  <InfinityIcon className="w-8 h-8 text-background" strokeWidth={2.5} />
                 </div>
-                <h3 className="font-display text-xl text-foreground" style={{ lineHeight: 1.3 }}>LIVE NOW</h3>
-              </div>
-              <Link to="/arena" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-                VIEW ALL <ArrowRight size={10} />
-              </Link>
-            </div>
-            
-            <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
-              {liveEvents.map((event, i) => (
-                <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
-                  <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + i * 0.05 }}
-                    className="w-[200px] bg-surface-1/80 backdrop-blur border border-emerald-500/30 hover:border-emerald-500/50 transition-colors overflow-hidden group"
-                  >
-                    {/* Mini poster */}
-                    {event.poster_url && (
-                      <div className="h-24 overflow-hidden">
-                        <img 
-                          src={event.poster_url} 
-                          alt={event.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                    )}
-                    <div className="p-3">
-                      <div className="flex items-center gap-1 mb-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-[8px] text-emerald-400 uppercase tracking-widest font-bold">Live</span>
-                      </div>
-                      <p className="font-display text-sm text-foreground truncate">{event.title}</p>
-                      <div className="mt-2 text-[10px] text-muted-foreground">
-                        <CountdownTimer endDate={event.end_date} />
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Upcoming Events */}
-        {upcomingEvents.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.25 }}
-          >
-            <div className="flex items-center justify-between px-4 mb-3">
-              <h3 className="font-display text-lg text-foreground flex items-center gap-2">
-                <Zap className="w-4 h-4 text-gold" />
-                UPCOMING
-              </h3>
-            </div>
-            
-            <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
-              {upcomingEvents.map((event, i) => {
-                const startsIn = new Date(event.start_date).getTime() - Date.now();
-                const days = Math.floor(startsIn / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((startsIn % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 
-                return (
-                  <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.25 + i * 0.05 }}
-                      className="w-[180px] bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4"
-                    >
-                      <p className="font-display text-sm text-foreground truncate mb-1">{event.title}</p>
-                      <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-3">{event.league} League</p>
-                      <div className="inline-flex items-center gap-1 px-2 py-1 bg-gold/10 border border-gold/30">
-                        <span className="text-[10px] text-gold font-bold">
-                          {days > 0 ? `${days}D ${hours}H` : `${hours}H`}
-                        </span>
+                <div>
+                  {hasLiveEvent ? (
+                    <>
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="relative flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                          <div className="absolute w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Live Now</span>
+                        </div>
                       </div>
-                    </motion.div>
-                  </Link>
-                );
-              })}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Quick Access Row - Rankings, Judges - 2 col now since Crews is in profile */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="px-4"
-        >
-          <div className="grid grid-cols-2 gap-3">
-            <Link to="/rankings">
-              <div className="bg-surface-1/60 backdrop-blur border border-border/50 hover:border-gold/30 transition-colors p-4 group h-full">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-gold" />
-                  </div>
-                  <div>
-                    <p className="font-display text-sm">RANKINGS</p>
-                    <p className="text-[9px] text-muted-foreground">Global Index</p>
-                  </div>
+                      <h2 className="font-display text-2xl text-foreground leading-tight">
+                        {primaryLiveEvent.title}
+                      </h2>
+                      <div className="mt-1 text-[10px] text-muted-foreground">
+                        <CountdownTimer endDate={primaryLiveEvent.end_date} />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="font-display text-2xl text-foreground">ARENA</h2>
+                      <p className="text-sm text-muted-foreground">Enter the competition</p>
+                    </>
+                  )}
                 </div>
               </div>
-            </Link>
-            
-            <Link to="/judges">
-              <div className="bg-gradient-to-br from-purple-500/10 to-surface-1/60 backdrop-blur border border-purple-500/30 hover:border-purple-400/50 transition-colors p-4 group h-full">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-500/10 border border-purple-500/30 flex items-center justify-center">
-                    <Gavel className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="font-display text-sm text-purple-300">QOI JUDGES</p>
-                    <p className="text-[9px] text-muted-foreground">Get rated</p>
-                  </div>
+              
+              {/* CTA Button */}
+              <div className="shrink-0">
+                <div className="bg-gradient-to-r from-gold to-amber-400 text-background font-display text-sm px-6 py-3 flex items-center gap-2 group-hover:shadow-lg group-hover:shadow-gold/30 transition-all">
+                  <span>{hasLiveEvent ? 'ENTER NOW' : 'VIEW ARENAS'}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
-              </div>
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* Stats Strip */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          className="px-4"
-        >
-          <div className="bg-gradient-to-r from-surface-1/40 via-surface-1/60 to-surface-1/40 border border-border/30 p-4">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="font-display text-xl text-gold">{stats.entries24h}</p>
-                <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Entries 24h</p>
-              </div>
-              <div>
-                <p className="font-display text-xl text-foreground">{stats.activeUsers}</p>
-                <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Active Now</p>
-              </div>
-              <div>
-                <p className="font-display text-xl text-foreground">{stats.totalCompeting || 0}</p>
-                <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Competing</p>
               </div>
             </div>
           </div>
-        </motion.div>
-      </div>
+        </Link>
+      </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          WORLD LAYER - Dynamic Activity Feed
+          QUICK ACCESS GRID - Compact 4-item grid
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="mt-8 px-4"
+        transition={{ delay: 0.15 }}
+        className="px-4 mt-4"
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <TrendingUp className="w-5 h-5 text-gold" />
-              <motion.div 
-                className="absolute inset-0"
-                animate={{ opacity: [0, 0.5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <TrendingUp className="w-5 h-5 text-gold blur-sm" />
-              </motion.div>
+        <div className="grid grid-cols-4 gap-2">
+          {/* Rankings */}
+          <Link to="/rankings" className="group">
+            <div className="bg-surface-1/60 border border-border/50 hover:border-gold/30 transition-colors p-3 text-center">
+              <Trophy className="w-5 h-5 text-gold mx-auto mb-1" />
+              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">Rankings</p>
             </div>
-            <h3 className="font-display text-lg">LIVE FEED</h3>
-          </div>
-          <Link to="/feed" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-            FULL FEED <ArrowRight size={10} />
           </Link>
-        </div>
-        
-        {/* Elegant feed container with subtle glass effect */}
-        <div className="relative">
-          {/* Subtle glow behind */}
-          <div className="absolute inset-0 bg-gradient-to-b from-gold/[0.02] to-transparent rounded-sm" />
           
-          <ActivityFeed limit={6} compact />
+          {/* Judges */}
+          <Link to="/judges" className="group">
+            <div className="bg-surface-1/60 border border-border/50 hover:border-purple-500/30 transition-colors p-3 text-center">
+              <Gavel className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">Judges</p>
+            </div>
+          </Link>
+          
+          {/* Crews */}
+          <Link to="/crews" className="group">
+            <div className="bg-surface-1/60 border border-border/50 hover:border-foreground/30 transition-colors p-3 text-center">
+              <Users2 className="w-5 h-5 text-foreground mx-auto mb-1" />
+              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">Crews</p>
+            </div>
+          </Link>
+          
+          {/* GQT */}
+          <Link to="/gqt" className="group">
+            <div className="bg-surface-1/60 border border-border/50 hover:border-foreground/30 transition-colors p-3 text-center">
+              <Target className="w-5 h-5 text-foreground mx-auto mb-1" />
+              <p className="text-[9px] text-foreground font-medium uppercase tracking-wide">GQT</p>
+            </div>
+          </Link>
         </div>
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          JUDGE ECONOMY - Live Reviews Feed
+          YOUR CREW / GQT Status (if applicable)
+      ═══════════════════════════════════════════════════════════════════ */}
+      {(userCrew || bestScore) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="px-4 mt-4"
+        >
+          <div className="bg-surface-1/40 border border-border/30 divide-y divide-border/20">
+            {userCrew && (
+              <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between p-3 hover:bg-surface-1/60 transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-muted/50 border border-border flex items-center justify-center overflow-hidden">
+                    {userCrew.avatar_url ? (
+                      <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Users2 className="w-4 h-4 text-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
+                    <p className="font-display text-sm text-foreground">{userCrew.name}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+            )}
+            {bestScore && (
+              <Link to="/gqt" className="flex items-center justify-between p-3 hover:bg-surface-1/60 transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-muted/50 border border-border flex items-center justify-center">
+                    <Target className="w-4 h-4 text-foreground" />
+                  </div>
+                  <div>
+                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best GQT Score</p>
+                    <p className="font-display text-sm text-gold">{bestScore.toFixed(0)}</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          STATS STRIP - Global pulse
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.45 }}
+        transition={{ delay: 0.25 }}
+        className="px-4 mt-4"
+      >
+        <div className="bg-surface-1/30 border border-border/20 p-3">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="font-display text-lg text-foreground">{stats.entries24h}</p>
+              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Entries 24h</p>
+            </div>
+            <div>
+              <p className="font-display text-lg text-foreground">{stats.activeUsers}</p>
+              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Active Now</p>
+            </div>
+            <div>
+              <p className="font-display text-lg text-foreground">{stats.totalCompeting || 0}</p>
+              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Competing</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          LIVE FEED - Compact activity log
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="mt-6 px-4"
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-gold" />
+            <h3 className="font-display text-sm text-foreground">LIVE FEED</h3>
+          </div>
+          <Link to="/feed" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+            FULL FEED <ArrowRight size={10} />
+          </Link>
+        </div>
+        <ActivityFeed limit={5} compact />
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          REVIEWS CAROUSEL
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.35 }}
         className="mt-6"
       >
         <JudgeReviewsFeed />
       </motion.div>
 
-      {/* Invite CTA - Subtle but present */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          INVITE FRIENDS - Subtle inline CTA (not a blockade)
+      ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.45 }}
-        className="mt-8 px-4"
+        transition={{ delay: 0.4 }}
+        className="mt-6 px-4"
       >
         <button
           onClick={() => setInviteModalOpen(true)}
-          className="w-full bg-gradient-to-r from-gold/10 via-gold/20 to-gold/10 border border-gold/30 hover:border-gold/60 transition-colors p-4 flex items-center justify-between group"
+          className="w-full bg-surface-1/40 border border-border/30 hover:border-gold/40 transition-colors p-3 flex items-center justify-between group"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
-              <Star className="w-5 h-5 text-gold" />
-            </div>
-            <div className="text-left">
-              <p className="font-display text-sm text-gold">INVITE FRIENDS</p>
-              <p className="text-[9px] text-muted-foreground">Earn +170 XP per invite</p>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <Star className="w-4 h-4 text-gold" />
+            <span className="text-sm text-foreground">Invite Friends</span>
+            <span className="text-[9px] text-muted-foreground">+170 XP</span>
           </div>
-          <ArrowRight className="w-5 h-5 text-gold group-hover:translate-x-1 transition-transform" />
+          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
         </button>
       </motion.div>
 
