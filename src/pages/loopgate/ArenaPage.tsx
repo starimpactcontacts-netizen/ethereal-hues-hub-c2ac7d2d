@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Infinity as InfinityIcon, ChevronRight, Clock, Users, Trophy, 
-  Flame, Calendar, Play, Swords, Target, Shield, Zap, Gamepad2
+  Flame, Calendar, Play, Swords, Target, Shield, Zap, Gamepad2,
+  Search, X, Filter, TrendingUp, Activity
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +12,7 @@ import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import TournamentCard, { type Tournament, type TournamentPhase } from "@/components/loopgate/TournamentCard";
 import TournamentDetailView from "@/components/loopgate/TournamentDetailView";
 import { 
@@ -165,6 +167,8 @@ export default function ArenaPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [isUserReady, setIsUserReady] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "sanctioned" | "practice">("all");
 
   useEffect(() => {
     async function fetchEvents() {
@@ -184,6 +188,31 @@ export default function ArenaPage() {
   const liveEvents = events.filter(e => e.status === "live");
   const upcomingEvents = events.filter(e => e.status === "upcoming" || e.status === "pending");
   const allActiveEvents = [...liveEvents, ...upcomingEvents];
+
+  // Filter tournaments based on search and filter
+  const filteredTournaments = useMemo(() => {
+    let filtered = mockTournaments;
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(t => 
+        t.name.toLowerCase().includes(query) ||
+        t.hostCrew.toLowerCase().includes(query)
+      );
+    }
+    
+    if (activeFilter === "sanctioned") {
+      filtered = filtered.filter(t => t.isSanctioned);
+    } else if (activeFilter === "practice") {
+      filtered = filtered.filter(t => !t.isSanctioned);
+    }
+    
+    return filtered;
+  }, [searchQuery, activeFilter]);
+
+  // Live stats
+  const totalLiveTournaments = mockTournaments.filter(t => t.phase === "submission" || t.phase === "bracket").length;
+  const totalActivePlayers = mockTournaments.reduce((sum, t) => sum + t.playerCount, 0);
 
   const handleReadyUp = () => {
     setIsUserReady(true);
@@ -207,41 +236,172 @@ export default function ArenaPage() {
       <LoopMonster />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          ARENA HEADER - Clean, competitive feel
+          ARENA HEADER - Scalable, search-first design
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="relative overflow-hidden">
-        {/* Background layers */}
+        {/* Background layers - cinematic depth */}
         <div className="absolute inset-0 bg-gradient-to-b from-surface-1 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--gold)/0.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,hsl(var(--gold)/0.12),transparent_50%)]" />
         
-        {/* Animated pulse */}
+        {/* Grid pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `
+              linear-gradient(hsl(var(--foreground)) 1px, transparent 1px),
+              linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px'
+          }}
+        />
+        
+        {/* Animated glow */}
         <motion.div 
-          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,_hsl(var(--gold)/0.05)_0%,_transparent_50%)]"
-          animate={{ opacity: [0.3, 0.8, 0.3] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_hsl(var(--gold)/0.08)_0%,_transparent_40%)]"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
 
         {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
 
         {/* Header content */}
-        <div className="relative px-4 pt-6 pb-4">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold via-amber-400 to-gold flex items-center justify-center shadow-lg shadow-gold/30">
-              <InfinityIcon className="w-4 h-4 text-background" />
+        <div className="relative px-4 pt-5 pb-5">
+          {/* Top row: Logo + Live Stats */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold via-amber-400 to-gold flex items-center justify-center shadow-lg shadow-gold/40">
+                <InfinityIcon className="w-[18px] h-[18px] text-background" />
+              </div>
+              <div>
+                <h1 className="font-display text-xl text-foreground tracking-wide leading-none">ARENA</h1>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">Tournaments</p>
+              </div>
             </div>
-            <h1 className="font-display text-2xl text-foreground tracking-wide">ARENA</h1>
+            
+            {/* Live Stats Pill */}
+            <div className="flex items-center gap-3 bg-surface-1/80 border border-border px-3 py-1.5">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] text-foreground font-medium">{totalLiveTournaments}</span>
+                <span className="text-[9px] text-muted-foreground">Live</span>
+              </div>
+              <div className="w-px h-3 bg-border" />
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[10px] text-foreground font-medium">{totalActivePlayers}</span>
+                <span className="text-[9px] text-muted-foreground">Players</span>
+              </div>
+            </div>
           </div>
-          
-          {/* Subtitle */}
-          <p className="text-center text-xs text-muted-foreground max-w-[280px] mx-auto">
-            Compete in official events and sanctioned tournaments
-          </p>
+
+          {/* Search Bar */}
+          <div className="relative mb-4">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="w-4 h-4 text-muted-foreground" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Search tournaments, crews..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full h-11 pl-10 pr-10 bg-surface-1 border-border focus:border-gold/50 text-sm placeholder:text-muted-foreground/60"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              >
+                <X className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+              </button>
+            )}
+          </div>
+
+          {/* Quick Filters */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveFilter("all")}
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all ${
+                activeFilter === "all"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-transparent text-muted-foreground border-border hover:border-foreground/50"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setActiveFilter("sanctioned")}
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 ${
+                activeFilter === "sanctioned"
+                  ? "bg-gold text-background border-gold"
+                  : "bg-transparent text-muted-foreground border-border hover:border-gold/50"
+              }`}
+            >
+              <Shield className="w-3 h-3" />
+              Sanctioned
+            </button>
+            <button
+              onClick={() => setActiveFilter("practice")}
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all ${
+                activeFilter === "practice"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-transparent text-muted-foreground border-border hover:border-foreground/50"
+              }`}
+            >
+              Practice
+            </button>
+            
+            {/* Trending indicator */}
+            <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>{mockTournaments.length} Active</span>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Search Results Mode */}
+      {searchQuery && (
+        <motion.section
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="px-4 mt-4"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-muted-foreground">
+              {filteredTournaments.length} result{filteredTournaments.length !== 1 ? 's' : ''} for "{searchQuery}"
+            </span>
+            <button 
+              onClick={() => setSearchQuery("")}
+              className="text-[10px] text-gold hover:underline"
+            >
+              Clear search
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2.5">
+            {filteredTournaments.map((tournament) => (
+              <div key={tournament.id} className="w-full">
+                <TournamentCard 
+                  tournament={tournament}
+                  onClick={() => setSelectedTournament(tournament)}
+                />
+              </div>
+            ))}
+          </div>
+          
+          {filteredTournaments.length === 0 && (
+            <div className="text-center py-12">
+              <Search className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">No tournaments found</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">Try a different search term</p>
+            </div>
+          )}
+        </motion.section>
+      )}
+
       {/* Loading State */}
-      {loading && (
+      {loading && !searchQuery && (
         <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
@@ -251,11 +411,9 @@ export default function ArenaPage() {
         </div>
       )}
 
-      {!loading && (
+      {/* Main Content - Only show when not searching */}
+      {!loading && !searchQuery && (
         <AnimatePresence mode="wait">
-          {/* ═══════════════════════════════════════════════════════════════════
-              OFFICIAL EVENTS - From the database (existing events)
-          ═══════════════════════════════════════════════════════════════════ */}
           {allActiveEvents.length > 0 && (
             <motion.section
               initial={{ opacity: 0, y: 20 }}
