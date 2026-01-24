@@ -263,8 +263,8 @@ export default function CrewsPage() {
 
   const myCrewIds = [primaryCrew?.crew_id, ...secondaryCrews.map(s => s.crew_id)].filter(Boolean);
   
+  // Don't filter out user's crews - they should still appear in discovery/featured/top
   const filteredCrews = crews.filter((crew) => {
-    if (myCrewIds.includes(crew.id)) return false;
     if (!searchQuery) return true;
     return crew.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
