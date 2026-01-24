@@ -7,7 +7,7 @@ import BeginnerGuideModal from './BeginnerGuideModal';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
-  const hideNavPaths = ['/admin', '/onboarding', '/feed'];
+  const hideNavPaths = ['/admin', '/onboarding'];
   const hideNav = hideNavPaths.some(path => location.pathname.startsWith(path));
   const showNav = !hideNav;
 
