@@ -30,6 +30,7 @@ interface JudgeEntry {
   xp: number;
   verification_status: boolean | null;
   totalReviews: number;
+  isTrial: boolean;
 }
 
 const leagueOrder = { elite: 0, pro: 1, open: 2 };
@@ -154,10 +155,11 @@ export default function IndexPage() {
   async function fetchJudges() {
     setJudgesLoading(true);
     try {
+      // Fetch both full judges and trial judges
       const { data: judgeRoles } = await supabase
         .from('user_roles')
-        .select('user_id')
-        .eq('role', 'judge');
+        .select('user_id, role')
+        .in('role', ['judge', 'trial_judge']);
 
       if (!judgeRoles?.length) {
         setJudges([]);
@@ -166,6 +168,7 @@ export default function IndexPage() {
       }
 
       const judgeIds = judgeRoles.map(r => r.user_id);
+      const trialJudgeIds = new Set(judgeRoles.filter(r => r.role === 'trial_judge').map(r => r.user_id));
 
       const { data: profiles } = await supabase
         .from('profiles')
@@ -186,14 +189,19 @@ export default function IndexPage() {
 
       const entries: JudgeEntry[] = profiles.map(profile => {
         const judgeReviews = reviews?.filter(r => r.judge_id === profile.id) || [];
+        const isTrial = trialJudgeIds.has(profile.id) && !judgeRoles.some(r => r.user_id === profile.id && r.role === 'judge');
         return {
           ...profile,
           totalReviews: judgeReviews.length,
+          isTrial,
         };
       });
 
-      // Sort by total reviews
-      entries.sort((a, b) => b.totalReviews - a.totalReviews);
+      // Sort: full judges first (by reviews), then trial judges
+      entries.sort((a, b) => {
+        if (a.isTrial !== b.isTrial) return a.isTrial ? 1 : -1;
+        return b.totalReviews - a.totalReviews;
+      });
       setJudges(entries);
     } catch (error) {
       console.error('Error fetching judges:', error);
@@ -714,11 +722,15 @@ export default function IndexPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     onClick={() => navigate(`/editor/${judge.id}`)}
-                    className="w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all duration-200 text-left bg-surface-0/60 border-border/50 hover:border-gold/40 hover:bg-surface-1/60 hover:shadow-[0_0_20px_rgba(212,175,55,0.08)]"
+                    className={`w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all duration-200 text-left ${
+                      judge.isTrial 
+                        ? 'bg-surface-0/40 border-border/30 opacity-70 hover:opacity-100' 
+                        : 'bg-surface-0/60 border-border/50 hover:border-gold/40 hover:bg-surface-1/60 hover:shadow-[0_0_20px_rgba(212,175,55,0.08)]'
+                    }`}
                   >
-                    <Avatar className="w-12 h-12 border-2 border-gold/30">
+                    <Avatar className={`w-12 h-12 border-2 ${judge.isTrial ? 'border-muted/30' : 'border-gold/30'}`}>
                       <AvatarImage src={judge.avatar_url || undefined} />
-                      <AvatarFallback className="bg-gold/10 text-gold font-bold">
+                      <AvatarFallback className={`${judge.isTrial ? 'bg-muted/10 text-muted-foreground' : 'bg-gold/10 text-gold'} font-bold`}>
                         {judge.username[0]?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -729,17 +741,22 @@ export default function IndexPage() {
                           {judge.display_name || judge.username}
                         </h3>
                         {judge.verification_status && <VerifiedBadge size="sm" />}
-                        <AuthorityBadge role="judge" size="sm" />
+                        {judge.isTrial ? (
+                          <span className="text-[8px] px-1.5 py-0.5 bg-muted/20 border border-muted/30 text-muted-foreground uppercase tracking-wider">Trial</span>
+                        ) : (
+                          <AuthorityBadge role="judge" size="sm" />
+                        )}
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">
                         <span>@{judge.username}</span>
-                        <span className="text-gold">{judge.totalReviews} reviews</span>
+                        {!judge.isTrial && <span className="text-gold">{judge.totalReviews} reviews</span>}
+                        {judge.isTrial && <span className="text-muted-foreground/60">Pending approval</span>}
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <LevelBadge level={judge.level || 1} size="sm" />
-                      <ChevronRight className="w-5 h-5 text-gold/60" />
+                      <ChevronRight className={`w-5 h-5 ${judge.isTrial ? 'text-muted-foreground/40' : 'text-gold/60'}`} />
                     </div>
                   </motion.button>
                 ))}
