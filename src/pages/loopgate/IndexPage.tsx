@@ -1,15 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2, MessageCircle, Shield, Crown, Star, Lock, ChevronRight, Users, Target, Medal } from "lucide-react";
+import { Search, Loader2, MessageCircle, Shield, Crown, Star, Lock, ChevronRight, Users, Target, Medal, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings } from "@/hooks/useRealData";
 import { useAuth } from "@/hooks/useAuth";
-import loopgateLogo from "@/assets/loopgate-logo.png";
 import SEO, { pageSEO } from "@/components/SEO";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
-import LevelBadge from "@/components/loopgate/LevelBadge";
 import CrewBadge from "@/components/loopgate/CrewBadge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
@@ -60,42 +58,47 @@ function getClassColors(classLetter: GQTRank, hasTakenGQT: boolean): string {
   return colors[classLetter] || colors['F'];
 }
 
-// Rank tier styles for visual hierarchy
+// Rank tier styles for visual hierarchy - AAA polish
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
-    bg: "bg-gradient-to-r from-yellow-500/25 via-amber-400/15 to-yellow-500/25",
+    bg: "bg-gradient-to-r from-yellow-500/30 via-amber-400/20 to-yellow-500/30",
     border: "border-l-4 border-yellow-400",
-    glow: "shadow-[0_0_15px_rgba(250,204,21,0.2)]",
+    glow: "shadow-[0_0_20px_rgba(250,204,21,0.25),inset_0_1px_0_rgba(250,204,21,0.2)]",
     text: "text-yellow-400",
     icon: Crown,
+    shimmer: true,
   };
   if (rank === 2) return {
-    bg: "bg-gradient-to-r from-slate-400/15 via-gray-300/10 to-slate-400/15",
+    bg: "bg-gradient-to-r from-slate-400/20 via-gray-300/12 to-slate-400/20",
     border: "border-l-4 border-slate-300",
-    glow: "shadow-[0_0_10px_rgba(203,213,225,0.15)]",
+    glow: "shadow-[0_0_15px_rgba(203,213,225,0.2)]",
     text: "text-slate-300",
     icon: Medal,
+    shimmer: true,
   };
   if (rank === 3) return {
-    bg: "bg-gradient-to-r from-amber-700/20 via-orange-600/10 to-amber-700/20",
+    bg: "bg-gradient-to-r from-amber-700/25 via-orange-600/15 to-amber-700/25",
     border: "border-l-4 border-amber-600",
-    glow: "shadow-[0_0_10px_rgba(217,119,6,0.15)]",
+    glow: "shadow-[0_0_15px_rgba(217,119,6,0.2)]",
     text: "text-amber-500",
     icon: Medal,
+    shimmer: true,
   };
   if (rank <= 10) return {
-    bg: "bg-gradient-to-r from-gold/8 via-gold/4 to-gold/8",
-    border: "border-l-2 border-gold/50",
-    glow: "",
+    bg: "bg-gradient-to-r from-gold/12 via-gold/6 to-gold/12",
+    border: "border-l-2 border-gold/60",
+    glow: "shadow-[0_0_10px_rgba(212,175,55,0.1)]",
     text: "text-gold",
     icon: null,
+    shimmer: false,
   };
   return {
-    bg: "bg-surface-1/60",
-    border: "border-l-2 border-border",
+    bg: "bg-surface-1/70",
+    border: "border-l-2 border-border/80",
     glow: "",
     text: "text-muted-foreground",
     icon: null,
+    shimmer: false,
   };
 };
 
@@ -150,45 +153,58 @@ export default function IndexPage() {
     <div className="min-h-screen bg-background pb-24">
       <SEO {...pageSEO.index} />
       
-      {/* Cinematic Hero Header */}
+      {/* Cinematic Hero Header - AAA Polish */}
       <div className="relative overflow-hidden">
-        {/* Multi-layer gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/10 via-gold/3 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.15),transparent_60%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-gold/8 blur-[80px] rounded-full" />
+        {/* Multi-layer gradient background - richer depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/12 via-gold/4 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.18),transparent_55%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/10 blur-[100px] rounded-full" />
         
-        {/* Decorative lines */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        {/* Decorative grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'linear-gradient(rgba(212,175,55,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.5) 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }} />
         
-        <header className="relative z-10 px-4 pt-5 pb-6">
-          <div className="flex items-center justify-between mb-5">
-            <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" />
-            <div className="flex items-center gap-2 text-gold">
-              <div className="relative">
-                <div className="w-1.5 h-1.5 rounded-full bg-gold" />
-                <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-gold animate-ping opacity-75" />
+        {/* Decorative lines - more prominent */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+        
+        {/* Corner accents */}
+        <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-gold/20" />
+        <div className="absolute top-0 right-0 w-24 h-24 border-r-2 border-t-2 border-gold/20" />
+        
+        <header className="relative z-10 px-4 pt-6 pb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center">
+                <Search className="w-4 h-4 text-gold" />
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-widest">Live</span>
+              <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-semibold">Discover</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="w-2 h-2 rounded-full bg-gold" />
+                <div className="absolute inset-0 w-2 h-2 rounded-full bg-gold animate-ping opacity-75" />
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-gold/80">Live</span>
             </div>
           </div>
           
-          {/* Hero Title */}
+          {/* Hero Title - Bolder */}
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 mb-2">
-              <Search className="w-4 h-4 text-gold" />
-              <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-medium">Discover</span>
-            </div>
-            <h1 className="font-display text-4xl tracking-wider text-white mb-1">EDITOR INDEX</h1>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
+            <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-white mb-2 drop-shadow-[0_0_30px_rgba(212,175,55,0.15)]">
+              EDITOR INDEX
+            </h1>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-[0.25em]">
               Scout • Search • Connect
             </p>
           </div>
         </header>
 
-        {/* Tab Navigation */}
-        <div className="relative z-10 px-4 pb-4">
-          <div className="flex gap-1 bg-surface-0/50 backdrop-blur-sm p-1 border border-border/50">
+        {/* Tab Navigation - Glass Morphism AAA */}
+        <div className="relative z-10 px-4 pb-5">
+          <div className="flex gap-1 bg-black/40 backdrop-blur-xl border border-white/10 p-1.5 shadow-[0_0_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]">
             {tabs.map((tab) => {
               const isActive = viewMode === tab.id;
               const Icon = tab.icon;
@@ -196,9 +212,9 @@ export default function IndexPage() {
                 <button
                   key={tab.id}
                   onClick={() => tab.id === "class" ? navigate("/class") : setViewMode(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold tracking-wider transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 ${
                     isActive
-                      ? "bg-gold text-background"
+                      ? "bg-gradient-to-b from-gold via-gold to-gold/90 text-background shadow-[0_0_20px_rgba(212,175,55,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
                       : "text-muted-foreground hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -210,7 +226,7 @@ export default function IndexPage() {
             {/* Crews tab - separate navigation */}
             <button
               onClick={handleCrewsTab}
-              className="flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold tracking-wider transition-all text-muted-foreground hover:text-white hover:bg-white/5"
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 text-muted-foreground hover:text-white hover:bg-white/5"
             >
               <Users className="w-4 h-4" />
               CREWS
@@ -228,79 +244,98 @@ export default function IndexPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            {/* Search */}
-            <div className="px-4 py-3">
-              <div className="relative">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            {/* Search - Enhanced */}
+            <div className="px-4 py-4">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-gold/5 opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-gold transition-colors" />
                 <input
                   type="text"
                   placeholder="Search editors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-surface-0/50 backdrop-blur-sm border border-border/50 pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-gold/50 transition-colors"
+                  className="w-full bg-surface-0/60 backdrop-blur-sm border border-border/60 pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-gold/50 focus:bg-surface-0/80 transition-all placeholder:text-muted-foreground/60"
                 />
               </div>
             </div>
 
-            {/* Filters */}
-            <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
-              <select
-                value={leagueFilter}
-                onChange={(e) => setLeagueFilter(e.target.value as LeagueFilter)}
-                className="bg-surface-0/80 border border-border/50 px-4 py-2 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-gold/50"
-              >
-                <option value="all">All Leagues</option>
-                <option value="elite">Elite</option>
-                <option value="pro">Pro</option>
-                <option value="open">Open</option>
-              </select>
+            {/* Filters - Premium Pill Style */}
+            <div className="px-4 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+              <div className="relative">
+                <select
+                  value={leagueFilter}
+                  onChange={(e) => setLeagueFilter(e.target.value as LeagueFilter)}
+                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-gold/50 hover:border-gold/30 transition-colors"
+                >
+                  <option value="all">All Leagues</option>
+                  <option value="elite">Elite</option>
+                  <option value="pro">Pro</option>
+                  <option value="open">Open</option>
+                </select>
+                <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground rotate-90 pointer-events-none" />
+              </div>
 
-              <select
-                value={rankFilter}
-                onChange={(e) => setRankFilter(e.target.value as RankFilter)}
-                className="bg-surface-0/80 border border-border/50 px-4 py-2 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-gold/50"
-              >
-                <option value="all">All Ranks</option>
-                <option value="top10">Top 10</option>
-                <option value="top50">Top 50</option>
-                <option value="top100">Top 100</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={rankFilter}
+                  onChange={(e) => setRankFilter(e.target.value as RankFilter)}
+                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-gold/50 hover:border-gold/30 transition-colors"
+                >
+                  <option value="all">All Ranks</option>
+                  <option value="top10">Top 10</option>
+                  <option value="top50">Top 50</option>
+                  <option value="top100">Top 100</option>
+                </select>
+                <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground rotate-90 pointer-events-none" />
+              </div>
             </div>
 
-            {/* Results Header */}
-            <div className="px-4 py-3 border-t border-border/50 flex items-center justify-between bg-surface-0/30">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gold" />
-                <span className="font-display text-lg text-white">
-                  {filteredEditors.length} <span className="text-muted-foreground">Editors</span>
+            {/* Results Header - Enhanced */}
+            <div className="px-4 py-3.5 border-t border-b border-border/40 flex items-center justify-between bg-gradient-to-r from-surface-0/40 via-surface-0/60 to-surface-0/40">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 bg-gold/10 border border-gold/30 flex items-center justify-center">
+                  <Users className="w-3.5 h-3.5 text-gold" />
+                </div>
+                <span className="font-display text-xl text-white">
+                  {filteredEditors.length} <span className="text-muted-foreground text-base">Editors</span>
                 </span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
-                Global Index
-              </span>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-3 h-3 text-gold/60" />
+                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
+                  Global Index
+                </span>
+              </div>
             </div>
 
             {/* Loading State */}
             {loading && (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-6 h-6 animate-spin text-gold" />
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <div className="relative">
+                  <Loader2 className="w-8 h-8 animate-spin text-gold" />
+                  <div className="absolute inset-0 w-8 h-8 rounded-full bg-gold/20 blur-lg animate-pulse" />
+                </div>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading rankings...</span>
               </div>
             )}
 
             {/* Error State */}
             {error && (
-              <div className="px-4 py-8 text-center">
-                <p className="text-sm text-destructive">Failed to load rankings</p>
+              <div className="px-4 py-12 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-destructive/10 border border-destructive/30 flex items-center justify-center">
+                  <span className="text-2xl">⚠</span>
+                </div>
+                <p className="text-sm text-destructive font-medium">Failed to load rankings</p>
               </div>
             )}
 
             {/* Empty State */}
             {!loading && !error && filteredEditors.length === 0 && (
-              <div className="px-4 py-16 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
-                  <Search className="w-8 h-8 text-muted-foreground" />
+              <div className="px-4 py-20 text-center">
+                <div className="w-20 h-20 mx-auto mb-5 bg-surface-1 border border-border/50 flex items-center justify-center">
+                  <Search className="w-10 h-10 text-muted-foreground/50" />
                 </div>
-                <p className="font-display text-xl text-muted-foreground mb-2">No editors found</p>
+                <p className="font-display text-2xl text-muted-foreground mb-2">No editors found</p>
                 <p className="text-xs text-muted-foreground/60 uppercase tracking-wider">
                   {rankings.length === 0 
                     ? "Be the first to compete and claim your rank" 
@@ -309,9 +344,9 @@ export default function IndexPage() {
               </div>
             )}
 
-            {/* Editor Cards */}
+            {/* Editor Cards - AAA Polish */}
             {!loading && !error && filteredEditors.length > 0 && (
-              <div className="px-4 py-2 space-y-2">
+              <div className="px-4 py-3 space-y-2.5">
                 {filteredEditors.map((editor, index) => {
                   const rank = editor.rank || 999;
                   const style = getRankStyle(rank);
@@ -320,38 +355,53 @@ export default function IndexPage() {
                   const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
                   const classColorStyle = getClassColors(classLetter, hasTakenGQT);
                   const authorityRole = getAuthorityRole(editor.roles);
+                  const isTopThree = rank <= 3;
                   
                   return (
                     <motion.button
                       key={editor.id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.015 }}
+                      transition={{ delay: index * 0.012, duration: 0.3 }}
                       onClick={() => navigate(`/editor/${editor.id}`)}
-                      className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-3 text-left hover:scale-[1.005] transition-transform active:scale-[0.995]`}
+                      className={`w-full relative overflow-hidden ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-3 text-left hover:scale-[1.008] transition-transform duration-200 active:scale-[0.995]`}
                     >
-                      {/* Avatar */}
-                      <Avatar className="w-10 h-10 border-2 border-border">
+                      {/* Shimmer effect for top 3 */}
+                      {style.shimmer && (
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                          <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                        </div>
+                      )}
+                      
+                      {/* Top 3 glow accent */}
+                      {isTopThree && (
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+                      )}
+                      
+                      {/* Avatar - enhanced border for top ranks */}
+                      <Avatar className={`w-11 h-11 border-2 ${isTopThree ? 'border-gold/50' : 'border-border/80'}`}>
                         <AvatarImage src={editor.avatar_url || undefined} />
-                        <AvatarFallback className="bg-surface-1 text-xs">
+                        <AvatarFallback className="bg-surface-1 text-xs font-bold">
                           {editor.username[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       
                       {/* Rank */}
-                      <div className="w-12 text-center">
+                      <div className="w-12 text-center flex-shrink-0">
                         {IconComponent ? (
-                          <IconComponent className={`w-5 h-5 mx-auto ${style.text}`} />
+                          <div className="relative">
+                            <IconComponent className={`w-6 h-6 mx-auto ${style.text} ${isTopThree ? 'drop-shadow-[0_0_8px_currentColor]' : ''}`} />
+                          </div>
                         ) : (
                           <span className={`font-display text-2xl ${style.text}`}>{rank}</span>
                         )}
-                        <p className="text-[7px] text-muted-foreground uppercase tracking-wider">Rank</p>
+                        <p className="text-[7px] text-muted-foreground uppercase tracking-wider mt-0.5">Rank</p>
                       </div>
                       
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                          <h3 className="font-semibold text-sm truncate text-white">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <h3 className={`font-semibold text-sm truncate ${isTopThree ? 'text-white' : 'text-foreground'}`}>
                             {editor.display_name || editor.username}
                           </h3>
                           {editor.verification_status && <VerifiedBadge size="sm" />}
@@ -362,16 +412,20 @@ export default function IndexPage() {
                           </span>
                         </div>
                         {editor.display_name && (
-                          <p className="text-[10px] text-muted-foreground mb-0.5">@{editor.username}</p>
+                          <p className="text-[10px] text-muted-foreground mb-1">@{editor.username}</p>
                         )}
-                        <div className="flex items-center gap-2 text-[9px] text-muted-foreground uppercase tracking-wider flex-wrap">
-                          <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
-                          <span>{editor.total_events || 0} Events</span>
+                        <div className="flex items-center gap-2.5 text-[9px] text-muted-foreground uppercase tracking-wider flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <span className="text-foreground/70">{editor.win_rate?.toFixed(0) || 0}%</span> Win
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="text-foreground/70">{editor.total_events || 0}</span> Events
+                          </span>
                           {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
                         </div>
                       </div>
 
-                      {/* Level & Index */}
+                      {/* Level & Index - Enhanced */}
                       <div className="flex items-center gap-4 flex-shrink-0">
                         <div className="text-center">
                           <p className="font-display text-lg text-foreground/80">
@@ -381,7 +435,7 @@ export default function IndexPage() {
                         </div>
                         
                         <div className="text-right">
-                          <p className="font-display text-2xl text-gold">
+                          <p className={`font-display text-2xl ${isTopThree ? 'text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'text-gold'}`}>
                             {(editor.global_index_score || 0).toFixed(1)}
                           </p>
                           <p className="text-[7px] text-muted-foreground uppercase tracking-wider">Index</p>
@@ -395,20 +449,25 @@ export default function IndexPage() {
           </motion.div>
         )}
 
-        {/* Arenas View */}
+        {/* Arenas View - Enhanced */}
         {viewMode === "arenas" && (
           <motion.div
             key="arenas"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="px-4 py-4 space-y-3"
+            className="px-4 py-5 space-y-3"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <MessageCircle className="w-4 h-4 text-gold" />
-              <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">
-                Real-time chat rooms by league tier
-              </span>
+            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border/30">
+              <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center">
+                <MessageCircle className="w-4 h-4 text-gold" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground">Chat Rooms</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Real-time • League-tiered access
+                </p>
+              </div>
             </div>
             
             {arenas.map((arena, index) => {
@@ -423,33 +482,33 @@ export default function IndexPage() {
                   transition={{ delay: index * 0.05 }}
                   onClick={() => hasAccess && navigate(`/arenas/${arena.id}`)}
                   disabled={!hasAccess}
-                  className={`w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all text-left ${
+                  className={`w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all duration-200 text-left ${
                     hasAccess
-                      ? "bg-surface-0/50 border-border/50 hover:border-gold/30 hover:bg-surface-1/50"
-                      : "bg-muted/10 border-border/30 opacity-50 cursor-not-allowed"
+                      ? "bg-surface-0/60 border-border/50 hover:border-gold/40 hover:bg-surface-1/60 hover:shadow-[0_0_20px_rgba(212,175,55,0.08)]"
+                      : "bg-muted/10 border-border/30 opacity-40 cursor-not-allowed"
                   }`}
                 >
-                  <div className={`w-12 h-12 flex items-center justify-center ${
-                    hasAccess ? "bg-gold/10 text-gold" : "bg-muted/20 text-muted-foreground"
+                  <div className={`w-12 h-12 flex items-center justify-center border ${
+                    hasAccess ? "bg-gold/10 border-gold/30 text-gold" : "bg-muted/20 border-border/30 text-muted-foreground"
                   }`}>
                     <IconComponent className="w-6 h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-display text-base tracking-wide">{arena.name}</h3>
-                      {!hasAccess && <Lock className="w-3 h-3 text-muted-foreground" />}
+                      <h3 className="font-display text-base tracking-wide text-foreground">{arena.name}</h3>
+                      {!hasAccess && <Lock className="w-3.5 h-3.5 text-muted-foreground" />}
                     </div>
-                    <p className="text-xs text-muted-foreground">{arena.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{arena.description}</p>
                   </div>
                   {hasAccess && (
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    <ChevronRight className="w-5 h-5 text-gold/60" />
                   )}
                 </motion.button>
               );
             })}
             
-            <div className="pt-6 text-center">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em]">
+            <div className="pt-8 text-center">
+              <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em]">
                 Unlock higher arenas by advancing your league
               </p>
             </div>
@@ -457,9 +516,9 @@ export default function IndexPage() {
         )}
       </AnimatePresence>
 
-      {/* Footer */}
-      <div className="p-4 text-center mt-4">
-        <p className="text-[9px] text-muted-foreground/60 uppercase tracking-[0.2em]">
+      {/* Footer - Enhanced */}
+      <div className="p-5 text-center mt-4 border-t border-border/20">
+        <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.25em]">
           {viewMode === "editors" ? "Real-time verified rankings" : 
            viewMode === "arenas" ? "Text-only • No media uploads" :
            "Performance-based progression"}
