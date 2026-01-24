@@ -183,7 +183,7 @@ export default function HubPage() {
                           {(profile as any)?.spendable_index || 0}
                         </span>
                       </div>
-                      <p className="text-[8px] text-muted-foreground uppercase tracking-widest">INDEX</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-medium">INDEX</p>
                     </div>
                   </div>
                 </Link>
@@ -203,20 +203,20 @@ export default function HubPage() {
               <div className="border-t border-border/30 px-4 py-3">
                 <div className="grid grid-cols-4 gap-3 text-center">
                   <div>
-                    <p className="font-display text-lg text-foreground">{profile?.total_events || 0}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Events</p>
+                    <p className="font-display text-xl text-foreground">{profile?.total_events || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Events</p>
                   </div>
                   <div>
-                    <p className="font-display text-lg text-foreground">{profile?.total_wins || 0}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Wins</p>
+                    <p className="font-display text-xl text-foreground">{profile?.total_wins || 0}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Wins</p>
                   </div>
                   <div>
-                    <p className="font-display text-lg text-foreground">{bestScore?.toFixed(0) || '—'}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Best QOI</p>
+                    <p className="font-display text-xl text-foreground">{bestScore?.toFixed(0) || '—'}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Best QOI</p>
                   </div>
                   <div>
-                    <p className="font-display text-lg text-foreground">{profile?.win_rate ? `${(profile.win_rate * 100).toFixed(0)}%` : '—'}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Win Rate</p>
+                    <p className="font-display text-xl text-foreground">{profile?.win_rate ? `${(profile.win_rate * 100).toFixed(0)}%` : '—'}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Win Rate</p>
                   </div>
                 </div>
               </div>
@@ -235,8 +235,8 @@ export default function HubPage() {
                           )}
                         </div>
                         <div>
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Your Crew</p>
-                          <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">{userCrew.name}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Your Crew</p>
+                          <p className="font-display text-base text-foreground group-hover:text-gold transition-colors">{userCrew.name}</p>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
@@ -248,8 +248,8 @@ export default function HubPage() {
                           <Plus className="w-5 h-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Join a Crew</p>
-                          <p className="text-sm text-foreground group-hover:text-gold transition-colors">Find your squad</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Join a Crew</p>
+                          <p className="text-base text-foreground group-hover:text-gold transition-colors font-medium">Find your squad</p>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
@@ -264,8 +264,8 @@ export default function HubPage() {
                         <Target className="w-5 h-5 text-foreground group-hover:text-gold transition-colors" />
                       </div>
                       <div>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Global QOI Test</p>
-                        <p className="font-display text-sm text-foreground group-hover:text-gold transition-colors">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Global QOI Test</p>
+                        <p className="font-display text-base text-foreground group-hover:text-gold transition-colors">
                           {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
                         </p>
                       </div>
@@ -324,8 +324,8 @@ export default function HubPage() {
                 </div>
                 
                 <div>
-                  <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
-                  <p className="text-sm text-muted-foreground">Enter the competition</p>
+                  <h2 className="font-display text-3xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
+                  <p className="text-sm text-muted-foreground font-medium">Enter the competition</p>
                 </div>
               </div>
               

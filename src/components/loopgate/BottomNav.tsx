@@ -55,8 +55,8 @@ export default function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.5} />
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.1em]">
+                  <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.08em]">
                     {item.label}
                   </span>
                 </>
@@ -74,9 +74,9 @@ export default function BottomNav() {
             
             {/* Button circle */}
             <div className="relative w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-full flex items-center justify-center shadow-lg shadow-gold/40 border-2 border-gold/60">
-              <InfinityIcon className="w-6 h-6 text-background" strokeWidth={2.5} />
+              <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
             </div>
-            <span className="text-[8px] font-bold uppercase tracking-[0.15em] text-gold mt-1">
+            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-gold mt-1">
               Arena
             </span>
           </button>
@@ -94,8 +94,8 @@ export default function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon size={18} strokeWidth={isActive ? 2.5 : 1.5} />
-                  <span className="text-[9px] font-semibold uppercase tracking-[0.1em]">
+                  <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.08em]">
                     {item.label}
                   </span>
                 </>

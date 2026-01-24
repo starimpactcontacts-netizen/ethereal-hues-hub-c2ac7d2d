@@ -236,10 +236,10 @@ export default function RankingsPage() {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 mb-3">
               <Trophy className="w-5 h-5 text-gold" />
-              <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-medium">Global</span>
+              <span className="text-xs text-gold uppercase tracking-[0.3em] font-semibold">Global</span>
             </div>
             <h1 className="font-display text-5xl tracking-wider text-white mb-2">RANKINGS</h1>
-            <p className="text-xs text-muted-foreground uppercase tracking-[0.2em]">
+            <p className="text-sm text-muted-foreground uppercase tracking-[0.15em] font-medium">
               Where legends are made
             </p>
           </div>
@@ -284,10 +284,10 @@ export default function RankingsPage() {
             {/* Section Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-gold" />
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Skill Index</span>
+                <Target className="w-5 h-5 text-gold" />
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.15em] font-semibold">Skill Index</span>
               </div>
-              <span className="text-[10px] text-muted-foreground">Top 50</span>
+              <span className="text-xs text-muted-foreground font-medium">Top 50</span>
             </div>
             
             {globalRankings.length === 0 && !rankingsLoading ? (
@@ -336,12 +336,12 @@ export default function RankingsPage() {
                           )}
                           <LevelBadge level={editor.level || 1} size="sm" />
                         </div>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                           <span className="uppercase tracking-wider">{editor.league}</span>
                           {editor.crew && (
                             <>
                               <span>•</span>
-                              <span className="text-gold">{editor.crew.name}</span>
+                              <span className="text-gold font-semibold">{editor.crew.name}</span>
                             </>
                           )}
                         </div>
@@ -352,7 +352,7 @@ export default function RankingsPage() {
                         <span className="font-display text-3xl text-gold">
                           {editor.global_index_score?.toFixed(1) || '0.0'}
                         </span>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Index</p>
+                        <p className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">Index</p>
                       </div>
                     </motion.button>
                   );

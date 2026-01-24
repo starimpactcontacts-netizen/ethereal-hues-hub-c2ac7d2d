@@ -101,7 +101,7 @@ function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge:
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
           </div>
-          <p className="text-xs text-muted-foreground mb-2">@{judge.username}</p>
+          <p className="text-xs text-muted-foreground font-medium">@{judge.username}</p>
           
           {/* Badge */}
           {judge.judge_badge && JUDGE_BADGES[judge.judge_badge] ? (
@@ -112,18 +112,18 @@ function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge:
             </Badge>
           ) : null}
 
-          {/* Stats row */}
-          <div className="flex items-center gap-3 text-[10px]">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Trophy size={10} className="text-gold" />
+          {/* Stats row - LARGER fonts */}
+          <div className="flex items-center gap-3 text-xs mt-2">
+            <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+              <Trophy size={12} className="text-gold" />
               <span>{judge.totalReviews} reviews</span>
             </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Star size={10} className="text-gold" />
+            <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+              <Star size={12} className="text-gold" />
               <span>Avg {judge.avgScore.toFixed(0)}</span>
             </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Flame size={10} className="text-orange-400" />
+            <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
+              <Flame size={12} className="text-orange-400" />
               <span>{judge.thisWeek} this week</span>
             </div>
           </div>
@@ -206,19 +206,19 @@ function JudgePreviewModal({
             <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{judge.bio}</p>
           )}
 
-          {/* Stats grid */}
+          {/* Stats grid - LARGER fonts */}
           <div className="grid grid-cols-3 gap-2 mb-6">
             <div className="bg-surface-1 border border-border rounded-lg p-3">
-              <div className="text-xl font-bold text-gold">{judge.totalReviews}</div>
-              <div className="text-[10px] text-muted-foreground uppercase">Total Reviews</div>
+              <div className="text-2xl font-display text-gold">{judge.totalReviews}</div>
+              <div className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">Total Reviews</div>
             </div>
             <div className="bg-surface-1 border border-border rounded-lg p-3">
-              <div className="text-xl font-bold text-foreground">{judge.avgScore.toFixed(0)}</div>
-              <div className="text-[10px] text-muted-foreground uppercase">Avg Score</div>
+              <div className="text-2xl font-display text-foreground">{judge.avgScore.toFixed(0)}</div>
+              <div className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">Avg Score</div>
             </div>
             <div className="bg-surface-1 border border-border rounded-lg p-3">
-              <div className="text-xl font-bold text-orange-400">{judge.thisWeek}</div>
-              <div className="text-[10px] text-muted-foreground uppercase">This Week</div>
+              <div className="text-2xl font-display text-orange-400">{judge.thisWeek}</div>
+              <div className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">This Week</div>
             </div>
           </div>
 
@@ -402,10 +402,10 @@ export default function JudgeHubPage() {
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Sparkles className="w-5 h-5 text-gold" />
-              <h1 className="font-display text-2xl tracking-wide">QOI JUDGES</h1>
+              <h1 className="font-display text-3xl tracking-wide">QOI JUDGES</h1>
               <Sparkles className="w-5 h-5 text-gold" />
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-medium">
               Get your edits rated by elite judges
             </p>
           </div>
