@@ -64,17 +64,17 @@ export default function BottomNav() {
             </NavLink>
           ))}
 
-          {/* Center Arena Button - THE ACTION BUTTON */}
+          {/* Center Arena Button - TikTok Style */}
           <button
             onClick={handleArenaClick}
-            className="relative flex flex-col items-center justify-center -mt-4"
+            className="relative flex flex-col items-center justify-center -mt-3"
           >
-            {/* Glow effect */}
-            <div className="absolute inset-0 -top-3 w-14 h-14 mx-auto bg-gold/30 rounded-full blur-xl" />
+            {/* Subtle glow */}
+            <div className="absolute -top-1 w-12 h-12 bg-gold/20 rounded-xl blur-lg" />
             
-            {/* Button circle */}
-            <div className="relative w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-full flex items-center justify-center shadow-lg shadow-gold/40 border-2 border-gold/60">
-              <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
+            {/* Button - dark bg with gold border */}
+            <div className="relative w-12 h-12 bg-background rounded-xl flex items-center justify-center border-2 border-gold shadow-lg shadow-gold/20">
+              <InfinityIcon className="w-6 h-6 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-[10px] font-semibold tracking-wide text-gold mt-1">
               Arena
