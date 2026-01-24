@@ -1,20 +1,24 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { Search, Loader2, MessageCircle, Shield, Crown, Star, Lock, ChevronRight, Users, Target, Medal, Sparkles } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Search, Loader2, MessageCircle, Shield, Crown, Star, Lock, ChevronRight, Users, Target, Medal, Sparkles, Zap, Trophy, RefreshCw, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRealRankings } from "@/hooks/useRealData";
+import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
+import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
 import SEO, { pageSEO } from "@/components/SEO";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import CrewBadge from "@/components/loopgate/CrewBadge";
+import LevelBadge from "@/components/loopgate/LevelBadge";
+import StatusBadge from "@/components/loopgate/StatusBadge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
-type ViewMode = "editors" | "arenas" | "class";
+type ViewMode = "editors" | "arenas" | "rankings";
+type RankingSubTab = "xp" | "crews" | "events";
 
 const arenas = [
   { id: 1, name: "Global", description: "Open to all editors", minLeague: "open" as const, icon: MessageCircle },
@@ -107,15 +111,30 @@ const getRankStyle = (rank: number) => {
 
 export default function IndexPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [leagueFilter, setLeagueFilter] = useState<LeagueFilter>("all");
   const [rankFilter, setRankFilter] = useState<RankFilter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("editors");
+  const [rankingSubTab, setRankingSubTab] = useState<RankingSubTab>("xp");
+  const eventIdFromUrl = searchParams.get("event");
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
+
+  // Keep session active
+  useActiveSession();
 
   const { rankings, loading, error } = useRealRankings();
+  const { events, loading: eventsLoading } = useRealEvents();
+  const { rankings: eventRankings, loading: eventRankingsLoading } = useEventRankings(selectedEventId);
+  const { users: xpUsers, loading: xpLoading } = useXPUserLeaderboard(50);
+  const { crews: xpCrews, loading: crewsLoading } = useXPCrewLeaderboard(20);
 
   const userLeague = profile?.league || "open";
+  const selectedEvent = events.find((e) => e.id === selectedEventId);
+  const isLiveEvent = selectedEvent?.status === "live";
+  const isClosedEvent = selectedEvent?.status === "closed";
+  const rankedEvents = events.filter((e) => e.status === "live" || e.status === "closed");
 
   const canAccessArena = (minLeague: "open" | "pro" | "elite") => {
     return leagueOrder[userLeague as keyof typeof leagueOrder] <= leagueOrder[minLeague];
@@ -143,13 +162,141 @@ export default function IndexPage() {
   }, [rankings, searchQuery, leagueFilter, rankFilter]);
 
   const tabs: { id: ViewMode; label: string; icon: React.ElementType }[] = [
-    { id: "editors", label: "EDITORS", icon: Users },
+    { id: "editors", label: "INDEX", icon: Target },
     { id: "arenas", label: "ARENAS", icon: MessageCircle },
-    { id: "class", label: "CLASS", icon: Target },
+    { id: "rankings", label: "RANKINGS", icon: Trophy },
+  ];
+
+  const rankingSubTabs: { id: RankingSubTab; label: string; icon: React.ElementType }[] = [
+    { id: "xp", label: "XP", icon: Zap },
+    { id: "crews", label: "CREWS", icon: Users },
+    { id: "events", label: "EVENTS", icon: Trophy },
   ];
 
   // Crews tab handler - navigate to crews page
   const handleCrewsTab = () => navigate("/crews");
+
+  // Event-specific leaderboard view within rankings
+  if (viewMode === "rankings" && selectedEvent) {
+    return (
+      <div className="min-h-screen pb-24 bg-background">
+        {/* Cinematic Header */}
+        <div className="relative overflow-hidden">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-gold/10 via-background to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.15),transparent_70%)]" />
+          
+          <header className="relative z-10 px-4 pt-4 pb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <button onClick={() => setSelectedEventId(null)} className="p-2 -ml-2 hover:bg-white/5 rounded-lg transition-colors">
+                <ArrowLeft size={20} />
+              </button>
+              <StatusBadge status={selectedEvent.status} />
+            </div>
+            
+            <h1 className="font-display text-3xl tracking-wide text-white mb-1">{selectedEvent.title}</h1>
+            <p className="text-xs text-gold uppercase tracking-[0.3em]">
+              {selectedEvent.league} League • Leaderboard
+            </p>
+          </header>
+
+          {/* Live Pulse Bar */}
+          {isLiveEvent && (
+            <div className="relative px-4 pb-4">
+              <div className="flex items-center gap-2 text-green-400">
+                <div className="relative">
+                  <div className="w-2 h-2 rounded-full bg-green-400" />
+                  <div className="absolute inset-0 w-2 h-2 rounded-full bg-green-400 animate-ping" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest">Live Rankings</span>
+                <RefreshCw size={12} className="animate-spin ml-auto opacity-50" style={{ animationDuration: "3s" }} />
+              </div>
+            </div>
+          )}
+
+          {isClosedEvent && (
+            <div className="px-4 pb-4 flex items-center gap-2 text-muted-foreground">
+              <Lock size={14} />
+              <span className="text-xs uppercase tracking-widest">Final Results</span>
+            </div>
+          )}
+        </div>
+
+        {/* QOI Legend */}
+        {isLiveEvent && (
+          <div className="px-4 py-3 bg-surface-0/50 border-y border-border/50 flex items-center justify-center gap-6 text-[10px] uppercase tracking-[0.2em]">
+            <span><span className="text-gold font-bold">Q</span> <span className="text-muted-foreground">Quality</span></span>
+            <span><span className="text-gold font-bold">O</span> <span className="text-muted-foreground">Originality</span></span>
+            <span><span className="text-gold font-bold">I</span> <span className="text-muted-foreground">Impact</span></span>
+          </div>
+        )}
+
+        {/* Leaderboard */}
+        <div className="px-4 py-6">
+          {eventRankings.length === 0 && !eventRankingsLoading ? (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <p className="text-muted-foreground font-medium">No rankings yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Submissions are being reviewed</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {eventRankings.map((ranking, index) => {
+                const displayRank = ranking.final_rank || index + 1;
+                const style = getRankStyle(displayRank);
+                const IconComponent = style.icon;
+                
+                return (
+                  <motion.div
+                    key={ranking.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className={`relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4`}
+                  >
+                    {/* Rank */}
+                    <div className="w-12 flex items-center justify-center">
+                      {IconComponent ? (
+                        <IconComponent className={`w-6 h-6 ${style.text}`} />
+                      ) : (
+                        <span className={`font-display text-2xl ${style.text}`}>{displayRank}</span>
+                      )}
+                    </div>
+                    
+                    {/* Username */}
+                    <div className="flex-1">
+                      <span className="font-semibold text-white">{ranking.profile?.username || 'Unknown'}</span>
+                    </div>
+                    
+                    {/* Scores */}
+                    {isLiveEvent ? (
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span>{ranking.quality_score || '—'}</span>
+                          <span>{ranking.originality_score || '—'}</span>
+                          <span>{ranking.impact_score || '—'}</span>
+                        </div>
+                        <div className="w-px h-6 bg-border" />
+                        <span className="font-display text-2xl text-gold min-w-[50px] text-right">
+                          {ranking.qoi_score?.toFixed(1) || '—'}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-display text-2xl text-gold">
+                        {ranking.qoi_score?.toFixed(1) || '—'}
+                      </span>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -213,7 +360,7 @@ export default function IndexPage() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => tab.id === "class" ? navigate("/class") : setViewMode(tab.id)}
+                  onClick={() => setViewMode(tab.id)}
                   className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 ${
                     isActive
                       ? "bg-gradient-to-b from-gold via-gold to-gold/90 text-background shadow-[0_0_20px_rgba(212,175,55,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
@@ -516,6 +663,226 @@ export default function IndexPage() {
             </div>
           </motion.div>
         )}
+
+        {/* Rankings View */}
+        {viewMode === "rankings" && (
+          <motion.div
+            key="rankings"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="px-4 py-4"
+          >
+            {/* Sub-tab Navigation */}
+            <div className="flex gap-1 bg-surface-0/60 border border-border/40 p-1 mb-5">
+              {rankingSubTabs.map((tab) => {
+                const isActive = rankingSubTab === tab.id;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setRankingSubTab(tab.id)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold tracking-wider transition-all duration-200 ${
+                      isActive
+                        ? "bg-gold text-background"
+                        : "text-muted-foreground hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* XP Leaderboard */}
+            {rankingSubTab === "xp" && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-gold" />
+                    <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Experience Points</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Top Grinders</span>
+                </div>
+                
+                {xpUsers.length === 0 && !xpLoading ? (
+                  <EmptyState icon={Zap} message="No XP rankings yet" />
+                ) : (
+                  <div className="space-y-2">
+                    {xpUsers.map((user, index) => {
+                      const rank = user.rank || index + 1;
+                      const style = getRankStyle(rank);
+                      const IconComponent = style.icon;
+                      
+                      return (
+                        <motion.button
+                          key={user.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.02 }}
+                          onClick={() => navigate(`/editor/${user.id}`)}
+                          className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                        >
+                          <div className="w-10 flex items-center justify-center">
+                            {IconComponent ? (
+                              <IconComponent className={`w-5 h-5 ${style.text}`} />
+                            ) : (
+                              <span className={`font-display text-xl ${style.text}`}>{rank}</span>
+                            )}
+                          </div>
+                          
+                          <Avatar className="w-10 h-10 border-2 border-border">
+                            <AvatarImage src={user.avatar_url || undefined} />
+                            <AvatarFallback className="bg-surface-1 text-xs">
+                              {user.username[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-white truncate">{user.username}</span>
+                              <LevelBadge level={user.level} size="sm" showAura />
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <span className="font-display text-2xl text-white">
+                              {user.xp.toLocaleString()}
+                            </span>
+                            <p className="text-[9px] text-gold uppercase tracking-wider">XP</p>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Crews Leaderboard */}
+            {rankingSubTab === "crews" && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-gold" />
+                    <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Crew Rankings</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">Combined XP</span>
+                </div>
+                
+                {xpCrews.length === 0 && !crewsLoading ? (
+                  <EmptyState icon={Users} message="No crews yet" />
+                ) : (
+                  <div className="space-y-2">
+                    {xpCrews.map((crew, index) => {
+                      const rank = crew.rank || index + 1;
+                      const style = getRankStyle(rank);
+                      const IconComponent = style.icon;
+                      
+                      return (
+                        <motion.button
+                          key={crew.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.02 }}
+                          onClick={() => navigate(`/crews/${crew.id}`)}
+                          className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                        >
+                          <div className="w-10 flex items-center justify-center">
+                            {IconComponent ? (
+                              <IconComponent className={`w-5 h-5 ${style.text}`} />
+                            ) : (
+                              <span className={`font-display text-xl ${style.text}`}>{rank}</span>
+                            )}
+                          </div>
+                          
+                          <Avatar className="w-10 h-10 border-2 border-gold/30">
+                            <AvatarImage src={crew.avatar_url || undefined} />
+                            <AvatarFallback className="bg-surface-1 text-lg">
+                              {crew.emblem}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1 min-w-0">
+                            <span className="font-semibold text-white truncate block">{crew.name}</span>
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                              <span>{crew.member_count} members</span>
+                              <span>•</span>
+                              <span className="text-gold">Lv {crew.crewLevel}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <span className="font-display text-2xl text-white">
+                              {crew.totalXP.toLocaleString()}
+                            </span>
+                            <p className="text-[9px] text-gold uppercase tracking-wider">Total XP</p>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Events Leaderboard */}
+            {rankingSubTab === "events" && (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-4 h-4 text-gold" />
+                    <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Event Leaderboards</span>
+                  </div>
+                </div>
+                
+                {rankedEvents.length === 0 ? (
+                  <EmptyState icon={Trophy} message="No ranked events yet" />
+                ) : (
+                  <div className="space-y-3">
+                    {rankedEvents.map((event, index) => (
+                      <motion.button
+                        key={event.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        onClick={() => setSelectedEventId(event.id)}
+                        className="w-full bg-surface-1/80 backdrop-blur-sm border border-border/50 hover:border-gold/30 p-4 text-left flex items-center gap-4 transition-all hover:scale-[1.01]"
+                      >
+                        {event.poster_url ? (
+                          <div
+                            className="w-14 h-20 bg-cover bg-center flex-shrink-0 border border-border/50"
+                            style={{ backgroundImage: `url(${event.poster_url})` }}
+                          />
+                        ) : (
+                          <div className="w-14 h-20 bg-surface-0 flex-shrink-0 flex items-center justify-center border border-border/50">
+                            <Trophy className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-display text-xl text-white truncate">{event.title}</h3>
+                            <StatusBadge status={event.status} small />
+                          </div>
+                          {event.subtitle && (
+                            <p className="text-xs text-muted-foreground truncate mb-1">{event.subtitle}</p>
+                          )}
+                          <p className="text-[10px] text-gold uppercase tracking-[0.15em]">
+                            {event.league} League
+                          </p>
+                        </div>
+                        
+                        <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Footer - Enhanced */}
@@ -523,9 +890,22 @@ export default function IndexPage() {
         <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.25em]">
           {viewMode === "editors" ? "Real-time verified rankings" : 
            viewMode === "arenas" ? "Text-only • No media uploads" :
+           viewMode === "rankings" ? "Where legends are made" :
            "Performance-based progression"}
         </p>
       </div>
+    </div>
+  );
+}
+
+// Empty state component
+function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
+  return (
+    <div className="text-center py-16">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
+        <Icon className="w-8 h-8 text-muted-foreground" />
+      </div>
+      <p className="text-muted-foreground font-medium">{message}</p>
     </div>
   );
 }
