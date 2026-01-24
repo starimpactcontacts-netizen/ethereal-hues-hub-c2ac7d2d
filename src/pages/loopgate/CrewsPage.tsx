@@ -459,10 +459,10 @@ export default function CrewsPage() {
                     <div className="relative">
                       <div
                         onClick={() => navigate(`/crews/${primaryCrew.crew_id}`)}
-                        className="relative overflow-hidden rounded-xl border-2 border-gold/30 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 cursor-pointer group p-4"
+                        className="relative overflow-hidden rounded-lg border-2 border-gold/30 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 cursor-pointer group p-4"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                          <div className="w-14 h-14 rounded-md overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
                             {getPrimaryCrewDetails()?.avatar_url ? (
                               <img src={getPrimaryCrewDetails()?.avatar_url!} alt="" className="w-full h-full object-cover" />
                             ) : (
