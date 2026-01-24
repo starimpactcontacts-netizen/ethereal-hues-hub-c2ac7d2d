@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Loader2, MessageCircle, Shield, Crown, Star, Lock, ChevronRight, Users, Target, Medal, Sparkles, Flame } from "lucide-react";
+import { Search, Loader2, MessageCircle, Shield, Crown, Star, Lock, ChevronRight, Users, Target, Medal, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings } from "@/hooks/useRealData";
 import { useAuth } from "@/hooks/useAuth";
@@ -148,9 +148,6 @@ export default function IndexPage() {
     { id: "class", label: "CLASS", icon: Target },
   ];
 
-  // Feed tab handler - navigate to feed page
-  const handleFeedTab = () => navigate("/rankings");
-
   // Crews tab handler - navigate to crews page
   const handleCrewsTab = () => navigate("/crews");
 
@@ -228,14 +225,6 @@ export default function IndexPage() {
                 </button>
               );
             })}
-            {/* Feed tab - separate navigation */}
-            <button
-              onClick={handleFeedTab}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 text-muted-foreground hover:text-white hover:bg-white/5"
-            >
-              <Flame className="w-4 h-4" />
-              FEED
-            </button>
             {/* Crews tab - separate navigation */}
             <button
               onClick={handleCrewsTab}

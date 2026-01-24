@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
-  ChevronRight, Plus, Infinity as InfinityIcon, Star, Flame
+  ChevronRight, Plus, Infinity as InfinityIcon, Star
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -461,10 +461,10 @@ export default function HubPage() {
           <div className="grid grid-cols-4 gap-1.5">
             <Link to="/rankings" className="group">
               <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 bg-gold/10 rounded-xl flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                  <Flame className="w-5 h-5 text-gold group-hover:text-gold transition-colors" />
+                <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                  <Trophy className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
                 </div>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Feed</span>
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Rankings</span>
               </div>
             </Link>
             
