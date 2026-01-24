@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
-type ViewMode = "editors" | "judges" | "rankings";
+type ViewMode = "editors" | "crews" | "rankings" | "judges";
 type RankingSubTab = "xp" | "crews" | "events";
 
 interface JudgeEntry {
@@ -241,10 +241,11 @@ export default function IndexPage() {
     });
   }, [rankings, shuffledRankings, searchQuery, leagueFilter, rankFilter, hasActiveFilters]);
 
-  const tabs: { id: ViewMode; label: string; icon: React.ElementType }[] = [
+  const tabs: { id: ViewMode; label: string; icon: React.ElementType; navigateTo?: string }[] = [
     { id: "editors", label: "INDEX", icon: Target },
-    { id: "judges", label: "JUDGES", icon: Gavel },
+    { id: "crews", label: "CREWS", icon: Users, navigateTo: "/crews" },
     { id: "rankings", label: "RANKINGS", icon: Trophy },
+    { id: "judges", label: "JUDGES", icon: Gavel },
   ];
 
   const rankingSubTabs: { id: RankingSubTab; label: string; icon: React.ElementType }[] = [
@@ -440,9 +441,15 @@ export default function IndexPage() {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setViewMode(tab.id)}
+                  onClick={() => {
+                    if (tab.navigateTo) {
+                      navigate(tab.navigateTo);
+                    } else {
+                      setViewMode(tab.id);
+                    }
+                  }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 ${
-                    isActive
+                    isActive && !tab.navigateTo
                       ? "bg-gradient-to-b from-gold via-gold to-gold/90 text-background shadow-[0_0_20px_rgba(212,175,55,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
                       : "text-muted-foreground hover:text-white hover:bg-white/5"
                   }`}
@@ -452,14 +459,6 @@ export default function IndexPage() {
                 </button>
               );
             })}
-            {/* Crews tab - separate navigation */}
-            <button
-              onClick={handleCrewsTab}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 text-muted-foreground hover:text-white hover:bg-white/5"
-            >
-              <Users className="w-4 h-4" />
-              CREWS
-            </button>
           </div>
         </div>
       </div>
