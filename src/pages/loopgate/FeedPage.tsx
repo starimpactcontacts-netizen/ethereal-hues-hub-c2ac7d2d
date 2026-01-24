@@ -112,8 +112,8 @@ function ArenaFeedCard({
         </div>
       </div>
 
-      {/* Right side actions */}
-      <div className="absolute right-3 bottom-[7.5rem] flex flex-col items-center gap-5 z-20">
+      {/* Right side actions - lifted for navbar (56px) + safe area */}
+      <div className="absolute right-3 bottom-[calc(4rem+env(safe-area-inset-bottom)+5rem)] flex flex-col items-center gap-4 z-20">
         <button onClick={(e) => { e.stopPropagation(); onProfile(); }} className="flex flex-col items-center gap-1">
           <Avatar className="w-11 h-11 border-2 border-white shadow-lg">
             <AvatarImage src={item.avatar_url || undefined} />
@@ -150,8 +150,8 @@ function ArenaFeedCard({
         </button>
       </div>
 
-      {/* Bottom info */}
-      <div className="absolute bottom-16 left-0 right-16 p-4 z-10">
+      {/* Bottom info - lifted for navbar (56px) + safe area */}
+      <div className="absolute left-0 right-16 p-4 z-10" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 0.5rem)' }}>
         <button onClick={onProfile} className="flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity">
           <span className="text-white font-bold text-base drop-shadow-lg">@{item.username}</span>
         </button>
@@ -226,8 +226,8 @@ function ReviewFeedCard({
         </div>
       </div>
 
-      {/* Right side actions */}
-      <div className="absolute right-3 bottom-[7.5rem] flex flex-col items-center gap-5 z-20">
+      {/* Right side actions - lifted for navbar (56px) + safe area */}
+      <div className="absolute right-3 bottom-[calc(4rem+env(safe-area-inset-bottom)+5rem)] flex flex-col items-center gap-4 z-20">
         <button onClick={(e) => { e.stopPropagation(); onProfile(); }} className="flex flex-col items-center gap-1">
           <Avatar className="w-11 h-11 border-2 border-white shadow-lg">
             <AvatarImage src={item.avatar_url || undefined} />
@@ -270,8 +270,8 @@ function ReviewFeedCard({
         </button>
       </div>
 
-      {/* Bottom info */}
-      <div className="absolute bottom-16 left-0 right-16 p-4 z-10">
+      {/* Bottom info - lifted for navbar (56px) + safe area */}
+      <div className="absolute left-0 right-16 p-4 z-10" style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px) + 0.5rem)' }}>
         <button onClick={onProfile} className="flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity">
           <span className="text-white font-bold text-base drop-shadow-lg">@{item.username}</span>
         </button>
