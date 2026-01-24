@@ -267,13 +267,9 @@ export default function PublicProfilePage() {
             </div>
             
             {profile.display_name && (
-              <p className="text-[10px] text-muted-foreground mb-1">@{profile.username}</p>
+              <p className="text-[10px] text-muted-foreground mb-2">@{profile.username}</p>
             )}
-
-            {/* League Badge - Compact */}
-            <span className={`text-[8px] font-semibold uppercase tracking-[0.12em] border px-1.5 py-0.5 mb-2 ${leagueColors[league]}`}>
-              {league}
-            </span>
+            {!profile.display_name && <div className="mb-1" />}
 
             {/* Stats Row - Compact inline */}
             <div className="flex items-center justify-center gap-3 mb-2">
