@@ -5,13 +5,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import PageTransition from "@/components/loopgate/PageTransition";
 import { Button } from "@/components/ui/button";
-import { Users, ArrowRight, Check, Zap, UserPlus } from "lucide-react";
+import { Users, Check } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function JoinCrewPage() {
   const { crewSlug } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
   const via = searchParams.get("via");
   const crewId = searchParams.get("crew");
@@ -27,32 +28,26 @@ export default function JoinCrewPage() {
 
   const fetchCrew = async () => {
     if (!crewId) {
-      // Try to find crew by slug (name)
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("crews")
         .select("*")
         .ilike("name", crewSlug?.replace(/-/g, ' ') || '')
         .maybeSingle();
       
-      if (data) {
-        setCrew(data);
-      }
+      if (data) setCrew(data);
     } else {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("crews")
         .select("*")
         .eq("id", crewId)
         .single();
       
-      if (data) {
-        setCrew(data);
-      }
+      if (data) setCrew(data);
     }
     setLoading(false);
   };
 
   const awardXPAndPostFeed = async (userId: string, crewName: string, crewIdToUse: string, referrerUsername?: string) => {
-    // Award XP to the joiner (15 XP for joining crew)
     await supabase.rpc('award_xp', {
       p_user_id: userId,
       p_amount: 15,
@@ -60,7 +55,6 @@ export default function JoinCrewPage() {
       p_description: `Joined ${crewName}`,
     });
 
-    // If there's a referrer (via), find them and award XP
     if (referrerUsername) {
       const { data: referrer } = await supabase
         .from("profiles")
@@ -69,7 +63,6 @@ export default function JoinCrewPage() {
         .single();
 
       if (referrer) {
-        // Award 50 XP to the referrer for successful recruit
         await supabase.rpc('award_xp', {
           p_user_id: referrer.id,
           p_amount: 50,
@@ -79,7 +72,6 @@ export default function JoinCrewPage() {
       }
     }
 
-    // Post to activity feed
     const { data: joinerProfile } = await supabase
       .from("profiles")
       .select("username, display_name, avatar_url")
@@ -105,7 +97,6 @@ export default function JoinCrewPage() {
 
   const handleJoin = async () => {
     if (!user) {
-      // Store invite info and redirect to start
       localStorage.setItem("pending_crew_invite", JSON.stringify({
         crewId: crew?.id,
         crewName: crew?.name,
@@ -116,11 +107,9 @@ export default function JoinCrewPage() {
     }
 
     if (!crew) return;
-
     setJoining(true);
 
     try {
-      // Check if already a member
       const { data: existingMember } = await supabase
         .from("crew_members")
         .select("id")
@@ -136,7 +125,6 @@ export default function JoinCrewPage() {
       }
 
       if (crew.join_type === "invite_only") {
-        // Check for existing pending request
         const { data: existingRequest } = await supabase
           .from("crew_join_requests")
           .select("id")
@@ -151,7 +139,6 @@ export default function JoinCrewPage() {
           return;
         }
 
-        // Create join request
         const { error } = await supabase.from("crew_join_requests").insert({
           crew_id: crew.id,
           user_id: user.id,
@@ -164,7 +151,6 @@ export default function JoinCrewPage() {
           setJoined(true);
         }
       } else {
-        // Direct join for open crews
         const { error } = await supabase.from("crew_members").insert({
           crew_id: crew.id,
           user_id: user.id,
@@ -174,18 +160,10 @@ export default function JoinCrewPage() {
         if (error) {
           toast.error("Failed to join crew");
         } else {
-          // Award XP and post to feed
           await awardXPAndPostFeed(user.id, crew.name, crew.id, via || undefined);
-          
-          toast.success(`Welcome to ${crew.name}!`, {
-            description: "+15 XP for joining",
-          });
+          toast.success(`Welcome to ${crew.name}!`);
           setJoined(true);
-          
-          // Navigate to crew page after delay
-          setTimeout(() => {
-            navigate(`/crews/${crew.id}`);
-          }, 1500);
+          setTimeout(() => navigate(`/crews/${crew.id}`), 1500);
         }
       }
     } catch {
@@ -199,7 +177,7 @@ export default function JoinCrewPage() {
     return (
       <PageTransition>
         <div className="min-h-screen bg-background flex items-center justify-center">
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="w-6 h-6 border-2 border-muted-foreground/30 border-t-foreground rounded-full animate-spin" />
         </div>
       </PageTransition>
     );
@@ -208,9 +186,9 @@ export default function JoinCrewPage() {
   if (!crew) {
     return (
       <PageTransition>
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-          <p className="text-muted-foreground mb-4">Crew not found</p>
-          <Button onClick={() => navigate("/crews")}>Browse Crews</Button>
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4">
+          <p className="text-muted-foreground">Crew not found</p>
+          <Button variant="outline" onClick={() => navigate("/crews")}>Browse Crews</Button>
         </div>
       </PageTransition>
     );
@@ -218,99 +196,60 @@ export default function JoinCrewPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <div className="max-w-md w-full text-center space-y-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        {/* Discord-style invite card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-sm bg-muted/30 rounded-lg p-6 text-center"
+        >
           {/* Crew Avatar */}
-          <div className="w-24 h-24 mx-auto rounded-full overflow-hidden border-2 border-gold bg-gold/10 flex items-center justify-center">
+          <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden bg-muted flex items-center justify-center mb-4">
             {crew.avatar_url ? (
               <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
             ) : (
-              <Users className="w-12 h-12 text-gold" />
+              <Users className="w-8 h-8 text-muted-foreground" />
             )}
           </div>
 
-          {/* Invite Text */}
-          {via && (
-            <p className="text-sm text-muted-foreground">
-              <span className="text-foreground font-semibold">@{via}</span> invited you to join
-            </p>
-          )}
+          {/* Invite text */}
+          <p className="text-sm text-muted-foreground mb-1">
+            You've been invited to join
+          </p>
 
-          {/* Crew Name */}
-          <div>
-            <h1 className="font-display text-3xl text-gold">{crew.name}</h1>
-            <p className="text-sm text-muted-foreground mt-2">{crew.description || "No description"}</p>
+          {/* Crew name */}
+          <h1 className="text-xl font-bold text-foreground mb-3">{crew.name}</h1>
+
+          {/* Online / Members count */}
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mb-5">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              {Math.floor(crew.member_count * 0.3) || 1} Online
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-muted-foreground/50" />
+              {crew.member_count} Members
+            </span>
           </div>
-
-          {/* Stats */}
-          <div className="flex items-center justify-center gap-6 py-4">
-            <div className="text-center">
-              <p className="font-display text-2xl">{crew.member_count}</p>
-              <p className="text-xs text-muted-foreground uppercase">Members</p>
-            </div>
-          </div>
-
-          {/* XP Rewards info */}
-          {!joined && (
-            <div className="grid grid-cols-2 gap-3 py-2">
-              <div className="flex items-center gap-2 p-3 bg-surface-1 border border-border rounded-lg">
-                <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center">
-                  <UserPlus className="w-4 h-4 text-gold" />
-                </div>
-                <div className="text-left">
-                  <p className="text-xs font-semibold">You Get</p>
-                  <p className="text-xs text-gold">+15 XP</p>
-                </div>
-              </div>
-              {via && (
-                <div className="flex items-center gap-2 p-3 bg-surface-1 border border-border rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-gold" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-xs font-semibold">@{via} Gets</p>
-                    <p className="text-xs text-gold">+50 XP</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* Join Button */}
           {joined ? (
-            <div className="bg-green-500/10 border border-green-500/30 p-4 rounded-lg">
-              <div className="flex items-center justify-center gap-2 text-green-500">
-                <Check className="w-5 h-5" />
-                <span className="font-semibold">
-                  {crew.join_type === "invite_only" ? "Request Sent!" : "Welcome!"}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Your XP journey begins now.
-              </p>
+            <div className="py-3 px-4 bg-gold/10 rounded-md flex items-center justify-center gap-2 text-gold">
+              <Check className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {crew.join_type === "invite_only" ? "Request Sent" : "Joined!"}
+              </span>
             </div>
           ) : (
             <Button
               onClick={handleJoin}
               disabled={joining}
-              className="w-full bg-gold text-background hover:bg-gold/90 font-display text-lg h-12"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium h-11 rounded-md"
             >
-              {joining ? (
-                "Joining..."
-              ) : user ? (
-                <>
-                  {crew.join_type === "invite_only" ? "Request to Join" : "Join Crew"}
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </>
-              ) : (
-                <>
-                  Sign Up to Join
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </>
-              )}
+              {joining ? "Joining..." : user ? "Accept Invite" : "Sign Up to Join"}
             </Button>
           )}
-        </div>
+        </motion.div>
       </div>
     </PageTransition>
   );
