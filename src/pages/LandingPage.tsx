@@ -80,9 +80,9 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
-            {/* Main headline - Official Brand Wordmark - MASSIVE FULLWIDTH */}
+            {/* Main headline - Official Brand Wordmark */}
             <motion.div 
-              className="mb-2 w-full max-w-4xl mx-auto px-4"
+              className="mb-3"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
@@ -90,7 +90,7 @@ export default function LandingPage() {
               <img 
                 src={loopgateBrand} 
                 alt="LOOPGATE" 
-                className="w-full max-w-[900px] h-auto mx-auto drop-shadow-[0_0_80px_rgba(255,255,255,0.25)]"
+                className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto mx-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
               />
             </motion.div>
             
