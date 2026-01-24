@@ -201,7 +201,7 @@ export default function JoinCrewPage() {
         <div className="absolute top-16 left-1/2 -translate-x-1/2">
           <div className="relative flex items-center justify-center">
             {/* Glow effect - behind logo */}
-            <div className="absolute inset-0 blur-3xl bg-white/40 scale-[2.5]" />
+            <div className="absolute w-64 h-32 blur-[60px] bg-white/80 rounded-full" />
             <img 
               src={loopgateLogo} 
               alt="LOOPGATE" 
