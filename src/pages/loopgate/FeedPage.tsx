@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useThumbnail } from "@/hooks/useThumbnail";
+import { fetchThumbnailsBatch } from "@/hooks/useThumbnail";
 
 // Unified feed item type
 type FeedItemType = 'arena' | 'review';
@@ -68,26 +68,22 @@ function getGrade(score: number): { grade: string; color: string } {
 // Arena feed card
 function ArenaFeedCard({ 
   item, 
+  thumbnail,
   onOpen, 
   onProfile 
 }: { 
   item: ArenaFeedItem; 
+  thumbnail: string | null;
   onOpen: () => void;
   onProfile: () => void;
 }) {
-  const { thumbnail, loading: thumbLoading } = useThumbnail(item.submission_url, item.platform);
-
   return (
     <div className="absolute inset-0 flex flex-col">
       <div className="absolute inset-0 cursor-pointer" onClick={onOpen}>
-        {thumbLoading ? (
-          <div className="absolute inset-0 bg-black flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-gold animate-spin" />
-          </div>
-        ) : thumbnail ? (
+        {thumbnail ? (
           <img src={thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-800" />
+          <div className="absolute inset-0 bg-gradient-to-br from-surface via-black to-surface" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
         
@@ -184,27 +180,24 @@ function ArenaFeedCard({
 // Review feed card
 function ReviewFeedCard({ 
   item, 
+  thumbnail,
   onOpen, 
   onProfile 
 }: { 
   item: ReviewFeedItem; 
+  thumbnail: string | null;
   onOpen: () => void;
   onProfile: () => void;
 }) {
-  const { thumbnail, loading: thumbLoading } = useThumbnail(item.submission_url, item.platform);
   const { grade, color } = getGrade(item.total_score);
 
   return (
     <div className="absolute inset-0 flex flex-col">
       <div className="absolute inset-0 cursor-pointer" onClick={onOpen}>
-        {thumbLoading ? (
-          <div className="absolute inset-0 bg-black flex items-center justify-center">
-            <Loader2 className="w-8 h-8 text-gold animate-spin" />
-          </div>
-        ) : thumbnail ? (
+        {thumbnail ? (
           <img src={thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-800" />
+          <div className="absolute inset-0 bg-gradient-to-br from-surface via-black to-surface" />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80" />
         
@@ -330,6 +323,7 @@ function ReviewFeedCard({
 export default function FeedPage() {
   const navigate = useNavigate();
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
+  const [thumbnails, setThumbnails] = useState<Record<string, string | null>>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -500,6 +494,17 @@ export default function FeedPage() {
       } else {
         setFeedItems(newItems);
       }
+
+      // Batch fetch thumbnails for new items
+      if (newItems.length > 0) {
+        const submissions = newItems.map(item => ({
+          submission_url: item.submission_url,
+          platform: item.platform
+        }));
+        fetchThumbnailsBatch(submissions).then(thumbs => {
+          setThumbnails(prev => ({ ...prev, ...thumbs }));
+        });
+      }
     } catch (error) {
       console.error('Error fetching feed:', error);
     } finally {
@@ -648,12 +653,14 @@ export default function FeedPage() {
           {currentItem.type === 'arena' ? (
             <ArenaFeedCard 
               item={currentItem}
+              thumbnail={thumbnails[currentItem.submission_url] || null}
               onOpen={() => openSubmission(currentItem.submission_url)}
               onProfile={() => navigate(`/editor/${currentItem.user_id}`)}
             />
           ) : (
             <ReviewFeedCard 
               item={currentItem}
+              thumbnail={thumbnails[currentItem.submission_url] || null}
               onOpen={() => openSubmission(currentItem.submission_url)}
               onProfile={() => navigate(`/editor/${currentItem.user_id}`)}
             />
