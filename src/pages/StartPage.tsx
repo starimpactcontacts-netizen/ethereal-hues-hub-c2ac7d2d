@@ -443,8 +443,16 @@ export default function StartPage() {
     // Success toast
     showSuccessToast();
 
-    // Navigate based on role
+    // Navigate based on role - grant trial_judge role if choosing judge path
     if (formData.role === 'judge') {
+      // Grant trial_judge role
+      const { data: session } = await supabase.auth.getSession();
+      if (session?.session?.user?.id) {
+        await supabase.from('user_roles').insert({
+          user_id: session.session.user.id,
+          role: 'trial_judge',
+        });
+      }
       navigate('/judges/apply');
     } else {
       navigate('/hub');
