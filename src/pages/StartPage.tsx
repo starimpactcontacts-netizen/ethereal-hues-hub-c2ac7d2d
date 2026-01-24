@@ -445,14 +445,16 @@ export default function StartPage() {
 
     // Navigate based on role - grant trial_judge role if choosing judge path
     if (formData.role === 'judge') {
-      // Grant trial_judge role
-      const { data: session } = await supabase.auth.getSession();
-      if (session?.session?.user?.id) {
-        await supabase.from('user_roles').insert({
-          user_id: session.session.user.id,
-          role: 'trial_judge',
-        });
+      // Grant trial_judge role - use userId directly, not getSession()
+      const { error: roleError } = await supabase.from('user_roles').insert({
+        user_id: userId,
+        role: 'trial_judge',
+      });
+      
+      if (roleError) {
+        console.error('Failed to assign trial_judge role:', roleError);
       }
+      
       navigate('/judges/apply');
     } else {
       navigate('/hub');
