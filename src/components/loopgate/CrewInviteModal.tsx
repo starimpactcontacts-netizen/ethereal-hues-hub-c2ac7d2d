@@ -4,9 +4,10 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Users } from "lucide-react";
+import { Copy, Check, Users, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import loopgateLogo from "@/assets/loopgate-wordmark.png";
 
 interface CrewInviteModalProps {
   open: boolean;
@@ -48,6 +49,13 @@ export default function CrewInviteModal({
       <DialogContent className="bg-muted/30 border-border max-w-sm p-0 overflow-hidden">
         {/* Preview card */}
         <div className="p-6 text-center">
+          {/* Loopgate wordmark */}
+          <img 
+            src={loopgateLogo} 
+            alt="LOOPGATE" 
+            className="h-4 mx-auto opacity-50 mb-4"
+          />
+
           {/* Crew Avatar */}
           <div className="w-16 h-16 mx-auto rounded-2xl overflow-hidden bg-muted flex items-center justify-center mb-3">
             {crewAvatarUrl ? (
@@ -61,7 +69,7 @@ export default function CrewInviteModal({
           <h3 className="text-lg font-bold text-foreground mb-2">{crewName}</h3>
           
           {/* Member count */}
-          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mb-5">
+          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mb-3">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               {Math.floor(memberCount * 0.3) || 1} Online
@@ -70,6 +78,12 @@ export default function CrewInviteModal({
               <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
               {memberCount} Members
             </span>
+          </div>
+
+          {/* XP Reward indicator */}
+          <div className="flex items-center justify-center gap-1.5 text-xs text-gold mb-4">
+            <Sparkles className="w-3 h-3" />
+            <span>They get +15 XP for joining</span>
           </div>
 
           {/* Link preview */}
