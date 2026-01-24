@@ -5,9 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import PageTransition from "@/components/loopgate/PageTransition";
 import { Button } from "@/components/ui/button";
-import { Users, Check } from "lucide-react";
+import { Users, Check, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-
+import loopgateLogo from "@/assets/loopgate-wordmark.png";
 export default function JoinCrewPage() {
   const { crewSlug } = useParams();
   const [searchParams] = useSearchParams();
@@ -196,7 +196,14 @@ export default function JoinCrewPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-6">
+        {/* Loopgate wordmark */}
+        <img 
+          src={loopgateLogo} 
+          alt="LOOPGATE" 
+          className="h-5 opacity-60"
+        />
+
         {/* Discord-style invite card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -221,7 +228,7 @@ export default function JoinCrewPage() {
           <h1 className="text-xl font-bold text-foreground mb-3">{crew.name}</h1>
 
           {/* Online / Members count */}
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mb-5">
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mb-4">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               {Math.floor(crew.member_count * 0.3) || 1} Online
@@ -231,6 +238,14 @@ export default function JoinCrewPage() {
               {crew.member_count} Members
             </span>
           </div>
+
+          {/* XP Reward - subtle indicator */}
+          {!joined && (
+            <div className="flex items-center justify-center gap-1.5 text-xs text-gold mb-5">
+              <Sparkles className="w-3 h-3" />
+              <span>+15 XP for joining</span>
+            </div>
+          )}
 
           {/* Join Button */}
           {joined ? (
