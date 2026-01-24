@@ -334,10 +334,18 @@ export default function PublicProfilePage() {
         <SubmissionGrid userId={userId || ''} />
       ) : (
         <div className="px-4 py-6 space-y-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-4 gap-2">
+          {/* League & Stats Grid */}
+          <div className="grid grid-cols-5 gap-2">
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className={`font-display text-2xl ${editorClass.color}`}>
+              <p className={`font-display text-xl uppercase ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
+                {league.charAt(0)}
+              </p>
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+                League
+              </p>
+            </div>
+            <div className="text-center p-3 bg-surface-1 border border-border">
+              <p className={`font-display text-xl ${editorClass.color}`}>
                 {editorClass.letter}
               </p>
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
@@ -345,7 +353,7 @@ export default function PublicProfilePage() {
               </p>
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className="font-display text-2xl">
+              <p className="font-display text-xl">
                 {Number(profile.global_index_score || 0).toFixed(1)}
               </p>
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
@@ -353,7 +361,7 @@ export default function PublicProfilePage() {
               </p>
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className="font-display text-2xl">
+              <p className="font-display text-xl">
                 {Number(profile.win_rate || 0).toFixed(0)}%
               </p>
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
@@ -361,7 +369,7 @@ export default function PublicProfilePage() {
               </p>
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className="font-display text-2xl">
+              <p className="font-display text-xl">
                 {profile.total_events || 0}
               </p>
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
