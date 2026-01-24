@@ -13,42 +13,47 @@ import SEO, { pageSEO } from "@/components/SEO";
 
 type TabType = "index" | "xp" | "crews" | "events";
 
-// Rank tier colors for visual hierarchy
+// Rank tier colors for visual hierarchy - AAA polish with shimmer
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
     bg: "bg-gradient-to-r from-yellow-500/30 via-amber-400/20 to-yellow-500/30",
     border: "border-l-4 border-yellow-400",
-    glow: "shadow-[0_0_15px_rgba(250,204,21,0.25)]",
+    glow: "shadow-[0_0_20px_rgba(250,204,21,0.25),inset_0_1px_0_rgba(250,204,21,0.2)]",
     text: "text-yellow-400",
     icon: Crown,
+    shimmer: true,
   };
   if (rank === 2) return {
     bg: "bg-gradient-to-r from-slate-400/20 via-gray-300/15 to-slate-400/20",
     border: "border-l-4 border-slate-300",
-    glow: "shadow-[0_0_12px_rgba(203,213,225,0.2)]",
+    glow: "shadow-[0_0_15px_rgba(203,213,225,0.2)]",
     text: "text-slate-300",
     icon: Medal,
+    shimmer: true,
   };
   if (rank === 3) return {
     bg: "bg-gradient-to-r from-amber-700/25 via-orange-600/15 to-amber-700/25",
     border: "border-l-4 border-amber-600",
-    glow: "shadow-[0_0_12px_rgba(217,119,6,0.2)]",
+    glow: "shadow-[0_0_15px_rgba(217,119,6,0.2)]",
     text: "text-amber-500",
     icon: Medal,
+    shimmer: true,
   };
   if (rank <= 10) return {
-    bg: "bg-gradient-to-r from-gold/10 via-gold/5 to-gold/10",
+    bg: "bg-gradient-to-r from-gold/12 via-gold/6 to-gold/12",
     border: "border-l-2 border-gold/60",
-    glow: "",
+    glow: "shadow-[0_0_10px_rgba(212,175,55,0.1)]",
     text: "text-gold",
     icon: null,
+    shimmer: false,
   };
   return {
-    bg: "bg-surface-1/80",
-    border: "border-l-2 border-border",
+    bg: "bg-surface-1/70",
+    border: "border-l-2 border-border/80",
     glow: "",
     text: "text-muted-foreground",
     icon: null,
+    shimmer: false,
   };
 };
 
@@ -209,45 +214,58 @@ export default function RankingsPage() {
     <div className="min-h-screen pb-24 bg-background">
       <SEO {...pageSEO.rankings} />
       
-      {/* Cinematic Hero Header */}
+      {/* Cinematic Hero Header - AAA Polish */}
       <div className="relative overflow-hidden">
-        {/* Multi-layer gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/15 via-gold/5 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.2),transparent_60%)]" />
+        {/* Multi-layer gradient background - richer depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/12 via-gold/4 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.18),transparent_55%)]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/10 blur-[100px] rounded-full" />
         
-        {/* Decorative lines */}
+        {/* Decorative grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'linear-gradient(rgba(212,175,55,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.5) 1px, transparent 1px)',
+          backgroundSize: '40px 40px'
+        }} />
+        
+        {/* Decorative lines - more prominent */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+        
+        {/* Corner accents */}
+        <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-gold/20" />
+        <div className="absolute top-0 right-0 w-24 h-24 border-r-2 border-t-2 border-gold/20" />
         
         <header className="relative z-10 px-4 pt-6 pb-8">
           <div className="flex items-center justify-between mb-6">
-            <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" />
-            <div className="flex items-center gap-2 text-green-400">
-              <div className="relative">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-green-400 animate-ping" />
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center">
+                <Trophy className="w-4 h-4 text-gold" />
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-widest">Live</span>
+              <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-semibold">Global</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
+              </div>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400/80">Live</span>
             </div>
           </div>
           
-          {/* Hero Title */}
+          {/* Hero Title - Bolder */}
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <Trophy className="w-5 h-5 text-gold" />
-              <span className="text-xs text-gold uppercase tracking-[0.3em] font-semibold">Global</span>
-            </div>
-            <h1 className="font-display text-5xl tracking-wider text-white mb-2">RANKINGS</h1>
-            <p className="text-sm text-muted-foreground uppercase tracking-[0.15em] font-medium">
+            <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-white mb-2 drop-shadow-[0_0_30px_rgba(212,175,55,0.15)]">
+              RANKINGS
+            </h1>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-[0.25em]">
               Where legends are made
             </p>
           </div>
         </header>
 
-        {/* Tab Navigation */}
-        <div className="relative z-10 px-4 pb-4">
-          <div className="flex gap-1 bg-surface-0/50 backdrop-blur-sm p-1 border border-border/50">
+        {/* Tab Navigation - Glass Morphism AAA */}
+        <div className="relative z-10 px-4 pb-5">
+          <div className="flex gap-1 bg-black/40 backdrop-blur-xl border border-white/10 p-1.5 shadow-[0_0_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
@@ -255,9 +273,9 @@ export default function RankingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-xs font-bold tracking-wider transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 ${
                     isActive
-                      ? "bg-gold text-background"
+                      ? "bg-gradient-to-b from-gold via-gold to-gold/90 text-background shadow-[0_0_20px_rgba(212,175,55,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
                       : "text-muted-foreground hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -293,34 +311,47 @@ export default function RankingsPage() {
             {globalRankings.length === 0 && !rankingsLoading ? (
               <EmptyState icon={Target} message="No rankings yet" />
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {globalRankings.slice(0, 50).map((editor, index) => {
                   const rank = editor.rank || index + 1;
                   const style = getRankStyle(rank);
                   const IconComponent = style.icon;
+                  const isTopThree = rank <= 3;
                   
                   return (
                     <motion.button
                       key={editor.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.02 }}
+                      transition={{ delay: index * 0.015, duration: 0.3 }}
                       onClick={() => navigate(`/editor/${editor.id}`)}
-                      className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                      className={`w-full relative overflow-hidden ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.008] transition-transform duration-200 active:scale-[0.995]`}
                     >
+                      {/* Shimmer effect for top 3 */}
+                      {style.shimmer && (
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                          <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                        </div>
+                      )}
+                      
+                      {/* Top 3 glow accent */}
+                      {isTopThree && (
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+                      )}
+                      
                       {/* Rank */}
-                      <div className="w-10 flex items-center justify-center">
+                      <div className="w-10 flex items-center justify-center flex-shrink-0">
                         {IconComponent ? (
-                          <IconComponent className={`w-5 h-5 ${style.text}`} />
+                          <IconComponent className={`w-6 h-6 ${style.text} ${isTopThree ? 'drop-shadow-[0_0_8px_currentColor]' : ''}`} />
                         ) : (
                           <span className={`font-display text-xl ${style.text}`}>{rank}</span>
                         )}
                       </div>
                       
                       {/* Avatar */}
-                      <Avatar className="w-8 h-8 border-2 border-border">
+                      <Avatar className={`w-9 h-9 border-2 ${isTopThree ? 'border-gold/50' : 'border-border/80'}`}>
                         <AvatarImage src={editor.avatar_url || undefined} />
-                        <AvatarFallback className="bg-surface-1 text-xs">
+                        <AvatarFallback className="bg-surface-1 text-xs font-bold">
                           {editor.username[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -328,7 +359,7 @@ export default function RankingsPage() {
                       {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-white truncate">{editor.username}</span>
+                          <span className={`font-semibold truncate ${isTopThree ? 'text-white' : 'text-foreground'}`}>{editor.username}</span>
                           {editor.verification_status && (
                             <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
                               <span className="text-[8px] text-white font-bold">✓</span>
@@ -341,18 +372,18 @@ export default function RankingsPage() {
                           {editor.crew && (
                             <>
                               <span>•</span>
-                              <span className="text-gold font-semibold">{editor.crew.name}</span>
+                              <CrewBadge crew={editor.crew} size="sm" />
                             </>
                           )}
                         </div>
                       </div>
                       
                       {/* Score */}
-                      <div className="text-right">
-                        <span className="font-display text-3xl text-gold">
+                      <div className="text-right flex-shrink-0">
+                        <span className={`font-display text-3xl ${isTopThree ? 'text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'text-gold'}`}>
                           {editor.global_index_score?.toFixed(1) || '0.0'}
                         </span>
-                        <p className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">Index</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">Index</p>
                       </div>
                     </motion.button>
                   );
