@@ -46,15 +46,16 @@ export default function CrewInviteModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-muted/30 border-border max-w-sm p-0 overflow-hidden">
+      <DialogContent className="bg-muted/30 border-border max-w-sm p-6 overflow-hidden">
+        {/* Loopgate wordmark above the modal content */}
+        <img 
+          src={loopgateLogo} 
+          alt="LOOPGATE" 
+          className="h-6 mx-auto mb-6"
+        />
+
         {/* Preview card */}
-        <div className="p-6 text-center">
-          {/* Loopgate wordmark */}
-          <img 
-            src={loopgateLogo} 
-            alt="LOOPGATE" 
-            className="h-5 mx-auto mb-5"
-          />
+        <div className="text-center">
 
           {/* Crew Avatar */}
           <div className="w-16 h-16 mx-auto rounded-2xl overflow-hidden bg-muted flex items-center justify-center mb-3">
