@@ -33,7 +33,7 @@ export default function SoftwareBadge({ software, size = 'sm', animate = true, i
   
   const badge = (
     <div 
-      className={`inline-flex items-center rounded-full bg-surface-1 border border-gold/30 ${sizeClasses[size]}`}
+      className={`inline-flex items-center rounded-full bg-surface-1 border border-border ${sizeClasses[size]}`}
     >
       <span className="font-medium tracking-wide text-muted-foreground">
         {softwareData.label}
