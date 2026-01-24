@@ -64,13 +64,18 @@ export default function BottomNav() {
             </NavLink>
           ))}
 
-          {/* Center Arena Button - Neon gold outline */}
+          {/* Center Arena Button - Legendary neon gold */}
           <button
             onClick={handleArenaClick}
-            className="flex flex-col items-center justify-center gap-1"
+            className="flex flex-col items-center justify-center gap-1 group"
           >
-            {/* Button - white bg, neon gold glow border */}
-            <div className="w-12 h-10 bg-white rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(212,175,55,0.6),0_0_4px_rgba(212,175,55,0.8),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]">
+            {/* Outer glow pulse */}
+            <div className="absolute w-14 h-12 bg-gold/20 rounded-lg blur-xl animate-pulse" />
+            
+            {/* Button - premium neon gold with layered glow */}
+            <div className="relative w-12 h-10 bg-gradient-to-b from-white to-zinc-100 rounded-lg flex items-center justify-center 
+              shadow-[0_0_20px_rgba(212,175,55,0.5),0_0_8px_rgba(212,175,55,0.7),0_0_2px_rgba(212,175,55,1),inset_0_0_0_1.5px_rgba(212,175,55,0.95)]
+              group-active:scale-95 transition-transform duration-150">
               <InfinityIcon className="w-5 h-5 text-zinc-900" strokeWidth={2.5} />
             </div>
             <span className="text-[10px] font-semibold tracking-wide text-gold">
