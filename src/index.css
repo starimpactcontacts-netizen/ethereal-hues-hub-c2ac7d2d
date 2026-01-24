@@ -22,7 +22,7 @@
   --secondary: 0 0% 10%;
   --secondary-foreground: 45 10% 92%;
   --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 50%;
+  --muted-foreground: 0 0% 58%; /* Brighter - less washed out */
   --accent: 0 0% 12%;
   --accent-foreground: 45 10% 92%;
   --destructive: 0 60% 50%;
@@ -72,7 +72,7 @@
   --secondary: 0 0% 10%;
   --secondary-foreground: 45 10% 92%;
   --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 50%;
+  --muted-foreground: 0 0% 58%; /* Brighter - less washed out */
   --accent: 0 0% 12%;
   --accent-foreground: 45 10% 92%;
   --destructive: 0 60% 50%;
@@ -150,44 +150,74 @@
     box-sizing: border-box;
   }
 
-  /* Fortnite-Style Typography - Aggressive & Condensed */
+  /* ═══════════════════════════════════════════════════════════════════
+     LOOPGATE TYPOGRAPHY SYSTEM - Bold, Aggressive, Unique
+     Using Bebas Neue for that ANTON-style condensed uppercase energy
+  ═══════════════════════════════════════════════════════════════════ */
+  
   h1, .font-display {
     font-family: var(--font-display);
     font-size: 3rem;
     font-weight: 400;
-    line-height: 0.95;
-    letter-spacing: 0.02em;
+    line-height: 0.9;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
   h2 {
     font-family: var(--font-display);
-    font-size: 2rem;
+    font-size: 2.25rem;
     font-weight: 400;
-    line-height: 1;
-    letter-spacing: 0.02em;
+    line-height: 0.95;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
   h3 {
     font-family: var(--font-display);
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 400;
-    line-height: 1.1;
-    letter-spacing: 0.02em;
+    line-height: 1;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
   }
 
+  /* Body text - slightly larger base for premium feel */
   p {
-    font-size: 0.875rem;
+    font-size: 0.9375rem; /* 15px - slightly larger than default */
     font-weight: 400;
-    line-height: 1.5;
+    line-height: 1.55;
   }
   
-  /* Display font utility */
+  /* Display font utility - bold condensed headers */
   .display-font {
     font-family: var(--font-display);
     text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  
+  /* ═══════════════════════════════════════════════════════════════════
+     LOOPGATE LABEL SYSTEM - Stronger, more visible labels
+  ═══════════════════════════════════════════════════════════════════ */
+  
+  /* Small labels - NO MORE 8px or 9px */
+  .label-sm {
+    font-size: 0.6875rem; /* 11px min */
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  
+  .label-xs {
+    font-size: 0.625rem; /* 10px absolute minimum */
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  
+  /* Stats numbers - always display font */
+  .stat-number {
+    font-family: var(--font-display);
     letter-spacing: 0.02em;
   }
   
