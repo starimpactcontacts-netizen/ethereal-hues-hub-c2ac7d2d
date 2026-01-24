@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Loader2, MessageCircle, Shield, Crown, Star, Lock, ChevronRight, Users, Target, Medal, Sparkles, Zap, Trophy, RefreshCw, ArrowLeft } from "lucide-react";
+import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -14,18 +14,23 @@ import LevelBadge from "@/components/loopgate/LevelBadge";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
+import { supabase } from "@/integrations/supabase/client";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
-type ViewMode = "editors" | "arenas" | "rankings";
+type ViewMode = "editors" | "judges" | "rankings";
 type RankingSubTab = "xp" | "crews" | "events";
 
-const arenas = [
-  { id: 1, name: "Global", description: "Open to all editors", minLeague: "open" as const, icon: MessageCircle },
-  { id: 2, name: "Open League", description: "Open League members", minLeague: "open" as const, icon: Shield },
-  { id: 3, name: "Pro Arena", description: "Pro & Elite only", minLeague: "pro" as const, icon: Star },
-  { id: 4, name: "Elite Arena", description: "Elite members only", minLeague: "elite" as const, icon: Crown },
-];
+interface JudgeEntry {
+  id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  level: number;
+  xp: number;
+  verification_status: boolean | null;
+  totalReviews: number;
+}
 
 const leagueOrder = { elite: 0, pro: 1, open: 2 };
 
@@ -136,9 +141,66 @@ export default function IndexPage() {
   const isClosedEvent = selectedEvent?.status === "closed";
   const rankedEvents = events.filter((e) => e.status === "live" || e.status === "closed");
 
-  const canAccessArena = (minLeague: "open" | "pro" | "elite") => {
-    return leagueOrder[userLeague as keyof typeof leagueOrder] <= leagueOrder[minLeague];
-  };
+  // Fetch judges
+  const [judges, setJudges] = useState<JudgeEntry[]>([]);
+  const [judgesLoading, setJudgesLoading] = useState(false);
+
+  useEffect(() => {
+    if (viewMode === "judges") {
+      fetchJudges();
+    }
+  }, [viewMode]);
+
+  async function fetchJudges() {
+    setJudgesLoading(true);
+    try {
+      const { data: judgeRoles } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'judge');
+
+      if (!judgeRoles?.length) {
+        setJudges([]);
+        setJudgesLoading(false);
+        return;
+      }
+
+      const judgeIds = judgeRoles.map(r => r.user_id);
+
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url, level, xp, verification_status')
+        .in('id', judgeIds);
+
+      if (!profiles) {
+        setJudges([]);
+        setJudgesLoading(false);
+        return;
+      }
+
+      const { data: reviews } = await supabase
+        .from('review_requests')
+        .select('judge_id')
+        .eq('status', 'reviewed')
+        .in('judge_id', judgeIds);
+
+      const entries: JudgeEntry[] = profiles.map(profile => {
+        const judgeReviews = reviews?.filter(r => r.judge_id === profile.id) || [];
+        return {
+          ...profile,
+          totalReviews: judgeReviews.length,
+        };
+      });
+
+      // Sort by total reviews
+      entries.sort((a, b) => b.totalReviews - a.totalReviews);
+      setJudges(entries);
+    } catch (error) {
+      console.error('Error fetching judges:', error);
+    } finally {
+      setJudgesLoading(false);
+    }
+  }
 
   // Check if any filters are active (affects whether we show ranked or randomized)
   const hasActiveFilters = searchQuery !== "" || leagueFilter !== "all" || rankFilter !== "all";
@@ -181,7 +243,7 @@ export default function IndexPage() {
 
   const tabs: { id: ViewMode; label: string; icon: React.ElementType }[] = [
     { id: "editors", label: "INDEX", icon: Target },
-    { id: "arenas", label: "ARENAS", icon: MessageCircle },
+    { id: "judges", label: "JUDGES", icon: Gavel },
     { id: "rankings", label: "RANKINGS", icon: Trophy },
   ];
 
@@ -468,7 +530,7 @@ export default function IndexPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Sparkles className="w-3 h-3 text-gold/60" />
+                <Target className="w-3 h-3 text-gold/60" />
                 <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
                   Global Index
                 </span>
@@ -616,10 +678,10 @@ export default function IndexPage() {
           </motion.div>
         )}
 
-        {/* Arenas View - Enhanced */}
-        {viewMode === "arenas" && (
+        {/* Judges View */}
+        {viewMode === "judges" && (
           <motion.div
-            key="arenas"
+            key="judges"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -627,56 +689,67 @@ export default function IndexPage() {
           >
             <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border/30">
               <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                <MessageCircle className="w-4 h-4 text-gold" />
+                <Gavel className="w-4 h-4 text-gold" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Chat Rooms</p>
+                <p className="text-xs font-semibold text-foreground">QOI Judges</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  Real-time • League-tiered access
+                  Official • Elite reviewers
                 </p>
               </div>
             </div>
             
-            {arenas.map((arena, index) => {
-              const hasAccess = canAccessArena(arena.minLeague);
-              const IconComponent = arena.icon;
-              
-              return (
-                <motion.button
-                  key={arena.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => hasAccess && navigate(`/arenas/${arena.id}`)}
-                  disabled={!hasAccess}
-                  className={`w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all duration-200 text-left ${
-                    hasAccess
-                      ? "bg-surface-0/60 border-border/50 hover:border-gold/40 hover:bg-surface-1/60 hover:shadow-[0_0_20px_rgba(212,175,55,0.08)]"
-                      : "bg-muted/10 border-border/30 opacity-40 cursor-not-allowed"
-                  }`}
-                >
-                  <div className={`w-12 h-12 flex items-center justify-center border ${
-                    hasAccess ? "bg-gold/10 border-gold/30 text-gold" : "bg-muted/20 border-border/30 text-muted-foreground"
-                  }`}>
-                    <IconComponent className="w-6 h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-display text-base tracking-wide text-foreground">{arena.name}</h3>
-                      {!hasAccess && <Lock className="w-3.5 h-3.5 text-muted-foreground" />}
+            {judgesLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-gold" />
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading judges...</span>
+              </div>
+            ) : judges.length === 0 ? (
+              <EmptyState icon={Gavel} message="No judges found" />
+            ) : (
+              <div className="space-y-2">
+                {judges.map((judge, index) => (
+                  <motion.button
+                    key={judge.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => navigate(`/editor/${judge.id}`)}
+                    className="w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all duration-200 text-left bg-surface-0/60 border-border/50 hover:border-gold/40 hover:bg-surface-1/60 hover:shadow-[0_0_20px_rgba(212,175,55,0.08)]"
+                  >
+                    <Avatar className="w-12 h-12 border-2 border-gold/30">
+                      <AvatarImage src={judge.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gold/10 text-gold font-bold">
+                        {judge.username[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-display text-base tracking-wide text-foreground truncate">
+                          {judge.display_name || judge.username}
+                        </h3>
+                        {judge.verification_status && <VerifiedBadge size="sm" />}
+                        <AuthorityBadge role="judge" size="sm" />
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">
+                        <span>@{judge.username}</span>
+                        <span className="text-gold">{judge.totalReviews} reviews</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{arena.description}</p>
-                  </div>
-                  {hasAccess && (
-                    <ChevronRight className="w-5 h-5 text-gold/60" />
-                  )}
-                </motion.button>
-              );
-            })}
+                    
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <LevelBadge level={judge.level || 1} size="sm" />
+                      <ChevronRight className="w-5 h-5 text-gold/60" />
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            )}
             
             <div className="pt-8 text-center">
               <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em]">
-                Unlock higher arenas by advancing your league
+                Request reviews from our elite judges
               </p>
             </div>
           </motion.div>
@@ -907,7 +980,7 @@ export default function IndexPage() {
       <div className="p-5 text-center mt-4 border-t border-border/20">
         <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.25em]">
           {viewMode === "editors" ? "Real-time verified rankings" : 
-           viewMode === "arenas" ? "Text-only • No media uploads" :
+           viewMode === "judges" ? "Elite reviewers • Request feedback" :
            viewMode === "rankings" ? "Where legends are made" :
            "Performance-based progression"}
         </p>
