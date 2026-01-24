@@ -80,9 +80,9 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
-            {/* Main headline - Official Brand Wordmark */}
+            {/* Main headline - Official Brand Wordmark - MASSIVE */}
             <motion.div 
-              className="mb-4"
+              className="mb-6"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
@@ -90,17 +90,17 @@ export default function LandingPage() {
               <img 
                 src={loopgateBrand} 
                 alt="LOOPGATE" 
-                className="h-20 sm:h-28 md:h-36 lg:h-44 w-auto mx-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                className="h-28 sm:h-40 md:h-52 lg:h-64 w-auto mx-auto drop-shadow-[0_0_60px_rgba(255,255,255,0.2)]"
               />
             </motion.div>
             
             <motion.p 
-              className="font-display text-xl sm:text-2xl md:text-3xl text-gold tracking-wide mb-6"
+              className="font-display text-2xl sm:text-3xl md:text-4xl text-gold tracking-wide mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              Prove Your Rank
+              PROVE YOUR RANK
             </motion.p>
             
             <motion.p 
