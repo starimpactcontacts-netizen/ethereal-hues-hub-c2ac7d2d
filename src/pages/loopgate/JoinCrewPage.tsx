@@ -198,15 +198,15 @@ export default function JoinCrewPage() {
     <PageTransition>
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         {/* Loopgate wordmark with glow - positioned at top */}
-        <div className="absolute top-12 left-1/2 -translate-x-1/2">
-          <div className="relative">
+        <div className="absolute top-16 left-1/2 -translate-x-1/2">
+          <div className="relative flex items-center justify-center">
+            {/* Glow effect - behind logo */}
+            <div className="absolute inset-0 blur-3xl bg-white/40 scale-[2.5]" />
             <img 
               src={loopgateLogo} 
               alt="LOOPGATE" 
-              className="h-10 relative z-10"
+              className="h-16 relative z-10"
             />
-            {/* Glow effect */}
-            <div className="absolute inset-0 blur-xl bg-white/20 scale-150" />
           </div>
         </div>
 

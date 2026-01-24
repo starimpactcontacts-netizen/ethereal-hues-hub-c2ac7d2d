@@ -48,15 +48,15 @@ export default function CrewInviteModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-muted/30 border-border max-w-sm p-6 pt-10 overflow-visible">
         {/* Loopgate wordmark with glow - positioned above modal */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          <div className="relative">
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2">
+          <div className="relative flex items-center justify-center">
+            {/* Glow effect - behind logo */}
+            <div className="absolute inset-0 blur-3xl bg-white/40 scale-[2.5]" />
             <img 
               src={loopgateLogo} 
               alt="LOOPGATE" 
-              className="h-8 relative z-10"
+              className="h-12 relative z-10"
             />
-            {/* Glow effect */}
-            <div className="absolute inset-0 blur-xl bg-white/20 scale-150" />
           </div>
         </div>
 
