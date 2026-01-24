@@ -260,17 +260,127 @@ export function useCrewMembership(userId: string | undefined) {
     [userId, secondaryCrews, fetchMemberships]
   );
 
+  // Leave primary crew (becomes unaffiliated)
+  const leavePrimary = useCallback(
+    async () => {
+      if (!userId || !primaryCrew) return false;
+
+      // Cannot leave if you're the owner
+      if (primaryCrew.role === "owner") {
+        toast.error("Owners cannot leave. Transfer ownership first.");
+        return false;
+      }
+
+      const { error } = await supabase
+        .from("crew_members")
+        .delete()
+        .eq("id", primaryCrew.id);
+
+      if (error) {
+        console.error("Error leaving primary crew:", error);
+        toast.error("Failed to leave crew");
+        return false;
+      }
+
+      // Clear crew_id from profile
+      await supabase
+        .from("profiles")
+        .update({ crew_id: null })
+        .eq("id", userId);
+
+      toast.success("Left crew");
+      fetchMemberships();
+      return true;
+    },
+    [userId, primaryCrew, fetchMemberships]
+  );
+
+  // Promote a secondary crew to primary
+  const promoteTorimary = useCallback(
+    async (crewId: string) => {
+      if (!userId) return false;
+
+      // Check cooldown
+      if (!canChangePrimary) {
+        toast.error(`You can change your primary crew on ${cooldownEndsAt?.toLocaleDateString()}`);
+        return false;
+      }
+
+      const membership = secondaryCrews.find((m) => m.crew_id === crewId);
+      if (!membership) {
+        toast.error("You're not a secondary member of this crew");
+        return false;
+      }
+
+      // If there's a current primary, demote it to secondary
+      if (primaryCrew) {
+        const { error: demoteError } = await supabase
+          .from("crew_members")
+          .update({ is_primary: false })
+          .eq("id", primaryCrew.id);
+
+        if (demoteError) {
+          console.error("Error demoting primary crew:", demoteError);
+          toast.error("Failed to change primary crew");
+          return false;
+        }
+      }
+
+      // Promote the secondary to primary
+      const { error: promoteError } = await supabase
+        .from("crew_members")
+        .update({ is_primary: true })
+        .eq("id", membership.id);
+
+      if (promoteError) {
+        console.error("Error promoting to primary:", promoteError);
+        toast.error("Failed to set primary crew");
+        // Try to revert
+        if (primaryCrew) {
+          await supabase.from("crew_members").update({ is_primary: true }).eq("id", primaryCrew.id);
+        }
+        return false;
+      }
+
+      // Update profile with new crew_id and cooldown
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          crew_id: crewId,
+          primary_crew_changed_at: new Date().toISOString(),
+        })
+        .eq("id", userId);
+
+      if (profileError) {
+        console.error("Error updating profile:", profileError);
+      }
+
+      toast.success(`🏴 ${membership.crew?.name} is now your primary crew!`);
+      fetchMemberships();
+      return true;
+    },
+    [userId, secondaryCrews, primaryCrew, canChangePrimary, cooldownEndsAt, fetchMemberships]
+  );
+
+  // Get days remaining on cooldown
+  const cooldownDaysRemaining = cooldownEndsAt
+    ? Math.ceil((cooldownEndsAt.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
   return {
     memberships,
     primaryCrew,
     secondaryCrews,
     loading,
     cooldownEndsAt,
+    cooldownDaysRemaining,
     canJoinSecondary,
     canChangePrimary,
     setPrimaryCrewById,
     joinAsSecondary,
     leaveSecondary,
+    leavePrimary,
+    promoteTorimary,
     refresh: fetchMemberships,
   };
 }
