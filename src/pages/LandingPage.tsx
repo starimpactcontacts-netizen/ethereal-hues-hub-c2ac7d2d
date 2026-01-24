@@ -9,6 +9,7 @@ import { useRealRankings, useRealEvents, useGlobalStats } from '@/hooks/useRealD
 import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import loopgateBrand from '@/assets/loopgate-brand.png';
 
 // Class tier colors
 const tierColors: Record<string, { bg: string; text: string; border: string; glow?: string }> = {
@@ -79,15 +80,19 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
-            {/* Main headline - massive typography */}
-            <motion.h1 
-              className="font-display text-[3.5rem] sm:text-[5rem] md:text-[7rem] lg:text-[8rem] leading-[0.85] tracking-[-0.02em] mb-2"
+            {/* Main headline - Official Brand Wordmark */}
+            <motion.div 
+              className="mb-4"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
-              LOOPGATE
-            </motion.h1>
+              <img 
+                src={loopgateBrand} 
+                alt="LOOPGATE" 
+                className="h-20 sm:h-28 md:h-36 lg:h-44 w-auto mx-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+              />
+            </motion.div>
             
             <motion.p 
               className="font-display text-xl sm:text-2xl md:text-3xl text-gold tracking-wide mb-6"
