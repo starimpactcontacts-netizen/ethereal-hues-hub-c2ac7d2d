@@ -53,7 +53,7 @@ export default function CrewInviteModal({
           <img 
             src={loopgateLogo} 
             alt="LOOPGATE" 
-            className="h-4 mx-auto opacity-50 mb-4"
+            className="h-5 mx-auto mb-5"
           />
 
           {/* Crew Avatar */}
