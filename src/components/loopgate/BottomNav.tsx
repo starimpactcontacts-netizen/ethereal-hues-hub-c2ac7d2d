@@ -64,14 +64,14 @@ export default function BottomNav() {
             </NavLink>
           ))}
 
-          {/* Center Arena Button - Clean inline style */}
+          {/* Center Arena Button - Neon gold outline */}
           <button
             onClick={handleArenaClick}
             className="flex flex-col items-center justify-center gap-1"
           >
-            {/* Button - white bg with gold border, inline */}
-            <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center border-2 border-gold">
-              <InfinityIcon className="w-5 h-5 text-background" strokeWidth={2.5} />
+            {/* Button - white bg, neon gold glow border */}
+            <div className="w-12 h-10 bg-white rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(212,175,55,0.6),0_0_4px_rgba(212,175,55,0.8),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]">
+              <InfinityIcon className="w-5 h-5 text-zinc-900" strokeWidth={2.5} />
             </div>
             <span className="text-[10px] font-semibold tracking-wide text-gold">
               Arena
