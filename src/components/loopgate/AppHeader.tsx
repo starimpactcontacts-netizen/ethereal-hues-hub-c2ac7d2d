@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import NotificationCenter from './NotificationCenter';
 import BeginnerGuideModal from './BeginnerGuideModal';
 import InviteModal from './InviteModal';
+import loopgateBrand from '@/assets/loopgate-brand.png';
 
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
@@ -53,9 +54,9 @@ export default function AppHeader() {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="flex items-center justify-between px-4 h-14">
-        {/* Logo - Clean white, tall condensed */}
-        <Link to="/hub" className="font-display text-2xl text-white tracking-[-0.02em]" style={{ fontStretch: 'condensed' }}>
-          LOOPGATE
+        {/* Logo - Official brand wordmark */}
+        <Link to="/hub">
+          <img src={loopgateBrand} alt="LOOPGATE" className="h-6 w-auto" />
         </Link>
 
         {/* Right side: Invite + Notifications + Menu */}
