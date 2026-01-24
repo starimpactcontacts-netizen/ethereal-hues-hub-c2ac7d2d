@@ -51,7 +51,7 @@ export default function CrewInviteModal({
         <div className="absolute -top-20 left-1/2 -translate-x-1/2">
           <div className="relative flex items-center justify-center">
             {/* Glow effect - behind logo */}
-            <div className="absolute w-48 h-24 blur-[50px] bg-white/80 rounded-full" />
+            <div className="absolute w-40 h-16 blur-[35px] bg-white/50 rounded-full" />
             <img 
               src={loopgateLogo} 
               alt="LOOPGATE" 
