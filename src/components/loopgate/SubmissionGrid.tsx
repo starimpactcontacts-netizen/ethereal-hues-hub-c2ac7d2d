@@ -74,19 +74,19 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
   if (submissions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-10 px-4">
-        <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center mb-3">
-          <Play className="w-5 h-5 text-muted-foreground" />
+        <div className="w-10 h-10 rounded-full bg-muted/30 flex items-center justify-center mb-2">
+          <Play className="w-4 h-4 text-muted-foreground" />
         </div>
-        <p className="text-sm font-medium text-foreground mb-1">No submissions yet</p>
-        <p className="text-xs text-muted-foreground mb-4">
+        <p className="text-xs font-medium text-foreground mb-0.5">No submissions yet</p>
+        <p className="text-[10px] text-muted-foreground mb-2">
           Submit your first edit to see it here
         </p>
         <Link 
           to="/arena"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gold text-black font-semibold rounded-lg text-sm hover:bg-gold/90 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold text-black font-semibold rounded-md text-xs hover:bg-gold/90 transition-colors"
         >
           Enter Arena
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-3 h-3" />
         </Link>
       </div>
     );
