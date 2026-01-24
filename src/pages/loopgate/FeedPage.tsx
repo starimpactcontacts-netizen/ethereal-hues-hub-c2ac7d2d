@@ -332,139 +332,169 @@ export default function FeedPage() {
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const seenUrls = useRef(new Set<string>());
+  const offsetRef = useRef({ arena: 0, review: 0 });
 
-  // Fetch both arena submissions and judge reviews
-  useEffect(() => {
-    async function fetchFeed() {
-      try {
-        // Fetch arena submissions and reviews
-        const [roundRes, eventRes, reviewRes] = await Promise.all([
-          supabase
-            .from('round_participations')
-            .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at')
-            .not('qoi_score', 'is', null)
-            .not('submission_url', 'is', null)
-            .order('created_at', { ascending: false })
-            .limit(30),
-          supabase
-            .from('event_participations')
-            .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, final_rank')
-            .not('qoi_score', 'is', null)
-            .not('submission_url', 'is', null)
-            .order('qoi_score', { ascending: false })
-            .limit(30),
-          supabase
-            .from('review_requests')
-            .select('*')
-            .eq('status', 'reviewed')
-            .not('total_score', 'is', null)
-            .order('reviewed_at', { ascending: false })
-            .limit(30)
-        ]);
+  const BATCH_SIZE = 20;
 
-        const roundData = roundRes.data || [];
-        const eventData = eventRes.data || [];
-        const reviewData = reviewRes.data || [];
-
-        // Get unique IDs for lookups
-        const arenaUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id)];
-        const reviewUserIds = reviewData.map(r => r.user_id);
-        const userIds = [...new Set([...arenaUserIds, ...reviewUserIds])];
-        const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
-
-        const [profilesRes, eventsRes] = await Promise.all([
-          supabase.from('profiles').select('id, username, avatar_url').in('id', userIds.length > 0 ? userIds : ['']),
-          supabase.from('events').select('id, title').in('id', eventIds.length > 0 ? eventIds : [''])
-        ]);
-
-        const profileMap = new Map(profilesRes.data?.map(p => [p.id, p]) || []);
-        const eventMap = new Map(eventsRes.data?.map(e => [e.id, e]) || []);
-
-        // Build arena feed items from round participations
-        const roundItems: ArenaFeedItem[] = roundData.map(s => ({
-          id: `arena-${s.id}`,
-          type: 'arena' as const,
-          submission_url: s.submission_url!,
-          platform: s.platform || 'tiktok',
-          user_id: s.user_id,
-          username: profileMap.get(s.user_id)?.username || 'editor',
-          avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
-          created_at: s.created_at || new Date().toISOString(),
-          qoi_score: s.qoi_score,
-          quality_score: s.quality_score || null,
-          originality_score: s.originality_score || null,
-          impact_score: s.impact_score || null,
-          event_id: s.event_id,
-          event_title: eventMap.get(s.event_id)?.title || 'Event',
-          final_rank: null,
-        }));
-
-        // Build arena feed items from event participations
-        const eventItems: ArenaFeedItem[] = eventData.map(s => ({
-          id: `arena-event-${s.id}`,
-          type: 'arena' as const,
-          submission_url: s.submission_url!,
-          platform: s.platform || 'tiktok',
-          user_id: s.user_id,
-          username: profileMap.get(s.user_id)?.username || 'editor',
-          avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
-          created_at: new Date().toISOString(), // event_participations doesn't have created_at
-          qoi_score: s.qoi_score,
-          quality_score: s.quality_score || null,
-          originality_score: s.originality_score || null,
-          impact_score: s.impact_score || null,
-          event_id: s.event_id,
-          event_title: eventMap.get(s.event_id)?.title || 'Event',
-          final_rank: s.final_rank || null,
-        }));
-
-        const arenaItems = [...roundItems, ...eventItems];
-
-        // Build review feed items
-        const reviewItems: ReviewFeedItem[] = reviewData.map(r => ({
-          id: `review-${r.id}`,
-          type: 'review' as const,
-          submission_url: r.submission_url,
-          platform: r.platform || 'tiktok',
-          user_id: r.user_id,
-          username: r.username || 'editor',
-          avatar_url: r.avatar_url,
-          created_at: r.reviewed_at || r.requested_at,
-          total_score: r.total_score || 0,
-          emotion_score: r.emotion_score,
-          creativity_score: r.creativity_score,
-          sync_score: r.sync_score,
-          identity_score: r.identity_score,
-          execution_score: r.execution_score,
-          judge_comment: r.judge_comment,
-          judge_username: r.judge_username,
-          judge_avatar_url: r.judge_avatar_url,
-        }));
-
-        // Merge and sort by date, dedupe by submission_url
-        const allItems = [...arenaItems, ...reviewItems].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-
-        const seen = new Set<string>();
-        const unique = allItems.filter(item => {
-          if (seen.has(item.submission_url)) return false;
-          seen.add(item.submission_url);
-          return true;
-        });
-
-        setFeedItems(unique);
-      } catch (error) {
-        console.error('Error fetching feed:', error);
-      } finally {
-        setLoading(false);
-      }
+  const fetchFeed = useCallback(async (isLoadMore = false) => {
+    if (isLoadMore && (loadingMore || !hasMore)) return;
+    
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      seenUrls.current.clear();
+      offsetRef.current = { arena: 0, review: 0 };
     }
 
-    fetchFeed();
+    try {
+      const arenaOffset = offsetRef.current.arena;
+      const reviewOffset = offsetRef.current.review;
+
+      const [roundRes, eventRes, reviewRes] = await Promise.all([
+        supabase
+          .from('round_participations')
+          .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at')
+          .not('qoi_score', 'is', null)
+          .not('submission_url', 'is', null)
+          .order('created_at', { ascending: false })
+          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase
+          .from('event_participations')
+          .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, final_rank')
+          .not('qoi_score', 'is', null)
+          .not('submission_url', 'is', null)
+          .order('qoi_score', { ascending: false })
+          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase
+          .from('review_requests')
+          .select('*')
+          .eq('status', 'reviewed')
+          .not('total_score', 'is', null)
+          .order('reviewed_at', { ascending: false })
+          .range(reviewOffset, reviewOffset + BATCH_SIZE - 1)
+      ]);
+
+      const roundData = roundRes.data || [];
+      const eventData = eventRes.data || [];
+      const reviewData = reviewRes.data || [];
+
+      // Update offsets
+      offsetRef.current.arena += Math.max(roundData.length, eventData.length);
+      offsetRef.current.review += reviewData.length;
+
+      // Check if we have more data
+      const fetchedCount = roundData.length + eventData.length + reviewData.length;
+      if (fetchedCount === 0) {
+        setHasMore(false);
+        if (isLoadMore) {
+          setLoadingMore(false);
+          return;
+        }
+      }
+
+      const arenaUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id)];
+      const reviewUserIds = reviewData.map(r => r.user_id);
+      const userIds = [...new Set([...arenaUserIds, ...reviewUserIds])];
+      const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
+
+      const [profilesRes, eventsRes] = await Promise.all([
+        supabase.from('profiles').select('id, username, avatar_url').in('id', userIds.length > 0 ? userIds : ['']),
+        supabase.from('events').select('id, title').in('id', eventIds.length > 0 ? eventIds : [''])
+      ]);
+
+      const profileMap = new Map(profilesRes.data?.map(p => [p.id, p]) || []);
+      const eventMap = new Map(eventsRes.data?.map(e => [e.id, e]) || []);
+
+      const roundItems: ArenaFeedItem[] = roundData.map(s => ({
+        id: `arena-${s.id}`,
+        type: 'arena' as const,
+        submission_url: s.submission_url!,
+        platform: s.platform || 'tiktok',
+        user_id: s.user_id,
+        username: profileMap.get(s.user_id)?.username || 'editor',
+        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
+        created_at: s.created_at || new Date().toISOString(),
+        qoi_score: s.qoi_score,
+        quality_score: s.quality_score || null,
+        originality_score: s.originality_score || null,
+        impact_score: s.impact_score || null,
+        event_id: s.event_id,
+        event_title: eventMap.get(s.event_id)?.title || 'Event',
+        final_rank: null,
+      }));
+
+      const eventItems: ArenaFeedItem[] = eventData.map(s => ({
+        id: `arena-event-${s.id}`,
+        type: 'arena' as const,
+        submission_url: s.submission_url!,
+        platform: s.platform || 'tiktok',
+        user_id: s.user_id,
+        username: profileMap.get(s.user_id)?.username || 'editor',
+        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
+        created_at: new Date().toISOString(),
+        qoi_score: s.qoi_score,
+        quality_score: s.quality_score || null,
+        originality_score: s.originality_score || null,
+        impact_score: s.impact_score || null,
+        event_id: s.event_id,
+        event_title: eventMap.get(s.event_id)?.title || 'Event',
+        final_rank: s.final_rank || null,
+      }));
+
+      const arenaItems = [...roundItems, ...eventItems];
+
+      const reviewItems: ReviewFeedItem[] = reviewData.map(r => ({
+        id: `review-${r.id}`,
+        type: 'review' as const,
+        submission_url: r.submission_url,
+        platform: r.platform || 'tiktok',
+        user_id: r.user_id,
+        username: r.username || 'editor',
+        avatar_url: r.avatar_url,
+        created_at: r.reviewed_at || r.requested_at,
+        total_score: r.total_score || 0,
+        emotion_score: r.emotion_score,
+        creativity_score: r.creativity_score,
+        sync_score: r.sync_score,
+        identity_score: r.identity_score,
+        execution_score: r.execution_score,
+        judge_comment: r.judge_comment,
+        judge_username: r.judge_username,
+        judge_avatar_url: r.judge_avatar_url,
+      }));
+
+      const allItems = [...arenaItems, ...reviewItems].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      const newItems = allItems.filter(item => {
+        if (seenUrls.current.has(item.submission_url)) return false;
+        seenUrls.current.add(item.submission_url);
+        return true;
+      });
+
+      if (isLoadMore) {
+        setFeedItems(prev => [...prev, ...newItems]);
+      } else {
+        setFeedItems(newItems);
+      }
+    } catch (error) {
+      console.error('Error fetching feed:', error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore]);
+
+  useEffect(() => {
+    fetchFeed(false);
   }, []);
 
   // Keyboard navigation
@@ -511,6 +541,11 @@ export default function FeedPage() {
       setIsTransitioning(true);
       setCurrentIndex(prev => prev + 1);
       setTimeout(() => setIsTransitioning(false), 400);
+      
+      // Load more when approaching end
+      if (currentIndex >= feedItems.length - 5 && hasMore && !loadingMore) {
+        fetchFeed(true);
+      }
     }
   };
 
@@ -568,12 +603,13 @@ export default function FeedPage() {
         <X className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
-      {/* Progress indicator */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1">
-        <span className="text-white text-xs font-medium">
-          {currentIndex + 1} / {feedItems.length}
-        </span>
-      </div>
+      {/* Loading more indicator */}
+      {loadingMore && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-full px-3 py-1.5">
+          <Loader2 className="w-3 h-3 text-white animate-spin" />
+          <span className="text-white text-xs font-medium">Loading more...</span>
+        </div>
+      )}
 
       {/* Main content */}
       <AnimatePresence mode="wait">
