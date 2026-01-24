@@ -116,28 +116,28 @@ export default function LandingPage() {
             
             {/* CTA Buttons - Premium styling */}
             <motion.div 
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6"
+              className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-6 w-full px-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.6 }}
             >
-              <Link to="/start">
+              <Link to="/start" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
-                  className="group relative bg-gold hover:bg-gold/90 text-background font-display text-lg sm:text-xl px-10 py-7 h-auto min-w-[220px] overflow-hidden"
+                  className="group relative bg-gold hover:bg-gold/90 text-background font-display text-base sm:text-lg px-8 py-4 h-auto w-full sm:w-auto sm:min-w-[200px] overflow-hidden"
                 >
-                  <span className="relative z-10 flex items-center gap-2">
+                  <span className="relative z-10 flex items-center justify-center gap-2">
                     <Target className="h-5 w-5" />
                     Rate My Edit
                   </span>
                   <div className="absolute inset-0 bg-gradient-to-r from-gold via-yellow-400 to-gold opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </Button>
               </Link>
-              <Link to="/gqt">
+              <Link to="/gqt" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-border/50 bg-surface-0/50 backdrop-blur-sm hover:bg-surface-1 hover:border-gold/30 font-display text-lg sm:text-xl px-10 py-7 h-auto min-w-[220px] transition-all duration-300"
+                  className="border-border/50 bg-surface-0/50 backdrop-blur-sm hover:bg-surface-1 hover:border-gold/30 font-display text-base sm:text-lg px-8 py-4 h-auto w-full sm:w-auto sm:min-w-[200px] transition-all duration-300"
                 >
                   Take QOI Test
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -159,31 +159,31 @@ export default function LandingPage() {
 
           {/* Live stats bar - floating at bottom */}
           <motion.div 
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-8 px-6 py-3 bg-background/80 backdrop-blur-md border border-border/50 rounded-full"
+            className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 sm:gap-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-background/80 backdrop-blur-md border border-border/50 rounded-full max-w-[calc(100%-2rem)]"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1, duration: 0.6 }}
           >
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-gold" />
-              <span className="text-sm font-semibold">{stats.activeUsers.toLocaleString()}</span>
-              <span className="text-xs text-muted-foreground">Active</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
+              <span className="text-xs sm:text-sm font-semibold">{stats.activeUsers.toLocaleString()}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">Active</span>
             </div>
-            <div className="w-px h-5 bg-border" />
-            <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-gold" />
-              <span className="text-sm font-semibold">{stats.entries24h}</span>
-              <span className="text-xs text-muted-foreground">Edits Today</span>
+            <div className="w-px h-4 sm:h-5 bg-border" />
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
+              <span className="text-xs sm:text-sm font-semibold">{stats.entries24h}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground hidden xs:inline">Edits Today</span>
             </div>
             {liveEvent && (
               <>
-                <div className="w-px h-5 bg-border" />
-                <div className="flex items-center gap-2">
+                <div className="w-px h-4 sm:h-5 bg-border" />
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-live opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-status-live" />
                   </span>
-                  <span className="text-sm font-semibold text-status-live">Live Event</span>
+                  <span className="text-xs sm:text-sm font-semibold text-status-live">Live</span>
                 </div>
               </>
             )}
