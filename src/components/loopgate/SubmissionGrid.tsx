@@ -73,12 +73,12 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
 
   if (submissions.length === 0) {
     return (
-      <div className="text-center py-16 px-4">
-        <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-          <Play className="w-6 h-6 text-gold" />
+      <div className="flex flex-col items-center justify-center text-center py-8 px-4">
+        <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
+          <Play className="w-5 h-5 text-muted-foreground" />
         </div>
         <p className="text-sm font-medium text-foreground mb-1">No submissions yet</p>
-        <p className="text-xs text-muted-foreground mb-4">
+        <p className="text-xs text-muted-foreground mb-3">
           Submit your first edit to see it here
         </p>
         <Link 
