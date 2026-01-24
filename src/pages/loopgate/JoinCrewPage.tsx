@@ -197,12 +197,18 @@ export default function JoinCrewPage() {
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-        {/* Loopgate wordmark above the card */}
-        <img 
-          src={loopgateLogo} 
-          alt="LOOPGATE" 
-          className="h-8 mx-auto mb-8"
-        />
+        {/* Loopgate wordmark with glow - positioned at top */}
+        <div className="absolute top-12 left-1/2 -translate-x-1/2">
+          <div className="relative">
+            <img 
+              src={loopgateLogo} 
+              alt="LOOPGATE" 
+              className="h-10 relative z-10"
+            />
+            {/* Glow effect */}
+            <div className="absolute inset-0 blur-xl bg-white/20 scale-150" />
+          </div>
+        </div>
 
         {/* Discord-style invite card */}
         <motion.div
