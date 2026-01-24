@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft, Gavel, Video, Target, CheckCircle, 
-  Clock, AlertCircle, Send, Play, ChevronRight,
-  Star, Sparkles, Shield
+  ArrowLeft, Gavel, CheckCircle, 
+  Clock, AlertCircle, Send, ChevronRight,
+  Star, Sparkles, Shield, Link2, FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,31 +16,6 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import BottomNav from '@/components/loopgate/BottomNav';
-
-// Test edits with baseline scores (what the actual score should be)
-const SKILL_TEST_EDITS = [
-  { 
-    id: 1, 
-    url: 'https://www.tiktok.com/@example/video/1',
-    thumbnail: 'https://placehold.co/300x400/1a1a1a/gold?text=Edit+1',
-    baseline: 72,
-    description: 'Anime edit with complex transitions'
-  },
-  { 
-    id: 2, 
-    url: 'https://www.tiktok.com/@example/video/2',
-    thumbnail: 'https://placehold.co/300x400/1a1a1a/gold?text=Edit+2',
-    baseline: 45,
-    description: 'Beginner edit with basic cuts'
-  },
-  { 
-    id: 3, 
-    url: 'https://www.tiktok.com/@example/video/3',
-    thumbnail: 'https://placehold.co/300x400/1a1a1a/gold?text=Edit+3',
-    baseline: 88,
-    description: 'Professional music video edit'
-  },
-];
 
 const SPECIALTIES = [
   'Anime / AMV',
@@ -54,13 +29,20 @@ const SPECIALTIES = [
 ];
 
 const EXPERIENCE_OPTIONS = [
-  { value: '<1', label: 'Less than 1 year' },
-  { value: '1-2', label: '1-2 years' },
-  { value: '3-5', label: '3-5 years' },
-  { value: '5+', label: '5+ years' },
+  { value: '<1', label: 'Less than 1 year editing' },
+  { value: '1-2', label: '1-2 years editing' },
+  { value: '3-5', label: '3-5 years editing' },
+  { value: '5+', label: '5+ years editing' },
 ];
 
-type Step = 'intro' | 'video' | 'test' | 'info' | 'review' | 'submitted';
+const JUDGING_EXPERIENCE_OPTIONS = [
+  { value: 'none', label: 'No prior judging experience' },
+  { value: 'discord', label: 'Judged Discord edit competitions' },
+  { value: 'community', label: 'Judged community events / collabs' },
+  { value: 'professional', label: 'Professional judging experience' },
+];
+
+type Step = 'intro' | 'form' | 'submitted';
 
 export default function JudgeApplicationPage() {
   const navigate = useNavigate();
@@ -74,74 +56,35 @@ export default function JudgeApplicationPage() {
   const [existingApplication, setExistingApplication] = useState<any>(null);
   
   // Form state
-  const [videoUrl, setVideoUrl] = useState('');
-  const [videoPlatform, setVideoPlatform] = useState<'tiktok' | 'instagram' | 'youtube'>('tiktok');
-  const [testScores, setTestScores] = useState<number[]>([50, 50, 50]);
-  const [currentTestEdit, setCurrentTestEdit] = useState(0);
+  const [portfolioUrl, setPortfolioUrl] = useState('');
+  const [bio, setBio] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [experience, setExperience] = useState('');
-  const [motivation, setMotivation] = useState('');
+  const [judgingExperience, setJudgingExperience] = useState('');
   
   // Check for existing application
   useEffect(() => {
-    if (user) {
-      checkExistingApplication();
-    }
+    const checkExisting = async () => {
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('judge_applications')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (data) {
+        setExistingApplication(data);
+        if (data.status === 'pending') {
+          setStep('submitted');
+        }
+      }
+    };
+    
+    checkExisting();
   }, [user]);
   
-  async function checkExistingApplication() {
-    if (!user) return;
-    
-    const { data } = await supabase
-      .from('judge_applications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    
-    if (data) {
-      setExistingApplication(data);
-      if (data.status === 'pending') {
-        setStep('submitted');
-      }
-    }
-  }
-  
-  const detectPlatform = (url: string) => {
-    if (url.includes('tiktok.com')) return 'tiktok';
-    if (url.includes('instagram.com')) return 'instagram';
-    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
-    return 'tiktok';
-  };
-  
-  const handleVideoUrlChange = (url: string) => {
-    setVideoUrl(url);
-    setVideoPlatform(detectPlatform(url));
-  };
-  
-  const handleTestScore = (score: number) => {
-    const newScores = [...testScores];
-    newScores[currentTestEdit] = score;
-    setTestScores(newScores);
-    
-    if (currentTestEdit < SKILL_TEST_EDITS.length - 1) {
-      setTimeout(() => setCurrentTestEdit(currentTestEdit + 1), 500);
-    }
-  };
-  
-  const calculateTestAccuracy = () => {
-    let totalDiff = 0;
-    testScores.forEach((score, i) => {
-      totalDiff += Math.abs(score - SKILL_TEST_EDITS[i].baseline);
-    });
-    // Convert to accuracy percentage (0 diff = 100%, 50 diff per edit = 0%)
-    const avgDiff = totalDiff / SKILL_TEST_EDITS.length;
-    return Math.max(0, 100 - (avgDiff * 2));
-  };
-  
   const handleSubmit = async () => {
-    // If temp profile, prompt for account creation
     if (isTemp) {
       openAccountPrompt('apply_judge');
       return;
@@ -152,31 +95,27 @@ export default function JudgeApplicationPage() {
       return;
     }
     
-    if (!videoUrl.trim()) {
-      toast.error('Please provide a rating video URL');
+    if (!bio.trim()) {
+      toast.error('Please tell us why you want to be a judge');
+      return;
+    }
+    
+    if (!specialty) {
+      toast.error('Please select your specialty');
       return;
     }
     
     setLoading(true);
     try {
-      const accuracy = calculateTestAccuracy();
-      
       const { error } = await supabase
         .from('judge_applications')
         .insert({
           user_id: user.id,
-          video_url: videoUrl.trim(),
-          video_platform: videoPlatform,
-          test_edit_1_score: testScores[0],
-          test_edit_1_baseline: SKILL_TEST_EDITS[0].baseline,
-          test_edit_2_score: testScores[1],
-          test_edit_2_baseline: SKILL_TEST_EDITS[1].baseline,
-          test_edit_3_score: testScores[2],
-          test_edit_3_baseline: SKILL_TEST_EDITS[2].baseline,
-          test_accuracy: accuracy,
-          specialty: specialty || null,
+          portfolio_url: portfolioUrl.trim() || null,
+          bio: bio.trim(),
+          specialty: specialty,
           experience_years: experience || null,
-          motivation: motivation.trim() || null,
+          judging_experience: judgingExperience || null,
         });
       
       if (error) throw error;
@@ -198,68 +137,66 @@ export default function JudgeApplicationPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center px-4"
+            className="px-4"
           >
-            {/* Hero */}
-            <div className="relative mb-8">
-              <div className="absolute inset-0 bg-gold/20 blur-[80px] rounded-full" />
-              <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-gold via-amber-500 to-yellow-600 rounded-2xl flex items-center justify-center">
-                <Gavel className="w-12 h-12 text-black" />
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
+                <Gavel className="w-10 h-10 text-gold" />
               </div>
+              <h1 className="font-display text-3xl mb-2">TRIAL JUDGE</h1>
+              <p className="text-muted-foreground">
+                You're currently a Trial Judge with limited access
+              </p>
             </div>
             
-            <h1 className="font-display text-3xl mb-3">Become a QOI Judge</h1>
-            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-              Join an elite group of editors who rate and review the community's best work.
-            </p>
-            
-            {/* Requirements */}
-            <div className="bg-surface-1 border border-border rounded-xl p-6 mb-8 text-left">
-              <h3 className="font-display text-sm uppercase tracking-widest text-gold mb-4">
-                Requirements
+            <div className="bg-surface-1 rounded-xl p-4 mb-6 border border-border">
+              <h3 className="font-medium mb-3 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-gold" />
+                Trial Judge Access
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <Video className="w-5 h-5 text-gold shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm">Submit a Rating Video</p>
-                    <p className="text-xs text-muted-foreground">
-                      Post a TikTok/Reel rating an edit to show your commentary style
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Target className="w-5 h-5 text-gold shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm">Pass the Skill Test</p>
-                    <p className="text-xs text-muted-foreground">
-                      Score 3 edits — we'll compare your ratings to the baseline
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-gold shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm">Manual Review</p>
-                    <p className="text-xs text-muted-foreground">
-                      Our team reviews every application to ensure quality
-                    </p>
-                  </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  Practice reviews (no XP awarded)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  Judge crew & friendly matches
+                </li>
+                <li className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-muted-foreground" />
+                  <span className="line-through">Official Arena judging</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-muted-foreground" />
+                  <span className="line-through">QOI reviews with XP</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 mb-8">
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-gold mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-gold mb-1">Apply for Full Access</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Complete the application to unlock official Arena judging and earn XP from reviews.
+                  </p>
                 </div>
               </div>
             </div>
             
             <Button
-              onClick={() => setStep('video')}
-              className="w-full h-14 bg-gold hover:bg-gold/90 text-black font-display text-lg"
+              onClick={() => setStep('form')}
+              className="w-full h-14 bg-gold hover:bg-gold/90 text-black font-medium text-lg"
             >
               Start Application
-              <ChevronRight className="ml-2 h-5 w-5" />
+              <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
           </motion.div>
         );
         
-      case 'video':
+      case 'form':
         return (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -268,38 +205,99 @@ export default function JudgeApplicationPage() {
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-                <Video className="w-5 h-5 text-gold" />
+                <FileText className="w-5 h-5 text-gold" />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">Step 1 of 3</p>
-                <h2 className="font-display text-xl">Rating Video</h2>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Judge Application</p>
+                <h2 className="font-display text-xl">Tell Us About You</h2>
               </div>
             </div>
             
-            <p className="text-muted-foreground mb-6">
-              Post a video (TikTok, Reels, or YouTube Short) where you rate someone's edit. 
-              This shows us your commentary style and expertise.
-            </p>
-            
-            <div className="space-y-4 mb-8">
+            <div className="space-y-5 mb-8">
+              {/* Portfolio URL */}
               <div>
                 <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
-                  Video URL
+                  <Link2 className="w-3.5 h-3.5 inline mr-1.5" />
+                  Portfolio / Socials (optional)
                 </label>
                 <Input
-                  value={videoUrl}
-                  onChange={(e) => handleVideoUrlChange(e.target.value)}
-                  placeholder="https://www.tiktok.com/@you/video/..."
-                  className="h-14 bg-surface-1 border-border"
+                  value={portfolioUrl}
+                  onChange={(e) => setPortfolioUrl(e.target.value)}
+                  placeholder="https://linktr.ee/you or TikTok/IG profile"
+                  className="h-12 bg-surface-1 border-border"
                 />
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Your editing work, socials, or linktree
+                </p>
               </div>
               
-              {videoUrl && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span>Detected platform: <span className="text-foreground capitalize">{videoPlatform}</span></span>
-                </div>
-              )}
+              {/* Specialty */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
+                  Specialty *
+                </label>
+                <Select value={specialty} onValueChange={setSpecialty}>
+                  <SelectTrigger className="h-12 bg-surface-1 border-border">
+                    <SelectValue placeholder="What do you know best?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SPECIALTIES.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Editing Experience */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
+                  Editing Experience
+                </label>
+                <Select value={experience} onValueChange={setExperience}>
+                  <SelectTrigger className="h-12 bg-surface-1 border-border">
+                    <SelectValue placeholder="How long have you been editing?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXPERIENCE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Judging Experience */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
+                  Judging Experience
+                </label>
+                <Select value={judgingExperience} onValueChange={setJudgingExperience}>
+                  <SelectTrigger className="h-12 bg-surface-1 border-border">
+                    <SelectValue placeholder="Any prior judging experience?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JUDGING_EXPERIENCE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Bio / Why Judge */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
+                  Why do you want to judge? *
+                </label>
+                <Textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="I want to help editors grow by giving honest, constructive feedback..."
+                  className="min-h-[100px] bg-surface-1 border-border resize-none"
+                  maxLength={500}
+                />
+                <p className="text-xs text-muted-foreground mt-1.5 text-right">
+                  {bio.length}/500
+                </p>
+              </div>
             </div>
             
             <div className="flex gap-3">
@@ -311,281 +309,21 @@ export default function JudgeApplicationPage() {
                 Back
               </Button>
               <Button
-                onClick={() => setStep('test')}
-                disabled={!videoUrl.trim()}
-                className="flex-1 h-12 bg-gold hover:bg-gold/90 text-black font-medium"
-              >
-                Continue
-              </Button>
-            </div>
-          </motion.div>
-        );
-        
-      case 'test':
-        const currentEdit = SKILL_TEST_EDITS[currentTestEdit];
-        const allScored = currentTestEdit === SKILL_TEST_EDITS.length - 1 && testScores[currentTestEdit] !== 50;
-        
-        return (
-          <motion.div
-            key={`test-${currentTestEdit}`}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="px-4"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-                <Target className="w-5 h-5 text-gold" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">Step 2 of 3</p>
-                <h2 className="font-display text-xl">Skill Test</h2>
-              </div>
-            </div>
-            
-            <p className="text-muted-foreground mb-6">
-              Rate each edit from 0-100. Your scores will be compared to our baseline to measure accuracy.
-            </p>
-            
-            {/* Progress dots */}
-            <div className="flex justify-center gap-2 mb-6">
-              {SKILL_TEST_EDITS.map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-3 h-3 rounded-full transition-colors ${
-                    i === currentTestEdit 
-                      ? 'bg-gold' 
-                      : i < currentTestEdit 
-                        ? 'bg-gold/50' 
-                        : 'bg-border'
-                  }`}
-                />
-              ))}
-            </div>
-            
-            {/* Current edit */}
-            <div className="bg-surface-1 border border-border rounded-xl p-4 mb-6">
-              <div className="aspect-[3/4] bg-black rounded-lg mb-4 flex items-center justify-center relative overflow-hidden">
-                <img 
-                  src={currentEdit.thumbnail} 
-                  alt={`Edit ${currentEdit.id}`}
-                  className="w-full h-full object-cover opacity-50"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <Play className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-              </div>
-              <p className="text-sm text-center text-muted-foreground">
-                Edit {currentTestEdit + 1}: {currentEdit.description}
-              </p>
-            </div>
-            
-            {/* Score slider */}
-            <div className="mb-8">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-muted-foreground">Your Rating</span>
-                <span className="font-display text-gold text-xl">{testScores[currentTestEdit]}</span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={testScores[currentTestEdit]}
-                onChange={(e) => handleTestScore(parseInt(e.target.value))}
-                className="w-full h-2 bg-border rounded-full appearance-none cursor-pointer
-                  [&::-webkit-slider-thumb]:appearance-none
-                  [&::-webkit-slider-thumb]:w-6
-                  [&::-webkit-slider-thumb]:h-6
-                  [&::-webkit-slider-thumb]:rounded-full
-                  [&::-webkit-slider-thumb]:bg-gold
-                  [&::-webkit-slider-thumb]:cursor-pointer"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                <span>0</span>
-                <span>50</span>
-                <span>100</span>
-              </div>
-            </div>
-            
-            {allScored ? (
-              <div className="space-y-4">
-                <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 text-center">
-                  <Sparkles className="w-6 h-6 text-gold mx-auto mb-2" />
-                  <p className="font-medium">Test Complete!</p>
-                  <p className="text-sm text-muted-foreground">
-                    Accuracy: <span className="text-gold font-bold">{calculateTestAccuracy().toFixed(0)}%</span>
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setStep('info')}
-                  className="w-full h-12 bg-gold hover:bg-gold/90 text-black font-medium"
-                >
-                  Continue
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                onClick={() => setStep('video')}
-                className="w-full h-12"
-              >
-                Back
-              </Button>
-            )}
-          </motion.div>
-        );
-        
-      case 'info':
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="px-4"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-                <Star className="w-5 h-5 text-gold" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest">Step 3 of 3</p>
-                <h2 className="font-display text-xl">About You</h2>
-              </div>
-            </div>
-            
-            <p className="text-muted-foreground mb-6">
-              Tell us a bit about your editing background. This helps us understand your expertise.
-            </p>
-            
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
-                  Specialty
-                </label>
-                <Select value={specialty} onValueChange={setSpecialty}>
-                  <SelectTrigger className="h-12 bg-surface-1 border-border">
-                    <SelectValue placeholder="Select your niche" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SPECIALTIES.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
-                  Experience
-                </label>
-                <Select value={experience} onValueChange={setExperience}>
-                  <SelectTrigger className="h-12 bg-surface-1 border-border">
-                    <SelectValue placeholder="Years editing" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EXPERIENCE_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest block mb-2">
-                  Why do you want to be a judge? <span className="text-muted-foreground/60">(optional)</span>
-                </label>
-                <Textarea
-                  value={motivation}
-                  onChange={(e) => setMotivation(e.target.value)}
-                  placeholder="I want to help the community improve..."
-                  className="bg-surface-1 border-border min-h-[100px]"
-                  maxLength={500}
-                />
-              </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setStep('test')}
-                className="flex-1 h-12"
-              >
-                Back
-              </Button>
-              <Button
-                onClick={() => setStep('review')}
-                className="flex-1 h-12 bg-gold hover:bg-gold/90 text-black font-medium"
-              >
-                Review
-              </Button>
-            </div>
-          </motion.div>
-        );
-        
-      case 'review':
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="px-4"
-          >
-            <h2 className="font-display text-2xl text-center mb-6">Review Application</h2>
-            
-            <div className="space-y-4 mb-8">
-              {/* Video */}
-              <div className="bg-surface-1 border border-border rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <Video className="w-4 h-4 text-gold" />
-                  <span className="text-sm font-medium">Rating Video</span>
-                </div>
-                <p className="text-sm text-muted-foreground truncate">{videoUrl}</p>
-              </div>
-              
-              {/* Test scores */}
-              <div className="bg-surface-1 border border-border rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <Target className="w-4 h-4 text-gold" />
-                  <span className="text-sm font-medium">Skill Test</span>
-                  <span className="ml-auto text-gold font-bold">{calculateTestAccuracy().toFixed(0)}% accuracy</span>
-                </div>
-                <div className="flex gap-2">
-                  {testScores.map((score, i) => (
-                    <div key={i} className="flex-1 bg-black/30 rounded-lg p-2 text-center">
-                      <div className="text-lg font-bold">{score}</div>
-                      <div className="text-[10px] text-muted-foreground">Edit {i + 1}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Info */}
-              <div className="bg-surface-1 border border-border rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <Star className="w-4 h-4 text-gold" />
-                  <span className="text-sm font-medium">About You</span>
-                </div>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <p>Specialty: {specialty || 'Not specified'}</p>
-                  <p>Experience: {EXPERIENCE_OPTIONS.find(o => o.value === experience)?.label || 'Not specified'}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setStep('info')}
-                className="flex-1 h-12"
-              >
-                Edit
-              </Button>
-              <Button
                 onClick={handleSubmit}
-                disabled={loading}
-                className="flex-1 h-12 bg-gold hover:bg-gold/90 text-black font-bold"
+                disabled={loading || !bio.trim() || !specialty}
+                className="flex-1 h-12 bg-gold hover:bg-gold/90 text-black font-medium"
               >
-                {loading ? 'Submitting...' : 'Submit'}
-                <Send className="ml-2 h-4 w-4" />
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    Submitting...
+                  </span>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Submit Application
+                  </>
+                )}
               </Button>
             </div>
           </motion.div>
@@ -594,62 +332,77 @@ export default function JudgeApplicationPage() {
       case 'submitted':
         return (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center px-4"
+            className="px-4 text-center"
           >
-            <div className="relative mb-8">
-              <div className="absolute inset-0 bg-gold/20 blur-[80px] rounded-full" />
-              <div className="relative w-24 h-24 mx-auto bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-                <Clock className="w-12 h-12 text-white" />
-              </div>
+            <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-green-500" />
             </div>
             
-            <h1 className="font-display text-3xl mb-3">Application Submitted</h1>
-            <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
-              Your application is under review. We'll notify you once a decision is made.
+            <h2 className="font-display text-2xl mb-2">APPLICATION SUBMITTED</h2>
+            <p className="text-muted-foreground mb-6">
+              We'll review your application and get back to you soon. You'll receive a notification when approved.
             </p>
             
-            <div className="bg-surface-1 border border-border rounded-xl p-6 mb-8">
-              <div className="flex items-center justify-center gap-2 text-amber-400 mb-2">
-                <AlertCircle className="w-5 h-5" />
-                <span className="font-medium">Pending Review</span>
+            <div className="bg-surface-1 border border-border rounded-xl p-4 mb-8 text-left">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                <Clock className="w-4 h-4" />
+                <span>While you wait...</span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                This usually takes 1-3 days. Check your notifications for updates.
-              </p>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  Practice judging in the Judge Hub
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  Judge crew matches and friendly tournaments
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  Explore arenas and events
+                </li>
+              </ul>
             </div>
             
-            <Button
-              onClick={() => navigate('/judges')}
-              variant="outline"
-              className="w-full h-12"
-            >
-              Back to Judge Hub
-            </Button>
+            <div className="flex flex-col gap-3">
+              <Button
+                onClick={() => navigate('/judge-hub')}
+                className="h-12 bg-gold hover:bg-gold/90 text-black font-medium"
+              >
+                Go to Judge Hub
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate('/hub')}
+                className="h-12"
+              >
+                Back to Hub
+              </Button>
+            </div>
           </motion.div>
         );
     }
   };
   
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-lg border-b border-border">
-        <div className="flex items-center justify-between p-4">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center h-14 px-4">
           <button
-            onClick={() => step === 'intro' ? navigate(-1) : setStep('intro')}
-            className="p-2 hover:bg-surface-1 rounded-full transition-colors"
+            onClick={() => navigate(-1)}
+            className="p-2 -ml-2 rounded-full hover:bg-surface-1 transition-colors"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          <span className="font-display text-sm uppercase tracking-widest">Judge Application</span>
-          <div className="w-10" />
+          <span className="ml-2 font-medium">Judge Application</span>
         </div>
       </div>
       
       {/* Content */}
-      <div className="max-w-md mx-auto py-8">
+      <div className="pt-8 max-w-md mx-auto">
         <AnimatePresence mode="wait">
           {renderStep()}
         </AnimatePresence>

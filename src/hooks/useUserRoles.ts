@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise';
+type AppRole = 'admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise' | 'trial_judge';
 
 interface UserRolesResult {
   roles: AppRole[];
@@ -9,7 +9,9 @@ interface UserRolesResult {
   hasRole: (role: AppRole) => boolean;
   isAuthority: boolean; // Has judge or dev role
   isAdmin: boolean;
-  isJudge: boolean;
+  isJudge: boolean; // Full judge (can do official reviews)
+  isTrialJudge: boolean; // Trial judge (practice only)
+  isAnyJudge: boolean; // Either trial or full judge
   isDev: boolean;
   isEnterprise: boolean;
 }
@@ -40,14 +42,20 @@ export function useUserRoles(userId: string | undefined): UserRolesResult {
   }, [userId]);
 
   const hasRole = useCallback((role: AppRole) => roles.includes(role), [roles]);
+  
+  const isJudge = roles.includes('judge');
+  const isTrialJudge = roles.includes('trial_judge') && !isJudge;
+  const isAnyJudge = isJudge || roles.includes('trial_judge');
 
   return {
     roles,
     loading,
     hasRole,
-    isAuthority: roles.includes('judge') || roles.includes('dev'),
+    isAuthority: isJudge || roles.includes('dev'),
     isAdmin: roles.includes('admin'),
-    isJudge: roles.includes('judge'),
+    isJudge,
+    isTrialJudge,
+    isAnyJudge,
     isDev: roles.includes('dev'),
     isEnterprise: roles.includes('enterprise'),
   };
@@ -86,9 +94,10 @@ export async function fetchUserRolesBatch(userIds: string[]): Promise<Map<string
   return result;
 }
 
-// Get authority role for display (prioritize dev over judge)
-export function getAuthorityRole(roles: AppRole[]): 'dev' | 'judge' | null {
+// Get authority role for display (prioritize dev over judge over trial)
+export function getAuthorityRole(roles: AppRole[]): 'dev' | 'judge' | 'trial_judge' | null {
   if (roles.includes('dev')) return 'dev';
   if (roles.includes('judge')) return 'judge';
+  if (roles.includes('trial_judge')) return 'trial_judge';
   return null;
 }

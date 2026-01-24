@@ -1232,10 +1232,13 @@ export type Database = {
       judge_applications: {
         Row: {
           admin_notes: string | null
+          bio: string | null
           created_at: string
           experience_years: string | null
           id: string
+          judging_experience: string | null
           motivation: string | null
+          portfolio_url: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -1250,15 +1253,18 @@ export type Database = {
           test_edit_3_score: number | null
           updated_at: string
           user_id: string
-          video_platform: string
-          video_url: string
+          video_platform: string | null
+          video_url: string | null
         }
         Insert: {
           admin_notes?: string | null
+          bio?: string | null
           created_at?: string
           experience_years?: string | null
           id?: string
+          judging_experience?: string | null
           motivation?: string | null
+          portfolio_url?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1273,15 +1279,18 @@ export type Database = {
           test_edit_3_score?: number | null
           updated_at?: string
           user_id: string
-          video_platform: string
-          video_url: string
+          video_platform?: string | null
+          video_url?: string | null
         }
         Update: {
           admin_notes?: string | null
+          bio?: string | null
           created_at?: string
           experience_years?: string | null
           id?: string
+          judging_experience?: string | null
           motivation?: string | null
+          portfolio_url?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -1296,8 +1305,8 @@ export type Database = {
           test_edit_3_score?: number | null
           updated_at?: string
           user_id?: string
-          video_platform?: string
-          video_url?: string
+          video_platform?: string | null
+          video_url?: string | null
         }
         Relationships: []
       }
@@ -2147,7 +2156,14 @@ export type Database = {
     }
     Enums: {
       advancement_type: "top_x" | "percentage" | "manual" | "none"
-      app_role: "admin" | "moderator" | "user" | "judge" | "dev" | "enterprise"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "judge"
+        | "dev"
+        | "enterprise"
+        | "trial_judge"
       crew_extended_role:
         | "ace_editor"
         | "veteran"
@@ -2294,7 +2310,15 @@ export const Constants = {
   public: {
     Enums: {
       advancement_type: ["top_x", "percentage", "manual", "none"],
-      app_role: ["admin", "moderator", "user", "judge", "dev", "enterprise"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "judge",
+        "dev",
+        "enterprise",
+        "trial_judge",
+      ],
       crew_extended_role: [
         "ace_editor",
         "veteran",
