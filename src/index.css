@@ -21,13 +21,13 @@
   --primary-foreground: 0 0% 4%;
   --secondary: 0 0% 10%;
   --secondary-foreground: 45 10% 92%;
-  --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 58%; /* Brighter - less washed out */
-  --accent: 0 0% 12%;
+  --muted: 0 0% 16%;
+  --muted-foreground: 0 0% 68%; /* Lighter - TikTok style readable grey */
+  --accent: 0 0% 14%;
   --accent-foreground: 45 10% 92%;
   --destructive: 0 60% 50%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 15%;
+  --border: 0 0% 20%; /* Slightly lighter border */
   --input: 0 0% 10%;
   --input-background: 0 0% 7%;
   --ring: 43 74% 49%;
@@ -71,13 +71,13 @@
   --primary-foreground: 0 0% 4%;
   --secondary: 0 0% 10%;
   --secondary-foreground: 45 10% 92%;
-  --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 58%; /* Brighter - less washed out */
-  --accent: 0 0% 12%;
+  --muted: 0 0% 16%;
+  --muted-foreground: 0 0% 68%; /* Lighter - TikTok style readable grey */
+  --accent: 0 0% 14%;
   --accent-foreground: 45 10% 92%;
   --destructive: 0 60% 50%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 15%;
+  --border: 0 0% 20%; /* Slightly lighter border */
   --input: 0 0% 10%;
   --ring: 43 74% 49%;
 }
