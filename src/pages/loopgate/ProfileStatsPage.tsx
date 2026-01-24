@@ -78,8 +78,8 @@ export default function ProfileStatsPage() {
           <div className="bg-surface-1 border border-border rounded-xl p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-gold" />
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
                   <p className="font-display text-2xl">LV {level}</p>
@@ -112,7 +112,7 @@ export default function ProfileStatsPage() {
             
             {/* Rank */}
             <div className="bg-surface-1 border border-border rounded-xl p-4 flex flex-col items-center justify-center">
-              <span className="font-display text-3xl text-gold">#{userRank}</span>
+              <span className="font-display text-3xl">#{userRank}</span>
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Global Rank</span>
             </div>
             
@@ -143,7 +143,7 @@ export default function ProfileStatsPage() {
             </div>
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <Trophy className="w-5 h-5 text-gold" />
+                <Trophy className="w-5 h-5 text-muted-foreground" />
                 <span className="text-sm">Events Entered</span>
               </div>
               <span className="font-display text-lg">{profile.total_events || 0}</span>
@@ -176,11 +176,11 @@ export default function ProfileStatsPage() {
         <section className="space-y-3">
           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Gatekeeper Quotient</h3>
           <Link to="/gqt">
-            <div className="bg-surface-1 border border-border rounded-xl p-4 hover:border-gold/30 transition-colors">
+            <div className="bg-surface-1 border border-border rounded-xl p-4 hover:border-foreground/30 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-gold" />
+                  <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                    <Target className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">Best GQT Score</p>
