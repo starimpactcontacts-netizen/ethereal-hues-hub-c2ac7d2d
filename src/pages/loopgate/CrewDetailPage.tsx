@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { 
   ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, 
   LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins, Copy, Link2, Calendar, 
-  Trophy, Hash, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight, Send, Trash2,
+  Trophy, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight, Send, Trash2,
   Swords, Circle
 } from "lucide-react";
 import { SiDiscord } from "@icons-pack/react-simple-icons";
@@ -16,16 +16,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
-import CrewBadge from "@/components/loopgate/CrewBadge";
 import CrewLiveFeed from "@/components/loopgate/CrewLiveFeed";
 import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
-import CrewExtendedRoleBadge from "@/components/loopgate/CrewExtendedRoleBadge";
 import CrewRivalCard from "@/components/loopgate/CrewRivalCard";
 import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
 import CrewChallengesPanel from "@/components/loopgate/CrewChallengesPanel";
 import { useCrewRivalries } from "@/hooks/useCrewRivalries";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,15 +88,6 @@ interface CrewStats {
   crewLevel: number;
 }
 
-interface ActivityItem {
-  id: string;
-  type: 'join' | 'submission' | 'level_up' | 'achievement';
-  username: string;
-  avatar_url: string | null;
-  message: string;
-  timestamp: string;
-}
-
 interface Announcement {
   id: string;
   crew_id: string;
@@ -128,33 +118,27 @@ interface CrewSubmission {
   };
 }
 
-type ChannelType = 'announcements' | 'events' | 'leaderboard' | 'members' | 'submissions' | 'feed' | 'rivals';
+type TabType = 'feed' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges';
 
 const emblemIcons: Record<string, React.ReactNode> = {
-  shield: <Shield className="w-12 h-12" />,
-  crown: <Crown className="w-12 h-12" />,
-  users: <Users className="w-12 h-12" />,
-  star: <Star className="w-12 h-12" />,
-  zap: <Zap className="w-12 h-12" />,
-  award: <Award className="w-12 h-12" />,
-};
-
-const leagueColors = {
-  open: "border-muted-foreground/30 text-muted-foreground",
-  pro: "border-blue-500/50 text-blue-400",
-  elite: "border-gold/50 text-gold",
-};
-
-const roleLabels = {
-  owner: "Owner",
-  officer: "Officer",
-  member: "Member",
+  shield: <Shield className="w-10 h-10" />,
+  crown: <Crown className="w-10 h-10" />,
+  users: <Users className="w-10 h-10" />,
+  star: <Star className="w-10 h-10" />,
+  zap: <Zap className="w-10 h-10" />,
+  award: <Award className="w-10 h-10" />,
 };
 
 const roleBadgeColors = {
   owner: "bg-gold/20 text-gold border-gold/30",
   officer: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   member: "bg-muted/50 text-muted-foreground border-border",
+};
+
+const roleLabels = {
+  owner: "Owner",
+  officer: "Officer",
+  member: "Member",
 };
 
 // Calculate crew level based on XP
@@ -172,7 +156,6 @@ function calculateCrewLevel(xp: number): number {
 }
 
 function getXPForLevel(level: number): number {
-  // Level 1 starts at 0, level 2 at 1000, etc.
   const thresholds = [0, 0, 1000, 3000, 6000, 10000, 15000, 22000, 32000, 45000, 70000];
   return thresholds[level] || 70000;
 }
@@ -189,8 +172,7 @@ export default function CrewDetailPage() {
   const [loading, setLoading] = useState(true);
   const [crewStats, setCrewStats] = useState<CrewStats>({ totalXP: 0, totalIndex: 0, crewLevel: 1 });
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [activeChannel, setActiveChannel] = useState<ChannelType>('feed');
-  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>('feed');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [newAnnouncement, setNewAnnouncement] = useState("");
   const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
@@ -264,19 +246,6 @@ export default function CrewDetailPage() {
       });
 
       setMembers(membersWithProfiles);
-
-      // Build activity feed from recent joins
-      const recentActivity: ActivityItem[] = membersWithProfiles
-        .slice(0, 10)
-        .map((m) => ({
-          id: m.id,
-          type: 'join' as const,
-          username: m.profile?.username || 'Unknown',
-          avatar_url: m.profile?.avatar_url || null,
-          message: `joined the crew`,
-          timestamp: m.joined_at,
-        }));
-      setActivity(recentActivity);
 
       if (user) {
         const myMembership = membersData.find((m) => m.user_id === user.id);
@@ -386,7 +355,6 @@ export default function CrewDetailPage() {
   const fetchUnreadCount = useCallback(async () => {
     if (!crewId || !user) return;
 
-    // Get user's last read time
     const { data: readData } = await supabase
       .from("crew_announcement_reads")
       .select("last_read_at")
@@ -396,7 +364,6 @@ export default function CrewDetailPage() {
 
     const lastReadAt = readData?.last_read_at || new Date(0).toISOString();
 
-    // Count announcements after last read
     const { count } = await supabase
       .from("crew_announcements")
       .select("*", { count: "exact", head: true })
@@ -464,7 +431,6 @@ export default function CrewDetailPage() {
     setLoadingSubmissions(true);
     const memberIds = members.map((m) => m.user_id);
 
-    // Get both round participations and event participations
     const [{ data: roundData }, { data: eventData }] = await Promise.all([
       supabase
         .from("round_participations")
@@ -486,14 +452,12 @@ export default function CrewDetailPage() {
       ...(eventData || []),
     ];
 
-    // Sort by submitted_at descending
     allSubmissions.sort((a, b) => {
       const dateA = new Date(a.submitted_at || "").getTime();
       const dateB = new Date(b.submitted_at || "").getTime();
       return dateB - dateA;
     });
 
-    // Get unique event IDs
     const eventIds = [...new Set(allSubmissions.map((s) => s.event_id))];
     
     const { data: eventsData } = await supabase
@@ -501,67 +465,54 @@ export default function CrewDetailPage() {
       .select("id, title")
       .in("id", eventIds);
 
-    const eventsMap = new Map((eventsData || []).map((e) => [e.id, e]));
-    const membersMap = new Map(members.map((m) => [m.user_id, m.profile]));
+    const { data: userProfiles } = await supabase
+      .from("profiles")
+      .select("id, username, avatar_url")
+      .in("id", memberIds);
 
-    const submissionsWithDetails: CrewSubmission[] = allSubmissions.slice(0, 30).map((s) => ({
-      id: s.id,
-      user_id: s.user_id,
-      event_id: s.event_id,
-      submission_url: s.submission_url!,
-      platform: s.platform,
-      qoi_score: s.qoi_score,
-      submitted_at: s.submitted_at || "",
-      user: membersMap.get(s.user_id) ? {
-        username: membersMap.get(s.user_id)!.username,
-        avatar_url: membersMap.get(s.user_id)!.avatar_url,
-      } : undefined,
-      event: eventsMap.get(s.event_id) ? { title: eventsMap.get(s.event_id)!.title } : undefined,
+    const submissionsWithDetails: CrewSubmission[] = allSubmissions.slice(0, 20).map((s) => ({
+      ...s,
+      platform: s.platform || "tiktok",
+      user: userProfiles?.find((p) => p.id === s.user_id),
+      event: eventsData?.find((e) => e.id === s.event_id),
     }));
 
     setCrewSubmissions(submissionsWithDetails);
     setLoadingSubmissions(false);
   }, [crewId, members]);
 
-  // Load announcements and unread count when crew loads
+  // Effects for fetching data based on active tab
   useEffect(() => {
-    if (crewId && myRole) {
+    if (activeTab === 'announcements') {
       fetchAnnouncements();
       fetchUnreadCount();
     }
-  }, [crewId, myRole, fetchAnnouncements, fetchUnreadCount]);
+  }, [activeTab, fetchAnnouncements, fetchUnreadCount]);
 
-  // Load submissions when switching to submissions channel
   useEffect(() => {
-    if (activeChannel === "submissions" && crewSubmissions.length === 0 && members.length > 0) {
-      fetchCrewSubmissions();
-    }
-  }, [activeChannel, crewSubmissions.length, members.length, fetchCrewSubmissions]);
-
-  // Mark as read when viewing announcements channel
-  useEffect(() => {
-    if (activeChannel === "announcements" && unreadAnnouncementCount > 0) {
+    if (activeTab === 'announcements' && myRole) {
       markAnnouncementsAsRead();
     }
-  }, [activeChannel, unreadAnnouncementCount, markAnnouncementsAsRead]);
+  }, [activeTab, myRole, markAnnouncementsAsRead]);
 
-  // Subscribe to realtime announcements
+  useEffect(() => {
+    if (activeTab === 'submissions') {
+      fetchCrewSubmissions();
+    }
+  }, [activeTab, fetchCrewSubmissions]);
+
+  // Realtime subscription for announcements
   useEffect(() => {
     if (!crewId) return;
 
     const channel = supabase
       .channel(`crew-announcements-${crewId}`)
       .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "crew_announcements",
-          filter: `crew_id=eq.${crewId}`,
-        },
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'crew_announcements', filter: `crew_id=eq.${crewId}` },
         () => {
           fetchAnnouncements();
-          if (activeChannel !== "announcements") {
+          if (activeTab !== 'announcements') {
             fetchUnreadCount();
           }
         }
@@ -571,7 +522,7 @@ export default function CrewDetailPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [crewId, activeChannel, fetchAnnouncements, fetchUnreadCount]);
+  }, [crewId, activeTab, fetchAnnouncements, fetchUnreadCount]);
 
   if (loading || !crew) {
     return (
@@ -583,9 +534,6 @@ export default function CrewDetailPage() {
     );
   }
 
-  // Use crew.owner_id OR crew_members role as source of truth for ownership
-  // This handles edge cases where transfer may have partially completed
-  // Admin/dev can also access settings
   const isOwnerByCrewTable = crew.owner_id === user?.id;
   const isOwnerByMemberRole = myRole === "owner";
   const isOwner = isOwnerByCrewTable || isOwnerByMemberRole;
@@ -593,7 +541,6 @@ export default function CrewDetailPage() {
   const isStaff = isOwner || myRole === "officer";
   const owner = members.find(m => m.role === 'owner');
   const crewSlug = crew?.name?.toLowerCase().replace(/\s+/g, '-') || '';
-  const publicLink = `loopgate.io/join/${crewSlug}`;
 
   const copyLink = async () => {
     const fullLink = `${window.location.origin}/join/${crewSlug}?crew=${crewId}`;
@@ -603,178 +550,222 @@ export default function CrewDetailPage() {
 
   const membersByXP = [...members].sort((a, b) => (b.profile?.xp || 0) - (a.profile?.xp || 0));
 
-  // XP progress calculation - ensure minimum visible progress when XP > 0
   const currentLevelXP = getXPForLevel(crewStats.crewLevel);
   const nextLevelXP = getXPForLevel(crewStats.crewLevel + 1);
   const rawProgress = ((crewStats.totalXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
-  // Show at least 3% progress if there's any XP, so the bar is visible
   const progressToNext = crewStats.totalXP > 0 ? Math.max(3, rawProgress) : 0;
 
-  const channels: { id: ChannelType; icon: React.ReactNode; label: string; badge?: number }[] = [
-    { id: 'feed', icon: <Zap className="w-4 h-4" />, label: 'Live Feed' },
-    { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'Announcements', badge: unreadAnnouncementCount },
+  const tabs: { id: TabType; icon: React.ReactNode; label: string; badge?: number }[] = [
+    { id: 'feed', icon: <Zap className="w-4 h-4" />, label: 'Live' },
+    { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'News', badge: unreadAnnouncementCount },
     { id: 'rivals', icon: <Swords className="w-4 h-4" />, label: 'Rivals', badge: rivalries.length },
-    { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Leaderboard' },
-    { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Members' },
-    { id: 'submissions', icon: <FileVideo className="w-4 h-4" />, label: 'Submissions' },
-    { id: 'events', icon: <Calendar className="w-4 h-4" />, label: 'Challenges' },
+    { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Board' },
+    { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Squad' },
+    { id: 'submissions', icon: <FileVideo className="w-4 h-4" />, label: 'Work' },
+    { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Events' },
   ];
 
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex flex-col pb-20">
-        {/* Header */}
-        <div className="sticky top-0 z-40 bg-surface-1/95 backdrop-blur-sm border-b border-border">
-          <div className="px-4 py-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <button onClick={() => navigate("/crews")} className="text-muted-foreground hover:text-foreground shrink-0">
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-gold/10 flex items-center justify-center text-gold shrink-0">
+        {/* Cinematic Hero Header */}
+        <div className="relative">
+          {/* Banner Background */}
+          <div 
+            className="h-40 w-full relative overflow-hidden"
+            style={{
+              background: crew.banner_url 
+                ? `url(${crew.banner_url}) center/cover` 
+                : crew.banner_color 
+                  ? `linear-gradient(135deg, ${crew.banner_color}60, ${crew.banner_color}20, rgba(0,0,0,0.9))` 
+                  : 'linear-gradient(135deg, rgba(212,175,55,0.3), rgba(212,175,55,0.1), rgba(0,0,0,0.9))'
+            }}
+          >
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+            
+            {/* Decorative Lines */}
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
+              <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+            </div>
+          </div>
+
+          {/* Back Button */}
+          <button 
+            onClick={() => navigate("/crews")} 
+            className="absolute top-4 left-4 z-20 w-9 h-9 rounded-md bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+
+          {/* Settings Button */}
+          {canAccessSettings && (
+            <button 
+              onClick={() => navigate(`/crews/${crewId}/settings`)}
+              className="absolute top-4 right-4 z-20 w-9 h-9 rounded-md bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          )}
+
+          {/* Crew Identity Card - Overlapping the banner */}
+          <div className="relative z-10 -mt-16 px-4">
+            <div className="bg-surface-1 border border-border rounded-lg p-4">
+              <div className="flex items-start gap-4">
+                {/* Avatar */}
+                <div className="w-20 h-20 rounded-md bg-surface-2 border-2 border-gold/30 overflow-hidden flex items-center justify-center text-gold shrink-0 -mt-10 shadow-lg">
                   {crew.avatar_url ? (
                     <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
                   ) : (
-                    <Shield className="w-4 h-4" />
+                    emblemIcons[crew.emblem] || <Shield className="w-10 h-10" />
                   )}
                 </div>
-                <h1 className="font-bold truncate max-w-[200px]">{crew.name}</h1>
+                
+                {/* Info */}
+                <div className="flex-1 min-w-0 pt-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="font-display text-xl tracking-wide truncate">{crew.name}</h1>
+                    {crew.is_featured && (
+                      <Star className="w-4 h-4 text-gold fill-gold shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{crew.description || "No description"}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {canAccessSettings && (
-                <Button variant="ghost" size="icon" onClick={() => navigate(`/crews/${crewId}/settings`)}>
-                  <Settings className="w-5 h-5" />
-                </Button>
+
+              {/* Stats Row */}
+              <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-border">
+                <div className="text-center">
+                  <div className="flex justify-center mb-1">
+                    <CrewLevelBadge level={crewStats.crewLevel} size="sm" />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Level</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-display text-lg">{members.length}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Members</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-display text-lg text-gold">{crewStats.totalXP.toLocaleString()}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">XP</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <Circle className="w-2 h-2 fill-green-500 text-green-500" />
+                    <p className="font-display text-lg">{onlineCount}</p>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Online</p>
+                </div>
+              </div>
+
+              {/* XP Progress Bar */}
+              <div className="mt-3">
+                <Progress value={progressToNext} className="h-1.5" />
+                <p className="text-[10px] text-muted-foreground text-right mt-1">
+                  {Math.round(progressToNext)}% to Level {crewStats.crewLevel + 1}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              {myRole && (
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    onClick={() => navigate(`/crews/${crewId}/chat`)}
+                    className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Chat
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowInviteModal(true)}
+                    className="border-border hover:border-gold/50 hover:bg-gold/5"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                  {crew.discord_url && (
+                    <a href={crew.discord_url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" className="border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/10">
+                        <SiDiscord className="w-4 h-4" />
+                      </Button>
+                    </a>
+                  )}
+                  {myRole !== "owner" && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" className="border-red-500/30 text-red-500 hover:bg-red-500/10">
+                          <LogOut className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Leave Crew?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to leave {crew.name}?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleLeaveCrew}>Leave</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Discord-style Layout */}
-        <div className="flex flex-1 flex-col md:flex-row">
-          {/* Sidebar - Channels */}
-          <div className="w-full md:w-56 bg-surface-1 border-b md:border-b-0 md:border-r border-border shrink-0">
-            {/* Crew Header in Sidebar */}
-            <div className="p-4 border-b border-border">
-            <div className="relative mb-4">
-                {/* Banner */}
-                <div 
-                  className="h-16 rounded-lg overflow-hidden"
-                  style={{
-                    background: crew.banner_url 
-                      ? `url(${crew.banner_url}) center/cover` 
-                      : crew.banner_color 
-                        ? `linear-gradient(135deg, ${crew.banner_color}40, ${crew.banner_color}20)` 
-                        : 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))'
-                  }}
-                >
-                  {!crew.banner_url && (
-                    <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1),transparent)]" />
-                  )}
-                </div>
-                {/* Avatar overlay */}
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
-                  <div className="w-14 h-14 rounded-full border-4 border-surface-1 overflow-hidden bg-gold/10 flex items-center justify-center text-gold shadow-lg">
-                    {crew.avatar_url ? (
-                      <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
-                    ) : (
-                      emblemIcons[crew.emblem] || <Shield className="w-7 h-7" />
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="text-center pt-6">
-                <div className="flex items-center justify-center gap-1.5">
-                  <h2 className="font-display text-lg">{crew.name}</h2>
-                  {crew.is_featured && (
-                    <Star className="w-4 h-4 text-gold fill-gold" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">{crew.member_count} members</p>
-                
-                {/* XP Bar with Level Badge */}
-                <div className="mt-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <CrewLevelBadge level={crewStats.crewLevel} size="sm" showLabel />
-                    <span className="text-[10px] text-muted-foreground">{crewStats.totalXP.toLocaleString()} XP</span>
-                  </div>
-                  <Progress value={progressToNext} className="h-1.5" />
-                </div>
-              </div>
-            </div>
-
-            {/* Channels */}
-            <div className="p-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 mb-2">
-                Channels
-              </p>
-              <div className="space-y-0.5">
-                {channels.map((channel) => (
-                  <button
-                    key={channel.id}
-                    onClick={() => setActiveChannel(channel.id)}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-colors ${
-                      activeChannel === channel.id
-                        ? 'bg-gold/10 text-gold'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                    }`}
-                  >
-                    <Hash className="w-4 h-4 opacity-60" />
-                    <span className="flex-1 text-left">{channel.label}</span>
-                    {channel.badge && channel.badge > 0 && (
-                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
-                        {channel.badge > 9 ? '9+' : channel.badge}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-              
-              {/* External Links */}
-              {crew.discord_url && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 mb-2">
-                    Links
-                  </p>
-                  <a
-                    href={crew.discord_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-[#5865F2] hover:bg-[#5865F2]/10 transition-colors"
-                  >
-                    <SiDiscord className="w-4 h-4" />
-                    <span>Discord Server</span>
-                    <ExternalLink className="w-3 h-3 ml-auto opacity-50" />
-                  </a>
-                </div>
-              )}
-            </div>
+        {/* Tabs Navigation */}
+        <div className="sticky top-0 z-30 bg-background border-b border-border mt-4">
+          <div className="flex overflow-x-auto scrollbar-hide px-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-gold text-gold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+                {tab.badge && tab.badge > 0 && (
+                  <span className="min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
+                    {tab.badge > 9 ? '9+' : tab.badge}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Channel Header */}
-            <div className="h-12 px-4 flex items-center gap-2 border-b border-border bg-background">
-              <Hash className="w-5 h-5 text-muted-foreground" />
-              <span className="font-semibold">{channels.find(c => c.id === activeChannel)?.label}</span>
-            </div>
-
-            {/* Channel Content */}
-            <div className="flex-1 overflow-y-auto p-4">
-              {activeChannel === 'feed' && crewId && (
+        {/* Tab Content */}
+        <div className="flex-1 p-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Live Feed Tab */}
+              {activeTab === 'feed' && crewId && (
                 <div className="space-y-4">
-                  {/* Online Indicator */}
+                  {/* Online Members */}
                   <div className="bg-surface-1 border border-border rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Circle className="w-2 h-2 fill-green-500 text-green-500" />
-                      <span className="text-xs font-medium">{onlineCount} Online Now</span>
+                      <span className="text-xs font-semibold uppercase tracking-wider">{onlineCount} Online Now</span>
                     </div>
                     <CrewOnlineIndicator crewId={crewId} />
                   </div>
                   
-                  {/* Live Feed */}
+                  {/* Activity Feed */}
                   <div className="bg-surface-1 border border-border rounded-lg p-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
                       <Zap className="w-4 h-4 text-gold" />
@@ -785,122 +776,19 @@ export default function CrewDetailPage() {
                 </div>
               )}
 
-              {activeChannel === 'rivals' && (
+              {/* Announcements Tab */}
+              {activeTab === 'announcements' && (
                 <div className="space-y-4">
-                  <div className="bg-surface-1 border border-red-500/20 rounded-lg p-4">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-2">
-                      <Swords className="w-4 h-4" />
-                      Crew Rivalries
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Mark rival crews to track your competition and fuel the beef.
-                    </p>
-                    
-                    {rivalries.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-6">No rivals yet. Visit other crews to mark them!</p>
-                    ) : (
-                      <div className="space-y-3">
-                        {rivalries.map((rivalry) => (
-                          <CrewRivalCard
-                            key={rivalry.id}
-                            rivalry={rivalry}
-                            ownCrewXP={crewStats.totalXP}
-                            isStaff={isStaff}
-                            onRemove={removeRival}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {activeChannel === 'announcements' && (
-                <div className="space-y-4">
-                  {/* Crew Info Card */}
-                  <div className="bg-surface-1 border border-border rounded-lg p-4">
-                    <p className="text-sm text-muted-foreground mb-4">{crew.description || "No description set"}</p>
-                    
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div className="flex flex-col items-center justify-center p-2 bg-background rounded-lg">
-                        <CrewLevelBadge level={crewStats.crewLevel} size="md" animate />
-                        <p className="text-[10px] text-muted-foreground uppercase mt-1">Level</p>
-                      </div>
-                      <div className="text-center p-2 bg-background rounded-lg">
-                        <p className="font-display text-lg">{crewStats.totalXP.toLocaleString()}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase">Total XP</p>
-                      </div>
-                      <div className="text-center p-2 bg-background rounded-lg">
-                        <p className="font-display text-lg">{Math.floor(crewStats.totalIndex).toLocaleString()}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase">Index</p>
-                      </div>
-                    </div>
-
-                    {/* Public Link */}
-                    <button 
-                      onClick={copyLink}
-                      className="w-full flex items-center justify-between gap-2 px-3 py-2 bg-background border border-border rounded-lg hover:border-gold/50 transition-colors group"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Link2 className="w-4 h-4 text-muted-foreground group-hover:text-gold shrink-0" />
-                        <span className="text-xs font-mono text-muted-foreground truncate">{publicLink}</span>
-                      </div>
-                      <Copy className="w-4 h-4 text-muted-foreground group-hover:text-gold shrink-0" />
-                    </button>
-                  </div>
-
-                  {/* Actions */}
-                  {myRole && (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => navigate(`/crews/${crewId}/chat`)}
-                        className="flex-1 bg-gold text-black hover:bg-gold/90"
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        Chat
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowInviteModal(true)}
-                        className="border-gold/30 text-gold hover:bg-gold/10"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </Button>
-                      {myRole !== "owner" && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="outline">
-                              <LogOut className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Leave Crew?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to leave {crew.name}?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleLeaveCrew}>Leave</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Join Requests */}
+                  {/* Join Requests (Staff Only) */}
                   {isStaff && joinRequests.length > 0 && (
-                    <div className="bg-surface-1 border border-border rounded-lg p-4">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+                    <div className="bg-surface-1 border border-gold/30 rounded-lg p-4">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-gold mb-3 flex items-center gap-2">
                         <UserPlus className="w-4 h-4" />
                         Join Requests ({joinRequests.length})
                       </h3>
                       <div className="space-y-2">
                         {joinRequests.map((request) => (
-                          <div key={request.id} className="p-2 bg-background rounded-lg flex items-center gap-3">
+                          <div key={request.id} className="p-2 bg-background rounded-md flex items-center gap-3">
                             <Avatar className="w-8 h-8">
                               <AvatarImage src={request.profile?.avatar_url || undefined} />
                               <AvatarFallback>{(request.profile?.username || "?")[0].toUpperCase()}</AvatarFallback>
@@ -922,7 +810,7 @@ export default function CrewDetailPage() {
                     </div>
                   )}
 
-                  {/* Post Announcement - Staff Only */}
+                  {/* Post Announcement (Staff Only) */}
                   {isStaff && (
                     <div className="bg-surface-1 border border-border rounded-lg p-4">
                       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
@@ -934,12 +822,12 @@ export default function CrewDetailPage() {
                           value={newAnnouncement}
                           onChange={(e) => setNewAnnouncement(e.target.value)}
                           placeholder="Write an announcement for crew members..."
-                          className="min-h-[80px] resize-none"
+                          className="min-h-[80px] resize-none bg-background"
                         />
                         <Button
                           onClick={handlePostAnnouncement}
                           disabled={sendingAnnouncement || !newAnnouncement.trim()}
-                          className="w-full bg-gold text-black hover:bg-gold/90"
+                          className="w-full bg-gold text-black hover:bg-gold/90 font-semibold"
                         >
                           {sendingAnnouncement ? (
                             <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -955,7 +843,7 @@ export default function CrewDetailPage() {
                   )}
 
                   {/* Announcements List */}
-                  {announcements.length > 0 && (
+                  {announcements.length > 0 ? (
                     <div className="space-y-3">
                       {announcements.map((announcement) => (
                         <div key={announcement.id} className="bg-surface-1 border border-border rounded-lg p-4">
@@ -987,38 +875,59 @@ export default function CrewDetailPage() {
                         </div>
                       ))}
                     </div>
-                  )}
-
-                  {/* Activity Feed */}
-                  <div className="bg-surface-1 border border-border rounded-lg p-4">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                      Recent Activity
-                    </h3>
-                    <div className="space-y-2">
-                      {activity.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p>
-                      ) : (
-                        activity.slice(0, 5).map((item) => (
-                          <div key={item.id} className="flex items-center gap-2 text-sm">
-                            <Avatar className="w-6 h-6">
-                              <AvatarImage src={item.avatar_url || undefined} />
-                              <AvatarFallback className="text-[10px]">{item.username[0].toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-foreground font-medium">{item.username}</span>
-                            <span className="text-muted-foreground">{item.message}</span>
-                          </div>
-                        ))
-                      )}
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                        <Bell className="w-8 h-8 text-muted-foreground/50" />
+                      </div>
+                      <h3 className="font-display text-lg text-muted-foreground mb-2">No Announcements</h3>
+                      <p className="text-xs text-muted-foreground/60 max-w-xs">
+                        Staff can post announcements to keep the crew updated.
+                      </p>
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Rivals Tab */}
+              {activeTab === 'rivals' && (
+                <div className="space-y-4">
+                  <div className="bg-surface-1 border border-red-500/20 rounded-lg p-4">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-2">
+                      <Swords className="w-4 h-4" />
+                      Crew Rivalries
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Mark rival crews to track your competition.
+                    </p>
+                    
+                    {rivalries.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+                          <Swords className="w-8 h-8 text-red-500/50" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">No rivals yet</p>
+                        <p className="text-xs text-muted-foreground/60">Visit other crews to mark them!</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {rivalries.map((rivalry) => (
+                          <CrewRivalCard
+                            key={rivalry.id}
+                            rivalry={rivalry}
+                            ownCrewXP={crewStats.totalXP}
+                            isStaff={isStaff}
+                            onRemove={removeRival}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {activeChannel === 'events' && crewId && (
-                <CrewChallengesPanel crewId={crewId} />
-              )}
-
-              {activeChannel === 'leaderboard' && (
+              {/* Leaderboard Tab */}
+              {activeTab === 'leaderboard' && (
                 <div className="space-y-2">
                   {membersByXP.map((member, index) => (
                     <div
@@ -1026,7 +935,7 @@ export default function CrewDetailPage() {
                       onClick={() => navigate(`/editor/${member.user_id}`)}
                       className="p-3 bg-surface-1 border border-border rounded-lg flex items-center gap-3 hover:border-gold/30 transition-colors cursor-pointer"
                     >
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                      <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold ${
                         index === 0 ? 'bg-gold text-background' : 
                         index === 1 ? 'bg-gray-400 text-background' : 
                         index === 2 ? 'bg-amber-600 text-background' : 
@@ -1034,7 +943,7 @@ export default function CrewDetailPage() {
                       }`}>
                         {index + 1}
                       </div>
-                      <Avatar className="w-9 h-9">
+                      <Avatar className="w-10 h-10">
                         <AvatarImage src={member.profile?.avatar_url || undefined} />
                         <AvatarFallback>{(member.profile?.username || "?")[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
@@ -1052,17 +961,24 @@ export default function CrewDetailPage() {
                 </div>
               )}
 
-              {activeChannel === 'members' && (
+              {/* Members Tab */}
+              {activeTab === 'members' && (
                 <div className="space-y-2">
                   {members.map((member) => (
                     <div
                       key={member.id}
-                      className="p-3 bg-surface-1 border border-border rounded-lg flex items-center gap-3"
+                      onClick={() => navigate(`/editor/${member.user_id}`)}
+                      className="p-3 bg-surface-1 border border-border rounded-lg flex items-center gap-3 cursor-pointer hover:border-gold/30 transition-colors"
                     >
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={member.profile?.avatar_url || undefined} />
-                        <AvatarFallback>{(member.profile?.username || "?")[0].toUpperCase()}</AvatarFallback>
-                      </Avatar>
+                      <div className="relative">
+                        <Avatar className="w-10 h-10">
+                          <AvatarImage src={member.profile?.avatar_url || undefined} />
+                          <AvatarFallback>{(member.profile?.username || "?")[0].toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        {member.role === 'owner' && (
+                          <Crown className="w-3.5 h-3.5 text-gold absolute -top-1 -right-1" />
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-sm truncate">{member.profile?.display_name || member.profile?.username}</p>
@@ -1073,17 +989,17 @@ export default function CrewDetailPage() {
                         <p className="text-xs text-muted-foreground">@{member.profile?.username} • {(member.profile?.xp || 0).toLocaleString()} XP</p>
                       </div>
                       {isOwner && member.role !== "owner" && (
-                        <div className="flex gap-1">
+                        <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                           {member.role === "member" ? (
-                            <Button size="sm" variant="ghost" className="text-xs" onClick={() => handlePromoteMember(member.id)}>
+                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => handlePromoteMember(member.id)}>
                               Promote
                             </Button>
                           ) : (
-                            <Button size="sm" variant="ghost" className="text-xs" onClick={() => handleDemoteMember(member.id)}>
+                            <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => handleDemoteMember(member.id)}>
                               Demote
                             </Button>
                           )}
-                          <Button size="sm" variant="ghost" className="text-xs text-red-500" onClick={() => handleKickMember(member.id)}>
+                          <Button size="sm" variant="ghost" className="text-xs h-7 text-red-500" onClick={() => handleKickMember(member.id)}>
                             Kick
                           </Button>
                         </div>
@@ -1093,7 +1009,8 @@ export default function CrewDetailPage() {
                 </div>
               )}
 
-              {activeChannel === 'submissions' && (
+              {/* Submissions Tab */}
+              {activeTab === 'submissions' && (
                 <div className="space-y-3">
                   {loadingSubmissions ? (
                     <div className="flex items-center justify-center py-12">
@@ -1106,7 +1023,7 @@ export default function CrewDetailPage() {
                       </div>
                       <h3 className="font-display text-lg text-muted-foreground mb-2">No Submissions Yet</h3>
                       <p className="text-xs text-muted-foreground/60 max-w-xs">
-                        When crew members submit to arenas, their submissions will appear here.
+                        When crew members submit to arenas, their work appears here.
                       </p>
                     </div>
                   ) : (
@@ -1146,42 +1063,13 @@ export default function CrewDetailPage() {
                   )}
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* Right Sidebar - Online Members (Desktop only) */}
-          <div className="hidden lg:block w-56 bg-surface-1 border-l border-border p-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-              Members — {members.length}
-            </p>
-            <div className="space-y-1">
-              {members.slice(0, 12).map((member) => (
-                <button
-                  key={member.id}
-                  onClick={() => navigate(`/editor/${member.user_id}`)}
-                  className="w-full flex items-center gap-2 p-1.5 rounded-md hover:bg-muted/50 transition-colors"
-                >
-                  <div className="relative">
-                    <Avatar className="w-7 h-7">
-                      <AvatarImage src={member.profile?.avatar_url || undefined} />
-                      <AvatarFallback className="text-[10px]">{(member.profile?.username || "?")[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    {member.role === 'owner' && (
-                      <Crown className="w-3 h-3 text-gold absolute -top-1 -right-1" />
-                    )}
-                  </div>
-                  <span className={`text-xs truncate ${member.role === 'owner' ? 'text-gold' : member.role === 'officer' ? 'text-blue-400' : ''}`}>
-                    {member.profile?.username}
-                  </span>
-                </button>
-              ))}
-              {members.length > 12 && (
-                <p className="text-[10px] text-muted-foreground text-center pt-1">
-                  +{members.length - 12} more
-                </p>
+              {/* Challenges Tab */}
+              {activeTab === 'challenges' && crewId && (
+                <CrewChallengesPanel crewId={crewId} />
               )}
-            </div>
-          </div>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
       
