@@ -41,11 +41,11 @@ export function disableZoom() {
   }
 }
 
-// Apply native scroll behavior - prevent bounce/overscroll reset
+// Apply native scroll behavior - prevent bounce/overscroll reset + GPU acceleration
 function applyNativeScrollBehavior() {
   if (!Capacitor.isNativePlatform()) return;
   
-  // Add CSS to prevent iOS bounce that causes "reset" feel
+  // Add CSS to prevent iOS bounce and enable 60fps scrolling
   const style = document.createElement('style');
   style.textContent = `
     /* Prevent iOS overscroll bounce on body */
@@ -54,12 +54,26 @@ function applyNativeScrollBehavior() {
       -webkit-overflow-scrolling: touch;
     }
     
-    /* Allow scrolling in specific containers */
+    /* Allow scrolling in specific containers with GPU acceleration */
     .scroll-container, 
     [data-scroll="true"],
     main {
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+    
+    /* 60fps touch interactions */
+    button, a, [role="button"] {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transform: translateZ(0);
+      transition: transform 0.1s ease-out;
+    }
+    
+    button:active, a:active, [role="button"]:active {
+      transform: translateZ(0) scale(0.97);
     }
   `;
   document.head.appendChild(style);
