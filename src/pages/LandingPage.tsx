@@ -69,7 +69,7 @@ export default function LandingPage() {
           >
             {/* Eyebrow badge */}
             <motion.div 
-              className="inline-flex items-center gap-2 px-4 py-2 mb-8 bg-surface-0/50 backdrop-blur-sm border border-border/50 rounded-full"
+              className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-surface-0/50 backdrop-blur-sm border border-border/50 rounded-full"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
@@ -80,9 +80,9 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
-            {/* Main headline - Official Brand Wordmark - MASSIVE */}
+            {/* Main headline - Official Brand Wordmark - MASSIVE FULLWIDTH */}
             <motion.div 
-              className="mb-6"
+              className="mb-2 w-full max-w-4xl mx-auto px-4"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
@@ -90,12 +90,12 @@ export default function LandingPage() {
               <img 
                 src={loopgateBrand} 
                 alt="LOOPGATE" 
-                className="h-28 sm:h-40 md:h-52 lg:h-64 w-auto mx-auto drop-shadow-[0_0_60px_rgba(255,255,255,0.2)]"
+                className="w-full max-w-[900px] h-auto mx-auto drop-shadow-[0_0_80px_rgba(255,255,255,0.25)]"
               />
             </motion.div>
             
             <motion.p 
-              className="font-display text-2xl sm:text-3xl md:text-4xl text-gold tracking-wide mb-6"
+              className="font-display text-3xl sm:text-4xl md:text-5xl text-gold tracking-wide mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
@@ -104,7 +104,7 @@ export default function LandingPage() {
             </motion.p>
             
             <motion.p 
-              className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto mb-10 leading-relaxed"
+              className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto mb-8 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.6 }}
