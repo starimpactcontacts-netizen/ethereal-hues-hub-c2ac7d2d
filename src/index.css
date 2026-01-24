@@ -138,6 +138,9 @@
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* GPU acceleration for smooth scrolling */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   
   #root {
@@ -148,6 +151,26 @@
   
   * {
     box-sizing: border-box;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     60FPS PERFORMANCE - GPU Acceleration & Touch Optimizations
+  ═══════════════════════════════════════════════════════════════════ */
+  
+  /* All interactive elements get GPU layer */
+  button, a, [role="button"], input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Smooth transitions use GPU */
+  .gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
   }
 
   /* ═══════════════════════════════════════════════════════════════════
@@ -250,14 +273,35 @@
     color: white;
   }
   
-  /* Card hover */
+  /* Card hover - GPU accelerated 60fps */
   .card-hover {
-    transition: all 0.2s ease;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                opacity 0.15s ease-out;
+    will-change: transform;
   }
   
   .card-hover:active {
-    transform: scale(0.98);
+    transform: translateZ(0) scale(0.97);
     opacity: 0.9;
+  }
+  
+  /* Touch-friendly tap states */
+  .tap-target {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  
+  /* Butter smooth transitions */
+  .smooth {
+    transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateZ(0);
+  }
+  
+  .smooth:active {
+    transform: translateZ(0) scale(0.97);
   }
   
   /* Mobile safe areas */
