@@ -691,9 +691,9 @@ export default function IndexPage() {
                 <Gavel className="w-4 h-4 text-gold" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Gate Judges & QOI Staff</p>
+                <p className="text-xs font-semibold text-foreground">Gate Judges</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  Contributors • Official QOI Judges
+                  Contributors • QOI Judges
                 </p>
               </div>
             </div>
