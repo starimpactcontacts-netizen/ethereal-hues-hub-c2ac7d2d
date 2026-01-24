@@ -113,7 +113,7 @@ function ArenaFeedCard({
       </div>
 
       {/* Right side actions */}
-      <div className="absolute right-3 bottom-28 flex flex-col items-center gap-5 z-20">
+      <div className="absolute right-3 bottom-[7.5rem] flex flex-col items-center gap-5 z-20">
         <button onClick={(e) => { e.stopPropagation(); onProfile(); }} className="flex flex-col items-center gap-1">
           <Avatar className="w-11 h-11 border-2 border-white shadow-lg">
             <AvatarImage src={item.avatar_url || undefined} />
@@ -151,7 +151,7 @@ function ArenaFeedCard({
       </div>
 
       {/* Bottom info */}
-      <div className="absolute bottom-0 left-0 right-16 p-4 z-10">
+      <div className="absolute bottom-16 left-0 right-16 p-4 z-10">
         <button onClick={onProfile} className="flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity">
           <span className="text-white font-bold text-base drop-shadow-lg">@{item.username}</span>
         </button>
@@ -227,7 +227,7 @@ function ReviewFeedCard({
       </div>
 
       {/* Right side actions */}
-      <div className="absolute right-3 bottom-28 flex flex-col items-center gap-5 z-20">
+      <div className="absolute right-3 bottom-[7.5rem] flex flex-col items-center gap-5 z-20">
         <button onClick={(e) => { e.stopPropagation(); onProfile(); }} className="flex flex-col items-center gap-1">
           <Avatar className="w-11 h-11 border-2 border-white shadow-lg">
             <AvatarImage src={item.avatar_url || undefined} />
@@ -271,7 +271,7 @@ function ReviewFeedCard({
       </div>
 
       {/* Bottom info */}
-      <div className="absolute bottom-0 left-0 right-16 p-4 z-10">
+      <div className="absolute bottom-16 left-0 right-16 p-4 z-10">
         <button onClick={onProfile} className="flex items-center gap-2 mb-2 hover:opacity-80 transition-opacity">
           <span className="text-white font-bold text-base drop-shadow-lg">@{item.username}</span>
         </button>
