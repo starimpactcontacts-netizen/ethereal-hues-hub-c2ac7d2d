@@ -221,100 +221,87 @@ export default function PublicProfilePage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Cinematic Hero Header */}
+      {/* Compact Hero Header */}
       <div className="relative overflow-hidden">
-        {/* Multi-layer gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/10 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.15),transparent_70%)]" />
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-background to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.08),transparent_60%)]" />
         
         {/* Decorative lines */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
         
         <div className="relative z-10">
           {/* Top Bar */}
-          <div className="px-4 pt-4 flex items-center justify-between">
-            <button onClick={() => navigate(-1)} className="p-2 -ml-2">
-              <ArrowLeft size={20} className="text-muted-foreground" />
+          <div className="px-4 pt-3 pb-1 flex items-center justify-between">
+            <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5">
+              <ArrowLeft size={18} className="text-muted-foreground" />
             </button>
-            <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-70" />
+            <img src={loopgateLogo} alt="LOOPGATE" className="h-3 opacity-60" />
             <button 
               onClick={handleShare}
-              className="p-2 -mr-2 text-muted-foreground hover:text-white"
+              className="p-1.5 -mr-1.5 text-muted-foreground hover:text-white"
             >
-              <Share2 size={18} />
+              <Share2 size={16} />
             </button>
           </div>
 
-          {/* Profile Info */}
-          <div className="px-4 pt-6 pb-4 flex flex-col items-center text-center">
-            {/* Avatar */}
-            <div className="mb-4">
-              <Avatar className="w-24 h-24 border-4 border-gold/30">
+          {/* Profile Info - Compact */}
+          <div className="px-4 pt-3 pb-3 flex flex-col items-center text-center">
+            {/* Avatar - Smaller */}
+            <div className="mb-2">
+              <Avatar className="w-16 h-16 border-2 border-gold/20">
                 <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
-                <AvatarFallback className="bg-gold/10 text-gold text-3xl font-display">
+                <AvatarFallback className="bg-gold/10 text-gold text-xl font-display">
                   {profile.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
 
-            {/* Name & Badges */}
-            <div className="flex items-center gap-2 mb-1 flex-wrap justify-center">
-              <h1 className="font-display text-3xl">{profile.display_name || profile.username}</h1>
-              {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
-              {profile.verification_status && <VerifiedBadge size="lg" />}
-              {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
-              {profile.is_founding_member && <FoundingBadge size="md" />}
+            {/* Name & Badges - Compact */}
+            <div className="flex items-center gap-1.5 mb-0.5 flex-wrap justify-center">
+              <h1 className="font-display text-lg">{profile.display_name || profile.username}</h1>
+              {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
+              {profile.verification_status && <VerifiedBadge size="md" />}
+              {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+              {profile.is_founding_member && <FoundingBadge size="sm" />}
             </div>
             
             {profile.display_name && (
-              <p className="text-sm text-muted-foreground mb-2">@{profile.username}</p>
+              <p className="text-[10px] text-muted-foreground mb-1">@{profile.username}</p>
             )}
 
-            {/* League Badge */}
-            <span className={`text-[10px] font-semibold uppercase tracking-[0.15em] border px-2 py-1 mb-4 ${leagueColors[league]}`}>
+            {/* League Badge - Compact */}
+            <span className={`text-[8px] font-semibold uppercase tracking-[0.12em] border px-1.5 py-0.5 mb-2 ${leagueColors[league]}`}>
               {league}
             </span>
 
-            {/* Archetype & Enterprise */}
-            <div className="flex items-center gap-2 flex-wrap justify-center mb-4">
-              {profile.archetype && <ArchetypeBadge archetype={profile.archetype} size="lg" />}
-              {isEnterprise && (
-                <span className="px-2 py-0.5 bg-gold/10 border border-gold/30 text-gold text-[10px] font-semibold uppercase tracking-wider">
-                  Enterprise
+            {/* Stats Row - Compact inline */}
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="text-center px-2">
+                <p className="font-display text-base text-white">{submissionCount}</p>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Edits</p>
+              </div>
+              <div className="w-px h-6 bg-border" />
+              <div className="text-center px-2">
+                <p className="font-display text-base text-gold">#{rank || "—"}</p>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Rank</p>
+              </div>
+              <div className="w-px h-6 bg-border" />
+              <div className="text-center px-2">
+                <p className="font-display text-base text-white">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Index</p>
+              </div>
+            </div>
+
+            {/* Crew Badge & Activity - Single row */}
+            <div className="flex items-center gap-3">
+              {userCrew && <CrewBadge crew={userCrew} size="sm" />}
+              <div className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
+                <span className="text-[10px] text-muted-foreground">
+                  {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
                 </span>
-              )}
-            </div>
-
-            {/* Stats Row */}
-            <div className="flex items-center justify-center gap-8 mb-4">
-              <div className="text-center">
-                <p className="font-display text-2xl text-white">{submissionCount}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Edits</p>
               </div>
-              <div className="text-center">
-                <p className="font-display text-2xl text-gold">#{rank || "—"}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
-              </div>
-              <div className="text-center">
-                <p className="font-display text-2xl text-white">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Index</p>
-              </div>
-            </div>
-
-            {/* Crew Badge */}
-            {userCrew && (
-              <div className="mb-4">
-                <CrewBadge crew={userCrew} size="md" />
-              </div>
-            )}
-
-            {/* Activity Status */}
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
-              <span className="text-xs text-muted-foreground">
-                {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
-              </span>
             </div>
           </div>
         </div>
