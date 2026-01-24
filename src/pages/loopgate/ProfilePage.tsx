@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2, Star, Award, Lock } from "lucide-react";
+import { ExternalLink, Calendar, Camera, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Users, Zap, Trash2, AlertTriangle, ShoppingBag, Coins, ArrowRight, Send, Palette, Wrench, Grid3X3, Settings, ChevronRight, Share2, Star, Award, Lock, Crown, Layers, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -9,6 +9,7 @@ import { useXP } from "@/hooks/useXP";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useReviewRequests } from "@/hooks/useReviewRequests";
+import { useCrewMembership } from "@/hooks/useCrewMembership";
 import { motion, AnimatePresence } from "framer-motion";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import VerificationModal from "@/components/loopgate/VerificationModal";
@@ -70,6 +71,7 @@ export default function ProfilePage() {
   const { xp, level, streak } = useXP();
   const { submissions } = useUserSubmissions();
   const { completedReviews, pendingReviews } = useReviewRequests();
+  const { primaryCrew, secondaryCrews } = useCrewMembership(profile?.id);
   const [activeTab, setActiveTab] = useState<ProfileTab>("submissions");
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
@@ -600,15 +602,73 @@ export default function ProfilePage() {
             </div>
           </div>
           
-          {/* Archetype + Crew */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
-            {(profile as any).archetype && (
+          {/* Archetype Badge */}
+          {(profile as any).archetype && (
+            <div className="flex justify-center mb-4">
               <ArchetypeBadge archetype={(profile as any).archetype} size="sm" />
-            )}
-            {userCrew && (
-              <CrewBadge crew={userCrew} size="sm" />
-            )}
-          </div>
+            </div>
+          )}
+          
+          {/* Crews Section */}
+          {(primaryCrew || secondaryCrews.length > 0) && (
+            <div className="mb-4">
+              {/* Primary Crew */}
+              {primaryCrew?.crew && (
+                <Link to={`/crews/${primaryCrew.crew_id}`} className="block mb-2">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-gold/5 border border-gold/20 hover:border-gold/40 transition-colors">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                      {primaryCrew.crew.avatar_url ? (
+                        <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Shield className="w-5 h-5 text-gold" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <Crown className="w-3 h-3 text-gold" />
+                        <span className="text-xs text-gold font-medium truncate">{primaryCrew.crew.name}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">Primary Crew</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gold/50" />
+                  </div>
+                </Link>
+              )}
+              
+              {/* Secondary Crews */}
+              {secondaryCrews.length > 0 && (
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {secondaryCrews.map((membership) => membership.crew && (
+                    <Link 
+                      key={membership.crew_id} 
+                      to={`/crews/${membership.crew_id}`}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-1 border border-border/50 hover:border-purple-500/30 transition-colors"
+                    >
+                      <div className="w-5 h-5 rounded overflow-hidden bg-surface-0 flex items-center justify-center">
+                        {membership.crew.avatar_url ? (
+                          <img src={membership.crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Layers className="w-3 h-3 text-muted-foreground" />
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground">{membership.crew.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* No Crew CTA */}
+          {!primaryCrew && secondaryCrews.length === 0 && (
+            <Link to="/crews" className="block mb-4">
+              <div className="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-border hover:border-purple-500/30 transition-colors">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Join a crew to compete together</span>
+                <ChevronRight className="w-3 h-3 text-muted-foreground" />
+              </div>
+            </Link>
+          )}
           
           {/* Premium Action Cards */}
           <div className="grid grid-cols-2 gap-3 mt-4">
