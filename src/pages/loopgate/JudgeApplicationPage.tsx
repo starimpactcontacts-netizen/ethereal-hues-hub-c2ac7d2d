@@ -1,3 +1,4 @@
+// Simplified Judge Application Flow v2 - No video test required
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
