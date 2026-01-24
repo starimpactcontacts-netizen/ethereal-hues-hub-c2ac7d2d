@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Target, Trophy, Users, Flame, ChevronRight, Star, Play } from 'lucide-react';
+import { ArrowRight, Target, Trophy, Users, Flame, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
@@ -9,7 +9,14 @@ import { useRealRankings, useRealEvents, useGlobalStats } from '@/hooks/useRealD
 import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import loopgateBrand from '@/assets/loopgate-brand.png';
+
+// Award laurels
+import beyondBorderAward from '@/assets/beyond-border-award.png';
+import creativeVisionAward from '@/assets/creative-vision-award.png';
+import digitalArtsAward from '@/assets/digital-arts-award.png';
+import futureMediaAward from '@/assets/future-media-award.png';
+import globalCinemaAward from '@/assets/global-cinema-award.png';
+import newLaurelAward from '@/assets/new-laurel-award.png';
 
 // Class tier configuration
 const tiers = [
@@ -21,6 +28,15 @@ const tiers = [
   { tier: 'C', color: '#3B82F6' },
   { tier: 'D', color: '#F97316' },
   { tier: 'F', color: '#EF4444' },
+];
+
+const laurels = [
+  beyondBorderAward,
+  creativeVisionAward,
+  digitalArtsAward,
+  futureMediaAward,
+  globalCinemaAward,
+  newLaurelAward,
 ];
 
 export default function LandingPage() {
@@ -46,10 +62,42 @@ export default function LandingPage() {
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
 
-        {/* Hero - Minimal, brand-focused */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center px-4">
-          {/* Subtle radial glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_45%,rgba(212,175,55,0.04),transparent)]" />
+        {/* Hero - AAA Typography */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
+          {/* Animated background gradients */}
+          <motion.div 
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 2 }}
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,175,55,0.15),transparent_50%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_100%,rgba(212,175,55,0.08),transparent_50%)]" />
+          </motion.div>
+
+          {/* Floating particles effect */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-gold/30 rounded-full"
+                style={{
+                  left: `${15 + i * 15}%`,
+                  top: `${20 + (i % 3) * 25}%`,
+                }}
+                animate={{
+                  y: [0, -30, 0],
+                  opacity: [0.3, 0.6, 0.3],
+                }}
+                transition={{
+                  duration: 3 + i * 0.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: i * 0.3,
+                }}
+              />
+            ))}
+          </div>
           
           <motion.div 
             className="relative z-10 text-center"
@@ -57,28 +105,47 @@ export default function LandingPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Brand wordmark - using actual image */}
-            <motion.div 
-              className="mb-8"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.8 }}
+            {/* Eyebrow badge */}
+            <motion.div
+              className="inline-flex items-center gap-2 px-4 py-1.5 border border-gold/30 bg-gold/5 mb-8"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
             >
-              <img 
-                src={loopgateBrand} 
-                alt="LOOPGATE" 
-                className="h-20 sm:h-28 md:h-36 lg:h-44 mx-auto object-contain"
-              />
+              <span className="w-1.5 h-1.5 bg-gold rounded-full animate-pulse" />
+              <span className="text-[10px] tracking-[0.3em] text-gold uppercase font-medium">
+                The Competitive Editing Index
+              </span>
             </motion.div>
+
+            {/* Main title - MASSIVE typography */}
+            <motion.h1
+              className="font-display text-[4rem] sm:text-[6rem] md:text-[8rem] lg:text-[10rem] leading-[0.85] tracking-[-0.02em] mb-4"
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent">
+                LOOPGATE
+              </span>
+            </motion.h1>
+
+            {/* Subtle glow line */}
+            <motion.div
+              className="w-32 h-px mx-auto bg-gradient-to-r from-transparent via-gold to-transparent mb-8"
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+            />
             
             {/* Tagline */}
             <motion.p 
-              className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-12 tracking-wide"
+              className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-12 tracking-wide max-w-xl mx-auto"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
             >
-              The Competitive Editing Index
+              Rank your edits. Climb the index. Prove your class.
             </motion.p>
             
             {/* Primary CTA */}
@@ -86,14 +153,21 @@ export default function LandingPage() {
               className="flex flex-col items-center gap-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
             >
               <Link to="/start">
                 <Button 
                   size="lg" 
-                  className="bg-foreground text-background hover:bg-foreground/90 font-semibold text-base sm:text-lg px-10 py-6 h-auto tracking-wide"
+                  className="bg-foreground text-background hover:bg-foreground/90 font-semibold text-base sm:text-lg px-12 py-7 h-auto tracking-wide group"
                 >
                   Enter
+                  <motion.span
+                    className="ml-2 inline-block"
+                    animate={{ x: [0, 4, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    →
+                  </motion.span>
                 </Button>
               </Link>
               
@@ -106,12 +180,33 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
+          {/* Award Laurels Strip */}
+          <motion.div 
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-6 sm:gap-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.6 }}
+          >
+            {laurels.map((laurel, i) => (
+              <motion.img
+                key={i}
+                src={laurel}
+                alt="Award"
+                className="h-12 sm:h-14 md:h-16 object-contain opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 0.6, scale: 1 }}
+                transition={{ delay: 1.3 + i * 0.1, duration: 0.4 }}
+                whileHover={{ scale: 1.1 }}
+              />
+            ))}
+          </motion.div>
+
           {/* Live stats - bottom */}
           <motion.div 
             className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 text-sm text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 0.6 }}
+            transition={{ delay: 1.5, duration: 0.6 }}
           >
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -201,16 +296,17 @@ export default function LandingPage() {
                   <motion.div
                     key={editor.id}
                     className={`group flex items-center justify-between p-5 border border-border hover:border-muted-foreground/30 transition-colors ${
-                      index === 0 ? 'bg-foreground/[0.02]' : ''
+                      index === 0 ? 'bg-gold/5 border-gold/20' : ''
                     }`}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.08 }}
+                    whileHover={{ x: 4 }}
                   >
                     <div className="flex items-center gap-5">
                       <span className={`w-8 text-center tabular-nums text-lg ${
-                        index === 0 ? 'text-gold font-semibold' : 'text-muted-foreground'
+                        index === 0 ? 'text-gold font-bold' : 'text-muted-foreground'
                       }`}>
                         {index + 1}
                       </span>
@@ -231,7 +327,7 @@ export default function LandingPage() {
                     </div>
                     
                     <div className="text-right">
-                      <p className={`text-lg tabular-nums ${index === 0 ? 'text-gold font-semibold' : ''}`}>
+                      <p className={`text-lg tabular-nums font-semibold ${index === 0 ? 'text-gold' : ''}`}>
                         {editor.global_index_score.toFixed(0)}
                       </p>
                     </div>
@@ -277,7 +373,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 + i * 0.04 }}
-                  whileHover={{ scale: 1.05, borderColor: t.color }}
+                  whileHover={{ scale: 1.1, borderColor: t.color }}
                 >
                   {t.tier}
                 </motion.div>
@@ -317,11 +413,9 @@ export default function LandingPage() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            <img 
-              src={loopgateBrand} 
-              alt="LOOPGATE" 
-              className="h-14 sm:h-16 mx-auto mb-8 object-contain opacity-80"
-            />
+            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl mb-4">
+              LOOPGATE
+            </h2>
             <p className="text-lg text-muted-foreground mb-10">
               Join the index. Prove your rank.
             </p>
