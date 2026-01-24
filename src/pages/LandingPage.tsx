@@ -11,12 +11,12 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 // Award laurels
+import clioAwards2025 from '@/assets/clio-awards-2025.png';
 import beyondBorderAward from '@/assets/beyond-border-award.png';
 import creativeVisionAward from '@/assets/creative-vision-award.png';
 import digitalArtsAward from '@/assets/digital-arts-award.png';
 import futureMediaAward from '@/assets/future-media-award.png';
 import globalCinemaAward from '@/assets/global-cinema-award.png';
-import newLaurelAward from '@/assets/new-laurel-award.png';
 
 // Class tier configuration
 const tiers = [
@@ -30,13 +30,14 @@ const tiers = [
   { tier: 'F', color: '#EF4444' },
 ];
 
+// Clio first (featured), then others
 const laurels = [
-  beyondBorderAward,
-  creativeVisionAward,
-  digitalArtsAward,
-  futureMediaAward,
-  globalCinemaAward,
-  newLaurelAward,
+  { src: clioAwards2025, featured: true },
+  { src: beyondBorderAward, featured: false },
+  { src: creativeVisionAward, featured: false },
+  { src: digitalArtsAward, featured: false },
+  { src: futureMediaAward, featured: false },
+  { src: globalCinemaAward, featured: false },
 ];
 
 export default function LandingPage() {
@@ -181,8 +182,9 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Award Laurels Strip */}
+          {/* Award Laurels Strip - Clio Featured */}
           <motion.div 
-            className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-6 sm:gap-8"
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-4 sm:gap-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.6 }}
@@ -190,11 +192,15 @@ export default function LandingPage() {
             {laurels.map((laurel, i) => (
               <motion.img
                 key={i}
-                src={laurel}
+                src={laurel.src}
                 alt="Award"
-                className="h-12 sm:h-14 md:h-16 object-contain opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0"
+                className={`object-contain transition-all ${
+                  laurel.featured 
+                    ? 'h-16 sm:h-20 md:h-24 opacity-90 hover:opacity-100' 
+                    : 'h-10 sm:h-12 md:h-14 opacity-50 hover:opacity-80 grayscale hover:grayscale-0'
+                }`}
                 initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 0.6, scale: 1 }}
+                animate={{ opacity: laurel.featured ? 0.9 : 0.5, scale: 1 }}
                 transition={{ delay: 1.3 + i * 0.1, duration: 0.4 }}
                 whileHover={{ scale: 1.1 }}
               />
