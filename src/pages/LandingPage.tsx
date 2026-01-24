@@ -67,25 +67,12 @@ export default function LandingPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}
           >
-            {/* Eyebrow badge */}
-            <motion.div 
-              className="inline-flex items-center gap-2 px-4 py-2 mb-4 bg-surface-0/50 backdrop-blur-sm border border-border/50 rounded-full"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              <span className="w-2 h-2 bg-gold rounded-full animate-pulse" />
-              <span className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground">
-                The Competitive Editing Index
-              </span>
-            </motion.div>
-
             {/* Main headline - Official Brand Wordmark */}
             <motion.div 
-              className="mb-3"
+              className="mb-4"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
+              transition={{ delay: 0.2, duration: 0.8 }}
             >
               <img 
                 src={loopgateBrand} 
@@ -95,66 +82,56 @@ export default function LandingPage() {
             </motion.div>
             
             <motion.p 
-              className="font-display text-3xl sm:text-4xl md:text-5xl text-gold tracking-wide mb-4"
+              className="font-display text-xl sm:text-2xl md:text-3xl text-gold tracking-[0.15em] uppercase mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
             >
-              PROVE YOUR RANK
+              The Competitive Editing Index
             </motion.p>
             
             <motion.p 
-              className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto mb-8 leading-relaxed"
+              className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
             >
-              Compete in events. Get rated by certified judges. 
-              <br className="hidden sm:block" />
-              Climb the global editor rankings.
+              A structured system for evaluating editors, hosting events, and maintaining global rankings.
             </motion.p>
             
-            {/* CTA Buttons - Premium styling */}
+            {/* CTA Buttons - Clean, minimal styling */}
             <motion.div 
-              className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-6 w-full px-4"
+              className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full px-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
             >
-              <Link to="/start" className="w-full sm:w-auto">
+              <Link to="/arena" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
-                  className="group relative bg-gold hover:bg-gold/90 text-background font-display text-base sm:text-lg px-8 py-4 h-auto w-full sm:w-auto sm:min-w-[200px] overflow-hidden"
+                  className="bg-foreground hover:bg-foreground/90 text-background font-display text-sm sm:text-base px-6 py-3 h-auto w-full sm:w-auto sm:min-w-[180px]"
                 >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Rate My Edit
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-gold via-yellow-400 to-gold opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  Enter Arena
                 </Button>
               </Link>
               <Link to="/gqt" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-border/50 bg-surface-0/50 backdrop-blur-sm hover:bg-surface-1 hover:border-gold/30 font-display text-base sm:text-lg px-8 py-4 h-auto w-full sm:w-auto sm:min-w-[200px] transition-all duration-300"
+                  className="border-border bg-transparent hover:bg-surface-1 hover:border-foreground/30 font-display text-sm sm:text-base px-6 py-3 h-auto w-full sm:w-auto sm:min-w-[180px]"
                 >
                   Take QOI Test
-                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
+              <Button 
+                size="lg" 
+                variant="ghost" 
+                onClick={handleGuestExplore}
+                className="text-muted-foreground hover:text-foreground font-display text-sm sm:text-base px-6 py-3 h-auto w-full sm:w-auto sm:min-w-[180px]"
+              >
+                Explore as Guest
+              </Button>
             </motion.div>
-            
-            {/* Guest explore link */}
-            <motion.button 
-              onClick={handleGuestExplore}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4 decoration-muted-foreground/30 hover:decoration-foreground"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
-            >
-              Explore as Guest
-            </motion.button>
           </motion.div>
 
           {/* Live stats bar - floating at bottom */}
