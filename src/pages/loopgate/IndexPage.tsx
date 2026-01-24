@@ -750,7 +750,7 @@ export default function IndexPage() {
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">
                         <span>@{judge.username}</span>
                         {!judge.isTrial && <span className="text-gold">{judge.totalReviews} reviews</span>}
-                        {judge.isTrial && <span className="text-muted-foreground/60">Pending approval</span>}
+                        {judge.isTrial && <span className="text-muted-foreground/60">Trial Judge</span>}
                       </div>
                     </div>
                     
