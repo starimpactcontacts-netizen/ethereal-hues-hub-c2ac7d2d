@@ -43,17 +43,19 @@ function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | nu
   return null;
 }
 
-// Get class colors - red F for tested, grey for untested
+// Get class colors - refined AAA styling with filled backgrounds
 function getClassColors(classLetter: GQTRank, hasTakenGQT: boolean): string {
   const colors: Record<string, string> = {
-    'S++': 'text-gold border-gold bg-gold/10',
-    'S+': 'text-gold border-gold/80 bg-gold/10',
-    'S': 'text-amber-400 border-amber-400 bg-amber-400/10',
-    'A': 'text-emerald-400 border-emerald-400 bg-emerald-400/10',
-    'B': 'text-blue-400 border-blue-400 bg-blue-400/10',
-    'C': 'text-slate-300 border-slate-400/50 bg-slate-400/10',
-    'D': 'text-orange-400 border-orange-500/40 bg-orange-500/10',
-    'F': hasTakenGQT ? 'text-red-500 border-red-500/50 bg-red-500/10' : 'text-muted-foreground border-border bg-muted/10',
+    'S++': 'text-background bg-gradient-to-r from-gold via-amber-400 to-gold border-gold/50 font-black',
+    'S+': 'text-background bg-gold border-gold/50 font-black',
+    'S': 'text-background bg-amber-500 border-amber-400/50 font-bold',
+    'A': 'text-background bg-emerald-500 border-emerald-400/50 font-bold',
+    'B': 'text-background bg-blue-500 border-blue-400/50 font-bold',
+    'C': 'text-background bg-slate-500 border-slate-400/50 font-bold',
+    'D': 'text-background bg-orange-500 border-orange-400/50 font-bold',
+    'F': hasTakenGQT 
+      ? 'text-background bg-red-600 border-red-500/50 font-bold' 
+      : 'text-muted-foreground bg-surface-2 border-border font-medium',
   };
   return colors[classLetter] || colors['F'];
 }
