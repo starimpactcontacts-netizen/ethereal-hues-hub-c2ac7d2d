@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Hash, MessageCircle, Target, Flag, Layers } from "lucide-react";
+import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Hash, MessageCircle, Target, Flag, Layers, Flame, TrendingUp, Sparkles, ArrowRight, Swords } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +41,17 @@ const emblemIcons: Record<string, React.ReactNode> = {
   zap: <Zap className="w-6 h-6" />,
   award: <Award className="w-6 h-6" />,
 };
+
+// Animated stat counter
+const StatCounter = ({ value, label, icon: Icon, color = "text-foreground" }: { value: number; label: string; icon: any; color?: string }) => (
+  <div className="text-center">
+    <div className={`text-2xl font-display font-bold ${color}`}>{value.toLocaleString()}</div>
+    <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground uppercase tracking-wider">
+      <Icon className="w-3 h-3" />
+      {label}
+    </div>
+  </div>
+);
 
 export default function CrewsPage() {
   const navigate = useNavigate();
@@ -179,48 +190,104 @@ export default function CrewsPage() {
 
   // Sort crews by total XP for rankings
   const rankedCrews = [...crews].sort((a, b) => (b.total_xp || 0) - (a.total_xp || 0));
+  const featuredCrews = crews.filter(c => c.is_featured);
+  const topThreeCrews = rankedCrews.slice(0, 3);
 
   // Get crew details for memberships
   const getPrimaryCrewDetails = () => crews.find(c => c.id === primaryCrew?.crew_id);
   const getSecondaryCrewDetails = () => secondaryCrews.map(s => crews.find(c => c.id === s.crew_id)).filter(Boolean) as Crew[];
 
+  // Stats for hero
+  const totalCrews = crews.length;
+  const totalMembers = crews.reduce((sum, c) => sum + c.member_count, 0);
+  const totalXP = crews.reduce((sum, c) => sum + (c.total_xp || 0), 0);
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background pb-24">
-        {/* Discord-inspired Header */}
+        {/* EPIC Hero Section */}
         <div className="relative overflow-hidden">
-          {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-background to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.12),transparent_60%)]" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-purple-600/10 blur-[120px] rounded-full" />
+          {/* Multi-layer gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-purple-950/40 via-purple-900/20 to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.25),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(168,85,247,0.15),transparent_40%)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-purple-600/20 blur-[150px] rounded-full" />
           
-          {/* Top bar */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
+          {/* Animated grid pattern */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: `linear-gradient(rgba(139,92,246,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.3) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px'
+          }} />
+          
+          {/* Floating orbs */}
+          <motion.div 
+            className="absolute top-20 left-8 w-24 h-24 rounded-full bg-purple-500/20 blur-2xl"
+            animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div 
+            className="absolute top-40 right-4 w-32 h-32 rounded-full bg-pink-500/15 blur-3xl"
+            animate={{ y: [0, 20, 0], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
+          
+          {/* Top bar accent */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
           
           <header className="relative z-10 px-4 pt-5 pb-6">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-6">
               <img src={loopgateLogo} alt="LOOPGATE" className="h-5 opacity-80" />
               <Button
                 size="sm"
                 onClick={() => navigate("/crews/create")}
-                className="bg-purple-600 text-white hover:bg-purple-700 font-bold"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 font-bold shadow-lg shadow-purple-900/30"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Create
+                Create Crew
               </Button>
             </div>
             
-            {/* Hero Title */}
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-purple-400" />
-                <span className="text-[10px] text-purple-400 uppercase tracking-[0.4em] font-medium">Community</span>
-              </div>
-              <h1 className="font-display text-4xl tracking-wider text-white mb-1">CREWS</h1>
-              <p className="text-xs text-muted-foreground">
-                Join a crew, compete together, climb the ranks
+            {/* Epic Hero Title */}
+            <motion.div 
+              className="text-center py-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <motion.div 
+                className="inline-flex items-center gap-2 mb-3 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Flame className="w-4 h-4 text-purple-400" />
+                <span className="text-xs text-purple-300 font-medium">Squad Up. Dominate. Rise.</span>
+              </motion.div>
+              
+              <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-purple-300 mb-3 leading-tight">
+                CREWS
+              </h1>
+              
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                Your crew is your identity. Compete in tournaments, climb the leaderboard, and build your legacy together.
               </p>
-            </div>
+            </motion.div>
+
+            {/* Live Stats Row */}
+            <motion.div 
+              className="mt-6 p-4 rounded-2xl bg-surface-1/60 backdrop-blur-sm border border-purple-500/20"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="flex items-center justify-between">
+                <StatCounter value={totalCrews} label="Crews" icon={Shield} color="text-purple-400" />
+                <div className="w-px h-8 bg-border" />
+                <StatCounter value={totalMembers} label="Members" icon={Users} color="text-pink-400" />
+                <div className="w-px h-8 bg-border" />
+                <StatCounter value={totalXP} label="Total XP" icon={Zap} color="text-gold" />
+              </div>
+            </motion.div>
           </header>
 
           {/* Search */}
@@ -232,14 +299,14 @@ export default function CrewsPage() {
                 placeholder="Search crews..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-surface-1/60 backdrop-blur-sm border border-border/50 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-purple-500/50 transition-colors"
+                className="w-full bg-surface-1/80 backdrop-blur-sm border border-border/50 rounded-xl pl-11 pr-4 py-3.5 text-sm focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all"
               />
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="relative z-10 px-4 pb-4">
-            <div className="flex gap-1 p-1 bg-surface-1/50 rounded-lg">
+          <div className="relative z-10 px-4 pb-6">
+            <div className="flex gap-1 p-1.5 bg-surface-1/60 backdrop-blur-sm rounded-xl border border-border/50">
               {[
                 { id: "discover" as const, label: "Discover", icon: Target },
                 { id: "my-crews" as const, label: "My Crews", icon: Layers },
@@ -247,10 +314,10 @@ export default function CrewsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-all ${
                     activeTab === tab.id
-                      ? "bg-purple-600 text-white shadow-lg"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-900/30"
+                      : "text-muted-foreground hover:text-foreground hover:bg-surface-2/50"
                   }`}
                 >
                   <tab.icon className="w-4 h-4" />
@@ -274,65 +341,90 @@ export default function CrewsPage() {
                 {/* Primary Crew Section */}
                 <section>
                   <div className="flex items-center gap-2 mb-3">
-                    <Flag className="w-4 h-4 text-gold" />
+                    <Crown className="w-4 h-4 text-gold" />
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Primary Crew</h2>
                     <span className="text-[10px] text-muted-foreground ml-auto">Your identity</span>
                   </div>
                   
                   {primaryCrew && getPrimaryCrewDetails() ? (
-                    <div
+                    <motion.div
                       onClick={() => navigate(`/crews/${primaryCrew.crew_id}`)}
-                      className="relative overflow-hidden rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 cursor-pointer group"
+                      className="relative overflow-hidden rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/15 via-surface-1 to-surface-1 cursor-pointer group"
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
                     >
+                      {/* Animated glow */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-gold/10 via-transparent to-gold/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      
                       {/* Crown indicator */}
-                      <div className="absolute top-2 right-2 z-10">
-                        <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
-                          <Crown className="w-4 h-4 text-gold" />
-                        </div>
+                      <div className="absolute top-3 right-3 z-10">
+                        <motion.div 
+                          className="w-10 h-10 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center"
+                          animate={{ rotate: [0, -5, 5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        >
+                          <Crown className="w-5 h-5 text-gold" />
+                        </motion.div>
                       </div>
                       
                       {/* Banner */}
-                      <div className="h-16 bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20" />
+                      <div className="h-20 bg-gradient-to-r from-gold/25 via-amber-500/15 to-gold/25" />
                       
                       {/* Avatar overlapping */}
-                      <div className="absolute top-8 left-4">
-                        <div className="w-16 h-16 rounded-xl overflow-hidden border-4 border-background bg-gold/10 flex items-center justify-center text-gold shadow-xl">
+                      <div className="absolute top-10 left-4">
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-background bg-gold/10 flex items-center justify-center text-gold shadow-xl shadow-gold/20">
                           {getPrimaryCrewDetails()?.avatar_url ? (
                             <img src={getPrimaryCrewDetails()?.avatar_url!} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            emblemIcons[getPrimaryCrewDetails()?.emblem || "shield"] || <Shield className="w-8 h-8" />
+                            emblemIcons[getPrimaryCrewDetails()?.emblem || "shield"] || <Shield className="w-10 h-10" />
                           )}
                         </div>
                       </div>
                       
-                      <div className="pt-6 pb-4 px-4 pl-24">
-                        <h3 className="font-display text-lg font-bold text-gold">{getPrimaryCrewDetails()?.name}</h3>
-                        <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
+                      <div className="pt-8 pb-5 px-4 pl-28">
+                        <h3 className="font-display text-xl font-bold text-gold">{getPrimaryCrewDetails()?.name}</h3>
+                        <p className="text-xs text-muted-foreground mb-3 line-clamp-1">
                           {getPrimaryCrewDetails()?.description || "Your primary crew"}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
+                        <div className="flex items-center gap-4 text-xs">
+                          <span className="flex items-center gap-1 text-muted-foreground">
                             <Users className="w-3 h-3" />
                             {getPrimaryCrewDetails()?.member_count} members
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Zap className="w-3 h-3 text-gold" />
+                          <span className="flex items-center gap-1 text-gold font-semibold">
+                            <Zap className="w-3 h-3" />
                             {(getPrimaryCrewDetails()?.total_xp || 0).toLocaleString()} XP
                           </span>
                         </div>
                       </div>
                       
-                      {/* Hover glow */}
-                      <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
+                      {/* CTA Arrow */}
+                      <div className="absolute right-4 bottom-5">
+                        <ArrowRight className="w-5 h-5 text-gold/50 group-hover:text-gold group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </motion.div>
                   ) : (
-                    <div className="p-6 rounded-xl border-2 border-dashed border-gold/30 bg-gold/5 text-center">
-                      <Flag className="w-8 h-8 text-gold/50 mx-auto mb-2" />
-                      <p className="text-sm text-gold/70 mb-1">No Primary Crew</p>
-                      <p className="text-xs text-muted-foreground">
-                        Join a crew as primary to represent them in tournaments
+                    <motion.div 
+                      className="p-8 rounded-2xl border-2 border-dashed border-purple-500/30 bg-purple-500/5 text-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center mx-auto mb-4">
+                        <Flag className="w-8 h-8 text-purple-400" />
+                      </div>
+                      <p className="text-base font-semibold text-foreground mb-1">No Primary Crew</p>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        Join a crew as your primary to represent them in tournaments
                       </p>
-                    </div>
+                      <Button
+                        size="sm"
+                        onClick={() => setActiveTab("discover")}
+                        className="bg-purple-600 text-white hover:bg-purple-700"
+                      >
+                        <Target className="w-4 h-4 mr-2" />
+                        Find a Crew
+                      </Button>
+                    </motion.div>
                   )}
                 </section>
 
@@ -341,40 +433,43 @@ export default function CrewsPage() {
                   <div className="flex items-center gap-2 mb-3">
                     <Layers className="w-4 h-4 text-purple-400" />
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Secondary Crews</h2>
-                    <span className="text-[10px] text-muted-foreground ml-auto">{secondaryCrews.length}/3</span>
+                    <span className="text-[10px] text-purple-400 ml-auto">{secondaryCrews.length}/3</span>
                   </div>
                   
                   {getSecondaryCrewDetails().length > 0 ? (
                     <div className="space-y-2">
-                      {getSecondaryCrewDetails().map((crew) => (
-                        <div
+                      {getSecondaryCrewDetails().map((crew, i) => (
+                        <motion.div
                           key={crew.id}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
                           onClick={() => navigate(`/crews/${crew.id}`)}
-                          className="p-3 rounded-xl border border-border/50 bg-surface-1/40 flex items-center gap-3 cursor-pointer hover:bg-surface-1 hover:border-purple-500/30 transition-all"
+                          className="p-4 rounded-xl border border-border/50 bg-surface-1/40 flex items-center gap-4 cursor-pointer hover:bg-surface-1 hover:border-purple-500/30 transition-all group"
                         >
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-0 border border-border flex items-center justify-center shrink-0 opacity-70">
+                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-surface-0 border border-border flex items-center justify-center shrink-0">
                             {crew.avatar_url ? (
                               <img src={crew.avatar_url} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <div className="text-muted-foreground scale-75">
+                              <div className="text-muted-foreground scale-90">
                                 {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
                               </div>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium text-muted-foreground truncate">{crew.name}</h3>
-                            <p className="text-[10px] text-muted-foreground/60">
-                              {crew.member_count} members
+                            <h3 className="text-sm font-semibold truncate">{crew.name}</h3>
+                            <p className="text-[10px] text-muted-foreground">
+                              {crew.member_count} members • {(crew.total_xp || 0).toLocaleString()} XP
                             </p>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
-                        </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+                        </motion.div>
                       ))}
                     </div>
                   ) : (
-                    <div className="p-4 rounded-xl border border-dashed border-border bg-surface-1/20 text-center">
+                    <div className="p-5 rounded-xl border border-dashed border-border bg-surface-1/20 text-center">
                       <p className="text-xs text-muted-foreground">
-                        No secondary crews yet. Join crews for practice and social connections.
+                        No secondary crews yet. Join more crews for practice and social connections.
                       </p>
                     </div>
                   )}
@@ -390,50 +485,59 @@ export default function CrewsPage() {
                 key="discover"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="space-y-6"
+                className="space-y-8"
               >
-                {/* Featured Crews */}
-                {crews.filter(c => c.is_featured).length > 0 && (
-                  <section className="mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Star className="w-4 h-4 text-gold fill-gold" />
-                      <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Featured</h2>
+                {/* Featured Crews - Horizontal Scroll */}
+                {featuredCrews.length > 0 && (
+                  <section>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Sparkles className="w-4 h-4 text-gold" />
+                      <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Featured Crews</h2>
                     </div>
-                    <div className="grid gap-3">
-                      {crews.filter(c => c.is_featured).map((crew) => (
-                        <div
-                          key={crew.id}
-                          onClick={() => navigate(`/crews/${crew.id}`)}
-                          className="relative overflow-hidden p-4 rounded-xl border border-gold/30 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 cursor-pointer hover:border-gold/50 transition-all"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-xl overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center">
-                              {crew.avatar_url ? (
-                                <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="text-gold">{emblemIcons[crew.emblem]}</div>
-                              )}
+                    <div className="-mx-4 px-4">
+                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                        {featuredCrews.map((crew, i) => (
+                          <motion.div
+                            key={crew.id}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.05 }}
+                            onClick={() => navigate(`/crews/${crew.id}`)}
+                            className="relative overflow-hidden min-w-[280px] p-5 rounded-2xl border border-gold/30 bg-gradient-to-br from-gold/15 via-surface-1 to-surface-1 cursor-pointer hover:border-gold/50 transition-all group"
+                          >
+                            {/* Star badge */}
+                            <div className="absolute top-3 right-3">
+                              <Star className="w-5 h-5 text-gold fill-gold" />
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-semibold truncate">{crew.name}</h3>
-                                <Star className="w-3 h-3 text-gold fill-gold" />
+                            
+                            <div className="flex items-start gap-4">
+                              <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                                {crew.avatar_url ? (
+                                  <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="text-gold">{emblemIcons[crew.emblem]}</div>
+                                )}
                               </div>
-                              <p className="text-xs text-muted-foreground line-clamp-1">{crew.description || "Featured crew"}</p>
-                              <p className="text-xs text-gold mt-1">{crew.member_count} members • {(crew.total_xp || 0).toLocaleString()} XP</p>
+                              <div className="flex-1 min-w-0 pt-1">
+                                <h3 className="font-semibold text-base truncate mb-1">{crew.name}</h3>
+                                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{crew.description || "Featured crew"}</p>
+                                <div className="flex items-center gap-3 text-xs">
+                                  <span className="text-gold font-medium">{crew.member_count} members</span>
+                                  <span className="text-purple-400">{(crew.total_xp || 0).toLocaleString()} XP</span>
+                                </div>
+                              </div>
                             </div>
-                            <ChevronRight className="w-5 h-5 text-gold/50" />
-                          </div>
-                        </div>
-                      ))}
+                            
+                            {/* Glow effect */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </motion.div>
+                        ))}
+                      </div>
                     </div>
                   </section>
                 )}
 
-                {/* Studios Coming Soon */}
-                <StudiosTeaser variant="compact" />
-
-                {/* Top Crews */}
+                {/* Top 3 Crews - Podium Style */}
                 <section>
                   <div className="flex items-center gap-2 mb-4">
                     <Trophy className="w-4 h-4 text-gold" />
@@ -442,71 +546,109 @@ export default function CrewsPage() {
                     </h2>
                   </div>
                   
-                  <div className="space-y-2">
-                    {rankedCrews.slice(0, 3).map((crew, index) => (
+                  <div className="space-y-3">
+                    {topThreeCrews.map((crew, index) => (
                       <motion.div
                         key={crew.id}
-                        initial={{ opacity: 0, x: -10 }}
+                        initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.05 }}
+                        transition={{ delay: index * 0.1 }}
                         onClick={() => navigate(`/crews/${crew.id}`)}
-                        className={`relative overflow-hidden p-4 rounded-xl border cursor-pointer transition-all hover:scale-[1.01] ${
+                        className={`relative overflow-hidden p-4 rounded-2xl border cursor-pointer transition-all hover:scale-[1.02] group ${
                           index === 0
-                            ? "bg-gradient-to-r from-gold/15 via-gold/5 to-transparent border-gold/30"
+                            ? "bg-gradient-to-r from-gold/20 via-amber-500/10 to-transparent border-gold/40 shadow-lg shadow-gold/10"
                             : index === 1
-                            ? "bg-gradient-to-r from-slate-400/10 via-slate-400/5 to-transparent border-slate-400/20"
-                            : "bg-gradient-to-r from-amber-600/10 via-amber-600/5 to-transparent border-amber-600/20"
+                            ? "bg-gradient-to-r from-slate-400/15 via-slate-400/5 to-transparent border-slate-400/30"
+                            : "bg-gradient-to-r from-amber-600/15 via-amber-600/5 to-transparent border-amber-600/30"
                         }`}
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                            index === 0 ? "bg-gold text-background" :
-                            index === 1 ? "bg-slate-400 text-background" :
-                            "bg-amber-600 text-background"
+                          {/* Rank Badge */}
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-display text-xl font-bold shadow-lg ${
+                            index === 0 ? "bg-gradient-to-br from-gold to-amber-600 text-background shadow-gold/30" :
+                            index === 1 ? "bg-gradient-to-br from-slate-300 to-slate-500 text-background shadow-slate-400/20" :
+                            "bg-gradient-to-br from-amber-500 to-amber-700 text-background shadow-amber-600/20"
                           }`}>
                             {index + 1}
                           </div>
-                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-surface-1 border border-border flex items-center justify-center">
+                          
+                          {/* Avatar */}
+                          <div className={`w-14 h-14 rounded-2xl overflow-hidden border-2 flex items-center justify-center ${
+                            index === 0 ? "border-gold/30 bg-gold/10" :
+                            index === 1 ? "border-slate-400/30 bg-slate-400/10" :
+                            "border-amber-600/30 bg-amber-600/10"
+                          }`}>
                             {crew.avatar_url ? (
                               <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="text-muted-foreground">
+                              <div className={index === 0 ? "text-gold" : index === 1 ? "text-slate-400" : "text-amber-600"}>
                                 {emblemIcons[crew.emblem]}
                               </div>
                             )}
                           </div>
+                          
+                          {/* Info */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold truncate">{crew.name}</h3>
+                            <h3 className={`font-semibold truncate ${index === 0 ? "text-gold" : ""}`}>{crew.name}</h3>
                             <p className="text-xs text-muted-foreground">
                               {crew.member_count} members
                             </p>
                           </div>
+                          
+                          {/* XP */}
                           <div className="text-right">
-                            <p className="font-display text-lg font-bold text-purple-400">
+                            <p className={`font-display text-2xl font-bold ${
+                              index === 0 ? "text-gold" :
+                              index === 1 ? "text-slate-300" :
+                              "text-amber-500"
+                            }`}>
                               {(crew.total_xp || 0).toLocaleString()}
                             </p>
-                            <p className="text-[10px] text-muted-foreground uppercase">XP</p>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">XP</p>
                           </div>
                         </div>
+                        
+                        {/* Shimmer effect for #1 */}
+                        {index === 0 && (
+                          <motion.div 
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+                            animate={{ x: ['-100%', '100%'] }}
+                            transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                          />
+                        )}
                       </motion.div>
                     ))}
                   </div>
                 </section>
 
+                {/* Studios Coming Soon */}
+                <StudiosTeaser variant="compact" />
+
                 {/* All Crews */}
                 <section>
                   <div className="flex items-center gap-2 mb-4">
-                    <Users className="w-4 h-4 text-muted-foreground" />
+                    <Users className="w-4 h-4 text-purple-400" />
                     <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       All Crews
                     </h2>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{filteredCrews.length} available</span>
                   </div>
 
                   {loading ? (
-                    <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <motion.div 
+                        className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      />
+                      <p className="text-sm text-muted-foreground mt-3">Loading crews...</p>
+                    </div>
                   ) : filteredCrews.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No crews found
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 rounded-2xl bg-surface-1 flex items-center justify-center mx-auto mb-4">
+                        <Search className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                      <p className="text-muted-foreground">No crews found</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -515,28 +657,29 @@ export default function CrewsPage() {
                           key={crew.id}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: index * 0.03 }}
+                          transition={{ delay: index * 0.02 }}
                           className="p-4 bg-surface-1/60 border border-border/50 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-surface-1 hover:border-purple-500/30 transition-all group"
                           onClick={() => navigate(`/crews/${crew.id}`)}
                         >
-                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-surface-0 border border-border flex items-center justify-center shrink-0">
+                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-surface-0 border border-border flex items-center justify-center shrink-0 group-hover:border-purple-500/30 transition-colors">
                             {crew.avatar_url ? (
                               <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="text-muted-foreground">
+                              <div className="text-muted-foreground group-hover:text-purple-400 transition-colors">
                                 {emblemIcons[crew.emblem] || <Shield className="w-6 h-6" />}
                               </div>
                             )}
                           </div>
                           
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold truncate mb-0.5">{crew.name}</h3>
-                            <p className="text-xs text-muted-foreground line-clamp-1">
+                            <h3 className="font-semibold truncate mb-0.5 group-hover:text-purple-300 transition-colors">{crew.name}</h3>
+                            <p className="text-xs text-muted-foreground line-clamp-1 mb-1.5">
                               {crew.description || "No description"}
                             </p>
-                            <div className="flex items-center gap-3 mt-1.5">
-                              <span className="text-[10px] text-muted-foreground">
-                                {crew.member_count} members
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <Users className="w-3 h-3" />
+                                {crew.member_count}
                               </span>
                               <span className={`text-[9px] font-bold uppercase tracking-wider border px-1.5 py-0.5 rounded ${
                                 leagueColors[crew.min_league]
@@ -552,7 +695,7 @@ export default function CrewsPage() {
                               <p className="text-[9px] text-muted-foreground">XP</p>
                             </div>
                             {user && !myCrewIds.includes(crew.id) && (
-                              <div className="flex gap-1">
+                              <div className="flex gap-1.5">
                                 {!primaryCrew && (
                                   <Button
                                     size="sm"
@@ -560,9 +703,9 @@ export default function CrewsPage() {
                                       e.stopPropagation();
                                       handleJoinCrew(crew, true);
                                     }}
-                                    className="text-[10px] h-7 px-2 bg-gold text-background hover:bg-gold/90"
+                                    className="text-[10px] h-7 px-2.5 bg-gradient-to-r from-gold to-amber-600 text-background hover:from-gold/90 hover:to-amber-600/90 shadow-sm"
                                   >
-                                    <Flag className="w-3 h-3 mr-1" />
+                                    <Crown className="w-3 h-3 mr-1" />
                                     Primary
                                   </Button>
                                 )}
@@ -574,9 +717,10 @@ export default function CrewsPage() {
                                       e.stopPropagation();
                                       handleJoinCrew(crew, false);
                                     }}
-                                    className="text-[10px] h-7 px-2 border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+                                    className="text-[10px] h-7 px-2.5 border-purple-500/30 text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/50"
                                   >
-                                    Secondary
+                                    <Plus className="w-3 h-3 mr-1" />
+                                    Join
                                   </Button>
                                 )}
                               </div>
