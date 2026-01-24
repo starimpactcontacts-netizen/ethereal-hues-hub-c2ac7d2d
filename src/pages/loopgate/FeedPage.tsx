@@ -342,6 +342,21 @@ export default function FeedPage() {
 
   const BATCH_SIZE = 20;
 
+  // Fix mobile viewport height
+  useEffect(() => {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    return () => {
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
+    };
+  }, []);
+
   const fetchFeed = useCallback(async (isLoadMore = false) => {
     if (isLoadMore && (loadingMore || !hasMore)) return;
     
@@ -590,17 +605,26 @@ export default function FeedPage() {
   return (
     <div 
       ref={containerRef}
-      className="fixed inset-0 bg-black z-50 overflow-hidden"
-      style={{ width: '100vw', height: '100dvh', top: 0, left: 0, right: 0, bottom: 0 }}
+      className="fixed inset-0 bg-black z-50 overflow-hidden touch-none"
+      style={{ 
+        width: '100vw', 
+        height: 'calc(var(--vh, 1vh) * 100)',
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'none'
+      }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Close button */}
+      {/* Close button - larger tap target */}
       <button
         onClick={() => navigate(-1)}
-        className="absolute top-3 left-3 sm:top-4 sm:left-4 z-50 p-1.5 sm:p-2 rounded-full bg-black/50 backdrop-blur-sm text-white hover:bg-black/70 transition-colors"
+        className="absolute top-4 left-4 z-50 w-11 h-11 rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-black/80 transition-colors flex items-center justify-center active:scale-95"
       >
-        <X className="w-5 h-5 sm:w-6 sm:h-6" />
+        <X className="w-6 h-6" />
       </button>
 
       {/* Loading more indicator */}
