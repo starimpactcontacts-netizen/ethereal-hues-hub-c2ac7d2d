@@ -286,8 +286,8 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ XP BAR ═══ */}
-      <div className="px-4 mb-4">
-        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1.5">
+      <div className="px-4 mb-3">
+        <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
           <span className="flex items-center gap-1">
             <Zap className="w-3 h-3 text-purple-400" />
             LV {level}
@@ -298,19 +298,19 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ QUICK NAV BUTTONS ═══ */}
-      <div className="px-4 mb-6">
-        <div className="grid grid-cols-2 gap-3">
+      <div className="px-4 mb-4">
+        <div className="grid grid-cols-2 gap-2">
           <Link to="/profile/stats">
             <motion.div 
               whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-xl p-4 flex items-center gap-3 hover:border-foreground/30 transition-colors"
+              className="bg-surface-1 border border-border rounded-xl p-3 flex items-center gap-2.5 hover:border-foreground/30 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-purple-400" />
+              <div className="w-9 h-9 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-purple-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">Stats</p>
-                <p className="text-[10px] text-muted-foreground">XP, rankings & more</p>
+                <p className="text-[10px] text-muted-foreground">XP & rankings</p>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </motion.div>
@@ -319,14 +319,14 @@ export default function ProfilePage() {
           <Link to="/profile/settings">
             <motion.div 
               whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-xl p-4 flex items-center gap-3 hover:border-foreground/30 transition-colors"
+              className="bg-surface-1 border border-border rounded-xl p-3 flex items-center gap-2.5 hover:border-foreground/30 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center">
-                <Settings className="w-5 h-5 text-muted-foreground" />
+              <div className="w-9 h-9 rounded-lg bg-muted/30 flex items-center justify-center">
+                <Settings className="w-4 h-4 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">Settings</p>
-                <p className="text-[10px] text-muted-foreground">Account & identity</p>
+                <p className="text-[10px] text-muted-foreground">Account</p>
               </div>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </motion.div>
@@ -335,8 +335,8 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ EDITS SECTION ═══ */}
-      <div className="px-4 mb-3">
-        <div className="flex items-center gap-2 mb-3">
+      <div className="px-4 mb-2">
+        <div className="flex items-center gap-2">
           <Grid3X3 className="w-4 h-4 text-muted-foreground" />
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">My Edits</h2>
         </div>
