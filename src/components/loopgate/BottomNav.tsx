@@ -41,14 +41,14 @@ export default function BottomNav() {
       )}
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-bottom">
-        <div className="flex items-center justify-around h-16 max-w-lg mx-auto relative">
-          {/* Left side items (Hub, Rankings) */}
+        <div className="grid grid-cols-5 h-16 max-w-lg mx-auto">
+          {/* Left side items (Hub, Loop) */}
           {navItems.slice(0, 2).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
+                `flex flex-col items-center justify-center gap-1 transition-colors ${
                   isActive ? "text-gold" : "text-muted-foreground"
                 }`
               }
@@ -56,7 +56,7 @@ export default function BottomNav() {
               {({ isActive }) => (
                 <>
                   <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.08em]">
+                  <span className="text-[10px] font-semibold tracking-wide">
                     {item.label}
                   </span>
                 </>
@@ -67,16 +67,16 @@ export default function BottomNav() {
           {/* Center Arena Button - THE ACTION BUTTON */}
           <button
             onClick={handleArenaClick}
-            className="relative flex flex-col items-center justify-center -mt-5"
+            className="relative flex flex-col items-center justify-center -mt-4"
           >
             {/* Glow effect */}
-            <div className="absolute inset-0 -top-3 w-16 h-16 bg-gold/30 rounded-full blur-xl" />
+            <div className="absolute inset-0 -top-3 w-14 h-14 mx-auto bg-gold/30 rounded-full blur-xl" />
             
             {/* Button circle */}
             <div className="relative w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-gold rounded-full flex items-center justify-center shadow-lg shadow-gold/40 border-2 border-gold/60">
               <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-gold mt-1">
+            <span className="text-[10px] font-semibold tracking-wide text-gold mt-1">
               Arena
             </span>
           </button>
@@ -87,7 +87,7 @@ export default function BottomNav() {
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-1 px-4 py-2 transition-colors ${
+                `flex flex-col items-center justify-center gap-1 transition-colors ${
                   isActive ? "text-gold" : "text-muted-foreground"
                 }`
               }
@@ -95,7 +95,7 @@ export default function BottomNav() {
               {({ isActive }) => (
                 <>
                   <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.08em]">
+                  <span className="text-[10px] font-semibold tracking-wide">
                     {item.label}
                   </span>
                 </>
