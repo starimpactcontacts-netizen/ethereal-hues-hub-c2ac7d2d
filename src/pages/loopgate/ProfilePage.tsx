@@ -177,18 +177,18 @@ export default function ProfilePage() {
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-b from-muted/10 via-transparent to-transparent" />
         
-        <div className="relative px-4 pt-3 pb-3">
+        <div className="relative px-4 pt-2 pb-2">
           {/* Top Actions */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <button
               onClick={() => {
                 const profileUrl = `${window.location.origin}/editor/${profile.id}`;
                 navigator.clipboard.writeText(profileUrl);
                 toast.success("Profile link copied!");
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border text-xs font-medium hover:border-foreground/30 transition-colors rounded-lg"
+              className="flex items-center gap-1 px-2.5 py-1 bg-surface-1 border border-border text-[11px] font-medium hover:border-foreground/30 transition-colors rounded-md"
             >
-              <Share2 className="w-3.5 h-3.5" />
+              <Share2 className="w-3 h-3" />
               Share
             </button>
             <ActivityStatusSelector
@@ -202,35 +202,35 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center">
             <button
               onClick={() => setShowAvatarModal(true)}
-              className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border group mb-2"
+              className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-border group mb-1.5"
             >
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-surface-1 flex items-center justify-center">
-                  <span className="font-display text-2xl text-muted-foreground">
+                  <span className="font-display text-xl text-muted-foreground">
                     {profile.username?.charAt(0).toUpperCase() || '?'}
                   </span>
                 </div>
               )}
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="w-5 h-5 text-white" />
+                <Camera className="w-4 h-4 text-white" />
               </div>
             </button>
             
-            <div className="text-center mb-2">
-              <div className="flex items-center justify-center gap-2">
-                <h1 className="font-display text-xl">
+            <div className="text-center mb-1.5">
+              <div className="flex items-center justify-center gap-1.5">
+                <h1 className="font-display text-lg">
                   {(profile as any).display_name || profile.username}
                 </h1>
-                {profile.verification_status && <VerifiedBadge size="md" />}
+                {profile.verification_status && <VerifiedBadge size="sm" />}
               </div>
-              <p className="text-xs text-muted-foreground">@{profile.username}</p>
+              <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
             </div>
 
             {/* Identity Badges */}
             {((profile as any).archetype || ((profile as any).software && (profile as any).software.length > 0)) && (
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-1.5 mb-1.5">
                 {(profile as any).archetype && (
                   <ArchetypeBadge archetype={(profile as any).archetype} size="sm" animate={false} />
                 )}
@@ -241,43 +241,43 @@ export default function ProfilePage() {
             )}
 
             {/* Stats Row */}
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <Link to="/gqt" className={`flex flex-col items-center justify-center w-12 h-12 rounded-lg border ${classColors[classLetter]}`}>
-                <span className="font-display text-lg">{classLetter}</span>
-                <span className="text-[7px] uppercase tracking-wider opacity-60">Class</span>
+            <div className="flex items-center justify-center gap-2 mb-1.5">
+              <Link to="/gqt" className={`flex flex-col items-center justify-center w-10 h-10 rounded-md border ${classColors[classLetter]}`}>
+                <span className="font-display text-base">{classLetter}</span>
+                <span className="text-[6px] uppercase tracking-wider opacity-60">Class</span>
               </Link>
-              <div className="text-center px-2">
-                <p className="font-display text-lg">{submissions.length}</p>
-                <p className="text-[9px] text-muted-foreground uppercase">Edits</p>
+              <div className="text-center px-1.5">
+                <p className="font-display text-base">{submissions.length}</p>
+                <p className="text-[8px] text-muted-foreground uppercase">Edits</p>
               </div>
-              <div className="text-center px-2">
-                <p className="font-display text-lg">#{userRank}</p>
-                <p className="text-[9px] text-muted-foreground uppercase">Rank</p>
+              <div className="text-center px-1.5">
+                <p className="font-display text-base">#{userRank}</p>
+                <p className="text-[8px] text-muted-foreground uppercase">Rank</p>
               </div>
-              <div className="text-center px-2">
-                <p className="font-display text-lg">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-                <p className="text-[9px] text-muted-foreground uppercase">Index</p>
+              <div className="text-center px-1.5">
+                <p className="font-display text-base">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+                <p className="text-[8px] text-muted-foreground uppercase">Index</p>
               </div>
             </div>
 
             {/* Primary Crew */}
             {primaryCrew?.crew && (
               <Link to={`/crews/${primaryCrew.crew_id}`} className="w-full max-w-xs">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-1 border border-border hover:border-foreground/30 transition-colors">
-                  <div className="w-7 h-7 rounded-md overflow-hidden bg-muted/30 flex items-center justify-center">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface-1 border border-border hover:border-foreground/30 transition-colors">
+                  <div className="w-6 h-6 rounded overflow-hidden bg-muted/30 flex items-center justify-center">
                     {primaryCrew.crew.avatar_url ? (
                       <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <Shield className="w-3.5 h-3.5 text-muted-foreground" />
+                      <Shield className="w-3 h-3 text-muted-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
-                      <Crown className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs font-medium truncate">{primaryCrew.crew.name}</span>
+                      <Crown className="w-2.5 h-2.5 text-muted-foreground" />
+                      <span className="text-[11px] font-medium truncate">{primaryCrew.crew.name}</span>
                     </div>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
                 </div>
               </Link>
             )}
@@ -286,10 +286,10 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ XP BAR ═══ */}
-      <div className="px-4 mb-2">
-        <div className="flex items-center justify-between text-[9px] text-muted-foreground mb-0.5">
-          <span className="flex items-center gap-1">
-            <Zap className="w-2.5 h-2.5 text-purple-400" />
+      <div className="px-4 mb-1.5">
+        <div className="flex items-center justify-between text-[8px] text-muted-foreground mb-0.5">
+          <span className="flex items-center gap-0.5">
+            <Zap className="w-2 h-2 text-purple-400" />
             LV {level}
           </span>
           <span>{xp} XP</span>
@@ -298,37 +298,37 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ QUICK NAV BUTTONS ═══ */}
-      <div className="px-4 mb-3">
-        <div className="grid grid-cols-2 gap-2">
+      <div className="px-4 mb-2">
+        <div className="grid grid-cols-2 gap-1.5">
           <Link to="/profile/stats">
             <motion.div 
               whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-lg p-2.5 flex items-center gap-2 hover:border-foreground/30 transition-colors"
+              className="bg-surface-1 border border-border rounded-md p-2 flex items-center gap-1.5 hover:border-foreground/30 transition-colors"
             >
-              <div className="w-8 h-8 rounded-md bg-purple-500/10 flex items-center justify-center">
-                <BarChart3 className="w-3.5 h-3.5 text-purple-400" />
+              <div className="w-6 h-6 rounded bg-purple-500/10 flex items-center justify-center">
+                <BarChart3 className="w-3 h-3 text-purple-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium">Stats</p>
-                <p className="text-[9px] text-muted-foreground">XP & rankings</p>
+                <p className="text-[11px] font-medium">Stats</p>
+                <p className="text-[8px] text-muted-foreground">XP & rankings</p>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
             </motion.div>
           </Link>
           
           <Link to="/profile/settings">
             <motion.div 
               whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-lg p-2.5 flex items-center gap-2 hover:border-foreground/30 transition-colors"
+              className="bg-surface-1 border border-border rounded-md p-2 flex items-center gap-1.5 hover:border-foreground/30 transition-colors"
             >
-              <div className="w-8 h-8 rounded-md bg-muted/30 flex items-center justify-center">
-                <Settings className="w-3.5 h-3.5 text-muted-foreground" />
+              <div className="w-6 h-6 rounded bg-muted/30 flex items-center justify-center">
+                <Settings className="w-3 h-3 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium">Settings</p>
-                <p className="text-[9px] text-muted-foreground">Account</p>
+                <p className="text-[11px] font-medium">Settings</p>
+                <p className="text-[8px] text-muted-foreground">Account</p>
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+              <ChevronRight className="w-3 h-3 text-muted-foreground" />
             </motion.div>
           </Link>
         </div>
@@ -336,9 +336,9 @@ export default function ProfilePage() {
 
       {/* ═══ EDITS SECTION ═══ */}
       <div className="px-4 mb-1">
-        <div className="flex items-center gap-1.5">
-          <Grid3X3 className="w-3.5 h-3.5 text-muted-foreground" />
-          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">My Edits</h2>
+        <div className="flex items-center gap-1">
+          <Grid3X3 className="w-3 h-3 text-muted-foreground" />
+          <h2 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">My Edits</h2>
         </div>
       </div>
 
