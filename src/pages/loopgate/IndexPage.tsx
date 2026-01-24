@@ -140,8 +140,26 @@ export default function IndexPage() {
     return leagueOrder[userLeague as keyof typeof leagueOrder] <= leagueOrder[minLeague];
   };
 
+  // Check if any filters are active (affects whether we show ranked or randomized)
+  const hasActiveFilters = searchQuery !== "" || leagueFilter !== "all" || rankFilter !== "all";
+
+  // Seeded random shuffle - consistent per session but randomized between sessions
+  const shuffledRankings = useMemo(() => {
+    if (hasActiveFilters) return rankings; // Don't shuffle when filtering
+    
+    // Create a shuffled copy using Fisher-Yates
+    const shuffled = [...rankings];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, [rankings, hasActiveFilters]);
+
   const filteredEditors = useMemo(() => {
-    return rankings.filter((editor) => {
+    const source = hasActiveFilters ? rankings : shuffledRankings;
+    
+    return source.filter((editor) => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesUsername = editor.username.toLowerCase().includes(query);
@@ -159,7 +177,7 @@ export default function IndexPage() {
       if (rankFilter === "top100" && rank > 100) return false;
       return true;
     });
-  }, [rankings, searchQuery, leagueFilter, rankFilter]);
+  }, [rankings, shuffledRankings, searchQuery, leagueFilter, rankFilter, hasActiveFilters]);
 
   const tabs: { id: ViewMode; label: string; icon: React.ElementType }[] = [
     { id: "editors", label: "INDEX", icon: Target },
