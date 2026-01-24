@@ -100,8 +100,17 @@ const CrewCard = ({
           </div>
         )}
         
-        {/* Avatar */}
-        <div className="absolute -bottom-5 left-3">
+        {crew.is_featured && (
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-gold/20 backdrop-blur-sm">
+            <Star className="w-3 h-3 text-gold fill-gold" />
+          </div>
+        )}
+      </div>
+      
+      {/* Content with Avatar overlapping */}
+      <div className="bg-surface-1 rounded-b-xl p-3 border-x border-b border-border/40 group-hover:border-purple-500/30 transition-colors">
+        {/* Avatar - positioned to overlap banner */}
+        <div className="relative z-10 -mt-8 mb-2">
           <div className="w-12 h-12 rounded-xl bg-surface-1 border-[3px] border-surface-1 overflow-hidden flex items-center justify-center shadow-lg">
             {crew.avatar_url ? (
               <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
@@ -113,15 +122,6 @@ const CrewCard = ({
           </div>
         </div>
         
-        {crew.is_featured && (
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-gold/20 backdrop-blur-sm">
-            <Star className="w-3 h-3 text-gold fill-gold" />
-          </div>
-        )}
-      </div>
-      
-      {/* Content */}
-      <div className="bg-surface-1 rounded-b-xl p-3 pt-7 border-x border-b border-border/40 group-hover:border-purple-500/30 transition-colors">
         <h3 className="font-semibold text-sm truncate mb-1 group-hover:text-white transition-colors">
           {crew.name}
         </h3>
