@@ -9,14 +9,7 @@ import { useRealRankings, useRealEvents, useGlobalStats } from '@/hooks/useRealD
 import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-
-// Award laurels
 import clioAwards2025 from '@/assets/clio-awards-2025.png';
-import beyondBorderAward from '@/assets/beyond-border-award.png';
-import creativeVisionAward from '@/assets/creative-vision-award.png';
-import digitalArtsAward from '@/assets/digital-arts-award.png';
-import futureMediaAward from '@/assets/future-media-award.png';
-import globalCinemaAward from '@/assets/global-cinema-award.png';
 
 // Class tier configuration
 const tiers = [
@@ -28,16 +21,6 @@ const tiers = [
   { tier: 'C', color: '#3B82F6' },
   { tier: 'D', color: '#F97316' },
   { tier: 'F', color: '#EF4444' },
-];
-
-// Clio first (featured), then others
-const laurels = [
-  { src: clioAwards2025, featured: true },
-  { src: beyondBorderAward, featured: false },
-  { src: creativeVisionAward, featured: false },
-  { src: digitalArtsAward, featured: false },
-  { src: futureMediaAward, featured: false },
-  { src: globalCinemaAward, featured: false },
 ];
 
 export default function LandingPage() {
@@ -63,148 +46,100 @@ export default function LandingPage() {
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
 
-        {/* Hero - AAA Typography */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
-          {/* Animated background gradients */}
-          <motion.div 
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 2 }}
+        {/* Hero - Original "PROVE YOUR RANK" design */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center px-4">
+          {/* Subtle gradient */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,175,55,0.08),transparent_50%)]" />
+          
+          {/* Clio Award Badge - subtle side placement */}
+          <motion.div
+            className="absolute top-32 right-8 md:right-16 lg:right-24"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1, duration: 0.6 }}
           >
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(212,175,55,0.15),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_100%,rgba(212,175,55,0.08),transparent_50%)]" />
+            <img 
+              src={clioAwards2025} 
+              alt="Clio Awards 2025 Shortlist" 
+              className="h-16 md:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity"
+            />
           </motion.div>
-
-          {/* Floating particles effect */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 bg-gold/30 rounded-full"
-                style={{
-                  left: `${15 + i * 15}%`,
-                  top: `${20 + (i % 3) * 25}%`,
-                }}
-                animate={{
-                  y: [0, -30, 0],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 3 + i * 0.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.3,
-                }}
-              />
-            ))}
-          </div>
           
           <motion.div 
-            className="relative z-10 text-center"
+            className="relative z-10 text-center max-w-4xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Eyebrow badge */}
-            <motion.div
-              className="inline-flex items-center gap-2 px-4 py-1.5 border border-gold/30 bg-gold/5 mb-8"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              <span className="w-1.5 h-1.5 bg-gold rounded-full animate-pulse" />
-              <span className="text-[10px] tracking-[0.3em] text-gold uppercase font-medium">
-                The Competitive Editing Index
-              </span>
-            </motion.div>
-
-            {/* Main title - MASSIVE typography */}
+            {/* Main headline */}
             <motion.h1
-              className="font-display text-[4rem] sm:text-[6rem] md:text-[8rem] lg:text-[10rem] leading-[0.85] tracking-[-0.02em] mb-4"
-              initial={{ opacity: 0, y: 40, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="font-display text-[3rem] sm:text-[4rem] md:text-[5.5rem] lg:text-[6.5rem] leading-[0.95] tracking-[-0.01em] mb-2"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.7 }}
             >
-              <span className="bg-gradient-to-b from-foreground via-foreground to-foreground/60 bg-clip-text text-transparent">
-                LOOPGATE
-              </span>
+              PROVE YOUR RANK.
             </motion.h1>
-
-            {/* Subtle glow line */}
-            <motion.div
-              className="w-32 h-px mx-auto bg-gradient-to-r from-transparent via-gold to-transparent mb-8"
-              initial={{ opacity: 0, scaleX: 0 }}
-              animate={{ opacity: 1, scaleX: 1 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-            />
+            
+            {/* Gold subheadline */}
+            <motion.h2
+              className="font-display text-[2.5rem] sm:text-[3.5rem] md:text-[4.5rem] lg:text-[5.5rem] leading-[0.95] tracking-[-0.01em] text-gold mb-8"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.7 }}
+            >
+              S++ OR F-TIER?
+            </motion.h2>
             
             {/* Tagline */}
             <motion.p 
-              className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-12 tracking-wide max-w-xl mx-auto"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-            >
-              Rank your edits. Climb the index. Prove your class.
-            </motion.p>
-            
-            {/* Primary CTA */}
-            <motion.div 
-              className="flex flex-col items-center gap-4"
+              className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              Find out where you rank among the world's best editors.
+            </motion.p>
+            
+            {/* Dual CTAs */}
+            <motion.div 
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
             >
               <Link to="/start">
                 <Button 
                   size="lg" 
-                  className="bg-foreground text-background hover:bg-foreground/90 font-semibold text-base sm:text-lg px-12 py-7 h-auto tracking-wide group"
+                  className="bg-gold hover:bg-gold/90 text-background font-display text-base tracking-wide px-8 py-6 h-auto"
                 >
-                  Enter
-                  <motion.span
-                    className="ml-2 inline-block"
-                    animate={{ x: [0, 4, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    →
-                  </motion.span>
+                  <Target className="w-5 h-5 mr-2" />
+                  RATE MY EDIT
                 </Button>
               </Link>
               
-              <button 
-                onClick={handleGuestExplore}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                or explore as guest
-              </button>
+              <Link to="/gqt">
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  className="border-foreground/20 hover:bg-foreground hover:text-background font-display text-base tracking-wide px-8 py-6 h-auto"
+                >
+                  TAKE THE QOI TEST
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
             </motion.div>
-          </motion.div>
-
-          {/* Award Laurels Strip */}
-          {/* Award Laurels Strip - Clio Featured */}
-          <motion.div 
-            className="absolute bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-4 sm:gap-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.6 }}
-          >
-            {laurels.map((laurel, i) => (
-              <motion.img
-                key={i}
-                src={laurel.src}
-                alt="Award"
-                className={`object-contain transition-all ${
-                  laurel.featured 
-                    ? 'h-16 sm:h-20 md:h-24 opacity-90 hover:opacity-100' 
-                    : 'h-10 sm:h-12 md:h-14 opacity-50 hover:opacity-80 grayscale hover:grayscale-0'
-                }`}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: laurel.featured ? 0.9 : 0.5, scale: 1 }}
-                transition={{ delay: 1.3 + i * 0.1, duration: 0.4 }}
-                whileHover={{ scale: 1.1 }}
-              />
-            ))}
+            
+            {/* Guest explore */}
+            <motion.button 
+              onClick={handleGuestExplore}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+            >
+              Explore as Guest
+            </motion.button>
           </motion.div>
 
           {/* Live stats - bottom */}
@@ -212,7 +147,7 @@ export default function LandingPage() {
             className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-6 text-sm text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.5, duration: 0.6 }}
+            transition={{ delay: 1, duration: 0.6 }}
           >
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
