@@ -87,6 +87,16 @@ export default function CreateCrewPage() {
         return;
       }
 
+      // Check if user already has a primary crew (for non-admins)
+      const { data: existingPrimary } = await supabase
+        .from("crew_members")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_primary", true)
+        .single();
+
+      const willBePrimary = !existingPrimary; // First crew is always primary
+
       // Create the crew with member_count 1 (owner)
       const { data: crew, error: crewError } = await supabase
         .from("crews")
@@ -111,11 +121,12 @@ export default function CreateCrewPage() {
         return;
       }
 
-      // Add creator as owner member
+      // Add creator as owner member (primary if they don't have one)
       const { error: memberError } = await supabase.from("crew_members").insert({
         crew_id: crew.id,
         user_id: user.id,
         role: "owner",
+        is_primary: willBePrimary,
       });
 
       if (memberError) {
@@ -127,11 +138,13 @@ export default function CreateCrewPage() {
         return;
       }
 
-      // Update profile with crew_id (trigger should do this, but ensure it's set)
-      await supabase
-        .from("profiles")
-        .update({ crew_id: crew.id })
-        .eq("id", user.id);
+      // Update profile with crew_id only if this is their primary crew
+      if (willBePrimary) {
+        await supabase
+          .from("profiles")
+          .update({ crew_id: crew.id })
+          .eq("id", user.id);
+      }
 
       navigate(`/crews/${crew.id}`);
     } catch (error) {

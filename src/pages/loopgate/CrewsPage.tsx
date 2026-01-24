@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Hash, MessageCircle, Calendar, Target } from "lucide-react";
+import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Hash, MessageCircle, Target, Flag, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useCrewMembership } from "@/hooks/useCrewMembership";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
@@ -44,19 +45,19 @@ const emblemIcons: Record<string, React.ReactNode> = {
 export default function CrewsPage() {
   const navigate = useNavigate();
   const { user, profile, isAdmin } = useAuth();
+  const { primaryCrew, secondaryCrews, canJoinSecondary, loading: membershipLoading, refresh: refreshMemberships } = useCrewMembership(user?.id);
   const [searchQuery, setSearchQuery] = useState("");
   const [crews, setCrews] = useState<Crew[]>([]);
-  const [myCrew, setMyCrew] = useState<Crew | null>(null);
   const [ownedCrewsCount, setOwnedCrewsCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"discover" | "my-crew">("discover");
+  const [activeTab, setActiveTab] = useState<"discover" | "my-crews">("discover");
 
-  // Switch to My Crew tab if user has a crew
+  // Switch to My Crews tab if user has a crew
   useEffect(() => {
-    if (profile?.crew_id) {
-      setActiveTab("my-crew");
+    if (primaryCrew || secondaryCrews.length > 0) {
+      setActiveTab("my-crews");
     }
-  }, [profile?.crew_id]);
+  }, [primaryCrew, secondaryCrews]);
 
   useEffect(() => {
     fetchCrews();
@@ -98,13 +99,6 @@ export default function CrewsPage() {
 
     setCrews(crewsWithXP);
 
-    if (profile?.crew_id) {
-      const userCrew = crewsWithXP.find((c) => c.id === profile.crew_id);
-      setMyCrew(userCrew || null);
-    } else {
-      setMyCrew(null);
-    }
-
     if (user) {
       const ownedCount = allCrews?.filter((c) => c.owner_id === user.id).length || 0;
       setOwnedCrewsCount(ownedCount);
@@ -113,14 +107,29 @@ export default function CrewsPage() {
     setLoading(false);
   };
 
+  // Filter out crews user is already in
+  const myCrewIds = [primaryCrew?.crew_id, ...secondaryCrews.map(s => s.crew_id)].filter(Boolean);
+  
   const filteredCrews = crews.filter((crew) => {
-    if (myCrew && crew.id === myCrew.id) return false;
+    if (myCrewIds.includes(crew.id)) return false;
     if (!searchQuery) return true;
     return crew.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const handleJoinCrew = async (crew: Crew) => {
+  const handleJoinCrew = async (crew: Crew, asPrimary: boolean) => {
     if (!user) return;
+
+    // Check if user can join secondary
+    if (!asPrimary && !canJoinSecondary) {
+      toast.error("You can only have 3 secondary crews. Leave one first.");
+      return;
+    }
+
+    // Check if user already has primary and trying to join as primary
+    if (asPrimary && primaryCrew) {
+      toast.error("You already have a primary crew. Change it from your crew settings.");
+      return;
+    }
 
     if (crew.join_type === "invite_only") {
       const { error } = await supabase.from("crew_join_requests").insert({
@@ -142,26 +151,38 @@ export default function CrewsPage() {
         crew_id: crew.id,
         user_id: user.id,
         role: "member",
+        is_primary: asPrimary,
       });
 
       if (error) {
         console.error("Error joining crew:", error);
+        toast.error("Failed to join crew");
       } else {
+        // If joining as primary, update profile.crew_id
+        if (asPrimary) {
+          await supabase.from("profiles").update({ crew_id: crew.id }).eq("id", user.id);
+        }
+        
         // Award XP for joining
         await supabase.rpc('award_xp', {
           p_user_id: user.id,
-          p_amount: 15,
-          p_action: 'crew_join',
-          p_description: `Joined ${crew.name}`,
+          p_amount: asPrimary ? 25 : 10,
+          p_action: asPrimary ? 'primary_crew_join' : 'secondary_crew_join',
+          p_description: `Joined ${crew.name} as ${asPrimary ? 'primary' : 'secondary'}`,
         });
-        toast.success("Welcome to the crew!");
+        toast.success(asPrimary ? `🏴 ${crew.name} is now your primary crew!` : `Joined ${crew.name} as secondary!`);
         fetchCrews();
+        refreshMemberships();
       }
     }
   };
 
   // Sort crews by total XP for rankings
   const rankedCrews = [...crews].sort((a, b) => (b.total_xp || 0) - (a.total_xp || 0));
+
+  // Get crew details for memberships
+  const getPrimaryCrewDetails = () => crews.find(c => c.id === primaryCrew?.crew_id);
+  const getSecondaryCrewDetails = () => secondaryCrews.map(s => crews.find(c => c.id === s.crew_id)).filter(Boolean) as Crew[];
 
   return (
     <PageTransition>
@@ -221,7 +242,7 @@ export default function CrewsPage() {
             <div className="flex gap-1 p-1 bg-surface-1/50 rounded-lg">
               {[
                 { id: "discover" as const, label: "Discover", icon: Target },
-                { id: "my-crew" as const, label: "My Crew", icon: Users },
+                { id: "my-crews" as const, label: "My Crews", icon: Layers },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -241,94 +262,124 @@ export default function CrewsPage() {
         </div>
 
         <div className="px-4 py-4 space-y-6">
-          {/* My Crew Tab */}
-          {activeTab === "my-crew" && (
+          {/* My Crews Tab */}
+          {activeTab === "my-crews" && (
             <AnimatePresence mode="wait">
-              {myCrew ? (
-                <motion.div
-                  key="my-crew"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  {/* Discord-style server card */}
-                  <div
-                    onClick={() => navigate(`/crews/${myCrew.id}`)}
-                    className="relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-900/20 via-surface-1 to-surface-1 cursor-pointer group"
-                  >
-                    {/* Banner */}
-                    <div className="h-20 bg-gradient-to-r from-purple-600/30 via-purple-500/20 to-purple-600/30" />
-                    
-                    {/* Avatar overlapping */}
-                    <div className="absolute top-12 left-1/2 -translate-x-1/2">
-                      <div className="w-16 h-16 rounded-2xl overflow-hidden border-4 border-background bg-purple-600/20 flex items-center justify-center text-purple-400 shadow-xl">
-                        {myCrew.avatar_url ? (
-                          <img src={myCrew.avatar_url} alt={myCrew.name} className="w-full h-full object-cover" />
-                        ) : (
-                          emblemIcons[myCrew.emblem] || <Shield className="w-8 h-8" />
-                        )}
+              <motion.div
+                key="my-crews"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="space-y-6"
+              >
+                {/* Primary Crew Section */}
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Flag className="w-4 h-4 text-gold" />
+                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gold">Primary Crew</h2>
+                    <span className="text-[10px] text-muted-foreground ml-auto">Your identity</span>
+                  </div>
+                  
+                  {primaryCrew && getPrimaryCrewDetails() ? (
+                    <div
+                      onClick={() => navigate(`/crews/${primaryCrew.crew_id}`)}
+                      className="relative overflow-hidden rounded-2xl border-2 border-gold/40 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 cursor-pointer group"
+                    >
+                      {/* Crown indicator */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+                          <Crown className="w-4 h-4 text-gold" />
+                        </div>
                       </div>
+                      
+                      {/* Banner */}
+                      <div className="h-16 bg-gradient-to-r from-gold/20 via-gold/10 to-gold/20" />
+                      
+                      {/* Avatar overlapping */}
+                      <div className="absolute top-8 left-4">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border-4 border-background bg-gold/10 flex items-center justify-center text-gold shadow-xl">
+                          {getPrimaryCrewDetails()?.avatar_url ? (
+                            <img src={getPrimaryCrewDetails()?.avatar_url!} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            emblemIcons[getPrimaryCrewDetails()?.emblem || "shield"] || <Shield className="w-8 h-8" />
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="pt-6 pb-4 px-4 pl-24">
+                        <h3 className="font-display text-lg font-bold text-gold">{getPrimaryCrewDetails()?.name}</h3>
+                        <p className="text-xs text-muted-foreground mb-2 line-clamp-1">
+                          {getPrimaryCrewDetails()?.description || "Your primary crew"}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            {getPrimaryCrewDetails()?.member_count} members
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Zap className="w-3 h-3 text-gold" />
+                            {(getPrimaryCrewDetails()?.total_xp || 0).toLocaleString()} XP
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {/* Hover glow */}
+                      <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                    
-                    <div className="pt-10 pb-5 px-5 text-center">
-                      <h3 className="font-display text-xl font-bold mb-1">{myCrew.name}</h3>
-                      <p className="text-xs text-muted-foreground mb-3">
-                        {myCrew.description || "Your crew"}
+                  ) : (
+                    <div className="p-6 rounded-xl border-2 border-dashed border-gold/30 bg-gold/5 text-center">
+                      <Flag className="w-8 h-8 text-gold/50 mx-auto mb-2" />
+                      <p className="text-sm text-gold/70 mb-1">No Primary Crew</p>
+                      <p className="text-xs text-muted-foreground">
+                        Join a crew as primary to represent them in tournaments
                       </p>
-                      
-                      {/* Discord-style channel previews */}
-                      <div className="flex flex-col gap-1 mb-4">
-                        {[
-                          { icon: Hash, label: "announcements" },
-                          { icon: MessageCircle, label: "general" },
-                          { icon: Trophy, label: "leaderboard" },
-                        ].map((channel) => (
-                          <div key={channel.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-0/50 text-left">
-                            <channel.icon className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">{channel.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Users className="w-3 h-3" />
-                          {myCrew.member_count} members
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Zap className="w-3 h-3 text-purple-400" />
-                          {(myCrew.total_xp || 0).toLocaleString()} XP
-                        </span>
-                      </div>
                     </div>
-                    
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </section>
+
+                {/* Secondary Crews Section */}
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Layers className="w-4 h-4 text-purple-400" />
+                    <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Secondary Crews</h2>
+                    <span className="text-[10px] text-muted-foreground ml-auto">{secondaryCrews.length}/3</span>
                   </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="no-crew"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-12"
-                >
-                  <div className="w-16 h-16 rounded-2xl bg-surface-1 border border-border flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="font-display text-lg mb-2">No Crew Yet</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Join a crew to compete together
-                  </p>
-                  <Button
-                    onClick={() => setActiveTab("discover")}
-                    variant="outline"
-                    className="border-purple-500/30 text-purple-400"
-                  >
-                    Browse Crews
-                  </Button>
-                </motion.div>
-              )}
+                  
+                  {getSecondaryCrewDetails().length > 0 ? (
+                    <div className="space-y-2">
+                      {getSecondaryCrewDetails().map((crew) => (
+                        <div
+                          key={crew.id}
+                          onClick={() => navigate(`/crews/${crew.id}`)}
+                          className="p-3 rounded-xl border border-border/50 bg-surface-1/40 flex items-center gap-3 cursor-pointer hover:bg-surface-1 hover:border-purple-500/30 transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-0 border border-border flex items-center justify-center shrink-0 opacity-70">
+                            {crew.avatar_url ? (
+                              <img src={crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="text-muted-foreground scale-75">
+                                {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-muted-foreground truncate">{crew.name}</h3>
+                            <p className="text-[10px] text-muted-foreground/60">
+                              {crew.member_count} members
+                            </p>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-xl border border-dashed border-border bg-surface-1/20 text-center">
+                      <p className="text-xs text-muted-foreground">
+                        No secondary crews yet. Join crews for practice and social connections.
+                      </p>
+                    </div>
+                  )}
+                </section>
+              </motion.div>
             </AnimatePresence>
           )}
 
@@ -500,18 +551,35 @@ export default function CrewsPage() {
                               <p className="text-sm font-bold text-purple-400">{(crew.total_xp || 0).toLocaleString()}</p>
                               <p className="text-[9px] text-muted-foreground">XP</p>
                             </div>
-                            {!myCrew && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleJoinCrew(crew);
-                                }}
-                                className="text-xs border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-                              >
-                                {crew.join_type === "invite_only" ? "Request" : "Join"}
-                              </Button>
+                            {user && !myCrewIds.includes(crew.id) && (
+                              <div className="flex gap-1">
+                                {!primaryCrew && (
+                                  <Button
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleJoinCrew(crew, true);
+                                    }}
+                                    className="text-[10px] h-7 px-2 bg-gold text-background hover:bg-gold/90"
+                                  >
+                                    <Flag className="w-3 h-3 mr-1" />
+                                    Primary
+                                  </Button>
+                                )}
+                                {canJoinSecondary && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleJoinCrew(crew, false);
+                                    }}
+                                    className="text-[10px] h-7 px-2 border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+                                  >
+                                    Secondary
+                                  </Button>
+                                )}
+                              </div>
                             )}
                           </div>
                         </motion.div>

@@ -365,6 +365,7 @@ export type Database = {
             | Database["public"]["Enums"]["crew_extended_role"]
             | null
           id: string
+          is_primary: boolean
           joined_at: string
           role: Database["public"]["Enums"]["crew_role"]
           user_id: string
@@ -375,6 +376,7 @@ export type Database = {
             | Database["public"]["Enums"]["crew_extended_role"]
             | null
           id?: string
+          is_primary?: boolean
           joined_at?: string
           role?: Database["public"]["Enums"]["crew_role"]
           user_id: string
@@ -385,6 +387,7 @@ export type Database = {
             | Database["public"]["Enums"]["crew_extended_role"]
             | null
           id?: string
+          is_primary?: boolean
           joined_at?: string
           role?: Database["public"]["Enums"]["crew_role"]
           user_id?: string
@@ -1578,6 +1581,7 @@ export type Database = {
           level: number
           onboarding_completed: boolean | null
           portfolio_url: string | null
+          primary_crew_changed_at: string | null
           region: string | null
           review_style: string | null
           rules_accepted: boolean | null
@@ -1621,6 +1625,7 @@ export type Database = {
           level?: number
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
+          primary_crew_changed_at?: string | null
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
@@ -1664,6 +1669,7 @@ export type Database = {
           level?: number
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
+          primary_crew_changed_at?: string | null
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
