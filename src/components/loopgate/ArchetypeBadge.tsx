@@ -41,10 +41,10 @@ export default function ArchetypeBadge({ archetype, size = 'lg', animate = true 
   
   const badge = (
     <div 
-      className={`inline-flex items-center rounded-full bg-gradient-to-r from-gold/20 via-gold/30 to-gold/20 border border-gold/50 ${sizeClasses[size]}`}
+      className={`inline-flex items-center rounded-full bg-surface-1 border border-border ${sizeClasses[size]}`}
     >
-      <Icon size={iconSizes[size]} className="text-gold" />
-      <span className="font-semibold tracking-wide text-gold uppercase">
+      <Icon size={iconSizes[size]} className="text-muted-foreground" />
+      <span className="font-semibold tracking-wide text-foreground uppercase">
         {archetypeData.label}
       </span>
     </div>
