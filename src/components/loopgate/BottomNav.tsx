@@ -1,10 +1,10 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { Home, Play, Search, User, LogIn, Infinity as InfinityIcon } from "lucide-react";
+import { Home, IterationCcw, Search, User, LogIn, Infinity as InfinityIcon } from "lucide-react";
 import { useGuestMode } from "@/hooks/useGuestMode";
 
 const navItems = [
   { to: "/hub", icon: Home, label: "Hub" },
-  { to: "/feed", icon: Play, label: "Loop" },
+  { to: "/feed", icon: IterationCcw, label: "Loop" },
   { to: "/index", icon: Search, label: "Discover" },
   { to: "/profile", icon: User, label: "Profile" },
 ];
