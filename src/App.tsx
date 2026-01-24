@@ -17,6 +17,8 @@ import HomePage from "./pages/loopgate/HomePage";
 import EventDetailPage from "./pages/loopgate/EventDetailPage";
 import RankingsPage from "./pages/loopgate/RankingsPage";
 import ProfilePage from "./pages/loopgate/ProfilePage";
+import ProfileSettingsPage from "./pages/loopgate/ProfileSettingsPage";
+import ProfileStatsPage from "./pages/loopgate/ProfileStatsPage";
 import PublicProfilePage from "./pages/loopgate/PublicProfilePage";
 import ClassPage from "./pages/loopgate/ClassPage";
 import IndexPage from "./pages/loopgate/IndexPage";
@@ -281,6 +283,8 @@ export default function App() {
               </ProtectedRoute>
             }>
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/settings" element={<ProfileSettingsPage />} />
+              <Route path="/profile/stats" element={<ProfileStatsPage />} />
               <Route path="/arenas/:arenaId" element={<ArenaChatPage />} />
               <Route path="/crews" element={<CrewsPage />} />
               <Route path="/crews/create" element={<CreateCrewPage />} />
