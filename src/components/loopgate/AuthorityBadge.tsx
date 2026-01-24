@@ -9,9 +9,9 @@ interface AuthorityBadgeProps {
 
 export default function AuthorityBadge({ role, size = 'sm' }: AuthorityBadgeProps) {
   const config = {
-    dev: { label: 'DEV', title: 'Loopgate Developer', icon: Shield, color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
-    judge: { label: 'QOI JUDGE', title: 'Official QOI Judge', icon: Gavel, color: 'bg-gold/20 text-gold border-gold/50' },
-    enterprise: { label: 'ENTERPRISE', title: 'Enterprise Client', icon: Building2, color: 'bg-purple-500/20 text-purple-400 border-purple-500/50' },
+    dev: { label: 'DEV', title: 'Loopgate Developer', icon: Shield, color: 'bg-muted text-blue-400 border-border' },
+    judge: { label: 'JUDGE', title: 'Official QOI Judge', icon: Gavel, color: 'bg-muted text-muted-foreground border-border' },
+    enterprise: { label: 'ENTERPRISE', title: 'Enterprise Client', icon: Building2, color: 'bg-muted text-purple-400 border-border' },
   };
   
   const { label, title, icon: Icon, color } = config[role];
@@ -24,7 +24,7 @@ export default function AuthorityBadge({ role, size = 'sm' }: AuthorityBadgeProp
   
   return (
     <span 
-      className={`inline-flex items-center ${sizeClasses} ${color} rounded-full font-semibold uppercase tracking-wider border`}
+      className={`inline-flex items-center ${sizeClasses} ${color} rounded font-medium uppercase tracking-wider border`}
       title={title}
     >
       <Icon className={iconSize} />

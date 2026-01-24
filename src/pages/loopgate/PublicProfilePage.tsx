@@ -231,12 +231,12 @@ export default function PublicProfilePage() {
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
         
         <div className="relative z-10">
-          {/* Top Bar */}
+          {/* Top Bar - Clean */}
           <div className="px-4 pt-3 pb-1 flex items-center justify-between">
             <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5">
               <ArrowLeft size={18} className="text-muted-foreground" />
             </button>
-            <img src={loopgateLogo} alt="LOOPGATE" className="h-3 opacity-60" />
+            <div className="w-8" /> {/* Spacer */}
             <button 
               onClick={handleShare}
               className="p-1.5 -mr-1.5 text-muted-foreground hover:text-white"
@@ -247,11 +247,11 @@ export default function PublicProfilePage() {
 
           {/* Profile Info - Compact */}
           <div className="px-4 pt-3 pb-3 flex flex-col items-center text-center">
-            {/* Avatar - Smaller */}
+            {/* Avatar - Neutral colors */}
             <div className="mb-2">
-              <Avatar className="w-16 h-16 border-2 border-gold/20">
+              <Avatar className="w-16 h-16 border-2 border-border">
                 <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
-                <AvatarFallback className="bg-gold/10 text-gold text-xl font-display">
+                <AvatarFallback className="bg-muted text-muted-foreground text-xl font-display">
                   {profile.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
