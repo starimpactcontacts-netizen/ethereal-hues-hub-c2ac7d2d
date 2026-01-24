@@ -175,7 +175,7 @@ export default function ProfilePage() {
 
       {/* ═══ HERO SECTION ═══ */}
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-muted/10 via-transparent to-transparent" />
         
         <div className="relative px-4 pt-4 pb-6">
           {/* Top Actions */}
@@ -186,7 +186,7 @@ export default function ProfilePage() {
                 navigator.clipboard.writeText(profileUrl);
                 toast.success("Profile link copied!");
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border text-xs font-medium hover:border-gold/50 transition-colors rounded-lg"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border text-xs font-medium hover:border-foreground/30 transition-colors rounded-lg"
             >
               <Share2 className="w-3.5 h-3.5" />
               Share
@@ -202,7 +202,7 @@ export default function ProfilePage() {
           <div className="flex flex-col items-center">
             <button
               onClick={() => setShowAvatarModal(true)}
-              className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gold/60 group mb-4"
+              className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-border group mb-4"
             >
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                 <p className="text-[10px] text-muted-foreground uppercase">Edits</p>
               </div>
               <div className="text-center">
-                <p className="font-display text-xl text-gold">#{userRank}</p>
+                <p className="font-display text-xl">#{userRank}</p>
                 <p className="text-[10px] text-muted-foreground uppercase">Rank</p>
               </div>
               <div className="text-center">
@@ -263,21 +263,21 @@ export default function ProfilePage() {
             {/* Primary Crew */}
             {primaryCrew?.crew && (
               <Link to={`/crews/${primaryCrew.crew_id}`} className="w-full max-w-xs">
-                <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gold/5 border border-gold/20 hover:border-gold/40 transition-colors">
-                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-gold/10 flex items-center justify-center">
+                <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-surface-1 border border-border hover:border-foreground/30 transition-colors">
+                  <div className="w-8 h-8 rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center">
                     {primaryCrew.crew.avatar_url ? (
                       <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <Shield className="w-4 h-4 text-gold" />
+                      <Shield className="w-4 h-4 text-muted-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <Crown className="w-3 h-3 text-gold" />
-                      <span className="text-sm text-gold font-medium truncate">{primaryCrew.crew.name}</span>
+                      <Crown className="w-3 h-3 text-muted-foreground" />
+                      <span className="text-sm font-medium truncate">{primaryCrew.crew.name}</span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gold/40" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </div>
               </Link>
             )}
@@ -289,7 +289,7 @@ export default function ProfilePage() {
       <div className="px-4 mb-4">
         <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1.5">
           <span className="flex items-center gap-1">
-            <Zap className="w-3 h-3 text-gold" />
+            <Zap className="w-3 h-3 text-purple-400" />
             LV {level}
           </span>
           <span>{xp} XP</span>
@@ -303,10 +303,10 @@ export default function ProfilePage() {
           <Link to="/profile/stats">
             <motion.div 
               whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-xl p-4 flex items-center gap-3 hover:border-gold/30 transition-colors"
+              className="bg-surface-1 border border-border rounded-xl p-4 flex items-center gap-3 hover:border-foreground/30 transition-colors"
             >
-              <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-gold" />
+              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-purple-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">Stats</p>
@@ -319,7 +319,7 @@ export default function ProfilePage() {
           <Link to="/profile/settings">
             <motion.div 
               whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-xl p-4 flex items-center gap-3 hover:border-gold/30 transition-colors"
+              className="bg-surface-1 border border-border rounded-xl p-4 flex items-center gap-3 hover:border-foreground/30 transition-colors"
             >
               <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center">
                 <Settings className="w-5 h-5 text-muted-foreground" />
