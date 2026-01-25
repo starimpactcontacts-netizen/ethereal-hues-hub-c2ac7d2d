@@ -135,9 +135,9 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Clio Entertainment Laurel */}
+          {/* Clio Entertainment Laurel - positioned on the side */}
           <motion.div 
-            className="absolute bottom-8 sm:bottom-10 left-1/2 -translate-x-1/2"
+            className="absolute bottom-8 sm:bottom-10 right-4 sm:right-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
@@ -145,7 +145,7 @@ export default function LandingPage() {
             <img 
               src={clioLaurel} 
               alt="Clio Entertainment Shortlist 2025" 
-              className="h-16 sm:h-20 w-auto opacity-60 hover:opacity-90 transition-opacity duration-300"
+              className="h-12 sm:h-16 w-auto opacity-50 hover:opacity-80 transition-opacity duration-300 brightness-0 invert"
             />
           </motion.div>
         </section>
