@@ -29,10 +29,21 @@ interface BracketTreeProps {
 
 // Generate bracket structure from participants
 function generateBracket(participants: Participant[]): { rounds: Match[][]; champion: Participant | null } {
-  // Sort by QOI score for seeding
+  // Include all participants who have submitted OR have been scored
+  // Sort by QOI score (scored first, then by join order for unscored)
   const sorted = [...participants]
-    .filter(p => p.qoi_score !== null)
-    .sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
+    .filter(p => p.username) // Include anyone in the tournament
+    .sort((a, b) => {
+      // Scored participants first, sorted by score
+      if (a.qoi_score !== null && b.qoi_score !== null) {
+        return (b.qoi_score || 0) - (a.qoi_score || 0);
+      }
+      // Scored before unscored
+      if (a.qoi_score !== null) return -1;
+      if (b.qoi_score !== null) return 1;
+      // Unscored: maintain original order (join order)
+      return 0;
+    });
 
   const count = sorted.length;
   if (count < 2) return { rounds: [], champion: sorted[0] || null };
