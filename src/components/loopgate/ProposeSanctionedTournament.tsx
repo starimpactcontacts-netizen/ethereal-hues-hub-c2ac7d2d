@@ -29,7 +29,7 @@ const formatOptions = [
   { value: "single_elimination", label: "Single Elimination" },
 ];
 
-const playerOptions = [20, 32, 48, 64, 100];
+const editorOptions = [2, 4, 8, 16, 32, 48, 64, 100];
 const durationOptions = [
   { value: 24, label: "24 hours" },
   { value: 48, label: "48 hours" },
@@ -50,7 +50,7 @@ export default function ProposeSanctionedTournament({
   const [description, setDescription] = useState("");
   const [theme, setTheme] = useState("");
   const [maxPlayers, setMaxPlayers] = useState(64);
-  const [minPlayers, setMinPlayers] = useState(20);
+  const [minPlayers, setMinPlayers] = useState(2);
   const [duration, setDuration] = useState(48);
   const [format, setFormat] = useState("single_elimination");
   const [rulesText, setRulesText] = useState("");
@@ -430,7 +430,7 @@ export default function ProposeSanctionedTournament({
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 block">
               <Users className="w-3.5 h-3.5 inline mr-2" />
-              Min Players
+              Min Editors
             </label>
             <div className="relative">
               <select
@@ -438,7 +438,7 @@ export default function ProposeSanctionedTournament({
                 onChange={(e) => setMinPlayers(Number(e.target.value))}
                 className="w-full bg-surface-1 border border-border px-4 py-3 text-foreground appearance-none"
               >
-                {[8, 12, 16, 20, 24, 32].map((n) => (
+                {[2, 4, 8, 16, 20, 32].map((n) => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>
@@ -447,7 +447,7 @@ export default function ProposeSanctionedTournament({
           </div>
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 block">
-              Max Players
+              Max Editors
             </label>
             <div className="relative">
               <select
@@ -455,7 +455,7 @@ export default function ProposeSanctionedTournament({
                 onChange={(e) => setMaxPlayers(Number(e.target.value))}
                 className="w-full bg-surface-1 border border-border px-4 py-3 text-foreground appearance-none"
               >
-                {playerOptions.map((n) => (
+                {editorOptions.map((n) => (
                   <option key={n} value={n}>{n}</option>
                 ))}
               </select>
