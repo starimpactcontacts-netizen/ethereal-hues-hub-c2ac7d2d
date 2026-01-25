@@ -366,7 +366,7 @@ export default function FeedPage() {
       const arenaOffset = offsetRef.current.arena;
       const reviewOffset = offsetRef.current.review;
 
-      const [roundRes, eventRes, reviewRes] = await Promise.all([
+      const [roundRes, eventRes, sanctionedRes, reviewRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at')
@@ -382,6 +382,13 @@ export default function FeedPage() {
           .order('qoi_score', { ascending: false })
           .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase
+          .from('sanctioned_tournament_participants')
+          .select('id, submission_url, submission_platform, qoi_score, user_id, tournament_id, submitted_at, final_rank')
+          .not('qoi_score', 'is', null)
+          .not('submission_url', 'is', null)
+          .order('submitted_at', { ascending: false })
+          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase
           .from('review_requests')
           .select('*')
           .eq('status', 'reviewed')
@@ -392,14 +399,15 @@ export default function FeedPage() {
 
       const roundData = roundRes.data || [];
       const eventData = eventRes.data || [];
+      const sanctionedData = sanctionedRes.data || [];
       const reviewData = reviewRes.data || [];
 
       // Update offsets
-      offsetRef.current.arena += Math.max(roundData.length, eventData.length);
+      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length);
       offsetRef.current.review += reviewData.length;
 
       // Check if we have more data
-      const fetchedCount = roundData.length + eventData.length + reviewData.length;
+      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length;
       if (fetchedCount === 0) {
         setHasMore(false);
         if (isLoadMore) {
@@ -408,18 +416,21 @@ export default function FeedPage() {
         }
       }
 
-      const arenaUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id)];
+      const arenaUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id), ...sanctionedData.map(s => s.user_id)];
       const reviewUserIds = reviewData.map(r => r.user_id);
       const userIds = [...new Set([...arenaUserIds, ...reviewUserIds])];
       const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
+      const tournamentIds = [...new Set(sanctionedData.map(s => s.tournament_id))];
 
-      const [profilesRes, eventsRes] = await Promise.all([
+      const [profilesRes, eventsRes, tournamentsRes] = await Promise.all([
         supabase.from('profiles').select('id, username, avatar_url').in('id', userIds.length > 0 ? userIds : ['']),
-        supabase.from('events').select('id, title').in('id', eventIds.length > 0 ? eventIds : [''])
+        supabase.from('events').select('id, title').in('id', eventIds.length > 0 ? eventIds : ['']),
+        supabase.from('sanctioned_tournaments').select('id, name').in('id', tournamentIds.length > 0 ? tournamentIds : [''])
       ]);
 
       const profileMap = new Map(profilesRes.data?.map(p => [p.id, p]) || []);
       const eventMap = new Map(eventsRes.data?.map(e => [e.id, e]) || []);
+      const tournamentMap = new Map(tournamentsRes.data?.map(t => [t.id, { id: t.id, title: t.name }]) || []);
 
       const roundItems: ArenaFeedItem[] = roundData.map(s => ({
         id: `arena-${s.id}`,
@@ -457,7 +468,25 @@ export default function FeedPage() {
         final_rank: s.final_rank || null,
       }));
 
-      const arenaItems = [...roundItems, ...eventItems];
+      const sanctionedItems: ArenaFeedItem[] = sanctionedData.map(s => ({
+        id: `arena-sanctioned-${s.id}`,
+        type: 'arena' as const,
+        submission_url: s.submission_url!,
+        platform: s.submission_platform || 'tiktok',
+        user_id: s.user_id,
+        username: profileMap.get(s.user_id)?.username || 'editor',
+        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
+        created_at: s.submitted_at || new Date().toISOString(),
+        qoi_score: s.qoi_score,
+        quality_score: null,
+        originality_score: null,
+        impact_score: null,
+        event_id: s.tournament_id,
+        event_title: tournamentMap.get(s.tournament_id)?.title || 'Sanctioned Tournament',
+        final_rank: s.final_rank || null,
+      }));
+
+      const arenaItems = [...roundItems, ...eventItems, ...sanctionedItems];
 
       const reviewItems: ReviewFeedItem[] = reviewData.map(r => ({
         id: `review-${r.id}`,

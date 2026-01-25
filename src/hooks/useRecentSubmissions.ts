@@ -16,7 +16,7 @@ export interface RecentSubmission {
   status: string;
   submitted_at: string;
   round_number: number | null;
-  type: 'round' | 'standard';
+  type: 'round' | 'standard' | 'sanctioned';
 }
 
 // Extract video thumbnail from URL
@@ -58,12 +58,33 @@ export function useRecentSubmissions(limit: number = 10) {
         .order('submitted_at', { ascending: false, nullsFirst: false })
         .limit(limit);
 
+      // Fetch sanctioned tournament participations
+      const { data: sanctionedData, error: sanctionedError } = await supabase
+        .from('sanctioned_tournament_participants')
+        .select('id, user_id, tournament_id, submission_url, submission_platform, qoi_score, submitted_at, final_rank')
+        .not('submission_url', 'is', null)
+        .order('submitted_at', { ascending: false, nullsFirst: false })
+        .limit(limit);
+
       if (roundError) console.error('Round fetch error:', roundError);
       if (eventError) console.error('Event fetch error:', eventError);
+      if (sanctionedError) console.error('Sanctioned fetch error:', sanctionedError);
 
       const allData = [
         ...(roundData || []).map(d => ({ ...d, type: 'round' as const, round_number: d.round_number })),
         ...(eventData || []).map(d => ({ ...d, type: 'standard' as const, round_number: null })),
+        ...(sanctionedData || []).map(d => ({ 
+          id: d.id,
+          user_id: d.user_id,
+          event_id: d.tournament_id,
+          submission_url: d.submission_url,
+          platform: d.submission_platform || 'tiktok',
+          qoi_score: d.qoi_score,
+          status: d.qoi_score ? 'scored' : 'pending',
+          submitted_at: d.submitted_at,
+          type: 'sanctioned' as const, 
+          round_number: null 
+        })),
       ];
 
       if (allData.length === 0) {
@@ -74,16 +95,19 @@ export function useRecentSubmissions(limit: number = 10) {
 
       // Get unique user and event IDs
       const userIds = [...new Set(allData.map(s => s.user_id))];
-      const eventIds = [...new Set(allData.map(s => s.event_id))];
+      const eventIds = [...new Set(allData.filter(s => s.type !== 'sanctioned').map(s => s.event_id))];
+      const tournamentIds = [...new Set(allData.filter(s => s.type === 'sanctioned').map(s => s.event_id))];
 
-      // Fetch profiles and events in parallel
-      const [profilesRes, eventsRes] = await Promise.all([
+      // Fetch profiles, events, and tournaments in parallel
+      const [profilesRes, eventsRes, tournamentsRes] = await Promise.all([
         supabase.from('profiles').select('id, username, display_name, avatar_url, global_index_score').in('id', userIds),
-        supabase.from('events').select('id, title').in('id', eventIds)
+        eventIds.length > 0 ? supabase.from('events').select('id, title').in('id', eventIds) : { data: [] },
+        tournamentIds.length > 0 ? supabase.from('sanctioned_tournaments').select('id, name').in('id', tournamentIds) : { data: [] }
       ]);
 
       const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p]));
       const eventMap = new Map((eventsRes.data || []).map(e => [e.id, e]));
+      const tournamentMap = new Map((tournamentsRes.data || []).map(t => [t.id, { id: t.id, title: t.name }]));
 
       const enriched: RecentSubmission[] = allData.map(s => ({
         id: s.id,
@@ -93,7 +117,9 @@ export function useRecentSubmissions(limit: number = 10) {
         avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
         global_index_score: profileMap.get(s.user_id)?.global_index_score || 0,
         event_id: s.event_id,
-        event_title: eventMap.get(s.event_id)?.title || 'Event',
+        event_title: s.type === 'sanctioned' 
+          ? tournamentMap.get(s.event_id)?.title || 'Sanctioned Tournament'
+          : eventMap.get(s.event_id)?.title || 'Event',
         submission_url: s.submission_url!,
         platform: s.platform || 'tiktok',
         qoi_score: s.qoi_score,
@@ -138,6 +164,11 @@ export function useRecentSubmissions(limit: number = 10) {
         event: 'INSERT', 
         schema: 'public', 
         table: 'event_participations'
+      }, () => fetchSubmissions())
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'sanctioned_tournament_participants'
       }, () => fetchSubmissions())
       .subscribe();
 
