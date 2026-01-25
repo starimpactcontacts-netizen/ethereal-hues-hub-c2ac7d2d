@@ -28,6 +28,8 @@ const actionLabels: Record<string, string> = {
   invite_sent: "Sent Invite",
   invite_joined: "Friend Joined",
   invite_submitted: "Friend Submitted (24h)",
+  sanctioned_tournament: "Sanctioned Tournament",
+  judge_review: "Judge Review",
 };
 
 interface XPHistoryProps {

@@ -223,16 +223,26 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
 
       if (error) throw error;
 
+      // Award XP to participant for being scored (participation XP)
+      const xpAmount = selectedTournament.xp_reward || 100;
+      await supabase.rpc('award_xp', {
+        p_user_id: scoringParticipant.user_id,
+        p_amount: xpAmount,
+        p_action: 'sanctioned_tournament',
+        p_description: `Competed in ${selectedTournament.name}`,
+      });
+
       // Create notification for the scored participant
       await supabase.from("notifications").insert({
         user_id: scoringParticipant.user_id,
         type: "tournament_scored",
         title: "Your submission was judged!",
-        message: `You scored ${qoiScore} QOI in ${selectedTournament.name}`,
+        message: `You scored ${qoiScore} QOI in ${selectedTournament.name} (+${xpAmount} XP)`,
         data: { 
           tournament_id: selectedTournament.id, 
           tournament_name: selectedTournament.name,
-          qoi_score: qoiScore 
+          qoi_score: qoiScore,
+          xp_awarded: xpAmount
         }
       });
 
@@ -252,7 +262,7 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
         }
       });
 
-      toast.success("Score saved!");
+      toast.success(`Score saved! +${xpAmount} XP awarded`);
       setScoringParticipant(null);
       setQoiScore(70);
       fetchParticipants(selectedTournament.id);
@@ -260,6 +270,111 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       toast.error(err.message || "Failed to save score");
     } finally {
       setSavingScore(false);
+    }
+  };
+
+  // Complete tournament and award Index points to top 3
+  const handleCompleteTournament = async (tournamentId: string) => {
+    const tournament = tournaments.find(t => t.id === tournamentId);
+    if (!tournament) return;
+
+    try {
+      // Get all participants sorted by score
+      const { data: allParticipants, error: fetchError } = await supabase
+        .from("sanctioned_tournament_participants")
+        .select("*")
+        .eq("tournament_id", tournamentId)
+        .not("qoi_score", "is", null)
+        .order("qoi_score", { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      if (!allParticipants || allParticipants.length === 0) {
+        toast.error("No scored participants to finalize");
+        return;
+      }
+
+      // Set final ranks
+      for (let i = 0; i < allParticipants.length; i++) {
+        const rank = i + 1;
+        await supabase
+          .from("sanctioned_tournament_participants")
+          .update({ final_rank: rank })
+          .eq("id", allParticipants[i].id);
+      }
+
+      // Award Index points to top 3
+      const indexRewards = [
+        { rank: 1, points: tournament.first_place_index || 0 },
+        { rank: 2, points: tournament.second_place_index || 0 },
+        { rank: 3, points: tournament.third_place_index || 0 },
+      ];
+
+      for (const reward of indexRewards) {
+        const participant = allParticipants[reward.rank - 1];
+        if (participant && reward.points > 0) {
+          // Get current profile values and increment
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("global_index_score, spendable_index")
+            .eq("id", participant.user_id)
+            .single();
+
+          if (profile) {
+            await supabase
+              .from("profiles")
+              .update({
+                global_index_score: (profile.global_index_score || 0) + reward.points,
+                spendable_index: (profile.spendable_index || 0) + reward.points,
+              })
+              .eq("id", participant.user_id);
+          }
+
+          // Notify winner
+          const placementText = reward.rank === 1 ? "1st" : reward.rank === 2 ? "2nd" : "3rd";
+          await supabase.from("notifications").insert({
+            user_id: participant.user_id,
+            type: "tournament_placement",
+            title: `🏆 ${placementText} Place!`,
+            message: `You placed ${placementText} in ${tournament.name} and earned ${reward.points} Index points!`,
+            data: { 
+              tournament_id: tournamentId, 
+              tournament_name: tournament.name,
+              rank: reward.rank,
+              index_awarded: reward.points
+            }
+          });
+
+          // Add to activity feed
+          await supabase.from("activity_feed").insert({
+            user_id: participant.user_id,
+            username: participant.username,
+            avatar_url: participant.avatar_url,
+            activity_type: "tournament_win",
+            title: `@${participant.username} placed ${placementText}`,
+            description: `in ${tournament.name} (+${reward.points} Index)`,
+            data: { 
+              tournament_id: tournamentId, 
+              tournament_name: tournament.name,
+              rank: reward.rank,
+              index_awarded: reward.points
+            }
+          });
+        }
+      }
+
+      // Mark tournament as completed
+      await supabase
+        .from("sanctioned_tournaments")
+        .update({ 
+          status: "completed",
+          end_date: new Date().toISOString()
+        })
+        .eq("id", tournamentId);
+
+      toast.success("Tournament completed! Rewards distributed.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to complete tournament");
     }
   };
 
@@ -802,10 +917,11 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleStatusChange(tournament.id, "completed")}
+                          onClick={() => handleCompleteTournament(tournament.id)}
                           className="text-xs"
                         >
-                          Complete
+                          <Trophy className="w-3 h-3 mr-1" />
+                          Complete & Award
                         </Button>
                       )}
                     </>
