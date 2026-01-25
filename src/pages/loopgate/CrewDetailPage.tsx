@@ -674,48 +674,63 @@ export default function CrewDetailPage() {
 
               {/* Action Buttons */}
               {myRole && (
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    onClick={() => navigate(`/crews/${crewId}/chat`)}
-                    className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Chat
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowInviteModal(true)}
-                    className="border-border hover:border-gold/50 hover:bg-gold/5"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                  {crew.discord_url && (
-                    <a href={crew.discord_url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" className="border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/10">
-                        <SiDiscord className="w-4 h-4" />
-                      </Button>
-                    </a>
-                  )}
-                  {myRole !== "owner" && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" className="border-red-500/30 text-red-500 hover:bg-red-500/10">
-                          <LogOut className="w-4 h-4" />
+                <div className="flex flex-col gap-2 mt-4">
+                  {/* Primary Row: Chat + Icons */}
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => navigate(`/crews/${crewId}/chat`)}
+                      className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Chat
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowInviteModal(true)}
+                      className="border-border hover:border-gold/50 hover:bg-gold/5"
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </Button>
+                    {crew.discord_url && (
+                      <a href={crew.discord_url} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" className="border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/10">
+                          <SiDiscord className="w-4 h-4" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Leave Crew?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to leave {crew.name}?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleLeaveCrew}>Leave</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                      </a>
+                    )}
+                    {myRole !== "owner" && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" className="border-red-500/30 text-red-500 hover:bg-red-500/10">
+                            <LogOut className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Leave Crew?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to leave {crew.name}?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleLeaveCrew}>Leave</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                  
+                  {/* Propose Tournament Button - Owner Only */}
+                  {isOwner && (
+                    <Button
+                      onClick={() => setShowProposalForm(true)}
+                      variant="outline"
+                      className="w-full border-gold/30 text-gold hover:bg-gold/10 font-semibold gap-2"
+                    >
+                      <Trophy className="w-4 h-4" />
+                      Propose Sanctioned Tournament
+                    </Button>
                   )}
                 </div>
               )}
@@ -1089,11 +1104,7 @@ export default function CrewDetailPage() {
 
               {/* Challenges Tab */}
               {activeTab === 'challenges' && crewId && (
-                <CrewChallengesPanel 
-                  crewId={crewId} 
-                  isOwner={isOwner}
-                  onProposeClick={() => setShowProposalForm(true)}
-                />
+                <CrewChallengesPanel crewId={crewId} />
               )}
             </motion.div>
           </AnimatePresence>
