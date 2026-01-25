@@ -168,32 +168,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log('[Auth] Token refreshed successfully');
         }
         
-        // For all other events, update state with session
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          setTimeout(() => {
-            if (mounted) {
-              fetchProfile(session.user.id);
-            }
-          }, 0);
-        } else if (event !== 'INITIAL_SESSION') {
-          // Only clear profile on explicit logout, not on initial null session
-          setProfile(null);
-          setPlatforms([]);
-          setRoles([]);
+        // Handle token refresh errors gracefully - don't log out immediately
+        // The session might still be valid even if refresh failed temporarily
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            setTimeout(() => {
+              if (mounted) {
+                fetchProfile(session.user.id);
+              }
+            }, 0);
+          }
+        } else if (event === 'USER_UPDATED') {
+          // User data changed, update accordingly
+          setSession(session);
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            setTimeout(() => {
+              if (mounted) {
+                fetchProfile(session.user.id);
+              }
+            }, 0);
+          }
         }
+        
         setLoading(false);
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (!mounted) return;
       
+      // If there's a refresh token error, try to recover by checking localStorage
       if (error) {
         console.error('[Auth] Error getting session:', error);
+        
+        // Check if this is a refresh token error - don't log out immediately
+        // The user might have a stale session that needs refreshing
+        if (error.message?.includes('refresh_token') || error.message?.includes('Refresh Token')) {
+          console.log('[Auth] Refresh token issue detected, clearing stale session');
+          // Clear the broken session to allow fresh login
+          await supabase.auth.signOut({ scope: 'local' });
+        }
+        
         setLoading(false);
         return;
       }
