@@ -10,6 +10,7 @@ import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import loopgateBrand from '@/assets/loopgate-brand.png';
+import clioLaurel from '@/assets/clio-laurel-2025.png';
 
 // Class tier colors
 const tierColors: Record<string, { bg: string; text: string; border: string; glow?: string }> = {
@@ -134,36 +135,18 @@ export default function LandingPage() {
             </motion.div>
           </motion.div>
 
-          {/* Live stats bar - floating at bottom */}
+          {/* Clio Entertainment Laurel */}
           <motion.div 
-            className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 sm:gap-6 px-4 sm:px-6 py-2.5 sm:py-3 bg-background/80 backdrop-blur-md border border-border/50 rounded-full max-w-[calc(100%-2rem)]"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 0.6 }}
+            className="absolute bottom-8 sm:bottom-10 left-1/2 -translate-x-1/2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 0.8 }}
           >
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
-              <span className="text-xs sm:text-sm font-semibold">{stats.activeUsers.toLocaleString()}</span>
-              <span className="text-[10px] sm:text-xs text-muted-foreground">Active</span>
-            </div>
-            <div className="w-px h-4 sm:h-5 bg-border" />
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
-              <span className="text-xs sm:text-sm font-semibold">{stats.entries24h}</span>
-              <span className="text-[10px] sm:text-xs text-muted-foreground hidden xs:inline">Edits Today</span>
-            </div>
-            {liveEvent && (
-              <>
-                <div className="w-px h-4 sm:h-5 bg-border" />
-                <div className="flex items-center gap-1.5 sm:gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-live opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-status-live" />
-                  </span>
-                  <span className="text-xs sm:text-sm font-semibold text-status-live">Live</span>
-                </div>
-              </>
-            )}
+            <img 
+              src={clioLaurel} 
+              alt="Clio Entertainment Shortlist 2025" 
+              className="h-16 sm:h-20 w-auto opacity-60 hover:opacity-90 transition-opacity duration-300"
+            />
           </motion.div>
         </section>
 
