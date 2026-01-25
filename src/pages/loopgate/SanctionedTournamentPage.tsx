@@ -26,6 +26,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
+import BracketTree from "@/components/loopgate/BracketTree";
 
 export default function SanctionedTournamentPage() {
   const { id } = useParams<{ id: string }>();
@@ -610,9 +611,9 @@ function SubmissionPhase({
 
 // ==================== BRACKET PHASE ====================
 function BracketPhase({ tournament, participants }: { tournament: any; participants: any[] }) {
-  // Sort by QOI score for preliminary ranking
-  const rankedParticipants = [...participants]
-    .filter((p) => p.submitted_at)
+  // Filter to only submitted participants
+  const submittedParticipants = participants.filter((p) => p.submitted_at);
+  const rankedParticipants = [...submittedParticipants]
     .sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
 
   return (
@@ -628,19 +629,13 @@ function BracketPhase({ tournament, participants }: { tournament: any; participa
           <Timer className="w-5 h-5 text-sky-400 animate-pulse" />
           <div>
             <span className="text-sm font-semibold text-sky-400">BRACKETS IN PROGRESS</span>
-            <p className="text-[10px] text-muted-foreground">Judges are reviewing submissions</p>
+            <p className="text-[10px] text-muted-foreground">Judges are reviewing matchups</p>
           </div>
         </div>
       </div>
 
-      {/* Bracket Visualization Placeholder */}
-      <div className="p-6 bg-surface-1 border border-border text-center">
-        <Swords className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-        <h3 className="font-display text-lg text-foreground mb-2">Bracket View Coming</h3>
-        <p className="text-sm text-muted-foreground">
-          Full bracket visualization will appear here once judging begins.
-        </p>
-      </div>
+      {/* Visual Bracket Tree */}
+      <BracketTree participants={submittedParticipants} />
 
       {/* Current Standings */}
       <div>
