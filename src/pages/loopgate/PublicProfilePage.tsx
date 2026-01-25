@@ -378,6 +378,20 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
+          {/* Joined Date */}
+          {profile.created_at && (
+            <div>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Joined</p>
+              <p className="text-sm text-foreground">
+                {new Date(profile.created_at).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </p>
+            </div>
+          )}
+
           {/* Software */}
           {profile.software && profile.software.length > 0 && (
             <div>
