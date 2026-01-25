@@ -97,12 +97,12 @@ export default function LandingPage() {
             </motion.div>
             
             <motion.p 
-              className="text-[11px] sm:text-xs text-muted-foreground/60 max-w-sm mx-auto mb-10 tracking-wide"
+              className="font-display text-sm sm:text-base text-muted-foreground/50 max-w-lg mx-auto mb-10 tracking-[0.15em]"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              A structured system for evaluating editors, hosting events, and maintaining global rankings.
+              A STRUCTURED SYSTEM FOR EVALUATING EDITORS, HOSTING EVENTS, AND MAINTAINING GLOBAL RANKINGS.
             </motion.p>
             
             {/* CTA Buttons - Clean, minimal styling */}
