@@ -17,6 +17,9 @@ import {
   Zap,
   Crown,
   Target,
+  ChevronDown,
+  ChevronUp,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -270,6 +273,7 @@ function LobbyPhase({
   onReadyUp,
   isCrewVsCrew,
 }: LobbyPhaseProps) {
+  const [showGuide, setShowGuide] = useState(false);
   const isReadyUpPhase = tournament.status === "ready_up";
   const readyDeadline = tournament.ready_up_deadline;
   
@@ -336,7 +340,91 @@ function LobbyPhase({
         </div>
       </div>
 
-      {/* Prize Pool */}
+      {/* How It Works - Collapsible Guide */}
+      <div className="border border-border bg-surface-1 overflow-hidden">
+        <button
+          onClick={() => setShowGuide(!showGuide)}
+          className="w-full flex items-center justify-between p-3 hover:bg-surface-2 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">How It Works</span>
+          </div>
+          {showGuide ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
+        </button>
+        
+        <AnimatePresence>
+          {showGuide && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="border-t border-border"
+            >
+              <div className="p-4 space-y-4">
+                {/* Phase 1 */}
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-emerald-400">1</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Lobby Phase</p>
+                    <p className="text-xs text-muted-foreground">
+                      Join and ready up before the deadline. Minimum {tournament.min_players} editors needed, max {tournament.max_players}.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Phase 2 */}
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-amber-400">2</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Submission Phase</p>
+                    <p className="text-xs text-muted-foreground">
+                      Theme revealed! You'll have {tournament.duration_hours}h to create and submit your edit. Email notification sent.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Phase 3 */}
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-sky-400">3</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Bracket Phase</p>
+                    <p className="text-xs text-muted-foreground">
+                      Admins judge all submissions on QOI (0-100). Single elimination bracket determines winners.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Phase 4 */}
+                <div className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center shrink-0">
+                    <span className="text-xs font-bold text-gold">4</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Rewards</p>
+                    <p className="text-xs text-muted-foreground">
+                      Top 3 win Index prizes. All participants earn XP and tournament credit.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+
       {(tournament.first_place_index || tournament.index_prize) && (
         <div className="p-4 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 border border-gold/20">
           <div className="flex items-center gap-2 mb-3">
