@@ -4,17 +4,26 @@ interface CountdownTimerProps {
   endDate: string | Date;
   label?: string;
   large?: boolean;
+  hideWhenExpired?: boolean;
+  expiredLabel?: string;
 }
 
-export default function CountdownTimer({ endDate, label, large = false }: CountdownTimerProps) {
+export default function CountdownTimer({ 
+  endDate, 
+  label, 
+  large = false, 
+  hideWhenExpired = false,
+  expiredLabel = "Ended"
+}: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+  const [isExpired, setIsExpired] = useState(false);
 
   function calculateTimeLeft() {
     const targetDate = typeof endDate === 'string' ? new Date(endDate) : endDate;
     const difference = targetDate.getTime() - new Date().getTime();
     
     if (difference <= 0) {
-      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
     }
 
     return {
@@ -22,16 +31,53 @@ export default function CountdownTimer({ endDate, label, large = false }: Countd
       hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
       minutes: Math.floor((difference / 1000 / 60) % 60),
       seconds: Math.floor((difference / 1000) % 60),
+      expired: false,
     };
   }
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      const newTimeLeft = calculateTimeLeft();
+      setTimeLeft(newTimeLeft);
+      setIsExpired(newTimeLeft.expired);
     }, 1000);
 
     return () => clearInterval(timer);
   }, [endDate]);
+
+  // Hide component if expired and hideWhenExpired is true
+  if (isExpired && hideWhenExpired) {
+    return null;
+  }
+
+  // Show expired state
+  if (isExpired) {
+    if (large) {
+      return (
+        <div className="text-center">
+          {label && (
+            <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-3">
+              {label}
+            </p>
+          )}
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <span className="text-lg font-semibold">{expiredLabel}</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        {label && (
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+            {label}
+          </span>
+        )}
+        <span className="text-sm font-semibold text-muted-foreground">{expiredLabel}</span>
+      </div>
+    );
+  }
 
   if (large) {
     return (
