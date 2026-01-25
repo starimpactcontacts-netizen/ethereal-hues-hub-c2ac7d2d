@@ -12,9 +12,9 @@ export default function AuthenticatedLayout() {
   const showNav = !hideNav;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col overflow-hidden">
       {!hideNav && <AppHeader />}
-      <main className={`flex-1 ${!hideNav ? 'pb-14' : ''}`}>
+      <main className={`flex-1 overflow-y-auto ${!hideNav ? 'pb-14' : ''}`}>
         <Suspense fallback={<LoadingScreen minimal />}>
           <Outlet />
         </Suspense>
