@@ -112,6 +112,9 @@ export default function EditorCard({ editor }: EditorCardProps) {
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider flex-wrap">
             <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
             <span>{editor.total_events || 0} Events</span>
+            {editor.created_at && (
+              <span className="text-gold/80">Since {new Date(editor.created_at).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })}</span>
+            )}
             {editor.crew && (
               <CrewBadge crew={editor.crew} size="sm" />
             )}
