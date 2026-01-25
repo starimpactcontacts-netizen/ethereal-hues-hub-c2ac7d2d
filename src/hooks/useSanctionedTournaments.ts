@@ -74,6 +74,7 @@ export interface ProposeTournamentData {
   duration_hours?: number;
   format_type?: string;
   proposed_start_date?: string;
+  poster_url?: string;
   // Crew vs Crew mode
   tournament_mode?: "open" | "crew_vs_crew";
   challenged_crew_id?: string;
@@ -344,6 +345,7 @@ export function useProposeTournament() {
           duration_hours: data.duration_hours || 48,
           format_type: data.format_type || "single_elimination",
           proposed_start_date: data.proposed_start_date,
+          poster_url: data.poster_url,
           tournament_mode: data.tournament_mode || "open",
           challenged_crew_id: data.challenged_crew_id,
           challenged_crew_name: data.challenged_crew_name,
