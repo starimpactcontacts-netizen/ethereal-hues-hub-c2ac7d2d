@@ -269,13 +269,30 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
       if (error) throw error;
 
+      const newReadyCount = (tournament?.ready_count || 0) + 1;
+
       // Update ready count
       await supabase
         .from("sanctioned_tournaments")
-        .update({ ready_count: (tournament?.ready_count || 0) + 1 })
+        .update({ ready_count: newReadyCount })
         .eq("id", tournamentId);
 
-      toast.success("Ready!");
+      // Check if max players reached - auto-start tournament!
+      if (newReadyCount >= (tournament?.max_players || 100)) {
+        await supabase
+          .from("sanctioned_tournaments")
+          .update({ 
+            status: "live",
+            start_date: new Date().toISOString(),
+            submission_deadline: new Date(Date.now() + (tournament?.duration_hours || 48) * 60 * 60 * 1000).toISOString()
+          })
+          .eq("id", tournamentId);
+
+        toast.success("Lobby full — Tournament starting!");
+      } else {
+        toast.success("Ready!");
+      }
+      
       return true;
     } catch (err: any) {
       toast.error(err.message || "Failed to ready up");
