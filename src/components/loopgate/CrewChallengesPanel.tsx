@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { Swords, Trophy, Clock, Sparkles } from "lucide-react";
+import { Swords, Trophy, Clock, Sparkles, Plus, CalendarPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCrewChallenges } from "@/hooks/useCrewChallenges";
 import CrewChallengeCard from "./CrewChallengeCard";
+import { Button } from "@/components/ui/button";
 
 interface CrewChallengesPanelProps {
   crewId: string;
+  isOwner?: boolean;
+  onProposeClick?: () => void;
 }
 
-export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps) {
+export default function CrewChallengesPanel({ crewId, isOwner, onProposeClick }: CrewChallengesPanelProps) {
   const { challenges, loading, claimReward, getTimeRemaining } = useCrewChallenges(crewId);
   const [claimingId, setClaimingId] = useState<string | null>(null);
 
@@ -30,16 +33,6 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
     );
   }
 
-  if (challenges.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Swords className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-        <p className="text-muted-foreground text-sm">No quests available right now</p>
-        <p className="text-muted-foreground/60 text-xs mt-1">Check back soon!</p>
-      </div>
-    );
-  }
-
   const totalXP = challenges.reduce((sum, c) => sum + c.xp_reward, 0);
   const claimableXP = challenges
     .filter((c) => c.canClaim)
@@ -47,6 +40,17 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
 
   return (
     <div className="space-y-6">
+      {/* Propose Tournament Button for Owners */}
+      {isOwner && onProposeClick && (
+        <Button
+          onClick={onProposeClick}
+          className="w-full bg-gold text-black hover:bg-gold/90 font-semibold gap-2"
+        >
+          <CalendarPlus className="w-4 h-4" />
+          Propose Sanctioned Tournament
+        </Button>
+      )}
+
       {/* Header Stats */}
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
@@ -94,6 +98,15 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
               ))}
             </AnimatePresence>
           </div>
+        </div>
+      )}
+
+      {/* Empty state when no challenges */}
+      {challenges.length === 0 && (
+        <div className="text-center py-8">
+          <Swords className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">No quests available right now</p>
+          <p className="text-muted-foreground/60 text-xs mt-1">Check back soon!</p>
         </div>
       )}
 

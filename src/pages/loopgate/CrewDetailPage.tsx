@@ -1089,7 +1089,11 @@ export default function CrewDetailPage() {
 
               {/* Challenges Tab */}
               {activeTab === 'challenges' && crewId && (
-                <CrewChallengesPanel crewId={crewId} />
+                <CrewChallengesPanel 
+                  crewId={crewId} 
+                  isOwner={isOwner}
+                  onProposeClick={() => setShowProposalForm(true)}
+                />
               )}
             </motion.div>
           </AnimatePresence>
