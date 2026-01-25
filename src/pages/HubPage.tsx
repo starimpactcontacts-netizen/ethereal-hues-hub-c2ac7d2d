@@ -299,82 +299,90 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden" style={{
-            clipPath: 'polygon(0% 8%, 3% 0%, 97% 0%, 100% 8%, 100% 92%, 97% 100%, 3% 100%, 0% 92%)',
-          }}>
-            {/* SVG border overlay for inward curve effect */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" preserveAspectRatio="none">
-              <path 
-                d="M 0,8 Q 12,0 24,0 L 376,0 Q 388,0 400,8 L 400,92 Q 388,100 376,100 L 24,100 Q 12,100 0,92 Z" 
-                fill="none" 
-                stroke="rgba(212,175,55,0.25)"
-                strokeWidth="1.5"
-                vectorEffect="non-scaling-stroke"
-                className="group-hover:stroke-[rgba(212,175,55,0.5)] transition-all duration-500"
-                style={{ width: '100%', height: '100%' }}
-              />
+          <div className="relative overflow-visible">
+            {/* SVG container with inward curved sides */}
+            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <defs>
+                <clipPath id="inwardShape" clipPathUnits="objectBoundingBox">
+                  <path d="M 0,0 L 1,0 L 1,0.08 Q 0.97,0.5 1,0.92 L 1,1 L 0,1 L 0,0.92 Q 0.03,0.5 0,0.08 Z" />
+                </clipPath>
+              </defs>
             </svg>
             
-            {/* Multi-layer background for depth */}
-            <div className="absolute inset-0 bg-gradient-to-br from-surface-1 via-background to-surface-1" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold/8 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
+            <div className="relative" style={{ clipPath: 'url(#inwardShape)' }}>
+              {/* Multi-layer background for depth */}
+              <div className="absolute inset-0 bg-gradient-to-br from-surface-1 via-background to-surface-1" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold/8 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
+              
+              {/* Animated glow pulse */}
+              <motion.div
+                className="absolute -top-20 -right-20 w-40 h-40 bg-gold/15 rounded-full blur-3xl"
+                animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.1, 1] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
             
-            {/* Animated glow pulse */}
-            <motion.div
-              className="absolute -top-20 -right-20 w-40 h-40 bg-gold/15 rounded-full blur-3xl"
-              animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.1, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            />
-            
-            {/* Content */}
-            <div className="relative p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* Arena Icon - Subtle Gold Glitch Aura */}
-                <div className="relative flex items-center justify-center">
-                  {/* Outer ambient glow - toned down */}
-                  <div className="absolute w-16 h-16 bg-gold/15 rounded-xl blur-xl animate-pulse" />
+              {/* Content */}
+              <div className="relative p-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  {/* Arena Icon - Subtle Gold Glitch Aura */}
+                  <div className="relative flex items-center justify-center">
+                    {/* Outer ambient glow - toned down */}
+                    <div className="absolute w-16 h-16 bg-gold/15 rounded-xl blur-xl animate-pulse" />
+                    
+                    {/* Glitch layer 1 - offset gold */}
+                    <div className="absolute w-12 h-12 bg-gold/25 rounded-lg blur-md translate-x-[2px] translate-y-[1px] animate-[pulse_1.5s_ease-in-out_infinite]" />
+                    
+                    {/* Glitch layer 2 - subtle */}
+                    <div className="absolute w-12 h-12 bg-gold/15 rounded-lg blur-md -translate-x-[2px] -translate-y-[1px] animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
+                    
+                    {/* Icon container - warm off-white with gold border */}
+                    <div className="relative w-12 h-12 bg-gradient-to-b from-zinc-100 via-zinc-50 to-zinc-100 rounded-lg flex items-center justify-center
+                      shadow-[0_0_20px_rgba(212,175,55,0.4),0_0_8px_rgba(212,175,55,0.6),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]
+                      group-hover:shadow-[0_0_25px_rgba(212,175,55,0.5),0_0_10px_rgba(212,175,55,0.8),inset_0_0_0_2px_rgba(212,175,55,1)]
+                      transition-all duration-300">
+                      <InfinityIcon className="w-6 h-6 text-zinc-900" strokeWidth={2.5} />
+                    </div>
+                  </div>
                   
-                  {/* Glitch layer 1 - offset gold */}
-                  <div className="absolute w-12 h-12 bg-gold/25 rounded-lg blur-md translate-x-[2px] translate-y-[1px] animate-[pulse_1.5s_ease-in-out_infinite]" />
-                  
-                  {/* Glitch layer 2 - subtle */}
-                  <div className="absolute w-12 h-12 bg-gold/15 rounded-lg blur-md -translate-x-[2px] -translate-y-[1px] animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
-                  
-                  {/* Icon container - warm off-white with gold border */}
-                  <div className="relative w-12 h-12 bg-gradient-to-b from-zinc-100 via-zinc-50 to-zinc-100 rounded-lg flex items-center justify-center
-                    shadow-[0_0_20px_rgba(212,175,55,0.4),0_0_8px_rgba(212,175,55,0.6),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]
-                    group-hover:shadow-[0_0_25px_rgba(212,175,55,0.5),0_0_10px_rgba(212,175,55,0.8),inset_0_0_0_2px_rgba(212,175,55,1)]
-                    transition-all duration-300">
-                    <InfinityIcon className="w-6 h-6 text-zinc-900" strokeWidth={2.5} />
+                  <div>
+                    <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
+                    <p className="text-xs text-muted-foreground font-medium">Enter the competition</p>
                   </div>
                 </div>
                 
-                <div>
-                  <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
-                  <p className="text-xs text-muted-foreground font-medium">Enter the competition</p>
-                </div>
-              </div>
-              
-              {/* Enter Button - Subtle Gold Glitch Style */}
-              <div className="shrink-0 relative">
-                {/* Button ambient glow */}
-                <div className="absolute inset-0 bg-gold/15 rounded-lg blur-lg animate-pulse" />
-                
-                {/* Glitch layers for button - subtle */}
-                <div className="absolute inset-0 bg-gold/20 rounded-lg blur-sm translate-x-[1px] translate-y-[1px] animate-[pulse_1.8s_ease-in-out_infinite]" />
-                
-                <div className="relative bg-gradient-to-b from-zinc-100 via-zinc-50 to-zinc-100 text-zinc-900 font-display text-xs px-5 py-2.5 rounded-lg
-                  shadow-[0_0_15px_rgba(212,175,55,0.35),0_0_6px_rgba(212,175,55,0.5),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]
-                  group-hover:shadow-[0_0_20px_rgba(212,175,55,0.5),0_0_8px_rgba(212,175,55,0.7),inset_0_0_0_2px_rgba(212,175,55,1)]
-                  transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <span>ENTER NOW</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                {/* Enter Button - Subtle Gold Glitch Style */}
+                <div className="shrink-0 relative">
+                  {/* Button ambient glow */}
+                  <div className="absolute inset-0 bg-gold/15 rounded-lg blur-lg animate-pulse" />
+                  
+                  {/* Glitch layers for button - subtle */}
+                  <div className="absolute inset-0 bg-gold/20 rounded-lg blur-sm translate-x-[1px] translate-y-[1px] animate-[pulse_1.8s_ease-in-out_infinite]" />
+                  
+                  <div className="relative bg-gradient-to-b from-zinc-100 via-zinc-50 to-zinc-100 text-zinc-900 font-display text-xs px-5 py-2.5 rounded-lg
+                    shadow-[0_0_15px_rgba(212,175,55,0.35),0_0_6px_rgba(212,175,55,0.5),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]
+                    group-hover:shadow-[0_0_20px_rgba(212,175,55,0.5),0_0_8px_rgba(212,175,55,0.7),inset_0_0_0_2px_rgba(212,175,55,1)]
+                    transition-all duration-300">
+                    <div className="flex items-center gap-2">
+                      <span>ENTER NOW</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            
+            {/* SVG border with inward curve */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 400 80">
+              <path 
+                d="M 0,0 L 400,0 L 400,6 Q 392,40 400,74 L 400,80 L 0,80 L 0,74 Q 8,40 0,6 Z" 
+                fill="none" 
+                stroke="rgba(212,175,55,0.3)"
+                strokeWidth="1"
+                vectorEffect="non-scaling-stroke"
+                className="group-hover:stroke-[rgba(212,175,55,0.5)] transition-all duration-500"
+              />
+            </svg>
           </div>
         </Link>
       </motion.div>
