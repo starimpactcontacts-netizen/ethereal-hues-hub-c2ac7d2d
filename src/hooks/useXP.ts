@@ -75,6 +75,8 @@ const ACTION_DESCRIPTIONS: Record<string, string> = {
   arena_chat: 'arena chat',
   verify_platform: 'verifying a platform',
   login_streak: 'daily login streak',
+  sanctioned_tournament: 'competing in a sanctioned tournament',
+  judge_review: 'completing a judge review',
 };
 
 export interface XPHistoryEntry {
