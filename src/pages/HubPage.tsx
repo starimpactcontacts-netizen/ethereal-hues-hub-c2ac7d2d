@@ -325,11 +325,23 @@ export default function HubPage() {
             {/* Content */}
             <div className="relative p-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {/* Arena Icon - Enhanced */}
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gold/30 rounded-xl blur-md group-hover:blur-lg transition-all" />
-                  <div className="relative w-14 h-14 bg-gradient-to-br from-gold via-amber-400 to-amber-500 rounded-xl flex items-center justify-center shadow-xl">
-                    <InfinityIcon className="w-7 h-7 text-background" strokeWidth={2.5} />
+                {/* Arena Icon - White x Gold Neon Glitch Aura */}
+                <div className="relative flex items-center justify-center">
+                  {/* Outer ambient glow */}
+                  <div className="absolute w-20 h-20 bg-gold/25 rounded-2xl blur-2xl animate-pulse" />
+                  
+                  {/* Glitch layer 1 - offset gold */}
+                  <div className="absolute w-14 h-14 bg-gold/40 rounded-xl blur-md translate-x-[3px] translate-y-[2px] animate-[pulse_1.5s_ease-in-out_infinite]" />
+                  
+                  {/* Glitch layer 2 - offset white */}
+                  <div className="absolute w-14 h-14 bg-white/30 rounded-xl blur-md -translate-x-[3px] -translate-y-[2px] animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
+                  
+                  {/* Icon container - crisp white with gold border glow */}
+                  <div className="relative w-14 h-14 bg-gradient-to-b from-white via-white to-zinc-50 rounded-xl flex items-center justify-center
+                    shadow-[0_0_30px_rgba(212,175,55,0.6),0_0_15px_rgba(255,255,255,0.5),0_0_8px_rgba(212,175,55,0.9),inset_0_0_0_2px_rgba(212,175,55,1)]
+                    group-hover:shadow-[0_0_40px_rgba(212,175,55,0.8),0_0_20px_rgba(255,255,255,0.6),0_0_10px_rgba(212,175,55,1),inset_0_0_0_2.5px_rgba(212,175,55,1)]
+                    transition-all duration-300">
+                    <InfinityIcon className="w-7 h-7 text-zinc-900" strokeWidth={2.5} />
                   </div>
                 </div>
                 
@@ -339,17 +351,20 @@ export default function HubPage() {
                 </div>
               </div>
               
-              {/* Enter Button - Enhanced */}
-              <div className="shrink-0">
-                <div className="relative overflow-hidden bg-gradient-to-r from-gold via-amber-400 to-gold text-background font-display text-sm px-6 py-3 rounded-xl shadow-lg shadow-gold/25 group-hover:shadow-gold/50 transition-all duration-300">
-                  {/* Button shimmer */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0"
-                    initial={{ x: '-100%' }}
-                    animate={{ x: '100%' }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                  />
-                  <div className="relative flex items-center gap-2">
+              {/* Enter Button - White x Gold Glitch Style */}
+              <div className="shrink-0 relative">
+                {/* Button ambient glow */}
+                <div className="absolute inset-0 bg-gold/20 rounded-xl blur-xl animate-pulse" />
+                
+                {/* Glitch layers for button */}
+                <div className="absolute inset-0 bg-gold/30 rounded-xl blur-sm translate-x-[2px] translate-y-[1px] animate-[pulse_1.8s_ease-in-out_infinite]" />
+                <div className="absolute inset-0 bg-white/20 rounded-xl blur-sm -translate-x-[2px] -translate-y-[1px] animate-[pulse_2.2s_ease-in-out_infinite_0.3s]" />
+                
+                <div className="relative bg-gradient-to-b from-white via-white to-zinc-50 text-zinc-900 font-display text-sm px-6 py-3 rounded-xl
+                  shadow-[0_0_25px_rgba(212,175,55,0.5),0_0_12px_rgba(255,255,255,0.4),0_0_6px_rgba(212,175,55,0.8),inset_0_0_0_1.5px_rgba(212,175,55,1)]
+                  group-hover:shadow-[0_0_35px_rgba(212,175,55,0.7),0_0_15px_rgba(255,255,255,0.5),0_0_8px_rgba(212,175,55,1),inset_0_0_0_2px_rgba(212,175,55,1)]
+                  transition-all duration-300">
+                  <div className="flex items-center gap-2">
                     <span>ENTER NOW</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
