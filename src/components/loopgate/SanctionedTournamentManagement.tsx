@@ -2,15 +2,17 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   ArrowLeft, Shield, Users, Clock, Trophy, ChevronDown, 
-  Check, X, ExternalLink, Play, CheckCircle, Coins
+  Check, X, ExternalLink, Play, CheckCircle, Coins, Swords, Eye, Gavel
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import type { SanctionedTournament } from "@/hooks/useSanctionedTournaments";
+import type { SanctionedTournament, SanctionedParticipant } from "@/hooks/useSanctionedTournaments";
 
 interface SanctionedTournamentManagementProps {
   onClose: () => void;
@@ -22,6 +24,8 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
   const [loading, setLoading] = useState(true);
   const [selectedTournament, setSelectedTournament] = useState<SanctionedTournament | null>(null);
   const [approvalMode, setApprovalMode] = useState(false);
+  const [judgingMode, setJudgingMode] = useState(false);
+  const [participants, setParticipants] = useState<SanctionedParticipant[]>([]);
   
   // Approval form state
   const [indexPrize, setIndexPrize] = useState("");
@@ -33,6 +37,11 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
   const [adminNotes, setAdminNotes] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Judging state
+  const [scoringParticipant, setScoringParticipant] = useState<SanctionedParticipant | null>(null);
+  const [qoiScore, setQoiScore] = useState(70);
+  const [savingScore, setSavingScore] = useState(false);
 
   useEffect(() => {
     fetchTournaments();
@@ -62,6 +71,21 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       console.error("Error fetching tournaments:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchParticipants = async (tournamentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("sanctioned_tournament_participants")
+        .select("*")
+        .eq("tournament_id", tournamentId)
+        .order("qoi_score", { ascending: false, nullsFirst: false });
+
+      if (error) throw error;
+      setParticipants((data as SanctionedParticipant[]) || []);
+    } catch (err) {
+      console.error("Error fetching participants:", err);
     }
   };
 
@@ -151,6 +175,31 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       toast.success(`Status updated to ${newStatus}`);
     } catch (err: any) {
       toast.error(err.message || "Failed to update status");
+    }
+  };
+
+  const handleScoreSubmission = async () => {
+    if (!scoringParticipant || !user) return;
+
+    setSavingScore(true);
+    try {
+      const { error } = await supabase
+        .from("sanctioned_tournament_participants")
+        .update({ qoi_score: qoiScore })
+        .eq("id", scoringParticipant.id);
+
+      if (error) throw error;
+
+      toast.success("Score saved!");
+      setScoringParticipant(null);
+      setQoiScore(70);
+      if (selectedTournament) {
+        fetchParticipants(selectedTournament.id);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save score");
+    } finally {
+      setSavingScore(false);
     }
   };
 
@@ -336,6 +385,177 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
     );
   }
 
+  // Judging Mode UI
+  if (judgingMode && selectedTournament) {
+    const submittedParticipants = participants.filter(p => p.submission_url);
+    const scoredCount = participants.filter(p => p.qoi_score !== null).length;
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => {
+              setJudgingMode(false);
+              setSelectedTournament(null);
+              setParticipants([]);
+              setScoringParticipant(null);
+            }}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-xs uppercase tracking-wider">Back</span>
+          </button>
+          <h3 className="font-display text-lg text-foreground">Judge Submissions</h3>
+        </div>
+
+        {/* Tournament Info */}
+        <div className="bg-surface-1 border border-gold/30 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              {selectedTournament.crew_avatar_url ? (
+                <img src={selectedTournament.crew_avatar_url} className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-gold" />
+                </div>
+              )}
+              <div>
+                <p className="font-bold text-foreground">{selectedTournament.name}</p>
+                <p className="text-xs text-muted-foreground">{selectedTournament.crew_name}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-display text-gold">{scoredCount}/{submittedParticipants.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Scored</p>
+            </div>
+          </div>
+          {selectedTournament.theme && (
+            <div className="bg-surface-2 p-3 text-center">
+              <p className="text-[10px] text-gold uppercase tracking-wider mb-1">Theme</p>
+              <p className="text-sm text-foreground">{selectedTournament.theme}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Scoring Modal */}
+        {scoringParticipant && (
+          <div className="bg-surface-1 border border-gold p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={scoringParticipant.avatar_url || undefined} />
+                  <AvatarFallback>{scoringParticipant.username[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-bold text-foreground">{scoringParticipant.username}</p>
+                  <a 
+                    href={scoringParticipant.submission_url || ""} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-gold hover:underline flex items-center gap-1"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    View Edit
+                  </a>
+                </div>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setScoringParticipant(null)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  QOI Score
+                </label>
+                <span className="text-2xl font-display text-gold">{qoiScore}</span>
+              </div>
+              <Slider
+                value={[qoiScore]}
+                onValueChange={(v) => setQoiScore(v[0])}
+                min={0}
+                max={100}
+                step={1}
+                className="py-2"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <span>0</span>
+                <span>50</span>
+                <span>100</span>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleScoreSubmission}
+              disabled={savingScore}
+              className="w-full bg-gold text-black hover:bg-gold/90"
+            >
+              {savingScore ? "Saving..." : "Save Score"}
+            </Button>
+          </div>
+        )}
+
+        {/* Submissions List */}
+        <div className="space-y-2">
+          {submittedParticipants.length === 0 ? (
+            <div className="text-center py-8">
+              <Gavel className="w-10 h-10 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No submissions yet</p>
+            </div>
+          ) : (
+            submittedParticipants.map((participant) => (
+              <div
+                key={participant.id}
+                className={`bg-surface-1 border p-3 flex items-center justify-between ${
+                  participant.qoi_score !== null ? "border-emerald-500/30" : "border-border"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={participant.avatar_url || undefined} />
+                    <AvatarFallback>{participant.username[0].toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-bold text-sm text-foreground">{participant.username}</p>
+                    <a 
+                      href={participant.submission_url || ""} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-gold hover:underline"
+                    >
+                      {participant.submission_platform || "tiktok"} →
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {participant.qoi_score !== null ? (
+                    <span className="text-lg font-display text-gold">{participant.qoi_score}</span>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    variant={participant.qoi_score !== null ? "outline" : "default"}
+                    onClick={() => {
+                      setScoringParticipant(participant);
+                      setQoiScore(participant.qoi_score || 70);
+                    }}
+                    className={participant.qoi_score === null ? "bg-gold text-black hover:bg-gold/90" : ""}
+                  >
+                    {participant.qoi_score !== null ? "Edit" : "Score"}
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -370,9 +590,17 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                     </div>
                   )}
                   <div>
-                    <p className="font-bold text-sm text-foreground">{tournament.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-sm text-foreground">{tournament.name}</p>
+                      {tournament.tournament_mode === "crew_vs_crew" && (
+                        <Swords className="w-3 h-3 text-red-400" />
+                      )}
+                    </div>
                     <p className="text-[10px] text-muted-foreground">
                       by {tournament.crew_name} • {tournament.min_players}-{tournament.max_players} players
+                      {tournament.tournament_mode === "crew_vs_crew" && tournament.challenged_crew_name && (
+                        <> vs {tournament.challenged_crew_name}</>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -412,6 +640,9 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                     <span className="text-[9px] uppercase tracking-wider text-muted-foreground bg-surface-2 px-2 py-0.5">
                       {tournament.status.replace("_", " ")}
                     </span>
+                    {tournament.tournament_mode === "crew_vs_crew" && (
+                      <Swords className="w-3 h-3 text-red-400" />
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="w-3 h-3 text-muted-foreground" />
@@ -419,7 +650,7 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {tournament.status === "approved" && (
                     <Button
                       size="sm"
@@ -431,34 +662,55 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                     </Button>
                   )}
                   {tournament.status === "ready_up" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleStatusChange(tournament.id, "live")}
-                      className="text-xs"
-                    >
-                      Go Live
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleStatusChange(tournament.id, "live")}
+                        className="text-xs"
+                      >
+                        Go Live
+                      </Button>
+                      <span className="text-[10px] text-muted-foreground">
+                        {tournament.ready_count} ready
+                      </span>
+                    </>
                   )}
-                  {tournament.status === "live" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleStatusChange(tournament.id, "bracket")}
-                      className="text-xs"
-                    >
-                      Start Bracket
-                    </Button>
-                  )}
-                  {tournament.status === "bracket" && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleStatusChange(tournament.id, "completed")}
-                      className="text-xs"
-                    >
-                      Mark Complete
-                    </Button>
+                  {(tournament.status === "live" || tournament.status === "bracket") && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedTournament(tournament);
+                          setJudgingMode(true);
+                          fetchParticipants(tournament.id);
+                        }}
+                        className="text-xs bg-gold text-black hover:bg-gold/90"
+                      >
+                        <Gavel className="w-3 h-3 mr-1" />
+                        Judge
+                      </Button>
+                      {tournament.status === "live" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleStatusChange(tournament.id, "bracket")}
+                          className="text-xs"
+                        >
+                          Start Bracket
+                        </Button>
+                      )}
+                      {tournament.status === "bracket" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleStatusChange(tournament.id, "completed")}
+                          className="text-xs"
+                        >
+                          Complete
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
 
