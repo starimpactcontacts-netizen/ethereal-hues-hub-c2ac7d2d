@@ -263,14 +263,7 @@ export default function BracketTree({ participants, bracketData }: BracketTreePr
 
   return (
     <div className="space-y-6">
-      {/* Champion Display */}
-      {champion && (
-        <div className="p-4 bg-gradient-to-b from-gold/10 to-transparent border border-gold/20">
-          <ChampionCard champion={champion} />
-        </div>
-      )}
-
-      {/* Bracket Grid - Horizontal scroll */}
+      {/* Bracket Grid - Horizontal scroll with champion at end */}
       <div className="overflow-x-auto pb-4 -mx-4 px-4">
         <div className="flex gap-4 items-center min-w-max">
           {rounds.map((round, roundIndex) => (
@@ -286,7 +279,7 @@ export default function BracketTree({ participants, bracketData }: BracketTreePr
               <div className="flex flex-col gap-4 justify-around" style={{
                 minHeight: roundIndex === 0 ? 'auto' : `${rounds[0].length * 80}px`
               }}>
-                {round.map((match, matchIndex) => (
+                {round.map((match) => (
                   <div 
                     key={match.id}
                     className="relative"
@@ -300,15 +293,70 @@ export default function BracketTree({ participants, bracketData }: BracketTreePr
                       isLast={roundIndex === rounds.length - 1}
                     />
                     
-                    {/* Connector lines */}
+                    {/* Connector lines to next round */}
                     {roundIndex < rounds.length - 1 && (
                       <div className="absolute right-0 top-1/2 w-4 border-t border-border/50" />
+                    )}
+                    
+                    {/* Connector line to champion (final match only) */}
+                    {roundIndex === rounds.length - 1 && (
+                      <div className="absolute right-0 top-1/2 w-6 border-t border-gold/50" />
                     )}
                   </div>
                 ))}
               </div>
             </div>
           ))}
+          
+          {/* Champion Slot - Always visible as end of bracket */}
+          <div className="flex flex-col gap-4">
+            <div className="text-center">
+              <span className="text-[10px] text-gold uppercase tracking-wider font-semibold">
+                Champion
+              </span>
+            </div>
+            
+            <div className="flex items-center justify-center" style={{
+              minHeight: rounds.length > 1 ? `${rounds[0].length * 80}px` : 'auto'
+            }}>
+              {champion ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="relative p-4 bg-gradient-to-br from-gold/20 to-gold/5 border-2 border-gold/40 min-w-[120px]"
+                >
+                  <Crown className="w-5 h-5 text-gold absolute -top-3 left-1/2 -translate-x-1/2" />
+                  <div className="flex flex-col items-center gap-2 pt-1">
+                    <Avatar className="w-10 h-10 border-2 border-gold shadow-lg shadow-gold/20">
+                      <AvatarImage src={champion.avatar_url || undefined} />
+                      <AvatarFallback className="text-sm bg-gold/20 text-gold">
+                        {champion.username?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-semibold text-gold truncate max-w-[100px]">
+                      {champion.username}
+                    </span>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="relative p-4 bg-surface-1 border border-dashed border-gold/30 min-w-[120px]"
+                >
+                  <Crown className="w-5 h-5 text-gold/40 absolute -top-3 left-1/2 -translate-x-1/2" />
+                  <div className="flex flex-col items-center gap-2 pt-1">
+                    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-gold/40" />
+                    </div>
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                      TBD
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
