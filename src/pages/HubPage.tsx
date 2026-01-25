@@ -4,13 +4,14 @@ import { motion } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
-  ChevronRight, Plus, Infinity as InfinityIcon, Star
+  ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings } from '@/hooks/useRealData';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
+import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
@@ -42,6 +43,7 @@ export default function HubPage() {
   const { events } = useRealEvents();
   const { stats } = useGlobalStats();
   const { rankings } = useRealRankings();
+  const { tournaments: sanctionedTournaments } = useSanctionedTournaments();
   const navigate = useNavigate();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
@@ -88,6 +90,14 @@ export default function HubPage() {
   const bestScore = profile?.best_gatekeeper_qoi;
 
   const liveEvents = events.filter(e => e.status === 'live');
+  
+  // Sanctioned tournaments that are active (approved, ready_up, live, bracket)
+  const activeSanctioned = sanctionedTournaments.filter(t => 
+    ['approved', 'ready_up', 'live', 'bracket'].includes(t.status)
+  );
+  
+  // Total featured count for header
+  const totalFeatured = liveEvents.length + activeSanctioned.length;
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
@@ -351,9 +361,9 @@ export default function HubPage() {
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
-          📺 FEATURED SECTION - Roblox-style event carousel
+          📺 FEATURED SECTION - Official events + Sanctioned tournaments
       ═══════════════════════════════════════════════════════════════════ */}
-      {liveEvents.length > 0 && (
+      {totalFeatured > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -362,7 +372,6 @@ export default function HubPage() {
         >
           {/* Background Pattern */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {/* Diagonal lines pattern */}
             <div 
               className="absolute inset-0 opacity-[0.03]"
               style={{
@@ -375,9 +384,7 @@ export default function HubPage() {
                 )`
               }}
             />
-            {/* Radial fade from left */}
             <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-transparent" />
-            {/* Bottom fade to blend */}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
           </div>
 
@@ -389,15 +396,16 @@ export default function HubPage() {
                 <span className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
               </div>
               <h3 className="font-display text-sm text-foreground">FEATURED</h3>
-              <span className="text-[9px] text-muted-foreground">({liveEvents.length} live)</span>
+              <span className="text-[9px] text-muted-foreground">({totalFeatured} active)</span>
             </div>
             <Link to="/arena" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
               VIEW ALL <ArrowRight size={10} />
             </Link>
           </div>
           
-          {/* Horizontal Carousel */}
+          {/* Horizontal Carousel - Official events FIRST, then Sanctioned */}
           <div className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
+            {/* Official Live Events - Priority */}
             {liveEvents.map((event, i) => (
               <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
                 <motion.div
@@ -422,6 +430,11 @@ export default function HubPage() {
                         <span className="text-[7px] font-bold text-white uppercase tracking-wider">Live</span>
                       </div>
                       
+                      {/* Official badge */}
+                      <div className="absolute bottom-1.5 left-1.5 bg-gold/90 px-1.5 py-0.5 rounded-sm">
+                        <span className="text-[7px] font-bold text-background uppercase tracking-wider">Official</span>
+                      </div>
+                      
                       {/* Prize pool */}
                       {event.prize_pool && (
                         <div className="absolute top-1.5 right-1.5 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-sm">
@@ -437,8 +450,69 @@ export default function HubPage() {
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-[8px] text-gold uppercase tracking-wider">{event.league} League</span>
                       <div className="text-[9px] text-muted-foreground">
-                        <CountdownTimer endDate={event.end_date} />
+                        <CountdownTimer endDate={event.end_date} expiredLabel="Awaiting..." />
                       </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+            
+            {/* Sanctioned Tournaments - After official events */}
+            {activeSanctioned.map((tournament, i) => (
+              <Link key={tournament.id} to={`/sanctioned/${tournament.id}`} className="shrink-0">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + (liveEvents.length + i) * 0.05 }}
+                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-purple-500/50 transition-colors overflow-hidden group"
+                >
+                  {/* Tournament Poster or Gradient */}
+                  <div className="h-24 overflow-hidden relative bg-gradient-to-br from-purple-900/50 to-surface-1">
+                    {tournament.poster_url ? (
+                      <img 
+                        src={tournament.poster_url} 
+                        alt={tournament.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Swords className="w-8 h-8 text-purple-400/50" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
+                    
+                    {/* Status badge */}
+                    <div className={`absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-sm ${
+                      tournament.status === 'live' || tournament.status === 'bracket' 
+                        ? 'bg-purple-500/90' 
+                        : 'bg-amber-500/90'
+                    }`}>
+                      <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">
+                        {tournament.status === 'approved' ? 'Lobby' : 
+                         tournament.status === 'ready_up' ? 'Ready Up' :
+                         tournament.status === 'bracket' ? 'Bracket' : 'Live'}
+                      </span>
+                    </div>
+                    
+                    {/* Sanctioned label */}
+                    <div className="absolute bottom-1.5 left-1.5 bg-purple-500/90 px-1.5 py-0.5 rounded-sm">
+                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">Sanctioned</span>
+                    </div>
+                    
+                    {/* Player count */}
+                    <div className="absolute top-1.5 right-1.5 bg-background/80 border border-border/50 px-1.5 py-0.5 rounded-sm">
+                      <span className="text-[8px] font-medium text-foreground">{tournament.player_count}/{tournament.max_players}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Tournament Info */}
+                  <div className="p-2.5">
+                    <p className="font-display text-xs text-foreground truncate">{tournament.name}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-[8px] text-purple-400 uppercase tracking-wider">{tournament.crew_name}</span>
+                      <span className="text-[9px] text-muted-foreground">{tournament.format_type?.replace('_', ' ')}</span>
                     </div>
                   </div>
                 </motion.div>
