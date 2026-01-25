@@ -93,10 +93,11 @@ export default function RequestJudgeReviewModal({
   }
 
   async function fetchJudges() {
+    // Fetch both 'judge' and 'trial_judge' roles
     const { data: judgeRoles } = await supabase
       .from('user_roles')
       .select('user_id')
-      .eq('role', 'judge');
+      .in('role', ['judge', 'trial_judge']);
 
     if (!judgeRoles?.length) return;
 
