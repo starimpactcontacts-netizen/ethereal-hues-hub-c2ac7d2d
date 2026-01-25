@@ -274,13 +274,12 @@ function LobbyPhase({
   isCrewVsCrew,
 }: LobbyPhaseProps) {
   const [showGuide, setShowGuide] = useState(false);
-  const [showAllSlots, setShowAllSlots] = useState(false);
   const isReadyUpPhase = tournament.status === "ready_up";
   const readyDeadline = tournament.ready_up_deadline;
   
-  // Only show first 6 participants in preview, rest on expand
-  const previewParticipants = participants.slice(0, 6);
-  const remainingCount = Math.max(0, tournament.max_players - 6);
+  // Calculate empty slots to show (fill grid to max_players)
+  const totalSlots = tournament.max_players || 64;
+  const emptySlots = Math.max(0, totalSlots - participants.length);
 
   return (
     <motion.div
@@ -289,87 +288,190 @@ function LobbyPhase({
       exit={{ opacity: 0, y: -20 }}
       className="px-4 py-4 space-y-4"
     >
-      {/* ========== HERO ACTION SECTION - JOIN BUTTON FIRST ========== */}
-      <div className={`relative overflow-hidden p-5 border ${
+      {/* ========== LOBBY HEADER - Countdown + Stats ========== */}
+      <div className={`relative overflow-hidden p-4 border ${
         isCrewVsCrew 
-          ? "bg-gradient-to-br from-red-950/60 via-surface-1 to-surface-1 border-red-500/40" 
-          : "bg-gradient-to-br from-gold/15 via-surface-1 to-surface-1 border-gold/40"
+          ? "bg-gradient-to-br from-red-950/40 via-surface-1 to-surface-1 border-red-500/30" 
+          : "bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 border-gold/30"
       }`}>
-        {/* Glow effect */}
-        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-32 blur-3xl ${
-          isCrewVsCrew ? "bg-red-500/20" : "bg-gold/20"
-        }`} />
-        
-        <div className="relative">
-          {/* Countdown if in ready-up phase */}
-          {isReadyUpPhase && readyDeadline && (
-            <div className="text-center mb-4">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
-                Lobby Closes In
+        <div className="flex items-center justify-between">
+          {/* Left: Player count */}
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+              isCrewVsCrew ? "bg-red-500/20" : "bg-gold/20"
+            }`}>
+              <Users className={`w-5 h-5 ${isCrewVsCrew ? "text-red-400" : "text-gold"}`} />
+            </div>
+            <div>
+              <p className="text-2xl font-display text-foreground">
+                {tournament.player_count}<span className="text-muted-foreground text-lg">/{totalSlots}</span>
               </p>
-              <CountdownTimer endDate={readyDeadline} large />
-            </div>
-          )}
-
-          {/* Main CTA - THE BUTTON */}
-          {!isParticipant ? (
-            <Button
-              onClick={onJoin}
-              disabled={maxReached}
-              className={`w-full h-14 font-display text-base uppercase tracking-wider shadow-lg ${
-                isCrewVsCrew
-                  ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
-                  : "bg-gradient-to-r from-gold via-amber-400 to-gold hover:from-amber-500 hover:via-gold hover:to-amber-500 text-background shadow-gold/30"
-              }`}
-            >
-              <Zap className="w-5 h-5 mr-2" />
-              {maxReached ? "Lobby Full" : "Join Tournament"}
-            </Button>
-          ) : isReadyUpPhase && !isReady ? (
-            <Button
-              onClick={onReadyUp}
-              className="w-full h-14 font-display text-base uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30"
-            >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              Ready Up
-            </Button>
-          ) : isReady ? (
-            <div className="flex items-center justify-center gap-2 p-4 bg-emerald-500/20 border border-emerald-500/40 shadow-lg shadow-emerald-500/20">
-              <CheckCircle className="w-6 h-6 text-emerald-400" />
-              <span className="font-display text-lg text-emerald-400">You're Ready!</span>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2 p-4 bg-surface-2 border border-border">
-              <CheckCircle className="w-5 h-5 text-emerald-400" />
-              <span className="font-medium text-foreground">Joined — Waiting for ready-up phase</span>
-            </div>
-          )}
-
-          {/* Quick leave option */}
-          {isParticipant && !isReady && tournament.status === "approved" && (
-            <button
-              onClick={onLeave}
-              className="w-full mt-2 py-2 text-xs text-muted-foreground hover:text-red-400 transition-colors"
-            >
-              Leave Tournament
-            </button>
-          )}
-
-          {/* Quick stats inline */}
-          <div className="flex items-center justify-center gap-6 mt-4 text-sm">
-            <div className="flex items-center gap-1.5">
-              <Users className={`w-4 h-4 ${isCrewVsCrew ? "text-red-400" : "text-gold"}`} />
-              <span className="text-foreground font-semibold">{tournament.player_count}</span>
-              <span className="text-muted-foreground">/ {tournament.max_players}</span>
-            </div>
-            <div className="w-px h-4 bg-border" />
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className={`w-4 h-4 ${minReached ? "text-emerald-400" : "text-amber-400"}`} />
-              <span className="text-foreground font-semibold">{tournament.ready_count}</span>
-              <span className="text-muted-foreground">ready</span>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Editors Joined</p>
             </div>
           </div>
+
+          {/* Right: Ready count or countdown */}
+          {isReadyUpPhase && readyDeadline ? (
+            <div className="text-right">
+              <CountdownTimer endDate={readyDeadline} />
+              <p className="text-[10px] text-amber-400 uppercase tracking-wider mt-0.5">Ready-Up Closing</p>
+            </div>
+          ) : (
+            <div className="text-right">
+              <div className="flex items-center gap-2">
+                <CheckCircle className={`w-4 h-4 ${minReached ? "text-emerald-400" : "text-amber-400"}`} />
+                <span className="text-lg font-display text-foreground">{tournament.ready_count}</span>
+                <span className="text-sm text-muted-foreground">ready</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                min {tournament.min_players} to start
+              </p>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* ========== THE MAIN EVENT - EDITOR LOBBY GRID ========== */}
+      <div className={`relative p-4 border ${
+        isCrewVsCrew ? "border-red-500/20" : "border-gold/20"
+      } bg-surface-1`}>
+        {/* Section header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Sparkles className={`w-4 h-4 ${isCrewVsCrew ? "text-red-400" : "text-gold"}`} />
+            <span className="text-sm font-bold uppercase tracking-wider text-foreground">Lobby</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>{readyParticipants.length} ready</span>
+          </div>
+        </div>
+
+        {/* THE GRID - This is the main attraction */}
+        <div className="grid grid-cols-8 gap-1.5 sm:gap-2">
+          {/* Ready participants first - they're glowing */}
+          {readyParticipants.map((p, i) => (
+            <motion.div
+              key={p.id}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: i * 0.02, type: "spring", stiffness: 400 }}
+              className="relative group"
+            >
+              <Avatar className={`w-full aspect-square border-2 shadow-lg ${
+                isCrewVsCrew 
+                  ? "border-red-500 shadow-red-500/30" 
+                  : "border-emerald-500 shadow-emerald-500/30"
+              }`}>
+                <AvatarImage src={p.avatar_url || undefined} className="object-cover" />
+                <AvatarFallback className={`text-[10px] font-bold ${
+                  isCrewVsCrew 
+                    ? "bg-red-500/30 text-red-300" 
+                    : "bg-emerald-500/30 text-emerald-300"
+                }`}>
+                  {p.username?.[0]?.toUpperCase() || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center ${
+                isCrewVsCrew ? "bg-red-500" : "bg-emerald-500"
+              }`}>
+                <CheckCircle className="w-2.5 h-2.5 text-white" />
+              </div>
+            </motion.div>
+          ))}
+          
+          {/* Non-ready participants - present but muted */}
+          {participants.filter((p) => !p.is_ready).map((p, i) => (
+            <motion.div
+              key={p.id}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: (readyParticipants.length + i) * 0.02 }}
+              className="relative"
+            >
+              <Avatar className="w-full aspect-square border border-border opacity-60">
+                <AvatarImage src={p.avatar_url || undefined} className="object-cover" />
+                <AvatarFallback className="bg-surface-2 text-muted-foreground text-[10px]">
+                  {p.username?.[0]?.toUpperCase() || "?"}
+                </AvatarFallback>
+              </Avatar>
+            </motion.div>
+          ))}
+          
+          {/* Empty slots - the anticipation */}
+          {Array.from({ length: Math.min(emptySlots, 48) }).map((_, i) => (
+            <motion.div
+              key={`empty-${i}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 + i * 0.01 }}
+              className={`w-full aspect-square border border-dashed flex items-center justify-center ${
+                isCrewVsCrew ? "border-red-500/10 bg-red-500/5" : "border-gold/10 bg-gold/5"
+              }`}
+            >
+              <Users className="w-2.5 h-2.5 text-muted-foreground/20" />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* More slots indicator */}
+        {emptySlots > 48 && (
+          <p className="text-[10px] text-muted-foreground text-center mt-3">
+            +{emptySlots - 48} more slots available
+          </p>
+        )}
+      </div>
+
+      {/* ========== JOIN / READY BUTTON ========== */}
+      <div className="relative">
+        {!isParticipant ? (
+          <Button
+            onClick={onJoin}
+            disabled={maxReached}
+            className={`w-full h-14 font-display text-base uppercase tracking-wider shadow-lg ${
+              isCrewVsCrew
+                ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
+                : "bg-gradient-to-r from-gold via-amber-400 to-gold hover:from-amber-500 hover:via-gold hover:to-amber-500 text-background shadow-gold/30"
+            }`}
+          >
+            <Zap className="w-5 h-5 mr-2" />
+            {maxReached ? "Lobby Full" : "Enter Lobby"}
+          </Button>
+        ) : isReadyUpPhase && !isReady ? (
+          <Button
+            onClick={onReadyUp}
+            className="w-full h-14 font-display text-base uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30"
+          >
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Ready Up
+          </Button>
+        ) : isReady ? (
+          <div className={`flex items-center justify-center gap-2 p-4 border shadow-lg ${
+            isCrewVsCrew 
+              ? "bg-red-500/20 border-red-500/40 shadow-red-500/20" 
+              : "bg-emerald-500/20 border-emerald-500/40 shadow-emerald-500/20"
+          }`}>
+            <CheckCircle className={`w-6 h-6 ${isCrewVsCrew ? "text-red-400" : "text-emerald-400"}`} />
+            <span className={`font-display text-lg ${isCrewVsCrew ? "text-red-400" : "text-emerald-400"}`}>
+              You're Ready!
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 p-4 bg-surface-2 border border-border">
+            <Timer className="w-5 h-5 text-amber-400" />
+            <span className="font-medium text-foreground">Waiting for ready-up phase...</span>
+          </div>
+        )}
+
+        {/* Leave option */}
+        {isParticipant && !isReady && tournament.status === "approved" && (
+          <button
+            onClick={onLeave}
+            className="w-full mt-2 py-2 text-xs text-muted-foreground hover:text-red-400 transition-colors"
+          >
+            Leave Tournament
+          </button>
+        )}
       </div>
 
       {/* Prize Pool - Compact */}
@@ -389,7 +491,7 @@ function LobbyPhase({
         </div>
       )}
 
-      {/* Theme Lock Notice - More compact */}
+      {/* Theme Lock Notice */}
       <div className="flex items-center gap-3 p-3 bg-violet-500/5 border border-violet-500/20">
         <Lock className="w-4 h-4 text-violet-400" />
         <div className="flex-1">
@@ -449,116 +551,10 @@ function LobbyPhase({
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Bracket</p>
-                    <p className="text-xs text-muted-foreground">Judged by QOI. Single elimination.</p>
+                    <p className="text-xs text-muted-foreground">Single elimination judged by QOI.</p>
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Participant Preview - Compact Grid */}
-      <div className="border border-border bg-surface-1 overflow-hidden">
-        <button
-          onClick={() => setShowAllSlots(!showAllSlots)}
-          className="w-full flex items-center justify-between p-3 hover:bg-surface-2 transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-foreground">
-              {showAllSlots ? "Ready Lobby" : `${participants.length} Editors Joined`}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {!showAllSlots && participants.length > 0 && (
-              <div className="flex -space-x-2">
-                {previewParticipants.slice(0, 4).map((p) => (
-                  <Avatar key={p.id} className="w-6 h-6 border-2 border-surface-1">
-                    <AvatarImage src={p.avatar_url || undefined} />
-                    <AvatarFallback className="bg-surface-2 text-[8px]">
-                      {p.username?.[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-                {participants.length > 4 && (
-                  <div className="w-6 h-6 rounded-full bg-surface-2 border-2 border-surface-1 flex items-center justify-center">
-                    <span className="text-[8px] text-muted-foreground">+{participants.length - 4}</span>
-                  </div>
-                )}
-              </div>
-            )}
-            {showAllSlots ? (
-              <ChevronUp className="w-4 h-4 text-muted-foreground" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            )}
-          </div>
-        </button>
-
-        <AnimatePresence>
-          {showAllSlots && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="border-t border-border p-3"
-            >
-              <div className="grid grid-cols-8 gap-2">
-                {/* Ready participants */}
-                {readyParticipants.map((p) => (
-                  <motion.div
-                    key={p.id}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="relative"
-                  >
-                    <Avatar className="w-full aspect-square border-2 border-emerald-500 shadow-lg shadow-emerald-500/20">
-                      <AvatarImage src={p.avatar_url || undefined} />
-                      <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-[10px]">
-                        {p.username?.[0]?.toUpperCase() || "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-3 h-3 text-white" />
-                    </div>
-                  </motion.div>
-                ))}
-                
-                {/* Non-ready participants */}
-                {participants.filter((p) => !p.is_ready).map((p) => (
-                  <motion.div
-                    key={p.id}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="relative opacity-50"
-                  >
-                    <Avatar className="w-full aspect-square border border-border">
-                      <AvatarImage src={p.avatar_url || undefined} />
-                      <AvatarFallback className="bg-surface-2 text-muted-foreground text-[10px]">
-                        {p.username?.[0]?.toUpperCase() || "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </motion.div>
-                ))}
-                
-                {/* Empty slots - only show 12 max */}
-                {Array.from({ length: Math.min(tournament.max_players - participants.length, 12) }).map((_, i) => (
-                  <div
-                    key={`empty-${i}`}
-                    className="w-full aspect-square border border-dashed border-border/30 bg-surface-1/50 flex items-center justify-center"
-                  >
-                    <Users className="w-3 h-3 text-muted-foreground/20" />
-                  </div>
-                ))}
-              </div>
-              
-              {tournament.max_players - participants.length > 12 && (
-                <p className="text-[10px] text-muted-foreground text-center mt-2">
-                  +{tournament.max_players - participants.length - 12} more slots
-                </p>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
