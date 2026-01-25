@@ -34,7 +34,7 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
     return (
       <div className="text-center py-12">
         <Swords className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-        <p className="text-muted-foreground text-sm">No active challenges right now</p>
+        <p className="text-muted-foreground text-sm">No quests available right now</p>
         <p className="text-muted-foreground/60 text-xs mt-1">Check back soon!</p>
       </div>
     );
@@ -53,7 +53,7 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
           <Trophy className="w-5 h-5 text-gold mx-auto mb-1" />
           <p className="text-lg font-bold">{challenges.length}</p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-            Active
+            Quests
           </p>
         </div>
         <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
@@ -79,7 +79,7 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
             <Swords className="w-4 h-4" />
-            Active Challenges
+            Crew Quests
           </h3>
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">

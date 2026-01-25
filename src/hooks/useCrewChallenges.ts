@@ -74,13 +74,38 @@ export function useCrewChallenges(crewId: string | undefined) {
       }
 
       // Fetch progress for this crew
-      const { data: progressData, error: progressError } = await supabase
+      let { data: progressData, error: progressError } = await supabase
         .from("crew_challenge_progress")
         .select("*")
         .eq("crew_id", crewId);
 
       if (progressError) {
         console.error("Error fetching progress:", progressError);
+      }
+
+      // Auto-initialize progress for challenges that don't have it yet
+      const existingChallengeIds = new Set(progressData?.map((p) => p.challenge_id) || []);
+      const missingChallenges = (challengesData || []).filter(
+        (c) => !existingChallengeIds.has(c.id)
+      );
+
+      if (missingChallenges.length > 0 && user) {
+        const newProgressRows = missingChallenges.map((challenge) => ({
+          crew_id: crewId,
+          challenge_id: challenge.id,
+          current_value: 0,
+        }));
+
+        const { data: insertedProgress, error: insertError } = await supabase
+          .from("crew_challenge_progress")
+          .upsert(newProgressRows, { onConflict: "crew_id,challenge_id" })
+          .select();
+
+        if (insertError) {
+          console.error("Error initializing progress:", insertError);
+        } else if (insertedProgress) {
+          progressData = [...(progressData || []), ...insertedProgress];
+        }
       }
 
       // Combine challenges with progress
@@ -114,7 +139,7 @@ export function useCrewChallenges(crewId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [crewId]);
+  }, [crewId, user]);
 
   // Initialize or update progress for a challenge
   const initProgress = useCallback(
