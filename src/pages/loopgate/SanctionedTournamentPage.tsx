@@ -765,10 +765,17 @@ function BracketPhase({ tournament, participants }: { tournament: any; participa
 
 // ==================== COMPLETED PHASE ====================
 function CompletedPhase({ tournament, participants }: { tournament: any; participants: any[] }) {
+  const [showBracket, setShowBracket] = useState(true);
+  
   const winners = [...participants]
     .filter((p) => p.final_rank)
     .sort((a, b) => (a.final_rank || 999) - (b.final_rank || 999))
     .slice(0, 3);
+
+  // Sort all participants by QOI score for the submissions list
+  const rankedParticipants = [...participants]
+    .filter((p) => p.submitted_at)
+    .sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
 
   return (
     <motion.div
@@ -840,8 +847,107 @@ function CompletedPhase({ tournament, participants }: { tournament: any; partici
       <div className="grid grid-cols-3 gap-3">
         <StatCard icon={Users} label="Participants" value={`${participants.length}`} accent="gold" />
         <StatCard icon={Send} label="Submissions" value={`${participants.filter((p) => p.submitted_at).length}`} accent="green" />
-        <StatCard icon={Trophy} label="Index Awarded" value={`${tournament.first_place_index || 200}`} accent="gold" />
+        <StatCard icon={Trophy} label="Index Awarded" value={`${tournament.first_place_index || 0}`} accent="gold" />
       </div>
+
+      {/* Bracket History - Collapsible */}
+      <div className="border border-gold/20 bg-surface-1 overflow-hidden">
+        <button
+          onClick={() => setShowBracket(!showBracket)}
+          className="w-full p-4 flex items-center justify-between hover:bg-surface-2/50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-gold" />
+            <span className="text-sm font-semibold uppercase tracking-wider text-foreground">Bracket History</span>
+          </div>
+          {showBracket ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
+        </button>
+        
+        <AnimatePresence>
+          {showBracket && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="border-t border-gold/10">
+                <BracketTree participants={participants} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* All Submissions List */}
+      {rankedParticipants.length > 0 && (
+        <div className="border border-border bg-surface-1">
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Send className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm font-semibold uppercase tracking-wider text-foreground">All Submissions</span>
+              <span className="text-xs text-muted-foreground ml-auto">{rankedParticipants.length} edits</span>
+            </div>
+          </div>
+          
+          <div className="divide-y divide-border max-h-80 overflow-y-auto">
+            {rankedParticipants.map((p, index) => (
+              <div
+                key={p.id}
+                className="p-3 flex items-center gap-3 hover:bg-surface-2/50 transition-colors"
+              >
+                {/* Rank */}
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  index === 0 ? "bg-gold/20 text-gold" :
+                  index === 1 ? "bg-foreground/20 text-foreground" :
+                  index === 2 ? "bg-amber-600/20 text-amber-500" :
+                  "bg-surface-2 text-muted-foreground"
+                }`}>
+                  {index + 1}
+                </div>
+                
+                {/* Avatar & Username */}
+                <Avatar className="w-8 h-8 border border-border">
+                  <AvatarImage src={p.avatar_url || undefined} />
+                  <AvatarFallback className="bg-surface-2 text-xs">
+                    {p.username?.[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{p.username}</p>
+                  {p.submission_platform && (
+                    <p className="text-[10px] text-muted-foreground capitalize">{p.submission_platform}</p>
+                  )}
+                </div>
+                
+                {/* QOI Score */}
+                {p.qoi_score !== null && (
+                  <div className="text-right">
+                    <p className="text-sm font-mono font-bold text-gold">{p.qoi_score.toFixed(1)}</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">QOI</p>
+                  </div>
+                )}
+                
+                {/* Link to submission */}
+                {p.submission_url && (
+                  <a
+                    href={p.submission_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-surface-2 hover:bg-surface-3 transition-colors"
+                  >
+                    <Send className="w-3.5 h-3.5 text-muted-foreground" />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
