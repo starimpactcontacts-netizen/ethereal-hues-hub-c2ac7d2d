@@ -144,17 +144,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    let mounted = true;
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!mounted) return;
+        
+        console.log('[Auth] State change:', event, !!session);
+        
+        // Handle specific events
+        if (event === 'SIGNED_OUT') {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setPlatforms([]);
+          setRoles([]);
+          setLoading(false);
+          return;
+        }
+        
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('[Auth] Token refreshed successfully');
+        }
+        
+        // For all other events, update state with session
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           setTimeout(() => {
-            fetchProfile(session.user.id);
+            if (mounted) {
+              fetchProfile(session.user.id);
+            }
           }, 0);
-        } else {
+        } else if (event !== 'INITIAL_SESSION') {
+          // Only clear profile on explicit logout, not on initial null session
           setProfile(null);
           setPlatforms([]);
           setRoles([]);
@@ -164,7 +189,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (!mounted) return;
+      
+      if (error) {
+        console.error('[Auth] Error getting session:', error);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('[Auth] Initial session:', !!session);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -219,6 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
       if (appUrlListener) {
         appUrlListener.remove();
