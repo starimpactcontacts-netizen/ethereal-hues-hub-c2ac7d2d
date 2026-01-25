@@ -909,57 +909,22 @@ export default function CrewDetailPage() {
                 </div>
               )}
 
-              {/* Rivals Tab */}
+              {/* Rivals Tab - Coming Soon */}
               {activeTab === 'rivals' && (
-                <div className="space-y-4">
-                  {/* Propose Tournament Button (Owner Only) */}
-                  {isOwner && rivalries.length > 0 && (
-                    <Button
-                      onClick={() => {
-                        setPreselectedRival(null);
-                        setShowProposalForm(true);
-                      }}
-                      className="w-full bg-gradient-to-r from-gold via-amber-500 to-gold text-background font-display uppercase tracking-wider"
-                    >
-                      <Trophy className="w-4 h-4 mr-2" />
-                      Propose Sanctioned Tournament
-                    </Button>
-                  )}
-                  
-                  <div className="bg-surface-1 border border-red-500/20 rounded-lg p-4">
-                    <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-2">
-                      <Swords className="w-4 h-4" />
+                <div className="bg-surface-1 border border-red-500/20 rounded-lg p-6">
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
+                      <Swords className="w-10 h-10 text-red-500/40" />
+                    </div>
+                    <h3 className="text-lg font-display uppercase tracking-wider text-red-400 mb-2">
                       Crew Rivalries
                     </h3>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      Mark rival crews to track your competition. Challenge them to sanctioned tournaments!
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20 mb-4">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-gold">Coming Soon</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground max-w-xs">
+                      Mark rival crews to track your competition and challenge them to sanctioned tournaments.
                     </p>
-                    
-                    {rivalries.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 text-center">
-                        <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
-                          <Swords className="w-8 h-8 text-red-500/50" />
-                        </div>
-                        <p className="text-sm text-muted-foreground">No rivals yet</p>
-                        <p className="text-xs text-muted-foreground/60">Visit other crews to mark them!</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {rivalries.map((rivalry) => (
-                          <CrewRivalCard
-                            key={rivalry.id}
-                            rivalry={rivalry}
-                            ownCrewXP={crewStats.totalXP}
-                            isStaff={isStaff}
-                            onRemove={removeRival}
-                            onChallenge={(rivalCrew) => {
-                              setPreselectedRival(rivalCrew);
-                              setShowProposalForm(true);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
                 </div>
               )}
