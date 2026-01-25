@@ -1929,6 +1929,184 @@ export type Database = {
           },
         ]
       }
+      sanctioned_tournament_participants: {
+        Row: {
+          avatar_url: string | null
+          bracket_position: number | null
+          eliminated_at: string | null
+          final_rank: number | null
+          id: string
+          is_ready: boolean
+          joined_at: string
+          qoi_score: number | null
+          ready_at: string | null
+          submission_platform: string | null
+          submission_url: string | null
+          submitted_at: string | null
+          tournament_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bracket_position?: number | null
+          eliminated_at?: string | null
+          final_rank?: number | null
+          id?: string
+          is_ready?: boolean
+          joined_at?: string
+          qoi_score?: number | null
+          ready_at?: string | null
+          submission_platform?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          tournament_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bracket_position?: number | null
+          eliminated_at?: string | null
+          final_rank?: number | null
+          id?: string
+          is_ready?: boolean
+          joined_at?: string
+          qoi_score?: number | null
+          ready_at?: string | null
+          submission_platform?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          tournament_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctioned_tournament_participants_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "sanctioned_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sanctioned_tournaments: {
+        Row: {
+          admin_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          crew_avatar_url: string | null
+          crew_id: string
+          crew_name: string
+          description: string | null
+          duration_hours: number
+          end_date: string | null
+          first_place_index: number | null
+          format_type: string
+          id: string
+          index_prize: number | null
+          max_players: number
+          min_players: number
+          name: string
+          player_count: number
+          poster_url: string | null
+          proposed_by: string
+          proposed_start_date: string | null
+          ready_count: number
+          ready_up_deadline: string | null
+          rejection_reason: string | null
+          rules: string[] | null
+          second_place_index: number | null
+          start_date: string | null
+          status: string
+          submission_deadline: string | null
+          theme: string | null
+          third_place_index: number | null
+          updated_at: string
+          xp_reward: number | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          crew_avatar_url?: string | null
+          crew_id: string
+          crew_name: string
+          description?: string | null
+          duration_hours?: number
+          end_date?: string | null
+          first_place_index?: number | null
+          format_type?: string
+          id?: string
+          index_prize?: number | null
+          max_players?: number
+          min_players?: number
+          name: string
+          player_count?: number
+          poster_url?: string | null
+          proposed_by: string
+          proposed_start_date?: string | null
+          ready_count?: number
+          ready_up_deadline?: string | null
+          rejection_reason?: string | null
+          rules?: string[] | null
+          second_place_index?: number | null
+          start_date?: string | null
+          status?: string
+          submission_deadline?: string | null
+          theme?: string | null
+          third_place_index?: number | null
+          updated_at?: string
+          xp_reward?: number | null
+        }
+        Update: {
+          admin_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          crew_avatar_url?: string | null
+          crew_id?: string
+          crew_name?: string
+          description?: string | null
+          duration_hours?: number
+          end_date?: string | null
+          first_place_index?: number | null
+          format_type?: string
+          id?: string
+          index_prize?: number | null
+          max_players?: number
+          min_players?: number
+          name?: string
+          player_count?: number
+          poster_url?: string | null
+          proposed_by?: string
+          proposed_start_date?: string | null
+          ready_count?: number
+          ready_up_deadline?: string | null
+          rejection_reason?: string | null
+          rules?: string[] | null
+          second_place_index?: number | null
+          start_date?: string | null
+          status?: string
+          submission_deadline?: string | null
+          theme?: string | null
+          third_place_index?: number | null
+          updated_at?: string
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sanctioned_tournaments_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shop_items: {
         Row: {
           created_at: string

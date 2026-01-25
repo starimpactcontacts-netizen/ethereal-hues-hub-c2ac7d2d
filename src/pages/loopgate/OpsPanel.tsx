@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection";
 import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
+import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 
 interface RealEvent {
@@ -2515,6 +2516,13 @@ export default function OpsPanel() {
             <Plus size={24} className="mx-auto text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground">New Event</p>
           </button>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            SANCTIONED TOURNAMENTS - Crew proposals & admin approval
+        ═══════════════════════════════════════════════════════════════════ */}
+        <section className="bg-card border border-gold/30 rounded-lg p-4">
+          <SanctionedTournamentManagement onClose={() => {}} />
         </section>
 
         {/* Submissions & Judging */}
