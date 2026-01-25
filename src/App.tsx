@@ -40,6 +40,7 @@ import JudgeHubPage from "./pages/loopgate/JudgeHubPage";
 import JudgePanelPage from "./pages/loopgate/JudgePanelPage";
 import JudgeApplicationPage from "./pages/loopgate/JudgeApplicationPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
+import SanctionedTournamentPage from "./pages/loopgate/SanctionedTournamentPage";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
 import SupportPage from "./pages/SupportPage";
@@ -270,6 +271,7 @@ export default function App() {
               <Route path="/index" element={<IndexPage />} />
               <Route path="/arenas" element={<ArenasPage />} />
               <Route path="/arena" element={<ArenaPage />} />
+              <Route path="/sanctioned/:id" element={<SanctionedTournamentPage />} />
               <Route path="/judges" element={<JudgeHubPage />} />
               <Route path="/judges/leaderboard" element={<JudgeLeaderboardPage />} />
               <Route path="/judges/apply" element={<JudgeApplicationPage />} />
