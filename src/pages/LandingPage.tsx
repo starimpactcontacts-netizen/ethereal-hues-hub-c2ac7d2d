@@ -119,7 +119,7 @@ export default function LandingPage() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="border-border bg-transparent hover:bg-surface-1 hover:border-foreground/30 font-display text-sm sm:text-base px-6 py-3 h-auto w-full sm:w-auto sm:min-w-[180px]"
+                  className="border-zinc-500/50 bg-zinc-800/50 hover:bg-zinc-700/50 hover:border-zinc-400/50 text-zinc-200 font-display text-sm sm:text-base px-6 py-3 h-auto w-full sm:w-auto sm:min-w-[180px]"
                 >
                   Take QOI Test
                 </Button>
