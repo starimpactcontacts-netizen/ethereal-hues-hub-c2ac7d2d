@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, 
-  Search, X, TrendingUp
+  Search, X, TrendingUp, Plus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,8 @@ import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
 import PracticeModeView from "@/components/loopgate/PracticeModeView";
+import SanctionedTournamentCard from "@/components/loopgate/SanctionedTournamentCard";
+import { useSanctionedTournaments } from "@/hooks/useSanctionedTournaments";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,6 +112,12 @@ export default function ArenaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "practice">("all");
   const [showPracticeMode, setShowPracticeMode] = useState(false);
+  
+  // Sanctioned tournaments - show approved, ready_up, live, bracket statuses
+  const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(
+    ["approved", "ready_up", "live", "bracket", "completed"]
+  );
+  
   useEffect(() => {
     async function fetchEvents() {
       const { data, error } = await supabase
@@ -398,29 +406,65 @@ export default function ArenaPage() {
               key="sanctioned-section"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="px-4 mt-8"
+              className="mt-8"
             >
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-4 h-4 text-gold" />
-                <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-                  Sanctioned Tournaments
-                </span>
-                <div className="flex-1 h-px bg-gradient-to-r from-gold/30 to-transparent" />
+              <div className="flex items-center justify-between px-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-gold" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Sanctioned Tournaments
+                  </span>
+                  {sanctionedTournaments.filter(t => t.status === "live" || t.status === "ready_up").length > 0 && (
+                    <span className="flex items-center gap-1 bg-gold/20 border border-gold/40 px-2 py-0.5 text-[9px] text-gold uppercase">
+                      {sanctionedTournaments.filter(t => t.status === "live" || t.status === "ready_up").length} Active
+                    </span>
+                  )}
+                </div>
+                {profile?.crew_id && (
+                  <Link 
+                    to="/crews" 
+                    className="text-[10px] text-gold hover:text-gold/80 transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Propose
+                  </Link>
+                )}
               </div>
-              <p className="text-[10px] text-muted-foreground mb-4">
-                Community-hosted tournaments with official backing
+              <p className="text-[10px] text-muted-foreground mb-4 px-4">
+                Crew-hosted tournaments with official Index prizes
               </p>
 
-              {/* Coming Soon State */}
-              <div className="bg-surface-1/50 border border-border border-dashed p-8 text-center">
-                <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
-                  <Shield className="w-6 h-6 text-gold/40" />
+              {sanctionedLoading ? (
+                <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+                  <Skeleton className="h-56 w-[200px] shrink-0" />
+                  <Skeleton className="h-56 w-[200px] shrink-0" />
                 </div>
-                <p className="text-sm text-muted-foreground font-medium mb-1">Sanctioned Tournaments Coming Soon</p>
-                <p className="text-[10px] text-muted-foreground/60">
-                  Crew-hosted competitive brackets with official prizes
-                </p>
-              </div>
+              ) : sanctionedTournaments.length > 0 ? (
+                <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+                  {sanctionedTournaments.map((tournament) => (
+                    <SanctionedTournamentCard
+                      key={tournament.id}
+                      tournament={tournament}
+                      onClick={() => navigate(`/sanctioned/${tournament.id}`)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="px-4">
+                  <div className="bg-surface-1/50 border border-border border-dashed p-8 text-center">
+                    <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
+                      <Shield className="w-6 h-6 text-gold/40" />
+                    </div>
+                    <p className="text-sm text-muted-foreground font-medium mb-1">No Active Tournaments</p>
+                    <p className="text-[10px] text-muted-foreground/60">
+                      {profile?.crew_id 
+                        ? "Your crew can propose a tournament for approval"
+                        : "Join a crew to propose sanctioned tournaments"
+                      }
+                    </p>
+                  </div>
+                </div>
+              )}
             </motion.section>
           )}
 
