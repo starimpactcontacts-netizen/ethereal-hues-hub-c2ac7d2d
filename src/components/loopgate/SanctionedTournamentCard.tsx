@@ -200,12 +200,12 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
           </div>
         )}
         
-        {/* Player count bar */}
+        {/* Editor count bar */}
         <div className="mb-2">
           <div className="flex items-center justify-between text-[9px] mb-1">
             <span className="text-muted-foreground">
               <Users className="w-3 h-3 inline mr-0.5" />
-              {tournament.player_count}/{tournament.max_players}
+              {tournament.player_count}/{tournament.max_players} editors
             </span>
             <span className="text-muted-foreground">
               min {tournament.min_players}

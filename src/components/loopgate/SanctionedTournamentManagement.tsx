@@ -308,7 +308,7 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
               <p className="text-sm font-bold text-foreground">{selectedTournament.format_type.replace("_", " ")}</p>
             </div>
             <div>
-              <p className="text-[10px] text-muted-foreground uppercase">Players</p>
+              <p className="text-[10px] text-muted-foreground uppercase">Editors</p>
               <p className="text-sm font-bold text-foreground">{selectedTournament.min_players}-{selectedTournament.max_players}</p>
             </div>
             <div>

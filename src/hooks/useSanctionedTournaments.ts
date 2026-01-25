@@ -340,7 +340,7 @@ export function useProposeTournament() {
           description: data.description,
           theme: data.theme,
           rules: data.rules,
-          min_players: data.min_players || 20,
+          min_players: data.min_players || 2,
           max_players: data.max_players || 64,
           duration_hours: data.duration_hours || 48,
           format_type: data.format_type || "single_elimination",
