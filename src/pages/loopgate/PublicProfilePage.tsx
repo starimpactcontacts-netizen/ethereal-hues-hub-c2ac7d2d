@@ -380,7 +380,7 @@ export default function PublicProfilePage() {
 
           {/* Member Since - Prestige Display */}
           {profile.created_at && (
-            <div className="bg-surface-1 border border-border p-4">
+            <div>
               <p className="text-[10px] text-gold uppercase tracking-widest mb-1 font-bold">On LOOPGATE Since</p>
               <p className="text-lg font-display text-foreground">
                 {new Date(profile.created_at).toLocaleDateString('en-US', { 
