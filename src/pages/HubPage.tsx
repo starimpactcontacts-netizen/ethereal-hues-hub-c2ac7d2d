@@ -304,7 +304,7 @@ export default function HubPage() {
             <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
               <defs>
                 <clipPath id="inwardShape" clipPathUnits="objectBoundingBox">
-                  <path d="M 0,0 L 1,0 L 1,0.08 Q 0.97,0.5 1,0.92 L 1,1 L 0,1 L 0,0.92 Q 0.03,0.5 0,0.08 Z" />
+                  <path d="M 0,0 L 1,0 L 1,0.02 Q 0.992,0.5 1,0.98 L 1,1 L 0,1 L 0,0.98 Q 0.008,0.5 0,0.02 Z" />
                 </clipPath>
               </defs>
             </svg>
@@ -372,10 +372,10 @@ export default function HubPage() {
               </div>
             </div>
             
-            {/* SVG border with inward curve */}
+            {/* SVG border with subtle inward curve */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 400 80">
               <path 
-                d="M 0,0 L 400,0 L 400,6 Q 392,40 400,74 L 400,80 L 0,80 L 0,74 Q 8,40 0,6 Z" 
+                d="M 0,0 L 400,0 L 400,2 Q 396,40 400,78 L 400,80 L 0,80 L 0,78 Q 4,40 0,2 Z" 
                 fill="none" 
                 stroke="rgba(212,175,55,0.3)"
                 strokeWidth="1"
