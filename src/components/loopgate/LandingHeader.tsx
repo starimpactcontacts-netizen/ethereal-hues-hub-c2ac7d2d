@@ -47,19 +47,13 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          {/* QOI Score Button - Eye-catching */}
+          {/* QOI Score Button - Gold themed */}
           <button
             onClick={scrollToQOI}
-            className="group relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-emerald-500/20 border border-emerald-500/50 hover:border-emerald-400 transition-all duration-300"
+            className="group relative flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/50 hover:border-gold hover:bg-gold/20 transition-all duration-300"
           >
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-cyan-500/20 to-emerald-500/10 blur-sm group-hover:blur-md transition-all opacity-60" />
-            
-            {/* Animated pulse ring */}
-            <div className="absolute inset-0 border border-emerald-400/50 animate-ping opacity-20" />
-            
-            <Target className="relative w-4 h-4 text-emerald-400" />
-            <span className="relative text-sm font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-300 to-emerald-400">
+            <Target className="relative w-4 h-4 text-gold" />
+            <span className="relative text-sm font-bold tracking-wider text-gold">
               QOI
             </span>
           </button>
@@ -77,13 +71,13 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
 
         {/* Mobile Hamburger */}
         <div className="md:hidden flex items-center gap-3">
-          {/* Mobile QOI Button */}
+          {/* Mobile QOI Button - Gold */}
           <button
             onClick={scrollToQOI}
-            className="relative flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-emerald-500/20 border border-emerald-500/50"
+            className="relative flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 border border-gold/50"
           >
-            <Target className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-xs font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-300 to-emerald-400">
+            <Target className="w-3.5 h-3.5 text-gold" />
+            <span className="text-xs font-bold tracking-wider text-gold">
               QOI
             </span>
           </button>
@@ -108,16 +102,14 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
 
                 {/* Navigation Links */}
                 <nav className="flex-1 py-6">
-                  {/* QOI Link in Mobile Menu */}
+                  {/* QOI Link in Mobile Menu - Gold */}
                   <SheetClose asChild>
                     <button
                       onClick={scrollToQOI}
-                      className="w-full flex items-center gap-3 px-6 py-4 text-lg font-medium text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                      className="w-full flex items-center gap-3 px-6 py-4 text-lg font-medium text-gold hover:bg-gold/10 transition-colors"
                     >
                       <Target className="w-5 h-5" />
-                      <span className="bg-gradient-to-r from-emerald-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent font-bold">
-                        QOI Score Test
-                      </span>
+                      <span className="font-bold">QOI Score Test</span>
                     </button>
                   </SheetClose>
                   
