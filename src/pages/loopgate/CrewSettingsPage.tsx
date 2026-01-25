@@ -718,20 +718,6 @@ export default function CrewSettingsPage() {
             )}
           </div>
 
-          {/* ==================== EVENT BASICS SECTION (Coming Soon) ==================== */}
-          <div className="space-y-4">
-            <SectionHeader id="events" title="Event Basics" icon={Star} />
-            
-            {expandedSection === "events" && (
-              <div className="p-6 bg-muted/30 rounded-lg border border-border text-center">
-                <Zap className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                <h3 className="font-semibold mb-1">Coming Soon</h3>
-                <p className="text-sm text-muted-foreground">
-                  Create crew events, set rules, and configure prize pools. This feature is under development.
-                </p>
-              </div>
-            )}
-          </div>
 
           {/* Save Button */}
           <Button
