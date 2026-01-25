@@ -1,17 +1,14 @@
 import { useState } from "react";
-import { Swords, Trophy, Clock, Sparkles, Plus, CalendarPlus } from "lucide-react";
+import { Swords, Trophy, Clock, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCrewChallenges } from "@/hooks/useCrewChallenges";
 import CrewChallengeCard from "./CrewChallengeCard";
-import { Button } from "@/components/ui/button";
 
 interface CrewChallengesPanelProps {
   crewId: string;
-  isOwner?: boolean;
-  onProposeClick?: () => void;
 }
 
-export default function CrewChallengesPanel({ crewId, isOwner, onProposeClick }: CrewChallengesPanelProps) {
+export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps) {
   const { challenges, loading, claimReward, getTimeRemaining } = useCrewChallenges(crewId);
   const [claimingId, setClaimingId] = useState<string | null>(null);
 
@@ -40,16 +37,6 @@ export default function CrewChallengesPanel({ crewId, isOwner, onProposeClick }:
 
   return (
     <div className="space-y-6">
-      {/* Propose Tournament Button for Owners */}
-      {isOwner && onProposeClick && (
-        <Button
-          onClick={onProposeClick}
-          className="w-full bg-gold text-black hover:bg-gold/90 font-semibold gap-2"
-        >
-          <CalendarPlus className="w-4 h-4" />
-          Propose Sanctioned Tournament
-        </Button>
-      )}
 
       {/* Header Stats */}
       <div className="grid grid-cols-3 gap-3">
