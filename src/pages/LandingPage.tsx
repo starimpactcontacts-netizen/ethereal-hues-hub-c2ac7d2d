@@ -97,7 +97,7 @@ export default function LandingPage() {
             </motion.div>
             
             <motion.p 
-              className="font-display text-sm sm:text-base text-muted-foreground/50 max-w-lg mx-auto mb-10 tracking-normal"
+              className="font-display text-sm sm:text-base text-muted-foreground/50 max-w-lg mx-auto mb-10 tracking-tight"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
