@@ -1,19 +1,17 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
-  ArrowLeft, Swords, Users, Scale, Trophy,
-  Flame, Shield, Sparkles
+  ArrowLeft, Users, Scale, Trophy,
+  Flame, Shield, Sparkles, MessageSquareText
 } from "lucide-react";
 import PracticeFormatCard, { PracticeFormat } from "./PracticeFormatCard";
-import Practice1v1Flow from "./Practice1v1Flow";
-import PracticeMatchView from "./PracticeMatchView";
 import PracticeJudgeQueue from "./PracticeJudgeQueue";
 import CreateFriendlyTournament from "./CreateFriendlyTournament";
 import FriendlyTournamentLobby from "./FriendlyTournamentLobby";
 import FriendlyTournamentActive from "./FriendlyTournamentActive";
 import FriendlyTournamentList from "./FriendlyTournamentList";
+import RequestJudgeReviewModal from "./RequestJudgeReviewModal";
 import { useAuth } from "@/hooks/useAuth";
-import { usePracticeMatch } from "@/hooks/usePracticeMatch";
 import { useFriendlyTournamentList, FriendlyTournament } from "@/hooks/useFriendlyTournament";
 import { toast } from "sonner";
 
@@ -23,11 +21,11 @@ interface PracticeModeViewProps {
 
 const practiceFormats = [
   {
-    format: "1v1" as PracticeFormat,
-    title: "1v1 Practice",
-    description: "Get matched with similar skill. Both submit, judge picks winner.",
-    icon: Swords,
-    xpReward: "20-50",
+    format: "get-feedback" as PracticeFormat,
+    title: "Get Feedback",
+    description: "Send an edit to a certified judge. Receive structured notes + QOI score.",
+    icon: MessageSquareText,
+    xpReward: "30",
     isAvailable: true,
   },
   {
@@ -46,35 +44,20 @@ const practiceFormats = [
     xpReward: "40-80",
     isAvailable: false,
   },
-  {
-    format: "judge-drill" as PracticeFormat,
-    title: "Judge Drill",
-    description: "Get feedback from a certified judge. Coming soon.",
-    icon: Scale,
-    xpReward: "30",
-    isAvailable: false,
-  },
 ];
 
-type ViewState = "menu" | "1v1-flow" | "match-view" | "judge-queue" | "friendly-list" | "create-friendly" | "friendly-lobby" | "friendly-active";
+type ViewState = "menu" | "judge-queue" | "friendly-list" | "create-friendly" | "friendly-lobby" | "friendly-active";
 
 export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
   const [viewState, setViewState] = useState<ViewState>("menu");
-  const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
   const [activeTournamentId, setActiveTournamentId] = useState<string | null>(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const { isJudge } = useAuth();
-  const { activeMatch } = usePracticeMatch();
   const { tournaments: openTournaments, myTournaments } = useFriendlyTournamentList();
 
   const handleFormatSelect = (format: PracticeFormat) => {
-    if (format === "1v1") {
-      // Check if user already has an active match
-      if (activeMatch) {
-        setActiveMatchId(activeMatch.id);
-        setViewState("match-view");
-      } else {
-        setViewState("1v1-flow");
-      }
+    if (format === "get-feedback") {
+      setShowFeedbackModal(true);
     } else if (format === "friendly-comp") {
       setViewState("friendly-list");
     } else {
@@ -82,11 +65,6 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
         description: "This format is under development."
       });
     }
-  };
-
-  const handleMatchFound = (matchId: string) => {
-    setActiveMatchId(matchId);
-    setViewState("match-view");
   };
 
   const handleTournamentCreated = (tournamentId: string) => {
@@ -104,27 +82,6 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
   };
 
   // Render different views based on state
-  if (viewState === "1v1-flow") {
-    return (
-      <Practice1v1Flow 
-        onBack={() => setViewState("menu")} 
-        onMatchFound={handleMatchFound}
-      />
-    );
-  }
-
-  if (viewState === "match-view" && activeMatchId) {
-    return (
-      <PracticeMatchView 
-        matchId={activeMatchId}
-        onBack={() => {
-          setActiveMatchId(null);
-          setViewState("menu");
-        }}
-      />
-    );
-  }
-
   if (viewState === "judge-queue") {
     return (
       <PracticeJudgeQueue onBack={() => setViewState("menu")} />
@@ -176,6 +133,11 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
   }
 
   return (
+    <>
+    <RequestJudgeReviewModal
+      isOpen={showFeedbackModal}
+      onClose={() => setShowFeedbackModal(false)}
+    />
     <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <div className="relative overflow-hidden">
@@ -236,29 +198,6 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
 
       {/* Content */}
       <div className="px-4 mt-4">
-        {/* Active Match Banner */}
-        {activeMatch && (
-          <motion.button
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            onClick={() => {
-              setActiveMatchId(activeMatch.id);
-              setViewState("match-view");
-            }}
-            className="w-full bg-emerald-500/10 border border-emerald-500/50 p-4 mb-4 text-left"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Active Match</p>
-                <p className="text-[10px] text-muted-foreground">
-                  You have an ongoing 1v1 practice — tap to view
-                </p>
-              </div>
-              <Swords className="w-5 h-5 text-emerald-400" />
-            </div>
-          </motion.button>
-        )}
-
         {/* Section header */}
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs font-bold uppercase tracking-wider text-foreground">
@@ -318,28 +257,25 @@ export default function PracticeModeView({ onBack }: PracticeModeViewProps) {
         {/* How it works */}
         <div className="mt-8">
           <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-3">
-            How 1v1 Practice Works
+            How Feedback Works
           </h3>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div className="bg-surface-1 border border-border p-3 text-center">
               <div className="text-lg font-display text-emerald-400 mb-1">1</div>
-              <p className="text-[9px] text-muted-foreground">Pick duration</p>
+              <p className="text-[9px] text-muted-foreground">Submit edit</p>
             </div>
             <div className="bg-surface-1 border border-border p-3 text-center">
               <div className="text-lg font-display text-emerald-400 mb-1">2</div>
-              <p className="text-[9px] text-muted-foreground">Get matched</p>
+              <p className="text-[9px] text-muted-foreground">Judge reviews</p>
             </div>
             <div className="bg-surface-1 border border-border p-3 text-center">
               <div className="text-lg font-display text-emerald-400 mb-1">3</div>
-              <p className="text-[9px] text-muted-foreground">Both submit</p>
-            </div>
-            <div className="bg-surface-1 border border-border p-3 text-center">
-              <div className="text-lg font-display text-emerald-400 mb-1">4</div>
-              <p className="text-[9px] text-muted-foreground">Judge decides</p>
+              <p className="text-[9px] text-muted-foreground">Get feedback</p>
             </div>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }
