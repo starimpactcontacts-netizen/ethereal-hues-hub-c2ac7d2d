@@ -82,17 +82,25 @@ export default function LandingPage() {
               />
             </motion.div>
             
-            <motion.p 
-              className="font-display text-xl sm:text-2xl md:text-3xl text-gold tracking-[0.15em] uppercase mb-6"
+            {/* Dramatic headline with stacked typography */}
+            <motion.div 
+              className="mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
-              The Competitive Editing Index
-            </motion.p>
+              <p className="text-[10px] sm:text-xs font-semibold tracking-[0.4em] uppercase text-muted-foreground mb-3">
+                Established 2025
+              </p>
+              <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[0.85] tracking-[0.08em]">
+                <span className="text-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">THE COMPETITIVE</span>
+                <br />
+                <span className="text-foreground">EDITING INDEX</span>
+              </h1>
+            </motion.div>
             
             <motion.p 
-              className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-10 leading-relaxed"
+              className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-10 leading-relaxed tracking-wide"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
