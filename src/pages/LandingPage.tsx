@@ -78,7 +78,7 @@ export default function LandingPage() {
               <img 
                 src={loopgateBrand} 
                 alt="LOOPGATE" 
-                className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto mx-auto drop-shadow-[0_0_40px_rgba(255,255,255,0.15)]"
+                className="h-20 sm:h-28 md:h-36 lg:h-44 w-auto mx-auto drop-shadow-[0_0_50px_rgba(255,255,255,0.2)]"
               />
             </motion.div>
             
