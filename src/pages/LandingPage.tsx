@@ -179,7 +179,7 @@ export default function LandingPage() {
                   icon: Target, 
                   title: 'QOI Score', 
                   desc: 'Get rated by certified judges on a 100-point scale. Discover your true Class.',
-                  accent: 'from-emerald-500/20 to-transparent'
+                  accent: 'from-zinc-400/20 to-transparent'
                 },
                 { 
                   icon: IterationCcw, 
