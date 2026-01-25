@@ -567,7 +567,7 @@ export default function CrewDetailPage() {
     { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Board' },
     { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Squad' },
     { id: 'submissions', icon: <FileVideo className="w-4 h-4" />, label: 'Work' },
-    { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Events' },
+    { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Quests' },
   ];
 
   return (
@@ -897,8 +897,8 @@ export default function CrewDetailPage() {
               {/* Rivals Tab */}
               {activeTab === 'rivals' && (
                 <div className="space-y-4">
-                  {/* Propose Tournament Button (Staff Only) */}
-                  {isStaff && rivalries.length > 0 && (
+                  {/* Propose Tournament Button (Owner Only) */}
+                  {isOwner && rivalries.length > 0 && (
                     <Button
                       onClick={() => {
                         setPreselectedRival(null);
