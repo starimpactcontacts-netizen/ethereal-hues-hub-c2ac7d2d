@@ -274,73 +274,131 @@ function LobbyPhase({
   isCrewVsCrew,
 }: LobbyPhaseProps) {
   const [showGuide, setShowGuide] = useState(false);
+  const [showAllSlots, setShowAllSlots] = useState(false);
   const isReadyUpPhase = tournament.status === "ready_up";
   const readyDeadline = tournament.ready_up_deadline;
   
-  // Calculate grid slots (show empty slots for FOMO effect)
-  const maxSlots = Math.min(tournament.max_players, 100);
-  const emptySlots = maxSlots - participants.length;
+  // Only show first 6 participants in preview, rest on expand
+  const previewParticipants = participants.slice(0, 6);
+  const remainingCount = Math.max(0, tournament.max_players - 6);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="px-4 py-6 space-y-6"
+      className="px-4 py-4 space-y-4"
     >
-      {/* Stats Bar */}
-      <div className="grid grid-cols-3 gap-3">
-        <StatCard
-          icon={Users}
-          label="Editors"
-          value={`${tournament.player_count}/${tournament.max_players}`}
-          accent={isCrewVsCrew ? "red" : "gold"}
-        />
-        <StatCard
-          icon={Target}
-          label="Minimum"
-          value={`${tournament.min_players}`}
-          accent={minReached ? "green" : "muted"}
-        />
-        <StatCard
-          icon={CheckCircle}
-          label="Ready"
-          value={`${tournament.ready_count}/${tournament.min_players}`}
-          accent={minReached ? "green" : "amber"}
-        />
+      {/* ========== HERO ACTION SECTION - JOIN BUTTON FIRST ========== */}
+      <div className={`relative overflow-hidden p-5 border ${
+        isCrewVsCrew 
+          ? "bg-gradient-to-br from-red-950/60 via-surface-1 to-surface-1 border-red-500/40" 
+          : "bg-gradient-to-br from-gold/15 via-surface-1 to-surface-1 border-gold/40"
+      }`}>
+        {/* Glow effect */}
+        <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-32 blur-3xl ${
+          isCrewVsCrew ? "bg-red-500/20" : "bg-gold/20"
+        }`} />
+        
+        <div className="relative">
+          {/* Countdown if in ready-up phase */}
+          {isReadyUpPhase && readyDeadline && (
+            <div className="text-center mb-4">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">
+                Lobby Closes In
+              </p>
+              <CountdownTimer endDate={readyDeadline} large />
+            </div>
+          )}
+
+          {/* Main CTA - THE BUTTON */}
+          {!isParticipant ? (
+            <Button
+              onClick={onJoin}
+              disabled={maxReached}
+              className={`w-full h-14 font-display text-base uppercase tracking-wider shadow-lg ${
+                isCrewVsCrew
+                  ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
+                  : "bg-gradient-to-r from-gold via-amber-400 to-gold hover:from-amber-500 hover:via-gold hover:to-amber-500 text-background shadow-gold/30"
+              }`}
+            >
+              <Zap className="w-5 h-5 mr-2" />
+              {maxReached ? "Lobby Full" : "Join Tournament"}
+            </Button>
+          ) : isReadyUpPhase && !isReady ? (
+            <Button
+              onClick={onReadyUp}
+              className="w-full h-14 font-display text-base uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30"
+            >
+              <CheckCircle className="w-5 h-5 mr-2" />
+              Ready Up
+            </Button>
+          ) : isReady ? (
+            <div className="flex items-center justify-center gap-2 p-4 bg-emerald-500/20 border border-emerald-500/40 shadow-lg shadow-emerald-500/20">
+              <CheckCircle className="w-6 h-6 text-emerald-400" />
+              <span className="font-display text-lg text-emerald-400">You're Ready!</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 p-4 bg-surface-2 border border-border">
+              <CheckCircle className="w-5 h-5 text-emerald-400" />
+              <span className="font-medium text-foreground">Joined — Waiting for ready-up phase</span>
+            </div>
+          )}
+
+          {/* Quick leave option */}
+          {isParticipant && !isReady && tournament.status === "approved" && (
+            <button
+              onClick={onLeave}
+              className="w-full mt-2 py-2 text-xs text-muted-foreground hover:text-red-400 transition-colors"
+            >
+              Leave Tournament
+            </button>
+          )}
+
+          {/* Quick stats inline */}
+          <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+            <div className="flex items-center gap-1.5">
+              <Users className={`w-4 h-4 ${isCrewVsCrew ? "text-red-400" : "text-gold"}`} />
+              <span className="text-foreground font-semibold">{tournament.player_count}</span>
+              <span className="text-muted-foreground">/ {tournament.max_players}</span>
+            </div>
+            <div className="w-px h-4 bg-border" />
+            <div className="flex items-center gap-1.5">
+              <CheckCircle className={`w-4 h-4 ${minReached ? "text-emerald-400" : "text-amber-400"}`} />
+              <span className="text-foreground font-semibold">{tournament.ready_count}</span>
+              <span className="text-muted-foreground">ready</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Countdown Timer */}
-      {isReadyUpPhase && readyDeadline && (
-        <div className={`p-4 border text-center ${
-          isCrewVsCrew 
-            ? "bg-red-500/5 border-red-500/20" 
-            : "bg-gold/5 border-gold/20"
-        }`}>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">
-            Lobby Closes In
-          </p>
-          <CountdownTimer endDate={readyDeadline} large />
-          <p className="text-[10px] text-muted-foreground mt-2">
-            {maxReached ? "Max reached — Starting soon!" : minReached ? "Minimum reached — Ready up!" : `Need ${tournament.min_players - tournament.ready_count} more ready`}
-          </p>
+      {/* Prize Pool - Compact */}
+      {(tournament.first_place_index || tournament.index_prize) && (
+        <div className="p-3 bg-gradient-to-r from-gold/10 via-surface-1 to-surface-1 border border-gold/20">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-gold" />
+              <span className="text-xs font-semibold text-gold uppercase tracking-wider">Prizes</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <span><span className="font-bold text-gold">{tournament.first_place_index || 200}</span> <span className="text-muted-foreground text-xs">1st</span></span>
+              <span><span className="font-bold text-foreground">{tournament.second_place_index || 100}</span> <span className="text-muted-foreground text-xs">2nd</span></span>
+              <span><span className="font-bold text-foreground">{tournament.third_place_index || 50}</span> <span className="text-muted-foreground text-xs">3rd</span></span>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Theme Lock Notice */}
-      <div className="flex items-center gap-3 p-3 bg-surface-1 border border-border">
-        <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center">
-          <Lock className="w-5 h-5 text-violet-400" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-foreground">Theme Locked</p>
-          <p className="text-[11px] text-muted-foreground">
-            Theme will be revealed when the lobby ends — no early prep!
-          </p>
+      {/* Theme Lock Notice - More compact */}
+      <div className="flex items-center gap-3 p-3 bg-violet-500/5 border border-violet-500/20">
+        <Lock className="w-4 h-4 text-violet-400" />
+        <div className="flex-1">
+          <span className="text-sm text-foreground">Theme Locked</span>
+          <span className="text-xs text-muted-foreground ml-2">Revealed when lobby closes</span>
         </div>
       </div>
 
-      {/* How It Works - Collapsible Guide */}
+      {/* How It Works - Collapsible */}
       <div className="border border-border bg-surface-1 overflow-hidden">
         <button
           onClick={() => setShowGuide(!showGuide)}
@@ -366,56 +424,32 @@ function LobbyPhase({
               transition={{ duration: 0.2 }}
               className="border-t border-border"
             >
-              <div className="p-4 space-y-4">
-                {/* Phase 1 */}
+              <div className="p-4 space-y-3">
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-emerald-400">1</span>
+                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-emerald-400">1</span>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">Lobby Phase</p>
-                    <p className="text-xs text-muted-foreground">
-                      Join and ready up before the deadline. Minimum {tournament.min_players} editors needed, max {tournament.max_players}.
-                    </p>
+                    <p className="text-xs text-muted-foreground">Join and ready up. Min {tournament.min_players}, max {tournament.max_players}.</p>
                   </div>
                 </div>
-
-                {/* Phase 2 */}
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-amber-400">2</span>
+                  <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-amber-400">2</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Submission Phase</p>
-                    <p className="text-xs text-muted-foreground">
-                      Theme revealed! You'll have {tournament.duration_hours}h to create and submit your edit. Email notification sent.
-                    </p>
+                    <p className="text-sm font-medium text-foreground">Submission</p>
+                    <p className="text-xs text-muted-foreground">Theme revealed! {tournament.duration_hours}h to submit.</p>
                   </div>
                 </div>
-
-                {/* Phase 3 */}
                 <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-sky-400">3</span>
+                  <div className="w-6 h-6 rounded-full bg-sky-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-sky-400">3</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-foreground">Bracket Phase</p>
-                    <p className="text-xs text-muted-foreground">
-                      Admins judge all submissions on QOI (0-100). Single elimination bracket determines winners.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Phase 4 */}
-                <div className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center shrink-0">
-                    <span className="text-xs font-bold text-gold">4</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Rewards</p>
-                    <p className="text-xs text-muted-foreground">
-                      Top 3 win Index prizes. All participants earn XP and tournament credit.
-                    </p>
+                    <p className="text-sm font-medium text-foreground">Bracket</p>
+                    <p className="text-xs text-muted-foreground">Judged by QOI. Single elimination.</p>
                   </div>
                 </div>
               </div>
@@ -424,138 +458,110 @@ function LobbyPhase({
         </AnimatePresence>
       </div>
 
-
-      {(tournament.first_place_index || tournament.index_prize) && (
-        <div className="p-4 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 border border-gold/20">
-          <div className="flex items-center gap-2 mb-3">
-            <Trophy className="w-4 h-4 text-gold" />
-            <span className="text-xs font-semibold text-gold uppercase tracking-wider">Prize Pool</span>
+      {/* Participant Preview - Compact Grid */}
+      <div className="border border-border bg-surface-1 overflow-hidden">
+        <button
+          onClick={() => setShowAllSlots(!showAllSlots)}
+          className="w-full flex items-center justify-between p-3 hover:bg-surface-2 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
+              {showAllSlots ? "Ready Lobby" : `${participants.length} Editors Joined`}
+            </span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center p-2 bg-gold/10 border border-gold/20">
-              <Crown className="w-4 h-4 text-gold mx-auto mb-1" />
-              <p className="text-lg font-bold text-gold">{tournament.first_place_index || 200}</p>
-              <p className="text-[9px] text-muted-foreground">1st Place</p>
-            </div>
-            <div className="text-center p-2 bg-surface-2 border border-border">
-              <p className="text-lg font-bold text-foreground">{tournament.second_place_index || 100}</p>
-              <p className="text-[9px] text-muted-foreground">2nd Place</p>
-            </div>
-            <div className="text-center p-2 bg-surface-2 border border-border">
-              <p className="text-lg font-bold text-foreground">{tournament.third_place_index || 50}</p>
-              <p className="text-[9px] text-muted-foreground">3rd Place</p>
-            </div>
-          </div>
-          <p className="text-[10px] text-muted-foreground text-center mt-3">
-            +{tournament.xp_reward || 100} XP for all participants
-          </p>
-        </div>
-      )}
-
-      {/* Participant Grid */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-foreground">Ready Lobby</h3>
-          <span className="text-[10px] text-muted-foreground">
-            {readyParticipants.length} ready / {participants.length} joined
-          </span>
-        </div>
-        
-        <div className="grid grid-cols-8 gap-2">
-          {/* Show ready participants first */}
-          {readyParticipants.map((p) => (
-            <motion.div
-              key={p.id}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="relative"
-            >
-              <Avatar className="w-full aspect-square border-2 border-emerald-500 shadow-lg shadow-emerald-500/20">
-                <AvatarImage src={p.avatar_url || undefined} />
-                <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-[10px]">
-                  {p.username?.[0]?.toUpperCase() || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
+          <div className="flex items-center gap-2">
+            {!showAllSlots && participants.length > 0 && (
+              <div className="flex -space-x-2">
+                {previewParticipants.slice(0, 4).map((p) => (
+                  <Avatar key={p.id} className="w-6 h-6 border-2 border-surface-1">
+                    <AvatarImage src={p.avatar_url || undefined} />
+                    <AvatarFallback className="bg-surface-2 text-[8px]">
+                      {p.username?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {participants.length > 4 && (
+                  <div className="w-6 h-6 rounded-full bg-surface-2 border-2 border-surface-1 flex items-center justify-center">
+                    <span className="text-[8px] text-muted-foreground">+{participants.length - 4}</span>
+                  </div>
+                )}
               </div>
-            </motion.div>
-          ))}
-          
-          {/* Show non-ready participants */}
-          {participants.filter((p) => !p.is_ready).map((p) => (
-            <motion.div
-              key={p.id}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              className="relative opacity-50"
-            >
-              <Avatar className="w-full aspect-square border border-border">
-                <AvatarImage src={p.avatar_url || undefined} />
-                <AvatarFallback className="bg-surface-2 text-muted-foreground text-[10px]">
-                  {p.username?.[0]?.toUpperCase() || "?"}
-                </AvatarFallback>
-              </Avatar>
-            </motion.div>
-          ))}
-          
-          {/* Show empty slots for FOMO */}
-          {Array.from({ length: Math.min(emptySlots, 20) }).map((_, i) => (
-            <div
-              key={`empty-${i}`}
-              className="w-full aspect-square border border-dashed border-border/50 bg-surface-1/50 flex items-center justify-center"
-            >
-              <Users className="w-3 h-3 text-muted-foreground/30" />
-            </div>
-          ))}
-        </div>
-        
-        {emptySlots > 20 && (
-          <p className="text-[10px] text-muted-foreground text-center mt-2">
-            +{emptySlots - 20} more slots available
-          </p>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="space-y-3">
-        {!isParticipant ? (
-          <Button
-            onClick={onJoin}
-            disabled={maxReached}
-            className={`w-full h-12 font-display text-sm uppercase tracking-wider ${
-              isCrewVsCrew
-                ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
-                : "bg-gradient-to-r from-gold to-amber-500 hover:from-amber-500 hover:to-gold text-background"
-            }`}
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            {maxReached ? "Lobby Full" : "Join Tournament"}
-          </Button>
-        ) : isReadyUpPhase && !isReady ? (
-          <Button
-            onClick={onReadyUp}
-            className="w-full h-12 font-display text-sm uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
-          >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Ready Up
-          </Button>
-        ) : isReady ? (
-          <div className="flex items-center justify-center gap-2 p-4 bg-emerald-500/10 border border-emerald-500/30">
-            <CheckCircle className="w-5 h-5 text-emerald-400" />
-            <span className="font-semibold text-emerald-400">You're Ready!</span>
+            )}
+            {showAllSlots ? (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
           </div>
-        ) : null}
+        </button>
 
-        {isParticipant && !isReady && tournament.status === "approved" && (
-          <Button
-            onClick={onLeave}
-            variant="ghost"
-            className="w-full text-muted-foreground hover:text-red-400"
-          >
-            Leave Tournament
-          </Button>
-        )}
+        <AnimatePresence>
+          {showAllSlots && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="border-t border-border p-3"
+            >
+              <div className="grid grid-cols-8 gap-2">
+                {/* Ready participants */}
+                {readyParticipants.map((p) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="relative"
+                  >
+                    <Avatar className="w-full aspect-square border-2 border-emerald-500 shadow-lg shadow-emerald-500/20">
+                      <AvatarImage src={p.avatar_url || undefined} />
+                      <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-[10px]">
+                        {p.username?.[0]?.toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    </div>
+                  </motion.div>
+                ))}
+                
+                {/* Non-ready participants */}
+                {participants.filter((p) => !p.is_ready).map((p) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="relative opacity-50"
+                  >
+                    <Avatar className="w-full aspect-square border border-border">
+                      <AvatarImage src={p.avatar_url || undefined} />
+                      <AvatarFallback className="bg-surface-2 text-muted-foreground text-[10px]">
+                        {p.username?.[0]?.toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </motion.div>
+                ))}
+                
+                {/* Empty slots - only show 12 max */}
+                {Array.from({ length: Math.min(tournament.max_players - participants.length, 12) }).map((_, i) => (
+                  <div
+                    key={`empty-${i}`}
+                    className="w-full aspect-square border border-dashed border-border/30 bg-surface-1/50 flex items-center justify-center"
+                  >
+                    <Users className="w-3 h-3 text-muted-foreground/20" />
+                  </div>
+                ))}
+              </div>
+              
+              {tournament.max_players - participants.length > 12 && (
+                <p className="text-[10px] text-muted-foreground text-center mt-2">
+                  +{tournament.max_players - participants.length - 12} more slots
+                </p>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
