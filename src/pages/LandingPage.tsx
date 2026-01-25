@@ -84,11 +84,14 @@ export default function LandingPage() {
             
             {/* Dramatic headline with stacked typography */}
             <motion.div 
-              className="mb-6"
+              className="mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
+              <p className="text-[10px] sm:text-xs font-semibold tracking-[0.4em] uppercase text-muted-foreground mb-3">
+                Established 2025
+              </p>
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[0.85] tracking-[0.08em]">
                 <span className="text-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">THE COMPETITIVE</span>
                 <br />
@@ -97,12 +100,12 @@ export default function LandingPage() {
             </motion.div>
             
             <motion.p 
-              className="text-[11px] sm:text-xs text-muted-foreground/70 max-w-sm mx-auto mb-10 leading-relaxed"
+              className="text-xs sm:text-sm font-medium tracking-[0.2em] uppercase text-muted-foreground/80 max-w-lg mx-auto mb-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              A structured system for evaluating editors, hosting events, and maintaining global rankings.
+              Evaluate · Compete · Rank
             </motion.p>
             
             {/* CTA Buttons - Clean, minimal styling */}
