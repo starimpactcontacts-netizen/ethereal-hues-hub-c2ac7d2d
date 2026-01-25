@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 
-export type PracticeFormat = "1v1" | "friendly-comp" | "crew-scrim" | "judge-drill";
+export type PracticeFormat = "get-feedback" | "friendly-comp" | "crew-scrim";
 
 interface PracticeFormatCardProps {
   format: PracticeFormat;
