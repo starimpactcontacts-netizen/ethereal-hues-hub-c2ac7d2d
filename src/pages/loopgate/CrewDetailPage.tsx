@@ -1123,7 +1123,7 @@ export default function CrewDetailPage() {
       
       {/* Propose Tournament Modal */}
       {showProposalForm && crew && (
-        <div className="fixed inset-0 z-50 bg-background">
+        <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
           <ProposeSanctionedTournament
             crewId={crew.id}
             crewName={crew.name}
