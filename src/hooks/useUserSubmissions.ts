@@ -52,14 +52,25 @@ export function useUserSubmissions(targetUserId?: string) {
       .not('submission_url', 'is', null)
       .order('submitted_at', { ascending: false });
 
+    // Fetch Sanctioned Tournament submissions
+    const { data: sanctionedData, error: sanctionedError } = await supabase
+      .from('sanctioned_tournament_participants')
+      .select('*, sanctioned_tournaments!inner(id, name, status)')
+      .eq('user_id', userId)
+      .not('submission_url', 'is', null)
+      .order('submitted_at', { ascending: false });
+
     if (standardError) {
       console.error('Error fetching standard submissions:', standardError);
     }
     if (roundError) {
       console.error('Error fetching round submissions:', roundError);
     }
+    if (sanctionedError) {
+      console.error('Error fetching sanctioned submissions:', sanctionedError);
+    }
 
-    // Merge both submission types
+    // Merge all submission types
     const allSubmissions = [
       ...(standardData || []).map(s => ({
         id: s.id,
@@ -73,6 +84,7 @@ export function useUserSubmissions(targetUserId?: string) {
         qoi_score: s.qoi_score,
         final_rank: s.final_rank,
         submitted_at: s.submitted_at,
+        source: 'standard' as const,
       })),
       ...(roundData || []).map(s => ({
         id: s.id,
@@ -86,6 +98,21 @@ export function useUserSubmissions(targetUserId?: string) {
         qoi_score: s.qoi_score,
         final_rank: null,
         submitted_at: s.submitted_at || s.created_at,
+        source: 'round' as const,
+      })),
+      ...(sanctionedData || []).map(s => ({
+        id: s.id,
+        event_id: s.tournament_id,
+        submission_url: s.submission_url!,
+        platform: s.submission_platform || 'tiktok',
+        status: s.qoi_score ? 'scored' : 'pending',
+        quality_score: null,
+        originality_score: null,
+        impact_score: null,
+        qoi_score: s.qoi_score,
+        final_rank: s.final_rank,
+        submitted_at: s.submitted_at || s.joined_at,
+        source: 'sanctioned' as const,
       })),
     ];
 
@@ -102,18 +129,27 @@ export function useUserSubmissions(targetUserId?: string) {
       return;
     }
 
-    // Fetch event details for each submission
-    const eventIds = [...new Set(allSubmissions.map(s => s.event_id))];
-    const { data: eventsData } = await supabase
-      .from('events')
-      .select('id, title, status, poster_url')
-      .in('id', eventIds);
+    // Fetch event details for non-sanctioned submissions
+    const eventIds = [...new Set(allSubmissions.filter(s => s.source !== 'sanctioned').map(s => s.event_id))];
+    const tournamentIds = [...new Set(allSubmissions.filter(s => s.source === 'sanctioned').map(s => s.event_id))];
+    
+    const [eventsRes, tournamentsRes] = await Promise.all([
+      eventIds.length > 0 
+        ? supabase.from('events').select('id, title, status, poster_url').in('id', eventIds)
+        : { data: [] },
+      tournamentIds.length > 0
+        ? supabase.from('sanctioned_tournaments').select('id, name, status, poster_url').in('id', tournamentIds)
+        : { data: [] }
+    ]);
 
-    const eventsMap = new Map((eventsData || []).map(e => [e.id, e]));
+    const eventsMap = new Map((eventsRes.data || []).map(e => [e.id, e]));
+    const tournamentsMap = new Map((tournamentsRes.data || []).map(t => [t.id, { id: t.id, title: t.name, status: t.status, poster_url: t.poster_url }]));
 
     const submissionsWithEvents = allSubmissions.map(s => ({
       ...s,
-      event: eventsMap.get(s.event_id) || undefined
+      event: s.source === 'sanctioned' 
+        ? tournamentsMap.get(s.event_id) || undefined
+        : eventsMap.get(s.event_id) || undefined
     })) as UserSubmission[];
 
     setSubmissions(submissionsWithEvents);

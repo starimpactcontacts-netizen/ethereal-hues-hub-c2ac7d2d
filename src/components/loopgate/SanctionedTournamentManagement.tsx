@@ -236,6 +236,22 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
         }
       });
 
+      // Add to activity feed for live feed visibility
+      await supabase.from("activity_feed").insert({
+        user_id: scoringParticipant.user_id,
+        username: scoringParticipant.username,
+        avatar_url: scoringParticipant.avatar_url,
+        activity_type: "arena_win",
+        title: `@${scoringParticipant.username} scored ${qoiScore} QOI`,
+        description: `in ${selectedTournament.name}`,
+        data: { 
+          tournament_id: selectedTournament.id, 
+          tournament_name: selectedTournament.name,
+          qoi_score: qoiScore,
+          submission_url: scoringParticipant.submission_url
+        }
+      });
+
       toast.success("Score saved!");
       setScoringParticipant(null);
       setQoiScore(70);
