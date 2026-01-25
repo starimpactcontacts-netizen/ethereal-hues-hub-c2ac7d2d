@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { ChevronRight, MapPin } from "lucide-react";
+import { ChevronRight, MapPin, Zap } from "lucide-react";
 import { LoopgateEvent } from "@/data/loopgateData";
 import StatusBadge from "./StatusBadge";
 import CountdownTimer from "./CountdownTimer";
+import { useEventRounds } from "@/hooks/useOpenArenaData";
 
 interface EventCardProps {
   event: LoopgateEvent;
@@ -10,6 +11,35 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event, featured = false }: EventCardProps) {
+  // Fetch rounds for Open Arena events
+  const isOpenArena = (event as any).event_mode === 'open_arena';
+  const { rounds } = useEventRounds(isOpenArena ? event.id : null);
+  const activeRound = rounds.find(r => r.status === 'active');
+
+  // Determine what countdown to show
+  const getCountdownConfig = () => {
+    if (event.status === "pending") {
+      return { date: event.startDate, label: "Starts" };
+    }
+    
+    if (event.status === "live") {
+      // For Open Arena, use active round timing
+      if (isOpenArena && activeRound?.ends_at) {
+        return { date: activeRound.ends_at, label: `R${activeRound.round_number} Ends` };
+      }
+      // For Open Arena without active round timing, show awaiting state
+      if (isOpenArena && !activeRound?.ends_at) {
+        return null; // Will show special message
+      }
+      // Standard events use end date
+      return { date: event.endDate, label: "Ends" };
+    }
+    
+    return null;
+  };
+
+  const countdownConfig = getCountdownConfig();
+
   return (
     <Link
       to={`/event/${event.id}`}
@@ -63,10 +93,18 @@ export default function EventCard({ event, featured = false }: EventCardProps) {
             {/* Countdown for live/pending */}
             {(event.status === "live" || event.status === "pending") && (
               <div className="mt-3">
-                <CountdownTimer
-                  endDate={event.status === "live" ? event.endDate : event.startDate}
-                  label={event.status === "live" ? "Ends" : "Starts"}
-                />
+                {countdownConfig ? (
+                  <CountdownTimer
+                    endDate={countdownConfig.date}
+                    label={countdownConfig.label}
+                    expiredLabel={isOpenArena ? "Awaiting next round" : "Ended"}
+                  />
+                ) : isOpenArena && event.status === "live" ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Zap size={10} className="text-gold" />
+                    <span>Round timing pending</span>
+                  </div>
+                ) : null}
               </div>
             )}
 

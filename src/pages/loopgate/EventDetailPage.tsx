@@ -251,12 +251,18 @@ export default function EventDetailPage() {
                   </div>
                 )}
 
-                {/* Round Countdown */}
-                {activeRound.ends_at && (
+                {/* Round Countdown or Status */}
+                {activeRound.ends_at ? (
                   <CountdownTimer 
                     endDate={activeRound.ends_at} 
                     label="Round Ends"
+                    expiredLabel="Awaiting results..."
                   />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Clock size={14} className="text-gold" />
+                    <span>Round timing pending</span>
+                  </div>
                 )}
               </div>
             )}
