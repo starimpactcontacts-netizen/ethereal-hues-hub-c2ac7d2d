@@ -299,28 +299,33 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden rounded-2xl">
+          <div className="relative overflow-hidden" style={{
+            clipPath: 'polygon(0% 8%, 3% 0%, 97% 0%, 100% 8%, 100% 92%, 97% 100%, 3% 100%, 0% 92%)',
+          }}>
+            {/* SVG border overlay for inward curve effect */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" preserveAspectRatio="none">
+              <path 
+                d="M 0,8 Q 12,0 24,0 L 376,0 Q 388,0 400,8 L 400,92 Q 388,100 376,100 L 24,100 Q 12,100 0,92 Z" 
+                fill="none" 
+                stroke="rgba(212,175,55,0.25)"
+                strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke"
+                className="group-hover:stroke-[rgba(212,175,55,0.5)] transition-all duration-500"
+                style={{ width: '100%', height: '100%' }}
+              />
+            </svg>
+            
             {/* Multi-layer background for depth */}
             <div className="absolute inset-0 bg-gradient-to-br from-surface-1 via-background to-surface-1" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold/8 via-transparent to-transparent" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
             
-            {/* Subtle grid texture */}
-            <div className="absolute inset-0 opacity-[0.03]" style={{
-              backgroundImage: `linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)`,
-              backgroundSize: '20px 20px'
-            }} />
-            
             {/* Animated glow pulse */}
             <motion.div
-              className="absolute -top-20 -right-20 w-40 h-40 bg-gold/20 rounded-full blur-3xl"
-              animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
+              className="absolute -top-20 -right-20 w-40 h-40 bg-gold/15 rounded-full blur-3xl"
+              animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.1, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
-            
-            {/* Border glow on hover */}
-            <div className="absolute inset-0 rounded-2xl border border-gold/20 group-hover:border-gold/50 transition-colors duration-500" />
-            <div className="absolute inset-[1px] rounded-2xl border border-white/5" />
             
             {/* Content */}
             <div className="relative p-4 flex items-center justify-between">
