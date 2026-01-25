@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   ArrowLeft, Shield, Users, Clock, Trophy, ChevronDown, 
-  Check, X, ExternalLink, Play, CheckCircle, Coins, Swords, Eye, Gavel
+  Check, X, ExternalLink, Play, CheckCircle, Coins, Swords, Eye, Gavel, Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -200,6 +200,34 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       toast.error(err.message || "Failed to save score");
     } finally {
       setSavingScore(false);
+    }
+  };
+
+  const handleDeleteTournament = async (tournamentId: string, tournamentName: string) => {
+    if (!confirm(`Are you sure you want to delete "${tournamentName}"? This will also remove all participants.`)) {
+      return;
+    }
+
+    try {
+      // First delete all participants
+      const { error: participantsError } = await supabase
+        .from("sanctioned_tournament_participants")
+        .delete()
+        .eq("tournament_id", tournamentId);
+
+      if (participantsError) throw participantsError;
+
+      // Then delete the tournament
+      const { error } = await supabase
+        .from("sanctioned_tournaments")
+        .delete()
+        .eq("id", tournamentId);
+
+      if (error) throw error;
+
+      toast.success("Tournament deleted");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete tournament");
     }
   };
 
@@ -604,16 +632,26 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                     </p>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setSelectedTournament(tournament);
-                    setApprovalMode(true);
-                  }}
-                  className="bg-amber-600 hover:bg-amber-700 text-white"
-                >
-                  Review
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setSelectedTournament(tournament);
+                      setApprovalMode(true);
+                    }}
+                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    Review
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteTournament(tournament.id, tournament.name)}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -724,6 +762,19 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                     <span className="text-muted-foreground">3rd: {tournament.third_place_index || 0}</span>
                   </div>
                 ) : null}
+
+                {/* Delete Button for Active Tournaments */}
+                <div className="mt-3 pt-3 border-t border-border">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleDeleteTournament(tournament.id, tournament.name)}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs"
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Remove Tournament
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
