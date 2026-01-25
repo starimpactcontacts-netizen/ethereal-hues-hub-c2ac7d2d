@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, 
-  Search, X, TrendingUp, Plus
+  Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
+  Clock, Award, UserPlus
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import LoopMonster from "@/components/loopgate/LoopMonster";
@@ -408,6 +410,7 @@ export default function ArenaPage() {
               animate={{ opacity: 1, y: 0 }}
               className="mt-8"
             >
+              {/* Header Row */}
               <div className="flex items-center justify-between px-4 mb-3">
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-gold" />
@@ -430,9 +433,106 @@ export default function ArenaPage() {
                   </Link>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground mb-4 px-4">
+              <p className="text-[10px] text-muted-foreground mb-3 px-4">
                 Crew-hosted tournaments with official Index prizes
               </p>
+
+              {/* How It Works - Collapsible Info Guide */}
+              <Collapsible className="mx-4 mb-4">
+                <CollapsibleTrigger className="flex items-center gap-2 text-[10px] text-muted-foreground hover:text-foreground transition-colors group">
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span className="uppercase tracking-wider">How It Works</span>
+                  <ChevronRight className="w-3 h-3 transition-transform group-data-[state=open]:rotate-90" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-3">
+                  <div className="bg-surface-1/80 border border-border p-4 space-y-4">
+                    {/* What are Sanctioned Tournaments */}
+                    <div>
+                      <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <Shield className="w-3.5 h-3.5 text-gold" />
+                        What is a Sanctioned Tournament?
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        Sanctioned tournaments are high-stakes, crew-hosted competitions officially approved by LOOPGATE admins. Winners earn <span className="text-gold font-bold">Index points</span> and <span className="text-purple-400 font-bold">XP</span> that count toward global rankings.
+                      </p>
+                    </div>
+
+                    {/* Who Can Create */}
+                    <div>
+                      <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+                        Who Can Create One?
+                      </h4>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        <span className="text-foreground font-medium">Crew Owners</span> can propose a sanctioned tournament from their crew page. Proposals are reviewed by admins who set the official prize pool.
+                      </p>
+                    </div>
+
+                    {/* How It Works Steps */}
+                    <div>
+                      <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-sky-400" />
+                        Tournament Lifecycle
+                      </h4>
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-gold/20 border border-gold/40 flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-[9px] font-bold text-gold">1</span>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-foreground font-medium">Lobby Phase</p>
+                            <p className="text-[9px] text-muted-foreground">Editors join and ready up. Tournament starts when max capacity is reached or enough are ready.</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-[9px] font-bold text-emerald-400">2</span>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-foreground font-medium">Submission Phase</p>
+                            <p className="text-[9px] text-muted-foreground">Theme revealed! 48h to create and submit your edit via TikTok, YouTube, or Instagram.</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-sky-500/20 border border-sky-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-[9px] font-bold text-sky-400">3</span>
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-foreground font-medium">Bracket Phase</p>
+                            <p className="text-[9px] text-muted-foreground">Single-elimination bracket judged by QOI scores. Best edits advance to finals.</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="w-5 h-5 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                            <Award className="w-2.5 h-2.5 text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-foreground font-medium">Prizes Awarded</p>
+                            <p className="text-[9px] text-muted-foreground">Top 3 earn Index points. All participants gain XP based on placement.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Join CTA */}
+                    {!profile?.crew_id && (
+                      <div className="pt-2 border-t border-border">
+                        <p className="text-[10px] text-muted-foreground mb-2">
+                          Want to host your own tournaments?
+                        </p>
+                        <Link 
+                          to="/crews"
+                          className="inline-flex items-center gap-2 text-[10px] text-gold hover:text-gold/80 font-medium transition-colors"
+                        >
+                          <Users className="w-3.5 h-3.5" />
+                          Join or Create a Crew
+                          <ChevronRight className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
               {sanctionedLoading ? (
                 <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
