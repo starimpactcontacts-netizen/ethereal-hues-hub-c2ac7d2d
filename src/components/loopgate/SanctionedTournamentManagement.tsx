@@ -156,12 +156,12 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
   const handleStatusChange = async (tournamentId: string, newStatus: string) => {
     try {
       const updates: any = { status: newStatus };
+      const tournament = tournaments.find(t => t.id === tournamentId);
       
       if (newStatus === "ready_up") {
         // Set ready up deadline to 24 hours from now
         updates.ready_up_deadline = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       } else if (newStatus === "live") {
-        const tournament = tournaments.find(t => t.id === tournamentId);
         updates.start_date = new Date().toISOString();
         updates.submission_deadline = new Date(Date.now() + (tournament?.duration_hours || 48) * 60 * 60 * 1000).toISOString();
       }
@@ -173,13 +173,46 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
 
       if (error) throw error;
       toast.success(`Status updated to ${newStatus}`);
+
+      // When tournament goes live, send emails and create notifications
+      if (newStatus === "live" && tournament) {
+        // Fetch ready participants to create notifications
+        const { data: participants } = await supabase
+          .from("sanctioned_tournament_participants")
+          .select("user_id, username")
+          .eq("tournament_id", tournamentId)
+          .eq("is_ready", true);
+
+        if (participants && participants.length > 0) {
+          // Create in-app notifications for all ready participants
+          const notifications = participants.map(p => ({
+            user_id: p.user_id,
+            type: "tournament_started",
+            title: "🏆 Tournament Started!",
+            message: `${tournament.name} is now live! Submit your edit before the deadline.`,
+            data: { tournament_id: tournamentId, tournament_name: tournament.name }
+          }));
+
+          await supabase.from("notifications").insert(notifications);
+
+          // Send emails via edge function
+          try {
+            await supabase.functions.invoke("send-tournament-email", {
+              body: { tournament_id: tournamentId }
+            });
+            toast.success(`Sent notifications to ${participants.length} editors!`);
+          } catch (emailErr) {
+            console.error("Email send failed:", emailErr);
+          }
+        }
+      }
     } catch (err: any) {
       toast.error(err.message || "Failed to update status");
     }
   };
 
   const handleScoreSubmission = async () => {
-    if (!scoringParticipant || !user) return;
+    if (!scoringParticipant || !user || !selectedTournament) return;
 
     setSavingScore(true);
     try {
@@ -190,12 +223,23 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
 
       if (error) throw error;
 
+      // Create notification for the scored participant
+      await supabase.from("notifications").insert({
+        user_id: scoringParticipant.user_id,
+        type: "tournament_scored",
+        title: "Your submission was judged!",
+        message: `You scored ${qoiScore} QOI in ${selectedTournament.name}`,
+        data: { 
+          tournament_id: selectedTournament.id, 
+          tournament_name: selectedTournament.name,
+          qoi_score: qoiScore 
+        }
+      });
+
       toast.success("Score saved!");
       setScoringParticipant(null);
       setQoiScore(70);
-      if (selectedTournament) {
-        fetchParticipants(selectedTournament.id);
-      }
+      fetchParticipants(selectedTournament.id);
     } catch (err: any) {
       toast.error(err.message || "Failed to save score");
     } finally {

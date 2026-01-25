@@ -20,6 +20,9 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string 
   house_accepted: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
   house_invited: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
   review_complete: { icon: Star, color: "text-purple-400", bg: "bg-purple-400/10" },
+  // Sanctioned tournament notifications
+  tournament_started: { icon: Trophy, color: "text-green-500", bg: "bg-green-500/10" },
+  tournament_scored: { icon: Trophy, color: "text-gold", bg: "bg-gold/10" },
 };
 
 interface NotificationItemProps {
@@ -32,8 +35,9 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
   const config = typeConfig[notification.type] || { icon: Bell, color: "text-foreground", bg: "bg-muted" };
   const Icon = config.icon;
   const eventId = (notification.data as { event_id?: string })?.event_id;
-  const reviewId = (notification.data as { review_id?: string })?.review_id;
+  const tournamentId = (notification.data as { tournament_id?: string })?.tournament_id;
   const isReview = notification.type === 'review_complete';
+  const isTournament = notification.type === 'tournament_started' || notification.type === 'tournament_scored';
 
   return (
     <div 
@@ -62,7 +66,16 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
             </Link>
           )}
           
-          {eventId && !isReview && (
+          {isTournament && tournamentId && (
+            <Link 
+              to={`/sanctioned/${tournamentId}`}
+              className="inline-block mt-2 text-[10px] text-gold uppercase tracking-wider hover:underline"
+            >
+              View Tournament →
+            </Link>
+          )}
+          
+          {eventId && !isReview && !isTournament && (
             <Link 
               to={`/event/${eventId}`}
               className="inline-block mt-2 text-[10px] text-gold uppercase tracking-wider hover:underline"
