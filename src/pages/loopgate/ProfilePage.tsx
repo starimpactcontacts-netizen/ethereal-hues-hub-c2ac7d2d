@@ -284,22 +284,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* ═══ MEMBER SINCE ═══ */}
-      {profile.created_at && (
-        <div className="px-4 mb-2">
-          <div className="bg-surface-1 border border-border p-3 flex items-center justify-between">
-            <p className="text-[10px] text-gold uppercase tracking-widest font-bold">On LOOPGATE Since</p>
-            <p className="text-sm font-display text-foreground">
-              {new Date(profile.created_at).toLocaleDateString('en-US', { 
-                month: 'short', 
-                year: 'numeric' 
-              })}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* ═══ XP BAR ═══ */}
       <div className="px-4 mb-1.5">
         <div className="flex items-center justify-between text-[8px] text-muted-foreground mb-0.5">
