@@ -26,8 +26,6 @@ interface ProposeSanctionedTournamentProps {
 
 const formatOptions = [
   { value: "single_elimination", label: "Single Elimination" },
-  { value: "double_elimination", label: "Double Elimination" },
-  { value: "round_robin", label: "Round Robin" },
 ];
 
 const playerOptions = [20, 32, 48, 64, 100];
