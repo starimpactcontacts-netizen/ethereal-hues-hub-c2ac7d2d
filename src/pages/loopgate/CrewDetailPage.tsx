@@ -21,6 +21,7 @@ import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
 import CrewRivalCard from "@/components/loopgate/CrewRivalCard";
 import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
 import CrewChallengesPanel from "@/components/loopgate/CrewChallengesPanel";
+import ProposeSanctionedTournament from "@/components/loopgate/ProposeSanctionedTournament";
 import { useCrewRivalries } from "@/hooks/useCrewRivalries";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { toast } from "sonner";
@@ -179,6 +180,10 @@ export default function CrewDetailPage() {
   const [unreadAnnouncementCount, setUnreadAnnouncementCount] = useState(0);
   const [crewSubmissions, setCrewSubmissions] = useState<CrewSubmission[]>([]);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
+  
+  // Tournament proposal state
+  const [showProposalForm, setShowProposalForm] = useState(false);
+  const [preselectedRival, setPreselectedRival] = useState<{ id: string; name: string; avatar_url: string | null; member_count: number } | null>(null);
 
   // Use custom hooks
   const { rivalries, addRival, removeRival } = useCrewRivalries(crewId);
@@ -892,13 +897,27 @@ export default function CrewDetailPage() {
               {/* Rivals Tab */}
               {activeTab === 'rivals' && (
                 <div className="space-y-4">
+                  {/* Propose Tournament Button (Staff Only) */}
+                  {isStaff && rivalries.length > 0 && (
+                    <Button
+                      onClick={() => {
+                        setPreselectedRival(null);
+                        setShowProposalForm(true);
+                      }}
+                      className="w-full bg-gradient-to-r from-gold via-amber-500 to-gold text-background font-display uppercase tracking-wider"
+                    >
+                      <Trophy className="w-4 h-4 mr-2" />
+                      Propose Sanctioned Tournament
+                    </Button>
+                  )}
+                  
                   <div className="bg-surface-1 border border-red-500/20 rounded-lg p-4">
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-2 flex items-center gap-2">
                       <Swords className="w-4 h-4" />
                       Crew Rivalries
                     </h3>
                     <p className="text-xs text-muted-foreground mb-4">
-                      Mark rival crews to track your competition.
+                      Mark rival crews to track your competition. Challenge them to sanctioned tournaments!
                     </p>
                     
                     {rivalries.length === 0 ? (
@@ -918,6 +937,10 @@ export default function CrewDetailPage() {
                             ownCrewXP={crewStats.totalXP}
                             isStaff={isStaff}
                             onRemove={removeRival}
+                            onChallenge={(rivalCrew) => {
+                              setPreselectedRival(rivalCrew);
+                              setShowProposalForm(true);
+                            }}
                           />
                         ))}
                       </div>
@@ -1081,6 +1104,35 @@ export default function CrewDetailPage() {
           crewName={crew.name}
           crewId={crew.id}
         />
+      )}
+      
+      {/* Propose Tournament Modal */}
+      {showProposalForm && crew && (
+        <div className="fixed inset-0 z-50 bg-background">
+          <ProposeSanctionedTournament
+            crewId={crew.id}
+            crewName={crew.name}
+            crewAvatarUrl={crew.avatar_url}
+            onBack={() => {
+              setShowProposalForm(false);
+              setPreselectedRival(null);
+            }}
+            onSubmitted={() => {
+              setShowProposalForm(false);
+              setPreselectedRival(null);
+              toast.success("Tournament proposal submitted!");
+            }}
+            rivals={rivalries
+              .filter((r) => r.rival_crew)
+              .map((r) => ({
+                id: r.rival_crew!.id,
+                name: r.rival_crew!.name,
+                avatar_url: r.rival_crew!.avatar_url,
+                member_count: r.rival_crew!.member_count,
+              }))}
+            preselectedRival={preselectedRival || undefined}
+          />
+        </div>
       )}
     </PageTransition>
   );

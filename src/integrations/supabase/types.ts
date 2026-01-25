@@ -1996,6 +1996,11 @@ export type Database = {
           admin_notes: string | null
           approved_at: string | null
           approved_by: string | null
+          challenge_accepted: boolean | null
+          challenge_accepted_at: string | null
+          challenged_crew_avatar_url: string | null
+          challenged_crew_id: string | null
+          challenged_crew_name: string | null
           created_at: string
           crew_avatar_url: string | null
           crew_id: string
@@ -2024,6 +2029,7 @@ export type Database = {
           submission_deadline: string | null
           theme: string | null
           third_place_index: number | null
+          tournament_mode: string
           updated_at: string
           xp_reward: number | null
         }
@@ -2031,6 +2037,11 @@ export type Database = {
           admin_notes?: string | null
           approved_at?: string | null
           approved_by?: string | null
+          challenge_accepted?: boolean | null
+          challenge_accepted_at?: string | null
+          challenged_crew_avatar_url?: string | null
+          challenged_crew_id?: string | null
+          challenged_crew_name?: string | null
           created_at?: string
           crew_avatar_url?: string | null
           crew_id: string
@@ -2059,6 +2070,7 @@ export type Database = {
           submission_deadline?: string | null
           theme?: string | null
           third_place_index?: number | null
+          tournament_mode?: string
           updated_at?: string
           xp_reward?: number | null
         }
@@ -2066,6 +2078,11 @@ export type Database = {
           admin_notes?: string | null
           approved_at?: string | null
           approved_by?: string | null
+          challenge_accepted?: boolean | null
+          challenge_accepted_at?: string | null
+          challenged_crew_avatar_url?: string | null
+          challenged_crew_id?: string | null
+          challenged_crew_name?: string | null
           created_at?: string
           crew_avatar_url?: string | null
           crew_id?: string
@@ -2094,10 +2111,18 @@ export type Database = {
           submission_deadline?: string | null
           theme?: string | null
           third_place_index?: number | null
+          tournament_mode?: string
           updated_at?: string
           xp_reward?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "sanctioned_tournaments_challenged_crew_id_fkey"
+            columns: ["challenged_crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sanctioned_tournaments_crew_id_fkey"
             columns: ["crew_id"]

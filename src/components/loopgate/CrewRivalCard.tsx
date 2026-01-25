@@ -1,4 +1,4 @@
-import { Shield, Users, Swords, X, TrendingUp, TrendingDown } from "lucide-react";
+import { Shield, Users, Swords, X, TrendingUp, TrendingDown, Trophy } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,7 @@ interface CrewRivalCardProps {
   rivalXP?: number;
   isStaff: boolean;
   onRemove: (rivalryId: string) => void;
+  onChallenge?: (rivalCrew: { id: string; name: string; avatar_url: string | null; member_count: number }) => void;
 }
 
 export default function CrewRivalCard({ 
@@ -25,7 +26,8 @@ export default function CrewRivalCard({
   ownCrewXP, 
   rivalXP = 0, 
   isStaff, 
-  onRemove 
+  onRemove,
+  onChallenge, 
 }: CrewRivalCardProps) {
   const navigate = useNavigate();
   const rival = rivalry.rival_crew;
@@ -34,6 +36,18 @@ export default function CrewRivalCard({
 
   const isAhead = ownCrewXP > rivalXP;
   const xpDiff = Math.abs(ownCrewXP - rivalXP);
+
+  const handleChallenge = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onChallenge) {
+      onChallenge({
+        id: rival.id,
+        name: rival.name,
+        avatar_url: rival.avatar_url,
+        member_count: rival.member_count,
+      });
+    }
+  };
 
   return (
     <div className="relative group">
@@ -82,20 +96,36 @@ export default function CrewRivalCard({
           </div>
         </div>
 
-        {/* Remove Button */}
-        {isStaff && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-muted-foreground hover:text-red-400"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(rivalry.id);
-            }}
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        )}
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          {/* Challenge Button */}
+          {isStaff && onChallenge && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              onClick={handleChallenge}
+              title="Challenge to Sanctioned Tournament"
+            >
+              <Trophy className="w-4 h-4" />
+            </Button>
+          )}
+          
+          {/* Remove Button */}
+          {isStaff && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-muted-foreground hover:text-red-400"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(rivalry.id);
+              }}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
