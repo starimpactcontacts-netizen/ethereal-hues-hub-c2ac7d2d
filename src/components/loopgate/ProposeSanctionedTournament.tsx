@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Shield, Users, Clock, Trophy, ChevronDown, FileText, Sparkles, Swords } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Trophy, ChevronDown, FileText, Sparkles, Swords, ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useProposeTournament } from "@/hooks/useSanctionedTournaments";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 interface RivalCrew {
   id: string;
   name: string;
@@ -59,8 +60,73 @@ export default function ProposeSanctionedTournament({
     preselectedRival ? "crew_vs_crew" : "open"
   );
   const [selectedRival, setSelectedRival] = useState<RivalCrew | null>(preselectedRival || null);
+  
+  // Poster upload
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [uploadingPoster, setUploadingPoster] = useState(false);
+  const posterInputRef = useRef<HTMLInputElement>(null);
 
   const { proposeTournament, submitting } = useProposeTournament();
+  
+  const handlePosterSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    
+    setPosterFile(file);
+    setPosterPreview(URL.createObjectURL(file));
+  };
+  
+  const removePoster = () => {
+    setPosterFile(null);
+    if (posterPreview) {
+      URL.revokeObjectURL(posterPreview);
+      setPosterPreview(null);
+    }
+    if (posterInputRef.current) {
+      posterInputRef.current.value = "";
+    }
+  };
+  
+  const uploadPoster = async (): Promise<string | null> => {
+    if (!posterFile) return null;
+    
+    setUploadingPoster(true);
+    try {
+      const fileExt = posterFile.name.split(".").pop();
+      const fileName = `tournament-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from("event-posters")
+        .upload(fileName, posterFile);
+      
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage
+        .from("event-posters")
+        .getPublicUrl(fileName);
+      
+      return data.publicUrl;
+    } catch (err: any) {
+      console.error("Poster upload error:", err);
+      toast.error("Failed to upload poster");
+      return null;
+    } finally {
+      setUploadingPoster(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
@@ -72,6 +138,13 @@ export default function ProposeSanctionedTournament({
       .split("\n")
       .map((r) => r.trim())
       .filter((r) => r.length > 0);
+    
+    // Upload poster if selected
+    let posterUrl: string | undefined;
+    if (posterFile) {
+      const url = await uploadPoster();
+      if (url) posterUrl = url;
+    }
 
     const id = await proposeTournament(crewId, crewName, crewAvatarUrl, {
       name: name.trim(),
@@ -86,6 +159,7 @@ export default function ProposeSanctionedTournament({
       challenged_crew_id: selectedRival?.id,
       challenged_crew_name: selectedRival?.name,
       challenged_crew_avatar_url: selectedRival?.avatar_url,
+      poster_url: posterUrl,
     });
 
     if (id) {
@@ -272,7 +346,54 @@ export default function ProposeSanctionedTournament({
           />
         </div>
 
-        {/* Theme */}
+        {/* Poster Upload (Optional) */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 block">
+            <ImagePlus className="w-3.5 h-3.5 inline mr-2" />
+            Tournament Poster (Optional)
+          </label>
+          <input
+            ref={posterInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePosterSelect}
+            className="hidden"
+          />
+          {posterPreview ? (
+            <div className="relative">
+              <img
+                src={posterPreview}
+                alt="Poster preview"
+                className="w-full h-40 object-cover border border-gold/30"
+              />
+              <button
+                type="button"
+                onClick={removePoster}
+                className="absolute top-2 right-2 w-7 h-7 bg-background/90 border border-border rounded-full flex items-center justify-center hover:bg-destructive hover:border-destructive transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <p className="text-[10px] text-muted-foreground mt-1.5">
+                This will be used as the tournament background
+              </p>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => posterInputRef.current?.click()}
+              className="w-full h-32 border border-dashed border-border bg-surface-1 hover:border-gold/50 transition-colors flex flex-col items-center justify-center gap-2"
+            >
+              <ImagePlus className="w-6 h-6 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Upload poster image
+              </span>
+              <span className="text-[10px] text-muted-foreground/60">
+                Recommended: 16:9 ratio, max 5MB
+              </span>
+            </button>
+          )}
+        </div>
+
         <div>
           <label className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 block">
             <Sparkles className="w-3.5 h-3.5 inline mr-2" />
@@ -422,6 +543,7 @@ export default function ProposeSanctionedTournament({
           disabled={
             !name.trim() || 
             submitting || 
+            uploadingPoster ||
             (tournamentMode === "crew_vs_crew" && !selectedRival)
           }
           className={`w-full py-6 font-display uppercase tracking-wider ${
@@ -430,11 +552,13 @@ export default function ProposeSanctionedTournament({
               : "bg-gradient-to-r from-gold via-amber-500 to-gold text-background"
           }`}
         >
-          {submitting 
-            ? "Submitting..." 
-            : tournamentMode === "crew_vs_crew"
-              ? "Issue Challenge"
-              : "Submit Proposal"
+          {uploadingPoster 
+            ? "Uploading poster..." 
+            : submitting 
+              ? "Submitting..." 
+              : tournamentMode === "crew_vs_crew"
+                ? "Issue Challenge"
+                : "Submit Proposal"
           }
         </Button>
       </div>
