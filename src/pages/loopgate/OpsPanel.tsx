@@ -251,6 +251,7 @@ export default function OpsPanel() {
     materials_url: '',
     rules: [] as string[],
     status: 'pending' as string,
+    event_mode: 'standard' as 'standard' | 'open_arena',
   });
   const [editRuleInput, setEditRuleInput] = useState('');
   const [editPosterFile, setEditPosterFile] = useState<File | null>(null);
@@ -1126,7 +1127,9 @@ export default function OpsPanel() {
         region_tags: newEvent.region_tags,
         rules: newEvent.rules.length > 0 ? newEvent.rules : null,
         start_date: new Date(newEvent.start_date).toISOString(),
-        end_date: new Date(newEvent.end_date).toISOString(),
+        end_date: isOpenArena 
+          ? new Date(new Date(newEvent.start_date).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() // Default 30 days for Open Arena (round timing takes over)
+          : new Date(newEvent.end_date).toISOString(),
         prize_pool: newEvent.prize_pool || null,
         league: newEvent.league,
         poster_url: posterUrl,
@@ -1240,6 +1243,7 @@ export default function OpsPanel() {
       materials_url: event.materials_url || '',
       rules: event.rules || [],
       status: event.status,
+      event_mode: event.event_mode || 'standard',
     });
     setEditRuleInput('');
     setEditPosterPreview(event.poster_url || null);
@@ -1247,7 +1251,8 @@ export default function OpsPanel() {
   }
 
   async function handleUpdateEvent() {
-    if (!editingEvent || !editEvent.title || !editEvent.start_date || !editEvent.end_date) {
+    const isOpenArena = editEvent.event_mode === 'open_arena';
+    if (!editingEvent || !editEvent.title || !editEvent.start_date || (!isOpenArena && !editEvent.end_date)) {
       toast.error('Please fill in required fields');
       return;
     }
@@ -1284,7 +1289,9 @@ export default function OpsPanel() {
         region_tags: editEvent.region_tags,
         rules: editEvent.rules.length > 0 ? editEvent.rules : null,
         start_date: new Date(editEvent.start_date).toISOString(),
-        end_date: new Date(editEvent.end_date).toISOString(),
+        end_date: isOpenArena && !editEvent.end_date
+          ? new Date(new Date(editEvent.start_date).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          : new Date(editEvent.end_date).toISOString(),
         prize_pool: editEvent.prize_pool || null,
         league: editEvent.league,
         poster_url: posterUrl,
@@ -4092,7 +4099,7 @@ export default function OpsPanel() {
             </div>
 
             {/* Date/Time */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className={newEvent.event_mode === 'open_arena' ? '' : 'grid grid-cols-2 gap-3'}>
               <div>
                 <Label htmlFor="start">Start Date/Time *</Label>
                 <Input
@@ -4102,17 +4109,24 @@ export default function OpsPanel() {
                   onChange={(e) => setNewEvent({ ...newEvent, start_date: e.target.value })}
                   className="mt-1"
                 />
+                {newEvent.event_mode === 'open_arena' && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Round timing is managed in the Open Arena configuration below
+                  </p>
+                )}
               </div>
-              <div>
-                <Label htmlFor="end">End Date/Time *</Label>
-                <Input
-                  id="end"
-                  type="datetime-local"
-                  value={newEvent.end_date}
-                  onChange={(e) => setNewEvent({ ...newEvent, end_date: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
+              {newEvent.event_mode !== 'open_arena' && (
+                <div>
+                  <Label htmlFor="end">End Date/Time *</Label>
+                  <Input
+                    id="end"
+                    type="datetime-local"
+                    value={newEvent.end_date}
+                    onChange={(e) => setNewEvent({ ...newEvent, end_date: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Prize Pool */}
@@ -4260,7 +4274,7 @@ export default function OpsPanel() {
             {/* Submit Button */}
             <button
               onClick={handleCreateEvent}
-              disabled={creating || !newEvent.title || !newEvent.start_date || !newEvent.end_date}
+              disabled={creating || !newEvent.title || !newEvent.start_date || (newEvent.event_mode !== 'open_arena' && !newEvent.end_date)}
               className="w-full py-3 bg-gold text-black font-bold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {creating ? (
@@ -4444,7 +4458,7 @@ export default function OpsPanel() {
             </div>
 
             {/* Date/Time */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className={editEvent.event_mode === 'open_arena' ? '' : 'grid grid-cols-2 gap-3'}>
               <div>
                 <Label htmlFor="edit-start">Start Date/Time *</Label>
                 <Input
@@ -4454,17 +4468,24 @@ export default function OpsPanel() {
                   onChange={(e) => setEditEvent({ ...editEvent, start_date: e.target.value })}
                   className="mt-1"
                 />
+                {editEvent.event_mode === 'open_arena' && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Round timing is managed per-round in the event rounds
+                  </p>
+                )}
               </div>
-              <div>
-                <Label htmlFor="edit-end">End Date/Time *</Label>
-                <Input
-                  id="edit-end"
-                  type="datetime-local"
-                  value={editEvent.end_date}
-                  onChange={(e) => setEditEvent({ ...editEvent, end_date: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
+              {editEvent.event_mode !== 'open_arena' && (
+                <div>
+                  <Label htmlFor="edit-end">End Date/Time *</Label>
+                  <Input
+                    id="edit-end"
+                    type="datetime-local"
+                    value={editEvent.end_date}
+                    onChange={(e) => setEditEvent({ ...editEvent, end_date: e.target.value })}
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Prize Pool */}
