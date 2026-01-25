@@ -244,19 +244,14 @@ export default function ProposeSanctionedTournament({
               <p className="text-xs font-bold uppercase">Open</p>
               <p className="text-[10px] mt-1 opacity-70">Anyone can join</p>
             </button>
-            <button
-              type="button"
-              onClick={() => setTournamentMode("crew_vs_crew")}
-              className={`p-4 border transition-all ${
-                tournamentMode === "crew_vs_crew"
-                  ? "bg-red-500/10 border-red-500 text-red-400"
-                  : "bg-surface-1 border-border text-muted-foreground hover:border-muted-foreground"
-              }`}
-            >
-              <Swords className="w-5 h-5 mx-auto mb-2" />
-              <p className="text-xs font-bold uppercase">Crew vs Crew</p>
-              <p className="text-[10px] mt-1 opacity-70">Challenge a rival</p>
-            </button>
+            <div className="relative p-4 border border-border bg-surface-1 opacity-60 cursor-not-allowed">
+              <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-gold/20 border border-gold/30 rounded-sm">
+                <span className="text-[8px] font-bold uppercase tracking-wider text-gold">Soon</span>
+              </div>
+              <Swords className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-xs font-bold uppercase text-muted-foreground">Crew vs Crew</p>
+              <p className="text-[10px] mt-1 text-muted-foreground/50">Challenge a rival</p>
+            </div>
           </div>
         </div>
 
