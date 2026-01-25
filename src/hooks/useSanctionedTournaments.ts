@@ -175,6 +175,24 @@ export function useSanctionedTournament(tournamentId: string | null) {
     }
   };
 
+  // Optimistic update helpers
+  const optimisticAddParticipant = (newParticipant: SanctionedParticipant) => {
+    setParticipants(prev => [...prev, newParticipant]);
+    setTournament(prev => prev ? { ...prev, player_count: prev.player_count + 1 } : prev);
+  };
+
+  const optimisticRemoveParticipant = (userId: string) => {
+    setParticipants(prev => prev.filter(p => p.user_id !== userId));
+    setTournament(prev => prev ? { ...prev, player_count: Math.max(0, prev.player_count - 1) } : prev);
+  };
+
+  const optimisticReadyUp = (userId: string) => {
+    setParticipants(prev => prev.map(p => 
+      p.user_id === userId ? { ...p, is_ready: true, ready_at: new Date().toISOString() } : p
+    ));
+    setTournament(prev => prev ? { ...prev, ready_count: prev.ready_count + 1 } : prev);
+  };
+
   useEffect(() => {
     fetchTournament();
     fetchParticipants();
@@ -206,6 +224,28 @@ export function useSanctionedTournament(tournamentId: string | null) {
   const joinTournament = async () => {
     if (!user || !profile || !tournamentId) return false;
 
+    // Create optimistic participant
+    const optimisticParticipant: SanctionedParticipant = {
+      id: crypto.randomUUID(),
+      tournament_id: tournamentId,
+      user_id: user.id,
+      username: profile.username,
+      avatar_url: profile.avatar_url,
+      is_ready: false,
+      ready_at: null,
+      submission_url: null,
+      submission_platform: null,
+      submitted_at: null,
+      bracket_position: null,
+      eliminated_at: null,
+      final_rank: null,
+      qoi_score: null,
+      joined_at: new Date().toISOString(),
+    };
+
+    // INSTANT UPDATE - add to UI immediately
+    optimisticAddParticipant(optimisticParticipant);
+
     try {
       const { error } = await supabase
         .from("sanctioned_tournament_participants")
@@ -218,7 +258,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
       if (error) throw error;
 
-      // Update player count
+      // Update player count on server
       await supabase
         .from("sanctioned_tournaments")
         .update({ player_count: (tournament?.player_count || 0) + 1 })
@@ -227,6 +267,8 @@ export function useSanctionedTournament(tournamentId: string | null) {
       toast.success("Joined tournament!");
       return true;
     } catch (err: any) {
+      // Rollback optimistic update on error
+      optimisticRemoveParticipant(user.id);
       toast.error(err.message || "Failed to join");
       return false;
     }
@@ -234,6 +276,9 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
   const leaveTournament = async () => {
     if (!user || !tournamentId) return false;
+
+    // INSTANT UPDATE - remove from UI immediately
+    optimisticRemoveParticipant(user.id);
 
     try {
       const { error } = await supabase
@@ -244,7 +289,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
       if (error) throw error;
 
-      // Update player count
+      // Update player count on server
       await supabase
         .from("sanctioned_tournaments")
         .update({ player_count: Math.max(0, (tournament?.player_count || 1) - 1) })
@@ -253,6 +298,9 @@ export function useSanctionedTournament(tournamentId: string | null) {
       toast.success("Left tournament");
       return true;
     } catch (err: any) {
+      // Refetch on error to restore state
+      fetchParticipants();
+      fetchTournament();
       toast.error(err.message || "Failed to leave");
       return false;
     }
@@ -260,6 +308,9 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
   const readyUp = async () => {
     if (!user || !tournamentId) return false;
+
+    // INSTANT UPDATE - mark as ready immediately
+    optimisticReadyUp(user.id);
 
     try {
       const { error } = await supabase
@@ -296,6 +347,9 @@ export function useSanctionedTournament(tournamentId: string | null) {
       
       return true;
     } catch (err: any) {
+      // Refetch on error to restore state
+      fetchParticipants();
+      fetchTournament();
       toast.error(err.message || "Failed to ready up");
       return false;
     }
