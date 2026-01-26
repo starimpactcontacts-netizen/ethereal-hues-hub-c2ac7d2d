@@ -134,6 +134,42 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string | null
+          last_message_preview: string | null
+          participant_1_id: string
+          participant_2_id: string
+          unread_count_1: number
+          unread_count_2: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          participant_1_id: string
+          participant_2_id: string
+          unread_count_1?: number
+          unread_count_2?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          participant_1_id?: string
+          participant_2_id?: string
+          unread_count_1?: number
+          unread_count_2?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crew_activity: {
         Row: {
           activity_type: string
@@ -567,6 +603,41 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      direct_messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          message_text: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_text: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_text?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -2314,6 +2385,10 @@ export type Database = {
         Returns: string
       }
       generate_invite_code: { Args: never; Returns: string }
+      get_or_create_conversation: {
+        Args: { p_user_1: string; p_user_2: string }
+        Returns: string
+      }
       get_skill_tier: { Args: { qoi_score: number }; Returns: string }
       has_role: {
         Args: {
@@ -2333,6 +2408,10 @@ export type Database = {
       is_username_available: {
         Args: { check_username: string }
         Returns: boolean
+      }
+      mark_conversation_read: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: undefined
       }
       process_login_streak: {
         Args: { p_user_id: string }

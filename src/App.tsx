@@ -52,6 +52,8 @@ import AppPage from "./pages/AppPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import FAQPage from "./pages/FAQPage";
 import StartPage from "./pages/StartPage";
+import MessagesPage from "./pages/loopgate/MessagesPage";
+import DirectMessagePage from "./pages/loopgate/DirectMessagePage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -292,6 +294,8 @@ export default function App() {
               <Route path="/crews/create" element={<CreateCrewPage />} />
               <Route path="/crews/:crewId" element={<CrewDetailPage />} />
               <Route path="/crews/:crewId/chat" element={<CrewChatPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/messages/:conversationId" element={<DirectMessagePage />} />
               <Route path="/crews/:crewId/settings" element={<CrewSettingsPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />

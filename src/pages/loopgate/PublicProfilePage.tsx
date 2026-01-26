@@ -11,6 +11,7 @@ import LevelBadge from "@/components/loopgate/LevelBadge";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
+import MessageButton from "@/components/loopgate/MessageButton";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import { getRankFromScore } from "@/data/gqtConfig";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -298,6 +299,11 @@ export default function PublicProfilePage() {
                   {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
                 </span>
               </div>
+            </div>
+
+            {/* Message Button */}
+            <div className="mt-3">
+              <MessageButton userId={profile.id} username={profile.username} variant="outline" size="sm" />
             </div>
           </div>
         </div>
