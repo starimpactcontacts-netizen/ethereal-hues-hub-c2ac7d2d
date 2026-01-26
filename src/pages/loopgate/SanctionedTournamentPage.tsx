@@ -245,6 +245,7 @@ export default function SanctionedTournamentPage() {
         onOpenChange={setShowInviteModal}
         tournamentName={tournament.name}
         tournamentId={tournament.id}
+        tournamentSlug={tournament.slug}
         crewName={tournament.crew_name}
         posterUrl={tournament.poster_url}
         playerCount={participants.length}

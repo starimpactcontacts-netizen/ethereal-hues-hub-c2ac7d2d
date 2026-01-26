@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 export interface SanctionedTournament {
   id: string;
+  slug: string;
   crew_id: string;
   proposed_by: string;
   crew_name: string;
@@ -132,23 +133,26 @@ export function useSanctionedTournaments(statusFilter?: string[]) {
   return { tournaments, loading, refetch: fetchTournaments };
 }
 
-export function useSanctionedTournament(tournamentId: string | null) {
+export function useSanctionedTournament(tournamentIdOrSlug: string | null) {
   const [tournament, setTournament] = useState<SanctionedTournament | null>(null);
   const [participants, setParticipants] = useState<SanctionedParticipant[]>([]);
   const [loading, setLoading] = useState(true);
   const { user, profile } = useAuth();
 
   const fetchTournament = async () => {
-    if (!tournamentId) {
+    if (!tournamentIdOrSlug) {
       setLoading(false);
       return;
     }
 
     try {
+      // Check if it's a UUID or slug
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tournamentIdOrSlug);
+      
       const { data, error } = await supabase
         .from("sanctioned_tournaments")
         .select("*")
-        .eq("id", tournamentId)
+        .eq(isUuid ? "id" : "slug", tournamentIdOrSlug)
         .maybeSingle();
 
       if (error) throw error;
@@ -159,13 +163,13 @@ export function useSanctionedTournament(tournamentId: string | null) {
   };
 
   const fetchParticipants = async () => {
-    if (!tournamentId) return;
+    if (!tournament?.id) return;
 
     try {
       const { data, error } = await supabase
         .from("sanctioned_tournament_participants")
         .select("*")
-        .eq("tournament_id", tournamentId)
+        .eq("tournament_id", tournament.id)
         .order("joined_at", { ascending: true });
 
       if (error) throw error;
@@ -197,39 +201,42 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
   useEffect(() => {
     fetchTournament();
-    fetchParticipants();
+  }, [tournamentIdOrSlug]);
 
-    if (!tournamentId) return;
+  useEffect(() => {
+    if (tournament?.id) {
+      fetchParticipants();
 
-    const channel = supabase
-      .channel(`sanctioned-tournament-${tournamentId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "sanctioned_tournaments", filter: `id=eq.${tournamentId}` },
-        () => fetchTournament()
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "sanctioned_tournament_participants", filter: `tournament_id=eq.${tournamentId}` },
-        () => fetchParticipants()
-      )
-      .subscribe();
+      const channel = supabase
+        .channel(`sanctioned-tournament-${tournament.id}`)
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "sanctioned_tournaments", filter: `id=eq.${tournament.id}` },
+          () => fetchTournament()
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "sanctioned_tournament_participants", filter: `tournament_id=eq.${tournament.id}` },
+          () => fetchParticipants()
+        )
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [tournamentId]);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [tournament?.id]);
 
   const isParticipant = participants.some((p) => p.user_id === user?.id);
   const userParticipation = participants.find((p) => p.user_id === user?.id);
 
   const joinTournament = async () => {
-    if (!user || !profile || !tournamentId) return false;
+    if (!user || !profile || !tournament?.id) return false;
 
     // Create optimistic participant
     const optimisticParticipant: SanctionedParticipant = {
       id: crypto.randomUUID(),
-      tournament_id: tournamentId,
+      tournament_id: tournament.id,
       user_id: user.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
@@ -252,7 +259,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
       const { error } = await supabase
         .from("sanctioned_tournament_participants")
         .insert({
-          tournament_id: tournamentId,
+          tournament_id: tournament.id,
           user_id: user.id,
           username: profile.username,
           avatar_url: profile.avatar_url,
@@ -272,7 +279,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
   };
 
   const leaveTournament = async () => {
-    if (!user || !tournamentId) return false;
+    if (!user || !tournament?.id) return false;
 
     // INSTANT UPDATE - remove from UI immediately
     optimisticRemoveParticipant(user.id);
@@ -281,7 +288,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
       const { error } = await supabase
         .from("sanctioned_tournament_participants")
         .delete()
-        .eq("tournament_id", tournamentId)
+        .eq("tournament_id", tournament.id)
         .eq("user_id", user.id);
 
       if (error) throw error;
@@ -299,7 +306,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
   };
 
   const readyUp = async () => {
-    if (!user || !tournamentId) return false;
+    if (!user || !tournament?.id) return false;
 
     // INSTANT UPDATE - mark as ready immediately
     optimisticReadyUp(user.id);
@@ -308,7 +315,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
       const { error } = await supabase
         .from("sanctioned_tournament_participants")
         .update({ is_ready: true, ready_at: new Date().toISOString() })
-        .eq("tournament_id", tournamentId)
+        .eq("tournament_id", tournament.id)
         .eq("user_id", user.id);
 
       if (error) throw error;
@@ -319,7 +326,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
       await supabase
         .from("sanctioned_tournaments")
         .update({ ready_count: newReadyCount })
-        .eq("id", tournamentId);
+        .eq("id", tournament.id);
 
       // Check if max players reached - auto-start tournament!
       if (newReadyCount >= (tournament?.max_players || 100)) {
@@ -330,7 +337,7 @@ export function useSanctionedTournament(tournamentId: string | null) {
             start_date: new Date().toISOString(),
             submission_deadline: new Date(Date.now() + (tournament?.duration_hours || 48) * 60 * 60 * 1000).toISOString()
           })
-          .eq("id", tournamentId);
+          .eq("id", tournament.id);
 
         toast.success("Lobby full — Tournament starting!");
       } else {
@@ -375,28 +382,31 @@ export function useProposeTournament() {
 
     setSubmitting(true);
     try {
+      // Note: slug is auto-generated by database trigger
+      const insertData = {
+        crew_id: crewId,
+        proposed_by: user.id,
+        crew_name: crewName,
+        crew_avatar_url: crewAvatarUrl,
+        name: data.name,
+        description: data.description,
+        theme: data.theme,
+        rules: data.rules,
+        min_players: data.min_players || 2,
+        max_players: data.max_players || 64,
+        duration_hours: data.duration_hours || 48,
+        format_type: data.format_type || "single_elimination",
+        proposed_start_date: data.proposed_start_date,
+        poster_url: data.poster_url,
+        tournament_mode: data.tournament_mode || "open",
+        challenged_crew_id: data.challenged_crew_id,
+        challenged_crew_name: data.challenged_crew_name,
+        challenged_crew_avatar_url: data.challenged_crew_avatar_url,
+      };
+
       const { data: inserted, error } = await supabase
         .from("sanctioned_tournaments")
-        .insert({
-          crew_id: crewId,
-          proposed_by: user.id,
-          crew_name: crewName,
-          crew_avatar_url: crewAvatarUrl,
-          name: data.name,
-          description: data.description,
-          theme: data.theme,
-          rules: data.rules,
-          min_players: data.min_players || 2,
-          max_players: data.max_players || 64,
-          duration_hours: data.duration_hours || 48,
-          format_type: data.format_type || "single_elimination",
-          proposed_start_date: data.proposed_start_date,
-          poster_url: data.poster_url,
-          tournament_mode: data.tournament_mode || "open",
-          challenged_crew_id: data.challenged_crew_id,
-          challenged_crew_name: data.challenged_crew_name,
-          challenged_crew_avatar_url: data.challenged_crew_avatar_url,
-        })
+        .insert(insertData as any)
         .select()
         .single();
 
