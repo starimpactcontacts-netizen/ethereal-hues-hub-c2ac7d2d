@@ -184,7 +184,7 @@ export default function CreateCrewPage() {
               placeholder="Enter crew name..."
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              maxLength={24}
+              maxLength={48}
               className="bg-muted/50"
               disabled={!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2}
             />
