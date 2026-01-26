@@ -438,9 +438,12 @@ export default function CrewChatPage() {
         <CrewTypingIndicator typingUsers={typingUsers} />
 
         {/* Input Area */}
-        <div className="bg-background border-t border-border/40 px-4 py-3 shrink-0 relative">
+        <div className="bg-background border-t border-border/40 px-4 py-3 shrink-0 relative z-50">
+          {/* GIF Picker - positioned above input */}
           {showGifPicker && crewId && (
-            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+            <div className="absolute bottom-full left-0 right-0 px-4 pb-2">
+              <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+            </div>
           )}
           {showMentions && crewId && (
             <MentionAutocomplete crewId={crewId} searchQuery={mentionQuery} onSelect={handleMentionSelect} visible={showMentions} />
