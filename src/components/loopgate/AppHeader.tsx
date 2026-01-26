@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/s
 import NotificationCenter from './NotificationCenter';
 import BeginnerGuideModal from './BeginnerGuideModal';
 import InviteModal from './InviteModal';
+import MessagesHeaderIcon from './MessagesHeaderIcon';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 
 const menuItems = [
@@ -59,8 +60,11 @@ export default function AppHeader() {
           <img src={loopgateBrand} alt="LOOPGATE" className="h-6 w-auto" />
         </Link>
 
-        {/* Right side: Invite + Notifications + Menu */}
+        {/* Right side: Messages + Invite + Notifications + Menu */}
         <div className="flex items-center gap-1">
+          {/* Messages */}
+          <MessagesHeaderIcon />
+          
           {/* Invite Button */}
           <Button
             variant="ghost"
