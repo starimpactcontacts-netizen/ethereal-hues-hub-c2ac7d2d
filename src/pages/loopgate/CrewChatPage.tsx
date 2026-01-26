@@ -437,8 +437,8 @@ export default function CrewChatPage() {
         {/* Typing Indicator */}
         <CrewTypingIndicator typingUsers={typingUsers} />
 
-        {/* Input Area - Fixed at bottom */}
-        <div className="bg-background border-t border-border/40 px-4 py-3 shrink-0">
+        {/* Input Area - Fixed at bottom with safe area */}
+        <div className="bg-background border-t border-border/40 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shrink-0">
           {showGifPicker && crewId && (
             <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
           )}
