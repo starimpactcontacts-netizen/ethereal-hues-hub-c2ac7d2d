@@ -5,6 +5,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useFriendlyTournament } from "@/hooks/useFriendlyTournament";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -19,6 +21,8 @@ export default function FriendlyTournamentLobby({
   onBack,
   onStarted,
 }: FriendlyTournamentLobbyProps) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     tournament,
     participants,
@@ -32,6 +36,19 @@ export default function FriendlyTournamentLobby({
   } = useFriendlyTournament(tournamentId);
 
   const [copied, setCopied] = useState(false);
+
+  // Wrapper to check auth before joining
+  const handleJoinTournament = async () => {
+    if (!user) {
+      localStorage.setItem("pending_friendly_tournament", JSON.stringify({
+        tournamentId,
+        tournamentName: tournament?.name,
+      }));
+      navigate(`/start?redirect=/arena/friendly/${tournamentId}`);
+      return;
+    }
+    joinTournament();
+  };
 
   if (loading || !tournament) {
     return (
@@ -249,7 +266,7 @@ export default function FriendlyTournamentLobby({
             </Button>
           ) : (
             <Button
-              onClick={joinTournament}
+              onClick={handleJoinTournament}
               disabled={isFull}
               className="w-full py-5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-display uppercase tracking-wider"
             >
