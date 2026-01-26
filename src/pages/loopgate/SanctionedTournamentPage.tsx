@@ -491,6 +491,15 @@ function LobbyPhase({
         </div>
       )}
 
+      {/* Description */}
+      {tournament.description && (
+        <div className="p-3 bg-surface-1 border border-border">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {tournament.description}
+          </p>
+        </div>
+      )}
+
       {/* Theme Lock Notice */}
       <div className="flex items-center gap-3 p-3 bg-violet-500/5 border border-violet-500/20">
         <Lock className="w-4 h-4 text-violet-400" />
