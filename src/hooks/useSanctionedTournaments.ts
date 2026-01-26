@@ -260,10 +260,15 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
       if (error) throw error;
 
-      // Update player count on server
+      // Update player count on server using actual count from participants table
+      const { count } = await supabase
+        .from("sanctioned_tournament_participants")
+        .select("*", { count: "exact", head: true })
+        .eq("tournament_id", tournamentId);
+      
       await supabase
         .from("sanctioned_tournaments")
-        .update({ player_count: (tournament?.player_count || 0) + 1 })
+        .update({ player_count: count || 1 })
         .eq("id", tournamentId);
 
       toast.success("Joined tournament!");
@@ -291,10 +296,15 @@ export function useSanctionedTournament(tournamentId: string | null) {
 
       if (error) throw error;
 
-      // Update player count on server
+      // Update player count on server using actual count from participants table
+      const { count } = await supabase
+        .from("sanctioned_tournament_participants")
+        .select("*", { count: "exact", head: true })
+        .eq("tournament_id", tournamentId);
+      
       await supabase
         .from("sanctioned_tournaments")
-        .update({ player_count: Math.max(0, (tournament?.player_count || 1) - 1) })
+        .update({ player_count: count || 0 })
         .eq("id", tournamentId);
 
       toast.success("Left tournament");
