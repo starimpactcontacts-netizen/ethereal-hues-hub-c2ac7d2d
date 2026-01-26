@@ -320,7 +320,7 @@ export default function CrewChatPage() {
 
   return (
     <PageTransition>
-      <div className="fixed inset-0 top-0 bottom-14 bg-background flex flex-col">
+      <div className="fixed top-0 left-0 right-0 bottom-14 bg-background flex flex-col">
         {/* Header */}
         <div className="sticky top-0 bg-card/95 backdrop-blur-md border-b border-border/50 z-40">
           <div className="px-4 py-3 flex items-center justify-between">
