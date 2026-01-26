@@ -319,10 +319,9 @@ export default function CrewChatPage() {
   }, {} as Record<string, MessageGroup[]>);
 
   return (
-    <PageTransition>
-      <div className="fixed top-0 left-0 right-0 bottom-14 bg-background flex flex-col">
-        {/* Header */}
-        <div className="sticky top-0 bg-card/95 backdrop-blur-md border-b border-border/50 z-40">
+    <div className="fixed inset-x-0 top-0 bottom-14 bg-background flex flex-col z-50">
+      {/* Header */}
+      <div className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0">
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button 
@@ -480,6 +479,6 @@ export default function CrewChatPage() {
           </div>
         </div>
       </div>
-    </PageTransition>
+    </div>
   );
 }
