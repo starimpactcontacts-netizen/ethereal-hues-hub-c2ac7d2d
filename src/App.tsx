@@ -20,6 +20,7 @@ import ProfilePage from "./pages/loopgate/ProfilePage";
 import ProfileSettingsPage from "./pages/loopgate/ProfileSettingsPage";
 import ProfileStatsPage from "./pages/loopgate/ProfileStatsPage";
 import PublicProfilePage from "./pages/loopgate/PublicProfilePage";
+import UsernameLookupPage from "./pages/loopgate/UsernameLookupPage";
 import ClassPage from "./pages/loopgate/ClassPage";
 import IndexPage from "./pages/loopgate/IndexPage";
 import ArenasPage from "./pages/loopgate/ArenasPage";
@@ -254,6 +255,7 @@ export default function App() {
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/join/:crewSlug" element={<JoinCrewPage />} />
+            <Route path="/u/:username" element={<UsernameLookupPage />} />
             <Route path="/start" element={<StartPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
