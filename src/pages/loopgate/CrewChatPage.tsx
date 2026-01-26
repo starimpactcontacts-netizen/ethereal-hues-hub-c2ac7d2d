@@ -319,165 +319,167 @@ export default function CrewChatPage() {
   }, {} as Record<string, MessageGroup[]>);
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col pb-14">
-      {/* Compact Header */}
-      <div className="bg-card/80 backdrop-blur border-b border-border/40 shrink-0 z-40">
-        <div className="px-2 py-1.5 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <button 
-              onClick={() => navigate(`/crews/${crewId}`)} 
-              className="p-1 rounded hover:bg-muted/50 transition-colors active:scale-95"
-            >
-              <ArrowLeft className="w-4 h-4 text-muted-foreground" />
-            </button>
+    <PageTransition>
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Header */}
+        <div className="sticky top-0 bg-card/95 backdrop-blur-md border-b border-border/50 z-40">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => navigate(`/crews/${crewId}`)} 
+                className="p-2 rounded-lg hover:bg-muted/50 transition-colors active:scale-95"
+              >
+                <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+              </button>
+              
+              <div className="flex items-center gap-2">
+                <Hash className="w-5 h-5 text-muted-foreground/70" />
+                <span className="text-sm font-semibold">general</span>
+                <span className="text-xs text-muted-foreground/60">— {crew.name}</span>
+              </div>
+            </div>
             
-            <div className="flex items-center gap-1.5">
-              <Hash className="w-4 h-4 text-muted-foreground/70" />
-              <span className="text-xs font-medium">general</span>
-              <span className="text-[10px] text-muted-foreground/50">— {crew.name}</span>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span>{onlineCount} online</span>
             </div>
           </div>
-          
-          <div className="flex items-center gap-1 text-[9px] text-muted-foreground/60">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary/80" />
-            <span>{onlineCount}</span>
-          </div>
         </div>
-      </div>
 
-      {/* Messages Area */}
-      <div ref={scrollAreaRef} className="flex-1 overflow-y-auto overscroll-contain">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-12 px-4 text-center">
-            <Hash className="w-8 h-8 text-muted-foreground/30 mb-2" />
-            <p className="text-xs text-muted-foreground">Start chatting in #general</p>
-          </div>
-        ) : (
-          <div className="py-1">
-            {Object.entries(messagesByDate).map(([dateKey, groups]) => (
-              <div key={dateKey}>
-                {/* Date Divider */}
-                <div className="flex items-center gap-2 px-2 py-1">
-                  <div className="flex-1 h-px bg-border/30" />
-                  <span className="text-[8px] text-muted-foreground/50 uppercase tracking-wide">{dateKey}</span>
-                  <div className="flex-1 h-px bg-border/30" />
-                </div>
-                
-                {/* Message Groups */}
-                {groups.map((group) => (
-                  <div 
-                    key={`${group.user_id}-${group.firstMessageTime.getTime()}`}
-                    className="group/msggroup hover:bg-muted/10 px-2 py-0.5"
-                  >
-                    <div className="flex gap-2">
-                      <Avatar 
-                        className="w-8 h-8 shrink-0 cursor-pointer"
-                        onClick={() => navigate(`/u/${group.username}`)}
-                      >
-                        <AvatarImage src={group.avatar_url || undefined} />
-                        <AvatarFallback className="bg-muted text-[10px] font-medium">
-                          {(group.display_name || group.username || "?")[0].toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-1.5">
-                          <span 
-                            className="text-xs font-medium hover:underline cursor-pointer"
-                            onClick={() => navigate(`/u/${group.username}`)}
-                          >
-                            {group.display_name || group.username}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground/40">
-                            {format(group.firstMessageTime, "h:mm a")}
-                          </span>
-                        </div>
+        {/* Messages Area */}
+        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto pb-32">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 py-12 px-4 text-center">
+              <Hash className="w-12 h-12 text-muted-foreground/20 mb-3" />
+              <p className="text-sm text-muted-foreground">Start the conversation in #general</p>
+            </div>
+          ) : (
+            <div className="py-3">
+              {Object.entries(messagesByDate).map(([dateKey, groups]) => (
+                <div key={dateKey}>
+                  {/* Date Divider */}
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <div className="flex-1 h-px bg-border/40" />
+                    <span className="text-[10px] text-muted-foreground/50 uppercase tracking-wider font-medium">{dateKey}</span>
+                    <div className="flex-1 h-px bg-border/40" />
+                  </div>
+                  
+                  {/* Message Groups */}
+                  {groups.map((group) => (
+                    <div 
+                      key={`${group.user_id}-${group.firstMessageTime.getTime()}`}
+                      className="group/msggroup hover:bg-muted/10 px-4 py-2"
+                    >
+                      <div className="flex gap-3">
+                        <Avatar 
+                          className="w-10 h-10 shrink-0 cursor-pointer"
+                          onClick={() => navigate(`/u/${group.username}`)}
+                        >
+                          <AvatarImage src={group.avatar_url || undefined} />
+                          <AvatarFallback className="bg-muted text-sm font-medium">
+                            {(group.display_name || group.username || "?")[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                         
-                        {group.messages.map((message) => {
-                          const isOwn = message.user_id === user?.id;
-                          const canDelete = canModerate || (isOwn && canDeleteOwnMessage(message.created_at));
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline gap-2">
+                            <span 
+                              className="text-sm font-semibold hover:underline cursor-pointer"
+                              onClick={() => navigate(`/u/${group.username}`)}
+                            >
+                              {group.display_name || group.username}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground/50">
+                              {format(group.firstMessageTime, "h:mm a")}
+                            </span>
+                          </div>
                           
-                          return (
-                            <div key={message.id} className="group/msg flex items-start gap-1">
-                              <div className="text-xs text-foreground/80 leading-relaxed break-words flex-1">
-                                <RichMessageContent content={message.message_text} />
+                          {group.messages.map((message) => {
+                            const isOwn = message.user_id === user?.id;
+                            const canDelete = canModerate || (isOwn && canDeleteOwnMessage(message.created_at));
+                            
+                            return (
+                              <div key={message.id} className="group/msg flex items-start gap-2 mt-0.5">
+                                <div className="text-sm text-foreground/90 leading-relaxed break-words flex-1">
+                                  <RichMessageContent content={message.message_text} />
+                                </div>
+                                {canDelete && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 shrink-0 transition-opacity">
+                                        <MoreVertical className="w-4 h-4 text-muted-foreground/50" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-32">
+                                      <DropdownMenuItem 
+                                        onClick={() => handleDeleteMessage(message.id)}
+                                        className="text-destructive text-xs"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </div>
-                              {canDelete && (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <button className="opacity-0 group-hover/msg:opacity-100 p-0.5 rounded hover:bg-muted/50 shrink-0">
-                                      <MoreVertical className="w-3 h-3 text-muted-foreground/50" />
-                                    </button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-28">
-                                    <DropdownMenuItem 
-                                      onClick={() => handleDeleteMessage(message.id)}
-                                      className="text-destructive text-[10px] py-1"
-                                    >
-                                      <Trash2 className="w-3 h-3 mr-1" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              )}
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-            <div ref={messagesEndRef} className="h-1" />
+                  ))}
+                </div>
+              ))}
+              <div ref={messagesEndRef} className="h-4" />
+            </div>
+          )}
+        </div>
+
+        {/* Typing Indicator */}
+        <CrewTypingIndicator typingUsers={typingUsers} />
+
+        {/* Input Area - Fixed at bottom */}
+        <div className="fixed bottom-14 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border/40 px-4 py-3 z-40">
+          {showGifPicker && crewId && (
+            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+          )}
+          {showMentions && crewId && (
+            <MentionAutocomplete crewId={crewId} searchQuery={mentionQuery} onSelect={handleMentionSelect} visible={showMentions} />
+          )}
+          
+          <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-transparent shrink-0"
+            >
+              <span className="text-[10px] font-bold">GIF</span>
+            </Button>
+            
+            <Input
+              ref={inputRef}
+              placeholder="Message #general"
+              value={newMessage}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              className="flex-1 bg-transparent border-0 h-10 text-sm focus-visible:ring-0 placeholder:text-muted-foreground/50"
+              disabled={sending}
+            />
+            
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => handleSendMessage()}
+              disabled={sending || !newMessage.trim()}
+              className="h-9 w-9 text-muted-foreground hover:text-primary disabled:opacity-30 hover:bg-transparent shrink-0"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
           </div>
-        )}
-      </div>
-
-      {/* Typing Indicator */}
-      <CrewTypingIndicator typingUsers={typingUsers} />
-
-      {/* Compact Input */}
-      <div className="bg-background/95 backdrop-blur border-t border-border/30 px-2 py-1.5 shrink-0">
-        {showGifPicker && crewId && (
-          <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
-        )}
-        {showMentions && crewId && (
-          <MentionAutocomplete crewId={crewId} searchQuery={mentionQuery} onSelect={handleMentionSelect} visible={showMentions} />
-        )}
-        
-        <div className="flex items-center gap-1 bg-muted/30 rounded-md px-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowGifPicker(!showGifPicker)}
-            className="h-7 w-7 text-muted-foreground/60 hover:text-foreground hover:bg-transparent"
-          >
-            <span className="text-[8px] font-bold">GIF</span>
-          </Button>
-          
-          <Input
-            ref={inputRef}
-            placeholder="Message #general"
-            value={newMessage}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border-0 h-8 text-xs focus-visible:ring-0 placeholder:text-muted-foreground/40"
-            disabled={sending}
-          />
-          
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => handleSendMessage()}
-            disabled={sending || !newMessage.trim()}
-            className="h-7 w-7 text-muted-foreground/60 hover:text-primary disabled:opacity-20 hover:bg-transparent"
-          >
-            <Send className="w-3.5 h-3.5" />
-          </Button>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 }
