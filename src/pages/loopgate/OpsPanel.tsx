@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel, Megaphone, Bell } from "lucide-react";
 import OpenArenaForm, { getDefaultOpenArenaConfig } from "@/components/loopgate/OpenArenaForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -418,6 +418,16 @@ export default function OpsPanel() {
   });
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSaving, setReviewSaving] = useState(false);
+
+  // Broadcast notification state
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [broadcastData, setBroadcastData] = useState({
+    title: '',
+    message: '',
+    type: 'announcement' as string,
+  });
+  const [broadcasting, setBroadcasting] = useState(false);
+
   // Role check - redirect if no ops access (handled by ProtectedRoute, but double-check)
   useEffect(() => {
     if (!hasOpsAccess && !loading && !(window as any).__LOOPGATE_DEV_AUTH__) {
@@ -2151,6 +2161,60 @@ export default function OpsPanel() {
     }
   }
 
+  // Broadcast notification to all users
+  async function handleBroadcastNotification() {
+    if (!broadcastData.title.trim() || !broadcastData.message.trim()) {
+      toast.error('Please fill in title and message');
+      return;
+    }
+    
+    setBroadcasting(true);
+    
+    try {
+      // Get all user IDs
+      const { data: allProfiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('is_banned', false);
+      
+      if (profilesError) throw profilesError;
+      
+      if (!allProfiles || allProfiles.length === 0) {
+        toast.error('No users found to notify');
+        return;
+      }
+      
+      // Create notifications for all users in batches
+      const notifications = allProfiles.map(profile => ({
+        user_id: profile.id,
+        type: broadcastData.type,
+        title: broadcastData.title,
+        message: broadcastData.message,
+        data: { broadcast: true, sent_by: user?.id },
+      }));
+      
+      // Insert in batches of 100 to avoid hitting limits
+      const batchSize = 100;
+      for (let i = 0; i < notifications.length; i += batchSize) {
+        const batch = notifications.slice(i, i + batchSize);
+        const { error: insertError } = await supabase
+          .from('notifications')
+          .insert(batch);
+        
+        if (insertError) throw insertError;
+      }
+      
+      toast.success(`Broadcast sent to ${allProfiles.length} users!`);
+      setShowBroadcastModal(false);
+      setBroadcastData({ title: '', message: '', type: 'announcement' });
+    } catch (error) {
+      console.error('Error broadcasting notification:', error);
+      toast.error('Failed to broadcast notification');
+    } finally {
+      setBroadcasting(false);
+    }
+  }
+
   // Filter users by search
   const filteredUsers = userSearch 
     ? users.filter(u => 
@@ -2238,7 +2302,7 @@ export default function OpsPanel() {
               {inviteAnalytics.total_invites} invites • {inviteAnalytics.conversion_rate}% conv
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button 
               onClick={() => setShowCreateEvent(true)}
               className="flex items-center justify-center gap-2 bg-gold text-black font-semibold py-3 rounded-lg text-sm"
@@ -2251,7 +2315,14 @@ export default function OpsPanel() {
               className="flex items-center justify-center gap-2 bg-surface-1 border border-border font-semibold py-3 rounded-lg text-sm hover:border-gold/50 transition-colors"
             >
               <ShoppingBag size={16} />
-              Add Shop Item
+              Shop Item
+            </button>
+            <button 
+              onClick={() => setShowBroadcastModal(true)}
+              className="flex items-center justify-center gap-2 bg-violet-500/20 border border-violet-500/50 text-violet-300 font-semibold py-3 rounded-lg text-sm hover:bg-violet-500/30 transition-colors"
+            >
+              <Megaphone size={16} />
+              Broadcast
             </button>
           </div>
           
@@ -4866,6 +4937,104 @@ export default function OpsPanel() {
                 </>
               )}
             </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Broadcast Notification Dialog */}
+      <Dialog open={showBroadcastModal} onOpenChange={(open) => {
+        if (!open) {
+          setShowBroadcastModal(false);
+          setBroadcastData({ title: '', message: '', type: 'announcement' });
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Megaphone size={18} className="text-violet-400" />
+              Broadcast Notification
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <p className="text-xs text-muted-foreground">
+              Send a notification to <span className="text-violet-400 font-semibold">{users.length} users</span>
+            </p>
+            
+            <div>
+              <Label>Notification Type</Label>
+              <div className="flex gap-2 mt-1 flex-wrap">
+                {[
+                  { id: 'announcement', label: 'Announcement', icon: Megaphone },
+                  { id: 'event_starting', label: 'Event Alert', icon: Calendar },
+                  { id: 'achievement', label: 'Achievement', icon: Trophy },
+                ].map(type => (
+                  <button 
+                    key={type.id} 
+                    onClick={() => setBroadcastData({ ...broadcastData, type: type.id })}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${
+                      broadcastData.type === type.id 
+                        ? 'bg-violet-500/20 border border-violet-500/50 text-violet-300' 
+                        : 'bg-surface-1 border border-border'
+                    }`}
+                  >
+                    <type.icon size={14} />
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <Label>Title *</Label>
+              <Input 
+                value={broadcastData.title} 
+                onChange={(e) => setBroadcastData({ ...broadcastData, title: e.target.value })} 
+                placeholder="🎉 Big Announcement!" 
+                className="mt-1"
+                maxLength={100}
+              />
+            </div>
+            
+            <div>
+              <Label>Message *</Label>
+              <Textarea 
+                value={broadcastData.message} 
+                onChange={(e) => setBroadcastData({ ...broadcastData, message: e.target.value })} 
+                placeholder="Write your message here..." 
+                className="mt-1" 
+                rows={3}
+                maxLength={500}
+              />
+              <p className="text-[10px] text-muted-foreground mt-1 text-right">
+                {broadcastData.message.length}/500
+              </p>
+            </div>
+            
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowBroadcastModal(false)}
+                className="flex-1 py-3 bg-surface-1 border border-border font-semibold rounded-lg"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleBroadcastNotification} 
+                disabled={broadcasting || !broadcastData.title.trim() || !broadcastData.message.trim()} 
+                className="flex-1 py-3 bg-violet-500 text-white font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {broadcasting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} />
+                    Broadcast
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
