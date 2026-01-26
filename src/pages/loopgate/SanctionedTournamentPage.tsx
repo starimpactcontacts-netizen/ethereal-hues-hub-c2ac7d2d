@@ -20,6 +20,7 @@ import {
   ChevronDown,
   ChevronUp,
   HelpCircle,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,6 +31,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import BracketTree from "@/components/loopgate/BracketTree";
+import TournamentInviteModal from "@/components/loopgate/TournamentInviteModal";
 
 export default function SanctionedTournamentPage() {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +51,7 @@ export default function SanctionedTournamentPage() {
 
   const [submissionUrl, setSubmissionUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // Calculate derived state
   const isReady = userParticipation?.is_ready || false;
@@ -133,13 +136,26 @@ export default function SanctionedTournamentPage() {
         } to-transparent`} />
 
         <div className="relative px-4 pt-5 pb-4">
-          <button
-            onClick={() => navigate("/arena")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-wider">Arena</span>
-          </button>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => navigate("/arena")}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-xs uppercase tracking-wider">Arena</span>
+            </button>
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                isCrewVsCrew 
+                  ? "bg-red-500/20 text-red-400 hover:bg-red-500/30" 
+                  : "bg-gold/20 text-gold hover:bg-gold/30"
+              }`}
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Invite</span>
+            </button>
+          </div>
 
           {/* Tournament Title Card */}
           <div className="flex items-start gap-4">
@@ -222,6 +238,19 @@ export default function SanctionedTournamentPage() {
           />
         )}
       </AnimatePresence>
+
+      {/* Tournament Invite Modal */}
+      <TournamentInviteModal
+        open={showInviteModal}
+        onOpenChange={setShowInviteModal}
+        tournamentName={tournament.name}
+        tournamentId={tournament.id}
+        crewName={tournament.crew_name}
+        posterUrl={tournament.poster_url}
+        playerCount={participants.length}
+        maxPlayers={tournament.max_players}
+        isCrewVsCrew={isCrewVsCrew}
+      />
     </motion.div>
   );
 }
