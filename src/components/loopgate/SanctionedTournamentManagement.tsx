@@ -224,43 +224,56 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       if (error) throw error;
 
       // Award XP to participant for being scored (participation XP)
+      // Wrap in try-catch to prevent XP failure from blocking score save
       const xpAmount = selectedTournament.xp_reward || 100;
-      await supabase.rpc('award_xp', {
-        p_user_id: scoringParticipant.user_id,
-        p_amount: xpAmount,
-        p_action: 'sanctioned_tournament',
-        p_description: `Competed in ${selectedTournament.name}`,
-      });
+      try {
+        await supabase.rpc('award_xp', {
+          p_user_id: scoringParticipant.user_id,
+          p_amount: xpAmount,
+          p_action: 'sanctioned_tournament',
+          p_description: `Competed in ${selectedTournament.name}`,
+        });
+      } catch (xpErr) {
+        console.error("XP award failed (non-blocking):", xpErr);
+      }
 
-      // Create notification for the scored participant
-      await supabase.from("notifications").insert({
-        user_id: scoringParticipant.user_id,
-        type: "tournament_scored",
-        title: "Your submission was judged!",
-        message: `You scored ${qoiScore} QOI in ${selectedTournament.name} (+${xpAmount} XP)`,
-        data: { 
-          tournament_id: selectedTournament.id, 
-          tournament_name: selectedTournament.name,
-          qoi_score: qoiScore,
-          xp_awarded: xpAmount
-        }
-      });
+      // Create notification for the scored participant (non-blocking)
+      try {
+        await supabase.from("notifications").insert({
+          user_id: scoringParticipant.user_id,
+          type: "tournament_scored",
+          title: "Your submission was judged!",
+          message: `You scored ${qoiScore} QOI in ${selectedTournament.name} (+${xpAmount} XP)`,
+          data: { 
+            tournament_id: selectedTournament.id, 
+            tournament_name: selectedTournament.name,
+            qoi_score: qoiScore,
+            xp_awarded: xpAmount
+          }
+        });
+      } catch (notifErr) {
+        console.error("Notification insert failed (non-blocking):", notifErr);
+      }
 
-      // Add to activity feed for live feed visibility
-      await supabase.from("activity_feed").insert({
-        user_id: scoringParticipant.user_id,
-        username: scoringParticipant.username,
-        avatar_url: scoringParticipant.avatar_url,
-        activity_type: "arena_win",
-        title: `@${scoringParticipant.username} scored ${qoiScore} QOI`,
-        description: `in ${selectedTournament.name}`,
-        data: { 
-          tournament_id: selectedTournament.id, 
-          tournament_name: selectedTournament.name,
-          qoi_score: qoiScore,
-          submission_url: scoringParticipant.submission_url
-        }
-      });
+      // Add to activity feed for live feed visibility (non-blocking)
+      try {
+        await supabase.from("activity_feed").insert({
+          user_id: scoringParticipant.user_id,
+          username: scoringParticipant.username,
+          avatar_url: scoringParticipant.avatar_url,
+          activity_type: "arena_win",
+          title: `@${scoringParticipant.username} scored ${qoiScore} QOI`,
+          description: `in ${selectedTournament.name}`,
+          data: { 
+            tournament_id: selectedTournament.id, 
+            tournament_name: selectedTournament.name,
+            qoi_score: qoiScore,
+            submission_url: scoringParticipant.submission_url
+          }
+        });
+      } catch (feedErr) {
+        console.error("Activity feed insert failed (non-blocking):", feedErr);
+      }
 
       toast.success(`Score saved! +${xpAmount} XP awarded`);
       setScoringParticipant(null);
@@ -276,7 +289,10 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
   // Complete tournament and award Index points to top 3
   const handleCompleteTournament = async (tournamentId: string) => {
     const tournament = tournaments.find(t => t.id === tournamentId);
-    if (!tournament) return;
+    if (!tournament) {
+      toast.error("Tournament not found");
+      return;
+    }
 
     try {
       // Get all participants sorted by score
@@ -290,17 +306,30 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       if (fetchError) throw fetchError;
 
       if (!allParticipants || allParticipants.length === 0) {
-        toast.error("No scored participants to finalize");
+        // No scored participants - just mark as completed without rewards
+        await supabase
+          .from("sanctioned_tournaments")
+          .update({ 
+            status: "completed",
+            end_date: new Date().toISOString()
+          })
+          .eq("id", tournamentId);
+        
+        toast.success("Tournament marked as completed (no scored participants)");
         return;
       }
 
       // Set final ranks
       for (let i = 0; i < allParticipants.length; i++) {
         const rank = i + 1;
-        await supabase
-          .from("sanctioned_tournament_participants")
-          .update({ final_rank: rank })
-          .eq("id", allParticipants[i].id);
+        try {
+          await supabase
+            .from("sanctioned_tournament_participants")
+            .update({ final_rank: rank })
+            .eq("id", allParticipants[i].id);
+        } catch (rankErr) {
+          console.error(`Failed to set rank for participant ${allParticipants[i].id}:`, rankErr);
+        }
       }
 
       // Award Index points to top 3
@@ -313,53 +342,65 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       for (const reward of indexRewards) {
         const participant = allParticipants[reward.rank - 1];
         if (participant && reward.points > 0) {
-          // Get current profile values and increment
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("global_index_score, spendable_index")
-            .eq("id", participant.user_id)
-            .single();
-
-          if (profile) {
-            await supabase
+          try {
+            // Get current profile values and increment
+            const { data: profile } = await supabase
               .from("profiles")
-              .update({
-                global_index_score: (profile.global_index_score || 0) + reward.points,
-                spendable_index: (profile.spendable_index || 0) + reward.points,
-              })
-              .eq("id", participant.user_id);
+              .select("global_index_score, spendable_index")
+              .eq("id", participant.user_id)
+              .maybeSingle();
+
+            if (profile) {
+              await supabase
+                .from("profiles")
+                .update({
+                  global_index_score: (profile.global_index_score || 0) + reward.points,
+                  spendable_index: (profile.spendable_index || 0) + reward.points,
+                })
+                .eq("id", participant.user_id);
+            }
+
+            // Notify winner (non-blocking)
+            const placementText = reward.rank === 1 ? "1st" : reward.rank === 2 ? "2nd" : "3rd";
+            try {
+              await supabase.from("notifications").insert({
+                user_id: participant.user_id,
+                type: "tournament_placement",
+                title: `🏆 ${placementText} Place!`,
+                message: `You placed ${placementText} in ${tournament.name} and earned ${reward.points} Index points!`,
+                data: { 
+                  tournament_id: tournamentId, 
+                  tournament_name: tournament.name,
+                  rank: reward.rank,
+                  index_awarded: reward.points
+                }
+              });
+            } catch (notifErr) {
+              console.error("Winner notification failed (non-blocking):", notifErr);
+            }
+
+            // Add to activity feed (non-blocking)
+            try {
+              await supabase.from("activity_feed").insert({
+                user_id: participant.user_id,
+                username: participant.username,
+                avatar_url: participant.avatar_url,
+                activity_type: "tournament_win",
+                title: `@${participant.username} placed ${placementText}`,
+                description: `in ${tournament.name} (+${reward.points} Index)`,
+                data: { 
+                  tournament_id: tournamentId, 
+                  tournament_name: tournament.name,
+                  rank: reward.rank,
+                  index_awarded: reward.points
+                }
+              });
+            } catch (feedErr) {
+              console.error("Activity feed insert failed (non-blocking):", feedErr);
+            }
+          } catch (rewardErr) {
+            console.error(`Failed to award Index to rank ${reward.rank}:`, rewardErr);
           }
-
-          // Notify winner
-          const placementText = reward.rank === 1 ? "1st" : reward.rank === 2 ? "2nd" : "3rd";
-          await supabase.from("notifications").insert({
-            user_id: participant.user_id,
-            type: "tournament_placement",
-            title: `🏆 ${placementText} Place!`,
-            message: `You placed ${placementText} in ${tournament.name} and earned ${reward.points} Index points!`,
-            data: { 
-              tournament_id: tournamentId, 
-              tournament_name: tournament.name,
-              rank: reward.rank,
-              index_awarded: reward.points
-            }
-          });
-
-          // Add to activity feed
-          await supabase.from("activity_feed").insert({
-            user_id: participant.user_id,
-            username: participant.username,
-            avatar_url: participant.avatar_url,
-            activity_type: "tournament_win",
-            title: `@${participant.username} placed ${placementText}`,
-            description: `in ${tournament.name} (+${reward.points} Index)`,
-            data: { 
-              tournament_id: tournamentId, 
-              tournament_name: tournament.name,
-              rank: reward.rank,
-              index_awarded: reward.points
-            }
-          });
         }
       }
 
@@ -375,6 +416,76 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
       toast.success("Tournament completed! Rewards distributed.");
     } catch (err: any) {
       toast.error(err.message || "Failed to complete tournament");
+    }
+  };
+
+  // Manual reward distribution for already-completed tournaments (admin recovery)
+  const handleDistributeRewards = async (tournamentId: string) => {
+    const tournament = tournaments.find(t => t.id === tournamentId);
+    if (!tournament) {
+      toast.error("Tournament not found");
+      return;
+    }
+
+    try {
+      const { data: allParticipants, error: fetchError } = await supabase
+        .from("sanctioned_tournament_participants")
+        .select("*")
+        .eq("tournament_id", tournamentId)
+        .not("qoi_score", "is", null)
+        .order("qoi_score", { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      if (!allParticipants || allParticipants.length === 0) {
+        toast.error("No scored participants found");
+        return;
+      }
+
+      // Set final ranks if not set
+      for (let i = 0; i < allParticipants.length; i++) {
+        const rank = i + 1;
+        if (allParticipants[i].final_rank !== rank) {
+          await supabase
+            .from("sanctioned_tournament_participants")
+            .update({ final_rank: rank })
+            .eq("id", allParticipants[i].id);
+        }
+      }
+
+      // Award Index points to top 3
+      const indexRewards = [
+        { rank: 1, points: tournament.first_place_index || 0 },
+        { rank: 2, points: tournament.second_place_index || 0 },
+        { rank: 3, points: tournament.third_place_index || 0 },
+      ];
+
+      let awarded = 0;
+      for (const reward of indexRewards) {
+        const participant = allParticipants[reward.rank - 1];
+        if (participant && reward.points > 0) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("global_index_score, spendable_index")
+            .eq("id", participant.user_id)
+            .maybeSingle();
+
+          if (profile) {
+            await supabase
+              .from("profiles")
+              .update({
+                global_index_score: (profile.global_index_score || 0) + reward.points,
+                spendable_index: (profile.spendable_index || 0) + reward.points,
+              })
+              .eq("id", participant.user_id);
+            awarded++;
+          }
+        }
+      }
+
+      toast.success(`Rewards distributed to ${awarded} participants`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to distribute rewards");
     }
   };
 
@@ -967,16 +1078,31 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
             {completedTournaments.slice(0, 5).map((tournament) => (
               <div
                 key={tournament.id}
-                className="bg-surface-1 border border-border p-3 flex items-center justify-between opacity-60"
+                className="bg-surface-1 border border-border p-3"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${statusColors[tournament.status]}`} />
-                  <div>
-                    <p className="text-sm text-foreground">{tournament.name}</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {tournament.status} • {tournament.crew_name}
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${statusColors[tournament.status]}`} />
+                    <div>
+                      <p className="text-sm text-foreground">{tournament.name}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {tournament.status} • {tournament.crew_name}
+                      </p>
+                    </div>
                   </div>
+                  {/* Admin recovery: distribute rewards manually for completed tournaments */}
+                  {tournament.status === "completed" && (tournament.first_place_index || tournament.second_place_index || tournament.third_place_index) && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDistributeRewards(tournament.id)}
+                      className="text-xs text-gold hover:text-gold/80"
+                      title="Manually distribute Index rewards if they weren't awarded"
+                    >
+                      <Coins className="w-3 h-3 mr-1" />
+                      Distribute
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
