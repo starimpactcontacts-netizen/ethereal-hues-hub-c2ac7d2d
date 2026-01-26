@@ -479,6 +479,5 @@ export default function CrewChatPage() {
           </div>
         </div>
       </div>
-    </div>
   );
 }
