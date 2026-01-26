@@ -320,7 +320,7 @@ export default function CrewChatPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="fixed inset-0 top-0 bottom-14 bg-background flex flex-col">
         {/* Header */}
         <div className="sticky top-0 bg-card/95 backdrop-blur-md border-b border-border/50 z-40">
           <div className="px-4 py-3 flex items-center justify-between">
@@ -347,7 +347,7 @@ export default function CrewChatPage() {
         </div>
 
         {/* Messages Area */}
-        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto pb-32">
+        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 py-12 px-4 text-center">
               <Hash className="w-12 h-12 text-muted-foreground/20 mb-3" />
@@ -439,7 +439,7 @@ export default function CrewChatPage() {
         <CrewTypingIndicator typingUsers={typingUsers} />
 
         {/* Input Area - Fixed at bottom */}
-        <div className="fixed bottom-14 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border/40 px-4 py-3 z-40">
+        <div className="bg-background border-t border-border/40 px-4 py-3 shrink-0">
           {showGifPicker && crewId && (
             <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
           )}
