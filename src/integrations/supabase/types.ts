@@ -2026,6 +2026,7 @@ export type Database = {
           rejection_reason: string | null
           rules: string[] | null
           second_place_index: number | null
+          slug: string
           start_date: string | null
           status: string
           submission_deadline: string | null
@@ -2069,6 +2070,7 @@ export type Database = {
           rejection_reason?: string | null
           rules?: string[] | null
           second_place_index?: number | null
+          slug: string
           start_date?: string | null
           status?: string
           submission_deadline?: string | null
@@ -2112,6 +2114,7 @@ export type Database = {
           rejection_reason?: string | null
           rules?: string[] | null
           second_place_index?: number | null
+          slug?: string
           start_date?: string | null
           status?: string
           submission_deadline?: string | null
