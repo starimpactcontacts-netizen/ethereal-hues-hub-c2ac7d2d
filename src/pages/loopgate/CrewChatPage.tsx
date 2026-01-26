@@ -319,31 +319,31 @@ export default function CrewChatPage() {
   }, {} as Record<string, MessageGroup[]>);
 
   return (
-    <div className="fixed inset-x-0 top-0 bottom-14 bg-background flex flex-col z-50">
-      {/* Header */}
-      <div className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate(`/crews/${crewId}`)} 
-                className="p-2 rounded-lg hover:bg-muted/50 transition-colors active:scale-95"
-              >
-                <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-              </button>
-              
-              <div className="flex items-center gap-2">
-                <Hash className="w-5 h-5 text-muted-foreground/70" />
-                <span className="text-sm font-semibold">general</span>
-                <span className="text-xs text-muted-foreground/60">— {crew.name}</span>
-              </div>
-            </div>
+    <div className="fixed inset-0 bg-background flex flex-col z-50" style={{ paddingBottom: 'calc(56px + env(safe-area-inset-bottom))' }}>
+      {/* Header with iOS safe area */}
+      <div className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => navigate(`/crews/${crewId}`)} 
+              className="p-2 rounded-lg hover:bg-muted/50 transition-colors active:scale-95"
+            >
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
             
-            <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span>{onlineCount} online</span>
+            <div className="flex items-center gap-2">
+              <Hash className="w-5 h-5 text-muted-foreground/70" />
+              <span className="text-sm font-semibold">general</span>
+              <span className="text-xs text-muted-foreground/60">— {crew.name}</span>
             </div>
           </div>
+          
+          <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span>{onlineCount} online</span>
+          </div>
         </div>
+      </div>
 
         {/* Messages Area */}
         <div ref={scrollAreaRef} className="flex-1 overflow-y-auto">
@@ -437,8 +437,8 @@ export default function CrewChatPage() {
         {/* Typing Indicator */}
         <CrewTypingIndicator typingUsers={typingUsers} />
 
-        {/* Input Area - Fixed at bottom with safe area */}
-        <div className="bg-background border-t border-border/40 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shrink-0">
+        {/* Input Area */}
+        <div className="bg-background border-t border-border/40 px-4 py-3 shrink-0">
           {showGifPicker && crewId && (
             <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
           )}
