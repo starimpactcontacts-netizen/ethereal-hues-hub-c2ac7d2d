@@ -2015,6 +2015,8 @@ export type Database = {
           max_players: number
           min_players: number
           name: string
+          participation_index: number | null
+          per_win_index: number | null
           player_count: number
           poster_url: string | null
           proposed_by: string
@@ -2056,6 +2058,8 @@ export type Database = {
           max_players?: number
           min_players?: number
           name: string
+          participation_index?: number | null
+          per_win_index?: number | null
           player_count?: number
           poster_url?: string | null
           proposed_by: string
@@ -2097,6 +2101,8 @@ export type Database = {
           max_players?: number
           min_players?: number
           name?: string
+          participation_index?: number | null
+          per_win_index?: number | null
           player_count?: number
           poster_url?: string | null
           proposed_by?: string

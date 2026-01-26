@@ -32,6 +32,8 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
   const [firstPlaceIndex, setFirstPlaceIndex] = useState("");
   const [secondPlaceIndex, setSecondPlaceIndex] = useState("");
   const [thirdPlaceIndex, setThirdPlaceIndex] = useState("");
+  const [participationIndex, setParticipationIndex] = useState("");
+  const [perWinIndex, setPerWinIndex] = useState("");
   const [xpReward, setXpReward] = useState("100");
   const [startDate, setStartDate] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
@@ -102,6 +104,8 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
           first_place_index: firstPlaceIndex ? parseInt(firstPlaceIndex) : null,
           second_place_index: secondPlaceIndex ? parseInt(secondPlaceIndex) : null,
           third_place_index: thirdPlaceIndex ? parseInt(thirdPlaceIndex) : null,
+          participation_index: participationIndex ? parseInt(participationIndex) : null,
+          per_win_index: perWinIndex ? parseInt(perWinIndex) : null,
           xp_reward: parseInt(xpReward) || 100,
           start_date: startDate || null,
           approved_by: user.id,
@@ -522,6 +526,8 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
     setFirstPlaceIndex("");
     setSecondPlaceIndex("");
     setThirdPlaceIndex("");
+    setParticipationIndex("");
+    setPerWinIndex("");
     setXpReward("100");
     setStartDate("");
     setAdminNotes("");
@@ -641,6 +647,32 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                 placeholder="25"
                 className="bg-surface-1 border-border"
               />
+            </div>
+          </div>
+
+          {/* Participation & Per-Win Index */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Participation Index</label>
+              <Input
+                type="number"
+                value={participationIndex}
+                onChange={(e) => setParticipationIndex(e.target.value)}
+                placeholder="10"
+                className="bg-surface-1 border-border"
+              />
+              <p className="text-[9px] text-muted-foreground mt-1">All who submit</p>
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground uppercase block mb-1">Per Bracket Win</label>
+              <Input
+                type="number"
+                value={perWinIndex}
+                onChange={(e) => setPerWinIndex(e.target.value)}
+                placeholder="5"
+                className="bg-surface-1 border-border"
+              />
+              <p className="text-[9px] text-muted-foreground mt-1">Each match won</p>
             </div>
           </div>
 
