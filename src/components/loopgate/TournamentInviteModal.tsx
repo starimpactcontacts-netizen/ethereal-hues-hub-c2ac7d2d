@@ -14,6 +14,7 @@ interface TournamentInviteModalProps {
   onOpenChange: (open: boolean) => void;
   tournamentName: string;
   tournamentId: string;
+  tournamentSlug: string;
   crewName: string;
   posterUrl?: string | null;
   playerCount?: number;
@@ -26,6 +27,7 @@ export default function TournamentInviteModal({
   onOpenChange,
   tournamentName,
   tournamentId,
+  tournamentSlug,
   crewName,
   posterUrl,
   playerCount = 0,
@@ -36,7 +38,8 @@ export default function TournamentInviteModal({
   const [copied, setCopied] = useState(false);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://loopgate.io';
-  const inviteLink = `${baseUrl}/sanctioned/${tournamentId}${profile?.username ? `?ref=${profile.username}` : ''}`;
+  // Use clean slug URL instead of UUID
+  const inviteLink = `${baseUrl}/sanctioned/${tournamentSlug}${profile?.username ? `?ref=${profile.username}` : ''}`;
 
   const handleCopy = async () => {
     try {
