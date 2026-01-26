@@ -319,205 +319,203 @@ export default function CrewChatPage() {
   }, {} as Record<string, MessageGroup[]>);
 
   return (
-    <PageTransition>
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Discord-style Header */}
-        <div className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border shrink-0">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate(`/crews/${crewId}`)} 
-                className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-              </button>
-              
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center">
-                  <Hash className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <h1 className="text-sm font-semibold leading-tight">general</h1>
-                  <p className="text-[10px] text-muted-foreground">{crew.name}</p>
-                </div>
-              </div>
-            </div>
+    <div className="fixed inset-0 bg-background flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      {/* Discord-style Header */}
+      <div className="bg-card/95 backdrop-blur-md border-b border-border shrink-0 z-40">
+        <div className="px-3 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <button 
+              onClick={() => navigate(`/crews/${crewId}`)} 
+              className="p-1.5 -ml-1 rounded-lg hover:bg-muted/50 transition-colors active:scale-95"
+            >
+              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
             
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground px-2 py-1 rounded-full bg-muted/50">
-                <Users className="w-3.5 h-3.5" />
-                <span>{onlineCount} online</span>
+              <div className="w-6 h-6 rounded bg-muted/80 flex items-center justify-center">
+                <Hash className="w-3.5 h-3.5 text-muted-foreground" />
+              </div>
+              <div className="leading-none">
+                <h1 className="text-sm font-semibold">general</h1>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{crew.name}</p>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Messages Area */}
-        <div ref={scrollAreaRef} className="flex-1 overflow-y-auto">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full py-20 px-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Hash className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-semibold mb-1">Welcome to #general!</h3>
-              <p className="text-sm text-muted-foreground max-w-xs">
-                This is the beginning of your crew's chat history. Say hi! 👋
-              </p>
-            </div>
-          ) : (
-            <div className="py-4">
-              {Object.entries(messagesByDate).map(([dateKey, groups]) => (
-                <div key={dateKey}>
-                  {/* Date Divider */}
-                  <div className="flex items-center gap-4 px-4 py-2">
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                      {dateKey}
-                    </span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
-                  
-                  {/* Message Groups */}
-                  {groups.map((group) => (
-                    <div 
-                      key={`${group.user_id}-${group.firstMessageTime.getTime()}`}
-                      className="group/msggroup hover:bg-muted/30 transition-colors px-4 py-1"
-                    >
-                      <div className="flex gap-3">
-                        {/* Avatar */}
-                        <Avatar 
-                          className="w-10 h-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => navigate(`/u/${group.username}`)}
-                        >
-                          <AvatarImage src={group.avatar_url || undefined} />
-                          <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
-                            {(group.display_name || group.username || "?")[0].toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        {/* Messages */}
-                        <div className="flex-1 min-w-0">
-                          {/* Header with name and time */}
-                          <div className="flex items-baseline gap-2 mb-0.5">
-                            <span 
-                              className="font-semibold text-sm hover:underline cursor-pointer"
-                              onClick={() => navigate(`/u/${group.username}`)}
-                            >
-                              {group.display_name || group.username}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {format(group.firstMessageTime, "h:mm a")}
-                            </span>
-                          </div>
-                          
-                          {/* Message texts */}
-                          {group.messages.map((message) => {
-                            const isOwn = message.user_id === user?.id;
-                            const canDelete = canModerate || (isOwn && canDeleteOwnMessage(message.created_at));
-                            
-                            return (
-                              <div 
-                                key={message.id} 
-                                className="group/msg flex items-start gap-2 py-0.5"
-                              >
-                                <div className="text-sm text-foreground/90 leading-relaxed break-words flex-1">
-                                  <RichMessageContent content={message.message_text} />
-                                </div>
-                                
-                                {/* Message actions */}
-                                {canDelete && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted transition-all shrink-0">
-                                        <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
-                                      </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-36">
-                                      <DropdownMenuItem 
-                                        onClick={() => handleDeleteMessage(message.id)}
-                                        className="text-destructive focus:text-destructive"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5 mr-2" />
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          )}
-        </div>
-
-        {/* Typing Indicator */}
-        <CrewTypingIndicator typingUsers={typingUsers} />
-
-        {/* Discord-style Input */}
-        <div className="sticky bottom-0 bg-background p-4 safe-bottom shrink-0">
-          <div className="relative">
-            {/* GIF Picker */}
-            {showGifPicker && crewId && (
-              <GifPicker
-                onSelect={handleGifSelect}
-                onClose={() => setShowGifPicker(false)}
-              />
-            )}
-            
-            {/* Mention Autocomplete */}
-            {showMentions && crewId && (
-              <MentionAutocomplete
-                crewId={crewId}
-                searchQuery={mentionQuery}
-                onSelect={handleMentionSelect}
-                visible={showMentions}
-              />
-            )}
-            
-            <div className="flex items-center gap-2">
-              {/* GIF Button */}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowGifPicker(!showGifPicker)}
-                className="h-10 w-10 shrink-0 text-muted-foreground hover:text-primary"
-              >
-                <span className="text-xs font-bold">GIF</span>
-              </Button>
-              
-              {/* Input */}
-              <div className="relative flex-1">
-                <Input
-                  ref={inputRef}
-                  placeholder={`Message #general — use @ to mention`}
-                  value={newMessage}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  className="pr-12 bg-muted/50 border-0 h-11 rounded-lg focus-visible:ring-1 focus-visible:ring-primary/50"
-                  disabled={sending}
-                />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleSendMessage()}
-                  disabled={sending || !newMessage.trim()}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-muted-foreground hover:text-primary disabled:opacity-30"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+          
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground px-2 py-1 rounded-full bg-muted/40">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span>{onlineCount}</span>
           </div>
         </div>
       </div>
-    </PageTransition>
+
+      {/* Messages Area - Scrollable */}
+      <div 
+        ref={scrollAreaRef} 
+        className="flex-1 overflow-y-auto overscroll-contain"
+      >
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full py-16 px-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+              <Hash className="w-7 h-7 text-muted-foreground/70" />
+            </div>
+            <h3 className="text-base font-semibold mb-1">Welcome to #general!</h3>
+            <p className="text-xs text-muted-foreground max-w-[240px]">
+              This is the beginning of your crew's chat. Say hi! 👋
+            </p>
+          </div>
+        ) : (
+          <div className="py-2">
+            {Object.entries(messagesByDate).map(([dateKey, groups]) => (
+              <div key={dateKey}>
+                {/* Date Divider */}
+                <div className="flex items-center gap-3 px-3 py-2 my-1">
+                  <div className="flex-1 h-px bg-border/50" />
+                  <span className="text-[9px] font-medium text-muted-foreground/70 uppercase tracking-wider">
+                    {dateKey}
+                  </span>
+                  <div className="flex-1 h-px bg-border/50" />
+                </div>
+                
+                {/* Message Groups */}
+                {groups.map((group) => (
+                  <div 
+                    key={`${group.user_id}-${group.firstMessageTime.getTime()}`}
+                    className="group/msggroup hover:bg-muted/20 transition-colors px-3 py-1"
+                  >
+                    <div className="flex gap-2.5">
+                      {/* Avatar */}
+                      <Avatar 
+                        className="w-9 h-9 shrink-0 cursor-pointer active:scale-95 transition-transform"
+                        onClick={() => navigate(`/u/${group.username}`)}
+                      >
+                        <AvatarImage src={group.avatar_url || undefined} />
+                        <AvatarFallback className="bg-primary/20 text-primary font-semibold text-xs">
+                          {(group.display_name || group.username || "?")[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      {/* Messages */}
+                      <div className="flex-1 min-w-0">
+                        {/* Header with name and time */}
+                        <div className="flex items-baseline gap-1.5 mb-0.5">
+                          <span 
+                            className="font-semibold text-[13px] hover:underline cursor-pointer"
+                            onClick={() => navigate(`/u/${group.username}`)}
+                          >
+                            {group.display_name || group.username}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/60">
+                            {format(group.firstMessageTime, "h:mm a")}
+                          </span>
+                        </div>
+                        
+                        {/* Message texts */}
+                        {group.messages.map((message) => {
+                          const isOwn = message.user_id === user?.id;
+                          const canDelete = canModerate || (isOwn && canDeleteOwnMessage(message.created_at));
+                          
+                          return (
+                            <div 
+                              key={message.id} 
+                              className="group/msg flex items-start gap-1.5 py-0.5"
+                            >
+                              <div className="text-[13px] text-foreground/90 leading-relaxed break-words flex-1">
+                                <RichMessageContent content={message.message_text} />
+                              </div>
+                              
+                              {/* Message actions */}
+                              {canDelete && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 transition-all shrink-0">
+                                      <MoreVertical className="w-3 h-3 text-muted-foreground" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-32">
+                                    <DropdownMenuItem 
+                                      onClick={() => handleDeleteMessage(message.id)}
+                                      className="text-destructive focus:text-destructive text-xs"
+                                    >
+                                      <Trash2 className="w-3 h-3 mr-1.5" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+            <div ref={messagesEndRef} className="h-2" />
+          </div>
+        )}
+      </div>
+
+      {/* Typing Indicator */}
+      <CrewTypingIndicator typingUsers={typingUsers} />
+
+      {/* Discord-style Input - Fixed at bottom */}
+      <div className="bg-background border-t border-border/50 p-2.5 shrink-0">
+        <div className="relative">
+          {/* GIF Picker */}
+          {showGifPicker && crewId && (
+            <GifPicker
+              onSelect={handleGifSelect}
+              onClose={() => setShowGifPicker(false)}
+            />
+          )}
+          
+          {/* Mention Autocomplete */}
+          {showMentions && crewId && (
+            <MentionAutocomplete
+              crewId={crewId}
+              searchQuery={mentionQuery}
+              onSelect={handleMentionSelect}
+              visible={showMentions}
+            />
+          )}
+          
+          <div className="flex items-center gap-1.5 bg-muted/40 rounded-lg px-1">
+            {/* GIF Button */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground hover:bg-transparent"
+            >
+              <span className="text-[10px] font-bold">GIF</span>
+            </Button>
+            
+            {/* Input */}
+            <Input
+              ref={inputRef}
+              placeholder="Message #general"
+              value={newMessage}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              className="flex-1 bg-transparent border-0 h-10 text-[13px] focus-visible:ring-0 placeholder:text-muted-foreground/50"
+              disabled={sending}
+            />
+            
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => handleSendMessage()}
+              disabled={sending || !newMessage.trim()}
+              className="h-9 w-9 shrink-0 text-muted-foreground hover:text-primary disabled:opacity-30 hover:bg-transparent"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
