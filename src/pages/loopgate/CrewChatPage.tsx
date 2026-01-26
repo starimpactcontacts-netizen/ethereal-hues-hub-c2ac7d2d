@@ -438,7 +438,7 @@ export default function CrewChatPage() {
         <CrewTypingIndicator typingUsers={typingUsers} />
 
         {/* Input Area */}
-        <div className="bg-background border-t border-border/40 px-4 py-3 shrink-0">
+        <div className="bg-background border-t border-border/40 px-4 py-3 shrink-0 relative">
           {showGifPicker && crewId && (
             <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
           )}
