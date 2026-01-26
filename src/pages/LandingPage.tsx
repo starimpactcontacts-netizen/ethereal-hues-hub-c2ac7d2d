@@ -70,7 +70,7 @@ export default function LandingPage() {
           >
             {/* Main headline - Official Brand Wordmark */}
             <motion.div 
-              className="mb-2"
+              className="mb-0"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
@@ -84,7 +84,7 @@ export default function LandingPage() {
             
             {/* Dramatic headline with stacked typography */}
             <motion.div 
-              className="mb-6"
+              className="mb-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
@@ -97,12 +97,12 @@ export default function LandingPage() {
             </motion.div>
             
             <motion.p 
-              className="font-display text-sm sm:text-base text-muted-foreground/50 max-w-lg mx-auto mb-10 tracking-tight"
+              className="font-display text-sm sm:text-base text-muted-foreground/50 max-w-lg mx-auto mb-10 tracking-tight lowercase"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              A STRUCTURED SYSTEM FOR EVALUATING EDITORS, HOSTING EVENTS, AND MAINTAINING GLOBAL RANKINGS.
+              a structured system for evaluating editors, hosting events, and maintaining global rankings.
             </motion.p>
             
             {/* CTA Buttons - Clean, minimal styling */}
