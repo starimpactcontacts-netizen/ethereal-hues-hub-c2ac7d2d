@@ -66,7 +66,7 @@ export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
   };
 
   return (
-    <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-50">
+    <div className="bg-card border border-border rounded-xl shadow-xl overflow-hidden z-[100] max-h-[60vh]">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-border">
         <span className="text-sm font-medium">GIFs</span>
