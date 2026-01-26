@@ -53,6 +53,20 @@ export default function SanctionedTournamentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
+  // Wrapper to check auth before joining
+  const handleJoinTournament = async () => {
+    if (!user) {
+      // Store pending tournament join intent
+      localStorage.setItem("pending_tournament_join", JSON.stringify({
+        tournamentId: id,
+        tournamentName: tournament?.name,
+      }));
+      navigate(`/start?redirect=/sanctioned/${id}`);
+      return false;
+    }
+    return joinTournament();
+  };
+
   // Calculate derived state
   const isReady = userParticipation?.is_ready || false;
   const hasSubmitted = !!userParticipation?.submitted_at;
@@ -209,7 +223,7 @@ export default function SanctionedTournamentPage() {
             isReady={isReady}
             minReached={minReached}
             maxReached={maxReached}
-            onJoin={joinTournament}
+            onJoin={handleJoinTournament}
             onLeave={leaveTournament}
             onReadyUp={readyUp}
             isCrewVsCrew={isCrewVsCrew}
