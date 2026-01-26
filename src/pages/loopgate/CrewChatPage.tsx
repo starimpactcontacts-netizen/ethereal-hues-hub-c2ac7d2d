@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Send, Trash2, Hash, Users, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Trash2, Hash, Users, MoreVertical, Smile } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewTypingIndicator from "@/components/loopgate/CrewTypingIndicator";
-import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
+import GifPicker from "@/components/loopgate/GifPicker";
+import MentionAutocomplete from "@/components/loopgate/MentionAutocomplete";
+import RichMessageContent from "@/components/loopgate/RichMessageContent";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
-import { format, isToday, isYesterday, isSameDay } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { toast } from "sonner";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import {
@@ -36,7 +38,6 @@ interface Crew {
   avatar_url: string | null;
 }
 
-// Group messages by user and time (within 5 minutes)
 interface MessageGroup {
   user_id: string;
   username: string;
@@ -53,16 +54,14 @@ function groupMessages(messages: Message[]): MessageGroup[] {
     const lastGroup = groups[groups.length - 1];
     const messageTime = new Date(message.created_at);
     
-    // Check if we should add to existing group
     if (lastGroup && lastGroup.user_id === message.user_id) {
       const timeDiff = messageTime.getTime() - lastGroup.firstMessageTime.getTime();
-      if (timeDiff < 5 * 60 * 1000) { // Within 5 minutes
+      if (timeDiff < 5 * 60 * 1000) {
         lastGroup.messages.push(message);
         return;
       }
     }
     
-    // Create new group
     groups.push({
       user_id: message.user_id,
       username: message.username,
@@ -93,10 +92,14 @@ export default function CrewChatPage() {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [cursorPosition, setCursorPosition] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   
-  // Typing & presence
   const { typingUsers, broadcastTyping, onlineCount } = useCrewPresence(crewId);
 
   useEffect(() => {
@@ -180,13 +183,15 @@ export default function CrewChatPage() {
     setLoading(false);
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (messageText?: string) => {
+    const text = messageText || newMessage;
+    
     if (isGuest) {
       toast.error("Sign in to send messages");
       return;
     }
     
-    if (!user || !profile || !crewId || !newMessage.trim()) return;
+    if (!user || !profile || !crewId || !text.trim()) return;
 
     setSending(true);
 
@@ -198,19 +203,72 @@ export default function CrewChatPage() {
       username: displayUsername,
       display_name: profile.display_name,
       avatar_url: profile.avatar_url,
-      message_text: newMessage.trim(),
+      message_text: text.trim(),
     });
 
     if (error) {
       console.error("Error sending message:", error);
     } else {
       setNewMessage("");
+      setShowGifPicker(false);
     }
 
     setSending(false);
   };
 
+  const handleGifSelect = (gifUrl: string) => {
+    handleSendMessage(gifUrl);
+    setShowGifPicker(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const position = e.target.selectionStart || 0;
+    setNewMessage(value);
+    setCursorPosition(position);
+    broadcastTyping();
+
+    // Check for @mention trigger
+    const textBeforeCursor = value.slice(0, position);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    
+    if (mentionMatch) {
+      setShowMentions(true);
+      setMentionQuery(mentionMatch[1]);
+    } else {
+      setShowMentions(false);
+      setMentionQuery("");
+    }
+  };
+
+  const handleMentionSelect = (username: string) => {
+    const textBeforeCursor = newMessage.slice(0, cursorPosition);
+    const textAfterCursor = newMessage.slice(cursorPosition);
+    const mentionStart = textBeforeCursor.lastIndexOf("@");
+    
+    const newText = 
+      textBeforeCursor.slice(0, mentionStart) + 
+      `@${username} ` + 
+      textAfterCursor;
+    
+    setNewMessage(newText);
+    setShowMentions(false);
+    setMentionQuery("");
+    inputRef.current?.focus();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (showMentions) {
+      if (e.key === "Escape") {
+        setShowMentions(false);
+        return;
+      }
+      // Let MentionAutocomplete handle arrow keys and enter
+      if (["ArrowUp", "ArrowDown", "Tab", "Enter"].includes(e.key)) {
+        return;
+      }
+    }
+    
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
@@ -253,7 +311,6 @@ export default function CrewChatPage() {
 
   const messageGroups = groupMessages(messages);
 
-  // Group messages by date
   const messagesByDate = messageGroups.reduce((acc, group) => {
     const dateKey = formatMessageDate(group.firstMessageTime);
     if (!acc[dateKey]) acc[dateKey] = [];
@@ -321,7 +378,7 @@ export default function CrewChatPage() {
                   </div>
                   
                   {/* Message Groups */}
-                  {groups.map((group, groupIdx) => (
+                  {groups.map((group) => (
                     <div 
                       key={`${group.user_id}-${group.firstMessageTime.getTime()}`}
                       className="group/msggroup hover:bg-muted/30 transition-colors px-4 py-1"
@@ -354,7 +411,7 @@ export default function CrewChatPage() {
                           </div>
                           
                           {/* Message texts */}
-                          {group.messages.map((message, msgIdx) => {
+                          {group.messages.map((message) => {
                             const isOwn = message.user_id === user?.id;
                             const canDelete = canModerate || (isOwn && canDeleteOwnMessage(message.created_at));
                             
@@ -363,9 +420,9 @@ export default function CrewChatPage() {
                                 key={message.id} 
                                 className="group/msg flex items-start gap-2 py-0.5"
                               >
-                                <p className="text-sm text-foreground/90 leading-relaxed break-words flex-1">
-                                  {message.message_text}
-                                </p>
+                                <div className="text-sm text-foreground/90 leading-relaxed break-words flex-1">
+                                  <RichMessageContent content={message.message_text} />
+                                </div>
                                 
                                 {/* Message actions */}
                                 {canDelete && (
@@ -406,26 +463,58 @@ export default function CrewChatPage() {
         {/* Discord-style Input */}
         <div className="sticky bottom-0 bg-background p-4 safe-bottom shrink-0">
           <div className="relative">
-            <Input
-              placeholder={`Message #general`}
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                broadcastTyping();
-              }}
-              onKeyDown={handleKeyDown}
-              className="pr-12 bg-muted/50 border-0 h-11 rounded-lg focus-visible:ring-1 focus-visible:ring-primary/50"
-              disabled={sending}
-            />
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={handleSendMessage}
-              disabled={sending || !newMessage.trim()}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-muted-foreground hover:text-primary disabled:opacity-30"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+            {/* GIF Picker */}
+            {showGifPicker && crewId && (
+              <GifPicker
+                onSelect={handleGifSelect}
+                onClose={() => setShowGifPicker(false)}
+              />
+            )}
+            
+            {/* Mention Autocomplete */}
+            {showMentions && crewId && (
+              <MentionAutocomplete
+                crewId={crewId}
+                searchQuery={mentionQuery}
+                onSelect={handleMentionSelect}
+                visible={showMentions}
+              />
+            )}
+            
+            <div className="flex items-center gap-2">
+              {/* GIF Button */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowGifPicker(!showGifPicker)}
+                className="h-10 w-10 shrink-0 text-muted-foreground hover:text-primary"
+              >
+                <span className="text-xs font-bold">GIF</span>
+              </Button>
+              
+              {/* Input */}
+              <div className="relative flex-1">
+                <Input
+                  ref={inputRef}
+                  placeholder={`Message #general — use @ to mention`}
+                  value={newMessage}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  className="pr-12 bg-muted/50 border-0 h-11 rounded-lg focus-visible:ring-1 focus-visible:ring-primary/50"
+                  disabled={sending}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => handleSendMessage()}
+                  disabled={sending || !newMessage.trim()}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-muted-foreground hover:text-primary disabled:opacity-30"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
