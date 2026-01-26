@@ -23,6 +23,8 @@ export interface SanctionedTournament {
   first_place_index: number | null;
   second_place_index: number | null;
   third_place_index: number | null;
+  participation_index: number | null;
+  per_win_index: number | null;
   xp_reward: number | null;
   approved_by: string | null;
   approved_at: string | null;
