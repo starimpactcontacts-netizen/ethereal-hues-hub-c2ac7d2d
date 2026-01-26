@@ -43,12 +43,12 @@ export const XP_REWARDS = {
   // Social Actions
   join_crew: 15,
   create_crew: 30,
-  crew_chat: 1,
+  crew_chat: 10,
   arena_chat: 1,
   verify_platform: 25,
   
   // Daily caps
-  crew_chat_cap: 30,
+  crew_chat_cap: 100,
   arena_chat_cap: 30,
 };
 
