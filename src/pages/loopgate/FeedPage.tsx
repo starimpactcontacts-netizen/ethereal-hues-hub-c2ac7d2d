@@ -614,7 +614,7 @@ export default function FeedPage() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+      <div className="fixed top-0 left-0 right-0 bottom-14 bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground">Loading loop...</p>
@@ -625,7 +625,7 @@ export default function FeedPage() {
 
   if (feedItems.length === 0) {
     return (
-      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 p-6">
+      <div className="fixed top-0 left-0 right-0 bottom-14 bg-background flex flex-col items-center justify-center p-6">
         <Play className="w-16 h-16 text-muted-foreground mb-4" />
         <h2 className="text-xl font-bold mb-2">No Content Yet</h2>
         <p className="text-muted-foreground text-center mb-6">
@@ -639,14 +639,8 @@ export default function FeedPage() {
   return (
     <div 
       ref={containerRef}
-      className="fixed inset-0 bg-black z-50 overflow-hidden touch-none"
+      className="fixed top-0 left-0 right-0 bottom-14 bg-black overflow-hidden touch-none"
       style={{ 
-        width: '100vw', 
-        height: 'calc(var(--vh, 1vh) * 100)',
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0,
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'none'
       }}
