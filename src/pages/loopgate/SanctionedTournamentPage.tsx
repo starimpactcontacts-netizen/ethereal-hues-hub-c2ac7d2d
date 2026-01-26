@@ -159,12 +159,18 @@ export default function SanctionedTournamentPage() {
 
           {/* Tournament Title Card */}
           <div className="flex items-start gap-4">
-            <div className={`w-14 h-14 rounded-lg flex items-center justify-center shadow-lg ${
+            <div className={`w-14 h-14 rounded-lg flex items-center justify-center shadow-lg overflow-hidden ${
               isCrewVsCrew 
                 ? "bg-gradient-to-br from-red-500 to-red-700 shadow-red-500/30" 
                 : "bg-gradient-to-br from-gold to-amber-600 shadow-gold/30"
             }`}>
-              {isCrewVsCrew ? (
+              {tournament.crew_avatar_url ? (
+                <img 
+                  src={tournament.crew_avatar_url} 
+                  alt={tournament.crew_name} 
+                  className="w-full h-full object-cover"
+                />
+              ) : isCrewVsCrew ? (
                 <Swords className="w-7 h-7 text-white" />
               ) : (
                 <Shield className="w-7 h-7 text-background" />
