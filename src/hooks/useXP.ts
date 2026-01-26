@@ -47,9 +47,9 @@ export const XP_REWARDS = {
   arena_chat: 1,
   verify_platform: 25,
   
-  // Daily caps
-  crew_chat_cap: 100,
-  arena_chat_cap: 30,
+  // Daily caps (set high to effectively uncap)
+  crew_chat_cap: 10000,
+  arena_chat_cap: 1000,
 };
 
 // Action descriptions for toasts
