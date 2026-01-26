@@ -304,7 +304,7 @@ function LobbyPhase({
             </div>
             <div>
               <p className="text-2xl font-display text-foreground">
-                {tournament.player_count}<span className="text-muted-foreground text-lg">/{totalSlots}</span>
+                {participants.length}<span className="text-muted-foreground text-lg">/{totalSlots}</span>
               </p>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Editors Joined</p>
             </div>
