@@ -320,13 +320,8 @@ export function useSanctionedTournament(tournamentIdOrSlug: string | null) {
 
       if (error) throw error;
 
+      // Trigger handles ready_count sync
       const newReadyCount = (tournament?.ready_count || 0) + 1;
-
-      // Update ready count
-      await supabase
-        .from("sanctioned_tournaments")
-        .update({ ready_count: newReadyCount })
-        .eq("id", tournament.id);
 
       // Check if max players reached - auto-start tournament!
       if (newReadyCount >= (tournament?.max_players || 100)) {
