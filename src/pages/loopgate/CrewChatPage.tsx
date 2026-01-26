@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Send, Trash2, Hash, Users, MoreVertical, Smile } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useXP, XP_REWARDS } from "@/hooks/useXP";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -85,6 +86,7 @@ export default function CrewChatPage() {
   const { crewId } = useParams();
   const navigate = useNavigate();
   const { user, profile, isAdmin, isDev } = useAuth();
+  const { awardCappedXP } = useXP();
   const { isGuest } = useGuestMode();
   const canModerate = isAdmin || isDev;
   const [crew, setCrew] = useState<Crew | null>(null);
@@ -211,6 +213,9 @@ export default function CrewChatPage() {
     } else {
       setNewMessage("");
       setShowGifPicker(false);
+      
+      // Award XP for crew chat (daily capped)
+      awardCappedXP(XP_REWARDS.crew_chat, 'crew_chat', `Message in ${crew?.name || 'crew'}`);
     }
 
     setSending(false);
