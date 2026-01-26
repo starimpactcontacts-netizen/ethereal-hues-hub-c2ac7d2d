@@ -361,6 +361,47 @@ function LobbyPhase({
         </div>
       </div>
 
+      {/* ========== JOIN / READY BUTTON - NOW ABOVE LOBBY ========== */}
+      <div className="relative">
+        {!isParticipant ? (
+          <Button
+            onClick={onJoin}
+            disabled={maxReached}
+            className={`w-full h-14 font-display text-base uppercase tracking-wider shadow-lg ${
+              isCrewVsCrew
+                ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
+                : "bg-gradient-to-r from-gold via-amber-400 to-gold hover:from-amber-500 hover:via-gold hover:to-amber-500 text-background shadow-gold/30"
+            }`}
+          >
+            <Zap className="w-5 h-5 mr-2" />
+            {maxReached ? "Lobby Full" : "Enter Lobby"}
+          </Button>
+        ) : !isReady ? (
+          <Button
+            onClick={onReadyUp}
+            className={`w-full h-14 font-display text-base uppercase tracking-wider shadow-lg ${
+              isCrewVsCrew
+                ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
+                : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-500/30"
+            }`}
+          >
+            <CheckCircle className="w-5 h-5 mr-2" />
+            Ready Up
+          </Button>
+        ) : (
+          <div className={`w-full h-14 flex items-center justify-center gap-2 border ${
+            isCrewVsCrew 
+              ? "bg-red-500/10 border-red-500/30" 
+              : "bg-emerald-500/10 border-emerald-500/30"
+          }`}>
+            <CheckCircle className={`w-5 h-5 ${isCrewVsCrew ? "text-red-400" : "text-emerald-400"}`} />
+            <span className={`font-display uppercase ${isCrewVsCrew ? "text-red-400" : "text-emerald-400"}`}>
+              You're Ready
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* ========== THE MAIN EVENT - EDITOR LOBBY GRID ========== */}
       <div className={`relative p-4 border ${
         isCrewVsCrew ? "border-red-500/20" : "border-gold/20"
@@ -452,57 +493,15 @@ function LobbyPhase({
         )}
       </div>
 
-      {/* ========== JOIN / READY BUTTON ========== */}
-      <div className="relative">
-        {!isParticipant ? (
-          <Button
-            onClick={onJoin}
-            disabled={maxReached}
-            className={`w-full h-14 font-display text-base uppercase tracking-wider shadow-lg ${
-              isCrewVsCrew
-                ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
-                : "bg-gradient-to-r from-gold via-amber-400 to-gold hover:from-amber-500 hover:via-gold hover:to-amber-500 text-background shadow-gold/30"
-            }`}
-          >
-            <Zap className="w-5 h-5 mr-2" />
-            {maxReached ? "Lobby Full" : "Enter Lobby"}
-          </Button>
-        ) : isReadyUpPhase && !isReady ? (
-          <Button
-            onClick={onReadyUp}
-            className="w-full h-14 font-display text-base uppercase tracking-wider bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30"
-          >
-            <CheckCircle className="w-5 h-5 mr-2" />
-            Ready Up
-          </Button>
-        ) : isReady ? (
-          <div className={`flex items-center justify-center gap-2 p-4 border shadow-lg ${
-            isCrewVsCrew 
-              ? "bg-red-500/20 border-red-500/40 shadow-red-500/20" 
-              : "bg-emerald-500/20 border-emerald-500/40 shadow-emerald-500/20"
-          }`}>
-            <CheckCircle className={`w-6 h-6 ${isCrewVsCrew ? "text-red-400" : "text-emerald-400"}`} />
-            <span className={`font-display text-lg ${isCrewVsCrew ? "text-red-400" : "text-emerald-400"}`}>
-              You're Ready!
-            </span>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center gap-2 p-4 bg-surface-2 border border-border">
-            <Timer className="w-5 h-5 text-amber-400" />
-            <span className="font-medium text-foreground">Waiting for ready-up phase...</span>
-          </div>
-        )}
-
-        {/* Leave option */}
-        {isParticipant && !isReady && tournament.status === "approved" && (
-          <button
-            onClick={onLeave}
-            className="w-full mt-2 py-2 text-xs text-muted-foreground hover:text-red-400 transition-colors"
-          >
-            Leave Tournament
-          </button>
-        )}
-      </div>
+      {/* Leave option - moved here after lobby grid */}
+      {isParticipant && !isReady && tournament.status === "approved" && (
+        <button
+          onClick={onLeave}
+          className="w-full py-2 text-xs text-muted-foreground hover:text-red-400 transition-colors"
+        >
+          Leave Tournament
+        </button>
+      )}
 
       {/* Prize Pool - Compact */}
       {(tournament.first_place_index || tournament.index_prize) && (
