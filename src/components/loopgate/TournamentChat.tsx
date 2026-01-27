@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Send, X, ChevronDown, Trash2 } from "lucide-react";
+import { MessageCircle, Send, ChevronDown, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import VerifiedBadge from "./VerifiedBadge";
 
 interface TournamentMessage {
   id: string;
@@ -18,6 +19,10 @@ interface TournamentMessage {
   avatar_url: string | null;
   message_text: string;
   created_at: string;
+}
+
+interface VerifiedUsers {
+  [userId: string]: boolean;
 }
 
 interface TournamentChatProps {
@@ -30,6 +35,7 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
   const { isGuest } = useGuestMode();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<TournamentMessage[]>([]);
+  const [verifiedUsers, setVerifiedUsers] = useState<VerifiedUsers>({});
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -38,6 +44,24 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
   const lastReadRef = useRef<number>(0);
 
   const canModerate = isAdmin || isDev;
+
+  // Fetch verified status for users
+  const fetchVerifiedStatus = async (userIds: string[]) => {
+    if (userIds.length === 0) return;
+    
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, verification_status")
+      .in("id", userIds);
+    
+    if (data) {
+      const verified: VerifiedUsers = {};
+      data.forEach((p) => {
+        verified[p.id] = p.verification_status === true;
+      });
+      setVerifiedUsers((prev) => ({ ...prev, ...verified }));
+    }
+  };
 
   // Fetch messages
   useEffect(() => {
@@ -53,8 +77,13 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
       if (error) {
         console.error("Error fetching tournament messages:", error);
       } else {
-        setMessages((data as TournamentMessage[]) || []);
+        const msgs = (data as TournamentMessage[]) || [];
+        setMessages(msgs);
         lastReadRef.current = Date.now();
+        
+        // Fetch verified status for all unique users
+        const uniqueUserIds = [...new Set(msgs.map((m) => m.user_id))];
+        fetchVerifiedStatus(uniqueUserIds);
       }
       setLoading(false);
     };
@@ -77,6 +106,11 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
         (payload) => {
           const newMsg = payload.new as TournamentMessage;
           setMessages((prev) => [...prev, newMsg]);
+          
+          // Fetch verified status for new user if not already known
+          if (!verifiedUsers[newMsg.user_id]) {
+            fetchVerifiedStatus([newMsg.user_id]);
+          }
           
           // Increment unread count if chat is closed and message isn't from current user
           if (!isOpen && newMsg.user_id !== user?.id) {
@@ -247,8 +281,11 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                         </AvatarFallback>
                       </Avatar>
                       <div className={`max-w-[70%] ${isOwnMessage ? "text-right" : ""}`}>
-                        <div className={`flex items-baseline gap-1.5 mb-0.5 ${isOwnMessage ? "flex-row-reverse" : ""}`}>
+                        <div className={`flex items-center gap-1 mb-0.5 ${isOwnMessage ? "flex-row-reverse" : ""}`}>
                           <span className="text-xs font-medium">{message.username}</span>
+                          {verifiedUsers[message.user_id] && (
+                            <VerifiedBadge size="sm" />
+                          )}
                           <span className="text-[10px] text-muted-foreground">
                             {formatTime(message.created_at)}
                           </span>
