@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Send, ChevronDown, Trash2 } from "lucide-react";
+import { MessageCircle, Send, X, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -205,47 +205,65 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
   const formatTime = (dateString: string) => format(new Date(dateString), "HH:mm");
 
   return (
-    <div className="mt-4 border border-border rounded-xl overflow-hidden bg-surface-1">
-      {/* Header - Always visible, clickable to expand/collapse */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-background/50 hover:bg-muted/50 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <MessageCircle className="w-4 h-4 text-gold" />
-          <span className="text-sm font-medium">Lobby Chat</span>
-          <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-            {messages.length}
-          </span>
-          {unreadCount > 0 && !isOpen && (
-            <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+    <>
+      {/* Floating Chat Button - Fixed position, right side, above bottom nav */}
+      {!isOpen && (
+        <motion.button
+          onClick={() => setIsOpen(true)}
+          className="fixed right-4 z-40 w-12 h-12 rounded-full bg-gold text-background shadow-lg shadow-gold/30 flex items-center justify-center"
+          style={{ bottom: "calc(56px + env(safe-area-inset-bottom) + 16px)" }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <MessageCircle className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </div>
-        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
-      </button>
+        </motion.button>
+      )}
 
-      {/* Expandable Chat Area */}
+      {/* Compact Chat Panel - Fixed, 1/4 width on desktop, wider on mobile */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="fixed right-4 z-50 w-72 sm:w-80 bg-background border border-border rounded-xl shadow-2xl overflow-hidden"
+            style={{ 
+              bottom: "calc(56px + env(safe-area-inset-bottom) + 16px)",
+              maxHeight: "320px"
+            }}
           >
-            {/* Messages */}
-            <div className="h-[200px] overflow-y-auto p-3 space-y-2 bg-background/30">
+            {/* Header */}
+            <div className="flex items-center justify-between px-3 py-2 bg-surface-1 border-b border-border">
+              <div className="flex items-center gap-2">
+                <MessageCircle className="w-4 h-4 text-gold" />
+                <span className="text-xs font-medium">Lobby Chat</span>
+                <span className="text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                  {messages.length}
+                </span>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1 hover:bg-muted rounded-md transition-colors"
+              >
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            {/* Messages - Compact scrollable area */}
+            <div className="h-[180px] overflow-y-auto p-2 space-y-1.5 bg-background/80">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
-                  <span className="text-sm text-muted-foreground">Loading...</span>
+                  <span className="text-xs text-muted-foreground">Loading...</span>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <MessageCircle className="w-6 h-6 text-muted-foreground/50 mb-1" />
-                  <p className="text-xs text-muted-foreground">No messages yet</p>
+                  <MessageCircle className="w-5 h-5 text-muted-foreground/50 mb-1" />
+                  <p className="text-[10px] text-muted-foreground">No messages yet</p>
                 </div>
               ) : (
                 messages.map((message) => {
@@ -253,37 +271,33 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                   return (
                     <motion.div
                       key={message.id}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex gap-2 group ${isOwnMessage ? "flex-row-reverse" : ""}`}
+                      initial={{ opacity: 0, x: isOwnMessage ? 10 : -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={`flex gap-1.5 group ${isOwnMessage ? "flex-row-reverse" : ""}`}
                     >
-                      <Avatar className="w-6 h-6 shrink-0">
+                      <Avatar className="w-5 h-5 shrink-0">
                         <AvatarImage src={message.avatar_url || undefined} />
-                        <AvatarFallback className="text-[10px] bg-muted">
+                        <AvatarFallback className="text-[8px] bg-muted">
                           {message.username?.charAt(0).toUpperCase() || "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`max-w-[75%] ${isOwnMessage ? "text-right" : ""}`}>
+                      <div className={`max-w-[80%] ${isOwnMessage ? "text-right" : ""}`}>
                         <div className={`flex items-center gap-1 mb-0.5 ${isOwnMessage ? "flex-row-reverse" : ""}`}>
-                          <span className="text-[11px] font-medium text-foreground/80">{message.username}</span>
-                          {verifiedUsers[message.user_id] && (
-                            <VerifiedBadge size="sm" />
-                          )}
-                          <span className="text-[9px] text-muted-foreground">
-                            {formatTime(message.created_at)}
-                          </span>
+                          <span className="text-[10px] font-medium text-foreground/80">{message.username}</span>
+                          {verifiedUsers[message.user_id] && <VerifiedBadge size="sm" />}
+                          <span className="text-[8px] text-muted-foreground">{formatTime(message.created_at)}</span>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5">
                           {isOwnMessage && (canModerate || canDeleteOwnMessage(message.created_at)) && (
                             <button
                               onClick={() => handleDeleteMessage(message.id)}
                               className="p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-2.5 h-2.5" />
                             </button>
                           )}
                           <div
-                            className={`inline-block px-2.5 py-1 rounded-xl text-xs ${
+                            className={`inline-block px-2 py-1 rounded-lg text-[11px] leading-tight ${
                               isOwnMessage
                                 ? "bg-gold/20 text-gold border border-gold/30 rounded-br-sm"
                                 : "bg-muted text-foreground rounded-bl-sm"
@@ -296,7 +310,7 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                               onClick={() => handleDeleteMessage(message.id)}
                               className="p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-2.5 h-2.5" />
                             </button>
                           )}
                         </div>
@@ -308,14 +322,14 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <form onSubmit={handleSendMessage} className="p-2 border-t border-border bg-background/50">
-              <div className="flex gap-2">
+            {/* Input - Compact */}
+            <form onSubmit={handleSendMessage} className="p-2 border-t border-border bg-surface-1">
+              <div className="flex gap-1.5">
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={isGuest ? "Sign in to chat" : "Type a message..."}
-                  className="flex-1 h-9 text-sm bg-background border-border"
+                  placeholder={isGuest ? "Sign in" : "Message..."}
+                  className="flex-1 h-8 text-xs bg-background border-border"
                   disabled={sending || isGuest}
                   maxLength={300}
                 />
@@ -323,15 +337,15 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                   type="submit"
                   size="sm"
                   disabled={!newMessage.trim() || sending}
-                  className="bg-gold hover:bg-gold/90 text-background h-9 px-3"
+                  className="bg-gold hover:bg-gold/90 text-background h-8 w-8 p-0"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5" />
                 </Button>
               </div>
             </form>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
