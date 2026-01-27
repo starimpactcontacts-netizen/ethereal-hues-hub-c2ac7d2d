@@ -112,7 +112,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
               <div>
                 <h2 className="font-display text-lg text-foreground">Create 1v1 Battle</h2>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  UFC of Loopgate
+                  Head-to-head showdown
                 </p>
               </div>
             </div>

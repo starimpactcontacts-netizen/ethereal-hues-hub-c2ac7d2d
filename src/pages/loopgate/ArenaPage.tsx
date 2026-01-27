@@ -625,19 +625,23 @@ export default function ArenaPage() {
                     </span>
                   )}
                 </div>
-                {profile && (
-                  <button 
-                    onClick={() => setShowCreateBattle(true)}
-                    className="text-[10px] text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
-                  >
-                    <Plus className="w-3 h-3" />
-                    Challenge
-                  </button>
-                )}
               </div>
               <p className="text-[10px] text-muted-foreground mb-3 px-4">
-                UFC-style 1v1 showdowns • Winner takes +20 Index
+                Head-to-head showdowns • Winner takes +20 Index
               </p>
+              
+              {/* Create Battle CTA */}
+              {profile && (
+                <div className="px-4 mb-4">
+                  <button 
+                    onClick={() => setShowCreateBattle(true)}
+                    className="w-full py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500 text-white font-display text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 transition-all"
+                  >
+                    <Swords className="w-4 h-4" />
+                    Start a 1v1 Battle
+                  </button>
+                </div>
+              )}
 
               {battlesLoading ? (
                 <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
