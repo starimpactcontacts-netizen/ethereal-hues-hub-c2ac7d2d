@@ -64,7 +64,7 @@ export default function DirectMessagePage() {
   }
 
   return (
-    <div className="fixed inset-0 bottom-14 bg-background flex flex-col z-50">
+    <div className="fixed inset-0 bg-background flex flex-col z-50 pb-14">
       {/* Header */}
       <div className="shrink-0 bg-surface-0 border-b border-border px-4 py-3 flex items-center gap-3">
         <Link to="/messages" className="p-1 -ml-1 text-muted-foreground hover:text-foreground">
