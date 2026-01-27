@@ -118,16 +118,19 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm px-4"
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
-            initial={{ y: 50, opacity: 0, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 50, opacity: 0, scale: 0.95 }}
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden max-h-[85vh] flex flex-col"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            className="w-full sm:max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden sm:mx-4"
+            style={{ 
+              maxHeight: 'calc(90vh - env(safe-area-inset-bottom))',
+              marginBottom: 'env(safe-area-inset-bottom)'
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
@@ -145,8 +148,8 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-4 space-y-4 overflow-y-auto flex-1">
+            {/* Content - scrollable */}
+            <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
               {/* Daily limit warning */}
               {hasReachedLimit && (
                 <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 flex items-start gap-3">
@@ -208,12 +211,12 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-4 border-t border-border">
+            {/* Footer - sticky at bottom with extra padding for iOS */}
+            <div className="p-4 pb-6 border-t border-border bg-card shrink-0">
               <Button
                 onClick={handleSubmit}
                 disabled={!canSubmit || submitting}
-                className="w-full bg-gold text-black hover:bg-gold/90 disabled:opacity-50"
+                className="w-full bg-gold text-black hover:bg-gold/90 disabled:opacity-50 h-12 text-base font-semibold"
               >
                 {submitting ? (
                   <>
