@@ -37,7 +37,10 @@ export function useConversations() {
   const [totalUnread, setTotalUnread] = useState(0);
 
   const fetchConversations = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -86,8 +89,12 @@ export function useConversations() {
   }, [user]);
 
   useEffect(() => {
-    fetchConversations();
-  }, [fetchConversations]);
+    if (user) {
+      fetchConversations();
+    } else {
+      setLoading(false);
+    }
+  }, [user, fetchConversations]);
 
   // Realtime subscription
   useEffect(() => {
