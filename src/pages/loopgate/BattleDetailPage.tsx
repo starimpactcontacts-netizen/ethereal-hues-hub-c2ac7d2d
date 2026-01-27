@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, Flame, 
   CheckCircle, XCircle, ExternalLink, ThumbsUp, 
-  Send, Share2
+  Send, Share2, Users
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBattle, recordBattleView, acceptBattle, submitToBattle, voteOnBattle, getMyVote } from "@/hooks/useBattles";
 import { toast } from "sonner";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
+import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -30,6 +31,7 @@ export default function BattleDetailPage() {
   const [accepting, setAccepting] = useState(false);
   const [myVote, setMyVote] = useState<string | null>(null);
   const [voting, setVoting] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   // Record view on mount
   useEffect(() => {
@@ -297,6 +299,23 @@ export default function BattleDetailPage() {
           </div>
         </div>
 
+        {/* Invite Challengers Button (for battle creator with open pending battles) */}
+        {isChallenger && battle.status === 'pending' && !battle.opponent_id && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Button
+              onClick={() => setInviteModalOpen(true)}
+              variant="outline"
+              className="w-full h-12 border-red-500/50 text-red-400 hover:bg-red-500/10 font-display uppercase tracking-wider"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Invite Challengers (up to 100)
+            </Button>
+          </motion.div>
+        )}
+
         {/* Accept Challenge (for open battles) */}
         {canAccept && (
           <motion.div
@@ -476,6 +495,14 @@ export default function BattleDetailPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Battle Invite Modal */}
+      <BattleInviteModal
+        isOpen={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        battleId={battle.id}
+        challengerUsername={battle.challenger_username}
+      />
     </div>
   );
 }

@@ -101,6 +101,64 @@ export type Database = {
         }
         Relationships: []
       }
+      battle_invites: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          recipient_id: string
+          responded_at: string | null
+          sender_avatar_url: string | null
+          sender_id: string
+          sender_username: string
+          status: string
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          recipient_id: string
+          responded_at?: string | null
+          sender_avatar_url?: string | null
+          sender_id: string
+          sender_username: string
+          status?: string
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          responded_at?: string | null
+          sender_avatar_url?: string | null
+          sender_id?: string
+          sender_username?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_invites_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_invites_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_invites_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       battle_views: {
         Row: {
           battle_id: string
