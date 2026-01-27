@@ -118,7 +118,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 pb-20"
+          className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm px-4"
           onClick={onClose}
         >
           <motion.div
@@ -126,7 +126,8 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 50, opacity: 0, scale: 0.95 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-card border border-border rounded-2xl overflow-hidden max-h-[70vh] flex flex-col"
+            className="w-full max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden max-h-[85vh] flex flex-col"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
