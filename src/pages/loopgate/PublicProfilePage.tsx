@@ -291,7 +291,7 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Crew Badge & Activity - Single row */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mb-3">
               {userCrew && <CrewBadge crew={userCrew} size="sm" />}
               <div className="flex items-center gap-1.5">
                 <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
@@ -301,10 +301,8 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            {/* Message Button */}
-            <div className="mt-3">
-              <MessageButton userId={profile.id} username={profile.username} variant="outline" size="sm" />
-            </div>
+            {/* Message Button - Compact icon style */}
+            <MessageButton userId={profile.id} username={profile.username} variant="icon" />
           </div>
         </div>
       </div>

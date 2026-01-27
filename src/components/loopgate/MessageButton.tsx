@@ -45,13 +45,13 @@ export default function MessageButton({
         size="icon"
         onClick={handleClick}
         disabled={loading}
-        className={className}
+        className={`h-9 w-9 rounded-full bg-surface-1 border border-border hover:bg-surface-1/80 hover:border-gold/30 ${className}`}
         title={`Message ${username}`}
       >
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
         ) : (
-          <MessageCircle className="w-4 h-4" />
+          <MessageCircle className="w-4 h-4 text-muted-foreground" />
         )}
       </Button>
     );
