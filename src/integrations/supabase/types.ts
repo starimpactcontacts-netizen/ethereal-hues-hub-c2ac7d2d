@@ -101,6 +101,231 @@ export type Database = {
         }
         Relationships: []
       }
+      battle_views: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          viewer_id: string | null
+          viewer_ip: string | null
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          viewer_id?: string | null
+          viewer_ip?: string | null
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          viewer_id?: string | null
+          viewer_ip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_views_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battle_votes: {
+        Row: {
+          battle_id: string
+          created_at: string
+          id: string
+          user_id: string
+          voted_for: string
+        }
+        Insert: {
+          battle_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+          voted_for: string
+        }
+        Update: {
+          battle_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          voted_for?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_votes_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battle_votes_voted_for_fkey"
+            columns: ["voted_for"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battles: {
+        Row: {
+          accepted_at: string | null
+          challenge_type: string
+          challenger_avatar_url: string | null
+          challenger_id: string
+          challenger_score: number | null
+          challenger_submission_platform: string | null
+          challenger_submission_url: string | null
+          challenger_submitted_at: string | null
+          challenger_username: string
+          challenger_votes: number
+          created_at: string
+          duration_hours: number
+          ends_at: string | null
+          id: string
+          judge_claimed_at: string | null
+          judge_id: string | null
+          judge_notes: string | null
+          judged_at: string | null
+          league_tier: string
+          loser_index_penalty: number | null
+          opponent_avatar_url: string | null
+          opponent_id: string | null
+          opponent_score: number | null
+          opponent_submission_platform: string | null
+          opponent_submission_url: string | null
+          opponent_submitted_at: string | null
+          opponent_username: string | null
+          opponent_votes: number
+          starts_at: string | null
+          status: string
+          updated_at: string
+          view_count: number
+          winner_id: string | null
+          winner_index_awarded: number | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          challenge_type?: string
+          challenger_avatar_url?: string | null
+          challenger_id: string
+          challenger_score?: number | null
+          challenger_submission_platform?: string | null
+          challenger_submission_url?: string | null
+          challenger_submitted_at?: string | null
+          challenger_username: string
+          challenger_votes?: number
+          created_at?: string
+          duration_hours?: number
+          ends_at?: string | null
+          id?: string
+          judge_claimed_at?: string | null
+          judge_id?: string | null
+          judge_notes?: string | null
+          judged_at?: string | null
+          league_tier?: string
+          loser_index_penalty?: number | null
+          opponent_avatar_url?: string | null
+          opponent_id?: string | null
+          opponent_score?: number | null
+          opponent_submission_platform?: string | null
+          opponent_submission_url?: string | null
+          opponent_submitted_at?: string | null
+          opponent_username?: string | null
+          opponent_votes?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          view_count?: number
+          winner_id?: string | null
+          winner_index_awarded?: number | null
+        }
+        Update: {
+          accepted_at?: string | null
+          challenge_type?: string
+          challenger_avatar_url?: string | null
+          challenger_id?: string
+          challenger_score?: number | null
+          challenger_submission_platform?: string | null
+          challenger_submission_url?: string | null
+          challenger_submitted_at?: string | null
+          challenger_username?: string
+          challenger_votes?: number
+          created_at?: string
+          duration_hours?: number
+          ends_at?: string | null
+          id?: string
+          judge_claimed_at?: string | null
+          judge_id?: string | null
+          judge_notes?: string | null
+          judged_at?: string | null
+          league_tier?: string
+          loser_index_penalty?: number | null
+          opponent_avatar_url?: string | null
+          opponent_id?: string | null
+          opponent_score?: number | null
+          opponent_submission_platform?: string | null
+          opponent_submission_url?: string | null
+          opponent_submitted_at?: string | null
+          opponent_username?: string | null
+          opponent_votes?: number
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          view_count?: number
+          winner_id?: string | null
+          winner_index_awarded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battles_challenger_id_fkey"
+            columns: ["challenger_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_judge_id_fkey"
+            columns: ["judge_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_opponent_id_fkey"
+            columns: ["opponent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connected_platforms: {
         Row: {
           connected_at: string | null
