@@ -12,6 +12,7 @@ import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings } from
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
+import { useBattles } from '@/hooks/useBattles';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
@@ -96,8 +97,14 @@ export default function HubPage() {
     ['approved', 'ready_up', 'live', 'bracket'].includes(t.status)
   );
   
+  // 1v1 Battles that are featured (pending open, active, or judging)
+  const { battles } = useBattles(['pending', 'active', 'judging']);
+  const featuredBattles = battles.filter(b => 
+    b.status === 'pending' || b.status === 'active' || b.status === 'judging'
+  ).slice(0, 5); // Limit to 5 most recent
+  
   // Total featured count for header
-  const totalFeatured = liveEvents.length + activeSanctioned.length;
+  const totalFeatured = liveEvents.length + activeSanctioned.length + featuredBattles.length;
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
@@ -540,6 +547,109 @@ export default function HubPage() {
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-[8px] text-purple-400 uppercase tracking-wider">{tournament.crew_name}</span>
                       <span className="text-[9px] text-muted-foreground">{tournament.format_type?.replace('_', ' ')}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+            
+            {/* 1v1 Battles - After sanctioned tournaments */}
+            {featuredBattles.map((battle, i) => (
+              <Link key={battle.id} to={`/battle/${battle.id}`} className="shrink-0">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + (liveEvents.length + activeSanctioned.length + i) * 0.05 }}
+                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/50 transition-colors overflow-hidden group"
+                >
+                  {/* VS Display Header */}
+                  <div className="h-24 overflow-hidden relative bg-gradient-to-br from-red-900/50 via-surface-2 to-surface-1">
+                    <div className="absolute inset-0 flex items-center justify-center px-4">
+                      {/* Challenger */}
+                      <div className="flex-1 flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-full border-2 border-red-500/50 bg-red-500/20 flex items-center justify-center overflow-hidden">
+                          {battle.challenger_avatar_url ? (
+                            <img src={battle.challenger_avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="font-display text-sm text-red-400">
+                              {battle.challenger_username.charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[8px] text-foreground mt-1 truncate max-w-[70px]">
+                          {battle.challenger_username}
+                        </span>
+                      </div>
+                      
+                      {/* VS Badge */}
+                      <div className="relative mx-2">
+                        <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/40">
+                          <Swords className="w-4 h-4 text-white" />
+                        </div>
+                        {battle.status === 'active' && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping" />
+                        )}
+                      </div>
+                      
+                      {/* Opponent */}
+                      <div className="flex-1 flex flex-col items-center">
+                        {battle.opponent_id ? (
+                          <>
+                            <div className="w-12 h-12 rounded-full border-2 border-red-500/50 bg-red-500/20 flex items-center justify-center overflow-hidden">
+                              {battle.opponent_avatar_url ? (
+                                <img src={battle.opponent_avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="font-display text-sm text-red-400">
+                                  {battle.opponent_username?.charAt(0).toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[8px] text-foreground mt-1 truncate max-w-[70px]">
+                              {battle.opponent_username}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-12 h-12 rounded-full border-2 border-dashed border-red-500/30 flex items-center justify-center bg-surface-2">
+                              <span className="text-lg text-red-400/50">?</span>
+                            </div>
+                            <span className="text-[8px] text-muted-foreground mt-1">Open</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Status badge */}
+                    <div className={`absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-sm ${
+                      battle.status === 'active' ? 'bg-red-500/90' :
+                      battle.status === 'judging' ? 'bg-purple-500/90' : 'bg-amber-500/90'
+                    }`}>
+                      <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">
+                        {battle.status === 'pending' ? 'Open' : 
+                         battle.status === 'active' ? 'Live' : 'Judging'}
+                      </span>
+                    </div>
+                    
+                    {/* 1v1 label */}
+                    <div className="absolute bottom-1.5 left-1.5 bg-red-500/90 px-1.5 py-0.5 rounded-sm">
+                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">1v1 Battle</span>
+                    </div>
+                    
+                    {/* Prize */}
+                    <div className="absolute top-1.5 right-1.5 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-sm">
+                      <span className="text-[8px] font-bold text-gold">+{battle.winner_index_awarded} IDX</span>
+                    </div>
+                  </div>
+                  
+                  {/* Battle Info */}
+                  <div className="p-2.5">
+                    <p className="font-display text-xs text-foreground truncate">
+                      {battle.challenger_username} vs {battle.opponent_username || '???'}
+                    </p>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-[8px] text-red-400 uppercase tracking-wider">{battle.duration_hours}h Battle</span>
+                      <span className="text-[9px] text-muted-foreground uppercase">{battle.league_tier}</span>
                     </div>
                   </div>
                 </motion.div>
