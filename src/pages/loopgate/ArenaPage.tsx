@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
-  Flame, Calendar, Target, Shield, 
+  Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
-  Clock, Award, UserPlus
+  Clock, Award, UserPlus, Eye
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,10 @@ import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
 import PracticeModeView from "@/components/loopgate/PracticeModeView";
 import SanctionedTournamentCard from "@/components/loopgate/SanctionedTournamentCard";
+import BattleCard from "@/components/loopgate/BattleCard";
+import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
 import { useSanctionedTournaments } from "@/hooks/useSanctionedTournaments";
+import { useBattles } from "@/hooks/useBattles";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,12 +115,18 @@ export default function ArenaPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "practice">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "battles" | "practice">("all");
   const [showPracticeMode, setShowPracticeMode] = useState(false);
+  const [showCreateBattle, setShowCreateBattle] = useState(false);
   
   // Sanctioned tournaments - show approved, ready_up, live, bracket statuses
   const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(
     ["approved", "ready_up", "live", "bracket", "completed"]
+  );
+  
+  // 1v1 Battles - show active, pending, judging
+  const { battles, loading: battlesLoading } = useBattles(
+    ["pending", "active", "judging", "completed"]
   );
   
   useEffect(() => {
@@ -278,6 +287,30 @@ export default function ArenaPage() {
             >
               <Shield className="w-3 h-3" />
               Sanctioned
+            </button>
+            
+            {/* 1v1 BATTLES - UFC Style */}
+            <button
+              onClick={() => setActiveFilter("battles")}
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 shrink-0 ${
+                activeFilter === "battles"
+                  ? "bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/30"
+                  : "bg-transparent text-red-400 border-red-500/50 hover:border-red-500 hover:bg-red-500/5"
+              }`}
+            >
+              <Swords className="w-3 h-3" />
+              1v1 Battles
+            </button>
+            
+            <button
+              onClick={() => setActiveFilter("practice")}
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0 ${
+                activeFilter === "practice"
+                  ? "bg-foreground text-background border-foreground"
+                  : "bg-transparent text-muted-foreground border-border hover:border-foreground/50"
+              }`}
+            >
+              Practice
             </button>
             
             <button
@@ -569,6 +602,85 @@ export default function ArenaPage() {
           )}
 
           {/* ═══════════════════════════════════════════════════════════════════
+              1v1 BATTLES SECTION - UFC of Loopgate
+          ═══════════════════════════════════════════════════════════════════ */}
+          {(activeFilter === "all" || activeFilter === "battles") && (
+            <motion.section
+              key="battles-section"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8"
+            >
+              {/* Header Row */}
+              <div className="flex items-center justify-between px-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <Swords className="w-4 h-4 text-red-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    1v1 Battles
+                  </span>
+                  {battles.filter(b => b.status === "active").length > 0 && (
+                    <span className="flex items-center gap-1 bg-red-500/20 border border-red-500/40 px-2 py-0.5 text-[9px] text-red-400 uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      {battles.filter(b => b.status === "active").length} Live
+                    </span>
+                  )}
+                </div>
+                {profile && (
+                  <button 
+                    onClick={() => setShowCreateBattle(true)}
+                    className="text-[10px] text-red-400 hover:text-red-300 transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Challenge
+                  </button>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground mb-3 px-4">
+                UFC-style 1v1 showdowns • Winner takes +20 Index
+              </p>
+
+              {battlesLoading ? (
+                <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+                  <Skeleton className="h-48 w-[220px] shrink-0" />
+                  <Skeleton className="h-48 w-[220px] shrink-0" />
+                </div>
+              ) : battles.length > 0 ? (
+                <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+                  {battles.slice(0, 10).map((battle) => (
+                    <BattleCard
+                      key={battle.id}
+                      battle={battle}
+                      onClick={() => navigate(`/battle/${battle.id}`)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="px-4">
+                  <div className="bg-surface-1/50 border border-red-500/20 border-dashed p-8 text-center">
+                    <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-3">
+                      <Swords className="w-6 h-6 text-red-400/40" />
+                    </div>
+                    <p className="text-sm text-muted-foreground font-medium mb-1">No Active Battles</p>
+                    <p className="text-[10px] text-muted-foreground/60 mb-4">
+                      Be the first to throw down
+                    </p>
+                    {profile && (
+                      <Button
+                        onClick={() => setShowCreateBattle(true)}
+                        size="sm"
+                        className="bg-red-500 hover:bg-red-600 text-white"
+                      >
+                        <Swords className="w-3.5 h-3.5 mr-1.5" />
+                        Start a Battle
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </motion.section>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════════
               PRACTICE SECTION - Shows in ALL and PRACTICE tabs
           ═══════════════════════════════════════════════════════════════════ */}
           {(activeFilter === "all" || activeFilter === "practice") && (
@@ -598,6 +710,16 @@ export default function ArenaPage() {
           <div className="h-8" />
         </AnimatePresence>
       )}
+      
+      {/* Create Battle Modal */}
+      <CreateBattleModal 
+        isOpen={showCreateBattle}
+        onClose={() => setShowCreateBattle(false)}
+        onSuccess={(battleId) => {
+          setShowCreateBattle(false);
+          navigate(`/battle/${battleId}`);
+        }}
+      />
     </div>
   );
 }
