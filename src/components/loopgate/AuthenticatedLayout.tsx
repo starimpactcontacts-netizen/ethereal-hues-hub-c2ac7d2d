@@ -4,7 +4,7 @@ import AppHeader from './AppHeader';
 import BottomNav from './BottomNav';
 import LoadingScreen from './LoadingScreen';
 import BeginnerGuideModal from './BeginnerGuideModal';
-import { useCrewChatNotifications } from '@/hooks/useCrewChatNotifications';
+import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
@@ -14,8 +14,8 @@ export default function AuthenticatedLayout() {
   const hideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path));
   const showNav = !hideNav;
 
-  // Enable global crew chat notifications with sound
-  useCrewChatNotifications();
+  // Enable global notifications with sounds (crew chat, DMs, tournaments, system alerts)
+  useGlobalNotifications();
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col overflow-hidden">
