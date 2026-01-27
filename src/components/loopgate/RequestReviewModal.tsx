@@ -149,6 +149,27 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
               </button>
             </div>
 
+            {/* Submit Button - AT THE TOP */}
+            <div className="p-4 border-b border-border bg-card shrink-0">
+              <Button
+                onClick={handleSubmit}
+                disabled={!canSubmit || submitting}
+                className="w-full bg-gold text-black hover:bg-gold/90 disabled:opacity-50 h-12 text-base font-semibold"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Request Review
+                  </>
+                )}
+              </Button>
+            </div>
+
             {/* Content - scrollable */}
             <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0 overscroll-contain">
               {/* Daily limit warning */}
@@ -210,27 +231,6 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
                   You'll receive a notification when your review is complete. Results appear in your profile.
                 </p>
               </div>
-            </div>
-
-            {/* Footer - sticky at bottom with extra padding for iOS */}
-            <div className="p-4 border-t border-border bg-card shrink-0">
-              <Button
-                onClick={handleSubmit}
-                disabled={!canSubmit || submitting}
-                className="w-full bg-gold text-black hover:bg-gold/90 disabled:opacity-50 h-12 text-base font-semibold"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Request Review
-                  </>
-                )}
-              </Button>
             </div>
           </motion.div>
         </motion.div>
