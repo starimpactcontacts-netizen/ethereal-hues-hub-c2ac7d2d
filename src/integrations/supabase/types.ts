@@ -2278,6 +2278,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_messages: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          message_text: string
+          tournament_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          message_text: string
+          tournament_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          message_text?: string
+          tournament_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_messages_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "sanctioned_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
