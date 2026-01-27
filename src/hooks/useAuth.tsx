@@ -347,10 +347,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: fnError || new Error(data?.error || 'Invalid code') };
     }
     
-    // Use the token hash to complete sign in
+    // Use the token hash to complete sign in (only token_hash + type, no email)
     if (data.tokenHash) {
       const { error } = await supabase.auth.verifyOtp({
-        email,
         token_hash: data.tokenHash,
         type: 'magiclink',
       });
