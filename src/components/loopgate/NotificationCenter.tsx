@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Check, Trash2, X, Trophy, Zap, Star, Calendar } from "lucide-react";
+import { Bell, Check, Trash2, Trophy, Zap, Star, Calendar, MessageSquare, Users, Megaphone } from "lucide-react";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -10,6 +10,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// System notifications - platform updates, announcements
+const SYSTEM_TYPES = ['system', 'announcement', 'maintenance', 'update'];
+
+// User notifications - personal activity
+const USER_TYPES = [
+  'submission_judged', 'rank_changed', 'event_starting', 'event_ended',
+  'achievement', 'house_accepted', 'house_invited', 'review_complete',
+  'tournament_started', 'tournament_scored', 'dm_received', 'crew_mention'
+];
 
 const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string }> = {
   submission_judged: { icon: Trophy, color: "text-gold", bg: "bg-gold/10" },
@@ -20,9 +31,14 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string 
   house_accepted: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
   house_invited: { icon: Star, color: "text-gold", bg: "bg-gold/10" },
   review_complete: { icon: Star, color: "text-purple-400", bg: "bg-purple-400/10" },
-  // Sanctioned tournament notifications
   tournament_started: { icon: Trophy, color: "text-green-500", bg: "bg-green-500/10" },
   tournament_scored: { icon: Trophy, color: "text-gold", bg: "bg-gold/10" },
+  dm_received: { icon: MessageSquare, color: "text-cyan-400", bg: "bg-cyan-400/10" },
+  crew_mention: { icon: Users, color: "text-orange-400", bg: "bg-orange-400/10" },
+  system: { icon: Megaphone, color: "text-white", bg: "bg-white/10" },
+  announcement: { icon: Megaphone, color: "text-gold", bg: "bg-gold/10" },
+  maintenance: { icon: Bell, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+  update: { icon: Zap, color: "text-cyan-400", bg: "bg-cyan-400/10" },
 };
 
 interface NotificationItemProps {
@@ -110,7 +126,43 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
 
 export default function NotificationCenter() {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<'activity' | 'system'>('activity');
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+
+  // Split notifications into categories
+  const activityNotifications = notifications.filter(n => !SYSTEM_TYPES.includes(n.type));
+  const systemNotifications = notifications.filter(n => SYSTEM_TYPES.includes(n.type));
+  
+  const activityUnread = activityNotifications.filter(n => !n.read).length;
+  const systemUnread = systemNotifications.filter(n => !n.read).length;
+
+  const renderNotificationList = (items: Notification[]) => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
+    
+    if (items.length === 0) {
+      return (
+        <div className="text-center py-12 px-4">
+          <Bell className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">No notifications</p>
+        </div>
+      );
+    }
+
+    return items.map((notification) => (
+      <NotificationItem
+        key={notification.id}
+        notification={notification}
+        onMarkAsRead={markAsRead}
+        onDelete={deleteNotification}
+      />
+    ));
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -118,7 +170,7 @@ export default function NotificationCenter() {
         <button className="relative p-2">
           <Bell size={20} />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gold text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gold text-black text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -139,30 +191,50 @@ export default function NotificationCenter() {
           </div>
         </SheetHeader>
 
-        <div className="overflow-y-auto max-h-[calc(100vh-120px)]">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="text-center py-12 px-4">
-              <Bell className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No notifications yet</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                You'll be notified when your submissions are judged
-              </p>
-            </div>
-          ) : (
-            notifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onMarkAsRead={markAsRead}
-                onDelete={deleteNotification}
-              />
-            ))
-          )}
-        </div>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as 'activity' | 'system')} className="w-full">
+          <TabsList className="w-full grid grid-cols-2 bg-surface-1 rounded-none border-b border-border h-11">
+            <TabsTrigger 
+              value="activity" 
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-gold rounded-none relative"
+            >
+              <span>Activity</span>
+              {activityUnread > 0 && (
+                <span className="ml-1.5 w-5 h-5 bg-gold text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {activityUnread > 9 ? '9+' : activityUnread}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="system"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-gold rounded-none relative"
+            >
+              <span>System</span>
+              {systemUnread > 0 && (
+                <span className="ml-1.5 w-5 h-5 bg-white/80 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {systemUnread > 9 ? '9+' : systemUnread}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="activity" className="mt-0 overflow-y-auto max-h-[calc(100vh-180px)]">
+            {renderNotificationList(activityNotifications)}
+          </TabsContent>
+          
+          <TabsContent value="system" className="mt-0 overflow-y-auto max-h-[calc(100vh-180px)]">
+            {systemNotifications.length === 0 && !loading ? (
+              <div className="text-center py-12 px-4">
+                <Megaphone className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No system updates</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Platform announcements will appear here
+                </p>
+              </div>
+            ) : (
+              renderNotificationList(systemNotifications)
+            )}
+          </TabsContent>
+        </Tabs>
       </SheetContent>
     </Sheet>
   );
