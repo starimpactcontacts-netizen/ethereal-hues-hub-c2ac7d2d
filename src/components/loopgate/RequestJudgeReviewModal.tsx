@@ -212,6 +212,27 @@ export default function RequestJudgeReviewModal({
               </button>
             </div>
 
+            {/* Submit Button - AT THE TOP */}
+            <div className="p-4 border-b border-border shrink-0">
+              <Button
+                onClick={handleSubmit}
+                disabled={!canSubmit || submitting}
+                className="w-full bg-gold text-black hover:bg-gold/90 disabled:opacity-50 font-bold h-12 text-base"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Submit for Review
+                  </>
+                )}
+              </Button>
+            </div>
+
             {/* Content */}
             <div className="p-4 space-y-4 overflow-y-auto flex-1">
               {/* Daily limit warning */}
@@ -391,27 +412,6 @@ export default function RequestJudgeReviewModal({
                   <span className="text-gold font-bold">+15 XP</span> when your review is complete!
                 </p>
               </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-border shrink-0">
-              <Button
-                onClick={handleSubmit}
-                disabled={!canSubmit || submitting}
-                className="w-full bg-gold text-black hover:bg-gold/90 disabled:opacity-50 font-bold"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Submit for Review
-                  </>
-                )}
-              </Button>
             </div>
           </motion.div>
         </motion.div>
