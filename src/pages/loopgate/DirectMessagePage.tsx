@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Smile, MoreVertical } from 'lucide-react';
+import { ArrowLeft, Send, Smile } from 'lucide-react';
 import { useDirectMessages, useConversations } from '@/hooks/useDirectMessages';
 import { useAuth } from '@/hooks/useAuth';
-import { formatDistanceToNow, format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import GifPicker from '@/components/loopgate/GifPicker';
@@ -12,7 +12,7 @@ import RichMessageContent from '@/components/loopgate/RichMessageContent';
 export default function DirectMessagePage() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { messages, loading, sending, sendMessage } = useDirectMessages(conversationId || null);
   const { conversations } = useConversations();
   
@@ -64,7 +64,7 @@ export default function DirectMessagePage() {
   }
 
   return (
-    <div className="fixed inset-0 bg-background flex flex-col z-50 pb-14">
+    <div className="h-[calc(100dvh-56px)] bg-background flex flex-col">
       {/* Header */}
       <div className="shrink-0 bg-surface-0 border-b border-border px-4 py-3 flex items-center gap-3">
         <Link to="/messages" className="p-1 -ml-1 text-muted-foreground hover:text-foreground">
@@ -176,7 +176,7 @@ export default function DirectMessagePage() {
       )}
 
       {/* Input */}
-      <div className="shrink-0 bg-surface-0 border-t border-border p-3">
+      <div className="shrink-0 bg-surface-0 border-t border-border p-3 pb-[max(12px,env(safe-area-inset-bottom))]">
         <div className="flex items-end gap-2">
           <Button
             variant="ghost"
