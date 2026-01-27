@@ -139,11 +139,11 @@ export default function TournamentChat({ tournamentId }: TournamentChatProps) {
   const formatTime = (dateString: string) => format(new Date(dateString), "HH:mm");
 
   return (
-    <div className="relative shrink-0">
+    <>
       {/* Compact Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-gold/10 border border-gold/30 hover:bg-gold/20 transition-colors"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-gold/10 border border-gold/30 hover:bg-gold/20 transition-colors shrink-0"
       >
         <MessageCircle className="w-3.5 h-3.5 text-gold" />
         <span className="text-[10px] font-bold uppercase text-gold">Chat</span>
@@ -157,103 +157,126 @@ export default function TournamentChat({ tournamentId }: TournamentChatProps) {
         )}
       </button>
 
-      {/* Dropdown Chat Panel */}
+      {/* Fixed Overlay Chat Panel */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-2 w-72 bg-background border border-border rounded-lg shadow-xl z-50 overflow-hidden"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 bg-surface-1 border-b border-border">
-              <div className="flex items-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5 text-gold" />
-                <span className="text-xs font-bold text-foreground">Lobby Chat</span>
-              </div>
-              <button onClick={() => setIsOpen(false)} className="p-0.5 hover:bg-muted rounded">
-                <X className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div className="h-[180px] overflow-y-auto p-2 space-y-1 bg-background/80">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <span className="text-[10px] text-muted-foreground">Loading...</span>
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 z-[100]"
+              onClick={() => setIsOpen(false)}
+            />
+            {/* Chat Panel - Roblox style */}
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed left-3 right-3 z-[101] bg-background border border-gold/30 rounded-xl shadow-2xl overflow-hidden"
+              style={{ 
+                bottom: "calc(70px + env(safe-area-inset-bottom))",
+                maxHeight: "45vh",
+                maxWidth: "400px",
+                marginLeft: "auto",
+                marginRight: "auto"
+              }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gold/20 to-gold/5 border-b border-gold/20">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4 text-gold" />
+                  <span className="text-sm font-bold text-foreground">Lobby Chat</span>
+                  <span className="text-xs text-muted-foreground">({messages.length})</span>
                 </div>
-              ) : messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-[10px] text-muted-foreground">No messages yet</p>
-                </div>
-              ) : (
-                messages.map((message) => {
-                  const isOwn = message.user_id === user?.id;
-                  return (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex items-start gap-1.5 group hover:bg-muted/30 px-1 py-0.5 rounded"
-                    >
-                      <Avatar className="w-5 h-5 shrink-0">
-                        <AvatarImage src={message.avatar_url || undefined} />
-                        <AvatarFallback className="text-[8px] bg-muted">
-                          {message.username?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1">
-                          <span className={`text-[10px] font-semibold ${isOwn ? "text-gold" : "text-foreground"}`}>
-                            {message.username}
-                          </span>
-                          {verifiedUsers[message.user_id] && <VerifiedBadge size="sm" />}
-                          <span className="text-[8px] text-muted-foreground">{formatTime(message.created_at)}</span>
-                          {((isOwn && canDeleteOwnMessage(message.created_at)) || canModerate) && (
-                            <button
-                              onClick={() => handleDeleteMessage(message.id)}
-                              className="ml-auto p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                            >
-                              <Trash2 className="w-2.5 h-2.5" />
-                            </button>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-foreground/90 break-words leading-tight">
-                          {message.message_text}
-                        </p>
-                      </div>
-                    </motion.div>
-                  );
-                })
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <form onSubmit={handleSendMessage} className="p-2 border-t border-border bg-surface-1">
-              <div className="flex gap-1.5">
-                <Input
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={isGuest ? "Sign in" : "Message..."}
-                  className="flex-1 h-7 text-[11px] bg-background border-border"
-                  disabled={sending || isGuest}
-                  maxLength={300}
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={!newMessage.trim() || sending}
-                  className="bg-gold hover:bg-gold/90 text-background h-7 w-7 p-0"
+                <button 
+                  onClick={() => setIsOpen(false)} 
+                  className="p-1.5 hover:bg-muted rounded-lg transition-colors"
                 >
-                  <Send className="w-3 h-3" />
-                </Button>
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
               </div>
-            </form>
-          </motion.div>
+
+              {/* Messages */}
+              <div className="h-[200px] overflow-y-auto p-3 space-y-2 bg-background">
+                {loading ? (
+                  <div className="flex items-center justify-center h-full">
+                    <span className="text-xs text-muted-foreground">Loading...</span>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-xs text-muted-foreground">No messages yet. Say hi!</p>
+                  </div>
+                ) : (
+                  messages.map((message) => {
+                    const isOwn = message.user_id === user?.id;
+                    return (
+                      <motion.div
+                        key={message.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-start gap-2 group hover:bg-muted/30 px-2 py-1.5 rounded-lg"
+                      >
+                        <Avatar className="w-6 h-6 shrink-0">
+                          <AvatarImage src={message.avatar_url || undefined} />
+                          <AvatarFallback className="text-[9px] bg-muted">
+                            {message.username?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs font-semibold ${isOwn ? "text-gold" : "text-foreground"}`}>
+                              {message.username}
+                            </span>
+                            {verifiedUsers[message.user_id] && <VerifiedBadge size="sm" />}
+                            <span className="text-[10px] text-muted-foreground">{formatTime(message.created_at)}</span>
+                            {((isOwn && canDeleteOwnMessage(message.created_at)) || canModerate) && (
+                              <button
+                                onClick={() => handleDeleteMessage(message.id)}
+                                className="ml-auto p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-xs text-foreground/90 break-words leading-relaxed">
+                            {message.message_text}
+                          </p>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input */}
+              <form onSubmit={handleSendMessage} className="p-3 border-t border-border bg-surface-1">
+                <div className="flex gap-2">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={isGuest ? "Sign in to chat" : "Type a message..."}
+                    className="flex-1 h-9 text-sm bg-background border-border"
+                    disabled={sending || isGuest}
+                    maxLength={300}
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={!newMessage.trim() || sending}
+                    className="bg-gold hover:bg-gold/90 text-background h-9 w-9 p-0"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
