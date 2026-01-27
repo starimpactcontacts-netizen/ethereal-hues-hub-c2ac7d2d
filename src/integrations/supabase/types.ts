@@ -1405,6 +1405,33 @@ export type Database = {
         }
         Relationships: []
       }
+      login_codes: {
+        Row: {
+          code: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       login_streaks: {
         Row: {
           current_streak: number
@@ -2357,6 +2384,7 @@ export type Database = {
         Args: { p_judge_id: string; p_match_id: string }
         Returns: boolean
       }
+      cleanup_expired_login_codes: { Args: never; Returns: undefined }
       create_invite:
         | {
             Args: { p_user_id: string }

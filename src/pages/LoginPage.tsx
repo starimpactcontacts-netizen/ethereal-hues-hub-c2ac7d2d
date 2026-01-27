@@ -419,14 +419,16 @@ export default function LoginPage() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center block">
-                    Enter Code
+                    Enter 6-Digit Code
                   </label>
                   <Input
                     value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    placeholder="123456"
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
                     className="h-14 bg-surface-1 border-border text-2xl text-center tracking-[0.5em] font-mono"
-                    maxLength={8}
+                    maxLength={6}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     autoComplete="one-time-code"
                   />
                 </div>
