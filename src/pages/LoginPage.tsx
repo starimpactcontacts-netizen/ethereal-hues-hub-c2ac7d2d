@@ -408,13 +408,24 @@ export default function LoginPage() {
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="text-center mb-4">
+                <div className="text-center mb-6">
                   <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
                     <Mail className="h-8 w-8 text-gold" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Check your email for a magic link, or enter the code below:
-                  </p>
+                  
+                  {/* Two login options */}
+                  <div className="flex gap-3 mb-4">
+                    <div className="flex-1 p-3 rounded-lg bg-surface-1 border border-border text-center">
+                      <Sparkles className="h-5 w-5 mx-auto mb-1 text-gold" />
+                      <p className="text-xs font-medium">One-Tap Magic</p>
+                      <p className="text-[10px] text-muted-foreground">Check email</p>
+                    </div>
+                    <div className="flex-1 p-3 rounded-lg bg-gold/10 border border-gold text-center">
+                      <Lock className="h-5 w-5 mx-auto mb-1 text-gold" />
+                      <p className="text-xs font-medium">6-Digit Code</p>
+                      <p className="text-[10px] text-muted-foreground">Enter below</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
