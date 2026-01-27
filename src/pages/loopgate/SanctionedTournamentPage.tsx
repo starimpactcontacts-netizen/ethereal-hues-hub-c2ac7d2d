@@ -213,6 +213,11 @@ export default function SanctionedTournamentPage() {
         </div>
       </div>
 
+      {/* Lobby Chat - Roblox style, ABOVE arena content */}
+      <div className="px-4 pt-2">
+        <TournamentChat tournamentId={tournament.id} />
+      </div>
+
       {/* Phase-specific content */}
       <AnimatePresence mode="wait">
         {(tournament.status === "approved" || tournament.status === "ready_up") && (
@@ -272,12 +277,6 @@ export default function SanctionedTournamentPage() {
         playerCount={participants.length}
         maxPlayers={tournament.max_players}
         isCrewVsCrew={isCrewVsCrew}
-      />
-
-      {/* Tournament Chat */}
-      <TournamentChat 
-        tournamentId={tournament.id} 
-        tournamentName={tournament.name} 
       />
     </motion.div>
   );
