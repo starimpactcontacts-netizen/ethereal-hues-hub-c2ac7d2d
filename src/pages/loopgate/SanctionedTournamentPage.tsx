@@ -173,8 +173,8 @@ export default function SanctionedTournamentPage() {
           </div>
 
           {/* Tournament Title Card */}
-          <div className="flex items-start gap-4">
-            <div className={`w-14 h-14 rounded-lg flex items-center justify-center shadow-lg overflow-hidden ${
+          <div className="flex items-start gap-3">
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center shadow-lg overflow-hidden shrink-0 ${
               isCrewVsCrew 
                 ? "bg-gradient-to-br from-red-500 to-red-700 shadow-red-500/30" 
                 : "bg-gradient-to-br from-gold to-amber-600 shadow-gold/30"
@@ -186,9 +186,9 @@ export default function SanctionedTournamentPage() {
                   className="w-full h-full object-cover"
                 />
               ) : isCrewVsCrew ? (
-                <Swords className="w-7 h-7 text-white" />
+                <Swords className="w-6 h-6 text-white" />
               ) : (
-                <Shield className="w-7 h-7 text-background" />
+                <Shield className="w-6 h-6 text-background" />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -202,20 +202,17 @@ export default function SanctionedTournamentPage() {
                 </span>
                 <StatusBadge status={tournament.status} />
               </div>
-              <h1 className="font-display text-xl text-foreground leading-tight">
+              <h1 className="font-display text-lg text-foreground leading-tight">
                 {tournament.name}
               </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-[10px] text-muted-foreground mt-0.5">
                 Hosted by {tournament.crew_name}
               </p>
             </div>
+            {/* Inline Chat Toggle */}
+            <TournamentChat tournamentId={tournament.id} />
           </div>
         </div>
-      </div>
-
-      {/* Lobby Chat - Roblox style, ABOVE arena content */}
-      <div className="px-4 pt-2">
-        <TournamentChat tournamentId={tournament.id} />
       </div>
 
       {/* Phase-specific content */}
