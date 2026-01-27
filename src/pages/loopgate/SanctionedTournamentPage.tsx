@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import BracketTree from "@/components/loopgate/BracketTree";
 import TournamentInviteModal from "@/components/loopgate/TournamentInviteModal";
+import TournamentChat from "@/components/loopgate/TournamentChat";
 
 export default function SanctionedTournamentPage() {
   const { id } = useParams<{ id: string }>();
@@ -271,6 +272,12 @@ export default function SanctionedTournamentPage() {
         playerCount={participants.length}
         maxPlayers={tournament.max_players}
         isCrewVsCrew={isCrewVsCrew}
+      />
+
+      {/* Tournament Chat */}
+      <TournamentChat 
+        tournamentId={tournament.id} 
+        tournamentName={tournament.name} 
       />
     </motion.div>
   );
