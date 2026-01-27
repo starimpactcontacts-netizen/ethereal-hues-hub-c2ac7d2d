@@ -224,15 +224,21 @@ export function useGlobalNotifications() {
               emoji = '⏰';
               sound = 'urgent';
               break;
+            case 'battle_invite':
+              emoji = '⚔️';
+              sound = 'urgent';
+              break;
           }
 
           playSound(sound);
           
-          const data = notif.data as { event_id?: string; tournament_id?: string };
+          const data = notif.data as { event_id?: string; tournament_id?: string; battle_id?: string };
           
           toast(`${emoji} ${notif.title}`, {
             description: notif.message,
-            action: data?.tournament_id
+            action: data?.battle_id
+              ? { label: 'View Battle', onClick: () => (window.location.href = `/battle/${data.battle_id}`) }
+              : data?.tournament_id
               ? { label: 'View', onClick: () => (window.location.href = `/sanctioned/${data.tournament_id}`) }
               : data?.event_id
               ? { label: 'View', onClick: () => (window.location.href = `/event/${data.event_id}`) }
