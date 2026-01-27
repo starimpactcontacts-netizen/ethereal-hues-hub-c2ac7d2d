@@ -9,7 +9,9 @@ import { useCrewChatNotifications } from '@/hooks/useCrewChatNotifications';
 export default function AuthenticatedLayout() {
   const location = useLocation();
   const hideNavPaths = ['/admin', '/onboarding'];
+  const hideHeaderPaths = ['/messages'];
   const hideNav = hideNavPaths.some(path => location.pathname.startsWith(path));
+  const hideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path));
   const showNav = !hideNav;
 
   // Enable global crew chat notifications with sound
@@ -17,8 +19,8 @@ export default function AuthenticatedLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col overflow-hidden">
-      {!hideNav && <AppHeader />}
-      <main className={`flex-1 overflow-y-auto ${!hideNav ? 'pb-14' : ''}`}>
+      {!hideNav && !hideHeader && <AppHeader />}
+      <main className={`flex-1 overflow-y-auto ${!hideNav && !hideHeader ? 'pb-14' : ''}`}>
         <Suspense fallback={<LoadingScreen minimal />}>
           <Outlet />
         </Suspense>
