@@ -122,14 +122,15 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
           onClick={onClose}
         >
           <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden sm:mx-4"
+            className="w-full sm:max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl sm:mx-4 flex flex-col"
             style={{ 
-              maxHeight: 'calc(90vh - env(safe-area-inset-bottom))',
-              marginBottom: 'env(safe-area-inset-bottom)'
+              maxHeight: '70vh',
+              paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))'
             }}
           >
             {/* Header */}
@@ -149,7 +150,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
             </div>
 
             {/* Content - scrollable */}
-            <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+            <div className="p-4 space-y-4 overflow-y-auto flex-1 min-h-0 overscroll-contain">
               {/* Daily limit warning */}
               {hasReachedLimit && (
                 <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 flex items-start gap-3">
@@ -212,7 +213,7 @@ export default function RequestReviewModal({ isOpen, onClose }: RequestReviewMod
             </div>
 
             {/* Footer - sticky at bottom with extra padding for iOS */}
-            <div className="p-4 pb-6 border-t border-border bg-card shrink-0">
+            <div className="p-4 border-t border-border bg-card shrink-0">
               <Button
                 onClick={handleSubmit}
                 disabled={!canSubmit || submitting}
