@@ -631,8 +631,8 @@ export default function ArenaPage() {
               </p>
               
               {/* Create Battle CTA */}
-              {profile && (
-                <div className="px-4 mb-4">
+              <div className="px-4 mb-4">
+                {profile ? (
                   <button 
                     onClick={() => setShowCreateBattle(true)}
                     className="w-full py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500 text-white font-display text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 transition-all"
@@ -640,8 +640,16 @@ export default function ArenaPage() {
                     <Swords className="w-4 h-4" />
                     Start a 1v1 Battle
                   </button>
-                </div>
-              )}
+                ) : (
+                  <Link 
+                    to="/start"
+                    className="w-full py-3 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500 text-white font-display text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 transition-all"
+                  >
+                    <Swords className="w-4 h-4" />
+                    Sign In to Battle
+                  </Link>
+                )}
+              </div>
 
               {battlesLoading ? (
                 <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
@@ -668,7 +676,7 @@ export default function ArenaPage() {
                     <p className="text-[10px] text-muted-foreground/60 mb-4">
                       Be the first to throw down
                     </p>
-                    {profile && (
+                    {profile ? (
                       <Button
                         onClick={() => setShowCreateBattle(true)}
                         size="sm"
@@ -676,6 +684,17 @@ export default function ArenaPage() {
                       >
                         <Swords className="w-3.5 h-3.5 mr-1.5" />
                         Start a Battle
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        size="sm"
+                        className="bg-red-500 hover:bg-red-600 text-white"
+                      >
+                        <Link to="/start">
+                          <Swords className="w-3.5 h-3.5 mr-1.5" />
+                          Sign In to Battle
+                        </Link>
                       </Button>
                     )}
                   </div>
