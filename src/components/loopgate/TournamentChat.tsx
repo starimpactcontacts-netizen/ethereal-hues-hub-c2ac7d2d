@@ -205,64 +205,47 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
   const formatTime = (dateString: string) => format(new Date(dateString), "HH:mm");
 
   return (
-    <>
-      {/* Floating Chat Button */}
-      <motion.button
-        onClick={() => setIsOpen(true)}
-        className={`fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-gold text-background shadow-lg shadow-gold/30 flex items-center justify-center ${
-          isOpen ? "hidden" : ""
-        }`}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+    <div className="mt-4 border border-border rounded-xl overflow-hidden bg-surface-1">
+      {/* Header - Always visible, clickable to expand/collapse */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-background/50 hover:bg-muted/50 transition-colors"
       >
-        <MessageCircle className="w-6 h-6" />
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-            {unreadCount > 9 ? "9+" : unreadCount}
+        <div className="flex items-center gap-2">
+          <MessageCircle className="w-4 h-4 text-gold" />
+          <span className="text-sm font-medium">Lobby Chat</span>
+          <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+            {messages.length}
           </span>
-        )}
-      </motion.button>
+          {unreadCount > 0 && !isOpen && (
+            <span className="w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </div>
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
 
-      {/* Chat Panel */}
+      {/* Expandable Chat Area */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            className="fixed bottom-16 right-4 left-4 z-50 bg-background border border-border rounded-xl shadow-2xl overflow-hidden"
-            style={{ maxHeight: "60vh", height: "400px" }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-surface-1 border-b border-border">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-gold" />
-                <span className="text-sm font-medium truncate max-w-[180px]">
-                  {tournamentName}
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  ({messages.length})
-                </span>
-              </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-muted rounded-md transition-colors"
-              >
-                <ChevronDown className="w-5 h-5" />
-              </button>
-            </div>
-
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ height: "calc(100% - 110px)" }}>
+            <div className="h-[200px] overflow-y-auto p-3 space-y-2 bg-background/30">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <span className="text-sm text-muted-foreground">Loading...</span>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <MessageCircle className="w-8 h-8 text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground">No messages yet</p>
-                  <p className="text-xs text-muted-foreground/70">Be the first to chat!</p>
+                  <MessageCircle className="w-6 h-6 text-muted-foreground/50 mb-1" />
+                  <p className="text-xs text-muted-foreground">No messages yet</p>
                 </div>
               ) : (
                 messages.map((message) => {
@@ -274,19 +257,19 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                       animate={{ opacity: 1, y: 0 }}
                       className={`flex gap-2 group ${isOwnMessage ? "flex-row-reverse" : ""}`}
                     >
-                      <Avatar className="w-7 h-7 shrink-0">
+                      <Avatar className="w-6 h-6 shrink-0">
                         <AvatarImage src={message.avatar_url || undefined} />
-                        <AvatarFallback className="text-[10px]">
+                        <AvatarFallback className="text-[10px] bg-muted">
                           {message.username?.charAt(0).toUpperCase() || "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`max-w-[70%] ${isOwnMessage ? "text-right" : ""}`}>
+                      <div className={`max-w-[75%] ${isOwnMessage ? "text-right" : ""}`}>
                         <div className={`flex items-center gap-1 mb-0.5 ${isOwnMessage ? "flex-row-reverse" : ""}`}>
-                          <span className="text-xs font-medium">{message.username}</span>
+                          <span className="text-[11px] font-medium text-foreground/80">{message.username}</span>
                           {verifiedUsers[message.user_id] && (
                             <VerifiedBadge size="sm" />
                           )}
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-[9px] text-muted-foreground">
                             {formatTime(message.created_at)}
                           </span>
                         </div>
@@ -300,10 +283,10 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                             </button>
                           )}
                           <div
-                            className={`inline-block px-3 py-1.5 rounded-2xl text-sm ${
+                            className={`inline-block px-2.5 py-1 rounded-xl text-xs ${
                               isOwnMessage
-                                ? "bg-gold text-background rounded-br-sm"
-                                : "bg-muted rounded-bl-sm"
+                                ? "bg-gold/20 text-gold border border-gold/30 rounded-br-sm"
+                                : "bg-muted text-foreground rounded-bl-sm"
                             }`}
                           >
                             {message.message_text}
@@ -326,21 +309,21 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-border bg-surface-1">
+            <form onSubmit={handleSendMessage} className="p-2 border-t border-border bg-background/50">
               <div className="flex gap-2">
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-background"
+                  placeholder={isGuest ? "Sign in to chat" : "Type a message..."}
+                  className="flex-1 h-9 text-sm bg-background border-border"
                   disabled={sending || isGuest}
                   maxLength={300}
                 />
                 <Button
                   type="submit"
-                  size="icon"
+                  size="sm"
                   disabled={!newMessage.trim() || sending}
-                  className="bg-gold hover:bg-gold/90 text-background shrink-0"
+                  className="bg-gold hover:bg-gold/90 text-background h-9 px-3"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
@@ -349,6 +332,6 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
