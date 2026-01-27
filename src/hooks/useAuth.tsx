@@ -323,7 +323,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithMagicLink = async (email: string) => {
     const redirectUrl = `${window.location.origin}/hub`;
     
-    // Use our custom edge function that sends a nicely formatted email with both OTP code and magic link
+    // Use our custom edge function that sends a 6-digit code + magic link
     const { data, error: fnError } = await supabase.functions.invoke('send-login-email', {
       body: { email, redirectTo: redirectUrl }
     });
@@ -333,19 +333,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: fnError };
     }
     
-    // Return the tokenHash for OTP verification
-    return { error: null, tokenHash: data?.tokenHash };
+    // Return the email for verification
+    return { error: null, email: data?.email };
   };
 
   const signInWithOtp = async (email: string, token: string, _tokenHash?: string) => {
-    // Always use email + token for OTP verification
-    // The token is the 6-8 character code the user enters
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email',
+    // Use our custom verification edge function for 6-digit codes
+    const { data, error: fnError } = await supabase.functions.invoke('verify-login-code', {
+      body: { email, code: token }
     });
-    return { error };
+    
+    if (fnError || !data?.success) {
+      return { error: fnError || new Error(data?.error || 'Invalid code') };
+    }
+    
+    // Use the token hash to complete sign in
+    if (data.tokenHash) {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token_hash: data.tokenHash,
+        type: 'magiclink',
+      });
+      return { error };
+    }
+    
+    return { error: new Error('Verification failed') };
   };
 
   const signInWithPassword = async (email: string, password: string) => {

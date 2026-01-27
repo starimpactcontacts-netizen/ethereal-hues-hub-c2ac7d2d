@@ -9,6 +9,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Generate a 6-digit numeric code
+const generateSixDigitCode = (): string => {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
 // Build email HTML directly without React (avoids version conflicts)
 const buildLoginEmailHtml = (token: string, magicLink: string): string => {
   return `<!DOCTYPE html>
@@ -25,13 +30,14 @@ const buildLoginEmailHtml = (token: string, magicLink: string): string => {
     <h1 style="color: #ffffff; font-size: 24px; font-weight: 600; text-align: center; margin: 0 0 32px 0;">Sign In</h1>
     <div style="background-color: #1a1a1a; border-radius: 12px; padding: 24px; text-align: center; border: 1px solid #333;">
       <p style="color: #888; font-size: 14px; margin: 0 0 12px 0;">Your login code:</p>
-      <p style="color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: 6px; margin: 0; font-family: monospace;">${token}</p>
+      <p style="color: #ffffff; font-size: 36px; font-weight: 700; letter-spacing: 8px; margin: 0; font-family: monospace;">${token}</p>
       <p style="color: #666; font-size: 12px; margin: 12px 0 0 0;">Enter this code in the app</p>
     </div>
     <hr style="border-color: #333; margin: 32px 0;">
     <p style="color: #888; font-size: 14px; text-align: center; margin: 0 0 16px 0;">Or click this link to sign in instantly:</p>
     <a href="${magicLink}" target="_blank" style="display: block; background-color: #ffffff; color: #000000; font-size: 16px; font-weight: 600; text-decoration: none; text-align: center; padding: 14px 24px; border-radius: 8px; margin: 0 auto;">Sign In to Loopgate →</a>
-    <p style="color: #666; font-size: 12px; text-align: center; margin: 32px 0 8px 0;">If you didn't request this, you can safely ignore this email.</p>
+    <p style="color: #666; font-size: 12px; text-align: center; margin: 32px 0 8px 0;">This code expires in 10 minutes.</p>
+    <p style="color: #666; font-size: 12px; text-align: center; margin: 0 0 8px 0;">If you didn't request this, you can safely ignore this email.</p>
     <p style="color: #444; font-size: 11px; text-align: center; margin: 0;">© Loopgate — Competitive Editing Index</p>
   </div>
 </body>
@@ -64,7 +70,28 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Generate magic link using admin API
+    // Generate our own 6-digit code
+    const sixDigitCode = generateSixDigitCode()
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+
+    // Store the code in our custom table
+    const { error: insertError } = await supabaseAdmin
+      .from('login_codes')
+      .insert({
+        email: email.toLowerCase(),
+        code: sixDigitCode,
+        expires_at: expiresAt.toISOString()
+      })
+
+    if (insertError) {
+      console.error('Insert code error:', insertError)
+      return new Response(JSON.stringify({ error: 'Failed to generate code' }), { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      })
+    }
+
+    // Still generate magic link for one-click login
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email,
@@ -73,23 +100,12 @@ Deno.serve(async (req) => {
       }
     })
 
-    if (linkError) {
-      console.error('Generate link error:', linkError)
-      return new Response(JSON.stringify({ error: linkError.message }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      })
-    }
+    const magicLink = linkData?.properties?.action_link || ''
 
-    // Extract the OTP and hashed token from properties
-    const token = linkData.properties?.email_otp || '------'
-    const tokenHash = linkData.properties?.hashed_token || ''
-    const magicLink = linkData.properties?.action_link || ''
+    console.log('Generated 6-digit code for:', email)
 
-    console.log('Generated link for:', email, 'token length:', token.length)
-
-    // Build email HTML
-    const emailHtml = buildLoginEmailHtml(token, magicLink)
+    // Build email HTML with 6-digit code
+    const emailHtml = buildLoginEmailHtml(sixDigitCode, magicLink)
 
     // Send via Resend
     const { error: emailError } = await resend.emails.send({
@@ -109,8 +125,8 @@ Deno.serve(async (req) => {
 
     console.log('Email sent successfully to:', email)
 
-    // Return the token_hash so the client can use it for verification
-    return new Response(JSON.stringify({ success: true, tokenHash }), {
+    // Return success (no token hash needed anymore, we verify against our table)
+    return new Response(JSON.stringify({ success: true, email: email.toLowerCase() }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
