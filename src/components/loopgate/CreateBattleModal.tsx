@@ -101,10 +101,13 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
           className="w-full max-w-md bg-background border-t border-red-500/30 rounded-t-2xl overflow-hidden"
-          style={{ maxHeight: "85vh" }}
+          style={{ 
+            maxHeight: "80vh",
+            marginBottom: "calc(56px + env(safe-area-inset-bottom, 0px))"
+          }}
         >
           {/* Header */}
-          <div className="relative p-4 bg-gradient-to-r from-red-500/20 via-surface-1 to-red-500/20 border-b border-border">
+          <div className="relative p-4 bg-gradient-to-r from-red-500/20 via-surface-1 to-red-500/20 border-b border-border flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/40">
                 <Swords className="w-5 h-5 text-white" />
@@ -124,7 +127,7 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
             </button>
           </div>
 
-          <div className="p-4 space-y-5 overflow-y-auto" style={{ maxHeight: "calc(85vh - 120px)" }}>
+          <div className="p-4 space-y-5 overflow-y-auto overscroll-contain" style={{ maxHeight: "calc(80vh - 80px)", WebkitOverflowScrolling: "touch" }}>
             {/* Challenge Type */}
             <div>
               <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block">
