@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Send, X, Trash2 } from "lucide-react";
+import { MessageCircle, Send, ChevronUp, ChevronDown, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -27,10 +27,9 @@ interface VerifiedUsers {
 
 interface TournamentChatProps {
   tournamentId: string;
-  tournamentName: string;
 }
 
-export default function TournamentChat({ tournamentId, tournamentName }: TournamentChatProps) {
+export default function TournamentChat({ tournamentId }: TournamentChatProps) {
   const { user, profile, isAdmin, isDev } = useAuth();
   const { isGuest } = useGuestMode();
   const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +80,6 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
         setMessages(msgs);
         lastReadRef.current = Date.now();
         
-        // Fetch verified status for all unique users
         const uniqueUserIds = [...new Set(msgs.map((m) => m.user_id))];
         fetchVerifiedStatus(uniqueUserIds);
       }
@@ -107,12 +105,10 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
           const newMsg = payload.new as TournamentMessage;
           setMessages((prev) => [...prev, newMsg]);
           
-          // Fetch verified status for new user if not already known
           if (!verifiedUsers[newMsg.user_id]) {
             fetchVerifiedStatus([newMsg.user_id]);
           }
           
-          // Increment unread count if chat is closed and message isn't from current user
           if (!isOpen && newMsg.user_id !== user?.id) {
             setUnreadCount((prev) => prev + 1);
           }
@@ -205,65 +201,52 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
   const formatTime = (dateString: string) => format(new Date(dateString), "HH:mm");
 
   return (
-    <>
-      {/* Floating Chat Button - Fixed position, right side, above bottom nav */}
-      {!isOpen && (
-        <motion.button
-          onClick={() => setIsOpen(true)}
-          className="fixed right-4 z-40 w-12 h-12 rounded-full bg-gold text-background shadow-lg shadow-gold/30 flex items-center justify-center"
-          style={{ bottom: "calc(56px + env(safe-area-inset-bottom) + 16px)" }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <MessageCircle className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+    <div className="border border-gold/20 rounded-lg overflow-hidden bg-surface-1">
+      {/* Chat Header Bar - Roblox style */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-3 py-2.5 bg-gradient-to-r from-gold/10 to-transparent hover:from-gold/20 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <MessageCircle className="w-4 h-4 text-gold" />
+          <span className="text-sm font-bold uppercase tracking-wider text-gold">Chat</span>
+          {messages.length > 0 && (
+            <span className="text-[10px] text-muted-foreground">
+              ({messages.length})
+            </span>
+          )}
+          {unreadCount > 0 && !isOpen && (
+            <span className="ml-1 px-1.5 py-0.5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </motion.button>
-      )}
+        </div>
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 text-gold" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        )}
+      </button>
 
-      {/* Compact Chat Panel - Fixed, 1/4 width on desktop, wider on mobile */}
+      {/* Expandable Chat Content */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed right-4 z-50 w-72 sm:w-80 bg-background border border-border rounded-xl shadow-2xl overflow-hidden"
-            style={{ 
-              bottom: "calc(56px + env(safe-area-inset-bottom) + 16px)",
-              maxHeight: "320px"
-            }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 bg-surface-1 border-b border-border">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-gold" />
-                <span className="text-xs font-medium">Lobby Chat</span>
-                <span className="text-[9px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                  {messages.length}
-                </span>
-              </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-muted rounded-md transition-colors"
-              >
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            </div>
-
-            {/* Messages - Compact scrollable area */}
-            <div className="h-[180px] overflow-y-auto p-2 space-y-1.5 bg-background/80">
+            {/* Messages Area */}
+            <div className="h-[160px] overflow-y-auto p-2 space-y-1.5 bg-background/50">
               {loading ? (
                 <div className="flex items-center justify-center h-full">
                   <span className="text-xs text-muted-foreground">Loading...</span>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <MessageCircle className="w-5 h-5 text-muted-foreground/50 mb-1" />
-                  <p className="text-[10px] text-muted-foreground">No messages yet</p>
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-[10px] text-muted-foreground">No messages yet — say something!</p>
                 </div>
               ) : (
                 messages.map((message) => {
@@ -271,9 +254,9 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                   return (
                     <motion.div
                       key={message.id}
-                      initial={{ opacity: 0, x: isOwnMessage ? 10 : -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className={`flex gap-1.5 group ${isOwnMessage ? "flex-row-reverse" : ""}`}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-start gap-1.5 group hover:bg-muted/30 px-1 py-0.5 rounded"
                     >
                       <Avatar className="w-5 h-5 shrink-0">
                         <AvatarImage src={message.avatar_url || undefined} />
@@ -281,39 +264,27 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
                           {message.username?.charAt(0).toUpperCase() || "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`max-w-[80%] ${isOwnMessage ? "text-right" : ""}`}>
-                        <div className={`flex items-center gap-1 mb-0.5 ${isOwnMessage ? "flex-row-reverse" : ""}`}>
-                          <span className="text-[10px] font-medium text-foreground/80">{message.username}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className={`text-[11px] font-semibold ${isOwnMessage ? "text-gold" : "text-foreground"}`}>
+                            {message.username}
+                          </span>
                           {verifiedUsers[message.user_id] && <VerifiedBadge size="sm" />}
-                          <span className="text-[8px] text-muted-foreground">{formatTime(message.created_at)}</span>
-                        </div>
-                        <div className="flex items-center gap-0.5">
-                          {isOwnMessage && (canModerate || canDeleteOwnMessage(message.created_at)) && (
+                          <span className="text-[9px] text-muted-foreground">
+                            {formatTime(message.created_at)}
+                          </span>
+                          {(isOwnMessage && canDeleteOwnMessage(message.created_at)) || canModerate ? (
                             <button
                               onClick={() => handleDeleteMessage(message.id)}
-                              className="p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                              className="p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all ml-auto"
                             >
                               <Trash2 className="w-2.5 h-2.5" />
                             </button>
-                          )}
-                          <div
-                            className={`inline-block px-2 py-1 rounded-lg text-[11px] leading-tight ${
-                              isOwnMessage
-                                ? "bg-gold/20 text-gold border border-gold/30 rounded-br-sm"
-                                : "bg-muted text-foreground rounded-bl-sm"
-                            }`}
-                          >
-                            {message.message_text}
-                          </div>
-                          {!isOwnMessage && canModerate && (
-                            <button
-                              onClick={() => handleDeleteMessage(message.id)}
-                              className="p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
-                            >
-                              <Trash2 className="w-2.5 h-2.5" />
-                            </button>
-                          )}
+                          ) : null}
                         </div>
+                        <p className="text-[11px] text-foreground/90 break-words leading-tight">
+                          {message.message_text}
+                        </p>
                       </div>
                     </motion.div>
                   );
@@ -322,14 +293,14 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input - Compact */}
+            {/* Input Bar */}
             <form onSubmit={handleSendMessage} className="p-2 border-t border-border bg-surface-1">
               <div className="flex gap-1.5">
                 <Input
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder={isGuest ? "Sign in" : "Message..."}
-                  className="flex-1 h-8 text-xs bg-background border-border"
+                  placeholder={isGuest ? "Sign in to chat" : "Type to chat..."}
+                  className="flex-1 h-8 text-xs bg-background border-border placeholder:text-muted-foreground/50"
                   disabled={sending || isGuest}
                   maxLength={300}
                 />
@@ -346,6 +317,6 @@ export default function TournamentChat({ tournamentId, tournamentName }: Tournam
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
