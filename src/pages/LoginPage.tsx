@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import loopgateLogo from '@/assets/loopgate-wordmark.png';
 
 type LoginMethod = 'username' | 'email' | 'magic';
+type MagicSubMethod = 'choose' | 'one-tap' | 'code';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   
   // Magic link state
+  const [magicSubMethod, setMagicSubMethod] = useState<MagicSubMethod>('choose');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [tokenHash, setTokenHash] = useState<string | undefined>();
@@ -151,6 +153,7 @@ export default function LoginPage() {
     setMethod(newMethod);
     setIdentifier('');
     setPassword('');
+    setMagicSubMethod('choose');
     setMagicLinkSent(false);
     setOtpCode('');
     setTokenHash(undefined);
@@ -348,8 +351,52 @@ export default function LoginPage() {
               </motion.form>
             )}
 
-            {/* Magic Link */}
-            {method === 'magic' && !magicLinkSent && (
+            {/* Magic - Choose Method */}
+            {method === 'magic' && magicSubMethod === 'choose' && (
+              <motion.div
+                key="magic-choose"
+                className="space-y-5"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <p className="text-center text-muted-foreground text-sm mb-2">
+                  Choose your login method
+                </p>
+                
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setMagicSubMethod('one-tap')}
+                    className="w-full p-4 rounded-lg bg-surface-1 border border-border hover:border-gold/50 transition-all text-left flex items-center gap-4"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center">
+                      <Sparkles className="h-6 w-6 text-gold" />
+                    </div>
+                    <div>
+                      <p className="font-medium">One-Tap Magic Link</p>
+                      <p className="text-sm text-muted-foreground">Click the link in your email</p>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => setMagicSubMethod('code')}
+                    className="w-full p-4 rounded-lg bg-gold/10 border border-gold hover:bg-gold/20 transition-all text-left flex items-center gap-4"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+                      <Lock className="h-6 w-6 text-gold" />
+                    </div>
+                    <div>
+                      <p className="font-medium">6-Digit Code</p>
+                      <p className="text-sm text-muted-foreground">Enter code from your email</p>
+                    </div>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Magic Link - Email Entry */}
+            {method === 'magic' && (magicSubMethod === 'one-tap' || magicSubMethod === 'code') && !magicLinkSent && (
               <motion.form
                 key="magic-request"
                 onSubmit={handleMagicLinkRequest}
@@ -359,6 +406,28 @@ export default function LoginPage() {
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2 }}
               >
+                <button
+                  type="button"
+                  onClick={() => setMagicSubMethod('choose')}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 mb-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back
+                </button>
+
+                <div className="text-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
+                    {magicSubMethod === 'one-tap' ? (
+                      <Sparkles className="h-6 w-6 text-gold" />
+                    ) : (
+                      <Lock className="h-6 w-6 text-gold" />
+                    )}
+                  </div>
+                  <p className="text-sm font-medium">
+                    {magicSubMethod === 'one-tap' ? 'One-Tap Magic Link' : '6-Digit Code Login'}
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
                     Email
@@ -376,10 +445,6 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <p className="text-sm text-muted-foreground text-center">
-                  We'll send you a magic link and code. One tap to log in.
-                </p>
-
                 <Button
                   type="submit"
                   disabled={loading || !identifier.trim()}
@@ -389,8 +454,8 @@ export default function LoginPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      Send Magic Link
+                      {magicSubMethod === 'one-tap' ? <Sparkles className="mr-2 h-5 w-5" /> : <Lock className="mr-2 h-5 w-5" />}
+                      Send {magicSubMethod === 'one-tap' ? 'Magic Link' : 'Code'}
                     </>
                   )}
                 </Button>
@@ -410,51 +475,58 @@ export default function LoginPage() {
               >
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-                    <Mail className="h-8 w-8 text-gold" />
+                    {magicSubMethod === 'one-tap' ? (
+                      <Sparkles className="h-8 w-8 text-gold" />
+                    ) : (
+                      <Lock className="h-8 w-8 text-gold" />
+                    )}
                   </div>
-                  
-                  {/* Two login options */}
-                  <div className="flex gap-3 mb-4">
-                    <div className="flex-1 p-3 rounded-lg bg-surface-1 border border-border text-center">
-                      <Sparkles className="h-5 w-5 mx-auto mb-1 text-gold" />
-                      <p className="text-xs font-medium">One-Tap Magic</p>
-                      <p className="text-[10px] text-muted-foreground">Check email</p>
-                    </div>
-                    <div className="flex-1 p-3 rounded-lg bg-gold/10 border border-gold text-center">
-                      <Lock className="h-5 w-5 mx-auto mb-1 text-gold" />
-                      <p className="text-xs font-medium">6-Digit Code</p>
-                      <p className="text-[10px] text-muted-foreground">Enter below</p>
-                    </div>
-                  </div>
+                  <p className="text-sm font-medium mb-1">
+                    {magicSubMethod === 'one-tap' ? 'Check your email for the magic link!' : 'Enter your 6-digit code'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Sent to {identifier}
+                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center block">
-                    Enter 6-Digit Code
-                  </label>
-                  <Input
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    placeholder="000000"
-                    className="h-14 bg-surface-1 border-border text-2xl text-center tracking-[0.5em] font-mono"
-                    maxLength={6}
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    autoComplete="one-time-code"
-                  />
-                </div>
+                {magicSubMethod === 'code' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-muted-foreground uppercase tracking-widest text-center block">
+                        Enter 6-Digit Code
+                      </label>
+                      <Input
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        className="h-14 bg-surface-1 border-border text-2xl text-center tracking-[0.5em] font-mono"
+                        maxLength={6}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        autoComplete="one-time-code"
+                      />
+                    </div>
 
-                <Button
-                  type="submit"
-                  disabled={loading || !otpCode.trim()}
-                  className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    'Verify Code'
-                  )}
-                </Button>
+                    <Button
+                      type="submit"
+                      disabled={loading || !otpCode.trim()}
+                      className="w-full h-14 bg-gold hover:bg-gold/90 text-gold-foreground font-display text-xl"
+                    >
+                      {loading ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        'Verify Code'
+                      )}
+                    </Button>
+                  </>
+                )}
+
+                {magicSubMethod === 'one-tap' && (
+                  <div className="text-center p-4 bg-surface-1 rounded-lg border border-border">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2 text-gold" />
+                    <p className="text-sm text-muted-foreground">Waiting for you to click the link...</p>
+                  </div>
+                )}
 
                 <button
                   type="button"
@@ -465,6 +537,7 @@ export default function LoginPage() {
                 </button>
               </motion.form>
             )}
+
           </AnimatePresence>
 
           {/* New user */}
