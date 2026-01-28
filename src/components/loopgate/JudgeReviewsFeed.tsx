@@ -17,6 +17,25 @@ interface ReviewItem {
   judge_avatar_url: string | null;
   judge_comment: string | null;
   reviewed_at: string | null;
+  rating_mode: string | null;
+  selected_tier: string | null;
+}
+
+// Get the display grade - prioritize selected_tier for tier_only mode
+function getDisplayGrade(review: ReviewItem): string {
+  // If judge used tier_only mode and selected a tier, use that directly
+  if (review.rating_mode === 'tier_only' && review.selected_tier) {
+    return review.selected_tier;
+  }
+  
+  // Otherwise calculate from score
+  const score = review.total_score || 0;
+  if (score >= 90) return 'S';
+  if (score >= 80) return 'A';
+  if (score >= 70) return 'B';
+  if (score >= 60) return 'C';
+  if (score >= 50) return 'D';
+  return 'F';
 }
 
 function getScoreClass(score: number): string {
@@ -48,7 +67,10 @@ function getScoreBg(score: number): string {
 
 function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (review: ReviewItem) => void }) {
   const { thumbnail, loading } = useThumbnail(review.submission_url, review.platform);
-  const scoreClass = review.total_score ? getScoreClass(review.total_score) : null;
+  const scoreClass = getDisplayGrade(review);
+  const scoreForColor = review.rating_mode === 'tier_only' && review.selected_tier
+    ? { 'S': 95, 'A': 85, 'B': 75, 'C': 65, 'D': 55, 'F': 25 }[review.selected_tier] || 0
+    : review.total_score || 0;
   
   return (
     <motion.button
@@ -82,9 +104,9 @@ function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (revie
         </div>
         
         {/* Score badge - top right */}
-        {scoreClass && review.total_score && (
-          <div className={`absolute top-2 right-2 px-2 py-1 rounded-md border backdrop-blur-sm ${getScoreBg(review.total_score)}`}>
-            <span className={`text-sm font-bold ${getScoreColor(review.total_score)}`}>{scoreClass}</span>
+        {scoreClass && (
+          <div className={`absolute top-2 right-2 px-2 py-1 rounded-md border backdrop-blur-sm ${getScoreBg(scoreForColor)}`}>
+            <span className={`text-sm font-bold ${getScoreColor(scoreForColor)}`}>{scoreClass}</span>
           </div>
         )}
         
@@ -121,11 +143,14 @@ function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (revie
           </div>
           
           {/* Score number */}
-          {review.total_score && (
+          {(review.total_score || review.selected_tier) && (
             <div className="flex items-center gap-1">
               <Star size={10} className="text-gold fill-gold" />
-              <span className={`text-xs font-bold ${getScoreColor(review.total_score)}`}>
-                {review.total_score}/100
+              <span className={`text-xs font-bold ${getScoreColor(scoreForColor)}`}>
+                {review.rating_mode === 'tier_only' && review.selected_tier
+                  ? `${review.selected_tier} Class`
+                  : `${review.total_score}/100`
+                }
               </span>
             </div>
           )}
@@ -142,7 +167,10 @@ function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (revie
 
 function ReviewPreviewModal({ review, onClose }: { review: ReviewItem; onClose: () => void }) {
   const { thumbnail } = useThumbnail(review.submission_url, review.platform);
-  const scoreClass = review.total_score ? getScoreClass(review.total_score) : null;
+  const scoreClass = getDisplayGrade(review);
+  const scoreForColor = review.rating_mode === 'tier_only' && review.selected_tier
+    ? { 'S': 95, 'A': 85, 'B': 75, 'C': 65, 'D': 55, 'F': 25 }[review.selected_tier] || 0
+    : review.total_score || 0;
   
   return (
     <motion.div
@@ -189,10 +217,10 @@ function ReviewPreviewModal({ review, onClose }: { review: ReviewItem; onClose: 
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           
           {/* Score overlay */}
-          {scoreClass && review.total_score && (
+          {scoreClass && (
             <div className="absolute bottom-3 right-3">
-              <div className={`px-3 py-1.5 rounded-lg border backdrop-blur-sm ${getScoreBg(review.total_score)}`}>
-                <span className={`text-2xl font-bold ${getScoreColor(review.total_score)}`}>{scoreClass}</span>
+              <div className={`px-3 py-1.5 rounded-lg border backdrop-blur-sm ${getScoreBg(scoreForColor)}`}>
+                <span className={`text-2xl font-bold ${getScoreColor(scoreForColor)}`}>{scoreClass}</span>
               </div>
             </div>
           )}
@@ -215,10 +243,17 @@ function ReviewPreviewModal({ review, onClose }: { review: ReviewItem; onClose: 
                 {review.reviewed_at ? formatDistanceToNow(new Date(review.reviewed_at), { addSuffix: true }) : 'Recently'}
               </p>
             </div>
-            {review.total_score && (
+            {(review.total_score || review.selected_tier) && (
               <div className="ml-auto text-right">
-                <p className={`text-xl font-bold ${getScoreColor(review.total_score)}`}>{review.total_score}</p>
-                <p className="text-[10px] text-muted-foreground uppercase">/100</p>
+                <p className={`text-xl font-bold ${getScoreColor(scoreForColor)}`}>
+                  {review.rating_mode === 'tier_only' && review.selected_tier
+                    ? review.selected_tier
+                    : review.total_score
+                  }
+                </p>
+                <p className="text-[10px] text-muted-foreground uppercase">
+                  {review.rating_mode === 'tier_only' ? 'Class' : '/100'}
+                </p>
               </div>
             )}
           </div>
@@ -283,9 +318,9 @@ export default function JudgeReviewsFeed({ embedded = false }: JudgeReviewsFeedP
     try {
       const { data, error } = await supabase
         .from('review_requests')
-        .select('*')
+        .select('id, username, avatar_url, submission_url, platform, total_score, judge_username, judge_avatar_url, judge_comment, reviewed_at, rating_mode, selected_tier')
         .eq('status', 'reviewed')
-        .not('total_score', 'is', null)
+        .or('total_score.not.is.null,selected_tier.not.is.null')
         .order('reviewed_at', { ascending: false })
         .limit(15);
 
