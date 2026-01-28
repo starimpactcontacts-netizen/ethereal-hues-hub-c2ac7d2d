@@ -1,20 +1,12 @@
 import { ExternalLink, Star, Gavel } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useJudgeReviews } from '@/hooks/useJudgeReviews';
+import { useJudgeReviews, getDisplayGrade, JudgeReview } from '@/hooks/useJudgeReviews';
 import { useThumbnail } from '@/hooks/useThumbnail';
 import { formatDistanceToNow } from 'date-fns';
 
-function getGrade(score: number) {
-  if (score >= 90) return { grade: 'S', color: 'text-gold' };
-  if (score >= 70) return { grade: 'A', color: 'text-emerald-400' };
-  if (score >= 50) return { grade: 'B', color: 'text-blue-400' };
-  if (score >= 30) return { grade: 'C', color: 'text-orange-400' };
-  return { grade: 'F', color: 'text-red-400' };
-}
-
-function ReviewCard({ review }: { review: any }) {
+function ReviewCard({ review }: { review: JudgeReview }) {
   const { thumbnail } = useThumbnail(review.submission_url, review.platform);
-  const { grade, color } = getGrade(review.total_score || 0);
+  const { grade, color } = getDisplayGrade(review);
 
   return (
     <motion.div

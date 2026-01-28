@@ -22,6 +22,30 @@ export interface JudgeReview {
   selected_tier: string | null;
 }
 
+// Shared utility for getting display grade - prioritizes selected_tier
+export function getDisplayGrade(review: { rating_mode?: string | null; selected_tier?: string | null; total_score?: number | null }): { grade: string; color: string } {
+  // If tier_only mode with a selected tier, use that directly
+  if (review.rating_mode === 'tier_only' && review.selected_tier) {
+    const tierColors: Record<string, string> = {
+      'S': 'text-gold',
+      'A': 'text-purple-400',
+      'B': 'text-blue-400',
+      'C': 'text-slate-300',
+      'D': 'text-orange-400',
+      'F': 'text-red-500',
+    };
+    return { grade: review.selected_tier, color: tierColors[review.selected_tier] || 'text-muted-foreground' };
+  }
+  
+  // Fallback to score-based calculation
+  const score = review.total_score || 0;
+  if (score >= 90) return { grade: 'S', color: 'text-gold' };
+  if (score >= 70) return { grade: 'A', color: 'text-purple-400' };
+  if (score >= 50) return { grade: 'B', color: 'text-blue-400' };
+  if (score >= 30) return { grade: 'C', color: 'text-slate-300' };
+  return { grade: 'F', color: 'text-red-500' };
+}
+
 export function useJudgeReviews() {
   const { user } = useAuth();
   const [reviews, setReviews] = useState<JudgeReview[]>([]);
