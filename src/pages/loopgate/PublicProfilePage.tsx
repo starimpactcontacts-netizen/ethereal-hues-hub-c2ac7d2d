@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Loader2, Globe, Share2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Globe, Share2, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
@@ -12,6 +12,7 @@ import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import MessageButton from "@/components/loopgate/MessageButton";
+import PublicJudgeVideos from "@/components/loopgate/PublicJudgeVideos";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import { getRankFromScore } from "@/data/gqtConfig";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -72,8 +73,9 @@ export default function PublicProfilePage() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'edits' | 'about'>('edits');
+  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'about'>('videos');
   const [submissionCount, setSubmissionCount] = useState(0);
+  const [isJudge, setIsJudge] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -130,7 +132,9 @@ export default function PublicProfilePage() {
         .eq("user_id", userId);
 
       if (rolesData) {
-        setRoles(rolesData.map(r => r.role as AppRole));
+        const userRoles = rolesData.map(r => r.role as AppRole);
+        setRoles(userRoles);
+        setIsJudge(userRoles.includes('judge'));
       }
 
       // Fetch submission count
@@ -310,6 +314,19 @@ export default function PublicProfilePage() {
       {/* Tab Navigation */}
       <div className="sticky top-0 z-30 bg-background border-b border-border">
         <div className="flex">
+          {isJudge && (
+            <button
+              onClick={() => setActiveTab('videos')}
+              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 ${
+                activeTab === 'videos'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-white'
+              }`}
+            >
+              <Video size={12} />
+              Videos
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('edits')}
             className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
@@ -334,7 +351,9 @@ export default function PublicProfilePage() {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'edits' ? (
+      {activeTab === 'videos' && isJudge ? (
+        <PublicJudgeVideos userId={userId || ''} />
+      ) : activeTab === 'edits' ? (
         <SubmissionGrid userId={userId || ''} />
       ) : (
         <div className="px-4 py-6 space-y-6">
