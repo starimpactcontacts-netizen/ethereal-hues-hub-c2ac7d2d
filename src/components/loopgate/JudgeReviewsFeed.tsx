@@ -21,47 +21,51 @@ interface ReviewItem {
   selected_tier: string | null;
 }
 
-// Get the display grade - prioritize selected_tier for tier_only mode
+// GQT Class thresholds: S+/S++ (90+), S (80-89), A (70-79), B (60-69), C (50-59), D (40-49), F (0-39)
 function getDisplayGrade(review: ReviewItem): string {
   // If judge used tier_only mode and selected a tier, use that directly
   if (review.rating_mode === 'tier_only' && review.selected_tier) {
     return review.selected_tier;
   }
   
-  // Otherwise calculate from score
+  // Otherwise calculate from score using GQT thresholds
   const score = review.total_score || 0;
   if (score >= 90) return 'S';
-  if (score >= 80) return 'A';
-  if (score >= 70) return 'B';
-  if (score >= 60) return 'C';
-  if (score >= 50) return 'D';
+  if (score >= 80) return 'S';
+  if (score >= 70) return 'A';
+  if (score >= 60) return 'B';
+  if (score >= 50) return 'C';
+  if (score >= 40) return 'D';
   return 'F';
 }
 
 function getScoreClass(score: number): string {
   if (score >= 90) return 'S';
-  if (score >= 80) return 'A';
-  if (score >= 70) return 'B';
-  if (score >= 60) return 'C';
-  if (score >= 50) return 'D';
+  if (score >= 80) return 'S';
+  if (score >= 70) return 'A';
+  if (score >= 60) return 'B';
+  if (score >= 50) return 'C';
+  if (score >= 40) return 'D';
   return 'F';
 }
 
 function getScoreColor(score: number): string {
   if (score >= 90) return 'text-gold';
-  if (score >= 80) return 'text-emerald-400';
-  if (score >= 70) return 'text-blue-400';
-  if (score >= 60) return 'text-purple-400';
-  if (score >= 50) return 'text-orange-400';
-  return 'text-red-400';
+  if (score >= 80) return 'text-amber-400';
+  if (score >= 70) return 'text-emerald-400';
+  if (score >= 60) return 'text-blue-400';
+  if (score >= 50) return 'text-slate-300';
+  if (score >= 40) return 'text-orange-400';
+  return 'text-red-500';
 }
 
 function getScoreBg(score: number): string {
   if (score >= 90) return 'bg-gold/20 border-gold/50';
-  if (score >= 80) return 'bg-emerald-500/20 border-emerald-500/50';
-  if (score >= 70) return 'bg-blue-500/20 border-blue-500/50';
-  if (score >= 60) return 'bg-purple-500/20 border-purple-500/50';
-  if (score >= 50) return 'bg-orange-500/20 border-orange-500/50';
+  if (score >= 80) return 'bg-amber-400/20 border-amber-400/50';
+  if (score >= 70) return 'bg-emerald-400/20 border-emerald-400/50';
+  if (score >= 60) return 'bg-blue-400/20 border-blue-400/50';
+  if (score >= 50) return 'bg-slate-300/20 border-slate-300/50';
+  if (score >= 40) return 'bg-orange-400/20 border-orange-400/50';
   return 'bg-red-500/20 border-red-500/50';
 }
 
