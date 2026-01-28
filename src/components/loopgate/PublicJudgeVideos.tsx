@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Video, ExternalLink, Eye, Sparkles, Play } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
-import { useThumbnail } from '@/hooks/useThumbnail';
+import { useVideoStats } from '@/hooks/useVideoStats';
 
 interface RatingVideo {
   id: string;
@@ -32,16 +32,19 @@ interface PublicJudgeVideosProps {
   userId: string;
 }
 
-// Individual video card with thumbnail
+// Individual video card with thumbnail and real stats
 function VideoCard({ video, index }: { video: RatingVideo; index: number }) {
-  const { thumbnail, loading: thumbLoading } = useThumbnail(video.video_url, video.platform);
+  const { views, thumbnailUrl, loading: statsLoading } = useVideoStats(video.video_url, video.platform);
   const PlatformIcon = platformIcons[video.platform];
   const platformColor = platformColors[video.platform];
 
-  const formatViews = (views: number) => {
-    if (views >= 1000000) return `${(views / 1000000).toFixed(1)}M`;
-    if (views >= 1000) return `${(views / 1000).toFixed(1)}K`;
-    return views.toString();
+  // Use fetched views or fallback to stored current_views
+  const displayViews = views ?? video.current_views ?? 0;
+
+  const formatViews = (viewCount: number) => {
+    if (viewCount >= 1000000) return `${(viewCount / 1000000).toFixed(1)}M`;
+    if (viewCount >= 1000) return `${(viewCount / 1000).toFixed(1)}K`;
+    return viewCount.toString();
   };
 
   return (
@@ -56,13 +59,13 @@ function VideoCard({ video, index }: { video: RatingVideo; index: number }) {
     >
       {/* Thumbnail Section */}
       <div className="relative aspect-video bg-surface-2">
-        {thumbLoading ? (
+        {statsLoading ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
           </div>
-        ) : thumbnail ? (
+        ) : thumbnailUrl ? (
           <img 
-            src={thumbnail} 
+            src={thumbnailUrl} 
             alt={video.title || 'Rating Video'} 
             className="w-full h-full object-cover"
           />
@@ -92,10 +95,12 @@ function VideoCard({ video, index }: { video: RatingVideo; index: number }) {
           </div>
         )}
 
-        {/* Views overlay */}
+        {/* Views overlay - shows real fetched views */}
         <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm flex items-center gap-1">
           <Eye size={10} className="text-white" />
-          <span className="text-[10px] font-medium text-white">{formatViews(video.current_views || 0)}</span>
+          <span className="text-[10px] font-medium text-white">
+            {statsLoading ? '...' : formatViews(displayViews)}
+          </span>
         </div>
       </div>
 
