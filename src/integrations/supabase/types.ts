@@ -2206,8 +2206,10 @@ export type Database = {
           judge_id: string | null
           judge_username: string | null
           platform: string
+          rating_mode: string | null
           requested_at: string
           reviewed_at: string | null
+          selected_tier: string | null
           status: string
           submission_url: string
           sync_score: number | null
@@ -2230,8 +2232,10 @@ export type Database = {
           judge_id?: string | null
           judge_username?: string | null
           platform: string
+          rating_mode?: string | null
           requested_at?: string
           reviewed_at?: string | null
+          selected_tier?: string | null
           status?: string
           submission_url: string
           sync_score?: number | null
@@ -2254,8 +2258,10 @@ export type Database = {
           judge_id?: string | null
           judge_username?: string | null
           platform?: string
+          rating_mode?: string | null
           requested_at?: string
           reviewed_at?: string | null
+          selected_tier?: string | null
           status?: string
           submission_url?: string
           sync_score?: number | null

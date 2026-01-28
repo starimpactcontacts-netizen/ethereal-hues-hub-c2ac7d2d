@@ -17,6 +17,8 @@ interface ReviewResult {
   judge_avatar_url: string | null;
   reviewed_at: string | null;
   username: string;
+  rating_mode?: string | null;
+  selected_tier?: string | null;
 }
 
 interface ReviewResultCardProps {
@@ -40,20 +42,50 @@ function getScoreColor(score: number, max: number): string {
   return 'text-red-400';
 }
 
-function getTotalScoreGrade(score: number): { grade: string; color: string } {
+// Get the display grade - prioritize selected_tier for tier_only mode
+function getDisplayGrade(review: ReviewResult): { grade: string; color: string } {
+  // If judge used tier_only mode and selected a tier, use that directly
+  if (review.rating_mode === 'tier_only' && review.selected_tier) {
+    const tierColors: Record<string, string> = {
+      'S': 'text-gold',
+      'A': 'text-purple-400',
+      'B': 'text-blue-400',
+      'C': 'text-slate-300',
+      'D': 'text-orange-400',
+      'F': 'text-red-500',
+    };
+    return { 
+      grade: review.selected_tier, 
+      color: tierColors[review.selected_tier] || 'text-muted-foreground' 
+    };
+  }
+  
+  // Otherwise calculate from score
+  const score = review.total_score || 0;
   if (score >= 90) return { grade: 'S+', color: 'text-gold' };
   if (score >= 80) return { grade: 'S', color: 'text-gold' };
-  if (score >= 70) return { grade: 'A', color: 'text-green-400' };
+  if (score >= 70) return { grade: 'A', color: 'text-purple-400' };
   if (score >= 60) return { grade: 'B', color: 'text-blue-400' };
-  if (score >= 50) return { grade: 'C', color: 'text-orange-400' };
-  if (score >= 40) return { grade: 'D', color: 'text-orange-500' };
+  if (score >= 50) return { grade: 'C', color: 'text-slate-300' };
+  if (score >= 40) return { grade: 'D', color: 'text-orange-400' };
   return { grade: 'F', color: 'text-red-500' };
+}
+
+// Get rating mode label
+function getRatingModeLabel(mode: string | null | undefined): string {
+  switch (mode) {
+    case 'full': return 'Full QOI';
+    case 'vibes': return 'Vibes';
+    case 'two_pillar': return 'Quick';
+    case 'tier_only': return 'Tier';
+    default: return 'Full QOI';
+  }
 }
 
 export default function ReviewResultCard({ review, compact = false }: ReviewResultCardProps) {
   const totalScore = review.total_score || 0;
-  const { grade, color } = getTotalScoreGrade(totalScore);
-
+  const { grade, color } = getDisplayGrade(review);
+  const ratingMode = getRatingModeLabel(review.rating_mode);
   if (compact) {
     return (
       <div className="bg-card border border-border rounded-lg p-3">
@@ -92,7 +124,10 @@ export default function ReviewResultCard({ review, compact = false }: ReviewResu
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-gold" />
             <span className="text-xs text-muted-foreground uppercase tracking-wider">
-              Review by QOI Judge
+              Judge Review
+            </span>
+            <span className="text-[10px] px-1.5 py-0.5 bg-surface-1 border border-border rounded text-muted-foreground">
+              {ratingMode}
             </span>
           </div>
           <span className={`font-display text-2xl ${color}`}>
