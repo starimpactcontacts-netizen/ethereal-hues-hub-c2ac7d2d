@@ -349,9 +349,26 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
 
             {/* Total Score Display */}
             <div className="bg-surface-1 border border-gold/30 rounded-xl p-4 text-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Score</p>
-              <p className="text-4xl font-bold text-gold">{calculateTotal()}</p>
-              <p className="text-xs text-muted-foreground">/ 100</p>
+              {mode === 'tier_only' ? (
+                <>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Final Grade</p>
+                  <p className={`text-5xl font-display font-bold ${
+                    selectedTier === 'S' ? 'text-gold' :
+                    selectedTier === 'A' ? 'text-purple-400' :
+                    selectedTier === 'B' ? 'text-blue-400' :
+                    selectedTier === 'C' ? 'text-slate-300' :
+                    selectedTier === 'D' ? 'text-orange-400' :
+                    'text-red-500'
+                  }`}>{selectedTier}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Class Rating</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Total Score</p>
+                  <p className="text-4xl font-bold text-gold">{calculateTotal()}</p>
+                  <p className="text-xs text-muted-foreground">/ 100</p>
+                </>
+              )}
             </div>
 
             {/* Comment */}
@@ -384,7 +401,10 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  Submit Review ({calculateTotal()}/100)
+                  {mode === 'tier_only' 
+                    ? `Submit Review (${selectedTier} Class)` 
+                    : `Submit Review (${calculateTotal()}/100)`
+                  }
                 </>
               )}
             </Button>
