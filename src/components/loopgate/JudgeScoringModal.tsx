@@ -94,7 +94,7 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
     const totalScore = calculateTotal();
 
     try {
-      // Update review request
+      // Update review request with rating mode and selected tier
       const { error } = await supabase
         .from('review_requests')
         .update({
@@ -110,6 +110,8 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
           judge_username: profile.username,
           judge_avatar_url: profile.avatar_url || null,
           reviewed_at: new Date().toISOString(),
+          rating_mode: mode,
+          selected_tier: mode === 'tier_only' ? selectedTier : null,
         })
         .eq('id', request.id);
 

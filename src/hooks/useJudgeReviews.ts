@@ -18,6 +18,8 @@ export interface JudgeReview {
   execution_score: number | null;
   judge_comment: string | null;
   reviewed_at: string | null;
+  rating_mode: string | null;
+  selected_tier: string | null;
 }
 
 export function useJudgeReviews() {

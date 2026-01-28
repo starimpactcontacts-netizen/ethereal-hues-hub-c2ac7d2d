@@ -23,6 +23,8 @@ export interface ReviewRequest {
   requested_at: string;
   claimed_at: string | null;
   reviewed_at: string | null;
+  rating_mode: string | null;
+  selected_tier: string | null;
 }
 
 export function useReviewRequests(targetUserId?: string) {
