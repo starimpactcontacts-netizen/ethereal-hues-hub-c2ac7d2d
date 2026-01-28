@@ -40,7 +40,7 @@ export default function ProfilePage() {
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
+  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('videos');
   
   useActiveSession();
 
