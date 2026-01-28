@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield } from "lucide-react";
+import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -10,6 +10,7 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useReviewRequests } from "@/hooks/useReviewRequests";
 import { useCrewMembership } from "@/hooks/useCrewMembership";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { motion } from "framer-motion";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
@@ -21,6 +22,7 @@ import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import ReviewResultCard from "@/components/loopgate/ReviewResultCard";
+import MyJudgeReviews from "@/components/loopgate/MyJudgeReviews";
 import { getRankFromScore } from "@/data/gqtConfig";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -35,7 +37,9 @@ export default function ProfilePage() {
   const { submissions } = useUserSubmissions();
   const { completedReviews } = useReviewRequests();
   const { primaryCrew } = useCrewMembership(profile?.id);
+  const { isAnyJudge } = useUserRoles(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'edits' | 'reviews'>('edits');
   
   useActiveSession();
 
@@ -333,27 +337,63 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ═══ EDITS SECTION ═══ */}
-      <div className="px-4 mb-1">
-        <div className="flex items-center gap-1">
-          <Grid3X3 className="w-3 h-3 text-muted-foreground" />
-          <h2 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">My Edits</h2>
-        </div>
+      {/* ═══ CONTENT TABS ═══ */}
+      <div className="px-4 mb-2">
+        {isAnyJudge ? (
+          <div className="flex gap-1 p-0.5 bg-surface-1 border border-border rounded-md">
+            <button
+              onClick={() => setActiveTab('edits')}
+              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+                activeTab === 'edits' 
+                  ? 'bg-background text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Grid3X3 className="w-3 h-3" />
+              My Edits
+            </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+                activeTab === 'reviews' 
+                  ? 'bg-gold/20 text-gold' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Gavel className="w-3 h-3" />
+              My Reviews
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1">
+            <Grid3X3 className="w-3 h-3 text-muted-foreground" />
+            <h2 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">My Edits</h2>
+          </div>
+        )}
       </div>
 
-      {/* Completed Reviews */}
-      {completedReviews.length > 0 && (
-        <div className="px-4 mb-4">
-          <div className="space-y-2">
-            {completedReviews.slice(0, 3).map((review) => (
-              <ReviewResultCard key={review.id} review={review} />
-            ))}
-          </div>
+      {/* ═══ TAB CONTENT ═══ */}
+      {activeTab === 'edits' ? (
+        <>
+          {/* Completed Reviews (reviews I received) */}
+          {completedReviews.length > 0 && (
+            <div className="px-4 mb-4">
+              <div className="space-y-2">
+                {completedReviews.slice(0, 3).map((review) => (
+                  <ReviewResultCard key={review.id} review={review} />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Submission Grid */}
+          <SubmissionGrid />
+        </>
+      ) : (
+        <div className="px-4">
+          <MyJudgeReviews />
         </div>
       )}
-      
-      {/* Submission Grid */}
-      <SubmissionGrid />
 
       {/* ═══ AVATAR MODAL ═══ */}
       {showAvatarModal && (
