@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,11 +8,14 @@ import JudgeInbox from '@/components/loopgate/JudgeInbox';
 import JudgeLiveFeed from '@/components/loopgate/JudgeLiveFeed';
 import CompletedReviewsList from '@/components/loopgate/CompletedReviewsList';
 import CardTemplatePreview from '@/components/loopgate/CardTemplatePreview';
+import JudgePanelStats from '@/components/loopgate/JudgePanelStats';
+import SubmitRatingVideoModal from '@/components/loopgate/SubmitRatingVideoModal';
 
 export default function JudgePanelPage() {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState('inbox');
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -39,6 +41,15 @@ export default function JudgePanelPage() {
           
           <div className="flex items-center gap-2">
             <Button 
+              onClick={() => setShowVideoModal(true)}
+              variant="outline" 
+              size="sm" 
+              className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+            >
+              <Video className="w-3 h-3 mr-1" />
+              Videos
+            </Button>
+            <Button 
               onClick={() => setShowTemplates(true)}
               variant="outline" 
               size="sm" 
@@ -57,20 +68,9 @@ export default function JudgePanelPage() {
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className="grid grid-cols-3 gap-2 p-4 border-b border-border">
-        <div className="bg-surface-1 rounded-xl p-3 text-center">
-          <p className="text-2xl font-display font-bold text-gold">0</p>
-          <p className="text-xs text-muted-foreground">Pending</p>
-        </div>
-        <div className="bg-surface-1 rounded-xl p-3 text-center">
-          <p className="text-2xl font-display font-bold text-foreground">0</p>
-          <p className="text-xs text-muted-foreground">Reviewed</p>
-        </div>
-        <div className="bg-surface-1 rounded-xl p-3 text-center">
-          <p className="text-2xl font-display font-bold text-foreground">0</p>
-          <p className="text-xs text-muted-foreground">This Week</p>
-        </div>
+      {/* Enhanced Stats Section */}
+      <div className="p-4 border-b border-border">
+        <JudgePanelStats />
       </div>
 
       {/* Main Content */}
@@ -116,6 +116,12 @@ export default function JudgePanelPage() {
       <CardTemplatePreview 
         isOpen={showTemplates} 
         onClose={() => setShowTemplates(false)} 
+      />
+
+      {/* Rating Video Submit Modal */}
+      <SubmitRatingVideoModal 
+        isOpen={showVideoModal} 
+        onClose={() => setShowVideoModal(false)} 
       />
     </div>
   );
