@@ -7,6 +7,8 @@ import { useThumbnail } from '@/hooks/useThumbnail';
 import { Button } from '@/components/ui/button';
 import JudgeCardExport from './JudgeCardExport';
 
+import { getDisplayGrade } from '@/hooks/useJudgeReviews';
+
 interface CompletedReview {
   id: string;
   user_id: string;
@@ -22,20 +24,13 @@ interface CompletedReview {
   execution_score: number | null;
   judge_comment: string | null;
   reviewed_at: string;
+  rating_mode: string | null;
+  selected_tier: string | null;
 }
 
 function ReviewCard({ review, onExport }: { review: CompletedReview; onExport: () => void }) {
   const { thumbnail } = useThumbnail(review.submission_url, review.platform);
-  
-  const getGrade = (score: number) => {
-    if (score >= 90) return { grade: 'S', color: 'text-gold' };
-    if (score >= 70) return { grade: 'A', color: 'text-purple-400' };
-    if (score >= 50) return { grade: 'B', color: 'text-blue-400' };
-    if (score >= 30) return { grade: 'C', color: 'text-muted-foreground' };
-    return { grade: 'F', color: 'text-red-400' };
-  };
-  
-  const { grade, color } = getGrade(review.total_score);
+  const { grade, color } = getDisplayGrade(review);
   
   return (
     <motion.div
@@ -110,7 +105,7 @@ export default function CompletedReviewsList() {
     const fetchReviews = async () => {
       const { data, error } = await supabase
         .from('review_requests')
-        .select('*')
+        .select('id, user_id, username, avatar_url, submission_url, platform, total_score, emotion_score, creativity_score, sync_score, identity_score, execution_score, judge_comment, reviewed_at, rating_mode, selected_tier')
         .eq('judge_id', user.id)
         .eq('status', 'reviewed')
         .order('reviewed_at', { ascending: false });
