@@ -2,16 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Trophy, Flame, Star, Crown, Zap, Users, 
-  TrendingUp, Award, ChevronRight, Sparkles, Target,
-  ArrowLeft, Send, ExternalLink, Filter
+  Search, Trophy, Flame, Star, Users, 
+  ChevronRight, Sparkles, Target,
+  ArrowLeft, Send, ExternalLink, Gavel
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import LevelBadge from '@/components/loopgate/LevelBadge';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
 import BottomNav from '@/components/loopgate/BottomNav';
@@ -19,6 +17,7 @@ import RequestJudgeReviewModal from '@/components/loopgate/RequestJudgeReviewMod
 import JudgeBadge, { JUDGE_BADGES } from '@/components/loopgate/JudgeBadge';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeLeaderboardCard from '@/components/loopgate/JudgeLeaderboardCard';
+import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
 
 interface JudgeProfile {
   id: string;
@@ -30,107 +29,77 @@ interface JudgeProfile {
   xp: number;
   verification_status: boolean;
   judge_badge: string | null;
+  judge_xp: number;
+  judge_level: number;
   totalReviews: number;
   avgScore: number;
   thisWeek: number;
-  vibe?: string;
 }
 
-// Judge vibes/tags
-const JUDGE_VIBES = [
-  'Blunt Judge',
-  'Technical Judge',
-  'Energetic Judge',
-  'Supportive Coach',
-  'Detail-Oriented',
-  'Creative Eye',
-  'Trend Spotter',
-  'Story Master',
-];
-
-// Niche filters
-const NICHES = [
-  { id: 'all', label: 'All' },
-  { id: 'anime', label: 'Anime' },
-  { id: 'velocity', label: 'Velocity' },
-  { id: 'meme', label: 'Meme' },
-  { id: 'transitions', label: 'Transitions' },
-  { id: 'amv', label: 'AMV' },
-  { id: 'film', label: 'Film' },
-];
-
-// Featured section types
-type FeaturedSection = 'trending' | 'top_xp' | 'active' | 'elite';
+// Judge level calculation
+function calculateJudgeLevel(xp: number): number {
+  if (xp >= 5000) return 10;
+  if (xp >= 3500) return 9;
+  if (xp >= 2500) return 8;
+  if (xp >= 1800) return 7;
+  if (xp >= 1200) return 6;
+  if (xp >= 800) return 5;
+  if (xp >= 500) return 4;
+  if (xp >= 250) return 3;
+  if (xp >= 100) return 2;
+  return 1;
+}
 
 function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge: JudgeProfile) => void }) {
   return (
     <motion.button
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(judge)}
-      className="w-full bg-card border border-border hover:border-gold/50 rounded-xl p-4 text-left transition-all group"
+      className="w-full bg-card border border-border hover:border-gold/40 rounded-xl p-3 text-left transition-all group"
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         {/* Avatar */}
         <div className="relative shrink-0">
           {judge.avatar_url ? (
             <img 
               src={judge.avatar_url} 
               alt={judge.username}
-              className="w-14 h-14 rounded-full object-cover border-2 border-gold/30 group-hover:border-gold transition-colors"
+              className="w-11 h-11 rounded-full object-cover border border-gold/30 group-hover:border-gold/60 transition-colors"
             />
           ) : (
-            <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center border-2 border-gold/30">
-              <span className="text-xl font-bold text-gold">
-                {(judge.display_name || judge.username).charAt(0).toUpperCase()}
-              </span>
+            <div className="w-11 h-11 rounded-full bg-gold/20 flex items-center justify-center border border-gold/30">
+              <Gavel size={16} className="text-gold" />
             </div>
           )}
-          {/* Level badge */}
-          <div className="absolute -bottom-1 -right-1">
-            <LevelBadge level={judge.level} size="sm" />
-          </div>
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="font-display text-sm truncate">
+            <span className="font-medium text-sm truncate">
               {judge.display_name || judge.username}
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
+            <JudgeLevelBadge level={judge.judge_level} size="xs" showIcon={false} />
           </div>
-          <p className="text-xs text-muted-foreground font-medium">@{judge.username}</p>
-          
-          {/* Badge */}
-          {judge.judge_badge && JUDGE_BADGES[judge.judge_badge] ? (
-            <JudgeBadge badge={JUDGE_BADGES[judge.judge_badge]} size="sm" showTooltip={false} animate={false} />
-          ) : judge.vibe ? (
-            <Badge variant="outline" className="text-[10px] mb-2 border-gold/30 text-gold">
-              {judge.vibe}
-            </Badge>
-          ) : null}
+          <p className="text-[11px] text-muted-foreground">@{judge.username}</p>
+        </div>
 
-          {/* Stats row - LARGER fonts */}
-          <div className="flex items-center gap-3 text-xs mt-2">
-            <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-              <Trophy size={12} className="text-gold" />
-              <span>{judge.totalReviews} reviews</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-              <Star size={12} className="text-gold" />
-              <span>Avg {judge.avgScore.toFixed(0)}</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-muted-foreground font-medium">
-              <Flame size={12} className="text-orange-400" />
-              <span>{judge.thisWeek} this week</span>
-            </div>
+        {/* Stats */}
+        <div className="flex items-center gap-3 text-[11px] shrink-0">
+          <div className="text-center">
+            <div className="font-bold text-gold">{judge.judge_xp}</div>
+            <div className="text-muted-foreground text-[9px] uppercase">JXP</div>
+          </div>
+          <div className="text-center">
+            <div className="font-bold">{judge.totalReviews}</div>
+            <div className="text-muted-foreground text-[9px] uppercase">Reviews</div>
           </div>
         </div>
 
-        <ChevronRight size={18} className="text-muted-foreground group-hover:text-gold transition-colors shrink-0" />
+        <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors shrink-0" />
       </div>
     </motion.button>
   );
@@ -163,63 +132,54 @@ function JudgePreviewModal({
         className="w-full max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden pb-6"
       >
         {/* Header with avatar */}
-        <div className="relative h-24 bg-gradient-to-b from-gold/20 to-transparent">
+        <div className="relative h-20 bg-gradient-to-b from-gold/20 to-transparent">
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
             {judge.avatar_url ? (
               <img 
                 src={judge.avatar_url} 
                 alt={judge.username}
-                className="w-20 h-20 rounded-full object-cover border-4 border-card"
+                className="w-16 h-16 rounded-full object-cover border-4 border-card"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-gold/20 flex items-center justify-center border-4 border-card">
-                <span className="text-2xl font-bold text-gold">
-                  {(judge.display_name || judge.username).charAt(0).toUpperCase()}
-                </span>
+              <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center border-4 border-card">
+                <Gavel size={24} className="text-gold" />
               </div>
             )}
           </div>
         </div>
 
         {/* Content */}
-        <div className="pt-12 px-4 text-center">
+        <div className="pt-10 px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <h3 className="font-display text-xl">{judge.display_name || judge.username}</h3>
+            <h3 className="font-display text-lg">{judge.display_name || judge.username}</h3>
             {judge.verification_status && <VerifiedBadge />}
           </div>
           <p className="text-sm text-muted-foreground mb-2">@{judge.username}</p>
           
-          {/* Level + XP */}
+          {/* Level + JXP */}
           <div className="flex items-center justify-center gap-2 mb-4">
-            <LevelBadge level={judge.level} size="sm" />
-            <span className="text-xs text-muted-foreground">{judge.xp.toLocaleString()} XP</span>
+            <JudgeLevelBadge level={judge.judge_level} size="sm" />
+            <span className="text-xs text-muted-foreground">{judge.judge_xp} JXP</span>
           </div>
-
-          {/* Vibe */}
-          {judge.vibe && (
-            <Badge className="mb-4 bg-gold/10 text-gold border-gold/30">
-              {judge.vibe}
-            </Badge>
-          )}
 
           {/* Bio */}
           {judge.bio && (
             <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{judge.bio}</p>
           )}
 
-          {/* Stats grid - LARGER fonts */}
-          <div className="grid grid-cols-3 gap-2 mb-6">
-            <div className="bg-surface-1 border border-border rounded-lg p-3">
-              <div className="text-2xl font-display text-gold">{judge.totalReviews}</div>
-              <div className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">Total Reviews</div>
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            <div className="bg-surface-1 border border-border rounded-lg p-2.5">
+              <div className="text-xl font-display text-gold">{judge.totalReviews}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Reviews</div>
             </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-3">
-              <div className="text-2xl font-display text-foreground">{judge.avgScore.toFixed(0)}</div>
-              <div className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">Avg Score</div>
+            <div className="bg-surface-1 border border-border rounded-lg p-2.5">
+              <div className="text-xl font-display">{judge.avgScore.toFixed(0)}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Avg Score</div>
             </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-3">
-              <div className="text-2xl font-display text-orange-400">{judge.thisWeek}</div>
-              <div className="text-[11px] text-muted-foreground uppercase tracking-[0.1em] font-semibold">This Week</div>
+            <div className="bg-surface-1 border border-border rounded-lg p-2.5">
+              <div className="text-xl font-display text-orange-400">{judge.thisWeek}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">This Week</div>
             </div>
           </div>
 
@@ -227,17 +187,17 @@ function JudgePreviewModal({
           <div className="flex gap-2">
             <button
               onClick={() => navigate(`/judge/${judge.username}`)}
-              className="flex-1 py-3 bg-surface-1 border border-border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 bg-surface-1 border border-border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors flex items-center justify-center gap-2"
             >
               <ExternalLink size={14} />
-              View Profile
+              Profile
             </button>
             <button
               onClick={() => onSubmit(judge.id)}
-              className="flex-1 py-3 bg-gold text-black rounded-lg text-sm font-bold hover:bg-gold/90 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 bg-gold text-black rounded-lg text-sm font-bold hover:bg-gold/90 transition-colors flex items-center justify-center gap-2"
             >
               <Send size={14} />
-              Submit Edit
+              Submit
             </button>
           </div>
         </div>
@@ -254,8 +214,6 @@ export default function JudgeHubPage() {
   const [judges, setJudges] = useState<JudgeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedNiche, setSelectedNiche] = useState('all');
-  const [featuredSection, setFeaturedSection] = useState<FeaturedSection>('trending');
   
   const [selectedJudge, setSelectedJudge] = useState<JudgeProfile | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -284,7 +242,7 @@ export default function JudgeHubPage() {
       // Get judge profiles
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, bio, level, xp, verification_status, judge_badge')
+        .select('id, username, display_name, avatar_url, bio, level, xp, verification_status, judge_badge, judge_xp, judge_review_count')
         .in('id', judgeIds);
 
       if (!profiles) {
@@ -312,14 +270,20 @@ export default function JudgeHubPage() {
           ? judgeReviews.reduce((acc, r) => acc + (r.total_score || 0), 0) / judgeReviews.length
           : 0;
 
+        const judgeXp = (profile as any).judge_xp || 0;
+
         return {
           ...profile,
+          judge_xp: judgeXp,
+          judge_level: calculateJudgeLevel(judgeXp),
           totalReviews: judgeReviews.length,
           avgScore,
           thisWeek: weeklyReviews.length,
         };
       });
 
+      // Sort by JXP by default
+      judgesWithStats.sort((a, b) => b.judge_xp - a.judge_xp);
       setJudges(judgesWithStats);
     } catch (error) {
       console.error('Error fetching judges:', error);
@@ -328,32 +292,13 @@ export default function JudgeHubPage() {
     }
   }
 
-  // Filter and sort judges
-  const filteredJudges = judges
-    .filter(j => {
-      if (!searchQuery) return true;
-      const query = searchQuery.toLowerCase();
-      return j.username.toLowerCase().includes(query) || 
-             (j.display_name?.toLowerCase().includes(query));
-    })
-    .sort((a, b) => {
-      switch (featuredSection) {
-        case 'trending':
-        case 'active':
-          return b.thisWeek - a.thisWeek;
-        case 'top_xp':
-          return b.xp - a.xp;
-        case 'elite':
-          return b.totalReviews - a.totalReviews;
-        default:
-          return b.totalReviews - a.totalReviews;
-      }
-    });
-
-  // Get featured judges - top 3 most active this week
-  const featuredJudges = [...judges]
-    .sort((a, b) => b.thisWeek - a.thisWeek || b.totalReviews - a.totalReviews)
-    .slice(0, 3);
+  // Filter judges
+  const filteredJudges = judges.filter(j => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return j.username.toLowerCase().includes(query) || 
+           (j.display_name?.toLowerCase().includes(query));
+  });
 
   const handleJudgeSelect = (judge: JudgeProfile) => {
     setSelectedJudge(judge);
@@ -372,166 +317,69 @@ export default function JudgeHubPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/10 blur-[100px] rounded-full" />
-
-        <div className="relative pt-6 pb-4 px-4">
-          {/* Top bar */}
-          <div className="flex items-center justify-between mb-6">
+      {/* Compact Header */}
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => navigate(-1)}
-              className="p-2 hover:bg-surface-1 rounded-full transition-colors"
+              className="p-1.5 hover:bg-surface-1 rounded-full transition-colors"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} />
             </button>
-            
-            {(isJudge || isDev) && (
-              <Link
-                to="/ops-panel/a7c92ff31b"
-                className="px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-lg text-xs font-medium text-gold hover:bg-gold/20 transition-colors flex items-center gap-1.5"
-              >
-                <Target size={12} />
-                Judge Panel
-              </Link>
-            )}
-          </div>
-
-          {/* Title */}
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-gold" />
-              <h1 className="font-display text-3xl tracking-wide">QOI JUDGES</h1>
-              <Sparkles className="w-5 h-5 text-gold" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center">
+                <Gavel size={16} className="text-gold" />
+              </div>
+              <h1 className="font-display text-lg tracking-wide">QOI JUDGES</h1>
             </div>
-            <p className="text-sm text-muted-foreground font-medium">
-              Get your edits rated by elite judges
-            </p>
-          </div>
-
-          {/* Quick Submit CTA */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleQuickSubmit}
-            className="w-full py-4 bg-gradient-to-r from-gold via-gold to-amber-500 text-black rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
-          >
-            <Send size={16} />
-            Request Judge Review
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Featured Judges - Horizontal Scroll */}
-      {featuredJudges.length > 0 && (
-        <div className="py-4">
-          <div className="flex items-center gap-2 mb-3 px-4">
-            <Crown className="w-4 h-4 text-gold" />
-            <h2 className="font-display text-sm tracking-wide">HOT THIS WEEK</h2>
           </div>
           
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4">
-            {featuredJudges.map((judge, index) => (
-              <motion.button
-                key={judge.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/judge/${judge.username}`)}
-                className={`relative flex-shrink-0 w-[160px] overflow-hidden rounded-2xl transition-all ${
-                  index === 0 
-                    ? 'bg-gradient-to-br from-gold/30 via-black to-amber-900/20 ring-2 ring-gold/60 shadow-xl shadow-gold/20' 
-                    : 'bg-gradient-to-br from-surface-1 to-black ring-1 ring-border hover:ring-gold/40'
-                }`}
-              >
-                {/* Top rank strip */}
-                <div className={`absolute top-0 left-0 right-0 h-6 flex items-center justify-center gap-1 text-[10px] font-bold uppercase tracking-wider ${
-                  index === 0 ? 'bg-gold text-black' : 
-                  index === 1 ? 'bg-zinc-600 text-white' : 
-                  'bg-amber-800 text-white'
-                }`}>
-                  {index === 0 && <Flame size={10} />}
-                  #{index + 1} Judge
-                </div>
-                
-                <div className="pt-8 pb-4 px-3">
-                  {/* Avatar with glow */}
-                  <div className="relative mx-auto mb-3 w-16 h-16">
-                    {index === 0 && (
-                      <div className="absolute inset-0 bg-gold/40 rounded-full blur-xl animate-pulse" />
-                    )}
-                    {judge.avatar_url ? (
-                      <img 
-                        src={judge.avatar_url} 
-                        alt={judge.username}
-                        className={`relative w-16 h-16 rounded-full object-cover border-2 ${
-                          index === 0 ? 'border-gold' : 'border-border'
-                        }`}
-                      />
-                    ) : (
-                      <div className={`relative w-16 h-16 rounded-full flex items-center justify-center border-2 ${
-                        index === 0 ? 'bg-gold/20 border-gold' : 'bg-surface-2 border-border'
-                      }`}>
-                        <span className={`text-xl font-bold ${index === 0 ? 'text-gold' : 'text-muted-foreground'}`}>
-                          {(judge.display_name || judge.username).charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Name */}
-                  <p className="font-display text-sm truncate text-center mb-1">
-                    {judge.display_name || judge.username}
-                  </p>
-                  
-                  {/* Stats row */}
-                  <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Flame size={10} className="text-orange-400" />
-                      <span className="text-orange-400 font-medium">{judge.thisWeek}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star size={10} className="text-gold" />
-                      <span>{judge.avgScore.toFixed(0)}</span>
-                    </div>
-                  </div>
-                  
-                  {/* Badge */}
-                  {judge.judge_badge && JUDGE_BADGES[judge.judge_badge] && (
-                    <div className="mt-2 flex justify-center">
-                      <JudgeBadge badge={JUDGE_BADGES[judge.judge_badge]} size="sm" showTooltip={false} animate={false} />
-                    </div>
-                  )}
-                </div>
-              </motion.button>
-            ))}
-          </div>
+          {(isJudge || isDev) && (
+            <Link
+              to="/judge-panel"
+              className="px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-lg text-xs font-medium text-gold hover:bg-gold/20 transition-colors flex items-center gap-1.5"
+            >
+              <Target size={12} />
+              Panel
+            </Link>
+          )}
         </div>
-      )}
-
-      {/* Live Reviews Feed */}
-      <JudgeReviewsFeed />
-
-      {/* Judge Leaderboard */}
-      <div className="px-4 py-4">
-        <JudgeLeaderboardCard compact limit={5} />
       </div>
 
-      {/* Become a Judge CTA - only show if not already a judge */}
+      {/* Request Review CTA */}
+      <div className="p-4">
+        <motion.button
+          whileTap={{ scale: 0.98 }}
+          onClick={handleQuickSubmit}
+          className="w-full py-3.5 bg-gradient-to-r from-gold via-gold to-amber-500 text-black rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
+        >
+          <Send size={16} />
+          Request Judge Review
+        </motion.button>
+      </div>
+
+      {/* Judge Leaderboard */}
+      <div className="px-4 pb-4">
+        <JudgeLeaderboardCard limit={5} />
+      </div>
+
+      {/* Recent Reviews */}
+      <div className="border-t border-border pt-4">
+        <JudgeReviewsFeed />
+      </div>
+
+      {/* Become a Judge CTA */}
       {!isJudge && (
-        <div className="px-4 py-4">
+        <div className="px-4 py-4 border-t border-border">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-gradient-to-br from-surface-1 via-surface-1 to-gold/5 border border-gold/30 rounded-xl p-4"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gold/20 flex items-center justify-center shrink-0">
-                <Sparkles className="w-6 h-6 text-gold" />
+              <div className="w-11 h-11 rounded-xl bg-gold/20 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-gold" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-display text-sm mb-0.5">Become a QOI Judge</h3>
@@ -550,86 +398,58 @@ export default function JudgeHubPage() {
         </div>
       )}
 
-      {/* Search & Filters */}
-      <div className="px-4 pb-3">
+      {/* All Judges Section */}
+      <div className="px-4 pt-4 border-t border-border">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Users size={14} className="text-muted-foreground" />
+            <h2 className="font-display text-sm tracking-wide">ALL JUDGES</h2>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            {filteredJudges.length} judge{filteredJudges.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
         {/* Search */}
-        <div className="relative mb-4">
+        <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search judges by name..."
+            placeholder="Search judges..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 bg-surface-1 border-border"
+            className="pl-9 h-9 bg-surface-1 border-border text-sm"
           />
         </div>
 
-        {/* Featured section tabs */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-          {[
-            { id: 'trending' as const, label: 'Trending', icon: Flame },
-            { id: 'top_xp' as const, label: 'Top XP', icon: Crown },
-            { id: 'active' as const, label: 'Most Active', icon: Zap },
-            { id: 'elite' as const, label: 'Elite', icon: Award },
-          ].map((section) => (
-            <button
-              key={section.id}
-              onClick={() => setFeaturedSection(section.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                featuredSection === section.id
-                  ? 'bg-gold text-black'
-                  : 'bg-surface-1 border border-border text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <section.icon size={12} />
-              {section.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Judges List */}
-      <div className="px-4 space-y-3">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : filteredJudges.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto rounded-full bg-gold/10 flex items-center justify-center mb-4">
-              <Users className="w-8 h-8 text-gold" />
+        {/* Judges List */}
+        <div className="space-y-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
             </div>
-            <p className="font-display text-lg mb-1">NO JUDGES FOUND</p>
-            <p className="text-sm text-muted-foreground">
-              {searchQuery ? 'Try a different search' : 'Judges coming soon'}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                {filteredJudges.length} Judge{filteredJudges.length !== 1 ? 's' : ''}
+          ) : filteredJudges.length === 0 ? (
+            <div className="text-center py-10">
+              <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center mb-3">
+                <Gavel className="w-6 h-6 text-gold" />
+              </div>
+              <p className="font-display text-sm mb-1">NO JUDGES FOUND</p>
+              <p className="text-xs text-muted-foreground">
+                {searchQuery ? 'Try a different search' : 'Judges coming soon'}
               </p>
-              <Link 
-                to="/judges/leaderboard"
-                className="text-xs text-gold hover:underline flex items-center gap-1"
-              >
-                View Leaderboard
-                <ChevronRight size={12} />
-              </Link>
             </div>
-            
-            {filteredJudges.map((judge, index) => (
+          ) : (
+            filteredJudges.map((judge, index) => (
               <motion.div
                 key={judge.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.03 }}
               >
                 <JudgeCard judge={judge} onSelect={handleJudgeSelect} />
               </motion.div>
-            ))}
-          </>
-        )}
+            ))
+          )}
+        </div>
       </div>
 
       {/* Judge Preview Modal */}
