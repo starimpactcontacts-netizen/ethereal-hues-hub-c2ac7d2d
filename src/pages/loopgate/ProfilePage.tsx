@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel } from "lucide-react";
+import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -23,6 +23,7 @@ import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import ReviewResultCard from "@/components/loopgate/ReviewResultCard";
 import MyJudgeReviews from "@/components/loopgate/MyJudgeReviews";
+import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
 import { getRankFromScore } from "@/data/gqtConfig";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ export default function ProfilePage() {
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edits' | 'reviews'>('edits');
+  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
   
   useActiveSession();
 
@@ -340,7 +341,7 @@ export default function ProfilePage() {
       {/* ═══ CONTENT TABS ═══ */}
       <div className="px-4 mb-2">
         {isAnyJudge ? (
-          <div className="flex gap-1 p-0.5 bg-surface-1 border border-border rounded-md">
+          <div className="flex gap-0.5 p-0.5 bg-surface-1 border border-border rounded-md">
             <button
               onClick={() => setActiveTab('edits')}
               className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
@@ -350,7 +351,7 @@ export default function ProfilePage() {
               }`}
             >
               <Grid3X3 className="w-3 h-3" />
-              My Edits
+              Edits
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
@@ -361,7 +362,18 @@ export default function ProfilePage() {
               }`}
             >
               <Gavel className="w-3 h-3" />
-              My Reviews
+              Reviews
+            </button>
+            <button
+              onClick={() => setActiveTab('videos')}
+              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+                activeTab === 'videos' 
+                  ? 'bg-purple-500/20 text-purple-400' 
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <Video className="w-3 h-3" />
+              Videos
             </button>
           </div>
         ) : (
@@ -373,7 +385,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ TAB CONTENT ═══ */}
-      {activeTab === 'edits' ? (
+      {activeTab === 'edits' && (
         <>
           {/* Completed Reviews (reviews I received) */}
           {completedReviews.length > 0 && (
@@ -389,9 +401,17 @@ export default function ProfilePage() {
           {/* Submission Grid */}
           <SubmissionGrid />
         </>
-      ) : (
+      )}
+      
+      {activeTab === 'reviews' && (
         <div className="px-4">
           <MyJudgeReviews />
+        </div>
+      )}
+      
+      {activeTab === 'videos' && (
+        <div className="px-4">
+          <MyRatingVideos />
         </div>
       )}
 
