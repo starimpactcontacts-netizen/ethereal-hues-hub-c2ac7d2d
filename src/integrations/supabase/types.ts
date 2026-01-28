@@ -1688,6 +1688,48 @@ export type Database = {
         }
         Relationships: []
       }
+      judge_rating_videos: {
+        Row: {
+          bonus_xp_awarded: number | null
+          current_views: number | null
+          id: string
+          judge_id: string
+          platform: string
+          submitted_at: string
+          title: string | null
+          updated_at: string
+          video_url: string
+          views_at_submission: number | null
+          viral_bonus_awarded: boolean | null
+        }
+        Insert: {
+          bonus_xp_awarded?: number | null
+          current_views?: number | null
+          id?: string
+          judge_id: string
+          platform: string
+          submitted_at?: string
+          title?: string | null
+          updated_at?: string
+          video_url: string
+          views_at_submission?: number | null
+          viral_bonus_awarded?: boolean | null
+        }
+        Update: {
+          bonus_xp_awarded?: number | null
+          current_views?: number | null
+          id?: string
+          judge_id?: string
+          platform?: string
+          submitted_at?: string
+          title?: string | null
+          updated_at?: string
+          video_url?: string
+          views_at_submission?: number | null
+          viral_bonus_awarded?: boolean | null
+        }
+        Relationships: []
+      }
       login_codes: {
         Row: {
           code: string
@@ -1966,7 +2008,9 @@ export type Database = {
           is_hidden: boolean
           judge_badge: string | null
           judge_bio: string | null
+          judge_review_count: number
           judge_specialty: string | null
+          judge_xp: number
           league: Database["public"]["Enums"]["league_tier"]
           level: number
           onboarding_completed: boolean | null
@@ -2010,7 +2054,9 @@ export type Database = {
           is_hidden?: boolean
           judge_badge?: string | null
           judge_bio?: string | null
+          judge_review_count?: number
           judge_specialty?: string | null
+          judge_xp?: number
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           onboarding_completed?: boolean | null
@@ -2054,7 +2100,9 @@ export type Database = {
           is_hidden?: boolean
           judge_badge?: string | null
           judge_bio?: string | null
+          judge_review_count?: number
           judge_specialty?: string | null
+          judge_xp?: number
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
           onboarding_completed?: boolean | null
@@ -2679,6 +2727,18 @@ export type Database = {
           new_level: number
           new_xp: number
           xp_awarded: number
+        }[]
+      }
+      award_judge_xp: {
+        Args: {
+          p_action: string
+          p_amount: number
+          p_description?: string
+          p_judge_id: string
+        }
+        Returns: {
+          new_judge_xp: number
+          new_review_count: number
         }[]
       }
       award_xp: {
