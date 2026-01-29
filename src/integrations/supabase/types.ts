@@ -1402,7 +1402,9 @@ export type Database = {
           competition_id: string
           created_at: string
           id: string
+          is_system: boolean | null
           message_text: string
+          message_type: string | null
           user_id: string
           username: string
         }
@@ -1411,7 +1413,9 @@ export type Database = {
           competition_id: string
           created_at?: string
           id?: string
+          is_system?: boolean | null
           message_text: string
+          message_type?: string | null
           user_id: string
           username: string
         }
@@ -1420,7 +1424,9 @@ export type Database = {
           competition_id?: string
           created_at?: string
           id?: string
+          is_system?: boolean | null
           message_text?: string
+          message_type?: string | null
           user_id?: string
           username?: string
         }
@@ -1478,14 +1484,56 @@ export type Database = {
           },
         ]
       }
+      hosted_competition_participants: {
+        Row: {
+          avatar_url: string | null
+          competition_id: string
+          id: string
+          is_ready: boolean | null
+          joined_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          competition_id: string
+          id?: string
+          is_ready?: boolean | null
+          joined_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          competition_id?: string
+          id?: string
+          is_ready?: boolean | null
+          joined_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosted_competition_participants_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "hosted_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hosted_competition_submissions: {
         Row: {
           avatar_url: string | null
           competition_id: string
+          creativity_score: number | null
           final_rank: number | null
           id: string
+          impact_score: number | null
+          is_winner: boolean | null
           judge_notes: string | null
           platform: string
+          quality_score: number | null
           score: number | null
           scored_at: string | null
           scored_by: string | null
@@ -1493,14 +1541,19 @@ export type Database = {
           submitted_at: string
           user_id: string
           username: string
+          winner_place: number | null
         }
         Insert: {
           avatar_url?: string | null
           competition_id: string
+          creativity_score?: number | null
           final_rank?: number | null
           id?: string
+          impact_score?: number | null
+          is_winner?: boolean | null
           judge_notes?: string | null
           platform: string
+          quality_score?: number | null
           score?: number | null
           scored_at?: string | null
           scored_by?: string | null
@@ -1508,14 +1561,19 @@ export type Database = {
           submitted_at?: string
           user_id: string
           username: string
+          winner_place?: number | null
         }
         Update: {
           avatar_url?: string | null
           competition_id?: string
+          creativity_score?: number | null
           final_rank?: number | null
           id?: string
+          impact_score?: number | null
+          is_winner?: boolean | null
           judge_notes?: string | null
           platform?: string
+          quality_score?: number | null
           score?: number | null
           scored_at?: string | null
           scored_by?: string | null
@@ -1523,6 +1581,7 @@ export type Database = {
           submitted_at?: string
           user_id?: string
           username?: string
+          winner_place?: number | null
         }
         Relationships: [
           {
@@ -1549,8 +1608,10 @@ export type Database = {
           host_user_id: string
           id: string
           is_featured: boolean | null
+          is_trending: boolean | null
           max_submissions: number | null
           name: string
+          participant_count: number | null
           poster_url: string | null
           prize_description: string | null
           rejection_reason: string | null
@@ -1558,6 +1619,7 @@ export type Database = {
           status: string
           submission_deadline: string
           updated_at: string
+          view_count: number | null
         }
         Insert: {
           approved_at?: string | null
@@ -1573,8 +1635,10 @@ export type Database = {
           host_user_id: string
           id?: string
           is_featured?: boolean | null
+          is_trending?: boolean | null
           max_submissions?: number | null
           name: string
+          participant_count?: number | null
           poster_url?: string | null
           prize_description?: string | null
           rejection_reason?: string | null
@@ -1582,6 +1646,7 @@ export type Database = {
           status?: string
           submission_deadline: string
           updated_at?: string
+          view_count?: number | null
         }
         Update: {
           approved_at?: string | null
@@ -1597,8 +1662,10 @@ export type Database = {
           host_user_id?: string
           id?: string
           is_featured?: boolean | null
+          is_trending?: boolean | null
           max_submissions?: number | null
           name?: string
+          participant_count?: number | null
           poster_url?: string | null
           prize_description?: string | null
           rejection_reason?: string | null
@@ -1606,6 +1673,7 @@ export type Database = {
           status?: string
           submission_deadline?: string
           updated_at?: string
+          view_count?: number | null
         }
         Relationships: [
           {
@@ -3033,6 +3101,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_hosted_comp_views: {
+        Args: { comp_id: string }
+        Returns: undefined
+      }
       is_crew_owner: {
         Args: { check_crew_id: string; check_user_id: string }
         Returns: boolean
@@ -3047,6 +3119,14 @@ export type Database = {
       }
       mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      post_hosted_comp_system_message: {
+        Args: {
+          p_competition_id: string
+          p_message: string
+          p_message_type?: string
+        }
         Returns: undefined
       }
       process_login_streak: {
