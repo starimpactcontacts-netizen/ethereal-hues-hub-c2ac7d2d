@@ -15,6 +15,8 @@ import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
 import PracticeModeView from "@/components/loopgate/PracticeModeView";
 import HostedCompCard from "@/components/loopgate/HostedCompCard";
+import FeaturedHostedCompCard from "@/components/loopgate/FeaturedHostedCompCard";
+import { useHostedCompetitions } from "@/hooks/useHostedCompetitions";
 import SanctionedTournamentCard from "@/components/loopgate/SanctionedTournamentCard";
 import BattleCard from "@/components/loopgate/BattleCard";
 import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
@@ -129,6 +131,9 @@ export default function ArenaPage() {
   const { battles, loading: battlesLoading } = useBattles(
     ["pending", "active", "judging", "completed"]
   );
+  
+  // Hosted Competitions - show live/judging for featured section
+  const { competitions: hostedComps, loading: hostedLoading } = useHostedCompetitions();
   
   useEffect(() => {
     async function fetchEvents() {
@@ -732,6 +737,30 @@ export default function ArenaPage() {
 
               {/* Hosted Comp Entry Card */}
               <HostedCompCard onEnter={() => navigate('/hosted-comps')} />
+
+              {/* Featured Hosted Comps */}
+              {hostedComps.filter(c => c.status === 'live' || c.status === 'judging').length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-cyan-400">
+                      Featured Comps
+                    </span>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
+                    {hostedComps
+                      .filter(c => c.status === 'live' || c.status === 'judging')
+                      .slice(0, 6)
+                      .map((comp) => (
+                        <FeaturedHostedCompCard
+                          key={comp.id}
+                          comp={comp}
+                          onClick={() => navigate(`/hosted-comp/${comp.id}`)}
+                        />
+                      ))}
+                  </div>
+                </div>
+              )}
             </motion.section>
           )}
 
