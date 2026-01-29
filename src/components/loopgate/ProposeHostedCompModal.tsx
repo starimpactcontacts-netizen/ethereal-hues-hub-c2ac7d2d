@@ -323,20 +323,28 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
             </label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'battle_royale', label: 'Battle Royale', desc: 'Best edit wins' },
-                { id: 'bracket', label: 'Bracket', desc: 'Elimination rounds' },
-                { id: 'round_robin', label: 'Scored', desc: 'Points-based' }
+                { id: 'battle_royale', label: 'Battle Royale', desc: 'Best edit wins', comingSoon: false },
+                { id: 'bracket', label: 'Bracket', desc: 'Elimination rounds', comingSoon: true },
+                { id: 'round_robin', label: 'Scored', desc: 'Points-based', comingSoon: true }
               ].map((f) => (
                 <button
                   key={f.id}
                   type="button"
-                  onClick={() => setFormat(f.id)}
-                  className={`p-3 text-center border rounded-lg transition-colors ${
-                    format === f.id
-                      ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
-                      : 'bg-surface-2 border-border text-muted-foreground hover:border-cyan-500/50'
+                  onClick={() => !f.comingSoon && setFormat(f.id)}
+                  disabled={f.comingSoon}
+                  className={`p-3 text-center border rounded-lg transition-colors relative ${
+                    f.comingSoon
+                      ? 'bg-surface-2/50 border-border/50 text-muted-foreground/50 cursor-not-allowed'
+                      : format === f.id
+                        ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400'
+                        : 'bg-surface-2 border-border text-muted-foreground hover:border-cyan-500/50'
                   }`}
                 >
+                  {f.comingSoon && (
+                    <span className="absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-amber-500/80 text-[7px] font-bold uppercase tracking-wide text-background rounded">
+                      Soon
+                    </span>
+                  )}
                   <span className="block text-xs font-semibold">{f.label}</span>
                   <span className="block text-[9px] mt-0.5 opacity-70">{f.desc}</span>
                 </button>
