@@ -48,6 +48,21 @@ export default function HostedCompDetailPage() {
   const [hostCrew, setHostCrew] = useState<CrewData | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Fetch host crew data - MUST be before any early returns
+  useEffect(() => {
+    if (competition?.host_crew_id) {
+      supabase
+        .from('crews')
+        .select('id, name, avatar_url, emblem')
+        .eq('id', competition.host_crew_id)
+        .single()
+        .then(({ data }) => {
+          if (data) setHostCrew(data);
+        });
+    }
+  }, [competition?.host_crew_id]);
+
+  // Early returns AFTER all hooks
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -98,20 +113,6 @@ export default function HostedCompDetailPage() {
       setSubmissionUrl("");
     }
   };
-
-  // Fetch host crew data
-  useEffect(() => {
-    if (competition?.host_crew_id) {
-      supabase
-        .from('crews')
-        .select('id, name, avatar_url, emblem')
-        .eq('id', competition.host_crew_id)
-        .single()
-        .then(({ data }) => {
-          if (data) setHostCrew(data);
-        });
-    }
-  }, [competition?.host_crew_id]);
 
   const handleShare = async () => {
     const url = `${window.location.origin}/hosted-comp/${competition?.id}`;
