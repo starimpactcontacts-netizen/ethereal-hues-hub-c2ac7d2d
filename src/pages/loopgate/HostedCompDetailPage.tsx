@@ -115,7 +115,9 @@ export default function HostedCompDetailPage() {
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/hosted-comp/${competition?.id}`;
+    // Use slug if available, otherwise fall back to id
+    const identifier = competition?.slug || competition?.id;
+    const url = `${window.location.origin}/hosted-comp/${identifier}`;
     try {
       if (navigator.share) {
         await navigator.share({
