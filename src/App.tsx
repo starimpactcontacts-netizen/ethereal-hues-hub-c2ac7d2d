@@ -56,6 +56,8 @@ import FAQPage from "./pages/FAQPage";
 import StartPage from "./pages/StartPage";
 import MessagesPage from "./pages/loopgate/MessagesPage";
 import DirectMessagePage from "./pages/loopgate/DirectMessagePage";
+import HostedCompsPage from "./pages/loopgate/HostedCompsPage";
+import HostedCompDetailPage from "./pages/loopgate/HostedCompDetailPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -278,6 +280,8 @@ export default function App() {
               <Route path="/arena" element={<ArenaPage />} />
               <Route path="/sanctioned/:id" element={<SanctionedTournamentPage />} />
               <Route path="/battle/:battleId" element={<BattleDetailPage />} />
+              <Route path="/hosted-comps" element={<HostedCompsPage />} />
+              <Route path="/hosted-comp/:id" element={<HostedCompDetailPage />} />
               <Route path="/judges" element={<JudgeHubPage />} />
               <Route path="/judges/leaderboard" element={<JudgeLeaderboardPage />} />
               <Route path="/judges/apply" element={<JudgeApplicationPage />} />
