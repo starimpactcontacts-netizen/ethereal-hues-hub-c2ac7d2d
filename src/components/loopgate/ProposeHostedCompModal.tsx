@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { X, Globe, Calendar, Users, Trophy, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { X, Globe, Calendar, Users, Trophy, Loader2, ImagePlus, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useHostedCompetitions } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { useCrewMembership } from "@/hooks/useCrewMembership";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProposeHostedCompModalProps {
   isOpen: boolean;
@@ -15,6 +17,7 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
   const { user, profile } = useAuth();
   const { proposeCompetition } = useHostedCompetitions();
   const { primaryCrew } = useCrewMembership(user?.id);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -25,6 +28,68 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
   const [prizeDescription, setPrizeDescription] = useState("");
   const [useCrewAsHost, setUseCrewAsHost] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [isUploadingPoster, setIsUploadingPoster] = useState(false);
+
+  const handlePosterSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+
+    setPosterFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPosterPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removePoster = () => {
+    setPosterFile(null);
+    setPosterPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadPoster = async (): Promise<string | null> => {
+    if (!posterFile || !user) return null;
+
+    setIsUploadingPoster(true);
+    try {
+      const fileExt = posterFile.name.split('.').pop();
+      const fileName = `hosted-comp-${user.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('event-posters')
+        .upload(filePath, posterFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('event-posters')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading poster:', error);
+      toast.error("Failed to upload poster");
+      return null;
+    } finally {
+      setIsUploadingPoster(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -37,6 +102,15 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
 
     setIsSubmitting(true);
 
+    // Upload poster if selected
+    let posterUrl: string | undefined;
+    if (posterFile) {
+      const uploadedUrl = await uploadPoster();
+      if (uploadedUrl) {
+        posterUrl = uploadedUrl;
+      }
+    }
+
     const result = await proposeCompetition({
       name: name.trim(),
       description: description.trim() || undefined,
@@ -45,7 +119,8 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
       max_submissions: maxSubmissions ? parseInt(maxSubmissions) : undefined,
       submission_deadline: new Date(deadline).toISOString(),
       prize_description: prizeDescription.trim() || undefined,
-      host_crew_id: useCrewAsHost && primaryCrew?.crew ? primaryCrew.crew.id : undefined
+      host_crew_id: useCrewAsHost && primaryCrew?.crew ? primaryCrew.crew.id : undefined,
+      poster_url: posterUrl
     });
 
     setIsSubmitting(false);
@@ -142,6 +217,49 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
               </div>
             </label>
           )}
+
+          {/* Poster Image */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              <ImagePlus className="w-3 h-3 inline mr-1" />
+              Background Poster (Optional)
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePosterSelect}
+              className="hidden"
+            />
+            {posterPreview ? (
+              <div className="relative rounded-lg overflow-hidden border border-cyan-500/30">
+                <img 
+                  src={posterPreview} 
+                  alt="Poster preview" 
+                  className="w-full h-32 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removePoster}
+                  className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full hover:bg-red-500/80 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-24 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-2 hover:border-cyan-500/50 transition-colors bg-surface-2/50"
+              >
+                <ImagePlus className="w-6 h-6 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">Tap to add poster image</span>
+              </button>
+            )}
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Recommended: 16:9 aspect ratio, max 5MB
+            </p>
+          </div>
 
           {/* Description */}
           <div>
@@ -246,7 +364,7 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || !name.trim() || !hostName.trim() || !deadline}
+            disabled={isSubmitting || isUploadingPoster || !name.trim() || !hostName.trim() || !deadline}
             className="w-full py-4 bg-gradient-to-r from-cyan-500 to-sky-500 text-background font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
