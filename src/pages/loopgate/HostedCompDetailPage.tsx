@@ -4,10 +4,11 @@ import { motion } from "framer-motion";
 import { 
   Globe, Users, Calendar, Trophy, ExternalLink, 
   Loader2, ChevronDown, ChevronUp, Star, UserPlus,
-  Clock, Award, Send, ArrowLeft
+  Clock, Award, Send, ArrowLeft, MessageCircle, Gavel
 } from "lucide-react";
-import AppHeader from "@/components/loopgate/AppHeader";
 import { useHostedCompetition, HostedCompetitionSubmission } from "@/hooks/useHostedCompetitions";
+import InviteJudgeModal from "@/components/loopgate/InviteJudgeModal";
+import HostedCompChat from "@/components/loopgate/HostedCompChat";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { formatDistanceToNow, isPast, format } from "date-fns";
@@ -156,34 +157,29 @@ export default function HostedCompDetailPage() {
   const [submissionUrl, setSubmissionUrl] = useState("");
   const [urlError, setUrlError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showInviteJudges, setShowInviteJudges] = useState(false);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
       </div>
     );
   }
 
   if (!competition) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="p-4">
-          <button
-            onClick={() => navigate('/hosted-comps')}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <div className="text-center py-12">
-            <Globe className="w-12 h-12 text-cyan-500/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">Competition not found</p>
-          </div>
+      <div className="p-4">
+        <button
+          onClick={() => navigate('/hosted-comps')}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back
+        </button>
+        <div className="text-center py-12">
+          <Globe className="w-12 h-12 text-cyan-500/30 mx-auto mb-3" />
+          <p className="text-muted-foreground">Competition not found</p>
         </div>
       </div>
     );
@@ -222,8 +218,7 @@ export default function HostedCompDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
+    <div className="pb-20">
       
       <div className="pb-20">
         {/* Back Button */}
