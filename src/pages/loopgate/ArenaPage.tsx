@@ -5,7 +5,7 @@ import {
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
-  Clock, Award, UserPlus, Eye
+  Clock, Award, UserPlus, Eye, Globe
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
 import PracticeModeView from "@/components/loopgate/PracticeModeView";
+import HostedCompCard from "@/components/loopgate/HostedCompCard";
 import SanctionedTournamentCard from "@/components/loopgate/SanctionedTournamentCard";
 import BattleCard from "@/components/loopgate/BattleCard";
 import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
@@ -115,7 +116,7 @@ export default function ArenaPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "battles" | "practice">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "battles" | "hosted" | "practice">("all");
   const [showPracticeMode, setShowPracticeMode] = useState(false);
   const [showCreateBattle, setShowCreateBattle] = useState(false);
   
@@ -313,15 +314,17 @@ export default function ArenaPage() {
               Practice
             </button>
             
+            {/* HOSTED COMPS - Community competitions */}
             <button
-              onClick={() => setActiveFilter("practice")}
-              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0 ${
-                activeFilter === "practice"
-                  ? "bg-foreground text-background border-foreground"
-                  : "bg-transparent text-muted-foreground border-border hover:border-foreground/50"
+              onClick={() => setActiveFilter("hosted")}
+              className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 shrink-0 ${
+                activeFilter === "hosted"
+                  ? "bg-cyan-500 text-white border-cyan-500 shadow-lg shadow-cyan-500/30"
+                  : "bg-transparent text-cyan-400 border-cyan-500/50 hover:border-cyan-500 hover:bg-cyan-500/5"
               }`}
             >
-              Practice
+              <Globe className="w-3 h-3" />
+              Hosted
             </button>
           </div>
         </div>
@@ -700,6 +703,38 @@ export default function ArenaPage() {
                   </div>
                 </div>
               )}
+            </motion.section>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              HOSTED COMPS SECTION - External Community Competitions
+          ═══════════════════════════════════════════════════════════════════ */}
+          {(activeFilter === "all" || activeFilter === "hosted") && (
+            <motion.section
+              key="hosted-section"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-4 mt-8"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Globe className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                  Hosted Comps
+                </span>
+                <div className="flex items-center gap-1 bg-cyan-500/20 border border-cyan-500/30 px-2 py-0.5 ml-2">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-cyan-400">Coming Soon</span>
+                </div>
+                <div className="flex-1 h-px bg-gradient-to-r from-cyan-500/30 to-transparent" />
+              </div>
+              <p className="text-[10px] text-muted-foreground mb-4">
+                Discord servers & creators host their competitions on Loopgate infra.
+              </p>
+
+              {/* Hosted Comp Entry Card */}
+              <HostedCompCard onEnter={() => {
+                // TODO: Navigate to hosted comps list
+                console.log("Hosted Comps clicked - coming soon");
+              }} />
             </motion.section>
           )}
 
