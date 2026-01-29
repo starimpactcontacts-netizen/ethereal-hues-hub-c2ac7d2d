@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 export interface HostedCompetition {
   id: string;
+  slug: string | null;
   name: string;
   description: string | null;
   host_user_id: string;
@@ -162,7 +163,7 @@ export function useHostedCompetitions() {
   };
 }
 
-export function useHostedCompetition(competitionId: string | undefined) {
+export function useHostedCompetition(idOrSlug: string | undefined) {
   const { user, profile } = useAuth();
   const [competition, setCompetition] = useState<HostedCompetition | null>(null);
   const [submissions, setSubmissions] = useState<HostedCompetitionSubmission[]>([]);
@@ -174,15 +175,23 @@ export function useHostedCompetition(competitionId: string | undefined) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
 
+  // Check if idOrSlug is a UUID or a slug
+  const isUUID = idOrSlug && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+
   const fetchCompetition = async () => {
-    if (!competitionId) return;
+    if (!idOrSlug) return;
 
     try {
-      const { data: compData, error: compError } = await supabase
-        .from('hosted_competitions')
-        .select('*')
-        .eq('id', competitionId)
-        .maybeSingle();
+      // Try UUID first, then slug
+      let query = supabase.from('hosted_competitions').select('*');
+      
+      if (isUUID) {
+        query = query.eq('id', idOrSlug);
+      } else {
+        query = query.eq('slug', idOrSlug);
+      }
+      
+      const { data: compData, error: compError } = await query.maybeSingle();
 
       if (compError) throw compError;
       if (!compData) {
@@ -197,7 +206,7 @@ export function useHostedCompetition(competitionId: string | undefined) {
       const { data: subsData, error: subsError } = await supabase
         .from('hosted_competition_submissions')
         .select('*')
-        .eq('competition_id', competitionId)
+        .eq('competition_id', compData.id)
         .order('submitted_at', { ascending: false });
 
       if (subsError) throw subsError;
@@ -208,7 +217,7 @@ export function useHostedCompetition(competitionId: string | undefined) {
       const { data: judgeData, error: judgeError } = await supabase
         .from('hosted_competition_judges')
         .select('*')
-        .eq('competition_id', competitionId);
+        .eq('competition_id', compData.id);
 
       if (judgeError) throw judgeError;
       setJudges(judgeData || []);
@@ -218,7 +227,7 @@ export function useHostedCompetition(competitionId: string | undefined) {
       const { data: participantData } = await supabase
         .from('hosted_competition_participants' as any)
         .select('*')
-        .eq('competition_id', competitionId);
+        .eq('competition_id', compData.id);
 
       const typedParticipants = (participantData as unknown as { id: string; user_id: string; username: string; avatar_url: string | null; }[]) || [];
       setParticipants(typedParticipants);
@@ -234,16 +243,15 @@ export function useHostedCompetition(competitionId: string | undefined) {
   useEffect(() => {
     fetchCompetition();
 
-    if (!competitionId) return;
+    if (!idOrSlug) return;
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates - use idOrSlug for channel naming
     const channel = supabase
-      .channel(`hosted_comp_${competitionId}`)
+      .channel(`hosted_comp_${idOrSlug}`)
       .on('postgres_changes', { 
         event: '*', 
         schema: 'public', 
-        table: 'hosted_competition_submissions',
-        filter: `competition_id=eq.${competitionId}`
+        table: 'hosted_competition_submissions'
       }, () => {
         fetchCompetition();
       })
@@ -252,10 +260,14 @@ export function useHostedCompetition(competitionId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [competitionId, user?.id]);
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [idOrSlug, user?.id]);
 
   const submitEntry = async (platform: string, submission_url: string) => {
-    if (!user || !profile || !competitionId) {
+    if (!user || !profile || !competition) {
       toast.error("You must be logged in");
       return false;
     }
@@ -264,7 +276,7 @@ export function useHostedCompetition(competitionId: string | undefined) {
       const { error } = await supabase
         .from('hosted_competition_submissions')
         .insert({
-          competition_id: competitionId,
+          competition_id: competition.id,
           user_id: user.id,
           username: profile.username,
           avatar_url: profile.avatar_url,
@@ -311,13 +323,13 @@ export function useHostedCompetition(competitionId: string | undefined) {
   };
 
   const inviteJudge = async (userId: string, username: string, avatarUrl?: string) => {
-    if (!user || !competitionId) return false;
+    if (!user || !competition) return false;
 
     try {
       const { error } = await supabase
         .from('hosted_competition_judges')
         .insert({
-          competition_id: competitionId,
+          competition_id: competition.id,
           user_id: userId,
           username,
           avatar_url: avatarUrl,

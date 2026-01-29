@@ -1616,6 +1616,7 @@ export type Database = {
           prize_description: string | null
           rejection_reason: string | null
           rules: string | null
+          slug: string | null
           status: string
           submission_deadline: string
           updated_at: string
@@ -1643,6 +1644,7 @@ export type Database = {
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null
+          slug?: string | null
           status?: string
           submission_deadline: string
           updated_at?: string
@@ -1670,6 +1672,7 @@ export type Database = {
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null
+          slug?: string | null
           status?: string
           submission_deadline?: string
           updated_at?: string
@@ -3086,6 +3089,10 @@ export type Database = {
       }
       find_practice_match: {
         Args: { p_duration: number; p_match_type: string; p_user_id: string }
+        Returns: string
+      }
+      generate_hosted_comp_slug: {
+        Args: { comp_name: string }
         Returns: string
       }
       generate_invite_code: { Args: never; Returns: string }
