@@ -1502,12 +1502,14 @@ export type Database = {
           approved_by: string | null
           created_at: string
           description: string | null
+          featured_at: string | null
           format: string
           host_avatar_url: string | null
           host_crew_id: string | null
           host_name: string
           host_user_id: string
           id: string
+          is_featured: boolean | null
           max_submissions: number | null
           name: string
           poster_url: string | null
@@ -1522,12 +1524,14 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           description?: string | null
+          featured_at?: string | null
           format?: string
           host_avatar_url?: string | null
           host_crew_id?: string | null
           host_name: string
           host_user_id: string
           id?: string
+          is_featured?: boolean | null
           max_submissions?: number | null
           name: string
           poster_url?: string | null
@@ -1542,12 +1546,14 @@ export type Database = {
           approved_by?: string | null
           created_at?: string
           description?: string | null
+          featured_at?: string | null
           format?: string
           host_avatar_url?: string | null
           host_crew_id?: string | null
           host_name?: string
           host_user_id?: string
           id?: string
+          is_featured?: boolean | null
           max_submissions?: number | null
           name?: string
           poster_url?: string | null

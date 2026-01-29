@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Globe, Check, X, Loader2, Calendar, Users, 
-  ChevronDown, ChevronUp, ExternalLink, Trophy
+  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff
 } from "lucide-react";
 import { usePendingHostedCompetitions, HostedCompetition } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -159,9 +159,69 @@ function PendingCompCard({
   );
 }
 
+function LiveCompCard({ 
+  comp, 
+  onToggleFeatured 
+}: { 
+  comp: HostedCompetition; 
+  onToggleFeatured: () => void;
+}) {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleToggle = async () => {
+    setIsProcessing(true);
+    await onToggleFeatured();
+    setIsProcessing(false);
+  };
+
+  return (
+    <div className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+          {comp.host_avatar_url ? (
+            <img src={comp.host_avatar_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <Globe className="w-4 h-4 text-cyan-400" />
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-medium truncate">{comp.name}</p>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] text-muted-foreground">by {comp.host_name}</span>
+            <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase font-bold ${
+              comp.status === 'live' 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'bg-amber-500/20 text-amber-400'
+            }`}>
+              {comp.status}
+            </span>
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={handleToggle}
+        disabled={isProcessing}
+        className={`p-2 rounded-lg transition-all ${
+          comp.is_featured 
+            ? 'bg-gold/20 text-gold hover:bg-gold/30' 
+            : 'bg-surface-2 text-muted-foreground hover:text-foreground hover:bg-surface-2/80'
+        }`}
+      >
+        {isProcessing ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : comp.is_featured ? (
+          <Star className="w-4 h-4 fill-current" />
+        ) : (
+          <StarOff className="w-4 h-4" />
+        )}
+      </button>
+    </div>
+  );
+}
+
 export default function HostedCompManagement() {
   const { user } = useAuth();
-  const { pending, loading, approveCompetition, rejectCompetition } = usePendingHostedCompetitions();
+  const { pending, liveComps, loading, approveCompetition, rejectCompetition, toggleFeatured } = usePendingHostedCompetitions();
 
   if (loading) {
     return (
@@ -172,34 +232,71 @@ export default function HostedCompManagement() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-display flex items-center gap-2">
-          <Globe className="w-5 h-5 text-cyan-400" />
-          Hosted Comp Proposals
-        </h2>
-        <span className="text-sm text-muted-foreground">
-          {pending.length} pending
-        </span>
+    <div className="space-y-6">
+      {/* Pending Proposals */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-display flex items-center gap-2">
+            <Globe className="w-5 h-5 text-cyan-400" />
+            Hosted Comp Proposals
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            {pending.length} pending
+          </span>
+        </div>
+
+        {pending.length === 0 ? (
+          <div className="bg-surface-1 border border-border rounded-lg p-6 text-center">
+            <Globe className="w-10 h-10 text-cyan-500/30 mx-auto mb-2" />
+            <p className="text-muted-foreground text-sm">No pending proposals</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {pending.map((comp) => (
+              <PendingCompCard
+                key={comp.id}
+                comp={comp}
+                onApprove={() => user && approveCompetition(comp.id, user.id)}
+                onReject={(reason) => rejectCompetition(comp.id, reason)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {pending.length === 0 ? (
-        <div className="bg-surface-1 border border-border rounded-lg p-6 text-center">
-          <Globe className="w-10 h-10 text-cyan-500/30 mx-auto mb-2" />
-          <p className="text-muted-foreground text-sm">No pending proposals</p>
+      {/* Feature Toggle for Live Comps */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-display flex items-center gap-2">
+            <Star className="w-5 h-5 text-gold" />
+            Feature Live Comps
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            {liveComps.filter(c => c.is_featured).length} featured
+          </span>
         </div>
-      ) : (
-        <div className="space-y-3">
-          {pending.map((comp) => (
-            <PendingCompCard
-              key={comp.id}
-              comp={comp}
-              onApprove={() => user && approveCompetition(comp.id, user.id)}
-              onReject={(reason) => rejectCompetition(comp.id, reason)}
-            />
-          ))}
-        </div>
-      )}
+        
+        <p className="text-[10px] text-muted-foreground">
+          Tap the star to feature/unfeature a competition on the Arena page.
+        </p>
+
+        {liveComps.length === 0 ? (
+          <div className="bg-surface-1 border border-border rounded-lg p-6 text-center">
+            <Star className="w-10 h-10 text-gold/30 mx-auto mb-2" />
+            <p className="text-muted-foreground text-sm">No live competitions</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {liveComps.map((comp) => (
+              <LiveCompCard
+                key={comp.id}
+                comp={comp}
+                onToggleFeatured={() => toggleFeatured(comp.id, !!comp.is_featured)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
