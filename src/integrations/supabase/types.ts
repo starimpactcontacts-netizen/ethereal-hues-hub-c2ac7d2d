@@ -1396,6 +1396,44 @@ export type Database = {
         }
         Relationships: []
       }
+      hosted_comp_messages: {
+        Row: {
+          avatar_url: string | null
+          competition_id: string
+          created_at: string
+          id: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          competition_id: string
+          created_at?: string
+          id?: string
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          competition_id?: string
+          created_at?: string
+          id?: string
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosted_comp_messages_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "hosted_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hosted_competition_judges: {
         Row: {
           accepted_at: string | null

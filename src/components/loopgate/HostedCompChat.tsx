@@ -33,14 +33,15 @@ export default function HostedCompChat({ competitionId, competitionName }: Hoste
 
     setLoading(true);
     const fetchMessages = async () => {
+      // Use raw query since types may not be regenerated yet
       const { data } = await supabase
-        .from('hosted_comp_messages')
+        .from('hosted_comp_messages' as any)
         .select('*')
         .eq('competition_id', competitionId)
         .order('created_at', { ascending: true })
         .limit(100);
 
-      setMessages(data || []);
+      setMessages((data as unknown as Message[]) || []);
       setLoading(false);
     };
 
@@ -76,7 +77,7 @@ export default function HostedCompChat({ competitionId, competitionName }: Hoste
 
     setIsSending(true);
     const { error } = await supabase
-      .from('hosted_comp_messages')
+      .from('hosted_comp_messages' as any)
       .insert({
         competition_id: competitionId,
         user_id: user.id,

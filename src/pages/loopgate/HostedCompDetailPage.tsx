@@ -399,7 +399,7 @@ export default function HostedCompDetailPage() {
           {/* Guest Prompt */}
           {isGuest && canSubmit && (
             <button
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/start')}
               className="w-full py-4 bg-surface-1 border border-cyan-500/30 text-foreground font-medium rounded-lg"
             >
               Sign in to Submit
@@ -408,13 +408,28 @@ export default function HostedCompDetailPage() {
 
           {/* Host Controls */}
           {isHost && (
-            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-3">
-              <p className="text-xs text-cyan-300 font-medium mb-2">🎯 You're the Host</p>
-              <p className="text-[11px] text-muted-foreground">
-                Score submissions below. Invite judges to help with the workload.
-              </p>
+            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-4 space-y-3">
+              <div>
+                <p className="text-xs text-cyan-300 font-medium mb-1">🎯 You're the Host</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Score submissions below. Invite judges to help with the workload.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowInviteJudges(true)}
+                className="w-full py-2.5 bg-cyan-500 text-background font-semibold rounded-lg flex items-center justify-center gap-2 text-sm"
+              >
+                <Gavel className="w-4 h-4" />
+                Invite Judges
+              </button>
             </div>
           )}
+
+          {/* Competition Chat */}
+          <HostedCompChat 
+            competitionId={competition.id} 
+            competitionName={competition.name} 
+          />
 
           {/* Judges */}
           {judges.length > 0 && (
@@ -460,6 +475,17 @@ export default function HostedCompDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Invite Judges Modal */}
+      <InviteJudgeModal
+        open={showInviteJudges}
+        onOpenChange={setShowInviteJudges}
+        competitionId={competition.id}
+        competitionName={competition.name}
+        hostUserId={competition.host_user_id}
+        existingJudgeIds={judges.map(j => j.user_id)}
+        onInvited={() => {}}
+      />
     </div>
   );
 }
