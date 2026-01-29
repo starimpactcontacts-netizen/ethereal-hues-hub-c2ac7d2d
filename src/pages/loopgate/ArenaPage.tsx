@@ -722,7 +722,7 @@ export default function ArenaPage() {
                   Hosted Comps
                 </span>
                 <div className="flex items-center gap-1 bg-cyan-500/20 border border-cyan-500/30 px-2 py-0.5 ml-2">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-cyan-400">Coming Soon</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-cyan-400">New</span>
                 </div>
                 <div className="flex-1 h-px bg-gradient-to-r from-cyan-500/30 to-transparent" />
               </div>
@@ -731,10 +731,7 @@ export default function ArenaPage() {
               </p>
 
               {/* Hosted Comp Entry Card */}
-              <HostedCompCard onEnter={() => {
-                // TODO: Navigate to hosted comps list
-                console.log("Hosted Comps clicked - coming soon");
-              }} />
+              <HostedCompCard onEnter={() => navigate('/hosted-comps')} />
             </motion.section>
           )}
 

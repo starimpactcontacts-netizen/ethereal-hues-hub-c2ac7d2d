@@ -1396,6 +1396,177 @@ export type Database = {
         }
         Relationships: []
       }
+      hosted_competition_judges: {
+        Row: {
+          accepted_at: string | null
+          avatar_url: string | null
+          competition_id: string
+          id: string
+          invited_at: string
+          invited_by: string
+          status: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          avatar_url?: string | null
+          competition_id: string
+          id?: string
+          invited_at?: string
+          invited_by: string
+          status?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          accepted_at?: string | null
+          avatar_url?: string | null
+          competition_id?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          status?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosted_competition_judges_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "hosted_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hosted_competition_submissions: {
+        Row: {
+          avatar_url: string | null
+          competition_id: string
+          final_rank: number | null
+          id: string
+          judge_notes: string | null
+          platform: string
+          score: number | null
+          scored_at: string | null
+          scored_by: string | null
+          submission_url: string
+          submitted_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          competition_id: string
+          final_rank?: number | null
+          id?: string
+          judge_notes?: string | null
+          platform: string
+          score?: number | null
+          scored_at?: string | null
+          scored_by?: string | null
+          submission_url: string
+          submitted_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          competition_id?: string
+          final_rank?: number | null
+          id?: string
+          judge_notes?: string | null
+          platform?: string
+          score?: number | null
+          scored_at?: string | null
+          scored_by?: string | null
+          submission_url?: string
+          submitted_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosted_competition_submissions_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "hosted_competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hosted_competitions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          description: string | null
+          format: string
+          host_avatar_url: string | null
+          host_crew_id: string | null
+          host_name: string
+          host_user_id: string
+          id: string
+          max_submissions: number | null
+          name: string
+          poster_url: string | null
+          prize_description: string | null
+          rejection_reason: string | null
+          status: string
+          submission_deadline: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          format?: string
+          host_avatar_url?: string | null
+          host_crew_id?: string | null
+          host_name: string
+          host_user_id: string
+          id?: string
+          max_submissions?: number | null
+          name: string
+          poster_url?: string | null
+          prize_description?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submission_deadline: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          description?: string | null
+          format?: string
+          host_avatar_url?: string | null
+          host_crew_id?: string | null
+          host_name?: string
+          host_user_id?: string
+          id?: string
+          max_submissions?: number | null
+          name?: string
+          poster_url?: string | null
+          prize_description?: string | null
+          rejection_reason?: string | null
+          status?: string
+          submission_deadline?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosted_competitions_host_crew_id_fkey"
+            columns: ["host_crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       house_applications: {
         Row: {
           created_at: string

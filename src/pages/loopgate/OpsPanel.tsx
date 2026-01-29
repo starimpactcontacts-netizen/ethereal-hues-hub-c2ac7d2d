@@ -16,6 +16,7 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection";
 import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
 import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
+import HostedCompManagement from "@/components/loopgate/HostedCompManagement";
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 
 interface RealEvent {
@@ -2601,6 +2602,13 @@ export default function OpsPanel() {
         ═══════════════════════════════════════════════════════════════════ */}
         <section className="bg-card border border-gold/30 rounded-lg p-4">
           <SanctionedTournamentManagement onClose={() => {}} />
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════════
+            HOSTED COMPETITIONS MANAGEMENT
+        ═══════════════════════════════════════════════════════════════════ */}
+        <section className="bg-card border border-cyan-500/30 rounded-lg p-4">
+          <HostedCompManagement />
         </section>
 
         {/* Submissions & Judging */}
