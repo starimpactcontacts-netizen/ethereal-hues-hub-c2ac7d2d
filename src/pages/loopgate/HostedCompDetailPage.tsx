@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   Globe, Calendar, Trophy, ExternalLink, 
   Loader2, ChevronDown, ChevronUp,
-  Clock, Send, ArrowLeft, ScrollText
+  Clock, Send, ArrowLeft, ScrollText, Share2, Shield, Copy, Check, UserPlus
 } from "lucide-react";
 import { useHostedCompetition } from "@/hooks/useHostedCompetitions";
 import InviteJudgeModal from "@/components/loopgate/InviteJudgeModal";
@@ -18,6 +18,14 @@ import { useGuestMode } from "@/hooks/useGuestMode";
 import { isPast, format } from "date-fns";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+
+interface CrewData {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  emblem: string;
+}
 
 export default function HostedCompDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +45,8 @@ export default function HostedCompDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInviteJudges, setShowInviteJudges] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [hostCrew, setHostCrew] = useState<CrewData | null>(null);
+  const [copied, setCopied] = useState(false);
 
   if (loading) {
     return (
@@ -89,16 +99,57 @@ export default function HostedCompDetailPage() {
     }
   };
 
+  // Fetch host crew data
+  useEffect(() => {
+    if (competition?.host_crew_id) {
+      supabase
+        .from('crews')
+        .select('id, name, avatar_url, emblem')
+        .eq('id', competition.host_crew_id)
+        .single()
+        .then(({ data }) => {
+          if (data) setHostCrew(data);
+        });
+    }
+  }, [competition?.host_crew_id]);
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/hosted-comp/${competition?.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: competition?.name,
+          text: `Join "${competition?.name}" on Loopgate!`,
+          url
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        toast.success("Link copied to clipboard!");
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      // User cancelled share
+    }
+  };
+
   return (
     <div className="pb-20">
-      {/* Back Button */}
-      <div className="px-4 pt-4">
+      {/* Back Button + Share */}
+      <div className="px-4 pt-4 flex items-center justify-between">
         <button
           onClick={() => navigate('/hosted-comps')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Hosted Comps
+        </button>
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-2 px-3 py-1.5 bg-surface-1 border border-border rounded-lg text-sm hover:bg-surface-2 transition-colors"
+        >
+          {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+          <span>{copied ? 'Copied!' : 'Share'}</span>
         </button>
       </div>
 
@@ -123,19 +174,34 @@ export default function HostedCompDetailPage() {
           </div>
         </div>
 
-        {/* Host Info */}
+        {/* Host Info - with Crew if available */}
         <div className="px-4 -mt-10 relative">
           <div className="flex items-end gap-3">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-sky-500 border-4 border-background flex items-center justify-center overflow-hidden shadow-lg shadow-cyan-500/20">
-              {competition.host_avatar_url ? (
-                <img src={competition.host_avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <Globe className="w-8 h-8 text-background" />
-              )}
-            </div>
+            {hostCrew ? (
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-sky-500 border-4 border-background flex items-center justify-center overflow-hidden shadow-lg shadow-cyan-500/20">
+                {hostCrew.avatar_url ? (
+                  <img src={hostCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <Shield className="w-8 h-8 text-background" />
+                )}
+              </div>
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-sky-500 border-4 border-background flex items-center justify-center overflow-hidden shadow-lg shadow-cyan-500/20">
+                {competition.host_avatar_url ? (
+                  <img src={competition.host_avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <Globe className="w-8 h-8 text-background" />
+                )}
+              </div>
+            )}
             <div className="pb-2">
-              <p className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider">Hosted by</p>
-              <p className="text-xl font-display">{competition.host_name}</p>
+              <p className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider">
+                {hostCrew ? 'Hosted by Crew' : 'Hosted by'}
+              </p>
+              <p className="text-xl font-display">{hostCrew ? hostCrew.name : competition.host_name}</p>
+              {hostCrew && (
+                <p className="text-[10px] text-muted-foreground">by {competition.host_name}</p>
+              )}
             </div>
           </div>
         </div>
@@ -186,38 +252,62 @@ export default function HostedCompDetailPage() {
           </div>
         )}
 
-        {/* Activity Signals */}
-        <HostedCompActivitySignals
-          competitionId={competition.id}
-          viewCount={competition.view_count || 0}
-          participantCount={participants.length}
-          submissionCount={submissions.length}
-          deadline={competition.submission_deadline}
-          isTrending={competition.is_trending}
-          communityUrl={competition.community_url}
-        />
-
-        {/* Join Button (before submission) */}
-        {!hasSubmitted && competition.status === 'live' && !deadlinePassed && (
-          <HostedCompJoinButton
-            competitionId={competition.id}
-            status={competition.status}
-            deadlinePassed={deadlinePassed}
-            onJoin={refetch}
-          />
+        {/* PROMINENT JOIN CTA - Shows first for non-participants */}
+        {competition.status === 'live' && !deadlinePassed && !hasJoined && !hasSubmitted && (
+          <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/5 border-2 border-emerald-500/40 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display text-lg flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-emerald-400" />
+                  Join This Competition
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {participants.length} {participants.length === 1 ? 'editor' : 'editors'} preparing entries
+                </p>
+              </div>
+            </div>
+            
+            {user ? (
+              <HostedCompJoinButton
+                competitionId={competition.id}
+                status={competition.status}
+                deadlinePassed={deadlinePassed}
+                onJoin={refetch}
+              />
+            ) : (
+              <motion.button
+                onClick={() => navigate('/start')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-background font-bold rounded-lg flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-5 h-5" />
+                Sign Up to Join
+              </motion.button>
+            )}
+          </div>
         )}
 
-        {/* Submit Button - Shows after joining */}
-        {canSubmit && user && hasJoined && !showSubmitForm && (
-          <motion.button
-            onClick={() => setShowSubmitForm(true)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-sky-500 text-background font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
-          >
-            <Send className="w-5 h-5" />
-            Submit Your Edit
-          </motion.button>
+        {/* Already Joined - show submit button */}
+        {hasJoined && !hasSubmitted && competition.status === 'live' && !deadlinePassed && (
+          <div className="space-y-3">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-2">
+              <Check className="w-5 h-5 text-emerald-400" />
+              <span className="text-sm font-medium text-emerald-400">You've joined!</span>
+            </div>
+            
+            {!showSubmitForm && (
+              <motion.button
+                onClick={() => setShowSubmitForm(true)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-4 bg-gradient-to-r from-cyan-500 to-sky-500 text-background font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
+              >
+                <Send className="w-5 h-5" />
+                Submit Your Edit
+              </motion.button>
+            )}
+          </div>
         )}
 
         {/* Already Submitted */}
@@ -227,6 +317,17 @@ export default function HostedCompDetailPage() {
             <p className="text-[11px] text-muted-foreground mt-1">Good luck! Results will be announced after judging.</p>
           </div>
         )}
+
+        {/* Activity Signals - moved after CTA */}
+        <HostedCompActivitySignals
+          competitionId={competition.id}
+          viewCount={competition.view_count || 0}
+          participantCount={participants.length}
+          submissionCount={submissions.length}
+          deadline={competition.submission_deadline}
+          isTrending={competition.is_trending}
+          communityUrl={competition.community_url}
+        />
 
         {/* Submit Form */}
         {showSubmitForm && (
@@ -305,15 +406,7 @@ export default function HostedCompDetailPage() {
           </motion.form>
         )}
 
-        {/* Guest Prompt */}
-        {isGuest && competition.status === 'live' && !deadlinePassed && (
-          <button
-            onClick={() => navigate('/start')}
-            className="w-full py-4 bg-surface-1 border border-cyan-500/30 text-foreground font-medium rounded-lg hover:bg-surface-2 transition-colors"
-          >
-            Sign in to Join & Submit
-          </button>
-        )}
+        {/* Guest prompt removed - now handled in the prominent CTA above */}
 
         {/* Host Dashboard */}
         {isHost && (
