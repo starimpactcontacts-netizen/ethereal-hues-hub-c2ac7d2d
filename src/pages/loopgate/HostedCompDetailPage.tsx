@@ -2,144 +2,22 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  Globe, Users, Calendar, Trophy, ExternalLink, 
-  Loader2, ChevronDown, ChevronUp, Star, UserPlus,
-  Clock, Award, Send, ArrowLeft, MessageCircle, Gavel
+  Globe, Calendar, Trophy, ExternalLink, 
+  Loader2, ChevronDown, ChevronUp,
+  Clock, Send, ArrowLeft, ScrollText
 } from "lucide-react";
-import { useHostedCompetition, HostedCompetitionSubmission } from "@/hooks/useHostedCompetitions";
+import { useHostedCompetition } from "@/hooks/useHostedCompetitions";
 import InviteJudgeModal from "@/components/loopgate/InviteJudgeModal";
 import HostedCompChat from "@/components/loopgate/HostedCompChat";
+import HostedCompJoinButton from "@/components/loopgate/HostedCompJoinButton";
+import HostedCompActivitySignals from "@/components/loopgate/HostedCompActivitySignals";
+import HostedCompLeaderboard from "@/components/loopgate/HostedCompLeaderboard";
+import HostedCompHostDashboard from "@/components/loopgate/HostedCompHostDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
-import { formatDistanceToNow, isPast, format } from "date-fns";
+import { isPast, format } from "date-fns";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 import { toast } from "sonner";
-
-function SubmissionCard({ 
-  submission, 
-  rank, 
-  canScore, 
-  onScore 
-}: { 
-  submission: HostedCompetitionSubmission; 
-  rank: number;
-  canScore: boolean;
-  onScore: (id: string, score: number, notes?: string) => void;
-}) {
-  const [showScoring, setShowScoring] = useState(false);
-  const [score, setScore] = useState(submission.score?.toString() || "");
-  const [notes, setNotes] = useState(submission.judge_notes || "");
-
-  const handleSave = () => {
-    const scoreNum = parseInt(score);
-    if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
-      toast.error("Score must be 0-100");
-      return;
-    }
-    onScore(submission.id, scoreNum, notes || undefined);
-    setShowScoring(false);
-  };
-
-  return (
-    <div className="bg-surface-1 border border-border rounded-lg overflow-hidden">
-      <div className="p-3 flex items-center gap-3">
-        {/* Rank */}
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
-          rank === 1 ? 'bg-gold/20 text-gold' :
-          rank === 2 ? 'bg-zinc-300/20 text-zinc-300' :
-          rank === 3 ? 'bg-amber-600/20 text-amber-600' :
-          'bg-surface-2 text-muted-foreground'
-        }`}>
-          {rank}
-        </div>
-
-        {/* User */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-surface-2 overflow-hidden">
-            {submission.avatar_url ? (
-              <img src={submission.avatar_url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
-                {submission.username.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">{submission.username}</p>
-            <p className="text-[10px] text-muted-foreground uppercase">{submission.platform}</p>
-          </div>
-        </div>
-
-        {/* Score */}
-        {submission.score !== null && (
-          <div className="text-right">
-            <p className="text-lg font-bold text-cyan-400">{submission.score}</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Score</p>
-          </div>
-        )}
-
-        {/* Link */}
-        <a 
-          href={submission.submission_url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="p-2 hover:bg-surface-2 rounded-lg"
-        >
-          <ExternalLink className="w-4 h-4 text-muted-foreground" />
-        </a>
-
-        {/* Score Button */}
-        {canScore && (
-          <button
-            onClick={() => setShowScoring(!showScoring)}
-            className="p-2 hover:bg-cyan-500/20 rounded-lg"
-          >
-            {showScoring ? <ChevronUp className="w-4 h-4 text-cyan-400" /> : <Star className="w-4 h-4 text-cyan-400" />}
-          </button>
-        )}
-      </div>
-
-      {/* Scoring Panel */}
-      {showScoring && canScore && (
-        <div className="p-3 border-t border-border bg-surface-2 space-y-3">
-          <div>
-            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Score (0-100)</label>
-            <input
-              type="number"
-              value={score}
-              onChange={(e) => setScore(e.target.value)}
-              min={0}
-              max={100}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1"
-            />
-          </div>
-          <div>
-            <label className="text-[10px] uppercase tracking-widest text-muted-foreground">Notes (optional)</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm mt-1 min-h-[60px] resize-none"
-              placeholder="Feedback for the editor..."
-            />
-          </div>
-          <button
-            onClick={handleSave}
-            className="w-full py-2 bg-cyan-500 text-background font-bold rounded-lg text-sm"
-          >
-            Save Score
-          </button>
-        </div>
-      )}
-
-      {/* Judge Notes Display */}
-      {submission.judge_notes && !showScoring && (
-        <div className="px-3 pb-3">
-          <p className="text-[11px] text-muted-foreground italic">"{submission.judge_notes}"</p>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function HostedCompDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -147,9 +25,9 @@ export default function HostedCompDetailPage() {
   const { user, profile } = useAuth();
   const { isGuest } = useGuestMode();
   const { 
-    competition, submissions, judges, loading, 
-    isHost, isJudge, hasSubmitted,
-    submitEntry, scoreSubmission
+    competition, submissions, judges, participants, loading, 
+    isHost, isJudge, hasSubmitted, hasJoined,
+    submitEntry, refetch
   } = useHostedCompetition(id);
 
   const [showSubmitForm, setShowSubmitForm] = useState(false);
@@ -158,6 +36,7 @@ export default function HostedCompDetailPage() {
   const [urlError, setUrlError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInviteJudges, setShowInviteJudges] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
   if (loading) {
     return (
@@ -187,15 +66,8 @@ export default function HostedCompDetailPage() {
 
   const deadlinePassed = isPast(new Date(competition.submission_deadline));
   const canSubmit = competition.status === 'live' && !deadlinePassed && !hasSubmitted;
-  const canScore = isHost || isJudge;
-
-  // Sort submissions by score (scored first, then by score desc)
-  const sortedSubmissions = [...submissions].sort((a, b) => {
-    if (a.score !== null && b.score === null) return -1;
-    if (a.score === null && b.score !== null) return 1;
-    if (a.score !== null && b.score !== null) return b.score - a.score;
-    return new Date(a.submitted_at).getTime() - new Date(b.submitted_at).getTime();
-  });
+  const isJudging = competition.status === 'judging' || (competition.status === 'live' && deadlinePassed);
+  const isCompleted = competition.status === 'completed';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,261 +91,253 @@ export default function HostedCompDetailPage() {
 
   return (
     <div className="pb-20">
-      
-      <div className="pb-20">
-        {/* Back Button */}
-        <div className="px-4 pt-4">
-          <button
-            onClick={() => navigate('/hosted-comps')}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Hosted Comps
-          </button>
-        </div>
+      {/* Back Button */}
+      <div className="px-4 pt-4">
+        <button
+          onClick={() => navigate('/hosted-comps')}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Hosted Comps
+        </button>
+      </div>
 
-        {/* Header */}
-        <div className="relative mt-4">
-          {/* Poster/Banner */}
-          <div className="h-32 bg-gradient-to-br from-cyan-500/20 via-sky-500/10 to-transparent">
-            {competition.poster_url && (
-              <img src={competition.poster_url} alt="" className="w-full h-full object-cover opacity-50" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-          </div>
-
-          {/* Host Info */}
-          <div className="px-4 -mt-8 relative">
-            <div className="flex items-end gap-3">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-sky-500 border-4 border-background flex items-center justify-center overflow-hidden">
-                {competition.host_avatar_url ? (
-                  <img src={competition.host_avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Globe className="w-7 h-7 text-background" />
-                )}
-              </div>
-              <div className="pb-1">
-                <p className="text-xs text-cyan-400 font-medium">Hosted by</p>
-                <p className="text-lg font-display">{competition.host_name}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-4 space-y-4">
-          {/* Title & Status */}
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="font-display text-xl">{competition.name}</h1>
-            <div className={`px-2 py-1 text-[9px] font-bold uppercase tracking-wider rounded ${
-              competition.status === 'completed' ? 'bg-zinc-500/20 text-zinc-400' :
-              competition.status === 'judging' || deadlinePassed ? 'bg-amber-500/20 text-amber-400' :
-              'bg-emerald-500/20 text-emerald-400'
+      {/* Header */}
+      <div className="relative mt-4">
+        {/* Poster/Banner */}
+        <div className="h-40 bg-gradient-to-br from-cyan-500/20 via-sky-500/10 to-transparent relative overflow-hidden">
+          {competition.poster_url && (
+            <img src={competition.poster_url} alt="" className="w-full h-full object-cover" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          
+          {/* Status Badge */}
+          <div className="absolute top-3 right-3">
+            <div className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${
+              isCompleted ? 'bg-zinc-500/80 text-white' :
+              isJudging ? 'bg-amber-500/80 text-background animate-pulse' :
+              'bg-emerald-500/80 text-background'
             }`}>
-              {competition.status === 'completed' ? 'Completed' :
-               competition.status === 'judging' || deadlinePassed ? 'Judging' : 'Live'}
+              {isCompleted ? 'Completed' : isJudging ? '⚡ Judging' : '🔴 Live'}
             </div>
           </div>
+        </div>
 
-          {/* Description */}
-          {competition.description && (
-            <p className="text-sm text-muted-foreground">{competition.description}</p>
-          )}
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
-              <Users className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-              <p className="text-lg font-bold">{submissions.length}</p>
-              <p className="text-[9px] text-muted-foreground uppercase">Entries</p>
+        {/* Host Info */}
+        <div className="px-4 -mt-10 relative">
+          <div className="flex items-end gap-3">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-sky-500 border-4 border-background flex items-center justify-center overflow-hidden shadow-lg shadow-cyan-500/20">
+              {competition.host_avatar_url ? (
+                <img src={competition.host_avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Globe className="w-8 h-8 text-background" />
+              )}
             </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
-              <Calendar className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-              <p className="text-xs font-medium">{format(new Date(competition.submission_deadline), 'MMM d')}</p>
-              <p className="text-[9px] text-muted-foreground uppercase">Deadline</p>
-            </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
-              <Trophy className="w-4 h-4 text-gold mx-auto mb-1" />
-              <p className="text-xs font-medium truncate">{competition.prize_description || 'Glory'}</p>
-              <p className="text-[9px] text-muted-foreground uppercase">Prize</p>
+            <div className="pb-2">
+              <p className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider">Hosted by</p>
+              <p className="text-xl font-display">{competition.host_name}</p>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Submit Button */}
-          {canSubmit && user && !showSubmitForm && (
-            <motion.button
-              onClick={() => setShowSubmitForm(true)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-4 bg-gradient-to-r from-cyan-500 to-sky-500 text-background font-bold rounded-lg flex items-center justify-center gap-2"
-            >
-              <Send className="w-5 h-5" />
-              Submit Your Edit
-            </motion.button>
-          )}
+      {/* Content */}
+      <div className="p-4 space-y-5">
+        {/* Title */}
+        <h1 className="font-display text-2xl tracking-wide">{competition.name}</h1>
 
-          {/* Already Submitted */}
-          {hasSubmitted && (
-            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-center">
-              <p className="text-sm text-emerald-400 font-medium">✓ You've submitted!</p>
-            </div>
-          )}
+        {/* Description */}
+        {competition.description && (
+          <p className="text-sm text-muted-foreground leading-relaxed">{competition.description}</p>
+        )}
 
-          {/* Submit Form */}
-          {showSubmitForm && (
-            <motion.form
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              onSubmit={handleSubmit}
-              className="bg-surface-1 border border-cyan-500/30 rounded-lg p-4 space-y-4"
-            >
-              <h3 className="font-semibold flex items-center gap-2">
-                <Send className="w-4 h-4 text-cyan-400" />
-                Submit Entry
-              </h3>
+        {/* Prize & Deadline Row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-br from-gold/10 to-amber-500/5 border border-gold/30 rounded-lg p-4 text-center">
+            <Trophy className="w-5 h-5 text-gold mx-auto mb-2" />
+            <p className="text-sm font-bold text-gold">{competition.prize_description || 'Glory'}</p>
+            <p className="text-[9px] text-muted-foreground uppercase">Prize</p>
+          </div>
+          <div className="bg-surface-1 border border-border rounded-lg p-4 text-center">
+            <Calendar className="w-5 h-5 text-cyan-400 mx-auto mb-2" />
+            <p className="text-sm font-bold">{format(new Date(competition.submission_deadline), 'MMM d, h:mm a')}</p>
+            <p className="text-[9px] text-muted-foreground uppercase">Deadline</p>
+          </div>
+        </div>
 
-              {/* Platform */}
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 block">Platform</label>
-                <div className="flex gap-2">
-                  {(["tiktok", "instagram", "youtube"] as const).map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => {
-                        setPlatform(p);
-                        setUrlError("");
-                      }}
-                      className={`flex-1 py-2 rounded-lg text-xs font-semibold uppercase ${
-                        platform === p
-                          ? "bg-cyan-500 text-background"
-                          : "bg-surface-2 border border-border text-muted-foreground"
-                      }`}
-                    >
-                      {p === "tiktok" ? "TikTok" : p === "instagram" ? "IG" : "YT"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* URL */}
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 block">Edit Link</label>
-                <input
-                  type="url"
-                  value={submissionUrl}
-                  onChange={(e) => {
-                    setSubmissionUrl(e.target.value);
-                    setUrlError("");
-                  }}
-                  placeholder={getPlatformUrlPlaceholder(platform)}
-                  className={`w-full bg-background border rounded-lg px-4 py-3 text-sm ${
-                    urlError ? "border-destructive" : "border-border"
-                  }`}
-                  required
-                />
-                {urlError && <p className="text-destructive text-xs mt-1">{urlError}</p>}
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowSubmitForm(false)}
-                  className="flex-1 py-3 bg-surface-2 text-foreground font-medium rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !submissionUrl}
-                  className="flex-1 py-3 bg-cyan-500 text-background font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                  Submit
-                </button>
-              </div>
-            </motion.form>
-          )}
-
-          {/* Guest Prompt */}
-          {isGuest && canSubmit && (
+        {/* Rules (Collapsible) */}
+        {competition.rules && (
+          <div className="bg-surface-1 border border-border rounded-lg overflow-hidden">
             <button
-              onClick={() => navigate('/start')}
-              className="w-full py-4 bg-surface-1 border border-cyan-500/30 text-foreground font-medium rounded-lg"
+              onClick={() => setShowRules(!showRules)}
+              className="w-full p-3 flex items-center justify-between hover:bg-surface-2 transition-colors"
             >
-              Sign in to Submit
+              <div className="flex items-center gap-2">
+                <ScrollText className="w-4 h-4 text-cyan-400" />
+                <span className="text-sm font-semibold">Competition Rules</span>
+              </div>
+              {showRules ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
-          )}
-
-          {/* Host Controls */}
-          {isHost && (
-            <div className="bg-cyan-500/10 border border-cyan-500/30 rounded-lg p-4 space-y-3">
-              <div>
-                <p className="text-xs text-cyan-300 font-medium mb-1">🎯 You're the Host</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Score submissions below. Invite judges to help with the workload.
-                </p>
+            {showRules && (
+              <div className="px-4 pb-4 text-sm text-muted-foreground whitespace-pre-wrap">
+                {competition.rules}
               </div>
-              <button
-                onClick={() => setShowInviteJudges(true)}
-                className="w-full py-2.5 bg-cyan-500 text-background font-semibold rounded-lg flex items-center justify-center gap-2 text-sm"
-              >
-                <Gavel className="w-4 h-4" />
-                Invite Judges
-              </button>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
-          {/* Competition Chat */}
-          <HostedCompChat 
-            competitionId={competition.id} 
-            competitionName={competition.name} 
+        {/* Activity Signals */}
+        <HostedCompActivitySignals
+          competitionId={competition.id}
+          viewCount={competition.view_count || 0}
+          participantCount={participants.length}
+          submissionCount={submissions.length}
+          deadline={competition.submission_deadline}
+          isTrending={competition.is_trending}
+          communityUrl={competition.community_url}
+        />
+
+        {/* Join Button (before submission) */}
+        {!hasSubmitted && competition.status === 'live' && !deadlinePassed && (
+          <HostedCompJoinButton
+            competitionId={competition.id}
+            status={competition.status}
+            deadlinePassed={deadlinePassed}
+            onJoin={refetch}
           />
+        )}
 
-          {/* Judges */}
-          {judges.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Judges</h3>
-              <div className="flex flex-wrap gap-2">
-                {judges.filter(j => j.status === 'accepted').map((judge) => (
-                  <div key={judge.id} className="flex items-center gap-2 bg-surface-1 border border-border rounded-full px-3 py-1">
-                    <div className="w-5 h-5 rounded-full bg-surface-2 overflow-hidden">
-                      {judge.avatar_url && <img src={judge.avatar_url} alt="" className="w-full h-full object-cover" />}
-                    </div>
-                    <span className="text-xs">{judge.username}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* Submit Button - Shows after joining */}
+        {canSubmit && user && hasJoined && !showSubmitForm && (
+          <motion.button
+            onClick={() => setShowSubmitForm(true)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full py-4 bg-gradient-to-r from-cyan-500 to-sky-500 text-background font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20"
+          >
+            <Send className="w-5 h-5" />
+            Submit Your Edit
+          </motion.button>
+        )}
 
-          {/* Submissions List */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Award className="w-3 h-3" />
-              Submissions ({submissions.length})
+        {/* Already Submitted */}
+        {hasSubmitted && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 text-center">
+            <p className="text-sm text-emerald-400 font-medium">✓ Your entry has been submitted!</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Good luck! Results will be announced after judging.</p>
+          </div>
+        )}
+
+        {/* Submit Form */}
+        {showSubmitForm && (
+          <motion.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            onSubmit={handleSubmit}
+            className="bg-surface-1 border border-cyan-500/30 rounded-lg p-4 space-y-4"
+          >
+            <h3 className="font-semibold flex items-center gap-2">
+              <Send className="w-4 h-4 text-cyan-400" />
+              Submit Entry
             </h3>
 
-            {sortedSubmissions.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No submissions yet
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {sortedSubmissions.map((sub, idx) => (
-                  <SubmissionCard
-                    key={sub.id}
-                    submission={sub}
-                    rank={idx + 1}
-                    canScore={canScore}
-                    onScore={scoreSubmission}
-                  />
+            {/* Platform */}
+            <div>
+              <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 block">Platform</label>
+              <div className="flex gap-2">
+                {(["tiktok", "instagram", "youtube"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => {
+                      setPlatform(p);
+                      setUrlError("");
+                    }}
+                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold uppercase ${
+                      platform === p
+                        ? "bg-cyan-500 text-background"
+                        : "bg-surface-2 border border-border text-muted-foreground hover:bg-surface-1"
+                    }`}
+                  >
+                    {p === "tiktok" ? "TikTok" : p === "instagram" ? "IG Reels" : "YouTube"}
+                  </button>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+
+            {/* URL */}
+            <div>
+              <label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 block">Edit Link</label>
+              <input
+                type="url"
+                value={submissionUrl}
+                onChange={(e) => {
+                  setSubmissionUrl(e.target.value);
+                  setUrlError("");
+                }}
+                placeholder={getPlatformUrlPlaceholder(platform)}
+                className={`w-full bg-background border rounded-lg px-4 py-3 text-sm ${
+                  urlError ? "border-destructive" : "border-border"
+                }`}
+                required
+              />
+              {urlError && <p className="text-destructive text-xs mt-1">{urlError}</p>}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSubmitForm(false)}
+                className="flex-1 py-3 bg-surface-2 text-foreground font-medium rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting || !submissionUrl}
+                className="flex-1 py-3 bg-cyan-500 text-background font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                Submit
+              </button>
+            </div>
+          </motion.form>
+        )}
+
+        {/* Guest Prompt */}
+        {isGuest && competition.status === 'live' && !deadlinePassed && (
+          <button
+            onClick={() => navigate('/start')}
+            className="w-full py-4 bg-surface-1 border border-cyan-500/30 text-foreground font-medium rounded-lg hover:bg-surface-2 transition-colors"
+          >
+            Sign in to Join & Submit
+          </button>
+        )}
+
+        {/* Host Dashboard */}
+        {isHost && (
+          <HostedCompHostDashboard
+            competitionId={competition.id}
+            submissions={submissions}
+            judges={judges}
+            onInviteJudges={() => setShowInviteJudges(true)}
+            onRefresh={refetch}
+          />
+        )}
+
+        {/* Competition Chat */}
+        <HostedCompChat 
+          competitionId={competition.id} 
+          competitionName={competition.name} 
+        />
+
+        {/* Leaderboard */}
+        <HostedCompLeaderboard
+          submissions={submissions}
+          isJudging={isJudging}
+          isCompleted={isCompleted}
+        />
       </div>
 
       {/* Invite Judges Modal */}
@@ -484,7 +348,7 @@ export default function HostedCompDetailPage() {
         competitionName={competition.name}
         hostUserId={competition.host_user_id}
         existingJudgeIds={judges.map(j => j.user_id)}
-        onInvited={() => {}}
+        onInvited={refetch}
       />
     </div>
   );

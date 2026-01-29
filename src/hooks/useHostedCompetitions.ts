@@ -27,6 +27,9 @@ export interface HostedCompetition {
   featured_at?: string | null;
   community_url?: string | null;
   rules?: string | null;
+  view_count?: number;
+  participant_count?: number;
+  is_trending?: boolean;
 }
 
 export interface HostedCompetitionSubmission {
@@ -43,6 +46,11 @@ export interface HostedCompetitionSubmission {
   judge_notes: string | null;
   final_rank: number | null;
   submitted_at: string;
+  creativity_score?: number | null;
+  quality_score?: number | null;
+  impact_score?: number | null;
+  is_winner?: boolean;
+  winner_place?: number | null;
 }
 
 export interface HostedCompetitionJudge {
@@ -159,10 +167,12 @@ export function useHostedCompetition(competitionId: string | undefined) {
   const [competition, setCompetition] = useState<HostedCompetition | null>(null);
   const [submissions, setSubmissions] = useState<HostedCompetitionSubmission[]>([]);
   const [judges, setJudges] = useState<HostedCompetitionJudge[]>([]);
+  const [participants, setParticipants] = useState<{ id: string; user_id: string; username: string; avatar_url: string | null; }[]>([]);
   const [loading, setLoading] = useState(true);
   const [isHost, setIsHost] = useState(false);
   const [isJudge, setIsJudge] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [hasJoined, setHasJoined] = useState(false);
 
   const fetchCompetition = async () => {
     if (!competitionId) return;
@@ -203,6 +213,16 @@ export function useHostedCompetition(competitionId: string | undefined) {
       if (judgeError) throw judgeError;
       setJudges(judgeData || []);
       setIsJudge(judgeData?.some(j => j.user_id === user?.id && j.status === 'accepted') || false);
+
+      // Fetch participants
+      const { data: participantData } = await supabase
+        .from('hosted_competition_participants' as any)
+        .select('*')
+        .eq('competition_id', competitionId);
+
+      const typedParticipants = (participantData as unknown as { id: string; user_id: string; username: string; avatar_url: string | null; }[]) || [];
+      setParticipants(typedParticipants);
+      setHasJoined(typedParticipants.some(p => p.user_id === user?.id));
 
     } catch (error: any) {
       console.error('Error fetching competition:', error);
@@ -320,10 +340,12 @@ export function useHostedCompetition(competitionId: string | undefined) {
     competition,
     submissions,
     judges,
+    participants,
     loading,
     isHost,
     isJudge,
     hasSubmitted,
+    hasJoined,
     submitEntry,
     scoreSubmission,
     inviteJudge,
