@@ -414,7 +414,8 @@ export function useGlobalStats() {
       reviewRequests,
       battles,
       gqtSubmissions,
-      activeUsers,
+      activeSessions,
+      onlineStatusUsers,
       sanctionedCompeting,
       battleCompeting
     ] = await Promise.all([
@@ -455,11 +456,19 @@ export function useGlobalStats() {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', twentyFourHoursAgo),
       
-      // Active users (last 10 minutes)
+      // Active users (last 10 minutes from sessions)
       supabase
         .from('active_sessions')
         .select('*', { count: 'exact', head: true })
         .gte('last_seen', tenMinutesAgo),
+      
+      // Users with activity_status set to online
+      supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('activity_status', 'online')
+        .eq('is_banned', false)
+        .eq('is_hidden', false),
       
       // Users in active sanctioned tournaments (lobby, ready_up, live, bracket)
       supabase
@@ -487,9 +496,15 @@ export function useGlobalStats() {
       (sanctionedCompeting.count || 0) + 
       (battleCompeting.count || 0);
 
+    // Active now = max of session-based activity or users with online status set
+    const activeNow = Math.max(
+      activeSessions.count || 0,
+      onlineStatusUsers.count || 0
+    );
+
     setStats({
       entries24h: totalEntries,
-      activeUsers: activeUsers.count || 0,
+      activeUsers: activeNow,
       totalCompeting: totalCompeting,
     });
     setLoading(false);
