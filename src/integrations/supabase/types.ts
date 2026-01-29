@@ -1500,6 +1500,7 @@ export type Database = {
         Row: {
           approved_at: string | null
           approved_by: string | null
+          community_url: string | null
           created_at: string
           description: string | null
           featured_at: string | null
@@ -1515,6 +1516,7 @@ export type Database = {
           poster_url: string | null
           prize_description: string | null
           rejection_reason: string | null
+          rules: string | null
           status: string
           submission_deadline: string
           updated_at: string
@@ -1522,6 +1524,7 @@ export type Database = {
         Insert: {
           approved_at?: string | null
           approved_by?: string | null
+          community_url?: string | null
           created_at?: string
           description?: string | null
           featured_at?: string | null
@@ -1537,6 +1540,7 @@ export type Database = {
           poster_url?: string | null
           prize_description?: string | null
           rejection_reason?: string | null
+          rules?: string | null
           status?: string
           submission_deadline: string
           updated_at?: string
@@ -1544,6 +1548,7 @@ export type Database = {
         Update: {
           approved_at?: string | null
           approved_by?: string | null
+          community_url?: string | null
           created_at?: string
           description?: string | null
           featured_at?: string | null
@@ -1559,6 +1564,7 @@ export type Database = {
           poster_url?: string | null
           prize_description?: string | null
           rejection_reason?: string | null
+          rules?: string | null
           status?: string
           submission_deadline?: string
           updated_at?: string
