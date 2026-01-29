@@ -393,7 +393,7 @@ export function useEventStats(eventId: string | null) {
   return { stats, loading, refetch: fetchStats };
 }
 
-// Hook for global stats (for Hub page) - counts both standard and Open Arena submissions
+// Hook for global stats (for Hub page) - aggregates ALL platform activity
 export function useGlobalStats() {
   const [stats, setStats] = useState<{ entries24h: number; activeUsers: number; totalCompeting: number }>({
     entries24h: 0,
@@ -406,35 +406,91 @@ export function useGlobalStats() {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    // Get standard submissions in last 24h
-    const { count: standardEntries } = await supabase
-      .from('event_participations')
-      .select('*', { count: 'exact', head: true })
-      .gte('submitted_at', twentyFourHoursAgo);
+    // Fetch all activity counts in parallel
+    const [
+      standardEntries,
+      roundEntries,
+      sanctionedParticipants,
+      reviewRequests,
+      battles,
+      gqtSubmissions,
+      activeUsers,
+      sanctionedCompeting,
+      battleCompeting
+    ] = await Promise.all([
+      // Standard event submissions in last 24h
+      supabase
+        .from('event_participations')
+        .select('*', { count: 'exact', head: true })
+        .gte('submitted_at', twentyFourHoursAgo),
+      
+      // Open Arena round submissions in last 24h
+      supabase
+        .from('round_participations')
+        .select('*', { count: 'exact', head: true })
+        .not('submission_url', 'is', null)
+        .gte('submitted_at', twentyFourHoursAgo),
+      
+      // Sanctioned tournament joins in last 24h
+      supabase
+        .from('sanctioned_tournament_participants')
+        .select('*', { count: 'exact', head: true })
+        .gte('joined_at', twentyFourHoursAgo),
+      
+      // Review requests (Get Feedback) in last 24h
+      supabase
+        .from('review_requests')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', twentyFourHoursAgo),
+      
+      // 1v1 Battles created in last 24h
+      supabase
+        .from('battles')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', twentyFourHoursAgo),
+      
+      // GQT submissions in last 24h
+      supabase
+        .from('gatekeeper_submissions')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', twentyFourHoursAgo),
+      
+      // Active users (last 10 minutes)
+      supabase
+        .from('active_sessions')
+        .select('*', { count: 'exact', head: true })
+        .gte('last_seen', tenMinutesAgo),
+      
+      // Users in active sanctioned tournaments (lobby, ready_up, live, bracket)
+      supabase
+        .from('sanctioned_tournament_participants')
+        .select('user_id', { count: 'exact', head: true }),
+      
+      // Users in active battles
+      supabase
+        .from('battles')
+        .select('challenger_id', { count: 'exact', head: true })
+        .in('status', ['pending', 'active', 'judging'])
+    ]);
 
-    // Get Open Arena submissions in last 24h
-    const { count: roundEntries } = await supabase
-      .from('round_participations')
-      .select('*', { count: 'exact', head: true })
-      .not('submission_url', 'is', null)
-      .gte('submitted_at', twentyFourHoursAgo);
+    // Sum all entries for last 24h
+    const totalEntries = 
+      (standardEntries.count || 0) + 
+      (roundEntries.count || 0) + 
+      (sanctionedParticipants.count || 0) + 
+      (reviewRequests.count || 0) + 
+      (battles.count || 0) + 
+      (gqtSubmissions.count || 0);
 
-    // Get active users (last 10 minutes)
-    const { count: activeUsers } = await supabase
-      .from('active_sessions')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_seen', tenMinutesAgo);
-
-    // Get total users with at least one participation
-    const { count: totalCompeting } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .gt('total_events', 0);
+    // Total competing = sanctioned + battle participants (unique-ish approximation)
+    const totalCompeting = 
+      (sanctionedCompeting.count || 0) + 
+      (battleCompeting.count || 0);
 
     setStats({
-      entries24h: (standardEntries || 0) + (roundEntries || 0),
-      activeUsers: activeUsers || 0,
-      totalCompeting: totalCompeting || 0,
+      entries24h: totalEntries,
+      activeUsers: activeUsers.count || 0,
+      totalCompeting: totalCompeting,
     });
     setLoading(false);
   }, []);
