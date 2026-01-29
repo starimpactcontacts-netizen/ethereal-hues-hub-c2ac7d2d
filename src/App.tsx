@@ -8,7 +8,7 @@ import { useUserRoles } from "./hooks/useUserRoles";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
-import AuthPage from "./pages/AuthPage";
+
 import LoginPage from "./pages/LoginPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import EnterpriseOnboardingPage from "./pages/EnterpriseOnboardingPage";
@@ -148,32 +148,6 @@ function RootRedirect() {
   return <Navigate to="/hub" replace />;
 }
 
-// Auth page wrapper - redirect if already logged in
-function AuthPageWrapper() {
-  const { user, profile, loading } = useAuth();
-  const { roles, loading: rolesLoading } = useUserRoles(user?.id);
-  
-  // Dev mode: immediate redirect, no render
-  if ((window as any).__LOOPGATE_DEV_AUTH__) {
-    return <Navigate to="/hub" replace />;
-  }
-  
-  // Show loading screen during auth check - prevents flash
-  if (loading || rolesLoading) {
-    return <LoadingScreen />;
-  }
-  
-  if (user) {
-    // Dev account bypasses everything - straight to hub
-    if (user.email === 'dev@loopgate.io') {
-      return <Navigate to="/hub" replace />;
-    }
-    // ZERO FRICTION: Go straight to hub, skip onboarding redirect
-    return <Navigate to="/hub" replace />;
-  }
-  
-  return <AuthPage />;
-}
 
 // Onboarding wrapper
 function OnboardingWrapper() {
@@ -245,7 +219,7 @@ export default function App() {
           <Routes>
             {/* Public routes - no auth required */}
             <Route path="/" element={<RootRedirect />} />
-            <Route path="/auth" element={<AuthPageWrapper />} />
+            {/* /auth removed - use /start or /login */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/onboarding" element={<OnboardingWrapper />} />
             <Route path="/enterprise-onboarding" element={<EnterpriseOnboardingWrapper />} />
