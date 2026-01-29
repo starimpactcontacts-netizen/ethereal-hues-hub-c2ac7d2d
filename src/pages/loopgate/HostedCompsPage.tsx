@@ -2,10 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
-  Globe, Plus, Users, Calendar, Trophy, 
+  Globe, Plus, Users, Trophy, 
   ChevronRight, Clock, Loader2, Sparkles, ArrowLeft 
 } from "lucide-react";
-import AppHeader from "@/components/loopgate/AppHeader";
 import { useHostedCompetitions, HostedCompetition } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
@@ -111,7 +110,6 @@ export default function HostedCompsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
       
       {/* Back Button */}
       <div className="px-4 pt-4">
