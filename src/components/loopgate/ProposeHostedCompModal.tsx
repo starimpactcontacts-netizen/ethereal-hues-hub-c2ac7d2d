@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { X, Globe, Calendar, Users, Trophy, Loader2, ImagePlus, Trash2 } from "lucide-react";
+import { X, Globe, Calendar, Users, Trophy, Loader2, ImagePlus, Trash2, ExternalLink, ListChecks } from "lucide-react";
 import { motion } from "framer-motion";
 import { useHostedCompetitions } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,6 +31,8 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
   const [posterFile, setPosterFile] = useState<File | null>(null);
   const [posterPreview, setPosterPreview] = useState<string | null>(null);
   const [isUploadingPoster, setIsUploadingPoster] = useState(false);
+  const [communityUrl, setCommunityUrl] = useState("");
+  const [rules, setRules] = useState("");
 
   const handlePosterSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -120,7 +122,9 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
       submission_deadline: new Date(deadline).toISOString(),
       prize_description: prizeDescription.trim() || undefined,
       host_crew_id: useCrewAsHost && primaryCrew?.crew ? primaryCrew.crew.id : undefined,
-      poster_url: posterUrl
+      poster_url: posterUrl,
+      community_url: communityUrl.trim() || undefined,
+      rules: rules.trim() || undefined
     });
 
     setIsSubmitting(false);
@@ -261,6 +265,25 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
             </p>
           </div>
 
+          {/* Community Link */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              <ExternalLink className="w-3 h-3 inline mr-1" />
+              Community Link *
+            </label>
+            <input
+              type="url"
+              value={communityUrl}
+              onChange={(e) => setCommunityUrl(e.target.value)}
+              placeholder="https://discord.gg/yourserver or website URL"
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-cyan-500"
+              required
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Where participants can join your community/get updates
+            </p>
+          </div>
+
           {/* Description */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
@@ -269,10 +292,28 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What's this competition about? Theme, rules, etc."
+              placeholder="What's this competition about? Theme, etc."
               className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 min-h-[80px] resize-none"
               maxLength={500}
             />
+          </div>
+
+          {/* Rules */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              <ListChecks className="w-3 h-3 inline mr-1" />
+              Rules (Optional)
+            </label>
+            <textarea
+              value={rules}
+              onChange={(e) => setRules(e.target.value)}
+              placeholder="• No teams, solo entries only&#10;• No stealing edits&#10;• Must be 10+ seconds"
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 min-h-[100px] resize-none"
+              maxLength={1000}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              List your competition rules (one per line recommended)
+            </p>
           </div>
 
           {/* Format */}
@@ -364,7 +405,7 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
           {/* Submit */}
           <button
             type="submit"
-            disabled={isSubmitting || isUploadingPoster || !name.trim() || !hostName.trim() || !deadline}
+            disabled={isSubmitting || isUploadingPoster || !name.trim() || !hostName.trim() || !deadline || !communityUrl.trim()}
             className="w-full py-4 bg-gradient-to-r from-cyan-500 to-sky-500 text-background font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (

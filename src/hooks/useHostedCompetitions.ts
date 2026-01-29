@@ -25,6 +25,8 @@ export interface HostedCompetition {
   submission_count?: number;
   is_featured?: boolean;
   featured_at?: string | null;
+  community_url?: string | null;
+  rules?: string | null;
 }
 
 export interface HostedCompetitionSubmission {
@@ -105,7 +107,7 @@ export function useHostedCompetitions() {
 
   const proposeCompetition = async (data: {
     name: string;
-    description: string;
+    description?: string;
     host_name: string;
     format: string;
     max_submissions?: number;
@@ -113,6 +115,8 @@ export function useHostedCompetitions() {
     prize_description?: string;
     poster_url?: string;
     host_crew_id?: string;
+    community_url?: string;
+    rules?: string;
   }) => {
     if (!user || !profile) {
       toast.error("You must be logged in");
