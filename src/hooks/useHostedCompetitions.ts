@@ -23,6 +23,8 @@ export interface HostedCompetition {
   created_at: string;
   updated_at: string;
   submission_count?: number;
+  is_featured?: boolean;
+  featured_at?: string | null;
 }
 
 export interface HostedCompetitionSubmission {
@@ -327,6 +329,7 @@ export function useHostedCompetition(competitionId: string | undefined) {
 
 export function usePendingHostedCompetitions() {
   const [pending, setPending] = useState<HostedCompetition[]>([]);
+  const [liveComps, setLiveComps] = useState<HostedCompetition[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchPending = async () => {
@@ -346,8 +349,24 @@ export function usePendingHostedCompetitions() {
     }
   };
 
+  const fetchLiveComps = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('hosted_competitions')
+        .select('*')
+        .in('status', ['live', 'judging'])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setLiveComps(data || []);
+    } catch (error: any) {
+      console.error('Error fetching live comps:', error);
+    }
+  };
+
   useEffect(() => {
     fetchPending();
+    fetchLiveComps();
   }, []);
 
   const approveCompetition = async (id: string, approverId: string) => {
@@ -364,6 +383,7 @@ export function usePendingHostedCompetitions() {
       if (error) throw error;
       toast.success("Competition approved and now live!");
       fetchPending();
+      fetchLiveComps();
       return true;
     } catch (error: any) {
       console.error('Error approving:', error);
@@ -393,11 +413,34 @@ export function usePendingHostedCompetitions() {
     }
   };
 
+  const toggleFeatured = async (id: string, isFeatured: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('hosted_competitions')
+        .update({
+          is_featured: !isFeatured,
+          featured_at: !isFeatured ? new Date().toISOString() : null
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success(!isFeatured ? "Competition featured!" : "Competition unfeatured");
+      fetchLiveComps();
+      return true;
+    } catch (error: any) {
+      console.error('Error toggling featured:', error);
+      toast.error("Failed to update");
+      return false;
+    }
+  };
+
   return {
     pending,
+    liveComps,
     loading,
     approveCompetition,
     rejectCompetition,
-    refetch: fetchPending
+    toggleFeatured,
+    refetch: () => { fetchPending(); fetchLiveComps(); }
   };
 }

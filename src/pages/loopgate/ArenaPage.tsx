@@ -738,18 +738,18 @@ export default function ArenaPage() {
               {/* Hosted Comp Entry Card */}
               <HostedCompCard onEnter={() => navigate('/hosted-comps')} />
 
-              {/* Featured Hosted Comps */}
-              {hostedComps.filter(c => c.status === 'live' || c.status === 'judging').length > 0 && (
-                <div className="mt-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-cyan-400">
-                      Featured Comps
-                    </span>
-                    <div className="flex-1 h-px bg-border" />
-                  </div>
+              {/* Featured Hosted Comps - Always visible */}
+              <div className="mt-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-cyan-400">
+                    Featured Comps
+                  </span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                {hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length > 0 ? (
                   <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
                     {hostedComps
-                      .filter(c => c.status === 'live' || c.status === 'judging')
+                      .filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging'))
                       .slice(0, 6)
                       .map((comp) => (
                         <FeaturedHostedCompCard
@@ -759,8 +759,18 @@ export default function ArenaPage() {
                         />
                       ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="bg-surface-1/50 border border-cyan-500/20 border-dashed p-6 text-center">
+                    <div className="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-2">
+                      <Globe className="w-5 h-5 text-cyan-500/40" />
+                    </div>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">No Featured Comps</p>
+                    <p className="text-[9px] text-muted-foreground/60">
+                      Live competitions will appear here when featured
+                    </p>
+                  </div>
+                )}
+              </div>
             </motion.section>
           )}
 
