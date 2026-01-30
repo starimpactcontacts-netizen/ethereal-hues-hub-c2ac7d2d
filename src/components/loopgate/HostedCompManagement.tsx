@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Globe, Check, X, Loader2, Calendar, Users, 
-  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus
+  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus, Upload
 } from "lucide-react";
 import { usePendingHostedCompetitions, HostedCompetition } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -179,6 +179,7 @@ function LiveCompCard({
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(comp.host_avatar_url || "");
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleToggle = async () => {
     setIsProcessing(true);
@@ -191,6 +192,47 @@ function LiveCompCard({
     await onDelete();
     setIsDeleting(false);
     setShowDeleteConfirm(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2MB");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `hosted-comp-${comp.id}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setAvatarUrl(publicUrl);
+      toast.success("Image uploaded!");
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSaveAvatar = async () => {
@@ -321,17 +363,27 @@ function LiveCompCard({
               </div>
             </div>
 
-            {/* URL Input */}
-            <input
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://example.com/avatar.png"
-              className="w-full bg-surface-1 border border-border rounded-lg px-3 py-2 text-sm"
-            />
+            {/* File Upload */}
+            <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={isUploading}
+              />
+              {isUploading ? (
+                <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
+              ) : (
+                <Upload className="w-6 h-6 text-muted-foreground" />
+              )}
+              <span className="text-sm text-muted-foreground">
+                {isUploading ? "Uploading..." : "Tap to upload image"}
+              </span>
+            </label>
 
-            <p className="text-[10px] text-muted-foreground">
-              💡 Paste an image URL. Leave empty to use the host's default avatar.
+            <p className="text-[10px] text-muted-foreground text-center">
+              💡 Upload a profile picture for the competition host. Max 2MB.
             </p>
 
             {/* Actions */}
