@@ -473,16 +473,18 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               <Trophy className="w-3 h-3 inline mr-1" />
-              Prize Description (Optional)
+              Prize Breakdown (Optional)
             </label>
-            <input
-              type="text"
+            <textarea
               value={prizeDescription}
               onChange={(e) => setPrizeDescription(e.target.value)}
-              placeholder="e.g. $100 + Discord Nitro"
-              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-cyan-500"
-              maxLength={100}
+              placeholder={"BEST EDIT — $500\n🥇 1st: $300\n🥈 2nd: $125\n🥉 3rd: $75\n\nMOST VIEWS — $300\n🥇 1st: $175\n🥈 2nd: $85\n🥉 3rd: $40"}
+              className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-cyan-500 min-h-[120px] resize-none"
+              maxLength={2000}
             />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Supports multiple prize categories - format as you'd like it displayed
+            </p>
           </div>
 
           {/* Info Box */}
