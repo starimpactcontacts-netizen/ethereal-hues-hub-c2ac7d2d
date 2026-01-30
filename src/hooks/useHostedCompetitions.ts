@@ -262,10 +262,6 @@ export function useHostedCompetition(idOrSlug: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [idOrSlug, user?.id]);
 
   const submitEntry = async (platform: string, submission_url: string) => {
@@ -474,6 +470,47 @@ export function usePendingHostedCompetitions() {
     }
   };
 
+  const deleteCompetition = async (id: string) => {
+    try {
+      // First delete related data
+      await supabase
+        .from('hosted_competition_submissions')
+        .delete()
+        .eq('competition_id', id);
+
+      await supabase
+        .from('hosted_competition_judges')
+        .delete()
+        .eq('competition_id', id);
+
+      await supabase
+        .from('hosted_competition_participants' as any)
+        .delete()
+        .eq('competition_id', id);
+
+      await supabase
+        .from('hosted_comp_messages')
+        .delete()
+        .eq('competition_id', id);
+
+      // Then delete the competition itself
+      const { error } = await supabase
+        .from('hosted_competitions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Competition deleted");
+      fetchPending();
+      fetchLiveComps();
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting competition:', error);
+      toast.error("Failed to delete competition");
+      return false;
+    }
+  };
+
   return {
     pending,
     liveComps,
@@ -481,6 +518,7 @@ export function usePendingHostedCompetitions() {
     approveCompetition,
     rejectCompetition,
     toggleFeatured,
+    deleteCompetition,
     refetch: () => { fetchPending(); fetchLiveComps(); }
   };
 }
