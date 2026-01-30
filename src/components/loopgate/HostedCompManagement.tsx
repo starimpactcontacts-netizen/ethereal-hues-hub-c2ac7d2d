@@ -2,12 +2,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Globe, Check, X, Loader2, Calendar, Users, 
-  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2
+  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus
 } from "lucide-react";
 import { usePendingHostedCompetitions, HostedCompetition } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 function PendingCompCard({ 
   comp, 
   onApprove, 
@@ -162,15 +165,20 @@ function PendingCompCard({
 function LiveCompCard({ 
   comp, 
   onToggleFeatured,
-  onDelete 
+  onDelete,
+  onRefresh
 }: { 
   comp: HostedCompetition; 
   onToggleFeatured: () => void;
   onDelete: () => void;
+  onRefresh: () => void;
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(comp.host_avatar_url || "");
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
 
   const handleToggle = async () => {
     setIsProcessing(true);
@@ -183,6 +191,26 @@ function LiveCompCard({
     await onDelete();
     setIsDeleting(false);
     setShowDeleteConfirm(false);
+  };
+
+  const handleSaveAvatar = async () => {
+    setIsSavingAvatar(true);
+    try {
+      const { error } = await supabase
+        .from('hosted_competitions')
+        .update({ host_avatar_url: avatarUrl || null })
+        .eq('id', comp.id);
+
+      if (error) throw error;
+      toast.success("Host avatar updated");
+      setShowAvatarModal(false);
+      onRefresh();
+    } catch (error: any) {
+      console.error('Error updating avatar:', error);
+      toast.error("Failed to update avatar");
+    } finally {
+      setIsSavingAvatar(false);
+    }
   };
 
   return (
@@ -211,6 +239,13 @@ function LiveCompCard({
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowAvatarModal(true)}
+            className="p-2 rounded-lg bg-surface-2 text-muted-foreground hover:text-cyan-400 hover:bg-cyan-500/10 transition-all"
+            title="Edit host avatar"
+          >
+            <ImagePlus className="w-4 h-4" />
+          </button>
           <button
             onClick={handleToggle}
             disabled={isProcessing}
@@ -259,13 +294,73 @@ function LiveCompCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Avatar Edit Modal */}
+      <Dialog open={showAvatarModal} onOpenChange={setShowAvatarModal}>
+        <DialogContent className="bg-background border-border max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display">
+              <ImagePlus className="w-5 h-5 text-cyan-400" />
+              Edit Host Avatar
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Set a custom profile picture for <span className="text-foreground font-medium">"{comp.name}"</span>
+            </p>
+
+            {/* Preview */}
+            <div className="flex justify-center">
+              <div className="w-20 h-20 rounded-full bg-cyan-500/20 border-2 border-cyan-500/40 flex items-center justify-center overflow-hidden">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <Globe className="w-8 h-8 text-cyan-400" />
+                )}
+              </div>
+            </div>
+
+            {/* URL Input */}
+            <input
+              type="url"
+              value={avatarUrl}
+              onChange={(e) => setAvatarUrl(e.target.value)}
+              placeholder="https://example.com/avatar.png"
+              className="w-full bg-surface-1 border border-border rounded-lg px-3 py-2 text-sm"
+            />
+
+            <p className="text-[10px] text-muted-foreground">
+              💡 Paste an image URL. Leave empty to use the host's default avatar.
+            </p>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowAvatarModal(false)}
+                className="flex-1 py-2 bg-surface-2 text-foreground font-medium rounded-lg text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAvatar}
+                disabled={isSavingAvatar}
+                className="flex-1 py-2 bg-cyan-500 text-background font-bold rounded-lg text-sm disabled:opacity-50 flex items-center justify-center gap-1"
+              >
+                {isSavingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                Save
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
 
 export default function HostedCompManagement() {
   const { user } = useAuth();
-  const { pending, liveComps, loading, approveCompetition, rejectCompetition, toggleFeatured, deleteCompetition } = usePendingHostedCompetitions();
+  const { pending, liveComps, loading, approveCompetition, rejectCompetition, toggleFeatured, deleteCompetition, refetch } = usePendingHostedCompetitions();
 
   if (loading) {
     return (
@@ -337,6 +432,7 @@ export default function HostedCompManagement() {
                 comp={comp}
                 onToggleFeatured={() => toggleFeatured(comp.id, !!comp.is_featured)}
                 onDelete={() => deleteCompetition(comp.id)}
+                onRefresh={refetch}
               />
             ))}
           </div>
