@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Gavel, Search, UserPlus, X, Loader2, Check } from "lucide-react";
+import { Users, Search, UserPlus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -41,30 +41,22 @@ export default function InviteJudgeModal({
 
     setIsSearching(true);
     try {
-      // Search for users who have judge role
-      const { data: judgeRoles } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .in('role', ['judge', 'trial_judge']);
-
-      const judgeUserIds = judgeRoles?.map(r => r.user_id) || [];
-
-      // Search profiles of judges
+      // Search ALL users by username - not restricted to judges anymore
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, username, avatar_url, display_name')
         .ilike('username', `%${searchQuery}%`)
-        .in('id', judgeUserIds)
+        .eq('is_banned', false)
         .limit(10);
 
-      // Filter out already invited judges and host
+      // Filter out already invited staff and host
       const filtered = (profiles || []).filter(
         p => !existingJudgeIds.includes(p.id) && p.id !== hostUserId
       );
 
       setSearchResults(filtered);
       if (filtered.length === 0) {
-        toast("No eligible judges found", { description: "Try searching for a different username" });
+        toast("No users found", { description: "Try searching for a different username" });
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -95,7 +87,7 @@ export default function InviteJudgeModal({
       onInvited();
     } catch (error) {
       console.error('Invite error:', error);
-      toast.error("Failed to invite judge");
+      toast.error("Failed to invite");
     } finally {
       setInviting(null);
     }
@@ -106,14 +98,14 @@ export default function InviteJudgeModal({
       <DialogContent className="bg-background border-border max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 font-display">
-            <Gavel className="w-5 h-5 text-cyan-400" />
-            Invite Judges
+            <Users className="w-5 h-5 text-cyan-400" />
+            Invite Staff
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Search for certified judges to help score submissions for "{competitionName}"
+            Invite anyone to help host & judge "{competitionName}"
           </p>
 
           {/* Search */}
@@ -125,7 +117,7 @@ export default function InviteJudgeModal({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Search judge username..."
+                placeholder="Search any username..."
                 className="w-full bg-surface-1 border border-border rounded-lg pl-9 pr-4 py-2 text-sm"
               />
             </div>
@@ -182,7 +174,7 @@ export default function InviteJudgeModal({
           {/* Tip */}
           <div className="bg-surface-1 border border-border rounded-lg p-3">
             <p className="text-xs text-muted-foreground">
-              💡 Only certified judges can be invited. They'll receive a notification and can accept or decline.
+              💡 Invited staff can score submissions and help manage the competition. They'll receive a notification to accept.
             </p>
           </div>
         </div>
