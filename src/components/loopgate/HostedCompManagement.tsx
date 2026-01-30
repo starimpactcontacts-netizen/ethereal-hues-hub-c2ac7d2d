@@ -2,12 +2,12 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Globe, Check, X, Loader2, Calendar, Users, 
-  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff
+  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2
 } from "lucide-react";
 import { usePendingHostedCompetitions, HostedCompetition } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
-
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 function PendingCompCard({ 
   comp, 
   onApprove, 
@@ -161,12 +161,16 @@ function PendingCompCard({
 
 function LiveCompCard({ 
   comp, 
-  onToggleFeatured 
+  onToggleFeatured,
+  onDelete 
 }: { 
   comp: HostedCompetition; 
   onToggleFeatured: () => void;
+  onDelete: () => void;
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleToggle = async () => {
     setIsProcessing(true);
@@ -174,54 +178,94 @@ function LiveCompCard({
     setIsProcessing(false);
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    await onDelete();
+    setIsDeleting(false);
+    setShowDeleteConfirm(false);
+  };
+
   return (
-    <div className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center overflow-hidden flex-shrink-0">
-          {comp.host_avatar_url ? (
-            <img src={comp.host_avatar_url} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <Globe className="w-4 h-4 text-cyan-400" />
-          )}
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm font-medium truncate">{comp.name}</p>
-          <div className="flex items-center gap-2">
-            <span className="text-[9px] text-muted-foreground">by {comp.host_name}</span>
-            <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase font-bold ${
-              comp.status === 'live' 
-                ? 'bg-emerald-500/20 text-emerald-400' 
-                : 'bg-amber-500/20 text-amber-400'
-            }`}>
-              {comp.status}
-            </span>
+    <>
+      <div className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+            {comp.host_avatar_url ? (
+              <img src={comp.host_avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <Globe className="w-4 h-4 text-cyan-400" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">{comp.name}</p>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] text-muted-foreground">by {comp.host_name}</span>
+              <span className={`text-[8px] px-1.5 py-0.5 rounded uppercase font-bold ${
+                comp.status === 'live' 
+                  ? 'bg-emerald-500/20 text-emerald-400' 
+                  : 'bg-amber-500/20 text-amber-400'
+              }`}>
+                {comp.status}
+              </span>
+            </div>
           </div>
         </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleToggle}
+            disabled={isProcessing}
+            className={`p-2 rounded-lg transition-all ${
+              comp.is_featured 
+                ? 'bg-gold/20 text-gold hover:bg-gold/30' 
+                : 'bg-surface-2 text-muted-foreground hover:text-foreground hover:bg-surface-2/80'
+            }`}
+          >
+            {isProcessing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : comp.is_featured ? (
+              <Star className="w-4 h-4 fill-current" />
+            ) : (
+              <StarOff className="w-4 h-4" />
+            )}
+          </button>
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="p-2 rounded-lg bg-surface-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-      <button
-        onClick={handleToggle}
-        disabled={isProcessing}
-        className={`p-2 rounded-lg transition-all ${
-          comp.is_featured 
-            ? 'bg-gold/20 text-gold hover:bg-gold/30' 
-            : 'bg-surface-2 text-muted-foreground hover:text-foreground hover:bg-surface-2/80'
-        }`}
-      >
-        {isProcessing ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : comp.is_featured ? (
-          <Star className="w-4 h-4 fill-current" />
-        ) : (
-          <StarOff className="w-4 h-4" />
-        )}
-      </button>
-    </div>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="bg-background border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">Delete Competition</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <span className="font-bold text-foreground">"{comp.name}"</span>? 
+              This will permanently delete all submissions, messages, and participant data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
 export default function HostedCompManagement() {
   const { user } = useAuth();
-  const { pending, liveComps, loading, approveCompetition, rejectCompetition, toggleFeatured } = usePendingHostedCompetitions();
+  const { pending, liveComps, loading, approveCompetition, rejectCompetition, toggleFeatured, deleteCompetition } = usePendingHostedCompetitions();
 
   if (loading) {
     return (
@@ -292,6 +336,7 @@ export default function HostedCompManagement() {
                 key={comp.id}
                 comp={comp}
                 onToggleFeatured={() => toggleFeatured(comp.id, !!comp.is_featured)}
+                onDelete={() => deleteCompetition(comp.id)}
               />
             ))}
           </div>
