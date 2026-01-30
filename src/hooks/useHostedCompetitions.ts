@@ -13,6 +13,7 @@ export interface HostedCompetition {
   host_name: string;
   host_avatar_url: string | null;
   poster_url: string | null;
+  poster_urls: string[] | null;
   format: string;
   max_submissions: number | null;
   submission_deadline: string;
@@ -123,6 +124,7 @@ export function useHostedCompetitions() {
     submission_deadline: string;
     prize_description?: string;
     poster_url?: string;
+    poster_urls?: string[];
     host_crew_id?: string;
     community_url?: string;
     rules?: string;
