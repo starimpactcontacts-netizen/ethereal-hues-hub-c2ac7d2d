@@ -6,6 +6,7 @@ import {
 import { formatDistanceToNow, isPast } from "date-fns";
 import { HostedCompetition } from "@/hooks/useHostedCompetitions";
 import { supabase } from "@/integrations/supabase/client";
+import PosterCarousel from "./PosterCarousel";
 
 interface CrewData {
   id: string;
@@ -48,11 +49,20 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
       {/* Top accent */}
       <div className="h-0.5 bg-gradient-to-r from-cyan-500 to-sky-500" />
       
-      {/* Poster or gradient header */}
+      {/* Poster or gradient header with carousel */}
       <div className="h-20 bg-gradient-to-br from-cyan-500/20 via-sky-500/10 to-transparent relative">
-        {comp.poster_url && (
+        {(comp.poster_urls && comp.poster_urls.length > 0) ? (
+          <div className="absolute inset-0 opacity-50">
+            <PosterCarousel 
+              posterUrls={comp.poster_urls} 
+              showArrows={false}
+              showIndicators={false}
+              autoPlayInterval={3000}
+            />
+          </div>
+        ) : comp.poster_url ? (
           <img src={comp.poster_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />
-        )}
+        ) : null}
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
         
         {/* Status badge */}

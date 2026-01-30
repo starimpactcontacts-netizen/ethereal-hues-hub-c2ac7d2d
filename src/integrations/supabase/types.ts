@@ -1613,6 +1613,7 @@ export type Database = {
           name: string
           participant_count: number | null
           poster_url: string | null
+          poster_urls: string[] | null
           prize_description: string | null
           rejection_reason: string | null
           rules: string | null
@@ -1641,6 +1642,7 @@ export type Database = {
           name: string
           participant_count?: number | null
           poster_url?: string | null
+          poster_urls?: string[] | null
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null
@@ -1669,6 +1671,7 @@ export type Database = {
           name?: string
           participant_count?: number | null
           poster_url?: string | null
+          poster_urls?: string[] | null
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null

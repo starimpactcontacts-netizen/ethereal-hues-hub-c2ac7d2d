@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
-import { X, Globe, Calendar, Users, Trophy, Loader2, ImagePlus, Trash2, ExternalLink, ListChecks } from "lucide-react";
-import { motion } from "framer-motion";
+import { X, Globe, Calendar, Users, Trophy, Loader2, ImagePlus, Trash2, ExternalLink, ListChecks, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useHostedCompetitions } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { useCrewMembership } from "@/hooks/useCrewMembership";
@@ -11,6 +11,11 @@ interface ProposeHostedCompModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+}
+
+interface PosterImage {
+  file: File;
+  preview: string;
 }
 
 export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: ProposeHostedCompModalProps) {
@@ -28,66 +33,84 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
   const [prizeDescription, setPrizeDescription] = useState("");
   const [useCrewAsHost, setUseCrewAsHost] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [posterFile, setPosterFile] = useState<File | null>(null);
-  const [posterPreview, setPosterPreview] = useState<string | null>(null);
+  const [posterImages, setPosterImages] = useState<PosterImage[]>([]);
+  const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
   const [isUploadingPoster, setIsUploadingPoster] = useState(false);
   const [communityUrl, setCommunityUrl] = useState("");
   const [rules, setRules] = useState("");
 
   const handlePosterSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please select an image file");
-      return;
-    }
+    const newImages: PosterImage[] = [];
+    
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) {
+        toast.error("Please select image files only");
+        return;
+      }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Each image must be under 5MB");
+        return;
+      }
 
-    setPosterFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPosterPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+      if (posterImages.length + newImages.length >= 5) {
+        toast.error("Maximum 5 images allowed");
+        return;
+      }
 
-  const removePoster = () => {
-    setPosterFile(null);
-    setPosterPreview(null);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPosterImages(prev => [...prev, { file, preview: reader.result as string }]);
+      };
+      reader.readAsDataURL(file);
+      newImages.push({ file, preview: '' });
+    });
+
+    // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const uploadPoster = async (): Promise<string | null> => {
-    if (!posterFile || !user) return null;
+  const removePoster = (index: number) => {
+    setPosterImages(prev => prev.filter((_, i) => i !== index));
+    if (currentPosterIndex >= posterImages.length - 1) {
+      setCurrentPosterIndex(Math.max(0, posterImages.length - 2));
+    }
+  };
+
+  const uploadPosters = async (): Promise<string[]> => {
+    if (posterImages.length === 0 || !user) return [];
 
     setIsUploadingPoster(true);
+    const uploadedUrls: string[] = [];
+
     try {
-      const fileExt = posterFile.name.split('.').pop();
-      const fileName = `hosted-comp-${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
+      for (const poster of posterImages) {
+        const fileExt = poster.file.name.split('.').pop();
+        const fileName = `hosted-comp-${user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('event-posters')
-        .upload(filePath, posterFile, { upsert: true });
+        const { error: uploadError } = await supabase.storage
+          .from('event-posters')
+          .upload(filePath, poster.file, { upsert: true });
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('event-posters')
-        .getPublicUrl(filePath);
+        const { data: { publicUrl } } = supabase.storage
+          .from('event-posters')
+          .getPublicUrl(filePath);
 
-      return publicUrl;
+        uploadedUrls.push(publicUrl);
+      }
+      return uploadedUrls;
     } catch (error: any) {
-      console.error('Error uploading poster:', error);
-      toast.error("Failed to upload poster");
-      return null;
+      console.error('Error uploading posters:', error);
+      toast.error("Failed to upload images");
+      return [];
     } finally {
       setIsUploadingPoster(false);
     }
@@ -104,13 +127,10 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
 
     setIsSubmitting(true);
 
-    // Upload poster if selected
-    let posterUrl: string | undefined;
-    if (posterFile) {
-      const uploadedUrl = await uploadPoster();
-      if (uploadedUrl) {
-        posterUrl = uploadedUrl;
-      }
+    // Upload posters if selected
+    let posterUrls: string[] = [];
+    if (posterImages.length > 0) {
+      posterUrls = await uploadPosters();
     }
 
     const result = await proposeCompetition({
@@ -122,7 +142,8 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
       submission_deadline: new Date(deadline).toISOString(),
       prize_description: prizeDescription.trim() || undefined,
       host_crew_id: useCrewAsHost && primaryCrew?.crew ? primaryCrew.crew.id : undefined,
-      poster_url: posterUrl,
+      poster_url: posterUrls[0], // Keep backward compat with first image
+      poster_urls: posterUrls.length > 0 ? posterUrls : undefined,
       community_url: communityUrl.trim() || undefined,
       rules: rules.trim() || undefined
     });
@@ -222,33 +243,96 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
             </label>
           )}
 
-          {/* Poster Image */}
+          {/* Poster Images Carousel */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
               <ImagePlus className="w-3 h-3 inline mr-1" />
-              Background Poster (Optional)
+              Background Images (Optional, up to 5)
             </label>
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               onChange={handlePosterSelect}
               className="hidden"
             />
-            {posterPreview ? (
-              <div className="relative rounded-lg overflow-hidden border border-cyan-500/30">
-                <img 
-                  src={posterPreview} 
-                  alt="Poster preview" 
-                  className="w-full h-32 object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={removePoster}
-                  className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full hover:bg-red-500/80 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+            
+            {posterImages.length > 0 ? (
+              <div className="space-y-2">
+                {/* Carousel Container */}
+                <div className="relative rounded-lg overflow-hidden border border-cyan-500/30">
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentPosterIndex}
+                      src={posterImages[currentPosterIndex]?.preview}
+                      alt={`Poster ${currentPosterIndex + 1}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="w-full h-32 object-cover"
+                    />
+                  </AnimatePresence>
+                  
+                  {/* Navigation Arrows */}
+                  {posterImages.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPosterIndex(prev => (prev - 1 + posterImages.length) % posterImages.length)}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/70 rounded-full hover:bg-cyan-500/80 transition-colors"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPosterIndex(prev => (prev + 1) % posterImages.length)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-black/70 rounded-full hover:bg-cyan-500/80 transition-colors"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Delete Button */}
+                  <button
+                    type="button"
+                    onClick={() => removePoster(currentPosterIndex)}
+                    className="absolute top-2 right-2 p-1.5 bg-black/70 rounded-full hover:bg-red-500/80 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  
+                  {/* Image Counter */}
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-black/70 rounded-full text-[10px] text-white">
+                    {currentPosterIndex + 1} / {posterImages.length}
+                  </div>
+                </div>
+                
+                {/* Thumbnail Strip + Add More */}
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {posterImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setCurrentPosterIndex(idx)}
+                      className={`shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-colors ${
+                        idx === currentPosterIndex ? 'border-cyan-500' : 'border-transparent hover:border-cyan-500/50'
+                      }`}
+                    >
+                      <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                  {posterImages.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="shrink-0 w-12 h-12 rounded border-2 border-dashed border-border flex items-center justify-center hover:border-cyan-500/50 transition-colors bg-surface-2/50"
+                    >
+                      <Plus className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               <button
@@ -257,11 +341,11 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
                 className="w-full h-24 border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-2 hover:border-cyan-500/50 transition-colors bg-surface-2/50"
               >
                 <ImagePlus className="w-6 h-6 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Tap to add poster image</span>
+                <span className="text-xs text-muted-foreground">Tap to add background images</span>
               </button>
             )}
             <p className="text-[10px] text-muted-foreground mt-1">
-              Recommended: 16:9 aspect ratio, max 5MB
+              Recommended: 16:9 aspect ratio, max 5MB each. Multiple images will display as carousel.
             </p>
           </div>
 

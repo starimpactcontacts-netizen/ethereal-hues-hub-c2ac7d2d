@@ -13,6 +13,7 @@ import HostedCompJoinButton from "@/components/loopgate/HostedCompJoinButton";
 import HostedCompActivitySignals from "@/components/loopgate/HostedCompActivitySignals";
 import HostedCompLeaderboard from "@/components/loopgate/HostedCompLeaderboard";
 import HostedCompHostDashboard from "@/components/loopgate/HostedCompHostDashboard";
+import PosterCarousel from "@/components/loopgate/PosterCarousel";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { isPast, format } from "date-fns";
@@ -158,11 +159,17 @@ export default function HostedCompDetailPage() {
 
       {/* Header */}
       <div className="relative mt-4">
-        {/* Poster/Banner */}
+        {/* Poster/Banner with Carousel */}
         <div className="h-40 bg-gradient-to-br from-cyan-500/20 via-sky-500/10 to-transparent relative overflow-hidden">
-          {competition.poster_url && (
+          {(competition.poster_urls && competition.poster_urls.length > 0) ? (
+            <PosterCarousel 
+              posterUrls={competition.poster_urls} 
+              showArrows={competition.poster_urls.length > 1}
+              showIndicators={competition.poster_urls.length > 1}
+            />
+          ) : competition.poster_url ? (
             <img src={competition.poster_url} alt="" className="w-full h-full object-cover" />
-          )}
+          ) : null}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           
           {/* Status Badge */}
