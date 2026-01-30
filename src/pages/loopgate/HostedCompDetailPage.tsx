@@ -227,18 +227,29 @@ export default function HostedCompDetailPage() {
           <p className="text-sm text-muted-foreground leading-relaxed">{competition.description}</p>
         )}
 
-        {/* Prize & Deadline Row */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gradient-to-br from-gold/10 to-amber-500/5 border border-gold/30 rounded-lg p-4 text-center">
-            <Trophy className="w-5 h-5 text-gold mx-auto mb-2" />
-            <p className="text-sm font-bold text-gold">{competition.prize_description || 'Glory'}</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Prize</p>
+        {/* Prize & Deadline */}
+        <div className="space-y-3">
+          {/* Deadline */}
+          <div className="bg-surface-1 border border-border rounded-lg p-4 flex items-center gap-4">
+            <Calendar className="w-5 h-5 text-cyan-400 shrink-0" />
+            <div>
+              <p className="text-sm font-bold">{format(new Date(competition.submission_deadline), 'MMM d, h:mm a')}</p>
+              <p className="text-[9px] text-muted-foreground uppercase">Submission Deadline</p>
+            </div>
           </div>
-          <div className="bg-surface-1 border border-border rounded-lg p-4 text-center">
-            <Calendar className="w-5 h-5 text-cyan-400 mx-auto mb-2" />
-            <p className="text-sm font-bold">{format(new Date(competition.submission_deadline), 'MMM d, h:mm a')}</p>
-            <p className="text-[9px] text-muted-foreground uppercase">Deadline</p>
-          </div>
+
+          {/* Prize Breakdown */}
+          {competition.prize_description && (
+            <div className="bg-gradient-to-br from-gold/10 to-amber-500/5 border border-gold/30 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy className="w-5 h-5 text-gold" />
+                <span className="text-xs font-bold text-gold uppercase tracking-wider">Prize Pool</span>
+              </div>
+              <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                {competition.prize_description}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Rules (Collapsible) */}
