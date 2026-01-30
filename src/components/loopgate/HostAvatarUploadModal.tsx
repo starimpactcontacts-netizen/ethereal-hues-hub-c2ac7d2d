@@ -155,7 +155,19 @@ export default function HostAvatarUploadModal({
     setUploading(true);
 
     try {
-      const filePath = `hosted-comp-${competitionId}/avatar.jpg`;
+      // Use a unique filename with timestamp to avoid caching issues
+      const timestamp = Date.now();
+      const filePath = `hosted-comps/${competitionId}/avatar-${timestamp}.jpg`;
+
+      // First, try to delete any existing avatar files for this comp
+      const { data: existingFiles } = await supabase.storage
+        .from("avatars")
+        .list(`hosted-comps/${competitionId}`);
+      
+      if (existingFiles && existingFiles.length > 0) {
+        const filesToDelete = existingFiles.map(f => `hosted-comps/${competitionId}/${f.name}`);
+        await supabase.storage.from("avatars").remove(filesToDelete);
+      }
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
@@ -164,27 +176,33 @@ export default function HostAvatarUploadModal({
           contentType: "image/jpeg"
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from("avatars")
         .getPublicUrl(filePath);
 
-      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
+      const urlWithCacheBuster = `${publicUrl}?t=${timestamp}`;
 
       const { error: updateError } = await supabase
         .from("hosted_competitions")
         .update({ host_avatar_url: urlWithCacheBuster })
         .eq("id", competitionId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("DB update error:", updateError);
+        throw updateError;
+      }
 
       toast.success("Host avatar updated");
       onUpdated();
       handleClose();
     } catch (error: any) {
       console.error("Avatar upload error:", error);
-      toast.error("Failed to upload avatar");
+      toast.error(error?.message || "Failed to upload avatar");
     } finally {
       setUploading(false);
     }
