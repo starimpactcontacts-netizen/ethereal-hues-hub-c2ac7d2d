@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Globe, Check, X, Loader2, Calendar, Users, 
-  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus, Upload
+  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus
 } from "lucide-react";
 import { usePendingHostedCompetitions, HostedCompetition } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import HostAvatarUploadModal from "./HostAvatarUploadModal";
 function PendingCompCard({ 
   comp, 
   onApprove, 
@@ -177,9 +177,6 @@ function LiveCompCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(comp.host_avatar_url || "");
-  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
   const handleToggle = async () => {
     setIsProcessing(true);
@@ -192,67 +189,6 @@ function LiveCompCard({
     await onDelete();
     setIsDeleting(false);
     setShowDeleteConfirm(false);
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error("Please select an image file");
-      return;
-    }
-
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must be under 2MB");
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `hosted-comp-${comp.id}-${Date.now()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      setAvatarUrl(publicUrl);
-      toast.success("Image uploaded!");
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error("Failed to upload image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleSaveAvatar = async () => {
-    setIsSavingAvatar(true);
-    try {
-      const { error } = await supabase
-        .from('hosted_competitions')
-        .update({ host_avatar_url: avatarUrl || null })
-        .eq('id', comp.id);
-
-      if (error) throw error;
-      toast.success("Host avatar updated");
-      setShowAvatarModal(false);
-      onRefresh();
-    } catch (error: any) {
-      console.error('Error updating avatar:', error);
-      toast.error("Failed to update avatar");
-    } finally {
-      setIsSavingAvatar(false);
-    }
   };
 
   return (
@@ -337,75 +273,14 @@ function LiveCompCard({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Avatar Edit Modal */}
-      <Dialog open={showAvatarModal} onOpenChange={setShowAvatarModal}>
-        <DialogContent className="bg-background border-border max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 font-display">
-              <ImagePlus className="w-5 h-5 text-cyan-400" />
-              Edit Host Avatar
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Set a custom profile picture for <span className="text-foreground font-medium">"{comp.name}"</span>
-            </p>
-
-            {/* Preview */}
-            <div className="flex justify-center">
-              <div className="w-20 h-20 rounded-full bg-cyan-500/20 border-2 border-cyan-500/40 flex items-center justify-center overflow-hidden">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <Globe className="w-8 h-8 text-cyan-400" />
-                )}
-              </div>
-            </div>
-
-            {/* File Upload */}
-            <label className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-all">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                disabled={isUploading}
-              />
-              {isUploading ? (
-                <Loader2 className="w-6 h-6 text-cyan-400 animate-spin" />
-              ) : (
-                <Upload className="w-6 h-6 text-muted-foreground" />
-              )}
-              <span className="text-sm text-muted-foreground">
-                {isUploading ? "Uploading..." : "Tap to upload image"}
-              </span>
-            </label>
-
-            <p className="text-[10px] text-muted-foreground text-center">
-              💡 Upload a profile picture for the competition host. Max 2MB.
-            </p>
-
-            {/* Actions */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowAvatarModal(false)}
-                className="flex-1 py-2 bg-surface-2 text-foreground font-medium rounded-lg text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveAvatar}
-                disabled={isSavingAvatar}
-                className="flex-1 py-2 bg-cyan-500 text-background font-bold rounded-lg text-sm disabled:opacity-50 flex items-center justify-center gap-1"
-              >
-                {isSavingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                Save
-              </button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Host Avatar Upload Modal */}
+      <HostAvatarUploadModal
+        isOpen={showAvatarModal}
+        onClose={() => setShowAvatarModal(false)}
+        competitionId={comp.id}
+        currentAvatarUrl={comp.host_avatar_url}
+        onUpdated={onRefresh}
+      />
     </>
   );
 }
