@@ -76,6 +76,7 @@ export default function PublicProfilePage() {
   const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'about'>('videos');
   const [submissionCount, setSubmissionCount] = useState(0);
   const [isJudge, setIsJudge] = useState(false);
+  const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
 
   useEffect(() => {
     if (!userId) return;
@@ -137,8 +138,8 @@ export default function PublicProfilePage() {
         setIsJudge(userRoles.includes('judge'));
       }
 
-      // Fetch submission count
-      const [eventParts, roundParts] = await Promise.all([
+      // Fetch submission count and activity stats in parallel
+      const [eventParts, roundParts, hostedSubs, battlesData] = await Promise.all([
         supabase
           .from("event_participations")
           .select("id", { count: "exact", head: true })
@@ -147,8 +148,30 @@ export default function PublicProfilePage() {
           .from("round_participations")
           .select("id", { count: "exact", head: true })
           .eq("user_id", userId),
+        supabase
+          .from("hosted_competition_submissions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
+        // Get all completed battles where user participated
+        supabase
+          .from("battles")
+          .select("challenger_id, opponent_id, winner_id")
+          .eq("status", "completed")
+          .or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`),
       ]);
-      setSubmissionCount((eventParts.count || 0) + (roundParts.count || 0));
+      
+      const submissionTotal = (eventParts.count || 0) + (roundParts.count || 0);
+      setSubmissionCount(submissionTotal);
+      
+      // Calculate real event stats
+      const eventCount = (roundParts.count || 0) + (hostedSubs.count || 0);
+      const battles = battlesData.data || [];
+      const battleCount = battles.length;
+      const wins = battles.filter(b => b.winner_id === userId).length;
+      const totalEvents = eventCount + battleCount;
+      const winRate = battleCount > 0 ? (wins / battleCount) * 100 : 0;
+      
+      setRealStats({ totalEvents, winRate, totalWins: wins });
 
       setLoading(false);
     };
@@ -385,7 +408,7 @@ export default function PublicProfilePage() {
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
               <p className="font-display text-xl">
-                {Number(profile.win_rate || 0).toFixed(0)}%
+                {realStats.winRate.toFixed(0)}%
               </p>
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
                 Win Rate
@@ -393,7 +416,7 @@ export default function PublicProfilePage() {
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
               <p className="font-display text-xl">
-                {profile.total_events || 0}
+                {realStats.totalEvents}
               </p>
               <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
                 Events

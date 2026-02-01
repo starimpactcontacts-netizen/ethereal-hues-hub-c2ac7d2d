@@ -149,27 +149,72 @@ export function useRealRankings() {
     } else {
       // Fetch roles for all users
       const userIds = (data || []).map(e => e.id);
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('user_id', userIds);
+      
+      // Fetch all user activity stats in parallel
+      const [rolesResult, roundParticipationsResult, battlesResult, hostedSubsResult] = await Promise.all([
+        // User roles
+        supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
+        // Round participations (Open Arena events)
+        supabase.from('round_participations').select('user_id').in('user_id', userIds),
+        // Battles (completed with winner)
+        supabase.from('battles').select('challenger_id, opponent_id, winner_id').eq('status', 'completed'),
+        // Hosted competition submissions
+        supabase.from('hosted_competition_submissions').select('user_id').in('user_id', userIds),
+      ]);
 
       // Build roles map
       const rolesMap = new Map<string, string[]>();
-      (rolesData || []).forEach(r => {
+      (rolesResult.data || []).forEach(r => {
         const existing = rolesMap.get(r.user_id) || [];
         existing.push(r.role);
         rolesMap.set(r.user_id, existing);
       });
 
+      // Build event participation counts
+      const eventCountMap = new Map<string, number>();
+      (roundParticipationsResult.data || []).forEach(p => {
+        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
+      });
+      (hostedSubsResult.data || []).forEach(p => {
+        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
+      });
+
+      // Build battle stats (wins and total battles)
+      const battleWinsMap = new Map<string, number>();
+      const battleCountMap = new Map<string, number>();
+      (battlesResult.data || []).forEach(b => {
+        // Count battles for both participants
+        if (b.challenger_id) {
+          battleCountMap.set(b.challenger_id, (battleCountMap.get(b.challenger_id) || 0) + 1);
+        }
+        if (b.opponent_id) {
+          battleCountMap.set(b.opponent_id, (battleCountMap.get(b.opponent_id) || 0) + 1);
+        }
+        // Count wins
+        if (b.winner_id) {
+          battleWinsMap.set(b.winner_id, (battleWinsMap.get(b.winner_id) || 0) + 1);
+        }
+      });
+
       // Add rank and roles based on order
-      const rankedData = (data || []).map((editor, index) => ({
-        ...editor,
-        rank: index + 1,
-        roles: rolesMap.get(editor.id) || [],
-        crew: editor.crews as RealEditor['crew'],
-        house: editor.houses as RealEditor['house'],
-      })) as RealEditor[];
+      const rankedData = (data || []).map((editor, index) => {
+        const eventCount = eventCountMap.get(editor.id) || 0;
+        const battleCount = battleCountMap.get(editor.id) || 0;
+        const wins = battleWinsMap.get(editor.id) || 0;
+        const totalEvents = eventCount + battleCount;
+        const winRate = battleCount > 0 ? (wins / battleCount) * 100 : 0;
+        
+        return {
+          ...editor,
+          rank: index + 1,
+          roles: rolesMap.get(editor.id) || [],
+          crew: editor.crews as RealEditor['crew'],
+          house: editor.houses as RealEditor['house'],
+          total_events: totalEvents,
+          total_wins: wins,
+          win_rate: winRate,
+        };
+      }) as RealEditor[];
       setRankings(rankedData);
     }
     setLoading(false);
