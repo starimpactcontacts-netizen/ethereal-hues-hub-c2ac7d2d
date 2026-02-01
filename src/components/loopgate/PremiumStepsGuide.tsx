@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Crown, CheckCircle2, Circle, Sparkles, ArrowRight } from "lucide-react";
+import RichMessageContent from "./RichMessageContent";
 
 interface PremiumStep {
   title: string;
@@ -88,7 +89,7 @@ export default function PremiumStepsGuide({
                 <p className={`text-[11px] mt-0.5 leading-relaxed ${
                   isCompleted ? 'text-emerald-400/70' : 'text-muted-foreground'
                 }`}>
-                  {step.description}
+                  <RichMessageContent content={step.description} />
                 </p>
               </div>
             </motion.div>
