@@ -213,17 +213,57 @@ export default function IndexPage() {
   // Check if any filters are active (affects whether we show ranked or randomized)
   const hasActiveFilters = searchQuery !== "" || leagueFilter !== "all" || rankFilter !== "all";
 
-  // Seeded random shuffle - consistent per session but randomized between sessions
+  // Prioritize "alive" users - those with engagement signals
+  // Then shuffle within priority tiers for variety
   const shuffledRankings = useMemo(() => {
     if (hasActiveFilters) return rankings; // Don't shuffle when filtering
     
-    // Create a shuffled copy using Fisher-Yates
-    const shuffled = [...rankings];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
+    // Score each user by "aliveness" signals
+    const scored = rankings.map(editor => {
+      let aliveScore = 0;
+      
+      // Has profile picture = +3
+      if (editor.avatar_url) aliveScore += 3;
+      
+      // Verified = +4
+      if (editor.verification_status) aliveScore += 4;
+      
+      // Took GQT test = +3
+      if (editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0) aliveScore += 3;
+      
+      // Has index score = +2
+      if ((editor.global_index_score || 0) > 0) aliveScore += 2;
+      
+      // Has competed in events = +3
+      if ((editor.total_events || 0) > 0) aliveScore += 3;
+      
+      // Level 2+ = +1
+      if ((editor.level || 1) >= 2) aliveScore += 1;
+      
+      return { editor, aliveScore };
+    });
+    
+    // Group by alive tier (high: 5+, medium: 1-4, low: 0)
+    const high = scored.filter(s => s.aliveScore >= 5);
+    const medium = scored.filter(s => s.aliveScore >= 1 && s.aliveScore < 5);
+    const low = scored.filter(s => s.aliveScore === 0);
+    
+    // Fisher-Yates shuffle within each tier
+    const shuffle = <T,>(arr: T[]): T[] => {
+      const shuffled = [...arr];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+    
+    // Combine: shuffled high tier first, then medium, then low
+    return [
+      ...shuffle(high).map(s => s.editor),
+      ...shuffle(medium).map(s => s.editor),
+      ...shuffle(low).map(s => s.editor),
+    ];
   }, [rankings, hasActiveFilters]);
 
   const filteredEditors = useMemo(() => {
