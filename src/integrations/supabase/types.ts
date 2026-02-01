@@ -1608,12 +1608,15 @@ export type Database = {
           host_user_id: string
           id: string
           is_featured: boolean | null
+          is_premium: boolean | null
           is_trending: boolean | null
           max_submissions: number | null
           name: string
           participant_count: number | null
           poster_url: string | null
           poster_urls: string[] | null
+          premium_at: string | null
+          premium_steps: Json | null
           prize_description: string | null
           rejection_reason: string | null
           rules: string | null
@@ -1637,12 +1640,15 @@ export type Database = {
           host_user_id: string
           id?: string
           is_featured?: boolean | null
+          is_premium?: boolean | null
           is_trending?: boolean | null
           max_submissions?: number | null
           name: string
           participant_count?: number | null
           poster_url?: string | null
           poster_urls?: string[] | null
+          premium_at?: string | null
+          premium_steps?: Json | null
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null
@@ -1666,12 +1672,15 @@ export type Database = {
           host_user_id?: string
           id?: string
           is_featured?: boolean | null
+          is_premium?: boolean | null
           is_trending?: boolean | null
           max_submissions?: number | null
           name?: string
           participant_count?: number | null
           poster_url?: string | null
           poster_urls?: string[] | null
+          premium_at?: string | null
+          premium_steps?: Json | null
           prize_description?: string | null
           rejection_reason?: string | null
           rules?: string | null

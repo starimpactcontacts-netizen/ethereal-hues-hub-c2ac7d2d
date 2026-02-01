@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   Globe, Calendar, Trophy, ExternalLink, 
   Loader2, ChevronDown, ChevronUp,
-  Clock, Send, ArrowLeft, ScrollText, Share2, Shield, Copy, Check, UserPlus
+  Clock, Send, ArrowLeft, ScrollText, Share2, Shield, Copy, Check, UserPlus, Crown
 } from "lucide-react";
 import { useHostedCompetition } from "@/hooks/useHostedCompetitions";
 import InviteJudgeModal from "@/components/loopgate/InviteJudgeModal";
@@ -14,6 +14,7 @@ import HostedCompActivitySignals from "@/components/loopgate/HostedCompActivityS
 import HostedCompLeaderboard from "@/components/loopgate/HostedCompLeaderboard";
 import HostedCompHostDashboard from "@/components/loopgate/HostedCompHostDashboard";
 import PosterCarousel from "@/components/loopgate/PosterCarousel";
+import PremiumStepsGuide from "@/components/loopgate/PremiumStepsGuide";
 import { useAuth } from "@/hooks/useAuth";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { isPast, format } from "date-fns";
@@ -273,8 +274,22 @@ export default function HostedCompDetailPage() {
           </div>
         )}
 
-        {/* PROMINENT JOIN CTA - Shows first for non-participants */}
-        {competition.status === 'live' && !deadlinePassed && !hasJoined && !hasSubmitted && (
+        {/* Premium Steps Guide - for premium competitions */}
+        {competition.is_premium && competition.premium_steps && competition.premium_steps.length > 0 && (
+          <PremiumStepsGuide
+            steps={competition.premium_steps}
+            hasJoined={hasJoined}
+            onJoinClick={() => {
+              if (!user) {
+                navigate('/start');
+              }
+              // Join action is handled by the HostedCompJoinButton within the guide
+            }}
+          />
+        )}
+
+        {/* PROMINENT JOIN CTA - Shows first for non-participants (non-premium) */}
+        {competition.status === 'live' && !deadlinePassed && !hasJoined && !hasSubmitted && !competition.is_premium && (
           <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/5 border-2 border-emerald-500/40 rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div>

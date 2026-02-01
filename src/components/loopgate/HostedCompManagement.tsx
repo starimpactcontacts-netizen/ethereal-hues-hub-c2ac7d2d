@@ -2,15 +2,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Globe, Check, X, Loader2, Calendar, Users, 
-  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus
+  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus, Crown
 } from "lucide-react";
-import { usePendingHostedCompetitions, HostedCompetition } from "@/hooks/useHostedCompetitions";
+import { usePendingHostedCompetitions, HostedCompetition, PremiumStep } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import HostAvatarUploadModal from "./HostAvatarUploadModal";
+import PremiumStepsEditorModal from "./PremiumStepsEditorModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 function PendingCompCard({ 
   comp, 
   onApprove, 
@@ -165,23 +167,36 @@ function PendingCompCard({
 function LiveCompCard({ 
   comp, 
   onToggleFeatured,
+  onTogglePremium,
   onDelete,
   onRefresh
 }: { 
   comp: HostedCompetition; 
   onToggleFeatured: () => void;
+  onTogglePremium: () => void;
   onDelete: () => void;
   onRefresh: () => void;
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPremiumProcessing, setIsPremiumProcessing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [showPremiumStepsModal, setShowPremiumStepsModal] = useState(false);
 
   const handleToggle = async () => {
     setIsProcessing(true);
     await onToggleFeatured();
     setIsProcessing(false);
+  };
+
+  const handleTogglePremium = async () => {
+    setIsPremiumProcessing(true);
+    await onTogglePremium();
+    setIsPremiumProcessing(false);
+    if (!comp.is_premium) {
+      setShowPremiumStepsModal(true);
+    }
   };
 
   const handleDelete = async () => {
@@ -213,6 +228,11 @@ function LiveCompCard({
               }`}>
                 {comp.status}
               </span>
+              {comp.is_premium && (
+                <span className="text-[8px] px-1.5 py-0.5 rounded uppercase font-bold bg-purple-500/20 text-purple-400 flex items-center gap-0.5">
+                  <Crown className="w-2 h-2" /> Premium
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -223,6 +243,23 @@ function LiveCompCard({
             title="Edit host avatar"
           >
             <ImagePlus className="w-4 h-4" />
+          </button>
+          {/* Premium Toggle */}
+          <button
+            onClick={handleTogglePremium}
+            disabled={isPremiumProcessing}
+            className={`p-2 rounded-lg transition-all ${
+              comp.is_premium 
+                ? 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30' 
+                : 'bg-surface-2 text-muted-foreground hover:text-purple-400 hover:bg-purple-500/10'
+            }`}
+            title={comp.is_premium ? "Remove premium" : "Make premium"}
+          >
+            {isPremiumProcessing ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Crown className="w-4 h-4" />
+            )}
           </button>
           <button
             onClick={handleToggle}
@@ -281,13 +318,23 @@ function LiveCompCard({
         currentAvatarUrl={comp.host_avatar_url}
         onUpdated={onRefresh}
       />
+
+      {/* Premium Steps Editor Modal */}
+      <PremiumStepsEditorModal
+        isOpen={showPremiumStepsModal}
+        onClose={() => setShowPremiumStepsModal(false)}
+        competitionId={comp.id}
+        competitionName={comp.name}
+        currentSteps={comp.premium_steps || []}
+        onUpdated={onRefresh}
+      />
     </>
   );
 }
 
 export default function HostedCompManagement() {
   const { user } = useAuth();
-  const { pending, liveComps, loading, approveCompetition, rejectCompetition, toggleFeatured, deleteCompetition, refetch } = usePendingHostedCompetitions();
+  const { pending, liveComps, loading, approveCompetition, rejectCompetition, toggleFeatured, togglePremium, deleteCompetition, refetch } = usePendingHostedCompetitions();
 
   if (loading) {
     return (
@@ -358,6 +405,7 @@ export default function HostedCompManagement() {
                 key={comp.id}
                 comp={comp}
                 onToggleFeatured={() => toggleFeatured(comp.id, !!comp.is_featured)}
+                onTogglePremium={() => togglePremium(comp.id, !!comp.is_premium)}
                 onDelete={() => deleteCompetition(comp.id)}
                 onRefresh={refetch}
               />
