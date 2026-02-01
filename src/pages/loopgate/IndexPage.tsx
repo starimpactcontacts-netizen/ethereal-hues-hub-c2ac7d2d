@@ -222,8 +222,8 @@ export default function IndexPage() {
     const scored = rankings.map(editor => {
       let aliveScore = 0;
       
-      // Has profile picture = +3
-      if (editor.avatar_url) aliveScore += 3;
+      // Has profile picture = +5 (high priority - makes page look alive)
+      if (editor.avatar_url) aliveScore += 5;
       
       // Verified = +4
       if (editor.verification_status) aliveScore += 4;
