@@ -3,6 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
+export interface PremiumStep {
+  title: string;
+  description: string;
+}
+
 export interface HostedCompetition {
   id: string;
   slug: string | null;
@@ -32,6 +37,10 @@ export interface HostedCompetition {
   view_count?: number;
   participant_count?: number;
   is_trending?: boolean;
+  // Premium fields
+  is_premium?: boolean;
+  premium_at?: string | null;
+  premium_steps?: PremiumStep[];
 }
 
 export interface HostedCompetitionSubmission {
@@ -82,13 +91,17 @@ export function useHostedCompetitions() {
 
       if (error) throw error;
       
-      // Get submission counts
+      // Get submission counts and cast premium_steps
       const compsWithCounts = await Promise.all((data || []).map(async (comp) => {
         const { count } = await supabase
           .from('hosted_competition_submissions')
           .select('*', { count: 'exact', head: true })
           .eq('competition_id', comp.id);
-        return { ...comp, submission_count: count || 0 };
+        return { 
+          ...comp, 
+          submission_count: count || 0,
+          premium_steps: Array.isArray(comp.premium_steps) ? comp.premium_steps as unknown as PremiumStep[] : []
+        } as HostedCompetition;
       }));
       
       setCompetitions(compsWithCounts);
@@ -201,7 +214,12 @@ export function useHostedCompetition(idOrSlug: string | undefined) {
         return;
       }
 
-      setCompetition(compData);
+      const typedComp = {
+        ...compData,
+        premium_steps: Array.isArray(compData.premium_steps) ? compData.premium_steps as unknown as PremiumStep[] : []
+      } as HostedCompetition;
+      
+      setCompetition(typedComp);
       setIsHost(user?.id === compData.host_user_id);
 
       // Fetch submissions
@@ -377,7 +395,11 @@ export function usePendingHostedCompetitions() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPending(data || []);
+      const typed = (data || []).map(c => ({
+        ...c,
+        premium_steps: Array.isArray(c.premium_steps) ? c.premium_steps as unknown as PremiumStep[] : []
+      })) as HostedCompetition[];
+      setPending(typed);
     } catch (error: any) {
       console.error('Error fetching pending:', error);
     } finally {
@@ -394,7 +416,11 @@ export function usePendingHostedCompetitions() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLiveComps(data || []);
+      const typed = (data || []).map(c => ({
+        ...c,
+        premium_steps: Array.isArray(c.premium_steps) ? c.premium_steps as unknown as PremiumStep[] : []
+      })) as HostedCompetition[];
+      setLiveComps(typed);
     } catch (error: any) {
       console.error('Error fetching live comps:', error);
     }
@@ -470,6 +496,52 @@ export function usePendingHostedCompetitions() {
     }
   };
 
+  const togglePremium = async (id: string, isPremium: boolean, steps?: PremiumStep[]) => {
+    try {
+      // Cast to any to bypass strict JSON typing
+      const updateData: any = {
+        is_premium: !isPremium,
+        premium_at: !isPremium ? new Date().toISOString() : null,
+        premium_steps: steps || []
+      };
+      
+      const { error } = await supabase
+        .from('hosted_competitions')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success(!isPremium ? "Competition marked as premium!" : "Premium status removed");
+      fetchLiveComps();
+      return true;
+    } catch (error: any) {
+      console.error('Error toggling premium:', error);
+      toast.error("Failed to update");
+      return false;
+    }
+  };
+
+  const updatePremiumSteps = async (id: string, steps: PremiumStep[]) => {
+    try {
+      // Cast to any to bypass strict JSON typing
+      const updateData: any = { premium_steps: steps };
+      
+      const { error } = await supabase
+        .from('hosted_competitions')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Premium steps updated!");
+      fetchLiveComps();
+      return true;
+    } catch (error: any) {
+      console.error('Error updating premium steps:', error);
+      toast.error("Failed to update steps");
+      return false;
+    }
+  };
+
   const deleteCompetition = async (id: string) => {
     try {
       // First delete related data
@@ -518,6 +590,8 @@ export function usePendingHostedCompetitions() {
     approveCompetition,
     rejectCompetition,
     toggleFeatured,
+    togglePremium,
+    updatePremiumSteps,
     deleteCompetition,
     refetch: () => { fetchPending(); fetchLiveComps(); }
   };

@@ -5,7 +5,7 @@ import {
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
-  Clock, Award, UserPlus, Eye, Globe
+  Clock, Award, UserPlus, Eye, Globe, Crown
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
 import PracticeModeView from "@/components/loopgate/PracticeModeView";
 import HostedCompCard from "@/components/loopgate/HostedCompCard";
 import FeaturedHostedCompCard from "@/components/loopgate/FeaturedHostedCompCard";
+import PremiumCompCard from "@/components/loopgate/PremiumCompCard";
 import { useHostedCompetitions } from "@/hooks/useHostedCompetitions";
 import SanctionedTournamentCard from "@/components/loopgate/SanctionedTournamentCard";
 import BattleCard from "@/components/loopgate/BattleCard";
@@ -438,6 +439,48 @@ export default function ArenaPage() {
                   </div>
                 </div>
               )}
+            </motion.section>
+          )}
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              PREMIUM SECTION - Featured paid hosted comps with step-by-step guide
+          ═══════════════════════════════════════════════════════════════════ */}
+          {activeFilter === "all" && hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length > 0 && (
+            <motion.section
+              key="premium-section"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8"
+            >
+              {/* Header Row */}
+              <div className="flex items-center justify-between px-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                    <Crown className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+                    Premium Competitions
+                  </span>
+                  <span className="flex items-center gap-1 bg-purple-500/20 border border-purple-500/40 px-2 py-0.5 text-[9px] text-purple-400 uppercase">
+                    Easy Entry
+                  </span>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground mb-3 px-4">
+                Step-by-step guided entry • Clear prizes & rankings
+              </p>
+
+              <div className="flex gap-3 px-4 overflow-x-auto scrollbar-hide pb-2">
+                {hostedComps
+                  .filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging'))
+                  .map((comp) => (
+                    <PremiumCompCard
+                      key={comp.id}
+                      comp={comp}
+                      onClick={() => navigate(`/hosted-comp/${comp.slug || comp.id}`)}
+                    />
+                  ))}
+              </div>
             </motion.section>
           )}
 
