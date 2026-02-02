@@ -151,15 +151,21 @@ export function useRealRankings() {
       const userIds = (data || []).map(e => e.id);
       
       // Fetch all user activity stats in parallel
-      const [rolesResult, roundParticipationsResult, battlesResult, hostedSubsResult] = await Promise.all([
+      const [rolesResult, roundParticipationsResult, battlesResult, hostedSubsResult, eventParticipationsResult, hostedWinnersResult, friendlyTournamentResult] = await Promise.all([
         // User roles
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
         // Round participations (Open Arena events)
-        supabase.from('round_participations').select('user_id').in('user_id', userIds),
+        supabase.from('round_participations').select('user_id, qoi_score').in('user_id', userIds),
         // Battles (completed with winner)
         supabase.from('battles').select('challenger_id, opponent_id, winner_id').eq('status', 'completed'),
         // Hosted competition submissions
-        supabase.from('hosted_competition_submissions').select('user_id').in('user_id', userIds),
+        supabase.from('hosted_competition_submissions').select('user_id, is_winner, winner_place').in('user_id', userIds),
+        // Official event participations (old-style events)
+        supabase.from('event_participations').select('user_id, final_rank').in('user_id', userIds),
+        // Hosted competition winners (1st place)
+        supabase.from('hosted_competition_submissions').select('user_id').in('user_id', userIds).eq('winner_place', 1),
+        // Friendly tournament participants
+        supabase.from('friendly_tournament_participants').select('user_id, final_rank').in('user_id', userIds),
       ]);
 
       // Build roles map
@@ -170,12 +176,22 @@ export function useRealRankings() {
         rolesMap.set(r.user_id, existing);
       });
 
-      // Build event participation counts
+      // Build event participation counts (unique events per user)
       const eventCountMap = new Map<string, number>();
+      // Round participations (open arena)
       (roundParticipationsResult.data || []).forEach(p => {
         eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
       });
+      // Hosted competition submissions
       (hostedSubsResult.data || []).forEach(p => {
+        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
+      });
+      // Official event participations
+      (eventParticipationsResult.data || []).forEach(p => {
+        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
+      });
+      // Friendly tournament participations
+      (friendlyTournamentResult.data || []).forEach(p => {
         eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
       });
 
@@ -196,13 +212,42 @@ export function useRealRankings() {
         }
       });
 
+      // Count all wins: battles + official events (rank 1) + hosted comps (winner_place 1) + tournaments
+      const totalWinsMap = new Map<string, number>();
+      
+      // Battle wins
+      battleWinsMap.forEach((wins, oderId) => {
+        totalWinsMap.set(oderId, (totalWinsMap.get(oderId) || 0) + wins);
+      });
+      
+      // Official event wins (final_rank = 1)
+      (eventParticipationsResult.data || []).forEach(p => {
+        if (p.final_rank === 1) {
+          totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
+        }
+      });
+      
+      // Hosted competition wins (winner_place = 1)
+      (hostedWinnersResult.data || []).forEach(p => {
+        totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
+      });
+      
+      // Friendly tournament wins (final_rank = 1)
+      (friendlyTournamentResult.data || []).forEach(p => {
+        if (p.final_rank === 1) {
+          totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
+        }
+      });
+
       // Add rank and roles based on order
       const rankedData = (data || []).map((editor, index) => {
         const eventCount = eventCountMap.get(editor.id) || 0;
         const battleCount = battleCountMap.get(editor.id) || 0;
-        const wins = battleWinsMap.get(editor.id) || 0;
         const totalEvents = eventCount + battleCount;
-        const winRate = battleCount > 0 ? (wins / battleCount) * 100 : 0;
+        const totalWins = totalWinsMap.get(editor.id) || 0;
+        
+        // Win rate = total wins / total events (if they have events)
+        const winRate = totalEvents > 0 ? (totalWins / totalEvents) * 100 : 0;
         
         return {
           ...editor,
@@ -211,7 +256,7 @@ export function useRealRankings() {
           crew: editor.crews as RealEditor['crew'],
           house: editor.houses as RealEditor['house'],
           total_events: totalEvents,
-          total_wins: wins,
+          total_wins: totalWins,
           win_rate: winRate,
         };
       }) as RealEditor[];

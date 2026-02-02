@@ -274,17 +274,47 @@ export default function HostedCompDetailPage() {
           </div>
         )}
 
+        {/* Premium Join CTA - Shows FIRST at top for premium competitions */}
+        {competition.is_premium && competition.status === 'live' && !deadlinePassed && !hasJoined && !hasSubmitted && (
+          <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/5 border-2 border-purple-500/40 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-display text-lg flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-purple-400" />
+                  Join This Competition
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {participants.length} {participants.length === 1 ? 'editor' : 'editors'} preparing entries
+                </p>
+              </div>
+            </div>
+            
+            {user ? (
+              <HostedCompJoinButton
+                competitionId={competition.id}
+                status={competition.status}
+                deadlinePassed={deadlinePassed}
+                onJoin={refetch}
+              />
+            ) : (
+              <motion.button
+                onClick={() => navigate('/start')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+              >
+                <Crown className="w-5 h-5" />
+                Sign Up to Join
+              </motion.button>
+            )}
+          </div>
+        )}
+
         {/* Premium Steps Guide - for premium competitions */}
         {competition.is_premium && competition.premium_steps && competition.premium_steps.length > 0 && (
           <PremiumStepsGuide
             steps={competition.premium_steps}
             hasJoined={hasJoined}
-            onJoinClick={() => {
-              if (!user) {
-                navigate('/start');
-              }
-              // Join action is handled by the HostedCompJoinButton within the guide
-            }}
           />
         )}
 

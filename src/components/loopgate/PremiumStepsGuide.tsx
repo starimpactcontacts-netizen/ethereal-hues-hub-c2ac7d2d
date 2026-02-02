@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Crown, CheckCircle2, Circle, Sparkles, ArrowRight } from "lucide-react";
+import { Crown, CheckCircle2, Sparkles } from "lucide-react";
 import RichMessageContent from "./RichMessageContent";
 
 interface PremiumStep {
@@ -11,14 +11,12 @@ interface PremiumStepsGuideProps {
   steps: PremiumStep[];
   currentStep?: number;
   hasJoined: boolean;
-  onJoinClick?: () => void;
 }
 
 export default function PremiumStepsGuide({ 
   steps, 
   currentStep = 0, 
-  hasJoined,
-  onJoinClick 
+  hasJoined
 }: PremiumStepsGuideProps) {
   if (steps.length === 0) return null;
 
@@ -97,18 +95,6 @@ export default function PremiumStepsGuide({
         })}
       </div>
 
-      {/* Join CTA if not joined */}
-      {!hasJoined && onJoinClick && (
-        <motion.button
-          onClick={onJoinClick}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full py-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 text-white font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all"
-        >
-          <span>Start Step 1</span>
-          <ArrowRight className="w-5 h-5" />
-        </motion.button>
-      )}
     </motion.div>
   );
 }
