@@ -9,6 +9,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealEvents, useGlobalStats, useActiveSession, useRealRankings } from '@/hooks/useRealData';
+import { useUserActivityStats } from '@/hooks/useUserActivityStats';
 import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
@@ -45,6 +46,7 @@ export default function HubPage() {
   const { stats } = useGlobalStats();
   const { rankings } = useRealRankings();
   const { tournaments: sanctionedTournaments } = useSanctionedTournaments();
+  const activityStats = useUserActivityStats(user?.id);
   const navigate = useNavigate();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
@@ -220,11 +222,11 @@ export default function HubPage() {
               <div className="border-t border-border/30 px-4 py-3">
                 <div className="grid grid-cols-4 gap-3 text-center">
                   <div>
-                    <p className="font-display text-xl text-foreground">{profile?.total_events || 0}</p>
+                    <p className="font-display text-xl text-foreground">{activityStats.totalEvents}</p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Events</p>
                   </div>
                   <div>
-                    <p className="font-display text-xl text-foreground">{profile?.total_wins || 0}</p>
+                    <p className="font-display text-xl text-foreground">{activityStats.totalWins}</p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Wins</p>
                   </div>
                   <div>
@@ -232,7 +234,7 @@ export default function HubPage() {
                     <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Best QOI</p>
                   </div>
                   <div>
-                    <p className="font-display text-xl text-foreground">{profile?.win_rate ? `${(profile.win_rate * 100).toFixed(0)}%` : '—'}</p>
+                    <p className="font-display text-xl text-foreground">{activityStats.totalEvents > 0 ? `${activityStats.winRate.toFixed(0)}%` : '—'}</p>
                     <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Win Rate</p>
                   </div>
                 </div>
