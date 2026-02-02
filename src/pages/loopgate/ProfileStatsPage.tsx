@@ -5,6 +5,7 @@ import { useRealRankings } from "@/hooks/useRealData";
 import { useXP, getXPForNextLevel, getXPForCurrentLevel } from "@/hooks/useXP";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useReviewRequests } from "@/hooks/useReviewRequests";
+import { useUserActivityStats } from "@/hooks/useUserActivityStats";
 import { motion } from "framer-motion";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import XPHistory from "@/components/loopgate/XPHistory";
@@ -12,11 +13,12 @@ import { getRankFromScore } from "@/data/gqtConfig";
 
 export default function ProfileStatsPage() {
   const navigate = useNavigate();
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, user, loading: authLoading } = useAuth();
   const { rankings } = useRealRankings();
   const { xp, level, streak } = useXP();
   const { submissions } = useUserSubmissions();
   const { completedReviews, pendingReviews } = useReviewRequests();
+  const activityStats = useUserActivityStats(user?.id);
 
   if (authLoading || !profile) {
     return (
@@ -46,8 +48,8 @@ export default function ProfileStatsPage() {
     'F': 'text-muted-foreground bg-muted/10 border-border',
   };
 
-  const winRate = profile.total_events > 0 
-    ? ((profile.total_wins / profile.total_events) * 100).toFixed(0) 
+  const winRate = activityStats.totalEvents > 0 
+    ? activityStats.winRate.toFixed(0) 
     : '0';
     
   const currentLevelXP = getXPForCurrentLevel(level);
@@ -146,14 +148,14 @@ export default function ProfileStatsPage() {
                 <Trophy className="w-5 h-5 text-muted-foreground" />
                 <span className="text-sm">Events Entered</span>
               </div>
-              <span className="font-display text-lg">{profile.total_events || 0}</span>
+              <span className="font-display text-lg">{activityStats.totalEvents}</span>
             </div>
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <Award className="w-5 h-5 text-emerald-400" />
                 <span className="text-sm">Wins</span>
               </div>
-              <span className="font-display text-lg text-emerald-400">{profile.total_wins || 0}</span>
+              <span className="font-display text-lg text-emerald-400">{activityStats.totalWins}</span>
             </div>
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
