@@ -151,7 +151,7 @@ export function useRealRankings() {
       const userIds = (data || []).map(e => e.id);
       
       // Fetch all user activity stats in parallel
-      const [rolesResult, roundParticipationsResult, battlesResult, hostedSubsResult, eventParticipationsResult, hostedWinnersResult, friendlyTournamentResult] = await Promise.all([
+      const [rolesResult, roundParticipationsResult, battlesResult, hostedSubsResult, eventParticipationsResult, hostedWinnersResult, friendlyTournamentResult, sanctionedTournamentResult] = await Promise.all([
         // User roles
         supabase.from('user_roles').select('user_id, role').in('user_id', userIds),
         // Round participations (Open Arena events)
@@ -166,6 +166,8 @@ export function useRealRankings() {
         supabase.from('hosted_competition_submissions').select('user_id').in('user_id', userIds).eq('winner_place', 1),
         // Friendly tournament participants
         supabase.from('friendly_tournament_participants').select('user_id, final_rank').in('user_id', userIds),
+        // Sanctioned tournament participants (THE MAIN TOURNAMENT SYSTEM!)
+        supabase.from('sanctioned_tournament_participants').select('user_id, final_rank').in('user_id', userIds),
       ]);
 
       // Build roles map
@@ -192,6 +194,10 @@ export function useRealRankings() {
       });
       // Friendly tournament participations
       (friendlyTournamentResult.data || []).forEach(p => {
+        eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
+      });
+      // Sanctioned tournament participations
+      (sanctionedTournamentResult.data || []).forEach(p => {
         eventCountMap.set(p.user_id, (eventCountMap.get(p.user_id) || 0) + 1);
       });
 
@@ -234,6 +240,13 @@ export function useRealRankings() {
       
       // Friendly tournament wins (final_rank = 1)
       (friendlyTournamentResult.data || []).forEach(p => {
+        if (p.final_rank === 1) {
+          totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
+        }
+      });
+      
+      // Sanctioned tournament wins (final_rank = 1) - THIS IS THE KEY ONE!
+      (sanctionedTournamentResult.data || []).forEach(p => {
         if (p.final_rank === 1) {
           totalWinsMap.set(p.user_id, (totalWinsMap.get(p.user_id) || 0) + 1);
         }

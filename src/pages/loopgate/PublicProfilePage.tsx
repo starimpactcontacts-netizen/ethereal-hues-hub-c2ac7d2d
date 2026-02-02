@@ -139,7 +139,7 @@ export default function PublicProfilePage() {
       }
 
       // Fetch submission count and activity stats in parallel
-      const [eventParts, roundParts, hostedSubs, battlesData] = await Promise.all([
+      const [eventParts, roundParts, hostedSubs, battlesData, friendlyTournaments, sanctionedTournaments, hostedWins, eventWins, friendlyWins, sanctionedWins] = await Promise.all([
         supabase
           .from("event_participations")
           .select("id", { count: "exact", head: true })
@@ -158,20 +158,57 @@ export default function PublicProfilePage() {
           .select("challenger_id, opponent_id, winner_id")
           .eq("status", "completed")
           .or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`),
+        // Friendly tournaments
+        supabase
+          .from("friendly_tournament_participants")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
+        // Sanctioned tournaments - THE KEY TABLE
+        supabase
+          .from("sanctioned_tournament_participants")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId),
+        // Hosted comp wins (1st place)
+        supabase
+          .from("hosted_competition_submissions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("winner_place", 1),
+        // Official event wins (final_rank = 1)
+        supabase
+          .from("event_participations")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("final_rank", 1),
+        // Friendly tournament wins
+        supabase
+          .from("friendly_tournament_participants")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("final_rank", 1),
+        // Sanctioned tournament wins (final_rank = 1)
+        supabase
+          .from("sanctioned_tournament_participants")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("final_rank", 1),
       ]);
       
       const submissionTotal = (eventParts.count || 0) + (roundParts.count || 0);
       setSubmissionCount(submissionTotal);
       
-      // Calculate real event stats
-      const eventCount = (roundParts.count || 0) + (hostedSubs.count || 0);
+      // Calculate real event stats - include ALL event types
+      const eventCount = (roundParts.count || 0) + (hostedSubs.count || 0) + (eventParts.count || 0) + (friendlyTournaments.count || 0) + (sanctionedTournaments.count || 0);
       const battles = battlesData.data || [];
       const battleCount = battles.length;
-      const wins = battles.filter(b => b.winner_id === userId).length;
-      const totalEvents = eventCount + battleCount;
-      const winRate = battleCount > 0 ? (wins / battleCount) * 100 : 0;
+      const battleWins = battles.filter(b => b.winner_id === userId).length;
       
-      setRealStats({ totalEvents, winRate, totalWins: wins });
+      // Total wins from ALL sources
+      const totalWins = battleWins + (hostedWins.count || 0) + (eventWins.count || 0) + (friendlyWins.count || 0) + (sanctionedWins.count || 0);
+      const totalEvents = eventCount + battleCount;
+      const winRate = totalEvents > 0 ? (totalWins / totalEvents) * 100 : 0;
+      
+      setRealStats({ totalEvents, winRate, totalWins });
 
       setLoading(false);
     };
