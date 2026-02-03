@@ -22,7 +22,7 @@ export const mockTournaments: Tournament[] = [
   {
     id: "t2",
     name: "Velocity Showdown",
-    hostCrew: "Motion Squad",
+    hostCrew: "Motion Unit",
     isSanctioned: true,
     phase: "ready-up",
     playerCount: 28,
@@ -35,7 +35,7 @@ export const mockTournaments: Tournament[] = [
   },
   {
     id: "t3",
-    name: "Crew Wars: Round 4",
+    name: "Unit Wars: Round 4",
     hostCrew: "The Collective",
     isSanctioned: false,
     phase: "ready-up",
@@ -44,7 +44,7 @@ export const mockTournaments: Tournament[] = [
     maxPlayers: 100,
     readyCount: 30,
     phaseEndsAt: hoursFromNow(12),
-    theme: "Open theme. Crew vs Crew elimination format.",
+    theme: "Open theme. Unit vs Unit elimination format.",
   },
 
   // Live / Submission Phase

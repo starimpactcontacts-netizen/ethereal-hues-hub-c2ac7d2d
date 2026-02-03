@@ -199,7 +199,7 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
                 Custom Code (Optional)
               </label>
               <Input
-                placeholder="e.g. YOURNAME, SQUAD2025"
+                placeholder="e.g. YOURNAME, UNIT2025"
                 value={customCode}
                 onChange={(e) => setCustomCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16))}
                 className="bg-surface-1 border-border font-mono uppercase"

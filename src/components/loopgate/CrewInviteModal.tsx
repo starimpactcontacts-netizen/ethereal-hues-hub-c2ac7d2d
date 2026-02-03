@@ -63,7 +63,7 @@ export default function CrewInviteModal({
         {/* Preview card */}
         <div className="text-center">
 
-          {/* Crew Avatar */}
+          {/* Unit Avatar */}
           <div className="w-16 h-16 mx-auto rounded-2xl overflow-hidden bg-muted flex items-center justify-center mb-3">
             {crewAvatarUrl ? (
               <img src={crewAvatarUrl} alt={crewName} className="w-full h-full object-cover" />
