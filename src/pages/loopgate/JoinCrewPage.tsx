@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Check, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import loopgateLogo from "@/assets/loopgate-wordmark.png";
+
 export default function JoinCrewPage() {
   const { crewSlug } = useParams();
   const [searchParams] = useSearchParams();
@@ -85,7 +86,7 @@ export default function JoinCrewPage() {
         username: joinerProfile.username,
         avatar_url: joinerProfile.avatar_url,
         title: `Joined ${crewName}`,
-        description: referrerUsername ? `via @${referrerUsername}'s invite link` : "Joined the crew",
+        description: referrerUsername ? `via @${referrerUsername}'s invite link` : "Joined the unit",
         data: {
           crew_id: crewIdToUse,
           crew_name: crewName,
@@ -118,7 +119,7 @@ export default function JoinCrewPage() {
         .maybeSingle();
 
       if (existingMember) {
-        toast.error("You're already in this crew");
+        toast.error("You're already in this unit");
         navigate(`/crews/${crew.id}`);
         setJoining(false);
         return;
@@ -147,7 +148,7 @@ export default function JoinCrewPage() {
         if (error) {
           toast.error("Failed to send request");
         } else {
-          toast.success("Request sent! Crew owner will review it.");
+          toast.success("Request sent! Unit owner will review it.");
           setJoined(true);
         }
       } else {
@@ -158,7 +159,7 @@ export default function JoinCrewPage() {
         });
 
         if (error) {
-          toast.error("Failed to join crew");
+          toast.error("Failed to join unit");
         } else {
           await awardXPAndPostFeed(user.id, crew.name, crew.id, via || undefined);
           toast.success(`Welcome to ${crew.name}!`);
@@ -187,8 +188,8 @@ export default function JoinCrewPage() {
     return (
       <PageTransition>
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4">
-          <p className="text-muted-foreground">Crew not found</p>
-          <Button variant="outline" onClick={() => navigate("/crews")}>Browse Crews</Button>
+          <p className="text-muted-foreground">Unit not found</p>
+          <Button variant="outline" onClick={() => navigate("/crews")}>Browse Units</Button>
         </div>
       </PageTransition>
     );
@@ -217,7 +218,7 @@ export default function JoinCrewPage() {
           className="w-full max-w-sm bg-muted/30 rounded-lg p-6 text-center"
         >
 
-          {/* Crew Avatar */}
+          {/* Unit Avatar */}
           <div className="w-24 h-24 mx-auto rounded-2xl overflow-hidden bg-muted flex items-center justify-center mb-4">
             {crew.avatar_url ? (
               <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
@@ -231,7 +232,7 @@ export default function JoinCrewPage() {
             You've been invited to join
           </p>
 
-          {/* Crew name */}
+          {/* Unit name */}
           <h1 className="text-xl font-bold text-foreground mb-3">{crew.name}</h1>
 
           {/* Online / Members count */}

@@ -423,7 +423,7 @@ export default function CrewSettingsPage() {
               <button onClick={() => navigate(`/crews/${crewId}`)} className="text-muted-foreground">
                 <ArrowLeft className="w-5 h-5" />
               </button>
-              <h1 className="text-lg font-bold">Crew Settings</h1>
+              <h1 className="text-lg font-bold">Unit Settings</h1>
             </div>
             {canBypass && (
               <span className="text-xs px-2 py-1 rounded bg-gold/20 text-gold">Admin Access</span>
@@ -441,9 +441,9 @@ export default function CrewSettingsPage() {
               <div className="space-y-6 p-4 bg-muted/30 rounded-lg border border-border">
                 {/* Crew Name */}
                 <div className="space-y-2">
-                  <Label>Crew Name</Label>
+                  <Label>Unit Name</Label>
                   <Input
-                    placeholder="Enter crew name..."
+                    placeholder="Enter unit name..."
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     maxLength={24}
@@ -455,7 +455,7 @@ export default function CrewSettingsPage() {
                 <div className="space-y-2">
                   <Label>Description</Label>
                   <Textarea
-                    placeholder="Tell others about your crew..."
+                    placeholder="Tell others about your unit..."
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     maxLength={200}
@@ -558,7 +558,7 @@ export default function CrewSettingsPage() {
             {expandedSection === "members" && (
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
                 <p className="text-sm text-muted-foreground">
-                  Manage member roles and remove members from the crew.
+                  Manage member roles and remove members from the unit.
                 </p>
                 
                 {/* Owner - Can't be modified */}
@@ -697,7 +697,7 @@ export default function CrewSettingsPage() {
 
                 {/* Emblem */}
                 <div className="space-y-3">
-                  <Label>Crew Emblem</Label>
+                  <Label>Unit Emblem</Label>
                   <div className="grid grid-cols-6 gap-2">
                     {emblems.map((emblem) => (
                       <button
@@ -737,7 +737,7 @@ export default function CrewSettingsPage() {
               <div className="space-y-3">
                 <Label className="text-muted-foreground">Transfer Ownership</Label>
                 <p className="text-xs text-muted-foreground">
-                  Transfer this crew to another member. You will become a regular member.
+                  Transfer this unit to another member. You will become a regular member.
                 </p>
                 <div className="space-y-2">
                   {nonOwnerMembers.map((member) => (
@@ -789,14 +789,14 @@ export default function CrewSettingsPage() {
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" className="w-full" disabled={deleting}>
                   <Trash2 className="w-4 h-4 mr-2" />
-                  {deleting ? "Deleting..." : "Delete Crew"}
+                  {deleting ? "Deleting..." : "Delete Unit"}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Crew?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete Unit?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the crew, all messages, and remove all members.
+                    This action cannot be undone. This will permanently delete the unit, all messages, and remove all members.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

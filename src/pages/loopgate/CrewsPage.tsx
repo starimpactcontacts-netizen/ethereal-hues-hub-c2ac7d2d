@@ -57,8 +57,8 @@ const bannerGradients = [
   "from-violet-900 via-purple-800 to-fuchsia-900",
 ];
 
-// Crew Card Component
-const CrewCard = ({ 
+// Unit Card Component
+const UnitCard = ({ 
   crew, 
   index, 
   onClick,
@@ -127,7 +127,7 @@ const CrewCard = ({
         </h3>
         
         <p className="text-xs text-muted-foreground line-clamp-2 mb-3 min-h-[32px]">
-          {crew.description || "A crew for competitive editors."}
+          {crew.description || "A unit for competitive editors."}
         </p>
         
         {/* Stats */}
@@ -211,12 +211,12 @@ export default function CrewsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [crews, setCrews] = useState<Crew[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"discover" | "my-crews">("discover");
+  const [activeTab, setActiveTab] = useState<"discover" | "my-units">("discover");
   const [activeCategory, setActiveCategory] = useState<"all" | "featured" | "top">("all");
 
   useEffect(() => {
     if (primaryCrew || secondaryCrews.length > 0) {
-      setActiveTab("my-crews");
+      setActiveTab("my-units");
     }
   }, [primaryCrew, secondaryCrews]);
 
@@ -233,7 +233,7 @@ export default function CrewsPage() {
       .order("member_count", { ascending: false });
 
     if (error) {
-      console.error("Error fetching crews:", error);
+      console.error("Error fetching units:", error);
       setLoading(false);
       return;
     }
@@ -263,7 +263,7 @@ export default function CrewsPage() {
 
   const myCrewIds = [primaryCrew?.crew_id, ...secondaryCrews.map(s => s.crew_id)].filter(Boolean);
   
-  // Don't filter out user's crews - they should still appear in discovery/featured/top
+  // Don't filter out user's units - they should still appear in discovery/featured/top
   const filteredCrews = crews.filter((crew) => {
     if (!searchQuery) return true;
     return crew.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -284,12 +284,12 @@ export default function CrewsPage() {
     if (!user) return;
 
     if (!asPrimary && !canJoinSecondary) {
-      toast.error("You can only have 3 secondary crews. Leave one first.");
+      toast.error("You can only have 3 secondary units. Leave one first.");
       return;
     }
 
     if (asPrimary && primaryCrew) {
-      toast.error("You already have a primary crew.");
+      toast.error("You already have a primary unit.");
       return;
     }
 
@@ -313,7 +313,7 @@ export default function CrewsPage() {
       });
 
       if (error) {
-        toast.error("Failed to join crew");
+        toast.error("Failed to join unit");
       } else {
         if (asPrimary) {
           await supabase.from("profiles").update({ crew_id: crew.id }).eq("id", user.id);
@@ -325,7 +325,7 @@ export default function CrewsPage() {
           p_action: asPrimary ? 'primary_crew_join' : 'secondary_crew_join',
           p_description: `Joined ${crew.name}`,
         });
-        toast.success(asPrimary ? `🏴 ${crew.name} is now your primary crew!` : `Joined ${crew.name}!`);
+        toast.success(asPrimary ? `🏴 ${crew.name} is now your primary unit!` : `Joined ${crew.name}!`);
         fetchCrews();
         refreshMemberships();
       }
@@ -350,7 +350,7 @@ export default function CrewsPage() {
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-70" />
-              <span className="text-sm font-medium text-muted-foreground">/crews</span>
+              <span className="text-sm font-medium text-muted-foreground">/units</span>
             </div>
             <Button
               size="sm"
@@ -399,7 +399,7 @@ export default function CrewsPage() {
         <div className="px-4 pt-6 pb-6">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="font-display text-4xl sm:text-5xl tracking-wide text-white leading-none mb-2">
-              FIND YOUR CREW
+              FIND YOUR UNIT
             </h1>
             <p className="text-sm text-muted-foreground">
               Compete together. Climb together.
@@ -412,7 +412,7 @@ export default function CrewsPage() {
           <div className="inline-flex gap-1 p-1 bg-surface-1 rounded-lg">
             {[
               { id: "discover" as const, label: "Discover", icon: Target },
-              { id: "my-crews" as const, label: "My Crews", icon: Layers, count: (primaryCrew ? 1 : 0) + secondaryCrews.length },
+              { id: "my-units" as const, label: "My Units", icon: Layers, count: (primaryCrew ? 1 : 0) + secondaryCrews.length },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -436,16 +436,16 @@ export default function CrewsPage() {
         </div>
 
         <div className="px-4">
-          {/* My Crews Tab */}
-          {activeTab === "my-crews" && (
+          {/* My Units Tab */}
+          {activeTab === "my-units" && (
             <AnimatePresence mode="wait">
-              <motion.div key="my-crews" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                {/* Primary Crew */}
+              <motion.div key="my-units" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                {/* Primary Unit */}
                 <section>
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-sm font-semibold flex items-center gap-2">
                       <Crown className="w-4 h-4 text-gold" />
-                      Primary Crew
+                      Primary Unit
                     </h2>
                     {!canChangePrimary && cooldownDaysRemaining > 0 && (
                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -477,7 +477,7 @@ export default function CrewsPage() {
                               <Crown className="w-4 h-4 text-gold shrink-0" />
                             </div>
                             <p className="text-xs text-muted-foreground line-clamp-1 mb-1">
-                              {getPrimaryCrewDetails()?.description || "Your primary crew"}
+                              {getPrimaryCrewDetails()?.description || "Your primary unit"}
                             </p>
                             <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                               <span>{getPrimaryCrewDetails()?.member_count} members</span>
@@ -510,9 +510,9 @@ export default function CrewsPage() {
                             </AlertDialogTrigger>
                             <AlertDialogContent className="bg-surface-1 border-border">
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Leave Primary Crew?</AlertDialogTitle>
+                                <AlertDialogTitle>Leave Primary Unit?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  You'll no longer represent {getPrimaryCrewDetails()?.name} in tournaments. You can join another crew as primary.
+                                  You'll no longer represent {getPrimaryCrewDetails()?.name} in tournaments. You can join another unit as primary.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -521,7 +521,7 @@ export default function CrewsPage() {
                                   onClick={() => leavePrimary()}
                                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                 >
-                                  Leave Crew
+                                  Leave Unit
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -538,24 +538,24 @@ export default function CrewsPage() {
                       <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-3">
                         <Flag className="w-6 h-6 text-gold/60" />
                       </div>
-                      <p className="text-sm font-medium mb-1">No Primary Crew</p>
+                      <p className="text-sm font-medium mb-1">No Primary Unit</p>
                       <p className="text-xs text-muted-foreground mb-4">
-                        Your primary crew represents you in tournaments
+                        Your primary unit represents you in tournaments
                       </p>
                       <Button size="sm" onClick={() => setActiveTab("discover")} className="bg-gold text-background hover:bg-gold/90">
                         <Target className="w-3.5 h-3.5 mr-1.5" />
-                        Find a Crew
+                        Find a Unit
                       </Button>
                     </motion.div>
                   )}
                 </section>
 
-                {/* Secondary Crews */}
+                {/* Secondary Units */}
                 <section>
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="text-sm font-semibold flex items-center gap-2">
                       <Layers className="w-4 h-4 text-purple-400" />
-                      Secondary Crews
+                      Secondary Units
                     </h2>
                     <span className="text-[10px] text-muted-foreground">{secondaryCrews.length}/3</span>
                   </div>
@@ -620,7 +620,7 @@ export default function CrewsPage() {
                                 <AlertDialogHeader>
                                   <AlertDialogTitle>Leave {crew.name}?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    You'll no longer be affiliated with this crew.
+                                    You'll no longer be affiliated with this unit.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
@@ -641,7 +641,7 @@ export default function CrewsPage() {
                   ) : (
                     <div className="p-4 rounded-xl bg-surface-1/30 border border-dashed border-border text-center">
                       <p className="text-xs text-muted-foreground">
-                        Join crews for practice and social connections
+                        Join units for practice and social connections
                       </p>
                     </div>
                   )}
@@ -651,9 +651,9 @@ export default function CrewsPage() {
                     <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-start gap-3">
                       <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-xs text-amber-200 font-medium">Primary Crew Cooldown</p>
+                        <p className="text-xs text-amber-200 font-medium">Primary Unit Cooldown</p>
                         <p className="text-[10px] text-muted-foreground mt-0.5">
-                          You can change your primary crew in {cooldownDaysRemaining} days
+                          You can change your primary unit in {cooldownDaysRemaining} days
                         </p>
                       </div>
                     </div>
@@ -676,7 +676,7 @@ export default function CrewsPage() {
                     </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                       {featuredCrews.slice(0, 4).map((crew, i) => (
-                        <CrewCard
+                        <UnitCard
                           key={crew.id}
                           crew={crew}
                           index={i}
@@ -692,15 +692,15 @@ export default function CrewsPage() {
                   </section>
                 )}
 
-                {/* All Crews */}
+                {/* All Units */}
                 <section>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold flex items-center gap-2">
                       <Users className="w-4 h-4 text-purple-400" />
-                      {activeCategory === "all" ? "All Crews" : activeCategory === "top" ? "Top Crews" : "Featured"}
+                      {activeCategory === "all" ? "All Units" : activeCategory === "top" ? "Top Units" : "Featured"}
                     </h2>
                     <span className="text-[10px] text-muted-foreground">
-                      {getCategoryCrews().length} crews
+                      {getCategoryCrews().length} units
                     </span>
                   </div>
 
@@ -715,12 +715,12 @@ export default function CrewsPage() {
                   ) : getCategoryCrews().length === 0 ? (
                     <div className="text-center py-16">
                       <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground text-sm">No crews found</p>
+                      <p className="text-muted-foreground text-sm">No units found</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                       {getCategoryCrews().map((crew, index) => (
-                        <CrewCard
+                        <UnitCard
                           key={crew.id}
                           crew={crew}
                           index={index}
