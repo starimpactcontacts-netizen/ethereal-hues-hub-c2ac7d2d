@@ -38,8 +38,8 @@ const practiceFormats = [
   },
   {
     format: "crew-scrim" as PracticeFormat,
-    title: "Crew vs Crew Scrim",
-    description: "Challenge another crew to a friendly scrimmage. Coming soon.",
+    title: "Unit vs Unit Scrim",
+    description: "Challenge another unit to a friendly scrimmage. Coming soon.",
     icon: Users,
     xpReward: "40-80",
     isAvailable: false,

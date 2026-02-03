@@ -104,7 +104,7 @@ export default function TournamentDetailView({
 
       {/* Content */}
       <div className="px-4 py-6 space-y-6">
-        {/* Host Crew */}
+        {/* Host Unit */}
         <div className="flex items-center gap-3 p-3 bg-surface-1 border border-border">
           {tournament.hostCrewAvatar ? (
             <img 

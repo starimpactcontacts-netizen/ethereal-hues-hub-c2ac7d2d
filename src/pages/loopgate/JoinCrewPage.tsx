@@ -243,7 +243,7 @@ export default function JoinCrewPage() {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-muted-foreground/50" />
-              {crew.member_count} Members
+              {crew.member_count} Editors
             </span>
           </div>
 

@@ -623,7 +623,7 @@ export default function CrewSettingsPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Remove Member?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Remove <strong>@{member.profile?.username}</strong> from the crew? They can rejoin if the crew is open.
+                                Remove <strong>@{member.profile?.username}</strong> from the unit? They can rejoin if the unit is open.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

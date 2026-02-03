@@ -129,7 +129,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                     <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Step 2</span>
                     <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Optional</span>
                   </div>
-                  <h3 className="font-semibold text-sm uppercase tracking-wide">Join a Crew</h3>
+                  <h3 className="font-semibold text-sm uppercase tracking-wide">Join a Unit</h3>
                 </div>
                 {expandedSteps.has(2) ? (
                   <ChevronUp size={16} className="text-muted-foreground" />
@@ -139,7 +139,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
               </div>
               {expandedSteps.has(2) && (
                 <p className="text-xs text-muted-foreground mt-2 ml-[52px] leading-relaxed">
-                  Crews unlock events, XP, and team rankings.
+                  Units unlock events, XP, and team rankings.
                 </p>
               )}
             </div>
