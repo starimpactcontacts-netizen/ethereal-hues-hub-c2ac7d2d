@@ -565,7 +565,7 @@ export default function CrewDetailPage() {
     { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'News', badge: unreadAnnouncementCount },
     { id: 'rivals', icon: <Swords className="w-4 h-4" />, label: 'Rivals', badge: rivalries.length },
     { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Board' },
-    { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Squad' },
+    { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Members' },
     { id: 'submissions', icon: <FileVideo className="w-4 h-4" />, label: 'Work' },
     { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Quests' },
   ];

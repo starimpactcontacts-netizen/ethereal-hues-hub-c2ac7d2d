@@ -268,7 +268,7 @@ export default function HubPage() {
                         </div>
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Join a Unit</p>
-                          <p className="text-base text-foreground group-hover:text-gold transition-colors font-medium">Find your squad</p>
+                          <p className="text-base text-foreground group-hover:text-gold transition-colors font-medium">Find your group</p>
                         </div>
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
