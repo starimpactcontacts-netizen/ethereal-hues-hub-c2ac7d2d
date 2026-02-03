@@ -84,7 +84,7 @@ export default function CrewSettingsPage() {
   const [removingMember, setRemovingMember] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>("basic");
   
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: "",
     description: "",
     emblem: "shield",
@@ -94,6 +94,7 @@ export default function CrewSettingsPage() {
     banner_color: "#d4af37",
     discord_url: "",
     is_public: true,
+    max_members: "" as string,
   });
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -143,6 +144,7 @@ export default function CrewSettingsPage() {
       banner_color: crew.banner_color || "#d4af37",
       discord_url: crew.discord_url || "",
       is_public: true, // Default to public
+      max_members: crew.max_members ? String(crew.max_members) : "",
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
@@ -277,6 +279,7 @@ export default function CrewSettingsPage() {
           banner_url: formData.banner_url,
           banner_color: formData.banner_color,
           discord_url: formData.discord_url.trim() || null,
+          max_members: formData.max_members ? parseInt(formData.max_members) : null,
         })
         .eq("id", crewId);
 
@@ -693,6 +696,26 @@ export default function CrewSettingsPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Max Members */}
+                <div className="space-y-2">
+                  <Label>Set Max Members (optional)</Label>
+                  <Input
+                    type="number"
+                    placeholder="example: 20"
+                    value={formData.max_members}
+                    onChange={(e) => setFormData({ ...formData, max_members: e.target.value })}
+                    min={1}
+                    max={1000}
+                    className="bg-muted/50"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {formData.max_members 
+                      ? `Max Members: ${formData.max_members}` 
+                      : "Max Members: ∞"}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/70">Blank = ∞</p>
                 </div>
 
                 {/* Emblem */}

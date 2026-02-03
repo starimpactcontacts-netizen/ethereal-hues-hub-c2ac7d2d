@@ -814,6 +814,7 @@ export type Database = {
           id: string
           is_featured: boolean | null
           join_type: string
+          max_members: number | null
           member_count: number
           min_league: Database["public"]["Enums"]["league_tier"]
           name: string
@@ -832,6 +833,7 @@ export type Database = {
           id?: string
           is_featured?: boolean | null
           join_type?: string
+          max_members?: number | null
           member_count?: number
           min_league?: Database["public"]["Enums"]["league_tier"]
           name: string
@@ -850,6 +852,7 @@ export type Database = {
           id?: string
           is_featured?: boolean | null
           join_type?: string
+          max_members?: number | null
           member_count?: number
           min_league?: Database["public"]["Enums"]["league_tier"]
           name?: string

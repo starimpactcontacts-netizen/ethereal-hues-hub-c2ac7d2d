@@ -37,12 +37,13 @@ export default function CreateCrewPage() {
   const canBypassLimit = hasAdminRole || isDev;
   const [loading, setLoading] = useState(false);
   const [ownedCrewsCount, setOwnedCrewsCount] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: "",
     description: "",
     emblem: "shield",
     min_league: "open" as "open" | "pro" | "elite",
     join_type: "open",
+    max_members: "",
   });
 
   // Redirect if not logged in
@@ -108,6 +109,7 @@ export default function CreateCrewPage() {
           join_type: formData.join_type,
           owner_id: user.id,
           member_count: 1, // Start with owner
+          max_members: formData.max_members ? parseInt(formData.max_members) : null,
         })
         .select()
         .single();
@@ -265,6 +267,26 @@ export default function CreateCrewPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Max Members */}
+          <div className="space-y-2">
+            <Label>Set Max Members (optional)</Label>
+            <Input
+              type="number"
+              placeholder="example: 20"
+              value={formData.max_members}
+              onChange={(e) => setFormData({ ...formData, max_members: e.target.value })}
+              min={1}
+              max={1000}
+              className="bg-muted/50"
+            />
+            <p className="text-xs text-muted-foreground">
+              {formData.max_members 
+                ? `Max Members: ${formData.max_members}` 
+                : "Max Members: ∞"}
+            </p>
+            <p className="text-[10px] text-muted-foreground/70">Blank = ∞</p>
           </div>
 
           {/* Create Button */}

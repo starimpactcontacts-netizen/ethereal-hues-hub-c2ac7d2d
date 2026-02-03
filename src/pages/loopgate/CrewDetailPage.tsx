@@ -46,6 +46,7 @@ interface Crew {
   min_league: "open" | "pro" | "elite";
   join_type: string;
   member_count: number;
+  max_members: number | null;
   owner_id: string;
   avatar_url: string | null;
   discord_url: string | null;
@@ -648,7 +649,10 @@ export default function CrewDetailPage() {
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Level</p>
                 </div>
                 <div className="text-center">
-                  <p className="font-display text-lg">{members.length}</p>
+                  <p className="font-display text-lg">
+                    {members.length}
+                    {crew.max_members && <span className="text-muted-foreground text-sm">/{crew.max_members}</span>}
+                  </p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Members</p>
                 </div>
                 <div className="text-center">

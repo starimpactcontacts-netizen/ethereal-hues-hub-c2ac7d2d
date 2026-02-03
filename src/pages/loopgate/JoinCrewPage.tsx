@@ -108,6 +108,14 @@ export default function JoinCrewPage() {
     }
 
     if (!crew) return;
+
+    // Check if unit is full
+    if (crew.max_members && crew.member_count >= crew.max_members) {
+      toast.error("This unit is full.");
+      setJoining(false);
+      return;
+    }
+
     setJoining(true);
 
     try {
@@ -236,19 +244,32 @@ export default function JoinCrewPage() {
           <h1 className="text-xl font-bold text-foreground mb-3">{crew.name}</h1>
 
           {/* Online / Members count */}
-          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mb-4">
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground mb-2">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               {Math.floor(crew.member_count * 0.3) || 1} Online
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-muted-foreground/50" />
-              {crew.member_count} Editors
+              {crew.member_count}{crew.max_members ? `/${crew.max_members}` : ""} Editors
             </span>
           </div>
 
+          {/* Max Members display */}
+          <div className="text-[10px] text-muted-foreground mb-4 text-center">
+            Max Members: {crew.max_members ? crew.max_members : "∞"}
+            {!crew.max_members && <span className="block text-muted-foreground/60">(no limit set)</span>}
+          </div>
+
+          {/* Unit Full Warning */}
+          {crew.max_members && crew.member_count >= crew.max_members && (
+            <div className="text-xs text-red-400 mb-4 text-center">
+              This unit is full
+            </div>
+          )}
+
           {/* XP Reward - subtle indicator */}
-          {!joined && (
+          {!joined && !(crew.max_members && crew.member_count >= crew.max_members) && (
             <div className="flex items-center justify-center gap-1.5 text-xs text-gold mb-5">
               <Sparkles className="w-3 h-3" />
               <span>+15 XP for joining</span>
@@ -262,6 +283,10 @@ export default function JoinCrewPage() {
               <span className="text-sm font-medium">
                 {crew.join_type === "invite_only" ? "Request Sent" : "Joined!"}
               </span>
+            </div>
+          ) : crew.max_members && crew.member_count >= crew.max_members ? (
+            <div className="py-3 px-4 bg-muted/50 rounded-md text-center text-muted-foreground text-sm font-medium">
+              Unit Full
             </div>
           ) : (
             <Button
