@@ -249,7 +249,7 @@ export default function ProposeSanctionedTournament({
                 <span className="text-[8px] font-bold uppercase tracking-wider text-gold">Soon</span>
               </div>
               <Swords className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-xs font-bold uppercase text-muted-foreground">Crew vs Crew</p>
+              <p className="text-xs font-bold uppercase text-muted-foreground">Unit vs Unit</p>
               <p className="text-[10px] mt-1 text-muted-foreground/50">Challenge a rival</p>
             </div>
           </div>
@@ -260,14 +260,14 @@ export default function ProposeSanctionedTournament({
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 block">
               <Swords className="w-3.5 h-3.5 inline mr-2" />
-              Challenge Rival Crew *
+              Challenge Rival Unit *
             </label>
             {rivals.length === 0 ? (
               <div className="bg-surface-1 border border-red-500/30 p-4 text-center">
                 <Swords className="w-6 h-6 text-red-400 mx-auto mb-2" />
                 <p className="text-xs text-muted-foreground">No rivals to challenge</p>
                 <p className="text-[10px] text-muted-foreground/70 mt-1">
-                  Mark a crew as rival first from Rivals tab
+                  Mark a unit as rival first from Rivals tab
                 </p>
               </div>
             ) : (

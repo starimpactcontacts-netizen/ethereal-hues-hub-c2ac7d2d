@@ -193,12 +193,12 @@ export default function SanctionedTournamentPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className={`text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider ${
+              <span className={`text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider ${
                   isCrewVsCrew 
                     ? "bg-red-500/20 text-red-400 border border-red-500/30" 
                     : "bg-gold/20 text-gold border border-gold/30"
                 }`}>
-                  {isCrewVsCrew ? "Crew vs Crew" : "Sanctioned"}
+                  {isCrewVsCrew ? "Unit vs Unit" : "Sanctioned"}
                 </span>
                 <StatusBadge status={tournament.status} />
               </div>

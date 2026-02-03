@@ -26,7 +26,7 @@ const ROLE_CONFIG: Record<
     label: "Veteran",
     icon: <Award className="w-3 h-3" />,
     colors: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-    description: "Long-standing crew member",
+    description: "Long-standing unit member",
   },
   challenger: {
     label: "Challenger",

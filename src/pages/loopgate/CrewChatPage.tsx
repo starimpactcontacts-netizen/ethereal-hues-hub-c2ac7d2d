@@ -214,8 +214,8 @@ export default function CrewChatPage() {
       setNewMessage("");
       setShowGifPicker(false);
       
-      // Award XP for crew chat (daily capped)
-      awardCappedXP(XP_REWARDS.crew_chat, 'crew_chat', `Message in ${crew?.name || 'crew'}`);
+      // Award XP for unit chat (daily capped)
+      awardCappedXP(XP_REWARDS.crew_chat, 'crew_chat', `Message in ${crew?.name || 'unit'}`);
     }
 
     setSending(false);

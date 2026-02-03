@@ -642,8 +642,8 @@ export default function ArenaPage() {
                     <p className="text-sm text-muted-foreground font-medium mb-1">No Active Tournaments</p>
                     <p className="text-[10px] text-muted-foreground/60">
                       {profile?.crew_id 
-                        ? "Your crew can propose a tournament for approval"
-                        : "Join a crew to propose sanctioned tournaments"
+                        ? "Your unit can propose a tournament for approval"
+                        : "Join a unit to propose sanctioned tournaments"
                       }
                     </p>
                   </div>

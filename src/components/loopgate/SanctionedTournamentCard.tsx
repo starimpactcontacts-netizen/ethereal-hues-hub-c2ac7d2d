@@ -110,7 +110,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
           <span className={`text-[8px] font-bold uppercase tracking-wider ${
             isCrewVsCrew ? "text-white" : "text-background"
           }`}>
-            {isCrewVsCrew ? "Crew vs Crew" : "Sanctioned"}
+            {isCrewVsCrew ? "Unit vs Unit" : "Sanctioned"}
           </span>
         </div>
         

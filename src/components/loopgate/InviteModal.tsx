@@ -149,7 +149,7 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
             </TabsTrigger>
             <TabsTrigger value="crew" className="flex-1 data-[state=active]:bg-gold/20 data-[state=active]:text-gold">
               <Users className="w-4 h-4 mr-2" />
-              Crew Invite
+              Unit Invite
             </TabsTrigger>
           </TabsList>
           
@@ -297,23 +297,23 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
             )}
           </TabsContent>
           
-          {/* Crew Invite Tab */}
+          {/* Unit Invite Tab */}
           <TabsContent value="crew" className="space-y-4 mt-4">
             {loadingCrews ? (
-              <div className="text-center py-8 text-muted-foreground">Loading crews...</div>
+              <div className="text-center py-8 text-muted-foreground">Loading units...</div>
             ) : userCrews.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                 <p className="text-muted-foreground text-sm">
-                  You need to be an owner or officer of a crew to send crew invites.
+                  You need to be an owner or officer of a unit to send unit invites.
                 </p>
               </div>
             ) : (
               <>
-                {/* Crew Selector */}
+                {/* Unit Selector */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Select Crew
+                    Select Unit
                   </label>
                   <div className="grid gap-2">
                     {userCrews.map(crew => (
@@ -378,7 +378,7 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
                   ) : (
                     <>
                       <Users className="w-4 h-4 mr-2" />
-                      Invite to {selectedCrew?.name || 'Crew'}
+                      Invite to {selectedCrew?.name || 'Unit'}
                     </>
                   )}
                 </Button>

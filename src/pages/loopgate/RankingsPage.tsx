@@ -524,7 +524,7 @@ export default function RankingsPage() {
                       <div className="flex-1 min-w-0">
                         <span className="font-semibold text-white truncate block">{crew.name}</span>
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <span>{crew.member_count} members</span>
+                          <span>{crew.member_count} editors</span>
                           <span>•</span>
                           <span className="text-gold">Lv {crew.crewLevel}</span>
                         </div>

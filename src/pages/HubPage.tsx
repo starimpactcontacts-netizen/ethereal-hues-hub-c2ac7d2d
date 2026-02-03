@@ -240,7 +240,7 @@ export default function HubPage() {
                 </div>
               </div>
 
-              {/* Quick Access Rows - Crew & GQT */}
+              {/* Quick Access Rows - Unit & GQT */}
               <div className="border-t border-border/30 divide-y divide-border/20">
                 <div className="px-4 py-3">
                   {userCrew ? (
@@ -254,7 +254,7 @@ export default function HubPage() {
                           )}
                         </div>
                         <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Your Crew</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Your Unit</p>
                           <p className="font-display text-base text-foreground group-hover:text-gold transition-colors">{userCrew.name}</p>
                         </div>
                       </div>
@@ -267,7 +267,7 @@ export default function HubPage() {
                           <Plus className="w-5 h-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Join a Crew</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Join a Unit</p>
                           <p className="text-base text-foreground group-hover:text-gold transition-colors font-medium">Find your squad</p>
                         </div>
                       </div>

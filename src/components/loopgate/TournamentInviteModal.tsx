@@ -118,7 +118,7 @@ export default function TournamentInviteModal({
                 ? "bg-red-500/20 text-red-400" 
                 : "bg-gold/20 text-gold"
             }`}>
-              {isCrewVsCrew ? "Crew vs Crew" : "Sanctioned"}
+              {isCrewVsCrew ? "Unit vs Unit" : "Sanctioned"}
             </span>
           </div>
 

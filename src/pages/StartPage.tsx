@@ -789,7 +789,7 @@ export default function StartPage() {
                   GOT AN INVITE?
                 </h1>
                 <p className="text-muted-foreground">
-                  Enter a friend's code or crew code for bonus XP
+                  Enter a friend's code or unit code for bonus XP
                 </p>
               </div>
 
