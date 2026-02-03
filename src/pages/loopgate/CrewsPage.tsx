@@ -29,6 +29,7 @@ interface Crew {
   min_league: "open" | "pro" | "elite";
   join_type: string;
   member_count: number;
+  max_members: number | null;
   avatar_url: string | null;
   banner_url?: string | null;
   banner_color?: string | null;
@@ -138,56 +139,72 @@ const UnitCard = ({
           </span>
           <span className="flex items-center gap-1">
             <Circle className="w-1.5 h-1.5 fill-muted-foreground" />
-            <span className="text-foreground">{crew.member_count}</span> Members
+            <span className="text-foreground">{crew.member_count}</span>
+            {crew.max_members ? `/${crew.max_members}` : ""} Members
           </span>
         </div>
-        
-        {/* Actions */}
-        {showActions && (canJoinPrimary || canJoinSecondary) && (
-          <div className="flex gap-2">
-            {canJoinPrimary && !canJoinSecondary && (
-              <Button
-                size="sm"
-                onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
-                className="w-full h-8 text-xs bg-gold text-background hover:bg-gold/90"
-              >
-                <Crown className="w-3 h-3 mr-1" />
-                Join as Primary
-              </Button>
-            )}
-            {canJoinSecondary && !canJoinPrimary && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
-                className="w-full h-8 text-xs border-purple-500/40 text-purple-400 hover:bg-purple-500/10"
-              >
-                <Plus className="w-3 h-3 mr-1" />
-                Join
-              </Button>
-            )}
-            {canJoinPrimary && canJoinSecondary && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
-                  className="flex-1 h-8 text-xs bg-gold text-background hover:bg-gold/90"
-                >
-                  <Crown className="w-3 h-3 mr-1" />
-                  Primary
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
-                  className="flex-1 h-8 text-xs border-border text-muted-foreground hover:bg-surface-2"
-                >
-                  <Plus className="w-3 h-3 mr-1" />
-                  Join
-                </Button>
-              </>
-            )}
+
+        {/* Unit Full indicator */}
+        {crew.max_members && crew.member_count >= crew.max_members && (
+          <div className="text-[10px] text-red-400 mb-2 flex items-center gap-1">
+            <span>Unit Full</span>
           </div>
+        )}
+        
+        {/* Actions - hide join buttons if unit is full */}
+        {showActions && (canJoinPrimary || canJoinSecondary) && (
+          <>
+            {crew.max_members && crew.member_count >= crew.max_members ? (
+              <div className="py-2 px-4 bg-muted/50 rounded-md text-center text-xs text-muted-foreground">
+                Unit Full
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                {canJoinPrimary && !canJoinSecondary && (
+                  <Button
+                    size="sm"
+                    onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
+                    className="w-full h-8 text-xs bg-gold text-background hover:bg-gold/90"
+                  >
+                    <Crown className="w-3 h-3 mr-1" />
+                    Join as Primary
+                  </Button>
+                )}
+                {canJoinSecondary && !canJoinPrimary && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
+                    className="w-full h-8 text-xs border-purple-500/40 text-purple-400 hover:bg-purple-500/10"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Join
+                  </Button>
+                )}
+                {canJoinPrimary && canJoinSecondary && (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
+                      className="flex-1 h-8 text-xs bg-gold text-background hover:bg-gold/90"
+                    >
+                      <Crown className="w-3 h-3 mr-1" />
+                      Primary
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
+                      className="flex-1 h-8 text-xs border-border text-muted-foreground hover:bg-surface-2"
+                    >
+                      <Plus className="w-3 h-3 mr-1" />
+                      Join
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </motion.div>
@@ -282,6 +299,12 @@ export default function CrewsPage() {
 
   const handleJoinCrew = async (crew: Crew, asPrimary: boolean) => {
     if (!user) return;
+
+    // Check if unit is full
+    if (crew.max_members && crew.member_count >= crew.max_members) {
+      toast.error("This unit is full.");
+      return;
+    }
 
     if (!asPrimary && !canJoinSecondary) {
       toast.error("You can only have 3 secondary units. Leave one first.");
