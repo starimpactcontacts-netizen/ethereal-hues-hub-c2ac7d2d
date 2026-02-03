@@ -52,7 +52,7 @@ export default function CreateCrewPage() {
     }
   }, [authLoading, user, navigate]);
 
-  // Check how many crews user already owns
+  // Check how many units user already owns
   useEffect(() => {
     const checkOwnedCrews = async () => {
       if (!user) return;
@@ -74,7 +74,7 @@ export default function CreateCrewPage() {
     setLoading(true);
 
     try {
-      // Check if user is already in a crew
+      // Check if user is already in a unit
       const { data: existingProfile } = await supabase
         .from("profiles")
         .select("crew_id")
@@ -82,12 +82,12 @@ export default function CreateCrewPage() {
         .single();
 
       if (existingProfile?.crew_id && !canBypassLimit) {
-        alert("You are already in a crew. Leave your current crew before creating a new one.");
+        alert("You are already in a unit. Leave your current unit before creating a new one.");
         setLoading(false);
         return;
       }
 
-      // Check if user already has a primary crew (for non-admins)
+      // Check if user already has a primary unit (for non-admins)
       const { data: existingPrimary } = await supabase
         .from("crew_members")
         .select("id")
@@ -95,9 +95,9 @@ export default function CreateCrewPage() {
         .eq("is_primary", true)
         .single();
 
-      const willBePrimary = !existingPrimary; // First crew is always primary
+      const willBePrimary = !existingPrimary; // First unit is always primary
 
-      // Create the crew with member_count 1 (owner)
+      // Create the unit with member_count 1 (owner)
       const { data: crew, error: crewError } = await supabase
         .from("crews")
         .insert({
@@ -113,9 +113,9 @@ export default function CreateCrewPage() {
         .single();
 
       if (crewError) {
-        console.error("Error creating crew:", crewError);
+        console.error("Error creating unit:", crewError);
         if (crewError.code === "23505") {
-          alert("A crew with this name already exists.");
+          alert("A unit with this name already exists.");
         }
         setLoading(false);
         return;
@@ -131,14 +131,14 @@ export default function CreateCrewPage() {
 
       if (memberError) {
         console.error("Error adding owner to crew_members:", memberError);
-        // Try to clean up the crew if member insert failed
+        // Try to clean up the unit if member insert failed
         await supabase.from("crews").delete().eq("id", crew.id);
-        alert("Failed to create crew. Please try again.");
+        alert("Failed to create unit. Please try again.");
         setLoading(false);
         return;
       }
 
-      // Update profile with crew_id only if this is their primary crew
+      // Update profile with crew_id only if this is their primary unit
       if (willBePrimary) {
         await supabase
           .from("profiles")
@@ -148,7 +148,7 @@ export default function CreateCrewPage() {
 
       navigate(`/crews/${crew.id}`);
     } catch (error) {
-      console.error("Unexpected error creating crew:", error);
+      console.error("Unexpected error creating unit:", error);
       alert("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
@@ -163,25 +163,25 @@ export default function CreateCrewPage() {
             <button onClick={() => navigate(-1)} className="text-muted-foreground">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-lg font-bold">Create Crew</h1>
+            <h1 className="text-lg font-bold">Create Unit</h1>
           </div>
         </div>
 
         <div className="px-4 py-6 space-y-6">
-          {/* Max crews limit warning - admins/devs bypass */}
+          {/* Max units limit warning - admins/devs bypass */}
           {!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2 && (
             <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
               <p className="text-sm text-destructive">
-                You already own 2 crews (maximum limit). Delete one to create a new crew.
+                You already own 2 units (maximum limit). Delete one to create a new unit.
               </p>
             </div>
           )}
 
-          {/* Crew Name */}
+          {/* Unit Name */}
           <div className="space-y-2">
-            <Label>Crew Name</Label>
+            <Label>Unit Name</Label>
             <Input
-              placeholder="Enter crew name..."
+              placeholder="Enter unit name..."
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               maxLength={48}
@@ -194,7 +194,7 @@ export default function CreateCrewPage() {
           <div className="space-y-2">
             <Label>Description</Label>
             <Textarea
-              placeholder="Tell others about your crew..."
+              placeholder="Tell others about your unit..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               maxLength={200}
@@ -273,7 +273,7 @@ export default function CreateCrewPage() {
             disabled={loading || !formData.name.trim() || (!canBypassLimit && ownedCrewsCount !== null && ownedCrewsCount >= 2)}
             className="w-full bg-gold text-black hover:bg-gold/90"
           >
-            {loading ? "Creating..." : "Create Crew"}
+            {loading ? "Creating..." : "Create Unit"}
           </Button>
         </div>
       </div>

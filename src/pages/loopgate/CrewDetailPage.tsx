@@ -707,10 +707,10 @@ export default function CrewDetailPage() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Leave Crew?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to leave {crew.name}?
-                            </AlertDialogDescription>
+                          <AlertDialogTitle>Leave Unit?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to leave {crew.name}?
+                          </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -841,7 +841,7 @@ export default function CrewDetailPage() {
                         <Textarea
                           value={newAnnouncement}
                           onChange={(e) => setNewAnnouncement(e.target.value)}
-                          placeholder="Write an announcement for crew members..."
+                          placeholder="Write an announcement for unit members..."
                           className="min-h-[80px] resize-none bg-background"
                         />
                         <Button

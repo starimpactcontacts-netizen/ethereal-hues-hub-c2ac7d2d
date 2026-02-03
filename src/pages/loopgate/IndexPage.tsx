@@ -291,14 +291,14 @@ export default function IndexPage() {
 
   const tabs: { id: ViewMode; label: string; icon: React.ElementType; navigateTo?: string }[] = [
     { id: "editors", label: "INDEX", icon: Target },
-    { id: "crews", label: "CREWS", icon: Users, navigateTo: "/crews" },
+    { id: "crews", label: "UNITS", icon: Users, navigateTo: "/crews" },
     { id: "rankings", label: "RANKINGS", icon: Trophy },
     { id: "judges", label: "JUDGES", icon: Gavel },
   ];
 
   const rankingSubTabs: { id: RankingSubTab; label: string; icon: React.ElementType }[] = [
     { id: "xp", label: "XP", icon: Zap },
-    { id: "crews", label: "CREWS", icon: Users },
+    { id: "crews", label: "UNITS", icon: Users },
     { id: "events", label: "EVENTS", icon: Trophy },
   ];
 
