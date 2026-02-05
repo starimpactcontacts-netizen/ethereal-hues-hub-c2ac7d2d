@@ -180,13 +180,13 @@ export default function ArenaPage() {
           ARENA HEADER - Scalable, search-first design
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="relative overflow-hidden">
-        {/* Background layers - cinematic depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-1 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,hsl(var(--gold)/0.12),transparent_50%)]" />
+        {/* Background layers - neutral depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-surface-1/80 via-background to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(255,255,255,0.06),transparent_50%)]" />
         
         {/* Grid pattern overlay */}
         <div 
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `
               linear-gradient(hsl(var(--foreground)) 1px, transparent 1px),
@@ -196,23 +196,21 @@ export default function ArenaPage() {
           }}
         />
         
-        {/* Animated glow */}
-        <motion.div 
-          className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_hsl(var(--gold)/0.08)_0%,_transparent_40%)]"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+        {/* Top accent line - subtle */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
         {/* Header content */}
         <div className="relative px-4 pt-5 pb-5">
           {/* Top row: Logo + Live Stats */}
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold via-amber-400 to-gold flex items-center justify-center shadow-lg shadow-gold/40">
-                <InfinityIcon className="w-[18px] h-[18px] text-background" />
+              {/* Glitch-style Arena icon matching nav */}
+              <div className="relative">
+                <div className="absolute w-9 h-9 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-full -translate-x-[2px] shadow-[0_0_10px_rgba(251,191,36,0.4)]" />
+                <div className="absolute w-9 h-9 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-full translate-x-[2px] shadow-[0_0_10px_rgba(139,92,246,0.4)]" />
+                <div className="relative w-9 h-9 bg-white rounded-full flex items-center justify-center">
+                  <InfinityIcon className="w-[18px] h-[18px] text-black" strokeWidth={2.5} />
+                </div>
               </div>
               <div>
                 <h1 className="font-display text-xl text-foreground tracking-wide leading-none">ARENA</h1>
@@ -221,9 +219,9 @@ export default function ArenaPage() {
             </div>
             
             {/* Live Stats Pill */}
-            <div className="flex items-center gap-3 bg-surface-1/80 border border-border px-3 py-1.5">
+            <div className="flex items-center gap-3 bg-surface-1/80 border border-border rounded px-3 py-2">
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[10px] text-foreground font-medium">{totalLiveEvents}</span>
                 <span className="text-[9px] text-muted-foreground">Live</span>
               </div>
@@ -246,7 +244,7 @@ export default function ArenaPage() {
               placeholder="Search tournaments, crews..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 pl-10 pr-10 bg-surface-1 border-border focus:border-gold/50 text-sm placeholder:text-muted-foreground/60"
+              className="w-full h-11 pl-10 pr-10 bg-surface-1 border-border focus:border-white/30 text-sm placeholder:text-muted-foreground/60"
             />
             {searchQuery && (
               <button 
