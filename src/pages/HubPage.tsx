@@ -308,33 +308,15 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-visible">
-            {/* SVG container with inward curved sides */}
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-              <defs>
-                <clipPath id="inwardShape" clipPathUnits="objectBoundingBox">
-                  <path d="M 0,0 L 1,0 L 1,0.02 Q 0.992,0.5 1,0.98 L 1,1 L 0,1 L 0,0.98 Q 0.008,0.5 0,0.02 Z" />
-                </clipPath>
-              </defs>
-            </svg>
+          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-r from-surface-1 via-background to-transparent group-hover:border-white/20 transition-colors">
+            {/* One-sided shiny glow effect */}
+            <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-gold/15 via-purple-500/10 to-transparent" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-24 h-24 bg-gold/20 rounded-full blur-2xl group-hover:bg-gold/30 transition-colors" />
             
-            <div className="relative" style={{ clipPath: 'url(#inwardShape)' }}>
-              {/* Multi-layer background for depth */}
-              <div className="absolute inset-0 bg-gradient-to-br from-surface-1 via-background to-surface-1" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gold/8 via-transparent to-transparent" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-gold/5 via-transparent to-transparent" />
-              
-              {/* Animated glow pulse */}
-              <motion.div
-                className="absolute -top-20 -right-20 w-40 h-40 bg-gold/15 rounded-full blur-3xl"
-                animate={{ opacity: [0.2, 0.4, 0.2], scale: [1, 1.1, 1] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
-            
-              {/* Content */}
-              <div className="relative p-4 flex items-center justify-between">
+            {/* Content */}
+            <div className="relative p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {/* Arena Icon - Subtle Gold Glitch Aura */}
+                  {/* Arena Icon - Vibrant offset layers */}
                   <div className="relative flex items-center justify-center">
                     {/* Left offset layer - vibrant gold/orange */}
                     <div className="absolute w-12 h-10 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-[6px] -translate-x-[4px] shadow-[0_0_12px_rgba(251,191,36,0.6)]" />
@@ -366,20 +348,7 @@ export default function HubPage() {
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
-            
-            {/* SVG border with subtle inward curve */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 400 80">
-              <path 
-                d="M 0,0 L 400,0 L 400,2 Q 396,40 400,78 L 400,80 L 0,80 L 0,78 Q 4,40 0,2 Z" 
-                fill="none" 
-                stroke="rgba(212,175,55,0.3)"
-                strokeWidth="1"
-                vectorEffect="non-scaling-stroke"
-                className="group-hover:stroke-[rgba(212,175,55,0.5)] transition-all duration-500"
-              />
-            </svg>
           </div>
         </Link>
       </motion.div>
