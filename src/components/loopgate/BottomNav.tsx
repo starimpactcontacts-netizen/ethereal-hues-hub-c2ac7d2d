@@ -69,11 +69,15 @@ export default function BottomNav() {
             onClick={handleArenaClick}
             className="flex flex-col items-center justify-center group relative"
           >
-            {/* TikTok-style gradient border */}
+            {/* Offset glitch layers - arena intensity colors */}
             <div className="relative">
-              <div className="absolute -inset-[1.5px] bg-gradient-to-r from-gold via-white to-gold rounded-lg opacity-90 group-hover:opacity-100 transition-opacity" />
-              <div className="relative w-11 h-9 bg-black rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
-                <InfinityIcon className="w-5 h-5 text-white" strokeWidth={2.5} />
+              {/* Left offset layer - gold/red */}
+              <div className="absolute w-11 h-9 bg-gradient-to-r from-gold to-red-500 rounded-[6px] -translate-x-[3px] opacity-80" />
+              {/* Right offset layer - blue/purple */}
+              <div className="absolute w-11 h-9 bg-gradient-to-r from-blue-500 to-purple-500 rounded-[6px] translate-x-[3px] opacity-80" />
+              {/* Main button - white bg, black icon */}
+              <div className="relative w-11 h-9 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
+                <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
               </div>
             </div>
           </button>
