@@ -121,58 +121,93 @@ export default function HubPage() {
       
       {/* Concentric Rings Pattern - Portal effect */}
       <div className="absolute inset-x-0 top-0 h-[520px] pointer-events-none overflow-hidden z-0">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.08, 1],
-            opacity: [0.8, 1, 0.8]
-          }}
-          transition={{ 
-            duration: 8, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
-          className="absolute left-1/2 top-0 -translate-x-1/2 w-[800px] h-[800px]"
+        {/* Static ring pattern base */}
+        <div 
+          className="absolute left-1/2 top-0 -translate-x-1/2 w-[1000px] h-[1000px]"
           style={{
             background: `
-              radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 2%, transparent 3%),
               repeating-radial-gradient(
                 circle at center,
                 transparent 0px,
-                transparent 18px,
-                rgba(255,255,255,0.06) 19px,
-                rgba(255,255,255,0.06) 20px,
-                transparent 21px
+                transparent 22px,
+                rgba(255,255,255,0.05) 23px,
+                rgba(255,255,255,0.05) 24px,
+                transparent 25px
               )
             `,
-            maskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, white 0%, transparent 70%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, white 0%, transparent 70%)',
+            maskImage: 'radial-gradient(ellipse 100% 50% at 50% 0%, white 0%, transparent 60%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 50% at 50% 0%, white 0%, transparent 60%)',
           }}
         />
-        {/* Second layer - counter pulse */}
+        
+        {/* Expanding ring 1 */}
         <motion.div 
           animate={{ 
-            scale: [1.05, 0.98, 1.05],
-            opacity: [0.6, 0.9, 0.6]
+            scale: [0.1, 2.5],
+            opacity: [0.4, 0]
           }}
           transition={{ 
-            duration: 10, 
+            duration: 6, 
             repeat: Infinity, 
-            ease: "easeInOut" 
+            ease: "linear",
+            delay: 0
           }}
-          className="absolute left-1/2 top-0 -translate-x-1/2 w-[900px] h-[900px]"
+          className="absolute left-1/2 top-0 -translate-x-1/2 w-[400px] h-[400px] rounded-full border border-white/20"
           style={{
-            background: `
-              repeating-radial-gradient(
-                circle at center,
-                transparent 0px,
-                transparent 28px,
-                rgba(255,255,255,0.04) 29px,
-                rgba(255,255,255,0.04) 30px,
-                transparent 31px
-              )
-            `,
-            maskImage: 'radial-gradient(ellipse 100% 55% at 50% 0%, white 0%, transparent 65%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 100% 55% at 50% 0%, white 0%, transparent 65%)',
+            boxShadow: '0 0 20px rgba(255,255,255,0.1)',
+          }}
+        />
+        
+        {/* Expanding ring 2 */}
+        <motion.div 
+          animate={{ 
+            scale: [0.1, 2.5],
+            opacity: [0.4, 0]
+          }}
+          transition={{ 
+            duration: 6, 
+            repeat: Infinity, 
+            ease: "linear",
+            delay: 2
+          }}
+          className="absolute left-1/2 top-0 -translate-x-1/2 w-[400px] h-[400px] rounded-full border border-white/20"
+          style={{
+            boxShadow: '0 0 20px rgba(255,255,255,0.1)',
+          }}
+        />
+        
+        {/* Expanding ring 3 */}
+        <motion.div 
+          animate={{ 
+            scale: [0.1, 2.5],
+            opacity: [0.4, 0]
+          }}
+          transition={{ 
+            duration: 6, 
+            repeat: Infinity, 
+            ease: "linear",
+            delay: 4
+          }}
+          className="absolute left-1/2 top-0 -translate-x-1/2 w-[400px] h-[400px] rounded-full border border-white/20"
+          style={{
+            boxShadow: '0 0 20px rgba(255,255,255,0.1)',
+          }}
+        />
+        
+        {/* Core glow */}
+        <motion.div 
+          animate={{ 
+            opacity: [0.6, 0.9, 0.6],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 3, 
+            repeat: Infinity, 
+            ease: "easeInOut"
+          }}
+          className="absolute left-1/2 top-0 -translate-x-1/2 w-12 h-12 rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 40%, transparent 70%)',
           }}
         />
       </div>
