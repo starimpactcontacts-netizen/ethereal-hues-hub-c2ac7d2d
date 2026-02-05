@@ -121,6 +121,20 @@ export default function HubPage() {
       
       {/* Edge Pattern - Subtle loop lines on left/right edges */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Top grid pattern */}
+        <div 
+          className="absolute inset-x-0 top-0 h-[200px] opacity-[0.08]"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(255,255,255,0.4) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255,255,255,0.4) 1px, transparent 1px)
+            `,
+            backgroundSize: '48px 48px',
+            maskImage: 'linear-gradient(to bottom, white 0%, white 40%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, white 0%, white 40%, transparent 100%)',
+          }}
+        />
+        
         {/* Left edge pattern */}
         <div 
           className="absolute left-0 top-0 w-20 h-[520px] opacity-[0.15]"
