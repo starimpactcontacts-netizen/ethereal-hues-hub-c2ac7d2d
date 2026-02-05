@@ -49,7 +49,7 @@ export default function BottomNav() {
               to={item.to}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-1 transition-colors ${
-                  isActive ? "text-gold" : "text-muted-foreground"
+                  isActive ? "text-white" : "text-muted-foreground"
                 }`
               }
             >
@@ -89,7 +89,7 @@ export default function BottomNav() {
               to={item.to}
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-1 transition-colors ${
-                  isActive ? "text-gold" : "text-muted-foreground"
+                  isActive ? "text-white" : "text-muted-foreground"
                 }`
               }
             >
