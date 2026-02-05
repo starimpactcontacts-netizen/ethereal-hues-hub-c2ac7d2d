@@ -134,53 +134,45 @@ export default function HubPage() {
           >
             {/* Dimensional Gate Effect - Behind Profile Card */}
             <div className="absolute -inset-3 -z-10 overflow-visible pointer-events-none">
-              {/* Pulling Spiral Effect */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                {/* Spiral rings - rotating inward */}
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute rounded-full border border-white/[0.08]"
-                    style={{
-                      width: `${110 + i * 25}%`,
-                      height: `${110 + i * 25}%`,
-                    }}
-                    animate={{ 
-                      rotate: i % 2 === 0 ? [0, 360] : [360, 0],
-                      scale: [1, 0.98, 1],
-                      opacity: [0.15 - i * 0.02, 0.25 - i * 0.03, 0.15 - i * 0.02]
-                    }}
-                    transition={{ 
-                      rotate: { duration: 20 + i * 5, repeat: Infinity, ease: "linear" },
-                      scale: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 },
-                      opacity: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }
-                    }}
-                  />
-                ))}
-                
-                {/* Inner spiral arms */}
-                <motion.div
-                  className="absolute w-[130%] h-[130%]"
-                  animate={{ rotate: [0, -360] }}
-                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                  style={{
-                    background: `conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.03) 30deg, transparent 60deg, rgba(255,255,255,0.02) 120deg, transparent 150deg, rgba(255,255,255,0.03) 210deg, transparent 240deg, rgba(255,255,255,0.02) 300deg, transparent 330deg)`,
-                  }}
-                />
-              </div>
-              
-              {/* Center pull glow */}
+              {/* Hypnotic Spiral - Pulling Inward */}
               <motion.div 
-                className="absolute inset-[20%] bg-white/[0.02] rounded-full blur-2xl"
-                animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.3, 0.5, 0.3] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] aspect-square rounded-full"
+                animate={{ rotate: [0, -360] }}
+                transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                style={{
+                  background: `repeating-conic-gradient(
+                    from 0deg,
+                    transparent 0deg 6deg,
+                    rgba(255,255,255,0.04) 6deg 12deg,
+                    transparent 12deg 18deg,
+                    rgba(255,255,255,0.03) 18deg 24deg
+                  )`,
+                  maskImage: 'radial-gradient(circle, black 0%, black 30%, transparent 70%)',
+                  WebkitMaskImage: 'radial-gradient(circle, black 0%, black 30%, transparent 70%)',
+                }}
               />
               
-              {/* Edge visibility accents */}
+              {/* Second spiral layer - opposite direction */}
               <motion.div 
-                className="absolute -inset-1 border border-white/[0.04] rounded-sm"
-                animate={{ opacity: [0.3, 0.5, 0.3] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180%] aspect-square rounded-full"
+                animate={{ rotate: [360, 0] }}
+                transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+                style={{
+                  background: `repeating-conic-gradient(
+                    from 90deg,
+                    transparent 0deg 8deg,
+                    rgba(255,255,255,0.025) 8deg 16deg
+                  )`,
+                  maskImage: 'radial-gradient(circle, black 0%, black 25%, transparent 60%)',
+                  WebkitMaskImage: 'radial-gradient(circle, black 0%, black 25%, transparent 60%)',
+                }}
+              />
+              
+              {/* Subtle edge border */}
+              <motion.div 
+                className="absolute -inset-1 border border-white/[0.03] rounded-sm"
+                animate={{ opacity: [0.2, 0.4, 0.2] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               />
             </div>
             
