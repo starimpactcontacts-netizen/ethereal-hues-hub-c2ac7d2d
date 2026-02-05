@@ -97,13 +97,17 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
               <p className="text-xs text-zinc-500 mb-4">
                 Get your first score. Enter the rankings.
               </p>
-                  <button
-                    onClick={handleStartGQT}
-                className="w-full px-4 py-3 bg-white text-black font-semibold text-sm rounded-[4px] hover:bg-zinc-100 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-                  >
-                    Start GQT
-                <ArrowRight size={14} />
-                  </button>
+              {/* TikTok-style button with gradient border */}
+              <div className="relative group">
+                <div className="absolute -inset-[1px] bg-gradient-to-r from-cyan-400 via-white to-rose-400 rounded-[6px] opacity-80 group-hover:opacity-100 transition-opacity" />
+                <button
+                  onClick={handleStartGQT}
+                  className="relative w-full px-4 py-3 bg-black text-white font-semibold text-sm rounded-[5px] flex items-center justify-center gap-2 transition-all"
+                >
+                  Start GQT
+                  <ArrowRight size={14} />
+                </button>
+              </div>
                 </div>
 
             {/* Step 2 - Collapsible */}
