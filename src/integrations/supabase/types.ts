@@ -1187,6 +1187,82 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "feed_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          like_count: number
+          parent_id: string | null
+          reply_count: number
+          submission_id: string
+          submission_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          parent_id?: string | null
+          reply_count?: number
+          submission_id: string
+          submission_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          like_count?: number
+          parent_id?: string | null
+          reply_count?: number
+          submission_id?: string
+          submission_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "feed_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friendly_tournament_participants: {
         Row: {
           avatar_url: string | null
