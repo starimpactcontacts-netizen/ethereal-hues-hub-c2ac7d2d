@@ -13,6 +13,7 @@ import ArchetypeSelector from "@/components/loopgate/ArchetypeSelector";
 import SoftwareSelector from "@/components/loopgate/SoftwareSelector";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import InviteFriendsModal from "@/components/loopgate/InviteFriendsModal";
+ import ProfileBackgroundSettings from "@/components/loopgate/ProfileBackgroundSettings";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -270,6 +271,20 @@ export default function ProfileSettingsPage() {
           )}
         </section>
 
+         {/* ─── Profile Background ─── */}
+         <section className="space-y-3">
+           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Profile Background</h3>
+           <div className="bg-surface-1 border border-border rounded-xl p-4">
+             <ProfileBackgroundSettings
+               userId={profile.id}
+               currentColor={(profile as any).profile_bg_color || 'gold'}
+               currentImageUrl={(profile as any).profile_bg_image_url || null}
+               userLevel={profile.level || 1}
+               onUpdate={refreshProfile}
+             />
+           </div>
+         </section>
+ 
         {/* ─── Verification ─── */}
         <section className="space-y-3">
           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Verification</h3>

@@ -2474,6 +2474,8 @@ export type Database = {
           onboarding_completed: boolean | null
           portfolio_url: string | null
           primary_crew_changed_at: string | null
+          profile_bg_color: string | null
+          profile_bg_image_url: string | null
           region: string | null
           review_style: string | null
           rules_accepted: boolean | null
@@ -2521,6 +2523,8 @@ export type Database = {
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null
+          profile_bg_color?: string | null
+          profile_bg_image_url?: string | null
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
@@ -2568,6 +2572,8 @@ export type Database = {
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null
+          profile_bg_color?: string | null
+          profile_bg_image_url?: string | null
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
