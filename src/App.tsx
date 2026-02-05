@@ -117,9 +117,9 @@ function RootRedirect() {
     return <Navigate to="/hub" replace />;
   }
   
-  // Show splash screen on initial load - TikTok style
+  // HTML splash handles initial load - this is just a fallback
   if (loading || rolesLoading) {
-    return <LoadingScreen splash />;
+    return null; // HTML splash is already visible
   }
   
   // Not logged in
@@ -156,9 +156,9 @@ function OnboardingWrapper() {
   
   const isEnterprise = roles.includes('enterprise');
   
-  // Show splash on auth check
+  // HTML splash handles initial load
   if (loading || rolesLoading) {
-    return <LoadingScreen splash />;
+    return null;
   }
   
   if (!user) {
@@ -189,9 +189,9 @@ function EnterpriseOnboardingWrapper() {
   
   const isEnterprise = roles.includes('enterprise');
   
-  // Show splash on auth check
+  // HTML splash handles initial load
   if (loading || rolesLoading) {
-    return <LoadingScreen splash />;
+    return null;
   }
   
   if (!user) {

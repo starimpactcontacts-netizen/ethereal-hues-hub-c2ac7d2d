@@ -38,8 +38,39 @@
   <meta name="twitter:description" content="Loopgate is an open competitive editing index with live leaderboards and public rankings.">
 </head>
 
-  <body style="background-color: #000000;">
+  <body style="background-color: #ffffff;">
+    <!-- Instant Splash Screen - shows before React loads -->
+    <div id="splash" style="
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease-out;
+    ">
+      <img 
+        src="/lovable-uploads/86ac2d4f-16a8-400f-a05a-94360824617d.png" 
+        alt="LOOPGATE" 
+        style="height: 32px; width: auto;"
+      />
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Hide splash once React is ready
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var splash = document.getElementById('splash');
+          if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(function() {
+              splash.style.display = 'none';
+            }, 300);
+          }
+        }, 800);
+      });
+    </script>
   </body>
 </html>
