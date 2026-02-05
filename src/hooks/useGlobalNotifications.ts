@@ -228,15 +228,28 @@ export function useGlobalNotifications() {
               emoji = '⚔️';
               sound = 'urgent';
               break;
+             case 'connection_request':
+               emoji = '🤝';
+               sound = 'alert';
+               break;
+             case 'connection_accepted':
+               emoji = '🎉';
+               sound = 'success';
+               break;
           }
 
           playSound(sound);
           
           const data = notif.data as { event_id?: string; tournament_id?: string; battle_id?: string };
-          
+           const connectionData = notif.data as { sender_id?: string; user_id?: string };
+ 
           toast(`${emoji} ${notif.title}`, {
             description: notif.message,
-            action: data?.battle_id
+             action: connectionData?.sender_id
+               ? { label: 'View Profile', onClick: () => (window.location.href = `/editor/${connectionData.sender_id}`) }
+               : connectionData?.user_id
+               ? { label: 'View Profile', onClick: () => (window.location.href = `/editor/${connectionData.user_id}`) }
+               : data?.battle_id
               ? { label: 'View Battle', onClick: () => (window.location.href = `/battle/${data.battle_id}`) }
               : data?.tournament_id
               ? { label: 'View', onClick: () => (window.location.href = `/sanctioned/${data.tournament_id}`) }
