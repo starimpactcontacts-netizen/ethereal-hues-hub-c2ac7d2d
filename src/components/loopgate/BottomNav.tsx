@@ -71,10 +71,10 @@ export default function BottomNav() {
           >
             {/* Offset glitch layers - arena intensity colors */}
             <div className="relative">
-              {/* Left offset layer - gold/red */}
-              <div className="absolute w-11 h-9 bg-gradient-to-r from-gold to-red-500 rounded-[6px] -translate-x-[3px] opacity-80" />
-              {/* Right offset layer - blue/purple */}
-              <div className="absolute w-11 h-9 bg-gradient-to-r from-blue-500 to-purple-500 rounded-[6px] translate-x-[3px] opacity-80" />
+              {/* Left offset layer - vibrant gold/orange */}
+              <div className="absolute w-11 h-9 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-[6px] -translate-x-[4px] shadow-[0_0_12px_rgba(251,191,36,0.6)]" />
+              {/* Right offset layer - vibrant blue/purple */}
+              <div className="absolute w-11 h-9 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-[6px] translate-x-[4px] shadow-[0_0_12px_rgba(139,92,246,0.6)]" />
               {/* Main button - white bg, black icon */}
               <div className="relative w-11 h-9 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
                 <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
