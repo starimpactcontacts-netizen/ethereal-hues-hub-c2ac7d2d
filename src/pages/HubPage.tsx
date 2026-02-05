@@ -133,50 +133,39 @@ export default function HubPage() {
             className="relative z-10"
           >
             {/* Dimensional Gate Effect - Behind Profile Card */}
-            <div className="absolute -inset-3 -z-10 overflow-visible pointer-events-none">
+            <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-sm">
               {/* Hypnotic Spiral - Pulling Inward */}
               <motion.div 
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] aspect-square rounded-full"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] aspect-square rounded-full"
                 animate={{ rotate: [0, -360] }}
-                transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
                 style={{
                   background: `repeating-conic-gradient(
                     from 0deg,
-                    transparent 0deg 6deg,
-                    rgba(255,255,255,0.04) 6deg 12deg,
-                    transparent 12deg 18deg,
-                    rgba(255,255,255,0.03) 18deg 24deg
+                    transparent 0deg 5deg,
+                    rgba(255,255,255,0.08) 5deg 10deg,
+                    transparent 10deg 15deg,
+                    rgba(255,255,255,0.06) 15deg 20deg
                   )`,
-                  maskImage: 'radial-gradient(circle, black 0%, black 30%, transparent 70%)',
-                  WebkitMaskImage: 'radial-gradient(circle, black 0%, black 30%, transparent 70%)',
                 }}
               />
               
               {/* Second spiral layer - opposite direction */}
               <motion.div 
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[180%] aspect-square rounded-full"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[220%] aspect-square rounded-full"
                 animate={{ rotate: [360, 0] }}
-                transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
                 style={{
                   background: `repeating-conic-gradient(
                     from 90deg,
-                    transparent 0deg 8deg,
-                    rgba(255,255,255,0.025) 8deg 16deg
+                    transparent 0deg 7deg,
+                    rgba(255,255,255,0.05) 7deg 14deg
                   )`,
-                  maskImage: 'radial-gradient(circle, black 0%, black 25%, transparent 60%)',
-                  WebkitMaskImage: 'radial-gradient(circle, black 0%, black 25%, transparent 60%)',
                 }}
-              />
-              
-              {/* Subtle edge border */}
-              <motion.div 
-                className="absolute -inset-1 border border-white/[0.03] rounded-sm"
-                animate={{ opacity: [0.2, 0.4, 0.2] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               />
             </div>
             
-            <div className="bg-surface-1/90 backdrop-blur-xl border border-border/50 overflow-hidden relative">
+            <div className="bg-surface-1 backdrop-blur-xl border border-border/50 overflow-hidden relative">
               {/* Top Row: Avatar + Identity + Shop Balance */}
               <div className="p-4 flex items-start justify-between gap-4">
                 <button 
