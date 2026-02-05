@@ -121,7 +121,16 @@ export default function HubPage() {
       
       {/* Concentric Rings Pattern - Portal effect */}
       <div className="absolute inset-x-0 top-0 h-[520px] pointer-events-none overflow-hidden z-0">
-        <div 
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.08, 1],
+            opacity: [0.8, 1, 0.8]
+          }}
+          transition={{ 
+            duration: 8, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
           className="absolute left-1/2 top-0 -translate-x-1/2 w-[800px] h-[800px]"
           style={{
             background: `
@@ -137,6 +146,33 @@ export default function HubPage() {
             `,
             maskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, white 0%, transparent 70%)',
             WebkitMaskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, white 0%, transparent 70%)',
+          }}
+        />
+        {/* Second layer - counter pulse */}
+        <motion.div 
+          animate={{ 
+            scale: [1.05, 0.98, 1.05],
+            opacity: [0.6, 0.9, 0.6]
+          }}
+          transition={{ 
+            duration: 10, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+          className="absolute left-1/2 top-0 -translate-x-1/2 w-[900px] h-[900px]"
+          style={{
+            background: `
+              repeating-radial-gradient(
+                circle at center,
+                transparent 0px,
+                transparent 28px,
+                rgba(255,255,255,0.04) 29px,
+                rgba(255,255,255,0.04) 30px,
+                transparent 31px
+              )
+            `,
+            maskImage: 'radial-gradient(ellipse 100% 55% at 50% 0%, white 0%, transparent 65%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 55% at 50% 0%, white 0%, transparent 65%)',
           }}
         />
       </div>
