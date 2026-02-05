@@ -58,6 +58,7 @@ import MessagesPage from "./pages/loopgate/MessagesPage";
 import DirectMessagePage from "./pages/loopgate/DirectMessagePage";
 import HostedCompsPage from "./pages/loopgate/HostedCompsPage";
 import HostedCompDetailPage from "./pages/loopgate/HostedCompDetailPage";
+import ConnectionsPage from "./pages/loopgate/ConnectionsPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -278,6 +279,7 @@ export default function App() {
               <Route path="/crews/:crewId/chat" element={<CrewChatPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/messages/:conversationId" element={<DirectMessagePage />} />
+              <Route path="/connections" element={<ConnectionsPage />} />
               <Route path="/crews/:crewId/settings" element={<CrewSettingsPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />

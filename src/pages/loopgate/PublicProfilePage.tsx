@@ -17,6 +17,8 @@ import loopgateLogo from "@/assets/loopgate-logo.png";
 import { getRankFromScore } from "@/data/gqtConfig";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
+import ConnectButton from "@/components/loopgate/ConnectButton";
+import { Users } from "lucide-react";
 
 interface PublicProfile {
   id: string;
@@ -42,6 +44,7 @@ interface PublicProfile {
   software: string[] | null;
   best_gatekeeper_qoi: number | null;
   is_founding_member: boolean;
+  connection_count: number;
 }
 
 interface ConnectedPlatform {
@@ -88,7 +91,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi")
+        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, connection_count")
         .eq("id", userId)
         .single();
 
@@ -345,13 +348,13 @@ export default function PublicProfilePage() {
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
-                <p className="font-display text-xl text-gold">#{rank || "—"}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
+                <p className="font-display text-xl text-white">{profile.connection_count || 0}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Connections</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
-                <p className="font-display text-xl text-white">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Index</p>
+                <p className="font-display text-xl text-gold">#{rank || "—"}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
               </div>
             </div>
 
@@ -391,8 +394,11 @@ export default function PublicProfilePage() {
               </div>
             )}
 
-            {/* Message Button - Compact icon style */}
-            <MessageButton userId={profile.id} username={profile.username} variant="icon" />
+            {/* Action Buttons - Connect & Message */}
+            <div className="flex items-center gap-3">
+              <ConnectButton targetUserId={profile.id} />
+              <MessageButton userId={profile.id} username={profile.username} variant="icon" />
+            </div>
           </div>
         </div>
       </div>
