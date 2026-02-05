@@ -43,6 +43,7 @@ export interface RealEditor {
   best_gatekeeper_qoi?: number | null;
   is_founding_member?: boolean;
   created_at?: string | null;
+  connection_count?: number;
   roles?: ('admin' | 'moderator' | 'user' | 'judge' | 'dev' | 'enterprise')[];
   crew_id?: string | null;
   crew?: {
@@ -134,7 +135,7 @@ export function useRealRankings() {
     const { data, error } = await supabase
       .from('profiles')
       .select(`
-        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id, house_id, xp, level, best_gatekeeper_qoi, is_founding_member, created_at,
+        id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, crew_id, house_id, xp, level, best_gatekeeper_qoi, is_founding_member, created_at, connection_count,
         crews:crew_id (id, name, emblem, avatar_url),
         houses:house_id (id, name, symbol, primary_color, secondary_color)
       `)
@@ -271,6 +272,7 @@ export function useRealRankings() {
           total_events: totalEvents,
           total_wins: totalWins,
           win_rate: winRate,
+          connection_count: editor.connection_count || 0,
         };
       }) as RealEditor[];
       setRankings(rankedData);
