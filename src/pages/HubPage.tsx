@@ -121,7 +121,7 @@ export default function HubPage() {
       <LoopMonster />
       
       {/* Concentric Rings Pattern - Portal effect */}
-      <div className="absolute inset-x-0 top-0 h-[520px] pointer-events-none overflow-hidden z-0">
+      <div className="absolute inset-x-0 top-0 h-[480px] pointer-events-none overflow-hidden z-0 flex items-center justify-center">
         {/* Loop rings image with subtle expansion */}
         <motion.div 
           animate={{ 
@@ -132,7 +132,7 @@ export default function HubPage() {
             repeat: Infinity, 
             ease: "easeInOut",
           }}
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] opacity-40"
+          className="w-[700px] h-[700px] opacity-40"
         >
           <img 
             src={loopRingsPattern} 
