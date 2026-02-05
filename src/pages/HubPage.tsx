@@ -477,7 +477,7 @@ export default function HubPage() {
             
             {/* Premium Hosted Competitions - After official, before sanctioned */}
             {premiumComps.map((comp, i) => (
-              <Link key={comp.id} to={`/hosted/${comp.slug || comp.id}`} className="shrink-0">
+              <Link key={comp.id} to={`/hosted-comp/${comp.slug || comp.id}`} className="shrink-0">
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
