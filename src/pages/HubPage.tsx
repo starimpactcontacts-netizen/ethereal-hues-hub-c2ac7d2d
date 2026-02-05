@@ -14,6 +14,7 @@ import { useTempProfile } from '@/hooks/useTempProfile';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
+import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
@@ -46,6 +47,7 @@ export default function HubPage() {
   const { stats } = useGlobalStats();
   const { rankings } = useRealRankings();
   const { tournaments: sanctionedTournaments } = useSanctionedTournaments();
+  const { competitions: hostedComps } = useHostedCompetitions();
   const activityStats = useUserActivityStats(user?.id);
   const navigate = useNavigate();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -105,8 +107,13 @@ export default function HubPage() {
     b.status === 'pending' || b.status === 'active' || b.status === 'judging'
   ).slice(0, 5); // Limit to 5 most recent
   
+  // Premium hosted competitions (live/judging, marked as premium)
+  const premiumComps = hostedComps.filter(c => 
+    c.is_premium && (c.status === 'live' || c.status === 'judging')
+  );
+  
   // Total featured count for header
-  const totalFeatured = liveEvents.length + activeSanctioned.length + featuredBattles.length;
+  const totalFeatured = liveEvents.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
 
   return (
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
@@ -468,13 +475,70 @@ export default function HubPage() {
               </Link>
             ))}
             
+            {/* Premium Hosted Competitions - After official, before sanctioned */}
+            {premiumComps.map((comp, i) => (
+              <Link key={comp.id} to={`/hosted/${comp.slug || comp.id}`} className="shrink-0">
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + (liveEvents.length + i) * 0.05 }}
+                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-amber-500/50 transition-colors overflow-hidden group"
+                >
+                  {/* Competition Poster */}
+                  <div className="h-24 overflow-hidden relative bg-gradient-to-br from-amber-900/50 to-surface-1">
+                    {(comp.poster_urls?.[0] || comp.poster_url) ? (
+                      <img 
+                        src={comp.poster_urls?.[0] || comp.poster_url || ''} 
+                        alt={comp.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Star className="w-8 h-8 text-amber-400/50" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
+                    
+                    {/* Live badge */}
+                    <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-amber-500/90 px-1.5 py-0.5 rounded-sm">
+                      <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">
+                        {comp.status === 'judging' ? 'Judging' : 'Live'}
+                      </span>
+                    </div>
+                    
+                    {/* Premium badge */}
+                    <div className="absolute bottom-1.5 left-1.5 bg-gradient-to-r from-amber-500 to-orange-500 px-1.5 py-0.5 rounded-sm">
+                      <span className="text-[7px] font-bold text-white uppercase tracking-wider">Premium</span>
+                    </div>
+                    
+                    {/* Participant count */}
+                    <div className="absolute top-1.5 right-1.5 bg-background/80 border border-border/50 px-1.5 py-0.5 rounded-sm">
+                      <span className="text-[8px] font-medium text-foreground">{comp.participant_count || 0} joined</span>
+                    </div>
+                  </div>
+                  
+                  {/* Competition Info */}
+                  <div className="p-2.5">
+                    <p className="font-display text-xs text-foreground truncate">{comp.name}</p>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <span className="text-[8px] text-amber-400 uppercase tracking-wider">{comp.host_name}</span>
+                      <div className="text-[9px] text-muted-foreground">
+                        <CountdownTimer endDate={comp.submission_deadline} expiredLabel="Closed" />
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
+            ))}
+            
             {/* Sanctioned Tournaments - After official events */}
             {activeSanctioned.map((tournament, i) => (
               <Link key={tournament.id} to={`/sanctioned/${tournament.id}`} className="shrink-0">
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + (liveEvents.length + i) * 0.05 }}
+                  transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + i) * 0.05 }}
                   className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-purple-500/50 transition-colors overflow-hidden group"
                 >
                   {/* Tournament Poster or Gradient */}
@@ -535,7 +599,7 @@ export default function HubPage() {
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + (liveEvents.length + activeSanctioned.length + i) * 0.05 }}
+                  transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + activeSanctioned.length + i) * 0.05 }}
                   className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/50 transition-colors overflow-hidden group"
                 >
                   {/* VS Display Header */}
