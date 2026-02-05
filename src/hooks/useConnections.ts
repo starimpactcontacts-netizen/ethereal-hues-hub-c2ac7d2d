@@ -91,7 +91,7 @@
          .select('requests_sent')
          .eq('user_id', user.id)
          .eq('week_start', weekStart)
-         .single();
+        .maybeSingle();
  
        const requestsSent = limitData?.requests_sent || 0;
  
@@ -163,7 +163,7 @@
        .select('requests_sent')
        .eq('user_id', user.id)
        .eq('week_start', weekStart)
-       .single();
+        .maybeSingle();
  
      const requestsSent = limitData?.requests_sent || 0;
      if (requestsSent >= WEEKLY_LIMIT) {
@@ -176,7 +176,7 @@
        .from('connections')
        .select('id, status')
        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${user.id})`)
-       .single();
+        .maybeSingle();
  
      if (existing) {
        if (existing.status === 'accepted') {
@@ -219,7 +219,14 @@
    const acceptRequest = async (connectionId: string): Promise<boolean> => {
      if (!user) return false;
  
-     const { error } = await supabase
+    // First get the connection to find the sender
+    const { data: connData } = await supabase
+      .from('connections')
+      .select('sender_id')
+      .eq('id', connectionId)
+      .single();
+
+    const { error } = await supabase
        .from('connections')
        .update({ status: 'accepted' })
        .eq('id', connectionId)
@@ -231,6 +238,23 @@
        return false;
      }
  
+    // Send notification to the original sender
+    if (connData) {
+      const { data: myProfile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+
+      await supabase.from('notifications').insert({
+        user_id: connData.sender_id,
+        type: 'connection_accepted',
+        title: 'Connection Accepted!',
+        message: `@${myProfile?.username || 'Someone'} accepted your connection request`,
+        data: { user_id: user.id, connection_id: connectionId }
+      });
+    }
+
      toast.success('Connection accepted!');
      fetchConnections();
      return true;
@@ -306,7 +330,7 @@
        .from('connections')
        .select('sender_id, receiver_id, status')
        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${targetUserId}),and(sender_id.eq.${targetUserId},receiver_id.eq.${user.id})`)
-       .single();
+        .maybeSingle();
  
      if (!data) return 'none';
      if (data.status === 'accepted') return 'connected';
