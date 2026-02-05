@@ -417,6 +417,80 @@ export type Database = {
         }
         Relationships: []
       }
+      connection_request_limits: {
+        Row: {
+          id: string
+          requests_sent: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          id?: string
+          requests_sent?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          id?: string
+          requests_sent?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connection_request_limits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connections: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          responded_at: string | null
+          sender_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          responded_at?: string | null
+          sender_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          responded_at?: string | null
+          sender_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connections_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connections_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -2377,6 +2451,7 @@ export type Database = {
           banned_reason: string | null
           best_gatekeeper_qoi: number | null
           bio: string | null
+          connection_count: number
           created_at: string | null
           crew_id: string | null
           discord: string | null
@@ -2423,6 +2498,7 @@ export type Database = {
           banned_reason?: string | null
           best_gatekeeper_qoi?: number | null
           bio?: string | null
+          connection_count?: number
           created_at?: string | null
           crew_id?: string | null
           discord?: string | null
@@ -2469,6 +2545,7 @@ export type Database = {
           banned_reason?: string | null
           best_gatekeeper_qoi?: number | null
           bio?: string | null
+          connection_count?: number
           created_at?: string | null
           crew_id?: string | null
           discord?: string | null
