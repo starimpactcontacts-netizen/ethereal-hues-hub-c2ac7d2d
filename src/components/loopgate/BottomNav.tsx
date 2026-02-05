@@ -71,7 +71,7 @@ export default function BottomNav() {
           >
             {/* TikTok-style gradient border */}
             <div className="relative">
-              <div className="absolute -inset-[1.5px] bg-gradient-to-r from-cyan-400 via-white to-rose-400 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute -inset-[1.5px] bg-gradient-to-r from-gold via-white to-gold rounded-lg opacity-90 group-hover:opacity-100 transition-opacity" />
               <div className="relative w-11 h-9 bg-black rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
                 <InfinityIcon className="w-5 h-5 text-white" strokeWidth={2.5} />
               </div>
