@@ -99,7 +99,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
               </p>
                   <button
                     onClick={handleStartGQT}
-                className="w-full px-4 py-2.5 bg-white text-black font-semibold text-sm rounded hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2"
+                className="w-full px-4 py-3 bg-white text-black font-semibold text-sm rounded-[4px] hover:bg-zinc-100 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
                   >
                     Start GQT
                 <ArrowRight size={14} />
