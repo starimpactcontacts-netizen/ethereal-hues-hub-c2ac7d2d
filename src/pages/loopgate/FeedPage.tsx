@@ -3,12 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { 
-  Play, Star, ChevronUp, ChevronDown, 
-  X, Share2, Trophy, Loader2, User, Sparkles
+  Play, Star, ChevronUp, ChevronDown, MessageCircle,
+  X, Share2, Trophy, Loader2, User, Sparkles, ExternalLink
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { fetchThumbnailsBatch } from "@/hooks/useThumbnail";
+import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
 
 // Unified feed item type
 type FeedItemType = 'arena' | 'review';
@@ -69,17 +70,21 @@ function getGrade(score: number): { grade: string; color: string } {
 function ArenaFeedCard({ 
   item, 
   thumbnail,
-  onOpen, 
-  onProfile 
+  onOpen,
+  onOpenPlayer,
+  onProfile,
+  onOpenComments
 }: { 
   item: ArenaFeedItem; 
   thumbnail: string | null;
   onOpen: () => void;
+  onOpenPlayer: () => void;
   onProfile: () => void;
+  onOpenComments: () => void;
 }) {
   return (
     <div className="absolute inset-0 flex flex-col">
-      <div className="absolute inset-0 cursor-pointer" onClick={onOpen}>
+      <div className="absolute inset-0 cursor-pointer" onClick={onOpenPlayer}>
         {thumbnail ? (
           <img src={thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
@@ -98,7 +103,7 @@ function ArenaFeedCard({
               <Play className="w-7 h-7 text-white ml-1" fill="white" />
             </div>
             <span className="text-white/80 text-xs font-medium">
-              Watch on {platformLabels[item.platform] || item.platform}
+              Tap to watch
             </span>
           </motion.div>
         </div>
@@ -143,9 +148,21 @@ function ArenaFeedCard({
           </div>
         )}
 
+        <button onClick={(e) => { e.stopPropagation(); onOpenComments(); }} className="flex flex-col items-center">
+          <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <MessageCircle className="w-5 h-5 text-white" />
+          </div>
+        </button>
+
         <button onClick={(e) => { e.stopPropagation(); navigator.share?.({ url: item.submission_url }); }} className="flex flex-col items-center">
           <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
             <Share2 className="w-5 h-5 text-white" />
+          </div>
+        </button>
+
+        <button onClick={(e) => { e.stopPropagation(); onOpen(); }} className="flex flex-col items-center">
+          <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <ExternalLink className="w-5 h-5 text-white" />
           </div>
         </button>
       </div>
@@ -181,19 +198,23 @@ function ArenaFeedCard({
 function ReviewFeedCard({ 
   item, 
   thumbnail,
-  onOpen, 
-  onProfile 
+  onOpen,
+  onOpenPlayer,
+  onProfile,
+  onOpenComments
 }: { 
   item: ReviewFeedItem; 
   thumbnail: string | null;
   onOpen: () => void;
+  onOpenPlayer: () => void;
   onProfile: () => void;
+  onOpenComments: () => void;
 }) {
   const { grade, color } = getGrade(item.total_score);
 
   return (
     <div className="absolute inset-0 flex flex-col">
-      <div className="absolute inset-0 cursor-pointer" onClick={onOpen}>
+      <div className="absolute inset-0 cursor-pointer" onClick={onOpenPlayer}>
         {thumbnail ? (
           <img src={thumbnail} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
@@ -212,7 +233,7 @@ function ReviewFeedCard({
               <Play className="w-7 h-7 text-white ml-1" fill="white" />
             </div>
             <span className="text-white/80 text-xs font-medium">
-              Watch on {platformLabels[item.platform] || item.platform}
+              Tap to watch
             </span>
           </motion.div>
         </div>
@@ -266,6 +287,18 @@ function ReviewFeedCard({
         <button onClick={(e) => { e.stopPropagation(); navigator.share?.({ url: item.submission_url }); }} className="flex flex-col items-center">
           <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
             <Share2 className="w-5 h-5 text-white" />
+          </div>
+        </button>
+
+        <button onClick={(e) => { e.stopPropagation(); onOpenComments(); }} className="flex flex-col items-center">
+          <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <MessageCircle className="w-5 h-5 text-white" />
+          </div>
+        </button>
+
+        <button onClick={(e) => { e.stopPropagation(); onOpen(); }} className="flex flex-col items-center">
+          <div className="w-11 h-11 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+            <ExternalLink className="w-5 h-5 text-white" />
           </div>
         </button>
       </div>
@@ -333,6 +366,8 @@ export default function FeedPage() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const seenUrls = useRef(new Set<string>());
   const offsetRef = useRef({ arena: 0, review: 0 });
+  const [playerOpen, setPlayerOpen] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   const BATCH_SIZE = 20;
 
@@ -612,6 +647,12 @@ export default function FeedPage() {
 
   const currentItem = feedItems[currentIndex];
 
+  const getSubmissionId = (item: FeedItem) => {
+    // Extract the ID portion from the feed item id (e.g., "arena-123" -> "123")
+    const parts = item.id.split('-');
+    return parts.slice(1).join('-');
+  };
+
   if (loading) {
     return (
       <div className="fixed top-0 left-0 right-0 bottom-14 bg-background flex items-center justify-center">
@@ -678,14 +719,18 @@ export default function FeedPage() {
               item={currentItem}
               thumbnail={thumbnails[currentItem.submission_url] || null}
               onOpen={() => openSubmission(currentItem.submission_url)}
+              onOpenPlayer={() => setPlayerOpen(true)}
               onProfile={() => navigate(`/editor/${currentItem.user_id}`)}
+              onOpenComments={() => setCommentsOpen(true)}
             />
           ) : (
             <ReviewFeedCard 
               item={currentItem}
               thumbnail={thumbnails[currentItem.submission_url] || null}
               onOpen={() => openSubmission(currentItem.submission_url)}
+              onOpenPlayer={() => setPlayerOpen(true)}
               onProfile={() => navigate(`/editor/${currentItem.user_id}`)}
+              onOpenComments={() => setCommentsOpen(true)}
             />
           )}
         </motion.div>
@@ -696,6 +741,17 @@ export default function FeedPage() {
         {currentIndex > 0 && <ChevronUp className="w-5 h-5 text-white/40" />}
         {currentIndex < feedItems.length - 1 && <ChevronDown className="w-5 h-5 text-white/40 animate-bounce" />}
       </div>
+
+      {/* Video Player Modal */}
+      <FeedVideoPlayer
+        isOpen={playerOpen}
+        onClose={() => setPlayerOpen(false)}
+        submissionUrl={currentItem.submission_url}
+        platform={currentItem.platform}
+        submissionId={getSubmissionId(currentItem)}
+        submissionType={currentItem.type}
+        username={currentItem.username}
+      />
     </div>
   );
 }
