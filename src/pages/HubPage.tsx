@@ -123,22 +123,22 @@ export default function HubPage() {
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         {/* Left edge pattern */}
         <div 
-          className="absolute left-0 top-0 w-16 h-[500px] opacity-[0.04]"
+          className="absolute left-0 top-0 w-20 h-[520px] opacity-[0.15]"
           style={{
             background: `repeating-linear-gradient(
               180deg,
               transparent 0px,
-              transparent 8px,
-              rgba(255,255,255,0.8) 8px,
-              rgba(255,255,255,0.8) 9px,
-              transparent 9px,
-              transparent 24px
+              transparent 12px,
+              rgba(255,255,255,0.6) 12px,
+              rgba(255,255,255,0.6) 13px,
+              transparent 13px,
+              transparent 32px
             ), repeating-linear-gradient(
-              90deg,
+              0deg,
               transparent 0px,
-              transparent 4px,
-              rgba(255,255,255,0.5) 4px,
-              rgba(255,255,255,0.5) 5px
+              transparent 40px,
+              rgba(255,255,255,0.3) 40px,
+              rgba(255,255,255,0.3) 41px
             )`,
             maskImage: 'linear-gradient(to right, white, transparent)',
             WebkitMaskImage: 'linear-gradient(to right, white, transparent)',
@@ -146,22 +146,22 @@ export default function HubPage() {
         />
         {/* Right edge pattern */}
         <div 
-          className="absolute right-0 top-0 w-16 h-[500px] opacity-[0.04]"
+          className="absolute right-0 top-0 w-20 h-[520px] opacity-[0.15]"
           style={{
             background: `repeating-linear-gradient(
               180deg,
               transparent 0px,
-              transparent 8px,
-              rgba(255,255,255,0.8) 8px,
-              rgba(255,255,255,0.8) 9px,
-              transparent 9px,
-              transparent 24px
+              transparent 12px,
+              rgba(255,255,255,0.6) 12px,
+              rgba(255,255,255,0.6) 13px,
+              transparent 13px,
+              transparent 32px
             ), repeating-linear-gradient(
-              90deg,
+              0deg,
               transparent 0px,
-              transparent 4px,
-              rgba(255,255,255,0.5) 4px,
-              rgba(255,255,255,0.5) 5px
+              transparent 40px,
+              rgba(255,255,255,0.3) 40px,
+              rgba(255,255,255,0.3) 41px
             )`,
             maskImage: 'linear-gradient(to left, white, transparent)',
             WebkitMaskImage: 'linear-gradient(to left, white, transparent)',
