@@ -121,22 +121,22 @@ export default function HubPage() {
           
           {/* Arena-inspired animated color layers */}
           <motion.div 
-            className="absolute -left-20 top-0 w-64 h-64 bg-gradient-to-br from-amber-500/20 via-orange-500/15 to-red-500/10 rounded-full blur-3xl"
+            className="absolute -left-10 -top-10 w-96 h-96 bg-gradient-to-br from-amber-500/50 via-orange-500/40 to-red-500/30 rounded-full blur-3xl"
             animate={{ 
               x: [0, 30, 0],
               y: [0, 20, 0],
-              opacity: [0.4, 0.6, 0.4]
+              opacity: [0.7, 1, 0.7]
             }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div 
-            className="absolute -right-20 top-10 w-64 h-64 bg-gradient-to-bl from-cyan-500/15 via-blue-500/12 to-purple-500/10 rounded-full blur-3xl"
+            className="absolute -right-10 -top-5 w-96 h-96 bg-gradient-to-bl from-cyan-500/45 via-blue-500/35 to-purple-500/30 rounded-full blur-3xl"
             animate={{ 
               x: [0, -25, 0],
               y: [0, 15, 0],
-              opacity: [0.3, 0.5, 0.3]
+              opacity: [0.6, 1, 0.6]
             }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
           />
           
           {/* Subtle center blend */}
