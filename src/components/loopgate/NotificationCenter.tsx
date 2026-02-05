@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Check, Trash2, Trophy, Zap, Star, Calendar, MessageSquare, Users, Megaphone } from "lucide-react";
+import { Bell, Check, Trash2, Trophy, Zap, Star, Calendar, MessageSquare, Users, Megaphone, UserPlus, UserCheck } from "lucide-react";
 import { useNotifications, Notification } from "@/hooks/useNotifications";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -19,7 +19,8 @@ const SYSTEM_TYPES = ['system', 'announcement', 'maintenance', 'update'];
 const USER_TYPES = [
   'submission_judged', 'rank_changed', 'event_starting', 'event_ended',
   'achievement', 'house_accepted', 'house_invited', 'review_complete',
-  'tournament_started', 'tournament_scored', 'dm_received', 'crew_mention'
+  'tournament_started', 'tournament_scored', 'dm_received', 'crew_mention',
+  'connection_request', 'connection_accepted'
 ];
 
 const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string }> = {
@@ -35,6 +36,8 @@ const typeConfig: Record<string, { icon: typeof Bell; color: string; bg: string 
   tournament_scored: { icon: Trophy, color: "text-gold", bg: "bg-gold/10" },
   dm_received: { icon: MessageSquare, color: "text-cyan-400", bg: "bg-cyan-400/10" },
   crew_mention: { icon: Users, color: "text-orange-400", bg: "bg-orange-400/10" },
+  connection_request: { icon: UserPlus, color: "text-sky-400", bg: "bg-sky-400/10" },
+  connection_accepted: { icon: UserCheck, color: "text-emerald-400", bg: "bg-emerald-400/10" },
   system: { icon: Megaphone, color: "text-white", bg: "bg-white/10" },
   announcement: { icon: Megaphone, color: "text-gold", bg: "bg-gold/10" },
   maintenance: { icon: Bell, color: "text-yellow-500", bg: "bg-yellow-500/10" },
