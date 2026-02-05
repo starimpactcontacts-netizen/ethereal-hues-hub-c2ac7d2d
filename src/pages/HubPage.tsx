@@ -120,37 +120,77 @@ export default function HubPage() {
       <LoopMonster />
       
       {/* ═══════════════════════════════════════════════════════════════════
-          HERO LAYER - Profile Card (Original expanded version)
+          HERO LAYER - Profile Card with Dimensional Gate Background
       ═══════════════════════════════════════════════════════════════════ */}
       <div className="relative">
         <div className="absolute inset-0 h-[420px] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-surface-1 via-background to-background" />
           
-          {/* Arena-inspired animated color layers */}
-          <motion.div 
-            className="absolute -left-10 -top-10 w-96 h-96 bg-gradient-to-br from-amber-500/50 via-orange-500/40 to-red-500/30 rounded-full blur-3xl"
-            animate={{ 
-              x: [0, 30, 0],
-              y: [0, 20, 0],
-              opacity: [0.7, 1, 0.7]
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div 
-            className="absolute -right-10 -top-5 w-96 h-96 bg-gradient-to-bl from-cyan-500/45 via-blue-500/35 to-purple-500/30 rounded-full blur-3xl"
-            animate={{ 
-              x: [0, -25, 0],
-              y: [0, 15, 0],
-              opacity: [0.6, 1, 0.6]
-            }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          />
+          {/* Dimensional Gate Portal Effect */}
+          <div className="absolute inset-0 flex items-start justify-center pt-24 pointer-events-none">
+            {/* Outer gate frame - perspective container */}
+            <div className="relative w-[340px] h-[300px]" style={{ perspective: '800px' }}>
+              {/* Portal rings - concentric pulsing */}
+              <motion.div 
+                className="absolute inset-0 border-2 border-white/5 rounded-[50%]"
+                style={{ transformStyle: 'preserve-3d', transform: 'rotateX(70deg)' }}
+                animate={{ scale: [1, 1.05, 1], opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.div 
+                className="absolute inset-[15%] border border-white/8 rounded-[50%]"
+                style={{ transformStyle: 'preserve-3d', transform: 'rotateX(70deg)' }}
+                animate={{ scale: [1.02, 0.98, 1.02], opacity: [0.4, 0.6, 0.4] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+              />
+              <motion.div 
+                className="absolute inset-[30%] border border-white/10 rounded-[50%]"
+                style={{ transformStyle: 'preserve-3d', transform: 'rotateX(70deg)' }}
+                animate={{ scale: [0.97, 1.03, 0.97], opacity: [0.5, 0.7, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+              />
+              <motion.div 
+                className="absolute inset-[45%] border border-white/15 rounded-[50%]"
+                style={{ transformStyle: 'preserve-3d', transform: 'rotateX(70deg)' }}
+                animate={{ scale: [1, 1.08, 1], opacity: [0.6, 0.9, 0.6] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.9 }}
+              />
+              
+              {/* Central portal glow */}
+              <motion.div 
+                className="absolute inset-[40%] bg-white/5 rounded-[50%] blur-xl"
+                style={{ transformStyle: 'preserve-3d', transform: 'rotateX(70deg)' }}
+                animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+              
+              {/* Vertical light pillars - the "gate posts" */}
+              <motion.div 
+                className="absolute left-[15%] top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent"
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.div 
+                className="absolute right-[15%] top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent"
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              />
+              
+              {/* Horizontal gate threshold */}
+              <motion.div 
+                className="absolute left-[10%] right-[10%] top-[70%] h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
+                animate={{ opacity: [0.2, 0.5, 0.2], scaleX: [0.95, 1.05, 0.95] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </div>
           
-          {/* Subtle center blend */}
-          <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_center_top,_rgba(255,255,255,0.03)_0%,_transparent_60%)]" />
+          {/* Subtle ambient glow behind portal */}
+          <div className="absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.04)_0%,_transparent_70%)]" />
           
+          {/* Grid overlay */}
           <div 
-            className="absolute inset-0 opacity-[0.015]"
+            className="absolute inset-0 opacity-[0.012]"
             style={{
               backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
               backgroundSize: '40px 40px'
