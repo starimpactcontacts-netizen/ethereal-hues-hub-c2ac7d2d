@@ -311,87 +311,87 @@ export default function PublicProfilePage() {
           </div>
 
           {/* Profile Info - Compact */}
-          <div className="px-4 pt-3 pb-3 flex flex-col items-center text-center">
-            {/* Avatar - Neutral colors */}
-            <div className="mb-2">
-              <Avatar className="w-16 h-16 border-2 border-border">
+          <div className="px-4 pt-4 pb-4 flex flex-col items-center text-center">
+            {/* Avatar - Large & prominent */}
+            <div className="mb-4">
+              <Avatar className="w-24 h-24 border-2 border-border">
                 <AvatarImage src={profile.avatar_url || undefined} alt={profile.username} />
-                <AvatarFallback className="bg-muted text-muted-foreground text-xl font-display">
+                <AvatarFallback className="bg-muted text-muted-foreground text-3xl font-display">
                   {profile.username[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
 
             {/* Name & Badges - Compact */}
-            <div className="flex items-center gap-1.5 mb-0.5 flex-wrap justify-center">
-              <h1 className="font-display text-lg">{profile.display_name || profile.username}</h1>
-              {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
+            <div className="flex items-center gap-2 mb-1 flex-wrap justify-center">
+              <h1 className="font-display text-2xl tracking-wide">{profile.display_name || profile.username}</h1>
+              {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
               {profile.verification_status && <VerifiedBadge size="md" />}
-              {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+              {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
               {profile.is_founding_member && <FoundingBadge size="sm" />}
             </div>
             
             {profile.display_name && (
-              <p className="text-[10px] text-muted-foreground mb-2">@{profile.username}</p>
+              <p className="text-xs text-muted-foreground mb-3">@{profile.username}</p>
             )}
-            {!profile.display_name && <div className="mb-1" />}
+            {!profile.display_name && <div className="mb-2" />}
 
-            {/* Stats Row - Compact inline */}
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <div className="text-center px-2">
-                <p className="font-display text-base text-white">{submissionCount}</p>
-                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Edits</p>
+            {/* Stats Row - Properly sized */}
+            <div className="flex items-center justify-center gap-6 mb-4">
+              <div className="text-center">
+                <p className="font-display text-xl text-white">{submissionCount}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Edits</p>
               </div>
-              <div className="w-px h-6 bg-border" />
-              <div className="text-center px-2">
-                <p className="font-display text-base text-gold">#{rank || "—"}</p>
-                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Rank</p>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <p className="font-display text-xl text-gold">#{rank || "—"}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Rank</p>
               </div>
-              <div className="w-px h-6 bg-border" />
-              <div className="text-center px-2">
-                <p className="font-display text-base text-white">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-                <p className="text-[8px] text-muted-foreground uppercase tracking-wider">Index</p>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <p className="font-display text-xl text-white">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Index</p>
               </div>
             </div>
 
             {/* Crew Badge & Activity - Single row */}
-            <div className="flex items-center gap-3 mb-3">
-              {userCrew && <CrewBadge crew={userCrew} size="sm" />}
-              <div className="flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
-                <span className="text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-4 mb-4">
+              {userCrew && <CrewBadge crew={userCrew} size="md" />}
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${activityLabels[profile.activity_status || 'offline']?.color || 'bg-muted-foreground'}`} />
+                <span className="text-xs text-muted-foreground">
                   {activityLabels[profile.activity_status || 'offline']?.label || 'Offline'}
                 </span>
               </div>
             </div>
 
-            {/* Message Button - Compact icon style */}
-            <MessageButton userId={profile.id} username={profile.username} variant="icon" />
-            
-            {/* Bio - TikTok style */}
+            {/* Bio - TikTok style - BEFORE message button */}
             {profile.bio && (
-              <p className="text-sm text-foreground/90 mt-3 max-w-xs text-center leading-relaxed">
+              <p className="text-sm text-foreground/90 mb-4 max-w-sm text-center leading-relaxed">
                 {profile.bio}
               </p>
             )}
             
             {/* Platform Links - Compact row */}
             {platforms.length > 0 && (
-              <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
+              <div className="flex items-center gap-2 mb-4 flex-wrap justify-center">
                 {platforms.map((p) => (
                   <a
                     key={p.id}
                     href={p.platform_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 px-2 py-1 bg-surface-1 border border-border rounded-full text-[10px] text-muted-foreground hover:text-white hover:border-gold/50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border rounded-full text-xs text-muted-foreground hover:text-white hover:border-gold/50 transition-colors"
                   >
-                    <ExternalLink size={10} />
+                    <ExternalLink size={12} />
                     {platformLabels[p.platform] || p.platform}
                   </a>
                 ))}
               </div>
             )}
+
+            {/* Message Button - Compact icon style */}
+            <MessageButton userId={profile.id} username={profile.username} variant="icon" />
           </div>
         </div>
       </div>
