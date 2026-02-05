@@ -117,9 +117,9 @@ function RootRedirect() {
     return <Navigate to="/hub" replace />;
   }
   
-  // Show loading screen during auth check - prevents flash
+  // Show splash screen on initial load - TikTok style
   if (loading || rolesLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen splash />;
   }
   
   // Not logged in
@@ -156,9 +156,9 @@ function OnboardingWrapper() {
   
   const isEnterprise = roles.includes('enterprise');
   
-  // Show loading screen during auth check - prevents flash
+  // Show splash on auth check
   if (loading || rolesLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen splash />;
   }
   
   if (!user) {
@@ -189,9 +189,9 @@ function EnterpriseOnboardingWrapper() {
   
   const isEnterprise = roles.includes('enterprise');
   
-  // Show loading screen during auth check
+  // Show splash on auth check
   if (loading || rolesLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen splash />;
   }
   
   if (!user) {

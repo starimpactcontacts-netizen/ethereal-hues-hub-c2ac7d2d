@@ -1,8 +1,10 @@
-import { motion } from 'framer-motion';
-import loopgateLogo from '@/assets/loopgate-logo.png';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import loopgateBrand from '@/assets/loopgate-brand.png';
 
 interface LoadingScreenProps {
   minimal?: boolean;
+  splash?: boolean;
 }
 
 // Modern crosshairs-style spinner component
@@ -72,7 +74,16 @@ function CrosshairsSpinner({ size = 48 }: { size?: number }) {
   );
 }
 
-export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
+export default function LoadingScreen({ minimal = false, splash = false }: LoadingScreenProps) {
+  const [showSplash, setShowSplash] = useState(splash);
+
+  useEffect(() => {
+    if (splash) {
+      const timer = setTimeout(() => setShowSplash(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [splash]);
+
   if (minimal) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
@@ -81,9 +92,31 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
     );
   }
 
+  // Splash screen - logo only, TikTok style
+  if (showSplash || splash) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black flex items-center justify-center z-50"
+        >
+          <motion.img 
+            src={loopgateBrand} 
+            alt="Loopgate" 
+            className="h-10 w-auto object-contain"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-50">
-      {/* Logo with subtle pulse */}
+      {/* Wordmark with subtle pulse */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -91,9 +124,9 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
         className="mb-8"
       >
         <motion.img 
-          src={loopgateLogo} 
+          src={loopgateBrand} 
           alt="Loopgate" 
-          className="w-16 h-16 object-contain"
+          className="h-8 w-auto object-contain"
           animate={{ 
             opacity: [0.8, 1, 0.8],
           }}
