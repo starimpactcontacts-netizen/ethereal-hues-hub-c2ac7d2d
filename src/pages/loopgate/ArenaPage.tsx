@@ -155,8 +155,11 @@ export default function ArenaPage() {
   const upcomingEvents = events.filter(e => e.status === "upcoming" || e.status === "pending");
   const allActiveEvents = [...liveEvents, ...upcomingEvents];
 
-  // Real stats from database
-  const totalLiveEvents = liveEvents.length;
+  // Total live arenas - combine all live content types
+  const liveBattles = battles.filter(b => b.status === "active" || b.status === "judging").length;
+  const liveTournaments = sanctionedTournaments.filter(t => t.status === "live" || t.status === "bracket" || t.status === "ready_up").length;
+  const liveHosted = hostedComps.filter(c => c.status === "live" || c.status === "judging").length;
+  const totalLive = liveEvents.length + liveBattles + liveTournaments + liveHosted;
 
   // Filter events based on search
   const filteredEvents = useMemo(() => {
@@ -219,17 +222,11 @@ export default function ArenaPage() {
             </div>
             
             {/* Live Stats Pill */}
-            <div className="flex items-center gap-3 bg-surface-1/80 border border-border rounded px-3 py-2">
+            <div className="flex items-center gap-2 bg-surface-1/80 border border-border rounded px-3 py-2">
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] text-foreground font-medium">{totalLiveEvents}</span>
-                <span className="text-[9px] text-muted-foreground">Live</span>
-              </div>
-              <div className="w-px h-3 bg-border" />
-              <div className="flex items-center gap-1.5">
-                <Users className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] text-foreground font-medium">{allActiveEvents.length}</span>
-                <span className="text-[9px] text-muted-foreground">Events</span>
+                <span className="text-[10px] text-foreground font-semibold">{totalLive}</span>
+                <span className="text-[10px] text-muted-foreground">Live</span>
               </div>
             </div>
           </div>
