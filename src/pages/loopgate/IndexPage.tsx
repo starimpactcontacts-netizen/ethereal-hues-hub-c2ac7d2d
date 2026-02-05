@@ -684,12 +684,6 @@ export default function IndexPage() {
                           <p className="text-[10px] text-muted-foreground mb-1">@{editor.username}</p>
                         )}
                         <div className="flex items-center gap-2.5 text-[9px] text-muted-foreground uppercase tracking-wider flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <span className="text-foreground/70">{editor.win_rate?.toFixed(0) || 0}%</span> Win
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <span className="text-foreground/70">{editor.total_events || 0}</span> Events
-                          </span>
                          <span className="flex items-center gap-1">
                            <span className="text-foreground/70">{editor.connection_count || 0}</span> Connections
                          </span>
