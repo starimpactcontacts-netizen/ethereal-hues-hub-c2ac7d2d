@@ -16,6 +16,7 @@ import PublicJudgeVideos from "@/components/loopgate/PublicJudgeVideos";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import { getRankFromScore } from "@/data/gqtConfig";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 
 interface PublicProfile {
   id: string;
@@ -73,7 +74,7 @@ export default function PublicProfilePage() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'about'>('videos');
+  const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'links' | 'about'>('videos');
   const [submissionCount, setSubmissionCount] = useState(0);
   const [isJudge, setIsJudge] = useState(false);
   const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
@@ -422,6 +423,18 @@ export default function PublicProfilePage() {
           >
             Edits
           </button>
+          {platforms.length > 0 && (
+            <button
+              onClick={() => setActiveTab('links')}
+              className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
+                activeTab === 'links'
+                  ? 'text-gold border-b-2 border-gold'
+                  : 'text-muted-foreground hover:text-white'
+              }`}
+            >
+              Links
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('about')}
             className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
@@ -440,6 +453,68 @@ export default function PublicProfilePage() {
         <PublicJudgeVideos userId={userId || ''} />
       ) : activeTab === 'edits' ? (
         <SubmissionGrid userId={userId || ''} />
+      ) : activeTab === 'links' ? (
+        <div className="px-4 py-6 space-y-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Connected Platforms</p>
+          <div className="space-y-3">
+            {platforms.map((p) => {
+              const PlatformIcon = p.platform === 'tiktok' ? SiTiktok 
+                : p.platform === 'instagram' ? SiInstagram 
+                : p.platform === 'youtube' ? SiYoutube 
+                : Globe;
+              const platformColor = p.platform === 'tiktok' ? 'group-hover:text-white' 
+                : p.platform === 'instagram' ? 'group-hover:text-pink-500' 
+                : p.platform === 'youtube' ? 'group-hover:text-red-500' 
+                : 'group-hover:text-white';
+              
+              return (
+                <a
+                  key={p.id}
+                  href={p.platform_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all"
+                >
+                  <div className={`w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground ${platformColor} transition-colors`}>
+                    <PlatformIcon size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">
+                      {platformLabels[p.platform] || p.platform}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      @{p.platform_username}
+                    </p>
+                  </div>
+                  <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                </a>
+              );
+            })}
+          </div>
+          
+          {/* Portfolio link if exists */}
+          {profile.portfolio_url && (
+            <a
+              href={profile.portfolio_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all mt-4"
+            >
+              <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground group-hover:text-gold transition-colors">
+                <Globe size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">
+                  Portfolio
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {profile.portfolio_url.replace(/^https?:\/\//, '').split('/')[0]}
+                </p>
+              </div>
+              <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+            </a>
+          )}
+        </div>
       ) : (
         <div className="px-4 py-6 space-y-6">
           {/* League & Stats Grid */}
