@@ -69,21 +69,12 @@ export default function BottomNav() {
             onClick={handleArenaClick}
             className="flex flex-col items-center justify-center group relative"
           >
-            {/* Outer ambient glow - gold */}
-            <div className="absolute w-16 h-14 bg-gold/25 rounded-xl blur-2xl animate-pulse" />
-            
-            {/* Glitch layer 1 - offset gold */}
-            <div className="absolute w-12 h-10 bg-gold/40 rounded-lg blur-md translate-x-[2px] translate-y-[1px] animate-[pulse_1.5s_ease-in-out_infinite]" />
-            
-            {/* Glitch layer 2 - offset white */}
-            <div className="absolute w-12 h-10 bg-white/30 rounded-lg blur-md -translate-x-[2px] -translate-y-[1px] animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
-            
-            {/* Button - crisp white with intense gold border glow */}
-            <div className="relative w-12 h-10 bg-gradient-to-b from-white via-white to-zinc-50 rounded-lg flex items-center justify-center 
-              shadow-[0_0_25px_rgba(212,175,55,0.6),0_0_12px_rgba(255,255,255,0.5),0_0_6px_rgba(212,175,55,0.9),inset_0_0_0_1.5px_rgba(212,175,55,1)]
-              group-hover:shadow-[0_0_35px_rgba(212,175,55,0.8),0_0_15px_rgba(255,255,255,0.6),0_0_8px_rgba(212,175,55,1),inset_0_0_0_2px_rgba(212,175,55,1)]
-              group-active:scale-95 transition-all duration-150">
-              <InfinityIcon className="w-5 h-5 text-zinc-900" strokeWidth={2.5} />
+            {/* TikTok-style gradient border */}
+            <div className="relative">
+              <div className="absolute -inset-[1.5px] bg-gradient-to-r from-cyan-400 via-white to-rose-400 rounded-lg opacity-90 group-hover:opacity-100 transition-opacity" />
+              <div className="relative w-11 h-9 bg-black rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
+                <InfinityIcon className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </div>
             </div>
           </button>
 
