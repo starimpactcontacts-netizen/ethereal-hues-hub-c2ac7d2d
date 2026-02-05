@@ -690,6 +690,9 @@ export default function IndexPage() {
                           <span className="flex items-center gap-1">
                             <span className="text-foreground/70">{editor.total_events || 0}</span> Events
                           </span>
+                         <span className="flex items-center gap-1">
+                           <span className="text-foreground/70">{editor.connection_count || 0}</span> Connections
+                         </span>
                           {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
                         </div>
                       </div>
