@@ -133,39 +133,39 @@ export default function HubPage() {
             className="relative z-10"
           >
             {/* Dimensional Gate Effect - Behind Profile Card */}
-            <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-sm">
+            <div className="absolute inset-0 -z-10 pointer-events-none">
               {/* Hypnotic Spiral - Pulling Inward */}
               <motion.div 
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] aspect-square rounded-full"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] aspect-square"
                 animate={{ rotate: [0, -360] }}
                 transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
                 style={{
                   background: `repeating-conic-gradient(
                     from 0deg,
-                    transparent 0deg 5deg,
-                    rgba(255,255,255,0.08) 5deg 10deg,
-                    transparent 10deg 15deg,
-                    rgba(255,255,255,0.06) 15deg 20deg
+                    transparent 0deg 4deg,
+                    rgba(255,255,255,0.12) 4deg 8deg,
+                    transparent 8deg 12deg,
+                    rgba(255,255,255,0.08) 12deg 16deg
                   )`,
                 }}
               />
               
               {/* Second spiral layer - opposite direction */}
               <motion.div 
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[220%] aspect-square rounded-full"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[280%] aspect-square"
                 animate={{ rotate: [360, 0] }}
-                transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 55, repeat: Infinity, ease: "linear" }}
                 style={{
                   background: `repeating-conic-gradient(
                     from 90deg,
-                    transparent 0deg 7deg,
-                    rgba(255,255,255,0.05) 7deg 14deg
+                    transparent 0deg 6deg,
+                    rgba(255,255,255,0.06) 6deg 12deg
                   )`,
                 }}
               />
             </div>
             
-            <div className="bg-surface-1 backdrop-blur-xl border border-border/50 overflow-hidden relative">
+            <div className="bg-surface-1/70 backdrop-blur-md border border-border/50 overflow-hidden relative">
               {/* Top Row: Avatar + Identity + Shop Balance */}
               <div className="p-4 flex items-start justify-between gap-4">
                 <button 
