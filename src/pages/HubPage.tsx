@@ -336,21 +336,13 @@ export default function HubPage() {
                 <div className="flex items-center gap-4">
                   {/* Arena Icon - Subtle Gold Glitch Aura */}
                   <div className="relative flex items-center justify-center">
-                    {/* Outer ambient glow - toned down */}
-                    <div className="absolute w-16 h-16 bg-gold/15 rounded-xl blur-xl animate-pulse" />
-                    
-                    {/* Glitch layer 1 - offset gold */}
-                    <div className="absolute w-12 h-12 bg-gold/25 rounded-lg blur-md translate-x-[2px] translate-y-[1px] animate-[pulse_1.5s_ease-in-out_infinite]" />
-                    
-                    {/* Glitch layer 2 - subtle */}
-                    <div className="absolute w-12 h-12 bg-gold/15 rounded-lg blur-md -translate-x-[2px] -translate-y-[1px] animate-[pulse_2s_ease-in-out_infinite_0.5s]" />
-                    
-                    {/* Icon container - warm off-white with gold border */}
-                    <div className="relative w-12 h-12 bg-gradient-to-b from-zinc-100 via-zinc-50 to-zinc-100 rounded-lg flex items-center justify-center
-                      shadow-[0_0_20px_rgba(212,175,55,0.4),0_0_8px_rgba(212,175,55,0.6),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]
-                      group-hover:shadow-[0_0_25px_rgba(212,175,55,0.5),0_0_10px_rgba(212,175,55,0.8),inset_0_0_0_2px_rgba(212,175,55,1)]
-                      transition-all duration-300">
-                      <InfinityIcon className="w-6 h-6 text-zinc-900" strokeWidth={2.5} />
+                    {/* Left offset layer - vibrant gold/orange */}
+                    <div className="absolute w-12 h-10 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-[6px] -translate-x-[4px] shadow-[0_0_12px_rgba(251,191,36,0.6)]" />
+                    {/* Right offset layer - vibrant blue/purple */}
+                    <div className="absolute w-12 h-10 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-[6px] translate-x-[4px] shadow-[0_0_12px_rgba(139,92,246,0.6)]" />
+                    {/* Main icon container - white bg, black icon */}
+                    <div className="relative w-12 h-10 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
+                      <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
                     </div>
                   </div>
                   
@@ -362,16 +354,12 @@ export default function HubPage() {
                 
                 {/* Enter Button - Subtle Gold Glitch Style */}
                 <div className="shrink-0 relative">
-                  {/* Button ambient glow */}
-                  <div className="absolute inset-0 bg-gold/15 rounded-lg blur-lg animate-pulse" />
-                  
-                  {/* Glitch layers for button - subtle */}
-                  <div className="absolute inset-0 bg-gold/20 rounded-lg blur-sm translate-x-[1px] translate-y-[1px] animate-[pulse_1.8s_ease-in-out_infinite]" />
-                  
-                  <div className="relative bg-gradient-to-b from-zinc-100 via-zinc-50 to-zinc-100 text-zinc-900 font-display text-xs px-5 py-2.5 rounded-lg
-                    shadow-[0_0_15px_rgba(212,175,55,0.35),0_0_6px_rgba(212,175,55,0.5),inset_0_0_0_1.5px_rgba(212,175,55,0.9)]
-                    group-hover:shadow-[0_0_20px_rgba(212,175,55,0.5),0_0_8px_rgba(212,175,55,0.7),inset_0_0_0_2px_rgba(212,175,55,1)]
-                    transition-all duration-300">
+                  {/* Left offset layer - vibrant gold/orange */}
+                  <div className="absolute h-full w-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-[6px] -translate-x-[3px] shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
+                  {/* Right offset layer - vibrant blue/purple */}
+                  <div className="absolute h-full w-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-[6px] translate-x-[3px] shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
+                  {/* Main button - white bg, black text */}
+                  <div className="relative bg-white text-black font-display text-xs px-5 py-2.5 rounded-[6px] group-hover:scale-[1.02] transition-transform">
                     <div className="flex items-center gap-2">
                       <span>ENTER NOW</span>
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
