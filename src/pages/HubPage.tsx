@@ -23,6 +23,7 @@ import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import XPProgressBar from '@/components/loopgate/XPProgressBar';
 import { supabase } from '@/integrations/supabase/client';
+import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 
 const leagueConfig = {
   cartel: { label: 'CARTEL', icon: Crown, gradient: 'from-gold via-amber-400 to-gold', glow: 'shadow-gold/30' },
@@ -121,95 +122,28 @@ export default function HubPage() {
       
       {/* Concentric Rings Pattern - Portal effect */}
       <div className="absolute inset-x-0 top-0 h-[520px] pointer-events-none overflow-hidden z-0">
-        {/* Static ring pattern base */}
-        <div 
-          className="absolute left-1/2 top-0 -translate-x-1/2 w-[1000px] h-[1000px]"
-          style={{
-            background: `
-              repeating-radial-gradient(
-                circle at center,
-                transparent 0px,
-                transparent 22px,
-                rgba(255,255,255,0.05) 23px,
-                rgba(255,255,255,0.05) 24px,
-                transparent 25px
-              )
-            `,
-            maskImage: 'radial-gradient(ellipse 100% 50% at 50% 0%, white 0%, transparent 60%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 100% 50% at 50% 0%, white 0%, transparent 60%)',
-          }}
-        />
-        
-        {/* Expanding ring 1 */}
+        {/* Loop rings image with subtle expansion */}
         <motion.div 
           animate={{ 
-            scale: [0.1, 2.5],
-            opacity: [0.4, 0]
+            scale: [1, 1.15, 1],
           }}
           transition={{ 
-            duration: 6, 
+            duration: 12, 
             repeat: Infinity, 
-            ease: "linear",
-            delay: 0
+            ease: "easeInOut",
           }}
-          className="absolute left-1/2 top-0 -translate-x-1/2 w-[400px] h-[400px] rounded-full border border-white/20"
-          style={{
-            boxShadow: '0 0 20px rgba(255,255,255,0.1)',
-          }}
-        />
-        
-        {/* Expanding ring 2 */}
-        <motion.div 
-          animate={{ 
-            scale: [0.1, 2.5],
-            opacity: [0.4, 0]
-          }}
-          transition={{ 
-            duration: 6, 
-            repeat: Infinity, 
-            ease: "linear",
-            delay: 2
-          }}
-          className="absolute left-1/2 top-0 -translate-x-1/2 w-[400px] h-[400px] rounded-full border border-white/20"
-          style={{
-            boxShadow: '0 0 20px rgba(255,255,255,0.1)',
-          }}
-        />
-        
-        {/* Expanding ring 3 */}
-        <motion.div 
-          animate={{ 
-            scale: [0.1, 2.5],
-            opacity: [0.4, 0]
-          }}
-          transition={{ 
-            duration: 6, 
-            repeat: Infinity, 
-            ease: "linear",
-            delay: 4
-          }}
-          className="absolute left-1/2 top-0 -translate-x-1/2 w-[400px] h-[400px] rounded-full border border-white/20"
-          style={{
-            boxShadow: '0 0 20px rgba(255,255,255,0.1)',
-          }}
-        />
-        
-        {/* Core glow */}
-        <motion.div 
-          animate={{ 
-            opacity: [0.6, 0.9, 0.6],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            duration: 3, 
-            repeat: Infinity, 
-            ease: "easeInOut"
-          }}
-          className="absolute left-1/2 top-0 -translate-x-1/2 w-12 h-12 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.3) 40%, transparent 70%)',
-          }}
-        />
+          className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[35%] w-[600px] h-[600px] opacity-40"
+        >
+          <img 
+            src={loopRingsPattern} 
+            alt="" 
+            className="w-full h-full object-cover"
+            style={{
+              maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, white 0%, transparent 70%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, white 0%, transparent 70%)',
+            }}
+          />
+        </motion.div>
       </div>
       
       {/* ═══════════════════════════════════════════════════════════════════
