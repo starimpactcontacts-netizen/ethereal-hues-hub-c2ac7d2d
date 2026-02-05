@@ -460,13 +460,6 @@ export default function IndexPage() {
               </div>
               <span className="text-[10px] text-white/70 uppercase tracking-[0.4em] font-semibold">Discover</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
-              </div>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400/80">Live</span>
-            </div>
           </div>
           
           {/* Hero Title - Bolder */}
