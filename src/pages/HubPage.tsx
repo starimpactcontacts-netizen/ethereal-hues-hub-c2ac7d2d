@@ -118,17 +118,34 @@ export default function HubPage() {
       <div className="relative">
         <div className="absolute inset-0 h-[420px] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-surface-1 via-background to-background" />
-          <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-gold/5 to-transparent" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center_top,_hsl(43_74%_49%_/_0.08)_0%,_transparent_60%)]" />
+          
+          {/* Arena-inspired animated color layers */}
           <motion.div 
-            className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,_hsl(43_74%_49%_/_0.05)_0%,_transparent_50%)]"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -left-20 top-0 w-64 h-64 bg-gradient-to-br from-amber-500/20 via-orange-500/15 to-red-500/10 rounded-full blur-3xl"
+            animate={{ 
+              x: [0, 30, 0],
+              y: [0, 20, 0],
+              opacity: [0.4, 0.6, 0.4]
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
+          <motion.div 
+            className="absolute -right-20 top-10 w-64 h-64 bg-gradient-to-bl from-cyan-500/15 via-blue-500/12 to-purple-500/10 rounded-full blur-3xl"
+            animate={{ 
+              x: [0, -25, 0],
+              y: [0, 15, 0],
+              opacity: [0.3, 0.5, 0.3]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
+          
+          {/* Subtle center blend */}
+          <div className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(ellipse_at_center_top,_rgba(255,255,255,0.03)_0%,_transparent_60%)]" />
+          
           <div 
-            className="absolute inset-0 opacity-[0.02]"
+            className="absolute inset-0 opacity-[0.015]"
             style={{
-              backgroundImage: `linear-gradient(hsl(var(--gold)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--gold)) 1px, transparent 1px)`,
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
               backgroundSize: '40px 40px'
             }}
           />
