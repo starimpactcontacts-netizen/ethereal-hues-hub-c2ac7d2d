@@ -367,6 +367,31 @@ export default function PublicProfilePage() {
 
             {/* Message Button - Compact icon style */}
             <MessageButton userId={profile.id} username={profile.username} variant="icon" />
+            
+            {/* Bio - TikTok style */}
+            {profile.bio && (
+              <p className="text-sm text-foreground/90 mt-3 max-w-xs text-center leading-relaxed">
+                {profile.bio}
+              </p>
+            )}
+            
+            {/* Platform Links - Compact row */}
+            {platforms.length > 0 && (
+              <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
+                {platforms.map((p) => (
+                  <a
+                    key={p.id}
+                    href={p.platform_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-2 py-1 bg-surface-1 border border-border rounded-full text-[10px] text-muted-foreground hover:text-white hover:border-gold/50 transition-colors"
+                  >
+                    <ExternalLink size={10} />
+                    {platformLabels[p.platform] || p.platform}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
