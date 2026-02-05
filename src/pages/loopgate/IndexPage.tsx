@@ -433,45 +433,45 @@ export default function IndexPage() {
       
       {/* Cinematic Hero Header - AAA Polish */}
       <div className="relative overflow-hidden">
-        {/* Multi-layer gradient background - richer depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/12 via-gold/4 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.18),transparent_55%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gold/10 blur-[100px] rounded-full" />
+        {/* Multi-layer gradient background - neutral depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/8 via-white/3 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(255,255,255,0.12),transparent_55%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] rounded-full" />
         
         {/* Decorative grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(rgba(212,175,55,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.5) 1px, transparent 1px)',
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)',
           backgroundSize: '40px 40px'
         }} />
         
-        {/* Decorative lines - more prominent */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+        {/* Decorative lines - neutral */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         
         {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-gold/20" />
-        <div className="absolute top-0 right-0 w-24 h-24 border-r-2 border-t-2 border-gold/20" />
+        <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-white/10" />
+        <div className="absolute top-0 right-0 w-24 h-24 border-r-2 border-t-2 border-white/10" />
         
         <header className="relative z-10 px-4 pt-6 pb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                <Search className="w-4 h-4 text-gold" />
+              <div className="w-8 h-8 bg-white/5 border border-white/20 flex items-center justify-center">
+                <Search className="w-4 h-4 text-white/70" />
               </div>
-              <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-semibold">Discover</span>
+              <span className="text-[10px] text-white/70 uppercase tracking-[0.4em] font-semibold">Discover</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <div className="w-2 h-2 rounded-full bg-gold" />
-                <div className="absolute inset-0 w-2 h-2 rounded-full bg-gold animate-ping opacity-75" />
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
               </div>
-              <span className="text-[9px] font-bold uppercase tracking-widest text-gold/80">Live</span>
+              <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-400/80">Live</span>
             </div>
           </div>
           
           {/* Hero Title - Bolder */}
           <div className="text-center">
-            <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-white mb-2 drop-shadow-[0_0_30px_rgba(212,175,55,0.15)]">
+            <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-white mb-2">
               EDITOR INDEX
             </h1>
             <p className="text-[11px] text-muted-foreground uppercase tracking-[0.25em]">
@@ -498,7 +498,7 @@ export default function IndexPage() {
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 ${
                     isActive && !tab.navigateTo
-                      ? "bg-gradient-to-b from-gold via-gold to-gold/90 text-background shadow-[0_0_20px_rgba(212,175,55,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      ? "bg-white text-background shadow-[0_0_20px_rgba(255,255,255,0.15),inset_0_1px_0_rgba(255,255,255,0.2)]"
                       : "text-muted-foreground hover:text-white hover:bg-white/5"
                   }`}
                 >
@@ -523,14 +523,14 @@ export default function IndexPage() {
             {/* Search - Enhanced */}
             <div className="px-4 py-4">
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-gold/5 opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-gold transition-colors" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-white transition-colors" />
                 <input
                   type="text"
                   placeholder="Search editors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-surface-0/60 backdrop-blur-sm border border-border/60 pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-gold/50 focus:bg-surface-0/80 transition-all placeholder:text-muted-foreground/60"
+                  className="w-full bg-surface-0/60 backdrop-blur-sm border border-border/60 pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-white/30 focus:bg-surface-0/80 transition-all placeholder:text-muted-foreground/60"
                 />
               </div>
             </div>
@@ -541,7 +541,7 @@ export default function IndexPage() {
                 <select
                   value={leagueFilter}
                   onChange={(e) => setLeagueFilter(e.target.value as LeagueFilter)}
-                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-gold/50 hover:border-gold/30 transition-colors"
+                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-white/30 hover:border-white/20 transition-colors"
                 >
                   <option value="all">All Leagues</option>
                   <option value="elite">Elite</option>
