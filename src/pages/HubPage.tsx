@@ -119,66 +119,24 @@ export default function HubPage() {
     <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
       <LoopMonster />
       
-      {/* Edge Pattern - Subtle loop lines on left/right edges */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Top grid pattern */}
+      {/* Concentric Rings Pattern - Portal effect */}
+      <div className="absolute inset-x-0 top-0 h-[520px] pointer-events-none overflow-hidden z-0">
         <div 
-          className="absolute inset-x-0 top-0 h-[200px] opacity-[0.08]"
+          className="absolute left-1/2 top-0 -translate-x-1/2 w-[800px] h-[800px]"
           style={{
-            backgroundImage: `
-              linear-gradient(to right, rgba(255,255,255,0.4) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255,255,255,0.4) 1px, transparent 1px)
+            background: `
+              radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 2%, transparent 3%),
+              repeating-radial-gradient(
+                circle at center,
+                transparent 0px,
+                transparent 18px,
+                rgba(255,255,255,0.06) 19px,
+                rgba(255,255,255,0.06) 20px,
+                transparent 21px
+              )
             `,
-            backgroundSize: '48px 48px',
-            maskImage: 'linear-gradient(to bottom, white 0%, white 40%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, white 0%, white 40%, transparent 100%)',
-          }}
-        />
-        
-        {/* Left edge pattern */}
-        <div 
-          className="absolute left-0 top-0 w-20 h-[520px] opacity-[0.15]"
-          style={{
-            background: `repeating-linear-gradient(
-              180deg,
-              transparent 0px,
-              transparent 12px,
-              rgba(255,255,255,0.6) 12px,
-              rgba(255,255,255,0.6) 13px,
-              transparent 13px,
-              transparent 32px
-            ), repeating-linear-gradient(
-              0deg,
-              transparent 0px,
-              transparent 40px,
-              rgba(255,255,255,0.3) 40px,
-              rgba(255,255,255,0.3) 41px
-            )`,
-            maskImage: 'linear-gradient(to right, white, transparent)',
-            WebkitMaskImage: 'linear-gradient(to right, white, transparent)',
-          }}
-        />
-        {/* Right edge pattern */}
-        <div 
-          className="absolute right-0 top-0 w-20 h-[520px] opacity-[0.15]"
-          style={{
-            background: `repeating-linear-gradient(
-              180deg,
-              transparent 0px,
-              transparent 12px,
-              rgba(255,255,255,0.6) 12px,
-              rgba(255,255,255,0.6) 13px,
-              transparent 13px,
-              transparent 32px
-            ), repeating-linear-gradient(
-              0deg,
-              transparent 0px,
-              transparent 40px,
-              rgba(255,255,255,0.3) 40px,
-              rgba(255,255,255,0.3) 41px
-            )`,
-            maskImage: 'linear-gradient(to left, white, transparent)',
-            WebkitMaskImage: 'linear-gradient(to left, white, transparent)',
+            maskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, white 0%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 60% at 50% 0%, white 0%, transparent 70%)',
           }}
         />
       </div>
