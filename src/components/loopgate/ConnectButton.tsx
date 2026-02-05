@@ -115,6 +115,22 @@ function getWeekStart(): string {
       return;
     }
 
+    // Get sender's profile info for notification
+    const { data: senderProfile } = await supabase
+      .from('profiles')
+      .select('username, avatar_url')
+      .eq('id', user.id)
+      .single();
+
+    // Create notification for recipient
+    await supabase.from('notifications').insert({
+      user_id: targetUserId,
+      type: 'connection_request',
+      title: 'New Connection Request',
+      message: `@${senderProfile?.username || 'Someone'} wants to connect with you`,
+      data: { sender_id: user.id, connection_id: newConn.id }
+    });
+
     // Update weekly limit
     await supabase
       .from('connection_request_limits')
@@ -144,6 +160,31 @@ function getWeekStart(): string {
       toast.error('Failed to accept');
       setActionLoading(false);
       return;
+    }
+
+    // Get the connection to find the sender
+    const { data: connData } = await supabase
+      .from('connections')
+      .select('sender_id')
+      .eq('id', data.connectionId)
+      .single();
+
+    if (connData) {
+      // Get accepter's profile info
+      const { data: accepterProfile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+
+      // Notify the original sender that their request was accepted
+      await supabase.from('notifications').insert({
+        user_id: connData.sender_id,
+        type: 'connection_accepted',
+        title: 'Connection Accepted!',
+        message: `@${accepterProfile?.username || 'Someone'} accepted your connection request`,
+        data: { user_id: user.id, connection_id: data.connectionId }
+      });
     }
 
     toast.success('Connected!');
