@@ -3,6 +3,7 @@
  import { X, ExternalLink, MessageCircle, Loader2 } from 'lucide-react';
  import { Button } from '@/components/ui/button';
  import FeedComments from './FeedComments';
+ import { supabase } from '@/integrations/supabase/client';
  
  interface FeedVideoPlayerProps {
    isOpen: boolean;
@@ -14,27 +15,37 @@
    username: string;
  }
  
- // Extract video ID from various platform URLs
- function getEmbedUrl(url: string, platform: string): string | null {
+// Check if URL is a short URL that needs resolving
+function isShortUrl(url: string): boolean {
    try {
      const urlObj = new URL(url);
-     
-     if (platform === 'youtube' || urlObj.hostname.includes('youtube') || urlObj.hostname.includes('youtu.be')) {
-       // Handle youtube.com/watch?v=ID
-       if (urlObj.hostname.includes('youtube.com')) {
-         const videoId = urlObj.searchParams.get('v');
-         if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-       }
-       // Handle youtu.be/ID
-       if (urlObj.hostname.includes('youtu.be')) {
-         const videoId = urlObj.pathname.slice(1);
-         if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-       }
-       // Handle youtube.com/shorts/ID
-       if (urlObj.pathname.includes('/shorts/')) {
-         const videoId = urlObj.pathname.split('/shorts/')[1]?.split('/')[0];
-         if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-       }
+    return urlObj.hostname === 'vm.tiktok.com' || urlObj.hostname === 'vt.tiktok.com';
+  } catch {
+    return false;
+  }
+}
+ 
+// Extract video ID from various platform URLs (for non-short URLs)
+function getLocalEmbedUrl(url: string, platform: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    
+    if (platform === 'youtube' || urlObj.hostname.includes('youtube') || urlObj.hostname.includes('youtu.be')) {
+      // Handle youtube.com/watch?v=ID
+      if (urlObj.hostname.includes('youtube.com')) {
+        const videoId = urlObj.searchParams.get('v');
+        if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+      }
+      // Handle youtu.be/ID
+      if (urlObj.hostname.includes('youtu.be')) {
+        const videoId = urlObj.pathname.slice(1);
+        if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+      }
+      // Handle youtube.com/shorts/ID
+      if (urlObj.pathname.includes('/shorts/')) {
+        const videoId = urlObj.pathname.split('/shorts/')[1]?.split('/')[0];
+        if (videoId) return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+      }
      }
      
      if (platform === 'tiktok' || urlObj.hostname.includes('tiktok')) {
@@ -44,10 +55,6 @@
        if (videoIndex !== -1 && pathParts[videoIndex + 1]) {
          const videoId = pathParts[videoIndex + 1];
          return `https://www.tiktok.com/embed/v2/${videoId}`;
-       }
-       // Handle vm.tiktok.com short URLs - these need to be opened externally
-       if (urlObj.hostname === 'vm.tiktok.com') {
-         return null;
        }
      }
      
@@ -77,17 +84,48 @@
    const [showComments, setShowComments] = useState(false);
    const [embedLoaded, setEmbedLoaded] = useState(false);
    const [embedError, setEmbedError] = useState(false);
+  const [embedUrl, setEmbedUrl] = useState<string | null>(null);
+  const [isResolving, setIsResolving] = useState(false);
    
-   const embedUrl = getEmbedUrl(submissionUrl, platform);
-   
-   // Reset states when modal opens/closes
+  // Resolve URL and get embed URL when modal opens
    useEffect(() => {
      if (isOpen) {
        setEmbedLoaded(false);
        setEmbedError(false);
        setShowComments(false);
+      setEmbedUrl(null);
+      
+      // Check if we need to resolve a short URL
+      if (isShortUrl(submissionUrl)) {
+        setIsResolving(true);
+        
+        supabase.functions.invoke('resolve-video-url', {
+          body: { url: submissionUrl }
+        }).then(({ data, error }) => {
+          setIsResolving(false);
+          
+          if (error) {
+            console.error('Error resolving URL:', error);
+            setEmbedUrl(null);
+            return;
+          }
+          
+          if (data?.embedUrl) {
+            console.log('Resolved embed URL:', data.embedUrl);
+            setEmbedUrl(data.embedUrl);
+          } else {
+            console.log('Could not resolve to embed URL');
+            setEmbedUrl(null);
+          }
+        });
+      } else {
+        // Try to get embed URL locally (no API call needed)
+        const localEmbed = getLocalEmbedUrl(submissionUrl, platform);
+        setEmbedUrl(localEmbed);
+      }
      }
    }, [isOpen, submissionUrl]);
+  
    
    // Handle escape key
    useEffect(() => {
@@ -152,7 +190,12 @@
            
            {/* Video Player Area */}
            <div className="absolute inset-0 flex items-center justify-center">
-             {embedUrl && !embedError ? (
+            {isResolving ? (
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="w-8 h-8 text-white animate-spin" />
+                <p className="text-white/60 text-sm">Loading video...</p>
+              </div>
+            ) : embedUrl && !embedError ? (
                <>
                  {!embedLoaded && (
                    <div className="absolute inset-0 flex items-center justify-center">
