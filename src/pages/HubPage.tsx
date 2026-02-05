@@ -116,13 +116,63 @@ export default function HubPage() {
   const totalFeatured = liveEvents.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
 
   return (
-    <div className="min-h-screen bg-background pb-24 overflow-x-hidden">
+    <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
       <LoopMonster />
+      
+      {/* Edge Pattern - Subtle loop lines on left/right edges */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Left edge pattern */}
+        <div 
+          className="absolute left-0 top-0 w-16 h-[500px] opacity-[0.04]"
+          style={{
+            background: `repeating-linear-gradient(
+              180deg,
+              transparent 0px,
+              transparent 8px,
+              rgba(255,255,255,0.8) 8px,
+              rgba(255,255,255,0.8) 9px,
+              transparent 9px,
+              transparent 24px
+            ), repeating-linear-gradient(
+              90deg,
+              transparent 0px,
+              transparent 4px,
+              rgba(255,255,255,0.5) 4px,
+              rgba(255,255,255,0.5) 5px
+            )`,
+            maskImage: 'linear-gradient(to right, white, transparent)',
+            WebkitMaskImage: 'linear-gradient(to right, white, transparent)',
+          }}
+        />
+        {/* Right edge pattern */}
+        <div 
+          className="absolute right-0 top-0 w-16 h-[500px] opacity-[0.04]"
+          style={{
+            background: `repeating-linear-gradient(
+              180deg,
+              transparent 0px,
+              transparent 8px,
+              rgba(255,255,255,0.8) 8px,
+              rgba(255,255,255,0.8) 9px,
+              transparent 9px,
+              transparent 24px
+            ), repeating-linear-gradient(
+              90deg,
+              transparent 0px,
+              transparent 4px,
+              rgba(255,255,255,0.5) 4px,
+              rgba(255,255,255,0.5) 5px
+            )`,
+            maskImage: 'linear-gradient(to left, white, transparent)',
+            WebkitMaskImage: 'linear-gradient(to left, white, transparent)',
+          }}
+        />
+      </div>
       
       {/* ═══════════════════════════════════════════════════════════════════
           HERO LAYER - Profile Card with Dimensional Gate Background
       ═══════════════════════════════════════════════════════════════════ */}
-      <div className="relative">
+      <div className="relative z-10">
         {/* Subtle top gradient */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
 
@@ -133,26 +183,8 @@ export default function HubPage() {
             className="relative z-10"
           >
             <div className="bg-surface-1 border border-border/50 overflow-hidden relative">
-              {/* Hypnotic Spiral - Contained within card */}
-              <div className="absolute inset-0 z-0 pointer-events-none">
-                <motion.div 
-                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%]"
-                  animate={{ rotate: [0, -360] }}
-                  transition={{ duration: 200, repeat: Infinity, ease: "linear" }}
-                  style={{
-                    background: `repeating-conic-gradient(
-                      from 0deg,
-                      transparent 0deg 3deg,
-                      rgba(255,255,255,0.03) 3deg 6deg,
-                      transparent 6deg 9deg,
-                      rgba(255,255,255,0.02) 9deg 12deg
-                    )`,
-                  }}
-                />
-              </div>
-              
               {/* Top Row: Avatar + Identity + Shop Balance */}
-              <div className="relative z-10 p-4 flex items-start justify-between gap-4">
+              <div className="p-4 flex items-start justify-between gap-4">
                 <button 
                   onClick={() => navigate('/profile')}
                   className="flex items-center gap-3 group text-left"
@@ -219,7 +251,7 @@ export default function HubPage() {
               </div>
 
               {/* XP Progress Bar */}
-              <div className="relative z-10 px-4 pb-3">
+              <div className="px-4 pb-3">
                 <XPProgressBar 
                   xp={profile?.xp || 0} 
                   level={profile?.level || 1} 
@@ -229,7 +261,7 @@ export default function HubPage() {
               </div>
 
               {/* Stats Row */}
-              <div className="relative z-10 border-t border-border/30 px-4 py-3">
+              <div className="border-t border-border/30 px-4 py-3">
                 <div className="grid grid-cols-4 gap-3 text-center">
                   <div>
                     <p className="font-display text-xl text-foreground">{activityStats.totalEvents}</p>
@@ -251,7 +283,7 @@ export default function HubPage() {
               </div>
 
               {/* Quick Access Rows - Unit & GQT */}
-              <div className="relative z-10 border-t border-border/30 divide-y divide-border/20">
+              <div className="border-t border-border/30 divide-y divide-border/20">
                 <div className="px-4 py-3">
                   {userCrew ? (
                     <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
