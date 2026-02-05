@@ -240,19 +240,7 @@
  
     // Send notification to the original sender
     if (connData) {
-      const { data: myProfile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', user.id)
-        .single();
-
-      await supabase.from('notifications').insert({
-        user_id: connData.sender_id,
-        type: 'connection_accepted',
-        title: 'Connection Accepted!',
-        message: `@${myProfile?.username || 'Someone'} accepted your connection request`,
-        data: { user_id: user.id, connection_id: connectionId }
-      });
+       // Notification is now handled by database trigger
     }
 
      toast.success('Connection accepted!');
