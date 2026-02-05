@@ -134,67 +134,53 @@ export default function HubPage() {
           >
             {/* Dimensional Gate Effect - Behind Profile Card */}
             <div className="absolute -inset-3 -z-10 overflow-visible pointer-events-none">
-              {/* Outer pulsing ring - visible edges */}
-              <motion.div 
-                className="absolute -inset-2 border-2 border-white/[0.06] rounded-sm"
-                animate={{ 
-                  opacity: [0.4, 0.8, 0.4],
-                  scale: [1, 1.015, 1]
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              />
+              {/* Pulling Spiral Effect */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                {/* Spiral rings - rotating inward */}
+                {[...Array(5)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full border border-white/[0.08]"
+                    style={{
+                      width: `${110 + i * 25}%`,
+                      height: `${110 + i * 25}%`,
+                    }}
+                    animate={{ 
+                      rotate: i % 2 === 0 ? [0, 360] : [360, 0],
+                      scale: [1, 0.98, 1],
+                      opacity: [0.15 - i * 0.02, 0.25 - i * 0.03, 0.15 - i * 0.02]
+                    }}
+                    transition={{ 
+                      rotate: { duration: 20 + i * 5, repeat: Infinity, ease: "linear" },
+                      scale: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 },
+                      opacity: { duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }
+                    }}
+                  />
+                ))}
+                
+                {/* Inner spiral arms */}
+                <motion.div
+                  className="absolute w-[130%] h-[130%]"
+                  animate={{ rotate: [0, -360] }}
+                  transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                  style={{
+                    background: `conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.03) 30deg, transparent 60deg, rgba(255,255,255,0.02) 120deg, transparent 150deg, rgba(255,255,255,0.03) 210deg, transparent 240deg, rgba(255,255,255,0.02) 300deg, transparent 330deg)`,
+                  }}
+                />
+              </div>
               
-              {/* Second ring layer */}
+              {/* Center pull glow */}
               <motion.div 
-                className="absolute -inset-4 border border-white/[0.04] rounded-sm"
-                animate={{ 
-                  opacity: [0.3, 0.6, 0.3],
-                  scale: [1.01, 0.995, 1.01]
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              />
-              
-              {/* Outer glow ring */}
-              <motion.div 
-                className="absolute -inset-6 border border-white/[0.02] rounded-sm"
-                animate={{ opacity: [0.2, 0.4, 0.2] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              />
-              
-              {/* Corner accents - gate posts */}
-              <motion.div 
-                className="absolute -top-3 -left-3 w-8 h-8 border-t-2 border-l-2 border-white/10"
-                animate={{ opacity: [0.4, 0.9, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <motion.div 
-                className="absolute -top-3 -right-3 w-8 h-8 border-t-2 border-r-2 border-white/10"
-                animate={{ opacity: [0.4, 0.9, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-              />
-              <motion.div 
-                className="absolute -bottom-3 -left-3 w-8 h-8 border-b-2 border-l-2 border-white/10"
-                animate={{ opacity: [0.4, 0.9, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-              />
-              <motion.div 
-                className="absolute -bottom-3 -right-3 w-8 h-8 border-b-2 border-r-2 border-white/10"
-                animate={{ opacity: [0.4, 0.9, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.9 }}
-              />
-              
-              {/* Ambient glow behind card */}
-              <motion.div 
-                className="absolute inset-0 bg-white/[0.015] rounded-sm blur-xl"
-                animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.98, 1.02, 0.98] }}
+                className="absolute inset-[20%] bg-white/[0.02] rounded-full blur-2xl"
+                animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.3, 0.5, 0.3] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               />
               
-              {/* Scanning line effect */}
+              {/* Edge visibility accents */}
               <motion.div 
-                className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                animate={{ top: ['-5%', '105%'] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                className="absolute -inset-1 border border-white/[0.04] rounded-sm"
+                animate={{ opacity: [0.3, 0.5, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               />
             </div>
             
