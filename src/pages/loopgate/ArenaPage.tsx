@@ -161,6 +161,13 @@ export default function ArenaPage() {
   const liveHosted = hostedComps.filter(c => c.status === "live" || c.status === "judging").length;
   const totalLive = liveEvents.length + liveBattles + liveTournaments + liveHosted;
 
+  // Joinable arenas - things people can enter right now
+  const joinableTournaments = sanctionedTournaments.filter(t => t.status === "approved" || t.status === "ready_up").length;
+  const joinableBattles = battles.filter(b => b.status === "pending").length;
+  const joinableHosted = hostedComps.filter(c => c.status === "open" || c.status === "lobby").length;
+  const joinableEvents = upcomingEvents.length;
+  const totalJoinable = joinableTournaments + joinableBattles + joinableHosted + joinableEvents;
+
   // Filter events based on search
   const filteredEvents = useMemo(() => {
     if (!searchQuery) return [];
@@ -222,7 +229,14 @@ export default function ArenaPage() {
             </div>
             
             {/* Live Stats Pill */}
-            <div className="flex items-center gap-2 bg-surface-1/80 border border-border rounded px-3 py-2">
+            <div className="flex items-center gap-3 bg-surface-1/80 border border-border rounded px-3 py-2">
+              {/* Joinable count */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] text-foreground font-semibold">{totalJoinable}</span>
+                <span className="text-[10px] text-muted-foreground">Open</span>
+              </div>
+              <div className="w-px h-3 bg-border" />
+              {/* Live count */}
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[10px] text-foreground font-semibold">{totalLive}</span>
