@@ -21,9 +21,9 @@ export default function LoadingScreen({ minimal = false }: LoadingScreenProps) {
   // Full-screen loader - returns null since HTML splash handles initial load
   // This is just a fallback for in-app transitions
   return (
-    <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
       <motion.div
-        className="w-8 h-8 border-2 border-neutral-200 border-t-neutral-900 rounded-full"
+        className="w-8 h-8 border-2 border-border border-t-foreground rounded-full"
         animate={{ rotate: 360 }}
         transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
       />
