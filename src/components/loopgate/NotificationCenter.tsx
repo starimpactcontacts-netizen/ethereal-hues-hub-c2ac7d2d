@@ -55,8 +55,11 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
   const Icon = config.icon;
   const eventId = (notification.data as { event_id?: string })?.event_id;
   const tournamentId = (notification.data as { tournament_id?: string })?.tournament_id;
+  const senderId = (notification.data as { sender_id?: string })?.sender_id;
+  const userId = (notification.data as { user_id?: string })?.user_id;
   const isReview = notification.type === 'review_complete';
   const isTournament = notification.type === 'tournament_started' || notification.type === 'tournament_scored';
+  const isConnection = notification.type === 'connection_request' || notification.type === 'connection_accepted';
 
   return (
     <div 
@@ -91,6 +94,15 @@ function NotificationItem({ notification, onMarkAsRead, onDelete }: Notification
               className="inline-block mt-2 text-[10px] text-gold uppercase tracking-wider hover:underline"
             >
               View Tournament →
+            </Link>
+          )}
+          
+          {isConnection && (senderId || userId) && (
+            <Link 
+              to={`/editor/${senderId || userId}`}
+              className="inline-block mt-2 text-[10px] text-sky-400 uppercase tracking-wider hover:underline"
+            >
+              View Profile →
             </Link>
           )}
           
