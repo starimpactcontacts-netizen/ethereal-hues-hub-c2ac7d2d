@@ -45,6 +45,8 @@ interface PublicProfile {
   best_gatekeeper_qoi: number | null;
   is_founding_member: boolean;
   connection_count: number;
+   profile_bg_color: string | null;
+   profile_bg_image_url: string | null;
 }
 
 interface ConnectedPlatform {
@@ -91,7 +93,7 @@ export default function PublicProfilePage() {
       // Fetch profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, connection_count")
+         .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, connection_count, profile_bg_color, profile_bg_image_url")
         .eq("id", userId)
         .single();
 
@@ -288,13 +290,52 @@ export default function PublicProfilePage() {
 
   const league = profile.league || "open";
 
+   // Get background gradient based on color selection
+   const bgColorGradients: Record<string, string> = {
+     gold: 'from-gold/20 via-gold/5 to-transparent',
+     purple: 'from-purple-500/20 via-purple-500/5 to-transparent',
+     cyan: 'from-cyan-500/20 via-cyan-500/5 to-transparent',
+     red: 'from-red-500/20 via-red-500/5 to-transparent',
+     emerald: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
+     zinc: 'from-zinc-400/20 via-zinc-400/5 to-transparent',
+   };
+ 
+   const bgAccentColors: Record<string, string> = {
+     gold: 'rgba(212,175,55,0.08)',
+     purple: 'rgba(168,85,247,0.08)',
+     cyan: 'rgba(6,182,212,0.08)',
+     red: 'rgba(239,68,68,0.08)',
+     emerald: 'rgba(16,185,129,0.08)',
+     zinc: 'rgba(161,161,170,0.08)',
+   };
+ 
+   const selectedBgColor = profile.profile_bg_color || 'gold';
+   const hasBgImage = profile.profile_bg_image_url && profile.level >= 3;
+ 
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Compact Hero Header */}
       <div className="relative overflow-hidden">
-        {/* Subtle gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.08),transparent_60%)]" />
+         {/* Dynamic background based on user settings */}
+         {hasBgImage ? (
+           <>
+             <div 
+               className="absolute inset-0 bg-cover bg-center"
+               style={{ backgroundImage: `url(${profile.profile_bg_image_url})` }}
+             />
+             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/70 to-background" />
+           </>
+         ) : (
+           <>
+             <div className={`absolute inset-0 bg-gradient-to-b ${bgColorGradients[selectedBgColor] || bgColorGradients.gold}`} />
+             <div 
+               className="absolute inset-0"
+               style={{ 
+                 background: `radial-gradient(ellipse at top, ${bgAccentColors[selectedBgColor] || bgAccentColors.gold}, transparent 60%)` 
+               }}
+             />
+           </>
+         )}
         
         {/* Decorative lines */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
