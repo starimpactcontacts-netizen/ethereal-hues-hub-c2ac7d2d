@@ -944,7 +944,7 @@ export default function IndexPage() {
                 </div>
                 
                 {xpCrews.length === 0 && !crewsLoading ? (
-                  <EmptyState icon={Users} message="No crews yet" />
+                  <EmptyState icon={Users} message="No units yet" />
                 ) : (
                   <div className="space-y-2">
                     {xpCrews.map((crew, index) => {
