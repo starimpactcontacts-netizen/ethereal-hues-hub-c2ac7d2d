@@ -137,10 +137,10 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
           {tournament.name}
         </h3>
         
-        {/* Crews Display */}
+        {/* Units Display */}
         {isCrewVsCrew ? (
           <div className="flex items-center gap-2 mb-3">
-            {/* Host Crew */}
+            {/* Host Unit */}
             <div className="flex items-center gap-1 flex-1 min-w-0">
               {tournament.crew_avatar_url ? (
                 <Avatar className="w-4 h-4 shrink-0">
@@ -162,7 +162,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
             {/* VS */}
             <span className="text-[10px] font-bold text-red-400">VS</span>
             
-            {/* Challenged Crew */}
+            {/* Challenged Unit */}
             <div className="flex items-center gap-1 flex-1 min-w-0">
               {tournament.challenged_crew_avatar_url ? (
                 <Avatar className="w-4 h-4 shrink-0">

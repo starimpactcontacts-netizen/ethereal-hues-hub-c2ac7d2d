@@ -102,11 +102,11 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
               });
             } catch {
               await navigator.clipboard.writeText(shareUrl);
-              toast.success('Crew invite link copied!');
+              toast.success('Unit invite link copied!');
             }
           } else {
             await navigator.clipboard.writeText(shareUrl);
-            toast.success('Crew invite link copied!');
+            toast.success('Unit invite link copied!');
           }
         } else {
           shareInvite(result.invite_code);
@@ -336,7 +336,7 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
                 <div className="bg-gold/5 border border-gold/20 p-4 space-y-2">
                   <h4 className="text-sm font-semibold text-gold flex items-center gap-2">
                     <Zap className="w-4 h-4" />
-                    Crew Invite Rewards
+                    Unit Invite Rewards
                   </h4>
                   <div className="space-y-1 text-xs text-muted-foreground">
                     <div className="flex justify-between">
@@ -360,7 +360,7 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
                     Custom Code (Optional)
                   </label>
                   <Input
-                    placeholder="e.g. JOINMYCREW"
+                    placeholder="e.g. JOINMYUNIT"
                     value={customCode}
                     onChange={(e) => setCustomCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 16))}
                     className="bg-surface-1 border-border font-mono uppercase"

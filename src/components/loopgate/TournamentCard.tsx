@@ -129,7 +129,7 @@ export default function TournamentCard({ tournament, onClick }: TournamentCardPr
           {tournament.name}
         </h3>
         
-        {/* Host Crew */}
+        {/* Host Unit */}
         <div className="flex items-center gap-1.5 mb-3">
           {tournament.hostCrewAvatar ? (
             <img 

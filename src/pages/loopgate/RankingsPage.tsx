@@ -512,7 +512,7 @@ export default function RankingsPage() {
                         )}
                       </div>
                       
-                      {/* Crew Avatar */}
+                      {/* Unit Avatar */}
                       <Avatar className="w-10 h-10 border-2 border-gold/30">
                         <AvatarImage src={crew.avatar_url || undefined} />
                         <AvatarFallback className="bg-surface-1 text-lg">

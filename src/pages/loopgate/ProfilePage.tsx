@@ -263,7 +263,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Primary Crew */}
+            {/* Primary Unit */}
             {primaryCrew?.crew && (
               <Link to={`/units/${primaryCrew.crew_id}`} className="w-full max-w-xs">
                 <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface-1 border border-border hover:border-foreground/30 transition-colors">

@@ -239,9 +239,9 @@ export default function ProfileSettingsPage() {
           </button>
         </section>
 
-        {/* ─── Crew ─── */}
+        {/* ─── Unit ─── */}
         <section className="space-y-3">
-          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Crew</h3>
+          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Unit</h3>
           {primaryCrew?.crew ? (
             <Link to={`/units/${primaryCrew.crew_id}`}>
               <div className="bg-gold/5 border border-gold/20 rounded-xl p-4 flex items-center justify-between hover:border-gold/40 transition-colors">

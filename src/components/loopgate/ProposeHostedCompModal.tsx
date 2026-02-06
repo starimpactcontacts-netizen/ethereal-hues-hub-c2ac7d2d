@@ -225,7 +225,7 @@ export default function ProposeHostedCompModal({ isOpen, onClose, onSuccess }: P
             </p>
           </div>
 
-          {/* Use Crew as Host */}
+          {/* Use Unit as Host */}
           {crewData && (
             <label className="flex items-center gap-3 p-3 bg-surface-2 border border-border rounded-lg cursor-pointer hover:border-cyan-500/50 transition-colors">
               <input

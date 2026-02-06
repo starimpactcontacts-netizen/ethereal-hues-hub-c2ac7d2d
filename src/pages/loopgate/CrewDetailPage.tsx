@@ -147,7 +147,7 @@ const roleLabels = {
   member: "Member",
 };
 
-// Calculate crew level based on XP
+// Calculate unit level based on XP
 function calculateCrewLevel(xp: number): number {
   if (xp >= 70000) return 10;
   if (xp >= 45000) return 9;
@@ -623,7 +623,7 @@ export default function CrewDetailPage() {
             </button>
           )}
 
-          {/* Crew Identity Card - Overlapping the banner */}
+          {/* Unit Identity Card - Overlapping the banner */}
           <div className="relative z-10 -mt-16 px-4">
             <div className="bg-surface-1 border border-border rounded-lg p-4">
               <div className="flex items-start gap-4">
@@ -949,13 +949,13 @@ export default function CrewDetailPage() {
                       <Swords className="w-10 h-10 text-red-500/40" />
                     </div>
                     <h3 className="text-lg font-display uppercase tracking-wider text-red-400 mb-2">
-                      Crew Rivalries
+                      Unit Rivalries
                     </h3>
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20 mb-4">
                       <span className="text-xs font-semibold uppercase tracking-wider text-gold">Coming Soon</span>
                     </div>
                     <p className="text-sm text-muted-foreground max-w-xs">
-                      Mark rival crews to track your competition and challenge them to sanctioned tournaments.
+                      Mark rival units to track your competition and challenge them to sanctioned tournaments.
                     </p>
                   </div>
                 </div>
@@ -1058,7 +1058,7 @@ export default function CrewDetailPage() {
                       </div>
                       <h3 className="font-display text-lg text-muted-foreground mb-2">No Submissions Yet</h3>
                       <p className="text-xs text-muted-foreground/60 max-w-xs">
-                        When crew members submit to arenas, their work appears here.
+                        When unit members submit to arenas, their work appears here.
                       </p>
                     </div>
                   ) : (

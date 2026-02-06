@@ -207,7 +207,7 @@ export default function HostedCompDetailPage() {
             )}
             <div className="pb-2">
               <p className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider">
-                {hostCrew ? 'Hosted by Crew' : 'Hosted by'}
+                {hostCrew ? 'Hosted by Unit' : 'Hosted by'}
               </p>
               <p className="text-xl font-display">{hostCrew ? hostCrew.name : competition.host_name}</p>
               {hostCrew && (

@@ -30,8 +30,8 @@ export default function CrewInviteModal({
   const [copied, setCopied] = useState(false);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://loopgate.io';
-  const crewSlug = crewName.toLowerCase().replace(/\s+/g, '-');
-  const inviteLink = `${baseUrl}/join/${crewSlug}?via=${profile?.username || 'anon'}&crew=${crewId}`;
+  const unitSlug = crewName.toLowerCase().replace(/\s+/g, '-');
+  const inviteLink = `${baseUrl}/unit/${unitSlug}?via=${profile?.username || 'anon'}&id=${crewId}`;
 
   const handleCopy = async () => {
     try {
