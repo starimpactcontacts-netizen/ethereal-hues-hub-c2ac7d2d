@@ -91,10 +91,10 @@ export default function DirectMessagePage() {
     }
   };
 
-  const handleOpenMessageMenu = (messageId: string) => {
-    if (isMobile) {
-      setSelectedMessageId(messageId);
-    }
+  const handleOpenMessageMenu = (e: React.MouseEvent | React.TouchEvent, messageId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedMessageId(messageId);
   };
 
   if (!conversationId) {
@@ -210,10 +210,11 @@ export default function DirectMessagePage() {
                         {isMe && (
                           isMobile ? (
                             <button 
-                              onClick={() => handleOpenMessageMenu(msg.id)}
-                              className="p-1.5 rounded active:bg-muted/50 shrink-0 self-center touch-manipulation"
+                              onTouchEnd={(e) => handleOpenMessageMenu(e, msg.id)}
+                              onClick={(e) => handleOpenMessageMenu(e, msg.id)}
+                              className="p-2.5 -m-1 rounded active:bg-muted/50 shrink-0 self-center touch-manipulation"
                             >
-                              <MoreVertical className="w-3.5 h-3.5 text-muted-foreground/70" />
+                              <MoreVertical className="w-4 h-4 text-muted-foreground" />
                             </button>
                           ) : (
                             <DropdownMenu>
