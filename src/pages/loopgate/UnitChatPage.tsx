@@ -117,13 +117,17 @@ export default function UnitChatPage() {
     fetchCrewData();
   }, [crewId, user, navigate]);
 
-  // Set default channel
+  // Set default channel and auto-open chat on mobile
   useEffect(() => {
     if (channels.length > 0 && !activeChannelId) {
       const generalChannel = channels.find((c) => c.name === "general") || channels[0];
       setSearchParams({ channel: generalChannel.id }, { replace: true });
+      // On mobile, auto-open the general channel chat
+      if (isMobile) {
+        setMobileView("chat");
+      }
     }
-  }, [channels, activeChannelId, setSearchParams]);
+  }, [channels, activeChannelId, setSearchParams, isMobile]);
 
   const handleSelectChannel = useCallback(
     (channelId: string) => {
@@ -160,14 +164,18 @@ export default function UnitChatPage() {
 
   if (loading || channelsLoading || !crew) {
     return (
-      <PageTransition>
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-xs text-muted-foreground">Loading channels...</p>
-          </div>
+      <div
+        className="fixed inset-0 bg-background flex items-center justify-center z-50"
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
+        }}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-muted-foreground">Loading channels...</p>
         </div>
-      </PageTransition>
+      </div>
     );
   }
 
