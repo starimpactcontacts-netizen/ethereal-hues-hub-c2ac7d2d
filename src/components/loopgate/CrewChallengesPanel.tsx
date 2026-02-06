@@ -70,7 +70,7 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
         <div>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
             <Swords className="w-4 h-4" />
-            Crew Quests
+            Unit Quests
           </h3>
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">

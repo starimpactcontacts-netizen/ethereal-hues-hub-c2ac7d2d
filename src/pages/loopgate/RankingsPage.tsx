@@ -480,7 +480,7 @@ export default function RankingsPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-gold" />
-                <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Crew Rankings</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Unit Rankings</span>
               </div>
               <span className="text-[10px] text-muted-foreground">Combined XP</span>
             </div>

@@ -733,7 +733,7 @@ export default function HubPage() {
                 <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
                   <Users2 className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
                 </div>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Crews</span>
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Units</span>
               </div>
             </Link>
             

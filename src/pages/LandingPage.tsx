@@ -177,7 +177,7 @@ export default function LandingPage() {
                 { 
                   icon: Trophy, 
                   title: 'Arena', 
-                  desc: 'Official events, open arenas, and crew tournaments. Real stakes, real competition.',
+                  desc: 'Official events, open arenas, and unit tournaments. Real stakes, real competition.',
                   accent: 'from-gold/20 to-transparent'
                 },
                 { 

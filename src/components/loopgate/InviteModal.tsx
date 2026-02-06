@@ -344,7 +344,7 @@ export default function InviteModal({ open, onOpenChange }: InviteModalProps) {
                       <span className="text-gold font-semibold">+20 XP</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Friend joins + auto-joins crew</span>
+                      <span>Friend joins + auto-joins unit</span>
                       <span className="text-gold font-semibold">+50 XP</span>
                     </div>
                     <div className="flex justify-between">

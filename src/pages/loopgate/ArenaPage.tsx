@@ -557,7 +557,7 @@ export default function ArenaPage() {
                         Who Can Create One?
                       </h4>
                       <p className="text-[10px] text-muted-foreground leading-relaxed">
-                        <span className="text-foreground font-medium">Crew Owners</span> can propose a sanctioned tournament from their crew page. Proposals are reviewed by admins who set the official prize pool.
+                        <span className="text-foreground font-medium">Unit Owners</span> can propose a sanctioned tournament from their unit page. Proposals are reviewed by admins who set the official prize pool.
                       </p>
                     </div>
 

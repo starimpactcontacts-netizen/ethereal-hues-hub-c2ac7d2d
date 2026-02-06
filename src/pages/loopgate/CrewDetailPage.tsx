@@ -934,7 +934,7 @@ export default function CrewDetailPage() {
                       </div>
                       <h3 className="font-display text-lg text-muted-foreground mb-2">No Announcements</h3>
                       <p className="text-xs text-muted-foreground/60 max-w-xs">
-                        Staff can post announcements to keep the crew updated.
+                        Staff can post announcements to keep the unit updated.
                       </p>
                     </div>
                   )}

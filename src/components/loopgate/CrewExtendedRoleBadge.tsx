@@ -20,7 +20,7 @@ const ROLE_CONFIG: Record<
     label: "Ace",
     icon: <Star className="w-3 h-3" />,
     colors: "bg-gold/20 text-gold border-gold/30",
-    description: "Top performer in the crew",
+    description: "Top performer in the unit",
   },
   veteran: {
     label: "Veteran",
@@ -44,7 +44,7 @@ const ROLE_CONFIG: Record<
     label: "Judge",
     icon: <Gavel className="w-3 h-3" />,
     colors: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-    description: "Official judge in the crew",
+    description: "Official judge in the unit",
   },
 };
 

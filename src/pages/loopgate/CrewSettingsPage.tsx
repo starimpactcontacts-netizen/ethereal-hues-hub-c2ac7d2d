@@ -129,7 +129,7 @@ const [formData, setFormData] = useState({
     const hasAccess = isOwnerByTable || isOwnerByRole || canBypass;
 
     if (!hasAccess) {
-      toast.error("You don't have permission to access crew settings");
+      toast.error("You don't have permission to access unit settings");
       navigate(`/crews/${crewId}`);
       return;
     }
@@ -286,7 +286,7 @@ const [formData, setFormData] = useState({
       if (error) {
         console.error("Error updating crew:", error);
         if (error.code === "23505") {
-          toast.error("A crew with this name already exists.");
+          toast.error("A unit with this name already exists.");
         } else {
           toast.error("Failed to save changes: " + error.message);
         }
@@ -294,7 +294,7 @@ const [formData, setFormData] = useState({
         return;
       }
 
-      toast.success("Crew settings saved!");
+      toast.success("Unit settings saved!");
       navigate(`/crews/${crewId}`);
     } catch (err) {
       console.error("Unexpected error saving crew:", err);
@@ -476,7 +476,7 @@ const [formData, setFormData] = useState({
                       className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-border hover:border-gold transition-colors group"
                     >
                       {crewAvatarUrl ? (
-                        <img src={crewAvatarUrl} alt="Crew avatar" className="w-full h-full object-cover" />
+                        <img src={crewAvatarUrl} alt="Unit avatar" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full bg-muted flex items-center justify-center">
                           <Camera className="w-6 h-6 text-muted-foreground" />

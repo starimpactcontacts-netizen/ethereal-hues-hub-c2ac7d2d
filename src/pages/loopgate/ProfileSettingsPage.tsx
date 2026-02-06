@@ -258,7 +258,7 @@ export default function ProfileSettingsPage() {
                       <Crown className="w-3.5 h-3.5 text-gold" />
                       <span className="text-sm font-medium text-gold">{primaryCrew.crew.name}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">Primary Crew</p>
+                    <p className="text-xs text-muted-foreground">Primary Unit</p>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-gold/50" />
@@ -267,7 +267,7 @@ export default function ProfileSettingsPage() {
           ) : (
             <Link to="/crews">
               <div className="border border-dashed border-border rounded-xl p-4 text-center hover:border-gold/30 transition-colors">
-                <p className="text-sm text-muted-foreground">+ Join or Create a Crew</p>
+                <p className="text-sm text-muted-foreground">+ Join or Create a Unit</p>
               </div>
             </Link>
           )}

@@ -14,7 +14,7 @@ export default function AuthenticatedLayout() {
   const hideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path));
   const showNav = !hideNav;
 
-  // Enable global notifications with sounds (crew chat, DMs, tournaments, system alerts)
+  // Enable global notifications with sounds (unit chat, DMs, tournaments, system alerts)
   useGlobalNotifications();
 
   return (

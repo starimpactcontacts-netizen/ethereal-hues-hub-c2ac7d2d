@@ -214,11 +214,11 @@ export function useCrewMembership(userId: string | undefined) {
 
       if (error) {
         console.error("Error joining crew as secondary:", error);
-        toast.error("Failed to join crew");
+        toast.error("Failed to join unit");
         return false;
       }
 
-      toast.success("Joined as secondary crew!");
+      toast.success("Joined as secondary unit!");
       fetchMemberships();
       return true;
     },
@@ -232,7 +232,7 @@ export function useCrewMembership(userId: string | undefined) {
 
       const membership = secondaryCrews.find((m) => m.crew_id === crewId);
       if (!membership) {
-        toast.error("You're not a secondary member of this crew");
+        toast.error("You're not a secondary member of this unit");
         return false;
       }
 
@@ -249,11 +249,11 @@ export function useCrewMembership(userId: string | undefined) {
 
       if (error) {
         console.error("Error leaving crew:", error);
-        toast.error("Failed to leave crew");
+        toast.error("Failed to leave unit");
         return false;
       }
 
-      toast.success("Left secondary crew");
+      toast.success("Left secondary unit");
       fetchMemberships();
       return true;
     },
@@ -278,7 +278,7 @@ export function useCrewMembership(userId: string | undefined) {
 
       if (error) {
         console.error("Error leaving primary crew:", error);
-        toast.error("Failed to leave crew");
+        toast.error("Failed to leave unit");
         return false;
       }
 
@@ -288,7 +288,7 @@ export function useCrewMembership(userId: string | undefined) {
         .update({ crew_id: null })
         .eq("id", userId);
 
-      toast.success("Left crew");
+      toast.success("Left unit");
       fetchMemberships();
       return true;
     },

@@ -131,7 +131,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
               </div>
               {expandedSteps.has(2) && (
                 <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Team up. Unlock crew events.
+                  Team up. Unlock unit events.
                 </p>
               )}
             </div>
