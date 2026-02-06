@@ -380,11 +380,12 @@ export default function HubPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="mt-2 relative border-y border-border/30"
-          style={{
-            borderImage: `repeating-linear-gradient(90deg, hsl(var(--border)) 0px, hsl(var(--border)) 6px, transparent 6px, transparent 12px) 1`
-          }}
+          className="mt-2 relative"
         >
+          {/* Top rope border - luxe twisted chain effect */}
+          <div className="absolute top-0 left-0 right-0 h-px pointer-events-none" style={{
+            background: `repeating-linear-gradient(90deg, hsl(var(--gold) / 0.15) 0px, hsl(var(--gold) / 0.3) 3px, transparent 3px, transparent 6px, hsl(var(--border)) 6px, hsl(var(--border)) 9px, transparent 9px, transparent 12px)`
+          }} />
           {/* Luxe Background Pattern */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div 
