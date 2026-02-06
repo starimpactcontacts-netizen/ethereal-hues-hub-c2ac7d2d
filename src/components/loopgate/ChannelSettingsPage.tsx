@@ -32,7 +32,7 @@ export default function ChannelSettingsPage({
   onClose,
   onSave,
   tiers = [],
-  botName = "Unit Bot",
+  botName = "Unit App",
   botAvatarUrl = "",
   onSaveBotSettings,
 }: ChannelSettingsPageProps) {
@@ -76,7 +76,7 @@ export default function ChannelSettingsPage({
       min_tier_order: minTierOrder,
     });
     if (onSaveBotSettings) {
-      await onSaveBotSettings(localBotName.trim() || "Unit Bot", localBotAvatar.trim());
+      await onSaveBotSettings(localBotName.trim() || "Unit App", localBotAvatar.trim());
     }
     if (success) {
       toast.success("Settings saved");
@@ -101,7 +101,7 @@ export default function ChannelSettingsPage({
   const handleRules = async () => { const v = rules.filter(r => r.trim()); if (v.length === 0) return; await postRules(v); resetCommand(); };
 
   const commands = [
-    { type: "embed" as CommandType, icon: Send, label: "Embed Message", desc: "Post as the bot" },
+    { type: "embed" as CommandType, icon: Send, label: "Embed Message", desc: "Post as the app" },
     { type: "poll" as CommandType, icon: BarChart3, label: "Create Poll", desc: "Members vote on options" },
     { type: "event" as CommandType, icon: Calendar, label: "Schedule Event", desc: "Set a date & time" },
     { type: "reminder" as CommandType, icon: Bell, label: "Post Reminder", desc: "Send an announcement" },
@@ -144,13 +144,13 @@ export default function ChannelSettingsPage({
             <div className="flex items-center gap-2 mb-2">
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
                 {botAvatarUrl ? (
-                  <img src={botAvatarUrl} alt="Bot" className="w-full h-full rounded-full object-cover" />
+                  <img src={botAvatarUrl} alt="App" className="w-full h-full rounded-full object-cover" />
                 ) : (
                   <Bot className="w-3.5 h-3.5 text-primary" />
                 )}
               </div>
               <div>
-                <h2 className="text-[12px] font-bold uppercase tracking-wide">{botName || "Unit Bot"}</h2>
+                <h2 className="text-[12px] font-bold uppercase tracking-wide">{botName || "Unit App"}</h2>
                 <p className="text-[10px] text-muted-foreground">Officer commands</p>
               </div>
             </div>
@@ -184,7 +184,7 @@ export default function ChannelSettingsPage({
                     </div>
                     <Input placeholder="Title (optional)" value={embedTitle} onChange={(e) => setEmbedTitle(e.target.value)} className="text-sm" />
                     <Textarea placeholder="Message body..." value={embedBody} onChange={(e) => setEmbedBody(e.target.value)} className="text-sm min-h-[100px]" />
-                    <Button onClick={handleEmbed} disabled={sending || !embedBody.trim()} className="w-full" size="sm">{sending ? "Posting..." : "Post as Bot"}</Button>
+                    <Button onClick={handleEmbed} disabled={sending || !embedBody.trim()} className="w-full" size="sm">{sending ? "Posting..." : "Post as App"}</Button>
                   </>
                 )}
 
@@ -274,8 +274,8 @@ export default function ChannelSettingsPage({
             <div className="border-t border-border/30 pt-3">
               <button onClick={() => setShowBotIdentity(!showBotIdentity)} className="w-full flex items-center justify-between py-1.5 touch-manipulation">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-[13px] font-semibold">Bot Identity</span>
+                   <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                   <span className="text-[13px] font-semibold">App Identity</span>
                 </div>
                 {showBotIdentity ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
               </button>
@@ -285,24 +285,24 @@ export default function ChannelSettingsPage({
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                     <div className="space-y-3 pt-3">
                       <div className="space-y-2">
-                        <Label className="text-xs">Bot Name</Label>
-                        <Input placeholder="Unit Bot" value={localBotName} onChange={(e) => setLocalBotName(e.target.value)} maxLength={32} className="bg-muted/50 h-9 text-sm" />
+                       <Label className="text-xs">App Name</Label>
+                         <Input placeholder="Unit App" value={localBotName} onChange={(e) => setLocalBotName(e.target.value)} maxLength={32} className="bg-muted/50 h-9 text-sm" />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs">Bot Avatar URL</Label>
-                        <Input placeholder="https://example.com/avatar.png" value={localBotAvatar} onChange={(e) => setLocalBotAvatar(e.target.value)} className="bg-muted/50 h-9 text-sm" />
+                       <Label className="text-xs">App Avatar URL</Label>
+                         <Input placeholder="https://example.com/avatar.png" value={localBotAvatar} onChange={(e) => setLocalBotAvatar(e.target.value)} className="bg-muted/50 h-9 text-sm" />
                       </div>
                       <div className="bg-muted/20 border border-border/50 rounded-lg p-3">
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Preview</p>
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-full ring-2 ring-primary/30 bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                            {localBotAvatar ? <img src={localBotAvatar} alt="Bot" className="w-full h-full object-cover" /> : <span className="text-sm">🤖</span>}
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[13px] font-semibold text-primary">{localBotName || "Unit Bot"}</span>
+                             {localBotAvatar ? <img src={localBotAvatar} alt="App" className="w-full h-full object-cover" /> : <span className="text-sm">🤖</span>}
+                           </div>
+                           <div className="flex items-center gap-1.5">
+                             <span className="text-[13px] font-semibold text-primary">{localBotName || "Unit App"}</span>
                             <span className="inline-flex items-center gap-0.5 px-1 py-[1px] rounded bg-primary/15 border border-primary/20">
                               <ShieldCheck className="w-3 h-3 text-primary" />
-                              <span className="text-[9px] font-bold text-primary uppercase tracking-wider">BOT</span>
+                              <span className="text-[9px] font-bold text-primary uppercase tracking-wider">APP</span>
                             </span>
                           </div>
                         </div>
