@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Smile } from "lucide-react";
+import EmojiPicker, { Emoji } from "./EmojiPicker";
 
 interface MessageReactionsProps {
   messageId: string;
@@ -25,8 +26,6 @@ interface ReactionRow {
   emoji: string;
   user_id: string;
 }
-
-const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "💀", "👀"];
 
 export default function MessageReactions({ messageId, messageTable }: MessageReactionsProps) {
   const { user } = useAuth();
@@ -120,20 +119,20 @@ export default function MessageReactions({ messageId, messageTable }: MessageRea
 
   return (
     <div className="flex items-center gap-1 flex-wrap mt-1">
-      {/* Existing reactions */}
+      {/* Existing reactions with Apple-style emojis */}
       {reactionArray.map((reaction) => (
         <button
           key={reaction.emoji}
           onClick={() => handleReact(reaction.emoji)}
           className={cn(
-            "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs border transition-colors",
+            "inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs border transition-colors",
             reaction.hasReacted
               ? "bg-primary/20 border-primary/40 text-foreground"
               : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50"
           )}
         >
-          <span>{reaction.emoji}</span>
-          <span className="text-[10px] font-medium">{reaction.count}</span>
+          <Emoji emoji={reaction.emoji} size={16} />
+          <span className="text-[11px] font-medium">{reaction.count}</span>
         </button>
       ))}
 
@@ -141,27 +140,17 @@ export default function MessageReactions({ messageId, messageTable }: MessageRea
       <Popover open={showPicker} onOpenChange={setShowPicker}>
         <PopoverTrigger asChild>
           <button
-            className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 transition-opacity"
+            className="opacity-0 group-hover/msg:opacity-100 p-1.5 rounded-full hover:bg-muted/50 transition-all"
           >
-            <Smile className="w-3.5 h-3.5 text-muted-foreground/60" />
+            <Smile className="w-4 h-4 text-muted-foreground/60" />
           </button>
         </PopoverTrigger>
         <PopoverContent 
           side="top" 
           align="start" 
-          className="w-auto p-2 bg-card border-border/60"
+          className="w-auto p-0 bg-transparent border-0 shadow-none z-[100]"
         >
-          <div className="flex gap-1">
-            {QUICK_EMOJIS.map((emoji) => (
-              <button
-                key={emoji}
-                onClick={() => handleReact(emoji)}
-                className="w-8 h-8 flex items-center justify-center rounded hover:bg-muted/50 text-lg transition-colors"
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
+          <EmojiPicker onSelect={handleReact} />
         </PopoverContent>
       </Popover>
     </div>
