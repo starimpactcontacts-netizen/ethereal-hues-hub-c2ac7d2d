@@ -342,10 +342,14 @@ export default function UnitChatPage() {
         {permissionsChannel && (
           <ChannelPermissionsModal
             channel={permissionsChannel}
+            crewId={crewId!}
             isOpen={!!permissionsChannel}
             onClose={() => setPermissionsChannel(null)}
             onSave={handleSavePermissions}
             tiers={tiers}
+            botName={crew.bot_name || "Unit Bot"}
+            botAvatarUrl={crew.bot_avatar_url || ""}
+            onSaveBotSettings={handleSaveBotSettings}
           />
         )}
       </div>
@@ -420,6 +424,7 @@ export default function UnitChatPage() {
       {permissionsChannel && (
         <ChannelPermissionsModal
           channel={permissionsChannel}
+          crewId={crewId!}
           isOpen={!!permissionsChannel}
           onClose={() => setPermissionsChannel(null)}
           onSave={handleSavePermissions}

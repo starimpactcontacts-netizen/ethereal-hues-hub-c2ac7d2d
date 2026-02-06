@@ -348,10 +348,7 @@ export default function ChannelChatView({
             </button>
           )}
 
-          {/* Bot command menu for officers */}
-          {isOfficer && (
-            <UnitBotCommandMenu crewId={crewId} channelId={channel.id} isOfficer={isOfficer} botName={botName} />
-          )}
+          {/* Bot commands now in channel settings modal */}
 
           {/* Permissions (officer only) */}
           {isOfficer && onShowPermissions && (
