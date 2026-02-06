@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Sparkles, Shield } from "lucide-react";
+import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Sparkles, Shield, Upload, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -145,7 +145,7 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
     setTierPerks(tierPerks.filter((_, i) => i !== index));
   };
 
-  const TIER_ICONS = ["⭐", "🌟", "💎", "👑", "🔥", "⚡", "🏆", "✨", "🎯", "💀"];
+  // TIER_ICONS moved to module-level TIER_ICONS_LIST
 
   return (
     <div className="space-y-5 pb-20">
@@ -524,167 +524,301 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
       {/* Tier Editor Modal - Mobile-optimized */}
       <AnimatePresence>
         {showTierEditor && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center"
-            onClick={() => setShowTierEditor(false)}
-          >
-            <motion.div
-              initial={{ y: isMobile ? 200 : 0, scale: isMobile ? 1 : 0.95, opacity: 0 }}
-              animate={{ y: 0, scale: 1, opacity: 1 }}
-              exit={{ y: isMobile ? 200 : 0, scale: isMobile ? 1 : 0.95, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[90vh] overflow-hidden flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Fixed Header */}
-              <div className="sticky top-0 bg-card border-b border-border/50 p-4 z-10 shrink-0 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold">
-                    {editingTier ? "Edit Tier" : "Create Tier"}
-                  </h3>
-                  <button onClick={() => { setShowTierEditor(false); resetTierForm(); }} className="p-1.5 rounded-lg hover:bg-muted/50">
-                    <LoopedX className="w-5 h-5" />
-                  </button>
-                </div>
-                <div className="flex gap-2">
-                  {editingTier && (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={async () => {
-                        await deleteTier(editingTier.id);
-                        setShowTierEditor(false);
-                        resetTierForm();
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setShowTierEditor(false);
-                      resetTierForm();
-                    }}
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSaveTier}
-                    disabled={!tierName}
-                    className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
-                  >
-                    {editingTier ? "Save" : "Create"}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Tier Name</label>
-                  <Input
-                    value={tierName}
-                    onChange={(e) => setTierName(e.target.value)}
-                    placeholder="e.g., Phase, Nexus, Apex"
-                    className="h-10"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Description</label>
-                  <Input
-                    value={tierDescription}
-                    onChange={(e) => setTierDescription(e.target.value)}
-                    placeholder="Short description of this tier"
-                    className="h-10"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Icon</label>
-                  <div className="flex flex-wrap gap-2">
-                    {TIER_ICONS.map((icon) => (
-                      <button
-                        key={icon}
-                        onClick={() => setTierIcon(icon)}
-                        className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-all touch-manipulation active:scale-95 ${
-                          tierIcon === icon
-                            ? "bg-gold/20 ring-2 ring-gold"
-                            : "bg-muted hover:bg-muted/80"
-                        }`}
-                      >
-                        {icon}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Color</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={tierColor}
-                      onChange={(e) => setTierColor(e.target.value)}
-                      className="w-12 h-10 rounded cursor-pointer"
-                    />
-                    <Input
-                      value={tierColor}
-                      onChange={(e) => setTierColor(e.target.value)}
-                      className="flex-1 h-10"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Requirements</label>
-                  <Textarea
-                    value={tierRequirements}
-                    onChange={(e) => setTierRequirements(e.target.value)}
-                    placeholder="1. Edit must be 10+ seconds&#10;2. No remakes/scraps&#10;3. Must be recent work"
-                    rows={4}
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Perks</label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      value={newPerk}
-                      onChange={(e) => setNewPerk(e.target.value)}
-                      placeholder="Add a perk..."
-                      className="h-10"
-                      onKeyDown={(e) => e.key === "Enter" && addPerk()}
-                    />
-                    <Button onClick={addPerk} size="sm" className="h-10 px-3">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {tierPerks.map((perk, i) => (
-                      <Badge
-                        key={i}
-                        variant="secondary"
-                        className="cursor-pointer hover:bg-destructive/20 touch-manipulation"
-                        onClick={() => removePerk(i)}
-                      >
-                        {perk} ×
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-            </motion.div>
-          </motion.div>
+          <TierEditorModal
+            isMobile={isMobile}
+            editingTier={editingTier}
+            tierName={tierName}
+            setTierName={setTierName}
+            tierDescription={tierDescription}
+            setTierDescription={setTierDescription}
+            tierIcon={tierIcon}
+            setTierIcon={setTierIcon}
+            tierColor={tierColor}
+            setTierColor={setTierColor}
+            tierRequirements={tierRequirements}
+            setTierRequirements={setTierRequirements}
+            tierPerks={tierPerks}
+            newPerk={newPerk}
+            setNewPerk={setNewPerk}
+            addPerk={addPerk}
+            removePerk={removePerk}
+            onSave={handleSaveTier}
+            onDelete={editingTier ? async () => { await deleteTier(editingTier.id); setShowTierEditor(false); resetTierForm(); } : undefined}
+            onClose={() => { setShowTierEditor(false); resetTierForm(); }}
+          />
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Tier Editor Modal (extracted for clarity) ───
+
+const TIER_ICONS_LIST = ["⭐", "🌟", "💎", "👑", "🔥", "⚡", "🏆", "✨", "🎯", "💀"];
+
+interface TierEditorModalProps {
+  isMobile: boolean;
+  editingTier: EditorTier | null;
+  tierName: string; setTierName: (v: string) => void;
+  tierDescription: string; setTierDescription: (v: string) => void;
+  tierIcon: string; setTierIcon: (v: string) => void;
+  tierColor: string; setTierColor: (v: string) => void;
+  tierRequirements: string; setTierRequirements: (v: string) => void;
+  tierPerks: string[];
+  newPerk: string; setNewPerk: (v: string) => void;
+  addPerk: () => void;
+  removePerk: (i: number) => void;
+  onSave: () => void;
+  onDelete?: () => void;
+  onClose: () => void;
+}
+
+function TierEditorModal({
+  isMobile, editingTier,
+  tierName, setTierName, tierDescription, setTierDescription,
+  tierIcon, setTierIcon, tierColor, setTierColor,
+  tierRequirements, setTierRequirements,
+  tierPerks, newPerk, setNewPerk, addPerk, removePerk,
+  onSave, onDelete, onClose,
+}: TierEditorModalProps) {
+  const iconFileRef = useRef<HTMLInputElement>(null);
+  const [customIconPreview, setCustomIconPreview] = useState<string | null>(null);
+
+  const handleIconFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setCustomIconPreview(dataUrl);
+      // Store as a special marker — the emoji field will hold a data URL
+      setTierIcon(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const isCustomIcon = tierIcon.startsWith("data:") || tierIcon.startsWith("http");
+
+  if (isMobile) {
+    // Full-screen on mobile
+    return (
+      <motion.div
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        className="fixed inset-0 z-[60] bg-background flex flex-col"
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
+        }}
+      >
+        {/* Header + Actions */}
+        <div className="shrink-0 border-b border-border/50 px-3 py-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold">{editingTier ? "Edit Tier" : "Create Tier"}</h3>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted/50 touch-manipulation">
+              <LoopedX className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex gap-2">
+            {onDelete && (
+              <Button variant="destructive" size="sm" onClick={onDelete} className="text-xs">Delete</Button>
+            )}
+            <Button variant="outline" size="sm" onClick={onClose} className="flex-1 text-xs">Cancel</Button>
+            <Button size="sm" onClick={onSave} disabled={!tierName} className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold text-xs">
+              {editingTier ? "Save" : "Create"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <TierEditorForm
+            tierName={tierName} setTierName={setTierName}
+            tierDescription={tierDescription} setTierDescription={setTierDescription}
+            tierIcon={tierIcon} setTierIcon={setTierIcon}
+            tierColor={tierColor} setTierColor={setTierColor}
+            tierRequirements={tierRequirements} setTierRequirements={setTierRequirements}
+            tierPerks={tierPerks} newPerk={newPerk} setNewPerk={setNewPerk}
+            addPerk={addPerk} removePerk={removePerk}
+            isCustomIcon={isCustomIcon} customIconPreview={customIconPreview}
+            iconFileRef={iconFileRef} handleIconFile={handleIconFile}
+          />
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Desktop: centered modal
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="bg-card border border-border rounded-2xl w-full max-w-md max-h-[85vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header + Actions */}
+        <div className="shrink-0 border-b border-border/50 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold">{editingTier ? "Edit Tier" : "Create Tier"}</h3>
+            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted/50">
+              <LoopedX className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex gap-2">
+            {onDelete && (
+              <Button variant="destructive" size="sm" onClick={onDelete}>Delete</Button>
+            )}
+            <Button variant="outline" size="sm" onClick={onClose} className="flex-1">Cancel</Button>
+            <Button size="sm" onClick={onSave} disabled={!tierName} className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold">
+              {editingTier ? "Save" : "Create"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <TierEditorForm
+            tierName={tierName} setTierName={setTierName}
+            tierDescription={tierDescription} setTierDescription={setTierDescription}
+            tierIcon={tierIcon} setTierIcon={setTierIcon}
+            tierColor={tierColor} setTierColor={setTierColor}
+            tierRequirements={tierRequirements} setTierRequirements={setTierRequirements}
+            tierPerks={tierPerks} newPerk={newPerk} setNewPerk={setNewPerk}
+            addPerk={addPerk} removePerk={removePerk}
+            isCustomIcon={isCustomIcon} customIconPreview={customIconPreview}
+            iconFileRef={iconFileRef} handleIconFile={handleIconFile}
+          />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Form fields (shared between mobile & desktop) ───
+
+interface TierEditorFormProps {
+  tierName: string; setTierName: (v: string) => void;
+  tierDescription: string; setTierDescription: (v: string) => void;
+  tierIcon: string; setTierIcon: (v: string) => void;
+  tierColor: string; setTierColor: (v: string) => void;
+  tierRequirements: string; setTierRequirements: (v: string) => void;
+  tierPerks: string[];
+  newPerk: string; setNewPerk: (v: string) => void;
+  addPerk: () => void;
+  removePerk: (i: number) => void;
+  isCustomIcon: boolean;
+  customIconPreview: string | null;
+  iconFileRef: React.RefObject<HTMLInputElement>;
+  handleIconFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+function TierEditorForm({
+  tierName, setTierName, tierDescription, setTierDescription,
+  tierIcon, setTierIcon, tierColor, setTierColor,
+  tierRequirements, setTierRequirements,
+  tierPerks, newPerk, setNewPerk, addPerk, removePerk,
+  isCustomIcon, customIconPreview, iconFileRef, handleIconFile,
+}: TierEditorFormProps) {
+  return (
+    <div className="p-4 space-y-4 pb-8">
+      <div>
+        <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Tier Name</label>
+        <Input value={tierName} onChange={(e) => setTierName(e.target.value)} placeholder="e.g., Phase, Nexus, Apex" className="h-9 text-sm" />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Description</label>
+        <Input value={tierDescription} onChange={(e) => setTierDescription(e.target.value)} placeholder="Short description of this tier" className="h-9 text-sm" />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Icon</label>
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {TIER_ICONS_LIST.map((icon) => (
+            <button
+              key={icon}
+              onClick={() => setTierIcon(icon)}
+              className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all touch-manipulation active:scale-95 ${
+                tierIcon === icon ? "bg-gold/20 ring-2 ring-gold" : "bg-muted hover:bg-muted/80"
+              }`}
+            >
+              {icon}
+            </button>
+          ))}
+
+          {/* Custom icon upload button */}
+          <input ref={iconFileRef} type="file" accept="image/*" className="hidden" onChange={handleIconFile} />
+          <button
+            onClick={() => iconFileRef.current?.click()}
+            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all touch-manipulation active:scale-95 border border-dashed ${
+              isCustomIcon ? "border-gold bg-gold/20 ring-2 ring-gold" : "border-border bg-muted hover:bg-muted/80"
+            }`}
+          >
+            {isCustomIcon ? (
+              <img src={tierIcon} alt="Custom" className="w-6 h-6 rounded object-cover" />
+            ) : (
+              <ImagePlus className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+        </div>
+        <p className="text-[10px] text-muted-foreground">Tap + to upload a custom icon image</p>
+      </div>
+
+      <div>
+        <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Color</label>
+        <div className="flex items-center gap-2">
+          <input type="color" value={tierColor} onChange={(e) => setTierColor(e.target.value)} className="w-10 h-9 rounded cursor-pointer" />
+          <Input value={tierColor} onChange={(e) => setTierColor(e.target.value)} className="flex-1 h-9 text-sm" />
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Requirements</label>
+        <Textarea
+          value={tierRequirements}
+          onChange={(e) => setTierRequirements(e.target.value)}
+          placeholder="1. Edit must be 10+ seconds&#10;2. No remakes/scraps&#10;3. Must be recent work"
+          rows={3}
+          className="text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Perks</label>
+        <div className="flex gap-2 mb-2">
+          <Input
+            value={newPerk}
+            onChange={(e) => setNewPerk(e.target.value)}
+            placeholder="Add a perk..."
+            className="h-9 text-sm"
+            onKeyDown={(e) => e.key === "Enter" && addPerk()}
+          />
+          <Button onClick={addPerk} size="sm" className="h-9 px-3">
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {tierPerks.map((perk, i) => (
+            <Badge
+              key={i}
+              variant="secondary"
+              className="cursor-pointer hover:bg-destructive/20 touch-manipulation"
+              onClick={() => removePerk(i)}
+            >
+              {perk} ×
+            </Badge>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
