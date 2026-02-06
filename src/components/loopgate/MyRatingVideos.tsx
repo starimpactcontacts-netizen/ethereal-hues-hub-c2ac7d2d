@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Video, ExternalLink, Eye, Plus, Trash2, Sparkles, Play, ImagePlus } from 'lucide-react';
+import { Video, ExternalLink, Eye, Plus, Trash2, Sparkles, Play, ImagePlus, Upload, Link } from 'lucide-react';
 import { useJudgeRatingVideos } from '@/hooks/useJudgeRatingVideos';
 import SubmitRatingVideoModal from './SubmitRatingVideoModal';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useVideoStats } from '@/hooks/useVideoStats';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 const platformIcons = {
   tiktok: SiTiktok,
@@ -37,15 +38,16 @@ function VideoCard({
   const { views, thumbnailUrl: fetchedThumb, loading: statsLoading } = useVideoStats(video.video_url, video.platform);
   const thumbnailUrl = video.thumbnail_url || fetchedThumb;
   const [showThumbInput, setShowThumbInput] = useState(false);
+  const [thumbMode, setThumbMode] = useState<'url' | 'file'>('file');
   const [thumbUrl, setThumbUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
 
-  const handleSaveThumb = async () => {
-    if (!thumbUrl.trim()) return;
+  const saveThumbnailUrl = async (url: string) => {
     setSaving(true);
     const { error } = await supabase
       .from('judge_rating_videos')
-      .update({ thumbnail_url: thumbUrl.trim() })
+      .update({ thumbnail_url: url })
       .eq('id', video.id);
     setSaving(false);
     if (error) { toast.error('Failed to save thumbnail'); return; }
@@ -53,6 +55,28 @@ function VideoCard({
     setShowThumbInput(false);
     setThumbUrl('');
     onThumbnailUpdated();
+  };
+
+  const handleSaveThumb = () => saveThumbnailUrl(thumbUrl.trim());
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please select an image'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
+    
+    setSaving(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${user.id}/${video.id}.${ext}`;
+    
+    const { error: uploadErr } = await supabase.storage
+      .from('video-thumbnails')
+      .upload(path, file, { upsert: true });
+    
+    if (uploadErr) { setSaving(false); toast.error('Upload failed'); return; }
+    
+    const { data: urlData } = supabase.storage.from('video-thumbnails').getPublicUrl(path);
+    await saveThumbnailUrl(urlData.publicUrl);
   };
   const PlatformIcon = platformIcons[video.platform as keyof typeof platformIcons];
   const platformColor = platformColors[video.platform as keyof typeof platformColors];
@@ -125,24 +149,52 @@ function VideoCard({
         </a>
       </div>
 
-      {/* Thumbnail URL input overlay */}
+      {/* Thumbnail input overlay */}
       {showThumbInput && (
-        <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-3 gap-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Paste thumbnail URL</p>
-          <input
-            type="url"
-            value={thumbUrl}
-            onChange={e => setThumbUrl(e.target.value)}
-            placeholder="https://..."
-            className="w-full bg-surface-2 border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
-            autoFocus
-          />
-          <div className="flex gap-2 w-full">
-            <button onClick={() => setShowThumbInput(false)} className="flex-1 text-[10px] py-1 rounded bg-surface-2 text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
-            <button onClick={handleSaveThumb} disabled={saving || !thumbUrl.trim()} className="flex-1 text-[10px] py-1 rounded bg-gold/20 text-gold hover:bg-gold/30 transition-colors disabled:opacity-50">
-              {saving ? '...' : 'Save'}
+        <div className="absolute inset-0 z-20 bg-black/85 backdrop-blur-sm flex flex-col items-center justify-center p-3 gap-2">
+          {/* Mode tabs */}
+          <div className="flex gap-1 w-full bg-surface-2 rounded p-0.5">
+            <button
+              onClick={() => setThumbMode('file')}
+              className={`flex-1 text-[10px] py-1 rounded flex items-center justify-center gap-1 transition-colors ${thumbMode === 'file' ? 'bg-gold/20 text-gold' : 'text-muted-foreground'}`}
+            >
+              <Upload size={10} /> Upload
+            </button>
+            <button
+              onClick={() => setThumbMode('url')}
+              className={`flex-1 text-[10px] py-1 rounded flex items-center justify-center gap-1 transition-colors ${thumbMode === 'url' ? 'bg-gold/20 text-gold' : 'text-muted-foreground'}`}
+            >
+              <Link size={10} /> URL
             </button>
           </div>
+
+          {thumbMode === 'file' ? (
+            <label className="w-full cursor-pointer">
+              <div className="w-full py-3 border border-dashed border-border rounded flex flex-col items-center gap-1 hover:border-gold/40 transition-colors">
+                <Upload size={16} className="text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground">{saving ? 'Uploading...' : 'Tap to choose image'}</span>
+              </div>
+              <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" disabled={saving} />
+            </label>
+          ) : (
+            <>
+              <input
+                type="url"
+                value={thumbUrl}
+                onChange={e => setThumbUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full bg-surface-2 border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
+                autoFocus
+              />
+              <button onClick={handleSaveThumb} disabled={saving || !thumbUrl.trim()} className="w-full text-[10px] py-1.5 rounded bg-gold/20 text-gold hover:bg-gold/30 transition-colors disabled:opacity-50">
+                {saving ? '...' : 'Save'}
+              </button>
+            </>
+          )}
+
+          <button onClick={() => setShowThumbInput(false)} className="w-full text-[10px] py-1 rounded text-muted-foreground hover:text-foreground transition-colors">
+            Cancel
+          </button>
         </div>
       )}
 
