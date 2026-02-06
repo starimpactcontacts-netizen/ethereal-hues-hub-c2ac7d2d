@@ -125,8 +125,10 @@ export default function EditorCard({ editor }: EditorCardProps) {
 
         {/* Connect & Stats */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Quick Connect */}
-          <ConnectButton targetUserId={editor.id} variant="icon" className="opacity-60 hover:opacity-100 transition-opacity" />
+          {/* Quick Connect - stop propagation to prevent card navigation */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <ConnectButton targetUserId={editor.id} variant="icon" className="opacity-70 hover:opacity-100 transition-opacity" />
+          </div>
           
           {/* Level */}
           <div className="text-center">
