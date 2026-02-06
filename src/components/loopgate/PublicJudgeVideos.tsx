@@ -14,6 +14,7 @@ interface RatingVideo {
   viral_bonus_awarded: boolean;
   bonus_xp_awarded: number | null;
   submitted_at: string;
+  thumbnail_url: string | null;
 }
 
 const platformIcons = {
@@ -34,7 +35,8 @@ interface PublicJudgeVideosProps {
 
 // Individual video card with thumbnail and real stats
 function VideoCard({ video, index }: { video: RatingVideo; index: number }) {
-  const { views, thumbnailUrl, loading: statsLoading } = useVideoStats(video.video_url, video.platform);
+  const { views, thumbnailUrl: fetchedThumb, loading: statsLoading } = useVideoStats(video.video_url, video.platform);
+  const thumbnailUrl = video.thumbnail_url || fetchedThumb;
   const PlatformIcon = platformIcons[video.platform];
   const platformColor = platformColors[video.platform];
 
@@ -59,7 +61,7 @@ function VideoCard({ video, index }: { video: RatingVideo; index: number }) {
     >
       {/* Thumbnail Section */}
       <div className="relative aspect-video bg-surface-2">
-        {statsLoading ? (
+        {statsLoading && !thumbnailUrl ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
           </div>

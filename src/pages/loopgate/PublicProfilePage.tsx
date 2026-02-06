@@ -80,9 +80,10 @@ export default function PublicProfilePage() {
   const [userCrew, setUserCrew] = useState<{ id: string; name: string; emblem: string; avatar_url: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'videos' | 'edits' | 'links' | 'about'>('videos');
-  const [submissionCount, setSubmissionCount] = useState(0);
-  const [isJudge, setIsJudge] = useState(false);
-  const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
+   const [submissionCount, setSubmissionCount] = useState(0);
+   const [videoCount, setVideoCount] = useState(0);
+   const [isJudge, setIsJudge] = useState(false);
+   const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
 
   useEffect(() => {
     if (!userId) return;
@@ -141,7 +142,17 @@ export default function PublicProfilePage() {
       if (rolesData) {
         const userRoles = rolesData.map(r => r.role as AppRole);
         setRoles(userRoles);
-        setIsJudge(userRoles.includes('judge'));
+        const userIsJudge = userRoles.includes('judge');
+        setIsJudge(userIsJudge);
+        
+        // Fetch judge video count if judge
+        if (userIsJudge) {
+          const { count: vidCount } = await supabase
+            .from('judge_rating_videos')
+            .select('*', { count: 'exact', head: true })
+            .eq('judge_id', userId);
+          setVideoCount(vidCount || 0);
+        }
       }
 
       // Fetch submission count and activity stats in parallel
@@ -384,8 +395,8 @@ export default function PublicProfilePage() {
             {/* Stats Row - Properly sized */}
             <div className="flex items-center justify-center gap-6 mb-4">
               <div className="text-center">
-                <p className="font-display text-xl text-white">{submissionCount}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Edits</p>
+               <p className="font-display text-xl text-white">{isJudge ? videoCount : submissionCount}</p>
+                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isJudge ? 'Videos' : 'Edits'}</p>
               </div>
               <div className="w-px h-8 bg-border" />
               <div className="text-center">
