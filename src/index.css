@@ -326,6 +326,12 @@
   }
 }
 
+/* Shimmer animation for loading placeholders */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 html {
   font-size: var(--font-size);
   scroll-behavior: smooth;
