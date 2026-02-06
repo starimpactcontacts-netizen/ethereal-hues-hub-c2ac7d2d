@@ -382,22 +382,22 @@ export default function HubPage() {
           transition={{ delay: 0.15 }}
           className="mt-2 relative"
         >
-          {/* Background Pattern */}
+          {/* Luxe Background Pattern */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div 
-              className="absolute inset-0 opacity-[0.03]"
+              className="absolute inset-0 opacity-[0.04]"
               style={{
-                backgroundImage: `repeating-linear-gradient(
-                  -45deg,
-                  transparent,
-                  transparent 10px,
-                  hsl(var(--foreground)) 10px,
-                  hsl(var(--foreground)) 11px
-                )`
+                backgroundImage: `
+                  radial-gradient(circle at 20px 20px, hsl(var(--foreground)) 1px, transparent 1px),
+                  radial-gradient(circle at 0px 0px, hsl(var(--foreground)) 1px, transparent 1px),
+                  linear-gradient(45deg, transparent 48%, hsl(var(--foreground)) 49%, hsl(var(--foreground)) 51%, transparent 52%),
+                  linear-gradient(-45deg, transparent 48%, hsl(var(--foreground)) 49%, hsl(var(--foreground)) 51%, transparent 52%)
+                `,
+                backgroundSize: '40px 40px'
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
           </div>
 
           {/* Section Header */}
