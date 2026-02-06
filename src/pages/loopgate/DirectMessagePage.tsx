@@ -11,12 +11,19 @@ import RichMessageContent from '@/components/loopgate/RichMessageContent';
 import MessageReactions from '@/components/loopgate/MessageReactions';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 export default function DirectMessagePage() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -27,8 +34,10 @@ export default function DirectMessagePage() {
   
   const [messageText, setMessageText] = useState('');
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isMobile = useIsMobile();
 
   // Get other user from conversations
   const conversation = conversations.find(c => c.id === conversationId);
@@ -68,16 +77,23 @@ export default function DirectMessagePage() {
   };
 
   const handleDeleteMessage = async (messageId: string) => {
+    setSelectedMessageId(null);
     const { error } = await supabase
       .from('direct_messages')
       .delete()
       .eq('id', messageId)
-      .eq('sender_id', user?.id); // Only allow deleting own messages
+      .eq('sender_id', user?.id);
 
     if (error) {
       toast.error("Failed to delete message");
     } else {
       toast.success("Message deleted");
+    }
+  };
+
+  const handleOpenMessageMenu = (messageId: string) => {
+    if (isMobile) {
+      setSelectedMessageId(messageId);
     }
   };
 
@@ -190,24 +206,33 @@ export default function DirectMessagePage() {
                           </div>
                         </div>
                         
-                        {/* Delete menu for own messages - visible on mobile, hover on desktop */}
+                        {/* Delete menu for own messages - Sheet on mobile, Dropdown on desktop */}
                         {isMe && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="sm:opacity-0 sm:group-hover/msg:opacity-100 opacity-100 p-1.5 rounded active:bg-muted/50 hover:bg-muted/50 shrink-0 transition-opacity self-center touch-manipulation">
-                                <MoreVertical className="w-3.5 h-3.5 text-muted-foreground/70" />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-32 bg-surface-1 border-border">
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteMessage(msg.id)}
-                                className="text-destructive text-xs"
-                              >
-                                <Trash2 className="w-3.5 h-3.5 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          isMobile ? (
+                            <button 
+                              onClick={() => handleOpenMessageMenu(msg.id)}
+                              className="p-1.5 rounded active:bg-muted/50 shrink-0 self-center touch-manipulation"
+                            >
+                              <MoreVertical className="w-3.5 h-3.5 text-muted-foreground/70" />
+                            </button>
+                          ) : (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button className="opacity-0 group-hover/msg:opacity-100 p-1.5 rounded hover:bg-muted/50 shrink-0 transition-opacity self-center">
+                                  <MoreVertical className="w-3.5 h-3.5 text-muted-foreground/70" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-32 bg-popover border-border">
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteMessage(msg.id)}
+                                  className="text-destructive text-xs"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )
                         )}
                       </div>
                       
@@ -230,6 +255,24 @@ export default function DirectMessagePage() {
           )}
         </div>
       </main>
+
+      {/* Mobile Message Actions Sheet */}
+      <Sheet open={!!selectedMessageId} onOpenChange={(open) => !open && setSelectedMessageId(null)}>
+        <SheetContent side="bottom" className="rounded-t-2xl px-4 pb-8">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Message Actions</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              onClick={() => selectedMessageId && handleDeleteMessage(selectedMessageId)}
+              className="flex items-center gap-3 w-full p-3 rounded-lg bg-destructive/10 text-destructive active:bg-destructive/20 touch-manipulation"
+            >
+              <Trash2 className="w-5 h-5" />
+              <span className="text-sm font-medium">Delete Message</span>
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* GIF Picker */}
       {showGifPicker && (
