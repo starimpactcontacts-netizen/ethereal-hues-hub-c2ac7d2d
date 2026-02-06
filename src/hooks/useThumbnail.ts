@@ -4,6 +4,28 @@ import { supabase } from '@/integrations/supabase/client';
 // Simple in-memory cache for thumbnails
 const thumbnailCache = new Map<string, string | null>();
 
+const YT_REGEX = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+
+/** Instantly resolve a YouTube thumbnail URL from a video URL — zero network calls */
+export function resolveYouTubeThumbnail(url: string): string | null {
+  if (!url) return null;
+  const match = url.match(YT_REGEX);
+  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null;
+}
+
+/** Instantly resolve a thumbnail for any platform if possible client-side */
+export function resolveInstantThumbnail(url: string, platform: string): string | null {
+  if (!url) return null;
+  // Check cache
+  if (thumbnailCache.has(url)) return thumbnailCache.get(url) || null;
+  // YouTube — instant
+  if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
+    const thumb = resolveYouTubeThumbnail(url);
+    if (thumb) { thumbnailCache.set(url, thumb); return thumb; }
+  }
+  return null;
+}
+
 export function useThumbnail(url: string, platform: string) {
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

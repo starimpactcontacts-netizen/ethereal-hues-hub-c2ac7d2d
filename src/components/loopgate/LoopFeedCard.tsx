@@ -3,6 +3,7 @@ import { Play, Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, Chev
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { useThumbnail } from "@/hooks/useThumbnail";
 import FeedInlineComments from "./FeedInlineComments";
 
 export interface LoopFeedItem {
@@ -53,6 +54,13 @@ interface LoopFeedCardProps {
 
 export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenPlayer }: LoopFeedCardProps) {
   const navigate = useNavigate();
+  // Self-heal: if feed didn't resolve a thumbnail, try per-card
+  const { thumbnail: hookThumb } = useThumbnail(
+    item.thumbnail_url ? '' : item.submission_url,
+    item.platform
+  );
+  const resolvedThumb = item.thumbnail_url || hookThumb;
+
   const displayTitle = item.custom_title || item.event_title || 'Untitled Edit';
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true });
 
@@ -115,17 +123,16 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
 
             {/* Thumbnail — compact */}
             <button onClick={onOpenPlayer} className="relative w-full rounded-md overflow-hidden group mb-1 block">
-              {item.thumbnail_url ? (
+              {resolvedThumb ? (
                 <img
-                  src={item.thumbnail_url}
+                  src={resolvedThumb}
                   alt={displayTitle}
                   className="w-full aspect-[16/9] object-cover"
                   loading="lazy"
                 />
               ) : (
                 <div className="w-full aspect-[16/9] bg-surface-2 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_1.5s_infinite]" 
-                    style={{ animation: 'shimmer 1.5s infinite', backgroundSize: '200% 100%' }} />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Play className="w-5 h-5 text-muted-foreground/30" />
                   </div>
