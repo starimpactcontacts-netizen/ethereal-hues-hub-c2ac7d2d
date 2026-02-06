@@ -1,21 +1,41 @@
-import { useState } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import JudgeInbox from '@/components/loopgate/JudgeInbox';
 import JudgeLiveFeed from '@/components/loopgate/JudgeLiveFeed';
 import CompletedReviewsList from '@/components/loopgate/CompletedReviewsList';
 import CardTemplatePreview from '@/components/loopgate/CardTemplatePreview';
 import JudgePanelStats from '@/components/loopgate/JudgePanelStats';
 import SubmitRatingVideoModal from '@/components/loopgate/SubmitRatingVideoModal';
+import JudgeFlywheel from '@/components/loopgate/JudgeFlywheel';
+import JudgeScoringModal from '@/components/loopgate/JudgeScoringModal';
 
 export default function JudgePanelPage() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [activeTab, setActiveTab] = useState('inbox');
   const [showTemplates, setShowTemplates] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showFlywheel, setShowFlywheel] = useState(false);
+  const [flywheelEditors, setFlywheelEditors] = useState<any[]>([]);
+  const [scoringFromFlywheel, setScoringFromFlywheel] = useState<any>(null);
+
+  // Fetch inbox editors for flywheel
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchInbox = async () => {
+      const { data } = await supabase
+        .from('review_requests')
+        .select('id, user_id, username, avatar_url, submission_url, platform')
+        .eq('status', 'pending')
+        .order('requested_at', { ascending: false });
+      setFlywheelEditors(data || []);
+    };
+    fetchInbox();
+  }, [user?.id]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,6 +60,14 @@ export default function JudgePanelPage() {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button 
+              onClick={() => setShowFlywheel(true)}
+              size="sm" 
+              className="bg-gold text-black hover:bg-gold/90 font-display font-bold tracking-wider text-[10px]"
+            >
+              <Zap className="w-3 h-3 mr-1" />
+              Flywheel
+            </Button>
             <Button 
               onClick={() => setShowVideoModal(true)}
               variant="outline" 
@@ -123,6 +151,26 @@ export default function JudgePanelPage() {
         isOpen={showVideoModal} 
         onClose={() => setShowVideoModal(false)} 
       />
+
+      {/* Flywheel */}
+      <JudgeFlywheel
+        isOpen={showFlywheel}
+        onClose={() => setShowFlywheel(false)}
+        editors={flywheelEditors}
+        onSelect={(editor) => {
+          setShowFlywheel(false);
+          setScoringFromFlywheel(editor);
+        }}
+      />
+
+      {/* Scoring from Flywheel */}
+      {scoringFromFlywheel && (
+        <JudgeScoringModal
+          request={scoringFromFlywheel}
+          onClose={() => setScoringFromFlywheel(null)}
+          onComplete={() => setScoringFromFlywheel(null)}
+        />
+      )}
     </div>
   );
 }
