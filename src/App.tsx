@@ -22,6 +22,7 @@ import ProfileStatsPage from "./pages/loopgate/ProfileStatsPage";
 import PublicProfilePage from "./pages/loopgate/PublicProfilePage";
 import UsernameLookupPage from "./pages/loopgate/UsernameLookupPage";
 import ClassPage from "./pages/loopgate/ClassPage";
+import LeaguePage from "./pages/loopgate/LeaguePage";
 import IndexPage from "./pages/loopgate/IndexPage";
 import ArenasPage from "./pages/loopgate/ArenasPage";
 import ArenaPage from "./pages/loopgate/ArenaPage";
@@ -254,6 +255,7 @@ export default function App() {
               <Route path="/editor/:userId" element={<PublicProfilePage />} />
               <Route path="/rankings" element={<RankingsPage />} />
               <Route path="/class" element={<ClassPage />} />
+              <Route path="/league" element={<LeaguePage />} />
               <Route path="/events" element={<HomePage />} />
               <Route path="/event/:id" element={<EventDetailPage />} />
               <Route path="/feed" element={<FeedPage />} />

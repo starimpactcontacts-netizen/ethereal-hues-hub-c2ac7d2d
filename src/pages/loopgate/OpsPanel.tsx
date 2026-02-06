@@ -16,6 +16,7 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import JudgeManagementSection from "@/components/loopgate/JudgeManagementSection";
 import JudgeApplicationsSection from "@/components/loopgate/JudgeApplicationsSection";
 import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTournamentManagement";
+import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdmin";
 import HostedCompManagement from "@/components/loopgate/HostedCompManagement";
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 
@@ -3597,6 +3598,9 @@ export default function OpsPanel() {
             </div>
           )}
         </section>
+
+        {/* Admin: League Applications */}
+        <LeagueApplicationsAdmin />
 
         {/* Admin: Unit Management */}
         <section>
