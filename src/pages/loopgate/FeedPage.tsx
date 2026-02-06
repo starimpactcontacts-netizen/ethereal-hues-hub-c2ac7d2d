@@ -29,7 +29,7 @@ export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTab>('foryou');
   const [searchQuery, setSearchQuery] = useState('');
   const [connectionIds, setConnectionIds] = useState<string[]>([]);
-  const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null }>>([]);
+  const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null; is_verified: boolean }>>([]);
   const [trendingUnits, setTrendingUnits] = useState<Array<{ id: string; name: string; avatar_url: string | null; emblem: string }>>([]);
 
   // Fetch connections for the connections tab
@@ -56,17 +56,37 @@ export default function FeedPage() {
       const [editorsRes, unitsRes] = await Promise.all([
         supabase
           .from('profiles')
-          .select('id, username, avatar_url')
+          .select('id, username, avatar_url, verification_status, connection_count, global_index_score, level')
           .not('avatar_url', 'is', null)
-          .order('updated_at', { ascending: false })
-          .limit(10),
+          .limit(50),
         supabase
           .from('crews')
           .select('id, name, avatar_url, emblem')
           .order('member_count', { ascending: false })
           .limit(8)
       ]);
-      setTrendingEditors(editorsRes.data || []);
+
+      // Score and sort editors by prestige algorithm
+      const scored = (editorsRes.data || []).map(p => {
+        let score = 0;
+        const isVerified = !!p.verification_status;
+        if (isVerified) score += 10;
+        const conn = p.connection_count || 0;
+        if (conn >= 20) score += 6;
+        else if (conn >= 5) score += 4;
+        else if (conn >= 1) score += 2;
+        const idx = p.global_index_score || 0;
+        if (idx >= 80) score += 6;
+        else if (idx >= 50) score += 4;
+        else if (idx > 0) score += 2;
+        const lvl = p.level || 1;
+        if (lvl >= 5) score += 3;
+        else if (lvl >= 2) score += 1;
+        return { id: p.id, username: p.username, avatar_url: p.avatar_url, is_verified: isVerified, _score: score };
+      });
+      scored.sort((a, b) => b._score - a._score);
+
+      setTrendingEditors(scored.slice(0, 12).map(({ _score, ...rest }) => rest));
       setTrendingUnits(unitsRes.data || []);
     };
     fetchTrending();
@@ -401,13 +421,20 @@ export default function FeedPage() {
                     onClick={() => navigate(`/editor/${editor.id}`)}
                     className="flex flex-col items-center gap-0.5 shrink-0"
                   >
-                    <div className="w-9 h-9 rounded-full border border-border/60 overflow-hidden bg-surface-1">
-                      <Avatar className="w-full h-full">
-                        <AvatarImage src={editor.avatar_url || undefined} />
-                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
-                          {editor.username[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                    <div className="relative">
+                      <div className={`w-9 h-9 rounded-full overflow-hidden bg-surface-1 ${editor.is_verified ? 'ring-2 ring-primary/60' : 'border border-border/60'}`}>
+                        <Avatar className="w-full h-full">
+                          <AvatarImage src={editor.avatar_url || undefined} />
+                          <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
+                            {editor.username[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      {editor.is_verified && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center border border-background">
+                          <span className="text-[7px] text-primary-foreground">✓</span>
+                        </div>
+                      )}
                     </div>
                     <span className="text-[9px] text-muted-foreground truncate max-w-[48px]">@{editor.username}</span>
                   </motion.button>
