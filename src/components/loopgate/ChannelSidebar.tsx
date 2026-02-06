@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Hash, Volume2, Megaphone, BookOpen, Lock, ChevronDown, ChevronRight, Plus, Settings, Users } from "lucide-react";
+import { Hash, Volume2, Megaphone, BookOpen, Lock, ChevronDown, ChevronRight, Plus, Settings, Users, ArrowLeft } from "lucide-react";
 import { CrewChannel } from "@/hooks/useCrewChannels";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +14,7 @@ interface ChannelSidebarProps {
   crewName: string;
   isOfficer?: boolean;
   onManageChannels?: () => void;
+  onBack?: () => void;
 }
 
 const CHANNEL_ICONS: Record<string, React.ReactNode> = {
@@ -33,6 +34,7 @@ export default function ChannelSidebar({
   crewName,
   isOfficer = false,
   onManageChannels,
+  onBack,
 }: ChannelSidebarProps) {
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
@@ -58,19 +60,27 @@ export default function ChannelSidebar({
     <div className="w-60 bg-surface-1 border-r border-border flex flex-col h-full">
       {/* Crew Header */}
       <div className="p-3 border-b border-border/50">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-sm truncate">{crewName}</h2>
+        <div className="flex items-center gap-2">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4 text-muted-foreground" />
+            </button>
+          )}
+          <h2 className="font-semibold text-sm truncate flex-1">{crewName}</h2>
           {isOfficer && onManageChannels && (
             <button
               onClick={onManageChannels}
-              className="p-1.5 rounded hover:bg-muted/50 transition-colors"
+              className="p-1.5 rounded hover:bg-muted/50 transition-colors shrink-0"
             >
               <Settings className="w-4 h-4 text-muted-foreground" />
             </button>
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
-          <div className="w-2 h-2 rounded-full bg-green-500" />
+          <div className="w-2 h-2 rounded-full bg-emerald-500" />
           <span>{onlineCount} online</span>
         </div>
       </div>
