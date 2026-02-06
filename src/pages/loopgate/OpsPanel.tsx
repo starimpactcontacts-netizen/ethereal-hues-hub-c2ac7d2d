@@ -3598,11 +3598,11 @@ export default function OpsPanel() {
           )}
         </section>
 
-        {/* Admin: Crew Management */}
+        {/* Admin: Unit Management */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Crew Management</h2>
-            <span className="text-xs text-muted-foreground">{crews.length} crews</span>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Unit Management</h2>
+            <span className="text-xs text-muted-foreground">{crews.length} units</span>
           </div>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {crews.map((crew) => (

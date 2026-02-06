@@ -252,7 +252,7 @@ export default function ArenaPage() {
             </div>
             <Input
               type="text"
-              placeholder="Search tournaments, crews..."
+              placeholder="Search tournaments, units..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-11 pl-10 pr-10 bg-surface-1 border-border focus:border-white/30 text-sm placeholder:text-muted-foreground/60"
@@ -527,7 +527,7 @@ export default function ArenaPage() {
                 )}
               </div>
               <p className="text-[10px] text-muted-foreground mb-3 px-4">
-                Crew-hosted tournaments with official Index prizes
+                Unit-hosted tournaments with official Index prizes
               </p>
 
               {/* How It Works - Collapsible Info Guide */}
@@ -546,7 +546,7 @@ export default function ArenaPage() {
                         What is a Sanctioned Tournament?
                       </h4>
                       <p className="text-[10px] text-muted-foreground leading-relaxed">
-                        Sanctioned tournaments are high-stakes, crew-hosted competitions officially approved by LOOPGATE admins. Winners earn <span className="text-gold font-bold">Index points</span> and <span className="text-purple-400 font-bold">XP</span> that count toward global rankings.
+                        Sanctioned tournaments are high-stakes, unit-hosted competitions officially approved by LOOPGATE admins. Winners earn <span className="text-gold font-bold">Index points</span> and <span className="text-purple-400 font-bold">XP</span> that count toward global rankings.
                       </p>
                     </div>
 
@@ -618,7 +618,7 @@ export default function ArenaPage() {
                           className="inline-flex items-center gap-2 text-[10px] text-gold hover:text-gold/80 font-medium transition-colors"
                         >
                           <Users className="w-3.5 h-3.5" />
-                          Join or Create a Crew
+                          Join or Create a Unit
                           <ChevronRight className="w-3 h-3" />
                         </Link>
                       </div>

@@ -220,7 +220,7 @@ export default function CrewAvatarUploadModal({
                   {currentAvatarUrl ? (
                     <img
                       src={currentAvatarUrl}
-                      alt="Crew avatar"
+                      alt="Unit avatar"
                       className="w-full h-full object-cover"
                     />
                   ) : (
