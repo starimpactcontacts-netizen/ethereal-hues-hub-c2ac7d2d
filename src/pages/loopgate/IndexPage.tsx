@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft } from "lucide-react";
+import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -12,6 +12,7 @@ import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import StatusBadge from "@/components/loopgate/StatusBadge";
+import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 import { supabase } from "@/integrations/supabase/client";
@@ -714,6 +715,16 @@ export default function IndexPage() {
                           {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
                         </div>
                       </div>
+
+                      {/* Quick Connect Button */}
+                      {profile?.id !== editor.id && (
+                        <div 
+                          onClick={(e) => e.stopPropagation()} 
+                          className="flex-shrink-0"
+                        >
+                          <ConnectButton targetUserId={editor.id} variant="compact" />
+                        </div>
+                      )}
 
                       {/* Level & Index - Enhanced */}
                       <div className="flex items-center gap-4 flex-shrink-0">
