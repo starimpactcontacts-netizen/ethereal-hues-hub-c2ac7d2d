@@ -14,6 +14,8 @@ export interface UserSubmission {
   qoi_score: number | null;
   final_rank: number | null;
   submitted_at: string;
+  thumbnail_url: string | null;
+  source: 'standard' | 'round' | 'sanctioned';
   event?: {
     id: string;
     title: string;
@@ -84,6 +86,7 @@ export function useUserSubmissions(targetUserId?: string) {
         qoi_score: s.qoi_score,
         final_rank: s.final_rank,
         submitted_at: s.submitted_at,
+        thumbnail_url: s.thumbnail_url || null,
         source: 'standard' as const,
       })),
       ...(roundData || []).map(s => ({
@@ -98,6 +101,7 @@ export function useUserSubmissions(targetUserId?: string) {
         qoi_score: s.qoi_score,
         final_rank: null,
         submitted_at: s.submitted_at || s.created_at,
+        thumbnail_url: (s as any).thumbnail_url || null,
         source: 'round' as const,
       })),
       ...(sanctionedData || []).map(s => ({
@@ -112,6 +116,7 @@ export function useUserSubmissions(targetUserId?: string) {
         qoi_score: s.qoi_score,
         final_rank: s.final_rank,
         submitted_at: s.submitted_at || s.joined_at,
+        thumbnail_url: (s as any).thumbnail_url || null,
         source: 'sanctioned' as const,
       })),
     ];
