@@ -344,6 +344,11 @@ export default function ChannelChatView({
             </button>
           )}
 
+          {/* Bot command menu for officers */}
+          {isOfficer && (
+            <UnitBotCommandMenu crewId={crewId} channelId={channel.id} isOfficer={isOfficer} />
+          )}
+
           {/* Permissions (officer only) */}
           {isOfficer && onShowPermissions && (
             <button
@@ -543,10 +548,7 @@ export default function ChannelChatView({
 
         {canPost ? (
           <div className="flex items-center gap-1.5 bg-muted/30 rounded-xl px-3">
-            {/* Bot command menu for officers */}
-            {isOfficer && (
-              <UnitBotCommandMenu crewId={crewId} channelId={channel.id} isOfficer={isOfficer} />
-            )}
+            {/* Bot command menu moved to channel header */}
 
             <Button
               type="button"
