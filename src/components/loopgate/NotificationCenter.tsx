@@ -192,7 +192,7 @@ export default function NotificationCenter() {
         </button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md bg-background border-border p-0">
-        <SheetHeader className="p-4 pl-14 border-b border-border">
+        <SheetHeader className="p-4 pr-14 border-b border-border">
           <div className="flex items-center justify-between">
             <SheetTitle className="font-display">Notifications</SheetTitle>
             {unreadCount > 0 && (
