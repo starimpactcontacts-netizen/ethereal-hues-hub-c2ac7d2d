@@ -932,14 +932,17 @@ export type Database = {
           id: string
           message: string | null
           platform: string
+          proof_url: string | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          software_used: string | null
           status: string
           submission_url: string
           tier_id: string
           user_id: string
           username: string
+          wants_feedback: boolean | null
         }
         Insert: {
           avatar_url?: string | null
@@ -948,14 +951,17 @@ export type Database = {
           id?: string
           message?: string | null
           platform: string
+          proof_url?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          software_used?: string | null
           status?: string
           submission_url: string
           tier_id: string
           user_id: string
           username: string
+          wants_feedback?: boolean | null
         }
         Update: {
           avatar_url?: string | null
@@ -964,14 +970,17 @@ export type Database = {
           id?: string
           message?: string | null
           platform?: string
+          proof_url?: string | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          software_used?: string | null
           status?: string
           submission_url?: string
           tier_id?: string
           user_id?: string
           username?: string
+          wants_feedback?: boolean | null
         }
         Relationships: [
           {
@@ -3499,6 +3508,137 @@ export type Database = {
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "sanctioned_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_feed_comments: {
+        Row: {
+          avatar_url: string | null
+          content: string
+          created_at: string
+          display_name: string | null
+          id: string
+          parent_id: string | null
+          post_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          content: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          parent_id?: string | null
+          post_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          content?: string
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          parent_id?: string | null
+          post_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_feed_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "unit_feed_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unit_feed_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "unit_feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_feed_posts: {
+        Row: {
+          avatar_url: string | null
+          content: string | null
+          created_at: string
+          crew_id: string
+          display_name: string | null
+          id: string
+          is_pinned: boolean
+          media_platform: string | null
+          media_url: string | null
+          post_type: string
+          thumbnail_url: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          content?: string | null
+          created_at?: string
+          crew_id: string
+          display_name?: string | null
+          id?: string
+          is_pinned?: boolean
+          media_platform?: string | null
+          media_url?: string | null
+          post_type?: string
+          thumbnail_url?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          content?: string | null
+          created_at?: string
+          crew_id?: string
+          display_name?: string | null
+          id?: string
+          is_pinned?: boolean
+          media_platform?: string | null
+          media_url?: string | null
+          post_type?: string
+          thumbnail_url?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      unit_feed_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_feed_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "unit_feed_posts"
             referencedColumns: ["id"]
           },
         ]

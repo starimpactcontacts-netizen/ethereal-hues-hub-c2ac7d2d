@@ -21,6 +21,7 @@ import PageTransition from "@/components/loopgate/PageTransition";
 import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
 import CrewLiveFeed from "@/components/loopgate/CrewLiveFeed";
 import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
+import UnitFeedTab from "@/components/loopgate/UnitFeedTab";
 import CrewRivalCard from "@/components/loopgate/CrewRivalCard";
 import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
 import CrewChallengesPanel from "@/components/loopgate/CrewChallengesPanel";
@@ -124,7 +125,7 @@ interface CrewSubmission {
   };
 }
 
-type TabType = 'feed' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges' | 'applications' | 'editors' | 'assets';
+type TabType = 'feed' | 'live' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges' | 'applications' | 'editors' | 'assets';
 
 const emblemIcons: Record<string, React.ReactNode> = {
   shield: <Shield className="w-10 h-10" />,
@@ -567,7 +568,8 @@ export default function CrewDetailPage() {
   const progressToNext = crewStats.totalXP > 0 ? Math.max(3, rawProgress) : 0;
 
   const tabs: { id: TabType; icon: React.ReactNode; label: string; badge?: number }[] = [
-    { id: 'feed', icon: <Zap className="w-4 h-4" />, label: 'Live' },
+    { id: 'feed', icon: <FileVideo className="w-4 h-4" />, label: 'Feed' },
+    { id: 'live', icon: <Zap className="w-4 h-4" />, label: 'Live' },
     { id: 'applications', icon: <ClipboardList className="w-4 h-4" />, label: 'Apply' },
     { id: 'editors', icon: <UserCheck className="w-4 h-4" />, label: 'Editors' },
     { id: 'assets', icon: <FolderOpen className="w-4 h-4" />, label: 'Assets' },
@@ -575,7 +577,6 @@ export default function CrewDetailPage() {
     { id: 'rivals', icon: <Swords className="w-4 h-4" />, label: 'Rivals', badge: rivalries.length },
     { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Board' },
     { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Members' },
-    { id: 'submissions', icon: <FileVideo className="w-4 h-4" />, label: 'Work' },
     { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Quests' },
   ];
 
@@ -790,8 +791,13 @@ export default function CrewDetailPage() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              {/* Live Feed Tab */}
+              {/* Unit Feed Tab */}
               {activeTab === 'feed' && crewId && (
+                <UnitFeedTab crewId={crewId} isStaff={isStaff} />
+              )}
+
+              {/* Live Activity Tab */}
+              {activeTab === 'live' && crewId && (
                 <div className="space-y-4">
                   {/* Online Members */}
                   <div className="bg-surface-1 border border-border rounded-lg p-4">
@@ -1044,62 +1050,7 @@ export default function CrewDetailPage() {
                 </div>
               )}
 
-              {/* Submissions Tab */}
-              {activeTab === 'submissions' && (
-                <div className="space-y-3">
-                  {loadingSubmissions ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  ) : crewSubmissions.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                        <FileVideo className="w-8 h-8 text-muted-foreground/50" />
-                      </div>
-                      <h3 className="font-display text-lg text-muted-foreground mb-2">No Submissions Yet</h3>
-                      <p className="text-xs text-muted-foreground/60 max-w-xs">
-                        When unit members submit to arenas, their work appears here.
-                      </p>
-                    </div>
-                  ) : (
-                    crewSubmissions.map((submission) => (
-                      <a
-                        key={submission.id}
-                        href={submission.submission_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block bg-surface-1 border border-border rounded-lg p-4 hover:border-gold/30 transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="w-9 h-9">
-                            <AvatarImage src={submission.user?.avatar_url || undefined} />
-                            <AvatarFallback>{(submission.user?.username || "?")[0].toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm truncate">{submission.user?.username || "Unknown"}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {submission.event?.title || "Arena Submission"}
-                            </p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            {submission.qoi_score ? (
-                              <p className="text-sm font-bold text-gold">{Math.round(submission.qoi_score)} QOI</p>
-                            ) : (
-                              <p className="text-xs text-muted-foreground">Pending</p>
-                            )}
-                            <p className="text-[10px] text-muted-foreground">
-                              {new Date(submission.submitted_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
-                        </div>
-                      </a>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {/* Challenges Tab */}
+              {/* Quests Tab */}
               {activeTab === 'challenges' && crewId && (
                 <CrewChallengesPanel crewId={crewId} />
               )}
