@@ -8,6 +8,7 @@ import { useRealRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXP } from "@/hooks/useXP";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
+import { useJudgeRatingVideos } from "@/hooks/useJudgeRatingVideos";
 import { useReviewRequests } from "@/hooks/useReviewRequests";
 import { useCrewMembership } from "@/hooks/useCrewMembership";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -36,6 +37,7 @@ export default function ProfilePage() {
   const { rankings } = useRealRankings();
   const { xp, level } = useXP();
   const { submissions } = useUserSubmissions();
+  const { videos: judgeVideos } = useJudgeRatingVideos();
   const { completedReviews } = useReviewRequests();
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
@@ -252,8 +254,8 @@ export default function ProfilePage() {
                 <span className="text-[6px] uppercase tracking-wider opacity-60">Class</span>
               </Link>
               <div className="text-center px-1.5">
-                <p className="font-display text-base">{submissions.length}</p>
-                <p className="text-[8px] text-muted-foreground uppercase">Edits</p>
+                <p className="font-display text-base">{isAnyJudge ? judgeVideos.length : submissions.length}</p>
+                <p className="text-[8px] text-muted-foreground uppercase">{isAnyJudge ? 'Videos' : 'Edits'}</p>
               </div>
               <div className="text-center px-1.5">
                 <p className="font-display text-base">#{userRank}</p>

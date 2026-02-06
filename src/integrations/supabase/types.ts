@@ -1421,6 +1421,7 @@ export type Database = {
           status: string | null
           submission_url: string
           submitted_at: string | null
+          thumbnail_url: string | null
           user_id: string
           xp_awarded: number | null
         }
@@ -1438,6 +1439,7 @@ export type Database = {
           status?: string | null
           submission_url: string
           submitted_at?: string | null
+          thumbnail_url?: string | null
           user_id: string
           xp_awarded?: number | null
         }
@@ -1455,6 +1457,7 @@ export type Database = {
           status?: string | null
           submission_url?: string
           submitted_at?: string | null
+          thumbnail_url?: string | null
           user_id?: string
           xp_awarded?: number | null
         }
@@ -2510,6 +2513,7 @@ export type Database = {
           judge_id: string
           platform: string
           submitted_at: string
+          thumbnail_url: string | null
           title: string | null
           updated_at: string
           video_url: string
@@ -2523,6 +2527,7 @@ export type Database = {
           judge_id: string
           platform: string
           submitted_at?: string
+          thumbnail_url?: string | null
           title?: string | null
           updated_at?: string
           video_url: string
@@ -2536,6 +2541,7 @@ export type Database = {
           judge_id?: string
           platform?: string
           submitted_at?: string
+          thumbnail_url?: string | null
           title?: string | null
           updated_at?: string
           video_url?: string
@@ -3133,6 +3139,7 @@ export type Database = {
           status: Database["public"]["Enums"]["participant_status"] | null
           submission_url: string | null
           submitted_at: string | null
+          thumbnail_url: string | null
           updated_at: string | null
           user_id: string
           xp_awarded: number | null
@@ -3153,6 +3160,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["participant_status"] | null
           submission_url?: string | null
           submitted_at?: string | null
+          thumbnail_url?: string | null
           updated_at?: string | null
           user_id: string
           xp_awarded?: number | null
@@ -3173,6 +3181,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["participant_status"] | null
           submission_url?: string | null
           submitted_at?: string | null
+          thumbnail_url?: string | null
           updated_at?: string | null
           user_id?: string
           xp_awarded?: number | null
@@ -3201,6 +3210,7 @@ export type Database = {
           submission_platform: string | null
           submission_url: string | null
           submitted_at: string | null
+          thumbnail_url: string | null
           tournament_id: string
           user_id: string
           username: string
@@ -3218,6 +3228,7 @@ export type Database = {
           submission_platform?: string | null
           submission_url?: string | null
           submitted_at?: string | null
+          thumbnail_url?: string | null
           tournament_id: string
           user_id: string
           username: string
@@ -3235,6 +3246,7 @@ export type Database = {
           submission_platform?: string | null
           submission_url?: string | null
           submitted_at?: string | null
+          thumbnail_url?: string | null
           tournament_id?: string
           user_id?: string
           username?: string

@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.verify-screenshot]
 verify_jwt = false
+
+[functions.refresh-video-stats]
+verify_jwt = false
