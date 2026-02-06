@@ -1,10 +1,11 @@
- import { useState, useEffect } from 'react';
- import { UserPlus, UserCheck, Clock, X, Loader2 } from 'lucide-react';
- import { Button } from '@/components/ui/button';
- import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { UserPlus, UserCheck, Clock, X, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
- import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
  
  interface ConnectButtonProps {
    targetUserId: string;
@@ -28,19 +29,20 @@ function getWeekStart(): string {
   return monday.toISOString().split('T')[0];
 }
  
- export default function ConnectButton({ targetUserId, variant = 'default', className }: ConnectButtonProps) {
-   const { user } = useAuth();
+export default function ConnectButton({ targetUserId, variant = 'default', className }: ConnectButtonProps) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<ConnectionData>({ status: 'none', connectionId: null });
   const [weeklyRemaining, setWeeklyRemaining] = useState(WEEKLY_LIMIT);
-   const [loading, setLoading] = useState(true);
-   const [actionLoading, setActionLoading] = useState(false);
- 
-   useEffect(() => {
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
     const fetchStatus = async () => {
-       if (!user || targetUserId === user.id) {
-         setLoading(false);
-         return;
-       }
+      if (!user || targetUserId === user.id) {
+        setLoading(false);
+        return;
+      }
 
       // Check connection status
       const { data: connData } = await supabase
@@ -74,13 +76,51 @@ function getWeekStart(): string {
         .single();
 
       setWeeklyRemaining(Math.max(0, WEEKLY_LIMIT - (limitData?.requests_sent || 0)));
-       setLoading(false);
-     };
+      setLoading(false);
+    };
     fetchStatus();
   }, [user, targetUserId]);
- 
-   // Don't show button for own profile or when not logged in
-   if (!user || targetUserId === user.id) return null;
+
+  // Don't show button for own profile
+  if (user && targetUserId === user.id) return null;
+
+  // Show login redirect for logged-out users
+  if (!user) {
+    if (variant === 'compact') {
+      return (
+        <button
+          onClick={() => navigate('/login')}
+          className={cn('inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors', className)}
+        >
+          <UserPlus size={12} />
+          Connect
+        </button>
+      );
+    }
+    if (variant === 'icon') {
+      return (
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn('h-8 w-8 text-muted-foreground hover:text-white', className)}
+          onClick={() => navigate('/login')}
+        >
+          <UserPlus size={16} />
+        </Button>
+      );
+    }
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className={cn('gap-1.5', className)}
+        onClick={() => navigate('/login')}
+      >
+        <UserPlus size={14} />
+        Connect
+      </Button>
+    );
+  }
  
    const handleConnect = async () => {
     if (!user) return;
