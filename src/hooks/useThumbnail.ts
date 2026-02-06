@@ -64,43 +64,56 @@ export function useThumbnail(url: string, platform: string) {
   return { thumbnail, loading };
 }
 
-// Batch fetch thumbnails for multiple submissions
+// Batch fetch thumbnails for multiple submissions — parallel with concurrency limit
 export async function fetchThumbnailsBatch(submissions: Array<{ submission_url: string; platform: string }>) {
   const results: Record<string, string | null> = {};
-  
-  await Promise.all(
-    submissions.map(async (sub) => {
-      const cacheKey = sub.submission_url;
-      
-      if (thumbnailCache.has(cacheKey)) {
-        results[cacheKey] = thumbnailCache.get(cacheKey) || null;
-        return;
-      }
+  const uncached: typeof submissions = [];
 
-      // YouTube direct
+  // Resolve cache hits first
+  for (const sub of submissions) {
+    const cacheKey = sub.submission_url;
+    if (thumbnailCache.has(cacheKey)) {
+      results[cacheKey] = thumbnailCache.get(cacheKey) || null;
+    } else {
+      // YouTube direct — no API call needed
       if (sub.platform === 'youtube' || sub.submission_url.includes('youtube.com') || sub.submission_url.includes('youtu.be')) {
         const match = sub.submission_url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
         if (match) {
           const ytThumbnail = `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
           thumbnailCache.set(cacheKey, ytThumbnail);
           results[cacheKey] = ytThumbnail;
-          return;
+          continue;
         }
       }
+      uncached.push(sub);
+    }
+  }
 
-      try {
-        const { data } = await supabase.functions.invoke('get-video-thumbnail', {
-          body: { url: sub.submission_url, platform: sub.platform }
-        });
-        const thumb = data?.thumbnailUrl || null;
-        thumbnailCache.set(cacheKey, thumb);
-        results[cacheKey] = thumb;
-      } catch {
-        thumbnailCache.set(cacheKey, null);
-        results[cacheKey] = null;
+  // Fetch uncached in parallel batches of 6
+  const CONCURRENCY = 6;
+  for (let i = 0; i < uncached.length; i += CONCURRENCY) {
+    const batch = uncached.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.allSettled(
+      batch.map(async (sub) => {
+        try {
+          const { data } = await supabase.functions.invoke('get-video-thumbnail', {
+            body: { url: sub.submission_url, platform: sub.platform }
+          });
+          const thumb = data?.thumbnailUrl || null;
+          thumbnailCache.set(sub.submission_url, thumb);
+          return { url: sub.submission_url, thumb };
+        } catch {
+          thumbnailCache.set(sub.submission_url, null);
+          return { url: sub.submission_url, thumb: null };
+        }
+      })
+    );
+    for (const r of batchResults) {
+      if (r.status === 'fulfilled') {
+        results[r.value.url] = r.value.thumb;
       }
-    })
-  );
+    }
+  }
 
   return results;
 }

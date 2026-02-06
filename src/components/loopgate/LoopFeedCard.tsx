@@ -123,8 +123,12 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                   loading="lazy"
                 />
               ) : (
-                <div className="w-full aspect-[16/9] bg-surface-2 flex items-center justify-center">
-                  <Play className="w-6 h-6 text-muted-foreground/40" />
+                <div className="w-full aspect-[16/9] bg-surface-2 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_1.5s_infinite]" 
+                    style={{ animation: 'shimmer 1.5s infinite', backgroundSize: '200% 100%' }} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Play className="w-5 h-5 text-muted-foreground/30" />
+                  </div>
                 </div>
               )}
               {/* Hover play */}
