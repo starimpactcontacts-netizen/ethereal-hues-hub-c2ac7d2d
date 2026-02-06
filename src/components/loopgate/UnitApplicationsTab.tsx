@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Sparkles } from "lucide-react";
+import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Sparkles, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,7 +8,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useCrewEditorSystem, EditorTier, EditorApplication } from "@/hooks/useCrewEditorSystem";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatDistanceToNow } from "date-fns";
+import { LoopedX } from "./LoopedX";
 
 interface UnitApplicationsTabProps {
   crewId: string;
@@ -17,6 +19,7 @@ interface UnitApplicationsTabProps {
 
 export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicationsTabProps) {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const {
     tiers,
     applications,
@@ -136,7 +139,7 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
   const TIER_ICONS = ["⭐", "🌟", "💎", "👑", "🔥", "⚡", "🏆", "✨", "🎯", "💀"];
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-5 pb-20">
       {/* My Editor Status */}
       {myEditorStatus && (
         <motion.div
@@ -364,44 +367,51 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
         </div>
       )}
 
-      {/* Apply Modal */}
+      {/* Apply Modal - Mobile-optimized bottom sheet */}
       <AnimatePresence>
         {showApplyModal && selectedTier && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center"
             onClick={() => setShowApplyModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-card border border-border rounded-xl p-6 w-full max-w-md"
+              initial={{ y: isMobile ? 200 : 0, scale: isMobile ? 1 : 0.95, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              exit={{ y: isMobile ? 200 : 0, scale: isMobile ? 1 : 0.95, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[90vh] overflow-y-auto overscroll-contain"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <span className="text-2xl">{selectedTier.icon}</span>
-                Apply for {selectedTier.name}
-              </h3>
+              {/* Fixed Header */}
+              <div className="sticky top-0 bg-card border-b border-border/50 p-4 flex items-center justify-between z-10">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <span className="text-xl">{selectedTier.icon}</span>
+                  Apply for {selectedTier.name}
+                </h3>
+                <button onClick={() => setShowApplyModal(false)} className="p-1.5 rounded-lg hover:bg-muted/50">
+                  <LoopedX className="w-5 h-5" />
+                </button>
+              </div>
 
-              {selectedTier.requirements && (
-                <div className="mb-4 text-sm bg-muted/30 rounded-lg p-3">
-                  <p className="font-medium mb-1">Requirements:</p>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {selectedTier.requirements}
-                  </p>
-                </div>
-              )}
+              <div className="p-4 space-y-4">
+                {selectedTier.requirements && (
+                  <div className="text-sm bg-muted/20 border border-border/50 rounded-lg p-3">
+                    <p className="font-medium mb-1 text-xs uppercase tracking-wider text-muted-foreground">Requirements</p>
+                    <p className="text-muted-foreground whitespace-pre-wrap text-[13px]">
+                      {selectedTier.requirements}
+                    </p>
+                  </div>
+                )}
 
-              <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Platform</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Platform</label>
                   <select
                     value={platform}
                     onChange={(e) => setPlatform(e.target.value)}
-                    className="w-full bg-background border border-border rounded-lg p-2"
+                    className="w-full bg-background border border-border rounded-lg p-2.5 text-sm"
                   >
                     <option value="tiktok">TikTok</option>
                     <option value="youtube">YouTube</option>
@@ -412,16 +422,17 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Submission URL</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Submission URL</label>
                   <Input
                     value={submissionUrl}
                     onChange={(e) => setSubmissionUrl(e.target.value)}
                     placeholder="https://..."
+                    className="h-10"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Message (optional)</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Message (optional)</label>
                   <Textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -430,7 +441,7 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
                     onClick={() => setShowApplyModal(false)}
@@ -441,10 +452,10 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                   <Button
                     onClick={handleApply}
                     disabled={!submissionUrl || submitting}
-                    className="flex-1"
+                    className="flex-1 text-black font-semibold"
                     style={{ backgroundColor: selectedTier.color }}
                   >
-                    {submitting ? "Submitting..." : "Submit Application"}
+                    {submitting ? "Submitting..." : "Submit"}
                   </Button>
                 </div>
               </div>
@@ -453,54 +464,63 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
         )}
       </AnimatePresence>
 
-      {/* Tier Editor Modal */}
+      {/* Tier Editor Modal - Mobile-optimized */}
       <AnimatePresence>
         {showTierEditor && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/80 flex items-end sm:items-center justify-center"
             onClick={() => setShowTierEditor(false)}
           >
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-card border border-border rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
+              initial={{ y: isMobile ? 200 : 0, scale: isMobile ? 1 : 0.95, opacity: 0 }}
+              animate={{ y: 0, scale: 1, opacity: 1 }}
+              exit={{ y: isMobile ? 200 : 0, scale: isMobile ? 1 : 0.95, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[90vh] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold mb-4">
-                {editingTier ? "Edit Tier" : "Create Tier"}
-              </h3>
+              {/* Fixed Header */}
+              <div className="sticky top-0 bg-card border-b border-border/50 p-4 flex items-center justify-between z-10 shrink-0">
+                <h3 className="text-lg font-bold">
+                  {editingTier ? "Edit Tier" : "Create Tier"}
+                </h3>
+                <button onClick={() => { setShowTierEditor(false); resetTierForm(); }} className="p-1.5 rounded-lg hover:bg-muted/50">
+                  <LoopedX className="w-5 h-5" />
+                </button>
+              </div>
 
-              <div className="space-y-4">
+              <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Tier Name</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Tier Name</label>
                   <Input
                     value={tierName}
                     onChange={(e) => setTierName(e.target.value)}
                     placeholder="e.g., Phase, Nexus, Apex"
+                    className="h-10"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Description</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Description</label>
                   <Input
                     value={tierDescription}
                     onChange={(e) => setTierDescription(e.target.value)}
                     placeholder="Short description of this tier"
+                    className="h-10"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Icon</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Icon</label>
                   <div className="flex flex-wrap gap-2">
                     {TIER_ICONS.map((icon) => (
                       <button
                         key={icon}
                         onClick={() => setTierIcon(icon)}
-                        className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-all ${
+                        className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-all touch-manipulation active:scale-95 ${
                           tierIcon === icon
                             ? "bg-gold/20 ring-2 ring-gold"
                             : "bg-muted hover:bg-muted/80"
@@ -513,7 +533,7 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Color</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -524,13 +544,13 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                     <Input
                       value={tierColor}
                       onChange={(e) => setTierColor(e.target.value)}
-                      className="flex-1"
+                      className="flex-1 h-10"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Requirements</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Requirements</label>
                   <Textarea
                     value={tierRequirements}
                     onChange={(e) => setTierRequirements(e.target.value)}
@@ -540,15 +560,16 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1 block">Perks</label>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Perks</label>
                   <div className="flex gap-2 mb-2">
                     <Input
                       value={newPerk}
                       onChange={(e) => setNewPerk(e.target.value)}
                       placeholder="Add a perk..."
+                      className="h-10"
                       onKeyDown={(e) => e.key === "Enter" && addPerk()}
                     />
-                    <Button onClick={addPerk} size="sm">
+                    <Button onClick={addPerk} size="sm" className="h-10 px-3">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
@@ -557,7 +578,7 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                       <Badge
                         key={i}
                         variant="secondary"
-                        className="cursor-pointer hover:bg-destructive/20"
+                        className="cursor-pointer hover:bg-destructive/20 touch-manipulation"
                         onClick={() => removePerk(i)}
                       >
                         {perk} ×
@@ -565,38 +586,40 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                     ))}
                   </div>
                 </div>
+              </div>
 
-                <div className="flex gap-2 pt-4">
-                  {editingTier && (
-                    <Button
-                      variant="destructive"
-                      onClick={async () => {
-                        await deleteTier(editingTier.id);
-                        setShowTierEditor(false);
-                        resetTierForm();
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  )}
+              {/* Fixed Footer */}
+              <div className="p-4 border-t border-border/50 flex gap-2 shrink-0">
+                {editingTier && (
                   <Button
-                    variant="outline"
-                    onClick={() => {
+                    variant="destructive"
+                    size="sm"
+                    onClick={async () => {
+                      await deleteTier(editingTier.id);
                       setShowTierEditor(false);
                       resetTierForm();
                     }}
-                    className="flex-1"
                   >
-                    Cancel
+                    Delete
                   </Button>
-                  <Button
-                    onClick={handleSaveTier}
-                    disabled={!tierName}
-                    className="flex-1 bg-gold text-black hover:bg-gold/90"
-                  >
-                    {editingTier ? "Save Changes" : "Create Tier"}
-                  </Button>
-                </div>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowTierEditor(false);
+                    resetTierForm();
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveTier}
+                  disabled={!tierName}
+                  className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
+                >
+                  {editingTier ? "Save" : "Create"}
+                </Button>
               </div>
             </motion.div>
           </motion.div>
