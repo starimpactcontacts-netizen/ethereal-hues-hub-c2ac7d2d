@@ -9,9 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
@@ -124,40 +121,34 @@ function ConversationItem({ conv, userId, onDelete, onLabel }: ConversationItemP
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="text-xs">
-                <Tag className="w-3.5 h-3.5 mr-2" />
-                {myLabel ? 'Change Label' : 'Add Label'}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-32">
-                {LABELS.map((label) => (
-                  <DropdownMenuItem
-                    key={label}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onLabel(conv.id, label);
-                    }}
-                    className={`text-xs ${myLabel === label ? 'bg-primary/10 text-primary' : ''}`}
-                  >
-                    {label}
-                  </DropdownMenuItem>
-                ))}
-                {myLabel && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onLabel(conv.id, null);
-                      }}
-                      className="text-xs text-muted-foreground"
-                    >
-                      Remove Label
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
+            <div className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              <Tag className="w-3 h-3 inline mr-1.5" />
+              Label
+            </div>
+            {LABELS.map((label) => (
+              <DropdownMenuItem
+                key={label}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLabel(conv.id, label);
+                }}
+                className={`text-xs ${myLabel === label ? 'bg-primary/10 text-primary' : ''}`}
+              >
+                {label}
+                {myLabel === label && <span className="ml-auto text-primary">✓</span>}
+              </DropdownMenuItem>
+            ))}
+            {myLabel && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onLabel(conv.id, null);
+                }}
+                className="text-xs text-muted-foreground"
+              >
+                Remove Label
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={(e) => {
