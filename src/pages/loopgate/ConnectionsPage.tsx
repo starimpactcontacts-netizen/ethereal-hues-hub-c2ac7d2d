@@ -1,10 +1,11 @@
- import { useState } from 'react';
- import { useNavigate } from 'react-router-dom';
- import { ArrowLeft, UserPlus, Users, Clock, Check, X, Loader2 } from 'lucide-react';
- import { useConnections } from '@/hooks/useConnections';
- import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
- import { Button } from '@/components/ui/button';
- import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, UserPlus, Users, Clock, Check, X, Loader2 } from 'lucide-react';
+import { useConnections } from '@/hooks/useConnections';
+import { useStartConversation } from '@/hooks/useDirectMessages';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
  
  export default function ConnectionsPage() {
    const navigate = useNavigate();
@@ -19,8 +20,10 @@
      cancelRequest,
      removeConnection,
    } = useConnections();
-   const [activeTab, setActiveTab] = useState<'connections' | 'requests' | 'sent'>('connections');
-   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const { startConversation } = useStartConversation();
+    const [activeTab, setActiveTab] = useState<'connections' | 'requests' | 'sent'>('connections');
+    const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [messageLoading, setMessageLoading] = useState<string | null>(null);
  
    const handleAccept = async (id: string) => {
      setActionLoading(id);
@@ -144,14 +147,21 @@
                      </button>
                      <p className="text-xs text-muted-foreground">@{c.profile?.username}</p>
                    </div>
-                   <Button
-                     variant="ghost"
-                     size="sm"
-                     onClick={() => navigate(`/messages?to=${c.profile?.id}`)}
-                     className="text-xs"
-                   >
-                     Message
-                   </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={messageLoading === c.profile?.id}
+                      onClick={async () => {
+                        if (!c.profile?.id) return;
+                        setMessageLoading(c.profile.id);
+                        const convId = await startConversation(c.profile.id);
+                        setMessageLoading(null);
+                        if (convId) navigate(`/messages/${convId}`);
+                      }}
+                      className="text-xs"
+                    >
+                      {messageLoading === c.profile?.id ? <Loader2 size={12} className="animate-spin" /> : 'Message'}
+                    </Button>
                  </div>
                ))
              )
