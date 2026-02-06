@@ -26,9 +26,11 @@ export interface PollVote {
   created_at: string;
 }
 
-export function useUnitBot(crewId: string | undefined, channelId: string | undefined) {
+export function useUnitBot(crewId: string | undefined, channelId: string | undefined, botName?: string) {
   const { user, profile } = useAuth();
   const [sending, setSending] = useState(false);
+
+  const displayName = botName || "Unit Bot";
 
   // Post a bot message to the channel
   const postBotMessage = useCallback(async (text: string) => {
@@ -40,8 +42,8 @@ export function useUnitBot(crewId: string | undefined, channelId: string | undef
         channel_id: channelId,
         crew_id: crewId,
         user_id: user.id,
-        username: "Unit Bot",
-        display_name: "Unit Bot",
+        username: displayName,
+        display_name: displayName,
         avatar_url: null,
         message_text: text,
         is_bot: true,
@@ -54,7 +56,7 @@ export function useUnitBot(crewId: string | undefined, channelId: string | undef
       return null;
     }
     return data;
-  }, [crewId, channelId, user]);
+  }, [crewId, channelId, user, displayName]);
 
   // Create a poll
   const createPoll = useCallback(async (title: string, options: string[], durationHours?: number) => {
