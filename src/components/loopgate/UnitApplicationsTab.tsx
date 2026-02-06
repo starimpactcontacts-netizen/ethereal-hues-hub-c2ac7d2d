@@ -540,13 +540,49 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
               onClick={(e) => e.stopPropagation()}
             >
               {/* Fixed Header */}
-              <div className="sticky top-0 bg-card border-b border-border/50 p-4 flex items-center justify-between z-10 shrink-0">
-                <h3 className="text-lg font-bold">
-                  {editingTier ? "Edit Tier" : "Create Tier"}
-                </h3>
-                <button onClick={() => { setShowTierEditor(false); resetTierForm(); }} className="p-1.5 rounded-lg hover:bg-muted/50">
-                  <LoopedX className="w-5 h-5" />
-                </button>
+              <div className="sticky top-0 bg-card border-b border-border/50 p-4 z-10 shrink-0 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold">
+                    {editingTier ? "Edit Tier" : "Create Tier"}
+                  </h3>
+                  <button onClick={() => { setShowTierEditor(false); resetTierForm(); }} className="p-1.5 rounded-lg hover:bg-muted/50">
+                    <LoopedX className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  {editingTier && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        await deleteTier(editingTier.id);
+                        setShowTierEditor(false);
+                        resetTierForm();
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowTierEditor(false);
+                      resetTierForm();
+                    }}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveTier}
+                    disabled={!tierName}
+                    className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
+                  >
+                    {editingTier ? "Save" : "Create"}
+                  </Button>
+                </div>
               </div>
 
               <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4">
@@ -645,39 +681,6 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                 </div>
               </div>
 
-              {/* Fixed Footer */}
-              <div className="p-4 border-t border-border/50 flex gap-2 shrink-0">
-                {editingTier && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={async () => {
-                      await deleteTier(editingTier.id);
-                      setShowTierEditor(false);
-                      resetTierForm();
-                    }}
-                  >
-                    Delete
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowTierEditor(false);
-                    resetTierForm();
-                  }}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveTier}
-                  disabled={!tierName}
-                  className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
-                >
-                  {editingTier ? "Save" : "Create"}
-                </Button>
-              </div>
             </motion.div>
           </motion.div>
         )}
