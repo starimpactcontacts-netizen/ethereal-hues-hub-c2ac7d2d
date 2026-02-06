@@ -51,7 +51,20 @@ export function useCrewChannels(crewId: string | undefined) {
       .order("channel_order", { ascending: true });
 
     if (!error && data) {
-      setChannels(data as CrewChannel[]);
+      // If no channels exist, seed defaults via DB function
+      if (data.length === 0) {
+        await supabase.rpc("ensure_default_channels", { p_crew_id: crewId });
+        // Re-fetch after seeding
+        const { data: seeded } = await supabase
+          .from("crew_channels")
+          .select("*")
+          .eq("crew_id", crewId)
+          .order("category_order", { ascending: true })
+          .order("channel_order", { ascending: true });
+        setChannels((seeded || []) as CrewChannel[]);
+      } else {
+        setChannels(data as CrewChannel[]);
+      }
     }
     setLoading(false);
   }, [crewId]);
