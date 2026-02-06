@@ -58,9 +58,9 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
       <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
         <SheetPrimitive.Close className="absolute right-4 top-4 z-10 w-8 h-8 rounded-sm ring-offset-background transition-all hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none flex items-center justify-center">
           {/* Double X - Loopgate signature close */}
-          <div className="relative">
-            <X className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
-            <X className="h-5 w-5 text-foreground absolute inset-0" strokeWidth={2} />
+          <div className="relative w-5 h-5">
+            <X className="h-5 w-5 text-muted-foreground/50 absolute -top-[1px] -left-[1px]" strokeWidth={2} />
+            <X className="h-5 w-5 text-foreground absolute top-[1px] left-[1px]" strokeWidth={2} />
           </div>
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
