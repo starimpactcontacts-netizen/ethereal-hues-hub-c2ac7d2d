@@ -1,16 +1,17 @@
 import { useNavigate } from "react-router-dom";
-import { Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, ChevronDown, ChevronUp, Swords } from "lucide-react";
+import { Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, ChevronDown, ChevronUp, Swords, Video } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUnifiedThumbnail } from "@/lib/thumbnail";
 import ThumbnailImage from "./ThumbnailImage";
 import FeedInlineComments from "./FeedInlineComments";
+import VerifiedBadge from "./VerifiedBadge";
 
 export interface LoopFeedItem {
   id: string;
   rawId: string;
-  type: 'arena' | 'review' | 'battle';
+  type: 'arena' | 'review' | 'battle' | 'judge_video';
   submission_url: string;
   platform: string;
   user_id: string;
@@ -39,6 +40,10 @@ export interface LoopFeedItem {
   opponent_score?: number | null;
   winner_id?: string | null;
   battle_status?: string;
+  // Judge video specific
+  video_title?: string | null;
+  current_views?: number | null;
+  is_verified?: boolean;
 }
 
 const platformLabels: Record<string, string> = {
@@ -72,7 +77,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
     item.thumbnail_url,
   );
 
-  const displayTitle = item.custom_title || item.event_title || 'Untitled Edit';
+  const displayTitle = item.type === 'judge_video' ? (item.video_title || 'Judge Rating Video') : (item.custom_title || item.event_title || 'Untitled Edit');
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true });
 
   const handleShare = (e: React.MouseEvent) => {
@@ -112,6 +117,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
               >
                 @{item.username}
               </button>
+              {item.is_verified && <VerifiedBadge size="sm" />}
               <span className="text-muted-foreground text-[10px] shrink-0">· {timeAgo}</span>
               <div className="flex-1" />
               {item.type === 'arena' ? (
@@ -123,6 +129,11 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                 <span className="bg-red-500/15 text-red-400 text-[8px] font-bold px-1 py-px rounded flex items-center gap-0.5 shrink-0">
                   <span className="font-display">⚔</span>
                   1v1
+                </span>
+              ) : item.type === 'judge_video' ? (
+                <span className="bg-purple-500/15 text-purple-400 text-[8px] font-bold px-1 py-px rounded flex items-center gap-0.5 shrink-0">
+                  <Video className="w-2 h-2" />
+                  JUDGE
                 </span>
               ) : (
                 <span className="bg-purple-500/15 text-purple-400 text-[8px] font-bold px-1 py-px rounded flex items-center gap-0.5 shrink-0">
@@ -158,9 +169,14 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                 )}
               </div>
             ) : (
-              <p className="text-[12px] text-foreground/90 leading-tight mb-1 line-clamp-1">
-                {displayTitle}
-              </p>
+              <div className="mb-1">
+                <p className="text-[12px] text-foreground/90 leading-tight line-clamp-1">
+                  {displayTitle}
+                </p>
+                {item.type === 'judge_video' && item.current_views != null && item.current_views > 0 && (
+                  <p className="text-[10px] text-muted-foreground">{item.current_views.toLocaleString()} views</p>
+                )}
+              </div>
             )}
 
             {/* Thumbnail / VS Clash */}
