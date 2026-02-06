@@ -17,20 +17,29 @@ export type Database = {
       active_sessions: {
         Row: {
           created_at: string | null
+          device_name: string | null
           id: string
+          ip_address: string | null
           last_seen: string | null
+          user_agent: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
+          device_name?: string | null
           id?: string
+          ip_address?: string | null
           last_seen?: string | null
+          user_agent?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
+          device_name?: string | null
           id?: string
+          ip_address?: string | null
           last_seen?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2821,6 +2830,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           global_index_score: number | null
+          has_password: boolean | null
           house_changed_at: string | null
           house_id: string | null
           id: string
@@ -2839,6 +2849,7 @@ export type Database = {
           primary_crew_changed_at: string | null
           profile_bg_color: string | null
           profile_bg_image_url: string | null
+          recovery_code: string | null
           region: string | null
           review_style: string | null
           rules_accepted: boolean | null
@@ -2870,6 +2881,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           global_index_score?: number | null
+          has_password?: boolean | null
           house_changed_at?: string | null
           house_id?: string | null
           id: string
@@ -2888,6 +2900,7 @@ export type Database = {
           primary_crew_changed_at?: string | null
           profile_bg_color?: string | null
           profile_bg_image_url?: string | null
+          recovery_code?: string | null
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
@@ -2919,6 +2932,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           global_index_score?: number | null
+          has_password?: boolean | null
           house_changed_at?: string | null
           house_id?: string | null
           id?: string
@@ -2937,6 +2951,7 @@ export type Database = {
           primary_crew_changed_at?: string | null
           profile_bg_color?: string | null
           profile_bg_image_url?: string | null
+          recovery_code?: string | null
           region?: string | null
           review_style?: string | null
           rules_accepted?: boolean | null
