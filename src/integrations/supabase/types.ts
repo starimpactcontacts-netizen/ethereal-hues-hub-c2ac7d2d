@@ -1450,6 +1450,7 @@ export type Database = {
       }
       event_participations: {
         Row: {
+          custom_title: string | null
           event_id: string
           final_rank: number | null
           id: string
@@ -1468,6 +1469,7 @@ export type Database = {
           xp_awarded: number | null
         }
         Insert: {
+          custom_title?: string | null
           event_id: string
           final_rank?: number | null
           id?: string
@@ -1486,6 +1488,7 @@ export type Database = {
           xp_awarded?: number | null
         }
         Update: {
+          custom_title?: string | null
           event_id?: string
           final_rank?: number | null
           id?: string
@@ -3228,6 +3231,7 @@ export type Database = {
         Row: {
           created_at: string | null
           cumulative_qoi: number | null
+          custom_title: string | null
           event_id: string
           id: string
           impact_score: number | null
@@ -3249,6 +3253,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           cumulative_qoi?: number | null
+          custom_title?: string | null
           event_id: string
           id?: string
           impact_score?: number | null
@@ -3270,6 +3275,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           cumulative_qoi?: number | null
+          custom_title?: string | null
           event_id?: string
           id?: string
           impact_score?: number | null
@@ -3302,6 +3308,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bracket_position: number | null
+          custom_title: string | null
           eliminated_at: string | null
           final_rank: number | null
           id: string
@@ -3320,6 +3327,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bracket_position?: number | null
+          custom_title?: string | null
           eliminated_at?: string | null
           final_rank?: number | null
           id?: string
@@ -3338,6 +3346,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bracket_position?: number | null
+          custom_title?: string | null
           eliminated_at?: string | null
           final_rank?: number | null
           id?: string

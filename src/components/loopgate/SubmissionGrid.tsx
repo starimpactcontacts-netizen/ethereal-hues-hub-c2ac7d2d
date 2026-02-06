@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight, ImagePlus, Upload, Link as LinkIcon } from "lucide-react";
+import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight, ImagePlus, Upload, Link as LinkIcon, Pencil, Check, X } from "lucide-react";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
@@ -253,6 +253,8 @@ function SubmissionDetailModal({
   const [thumbMode, setThumbMode] = useState<'file' | 'url'>('file');
   const [thumbUrl, setThumbUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState(submission?.custom_title || '');
 
   if (!submission) return null;
 
@@ -271,6 +273,20 @@ function SubmissionDetailModal({
     toast.success('Thumbnail updated!');
     setShowThumbInput(false);
     setThumbUrl('');
+    onThumbnailUpdated();
+  };
+
+  const saveTitle = async () => {
+    if (!submission) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from(tableName)
+      .update({ custom_title: titleValue.trim() || null } as any)
+      .eq('id', submission.id);
+    setSaving(false);
+    if (error) { toast.error('Failed to save title'); return; }
+    toast.success('Title updated!');
+    setEditingTitle(false);
     onThumbnailUpdated();
   };
 
@@ -413,13 +429,54 @@ function SubmissionDetailModal({
         
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Event title */}
+          {/* Custom title / edit name */}
+          {userId && (
+            <div className="flex items-center gap-2">
+              {editingTitle ? (
+                <div className="flex-1 flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={titleValue}
+                    onChange={e => setTitleValue(e.target.value)}
+                    placeholder={submission.event?.title || 'Name your edit...'}
+                    className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
+                    autoFocus
+                    onKeyDown={e => { if (e.key === 'Enter') saveTitle(); if (e.key === 'Escape') setEditingTitle(false); }}
+                  />
+                  <button onClick={saveTitle} disabled={saving} className="p-1.5 rounded bg-gold/20 text-gold hover:bg-gold/30">
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button onClick={() => setEditingTitle(false)} className="p-1.5 rounded hover:bg-muted/50 text-muted-foreground">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1 flex items-center gap-2">
+                  <span className="font-semibold text-sm text-foreground">
+                    {submission.custom_title || submission.event?.title || 'Untitled Edit'}
+                  </span>
+                  <button onClick={() => { setTitleValue(submission.custom_title || ''); setEditingTitle(true); }} className="p-1 rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground">
+                    <Pencil className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+          {!userId && (
+            <div>
+              <span className="font-semibold text-sm">
+                {submission.custom_title || submission.event?.title || 'Unknown Event'}
+              </span>
+            </div>
+          )}
+
+          {/* Event link */}
           <div>
             <Link 
               to={`/event/${submission.event_id}`}
-              className="font-semibold text-sm hover:text-gold transition-colors"
+              className="text-xs text-muted-foreground hover:text-gold transition-colors"
             >
-              {submission.event?.title || 'Unknown Event'}
+              {submission.event?.title || 'Unknown Event'} →
             </Link>
             <div className="flex items-center gap-2 mt-1">
               <span className={`text-[10px] px-2 py-0.5 uppercase tracking-wider rounded bg-gradient-to-r ${gradient} text-white`}>
