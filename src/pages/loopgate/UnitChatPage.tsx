@@ -37,10 +37,105 @@ interface Member {
 }
 
 const CHANNEL_ICONS: Record<string, React.ReactNode> = {
-  text: <Hash className="w-5 h-5 text-muted-foreground/60" />,
-  announcement: <Megaphone className="w-5 h-5 text-muted-foreground/60" />,
-  rules: <BookOpen className="w-5 h-5 text-muted-foreground/60" />,
+  text: <Hash className="w-4 h-4 text-muted-foreground/60" />,
+  announcement: <Megaphone className="w-4 h-4 text-muted-foreground/60" />,
+  rules: <BookOpen className="w-4 h-4 text-muted-foreground/60" />,
 };
+
+// Discord-style collapsible category for mobile
+function MobileChannelCategory({
+  category,
+  channels,
+  activeChannelId,
+  unreadCounts,
+  onSelectChannel,
+}: {
+  category: string;
+  channels: CrewChannel[];
+  activeChannelId: string | null;
+  unreadCounts: Record<string, number>;
+  onSelectChannel: (id: string) => void;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  const totalUnread = channels.reduce((sum, ch) => sum + (unreadCounts[ch.id] || 0), 0);
+
+  return (
+    <div className="mt-1">
+      {/* Category header - Discord style */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="w-full flex items-center gap-0.5 px-3 py-1 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground/60 active:text-muted-foreground touch-manipulation"
+      >
+        <ChevronRight
+          className={cn(
+            "w-3 h-3 transition-transform duration-150",
+            !collapsed && "rotate-90"
+          )}
+        />
+        <span className="flex-1 text-left">{category}</span>
+        {collapsed && totalUnread > 0 && (
+          <span className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+            {totalUnread}
+          </span>
+        )}
+      </button>
+
+      {/* Channel items */}
+      <AnimatePresence initial={false}>
+        {!collapsed && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.12 }}
+            className="overflow-hidden"
+          >
+            {channels
+              .sort((a, b) => a.channel_order - b.channel_order)
+              .map((channel) => {
+                const unread = unreadCounts[channel.id] || 0;
+                const icon = CHANNEL_ICONS[channel.channel_type] || CHANNEL_ICONS.text;
+                const isActive = channel.id === activeChannelId;
+
+                return (
+                  <button
+                    key={channel.id}
+                    onClick={() => onSelectChannel(channel.id)}
+                    className={cn(
+                      "w-full flex items-center gap-2 px-3 py-1.5 ml-1 mr-2 rounded-md transition-colors active:scale-[0.98] touch-manipulation",
+                      isActive
+                        ? "bg-muted/40 text-foreground"
+                        : unread > 0
+                          ? "text-foreground"
+                          : "text-muted-foreground/60"
+                    )}
+                  >
+                    <span className="shrink-0">{icon}</span>
+                    <span
+                      className={cn(
+                        "flex-1 text-left text-[13px] truncate",
+                        unread > 0 && !isActive && "font-semibold text-foreground"
+                      )}
+                    >
+                      {channel.name}
+                    </span>
+                    {channel.is_locked && (
+                      <Lock className="w-3 h-3 text-muted-foreground/30 shrink-0" />
+                    )}
+                    {unread > 0 && !isActive && (
+                      <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[18px] text-center">
+                        {unread > 99 ? "99+" : unread}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function UnitChatPage() {
   const { crewId } = useParams();
@@ -221,29 +316,25 @@ export default function UnitChatPage() {
               transition={{ duration: 0.15 }}
               className="flex flex-col h-full"
             >
-              {/* Mobile Channels Header */}
-              <div className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0">
-                <div className="px-4 py-3 flex items-center gap-3">
-                  <button
-                    onClick={() => navigate(`/units/${crewId}`)}
-                    className="p-2 rounded-lg hover:bg-muted/50 transition-colors active:scale-95 touch-manipulation"
-                  >
-                    <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-                  </button>
-                  <div className="flex-1">
-                    <h2 className="font-semibold text-sm">{crew.name}</h2>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span>{onlineMembers.length} online</span>
-                      <span className="mx-1">·</span>
-                      <span>{channels.length} channels</span>
-                    </div>
-                  </div>
+              {/* Discord-style compact header */}
+              <div className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0 px-3 py-2.5 flex items-center gap-2.5">
+                <button
+                  onClick={() => navigate(`/units/${crewId}`)}
+                  className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors active:scale-95 touch-manipulation"
+                >
+                  <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-bold text-[15px] truncate">{crew.name}</h2>
+                </div>
+                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span>{onlineMembers.length}</span>
                 </div>
               </div>
 
-              {/* Mobile Channel List */}
-              <div className="flex-1 overflow-y-auto">
+              {/* Discord-style channel list */}
+              <div className="flex-1 overflow-y-auto overscroll-contain py-1">
                 {Object.entries(channelsByCategory)
                   .sort(([, a], [, b]) => {
                     const aOrder = a[0]?.category_order ?? 99;
@@ -251,55 +342,14 @@ export default function UnitChatPage() {
                     return aOrder - bOrder;
                   })
                   .map(([category, categoryChannels]) => (
-                    <div key={category} className="py-2">
-                      <h4 className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground/60 px-4 mb-1.5">
-                        {category}
-                      </h4>
-                      {categoryChannels
-                        .sort((a, b) => a.channel_order - b.channel_order)
-                        .map((channel) => {
-                          const unread = unreadCounts[channel.id] || 0;
-                          const icon = CHANNEL_ICONS[channel.channel_type] || CHANNEL_ICONS.text;
-                          const isActive = channel.id === activeChannelId;
-
-                          return (
-                            <button
-                              key={channel.id}
-                              onClick={() => handleSelectChannel(channel.id)}
-                              className={cn(
-                                "w-full flex items-center gap-3 px-4 py-3 transition-colors active:bg-muted/40 touch-manipulation",
-                                isActive ? "bg-muted/20" : "hover:bg-muted/10"
-                              )}
-                            >
-                              <span className="shrink-0">{icon}</span>
-                              <div className="flex-1 min-w-0 text-left">
-                                <div className="flex items-center gap-1.5">
-                                  <span className={cn(
-                                    "text-sm truncate",
-                                    unread > 0 ? "font-semibold text-foreground" : "text-muted-foreground"
-                                  )}>
-                                    {channel.name}
-                                  </span>
-                                  {channel.is_locked && <Lock className="w-3 h-3 text-muted-foreground/40 shrink-0" />}
-                                </div>
-                                {channel.description && (
-                                  <p className="text-[11px] text-muted-foreground/40 truncate mt-0.5">
-                                    {channel.description}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                {unread > 0 && (
-                                  <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[18px] text-center">
-                                    {unread > 99 ? "99+" : unread}
-                                  </span>
-                                )}
-                                <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
-                              </div>
-                            </button>
-                          );
-                        })}
-                    </div>
+                    <MobileChannelCategory
+                      key={category}
+                      category={category}
+                      channels={categoryChannels}
+                      activeChannelId={activeChannelId}
+                      unreadCounts={unreadCounts}
+                      onSelectChannel={handleSelectChannel}
+                    />
                   ))}
               </div>
             </motion.div>
