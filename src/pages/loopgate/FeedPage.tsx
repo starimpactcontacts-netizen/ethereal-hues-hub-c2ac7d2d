@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { fetchThumbnailsBatch } from "@/hooks/useThumbnail";
 import LoopFeedCard, { type LoopFeedItem } from "@/components/loopgate/LoopFeedCard";
 import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
-import FeedComments from "@/components/loopgate/FeedComments";
 
 const BATCH_SIZE = 20;
 
@@ -19,9 +18,8 @@ export default function FeedPage() {
   const seenUrls = useRef(new Set<string>());
   const offsetRef = useRef({ arena: 0, review: 0 });
 
-  // Player + comments state
   const [playerItem, setPlayerItem] = useState<LoopFeedItem | null>(null);
-  const [commentsItem, setCommentsItem] = useState<LoopFeedItem | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchFeed = useCallback(async (isLoadMore = false) => {
     if (isLoadMore && (loadingMore || !hasMore)) return;
@@ -193,7 +191,6 @@ export default function FeedPage() {
         setFeedItems(newItems);
       }
 
-      // Batch fetch thumbnails for items that don't have a custom one
       const needThumbnails = newItems.filter(i => !i.thumbnail_url);
       if (needThumbnails.length > 0) {
         fetchThumbnailsBatch(needThumbnails.map(i => ({ submission_url: i.submission_url, platform: i.platform })))
@@ -216,7 +213,6 @@ export default function FeedPage() {
 
   useEffect(() => { fetchFeed(false); }, []);
 
-  // Infinite scroll
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
     if (target.scrollHeight - target.scrollTop - target.clientHeight < 400 && hasMore && !loadingMore) {
@@ -255,39 +251,40 @@ export default function FeedPage() {
     >
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="flex items-center gap-3 px-4 py-3 max-w-2xl mx-auto">
+        <div className="flex items-center gap-3 px-4 py-2.5 max-w-2xl mx-auto">
           <button
             onClick={() => navigate(-1)}
-            className="w-9 h-9 rounded-full hover:bg-muted/50 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full hover:bg-muted/50 flex items-center justify-center transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
           <div className="flex items-center gap-2">
-            <Flame className="w-5 h-5 text-primary" />
+            <Flame className="w-5 h-5 text-gold" />
             <h1 className="text-lg font-bold text-foreground tracking-tight">The Loop</h1>
           </div>
         </div>
       </div>
 
-      {/* Feed */}
-      <div className="max-w-2xl mx-auto px-3 py-3 space-y-3">
+      {/* Twitter-style feed — no gaps between cards, border-separated */}
+      <div className="max-w-2xl mx-auto">
         {feedItems.map(item => (
           <LoopFeedCard
             key={item.id}
             item={item}
+            isExpanded={expandedId === item.id}
+            onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)}
             onOpenPlayer={() => setPlayerItem(item)}
-            onOpenComments={() => setCommentsItem(item)}
           />
         ))}
 
         {loadingMore && (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-6 border-b border-border">
             <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
           </div>
         )}
 
         {!hasMore && feedItems.length > 0 && (
-          <p className="text-center text-xs text-muted-foreground py-6">You've seen it all 🔥</p>
+          <p className="text-center text-xs text-muted-foreground py-8">You've seen it all 🔥</p>
         )}
       </div>
 
@@ -302,19 +299,6 @@ export default function FeedPage() {
           submissionType={playerItem.type}
           username={playerItem.username}
         />
-      )}
-
-      {/* Comments Sheet */}
-      {commentsItem && (
-        <div className="fixed inset-0 z-[90]">
-          <FeedComments
-            isOpen={true}
-            onClose={() => setCommentsItem(null)}
-            submissionId={commentsItem.rawId}
-            submissionType={commentsItem.type}
-            username={commentsItem.username}
-          />
-        </div>
       )}
     </div>
   );
