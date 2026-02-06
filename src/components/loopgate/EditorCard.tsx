@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Plus } from "lucide-react";
 import { RealEditor } from "@/hooks/useRealData";
 import VerifiedBadge from "./VerifiedBadge";
 import AuthorityBadge from "./AuthorityBadge";
@@ -6,6 +7,7 @@ import FoundingBadge from "./FoundingBadge";
 import CrewBadge from "./CrewBadge";
 import LevelBadge from "./LevelBadge";
 import ConnectButton from "./ConnectButton";
+import { useAuth } from "@/hooks/useAuth";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 
 // Get class letter from GQT score or level
@@ -52,11 +54,13 @@ function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | nu
 
 export default function EditorCard({ editor }: EditorCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isTop10 = (editor.rank || 999) <= 10;
   const authorityRole = getAuthorityRole(editor.roles);
   const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
   const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
   const classColorStyle = getClassColors(classLetter, hasTakenGQT);
+  const isOwnProfile = user?.id === editor.id;
 
   const handleClick = () => {
     navigate(`/editor/${editor.id}`);
@@ -125,10 +129,22 @@ export default function EditorCard({ editor }: EditorCardProps) {
 
         {/* Connect & Stats */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          {/* Quick Connect - LinkedIn style */}
-          <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
-            <ConnectButton targetUserId={editor.id} variant="compact" />
-          </div>
+          {/* Quick Connect - always visible */}
+          {!isOwnProfile && (
+            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
+              {user ? (
+                <ConnectButton targetUserId={editor.id} variant="compact" />
+              ) : (
+                <button
+                  onClick={() => navigate('/login')}
+                  className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors"
+                >
+                  <Plus size={12} />
+                  Connect
+                </button>
+              )}
+            </div>
+          )}
           
           {/* Level */}
           <div className="text-center">
