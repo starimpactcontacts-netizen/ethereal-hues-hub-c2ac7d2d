@@ -124,6 +124,7 @@ export default function IndexPage() {
   const [rankFilter, setRankFilter] = useState<RankFilter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("editors");
   const [rankingSubTab, setRankingSubTab] = useState<RankingSubTab>("xp");
+  const [shuffleKey, setShuffleKey] = useState(0); // Trigger reshuffle
   const eventIdFromUrl = searchParams.get("event");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
 
@@ -275,7 +276,8 @@ export default function IndexPage() {
       ...shuffle(avatarMedium).map(s => s.editor),
       ...shuffle(noAvatar).map(s => s.editor),
     ];
-  }, [rankings, hasActiveFilters]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rankings, hasActiveFilters, shuffleKey]);
 
   const filteredEditors = useMemo(() => {
     const source = hasActiveFilters ? rankings : shuffledRankings;
@@ -471,6 +473,17 @@ export default function IndexPage() {
               </div>
               <span className="text-[10px] text-white/70 uppercase tracking-[0.4em] font-semibold">Discover</span>
             </div>
+            
+            {/* Refresh/Shuffle Button */}
+            {viewMode === "editors" && (
+              <button
+                onClick={() => setShuffleKey(k => k + 1)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/70 hover:text-white group"
+              >
+                <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
+                <span className="text-[10px] uppercase tracking-wider font-medium">Shuffle</span>
+              </button>
+            )}
           </div>
           
           {/* Hero Title - Bolder */}
