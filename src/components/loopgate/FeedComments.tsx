@@ -1,6 +1,6 @@
  import { useState, useEffect, useRef } from 'react';
  import { motion, AnimatePresence } from 'framer-motion';
- import { X, Heart, Send, Reply, Loader2, MessageCircle } from 'lucide-react';
+ import { X, Heart, Send, Reply, Loader2, MessageCircle, Smile } from 'lucide-react';
  import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
  import { Button } from '@/components/ui/button';
  import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +8,10 @@
  import { useAuth } from '@/hooks/useAuth';
  import { toast } from 'sonner';
  import { formatDistanceToNow } from 'date-fns';
+ import GifPicker from './GifPicker';
+
+ const isGifUrl = (text: string) =>
+   text.includes('tenor.com') || text.includes('giphy.com') || /\.(gif|gifv)(\?|$)/i.test(text);
  
  interface Comment {
    id: string;
@@ -45,6 +49,7 @@
    const [newComment, setNewComment] = useState('');
    const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
    const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+   const [showGifPicker, setShowGifPicker] = useState(false);
    const inputRef = useRef<HTMLTextAreaElement>(null);
    
    // Fetch comments
@@ -54,7 +59,6 @@
      const fetchComments = async () => {
        setLoading(true);
        try {
-         // Fetch top-level comments with user profiles
          const { data: commentsData, error } = await supabase
            .from('feed_comments')
            .select('*')
@@ -65,7 +69,6 @@
          
          if (error) throw error;
          
-         // Fetch user profiles for comments
          const userIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
          const { data: profiles } = await supabase
            .from('profiles')
@@ -74,7 +77,6 @@
          
          const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
          
-         // Check which comments current user has liked
          let likedCommentIds: string[] = [];
          if (user) {
            const commentIds = commentsData?.map(c => c.id) || [];
@@ -104,7 +106,6 @@
      fetchComments();
    }, [isOpen, submissionId, submissionType, user]);
    
-   // Load replies for a comment
    const loadReplies = async (parentId: string) => {
      if (expandedReplies.has(parentId)) {
        setExpandedReplies(prev => {
@@ -148,7 +149,6 @@
          isLiked: likedReplyIds.includes(c.id)
        }));
        
-       // Attach replies to parent
        setComments(prev => prev.map(c => 
          c.id === parentId ? { ...c, replies: enrichedReplies } : c
        ));
@@ -159,9 +159,8 @@
      }
    };
    
-   // Submit comment
-   const handleSubmit = async () => {
-     if (!user || !profile || !newComment.trim()) return;
+   const submitContent = async (content: string) => {
+     if (!user || !profile || !content.trim()) return;
      
      setSending(true);
      try {
@@ -171,7 +170,7 @@
            submission_id: submissionId,
            submission_type: submissionType,
            user_id: user.id,
-           content: newComment.trim(),
+           content: content.trim(),
            parent_id: replyingTo?.id || null
          })
          .select()
@@ -187,7 +186,6 @@
        };
        
        if (replyingTo) {
-         // Add reply to parent
          setComments(prev => prev.map(c => 
            c.id === replyingTo.id 
              ? { 
@@ -199,7 +197,6 @@
          ));
          setReplyingTo(null);
        } else {
-         // Add top-level comment
          setComments(prev => [newCommentObj, ...prev]);
        }
        
@@ -211,8 +208,14 @@
        setSending(false);
      }
    };
+
+   const handleSubmit = () => submitContent(newComment);
+
+   const handleGifSelect = (gifUrl: string) => {
+     setShowGifPicker(false);
+     submitContent(gifUrl);
+   };
    
-   // Toggle like
    const toggleLike = async (comment: Comment, isReply = false, parentId?: string) => {
      if (!user) {
        toast.error('Sign in to like comments');
@@ -221,7 +224,6 @@
      
      const wasLiked = comment.isLiked;
      
-     // Optimistic update
      const updateComment = (c: Comment) => 
        c.id === comment.id 
          ? { ...c, isLiked: !wasLiked, like_count: c.like_count + (wasLiked ? -1 : 1) }
@@ -251,7 +253,6 @@
        }
      } catch (err) {
        console.error('Error toggling like:', err);
-       // Revert on error
        if (isReply && parentId) {
          setComments(prev => prev.map(c => 
            c.id === parentId 
@@ -264,7 +265,6 @@
      }
    };
    
-   // Start replying
    const startReply = (comment: Comment) => {
      setReplyingTo(comment);
      inputRef.current?.focus();
@@ -274,7 +274,6 @@
      <AnimatePresence>
        {isOpen && (
          <>
-           {/* Backdrop */}
            <motion.div
              initial={{ opacity: 0 }}
              animate={{ opacity: 1 }}
@@ -283,7 +282,6 @@
              className="absolute inset-0 bg-black/50 z-10"
            />
            
-           {/* Comments Sheet */}
            <motion.div
              initial={{ y: '100%' }}
              animate={{ y: 0 }}
@@ -291,12 +289,10 @@
              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
              className="absolute bottom-0 left-0 right-0 z-20 bg-surface-1 rounded-t-3xl max-h-[70vh] flex flex-col"
            >
-             {/* Handle */}
              <div className="flex justify-center pt-3 pb-2">
                <div className="w-10 h-1 rounded-full bg-border" />
              </div>
              
-             {/* Header */}
              <div className="flex items-center justify-between px-4 py-2 border-b border-border">
                <h3 className="font-display text-lg text-foreground">
                  Comments
@@ -306,7 +302,6 @@
                </button>
              </div>
              
-             {/* Comments List */}
              <div className="flex-1 overflow-y-auto p-4 space-y-4">
                {loading ? (
                  <div className="flex items-center justify-center py-8">
@@ -321,7 +316,6 @@
                ) : (
                  comments.map(comment => (
                    <div key={comment.id} className="space-y-3">
-                     {/* Main comment */}
                      <CommentItem 
                        comment={comment}
                        onLike={() => toggleLike(comment)}
@@ -330,7 +324,6 @@
                        isExpanded={expandedReplies.has(comment.id)}
                      />
                      
-                     {/* Replies */}
                      {expandedReplies.has(comment.id) && comment.replies && (
                        <div className="ml-10 space-y-3 border-l-2 border-border/50 pl-4">
                          {comment.replies.map(reply => (
@@ -348,6 +341,13 @@
                )}
              </div>
              
+             {/* GIF Picker */}
+             {showGifPicker && (
+               <div className="px-4 border-t border-border">
+                 <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+               </div>
+             )}
+
              {/* Input Area */}
              <div className="border-t border-border p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                {replyingTo && (
@@ -383,6 +383,14 @@
                      }
                    }}
                  />
+
+                 <button
+                   onClick={() => setShowGifPicker(!showGifPicker)}
+                   disabled={!user}
+                   className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
+                 >
+                   <Smile className="w-5 h-5" />
+                 </button>
                  
                  <Button
                    size="icon"
@@ -405,7 +413,6 @@
    );
  }
  
- // Individual comment component
  function CommentItem({
    comment,
    onLike,
@@ -440,9 +447,13 @@
            </span>
          </div>
          
-         <p className={`text-foreground break-words ${isReply ? 'text-sm' : ''}`}>
-           {comment.content}
-         </p>
+         {isGifUrl(comment.content) ? (
+           <img src={comment.content} alt="GIF" className="max-w-[200px] rounded-lg mt-1" loading="lazy" />
+         ) : (
+           <p className={`text-foreground break-words ${isReply ? 'text-sm' : ''}`}>
+             {comment.content}
+           </p>
+         )}
          
          <div className="flex items-center gap-4 mt-2">
            <button 
