@@ -629,6 +629,47 @@ export type Database = {
           },
         ]
       }
+      crew_assets: {
+        Row: {
+          asset_type: string
+          asset_url: string
+          created_at: string
+          crew_id: string
+          description: string | null
+          id: string
+          min_tier_order: number | null
+          name: string
+        }
+        Insert: {
+          asset_type?: string
+          asset_url: string
+          created_at?: string
+          crew_id: string
+          description?: string | null
+          id?: string
+          min_tier_order?: number | null
+          name: string
+        }
+        Update: {
+          asset_type?: string
+          asset_url?: string
+          created_at?: string
+          crew_id?: string
+          description?: string | null
+          id?: string
+          min_tier_order?: number | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_assets_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_challenge_progress: {
         Row: {
           challenge_id: string
@@ -718,6 +759,277 @@ export type Database = {
           xp_reward?: number
         }
         Relationships: []
+      }
+      crew_channel_messages: {
+        Row: {
+          avatar_url: string | null
+          channel_id: string
+          created_at: string
+          crew_id: string
+          display_name: string | null
+          id: string
+          is_bot: boolean | null
+          is_pinned: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          channel_id: string
+          created_at?: string
+          crew_id: string
+          display_name?: string | null
+          id?: string
+          is_bot?: boolean | null
+          is_pinned?: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          channel_id?: string
+          created_at?: string
+          crew_id?: string
+          display_name?: string | null
+          id?: string
+          is_bot?: boolean | null
+          is_pinned?: boolean | null
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_channel_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "crew_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_channel_messages_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_channels: {
+        Row: {
+          category: string | null
+          category_order: number | null
+          channel_order: number | null
+          channel_type: string
+          created_at: string
+          crew_id: string
+          description: string | null
+          id: string
+          is_editor_only: boolean | null
+          is_locked: boolean | null
+          min_tier_order: number | null
+          name: string
+        }
+        Insert: {
+          category?: string | null
+          category_order?: number | null
+          channel_order?: number | null
+          channel_type?: string
+          created_at?: string
+          crew_id: string
+          description?: string | null
+          id?: string
+          is_editor_only?: boolean | null
+          is_locked?: boolean | null
+          min_tier_order?: number | null
+          name: string
+        }
+        Update: {
+          category?: string | null
+          category_order?: number | null
+          channel_order?: number | null
+          channel_type?: string
+          created_at?: string
+          crew_id?: string
+          description?: string | null
+          id?: string
+          is_editor_only?: boolean | null
+          is_locked?: boolean | null
+          min_tier_order?: number | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_channels_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_editor_applications: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          crew_id: string
+          id: string
+          message: string | null
+          platform: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submission_url: string
+          tier_id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          crew_id: string
+          id?: string
+          message?: string | null
+          platform: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submission_url: string
+          tier_id: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          crew_id?: string
+          id?: string
+          message?: string | null
+          platform?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submission_url?: string
+          tier_id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_editor_applications_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_editor_applications_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "crew_editor_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_editor_tiers: {
+        Row: {
+          application_url: string | null
+          color: string | null
+          created_at: string
+          crew_id: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          perks: Json | null
+          requirements: string | null
+          tier_order: number
+          updated_at: string
+        }
+        Insert: {
+          application_url?: string | null
+          color?: string | null
+          created_at?: string
+          crew_id: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          perks?: Json | null
+          requirements?: string | null
+          tier_order?: number
+          updated_at?: string
+        }
+        Update: {
+          application_url?: string | null
+          color?: string | null
+          created_at?: string
+          crew_id?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          perks?: Json | null
+          requirements?: string | null
+          tier_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_editor_tiers_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_editors: {
+        Row: {
+          approved_at: string
+          approved_by: string | null
+          crew_id: string
+          id: string
+          tier_id: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by?: string | null
+          crew_id: string
+          id?: string
+          tier_id: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string | null
+          crew_id?: string
+          id?: string
+          tier_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_editors_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_editors_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "crew_editor_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crew_join_requests: {
         Row: {
