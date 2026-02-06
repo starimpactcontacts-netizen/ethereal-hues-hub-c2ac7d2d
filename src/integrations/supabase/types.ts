@@ -1255,6 +1255,7 @@ export type Database = {
           avatar_url: string | null
           banner_color: string | null
           banner_url: string | null
+          content_style: string | null
           created_at: string
           description: string | null
           discord_url: string | null
@@ -1268,12 +1269,15 @@ export type Database = {
           min_league: Database["public"]["Enums"]["league_tier"]
           name: string
           owner_id: string
+          requirements_text: string | null
+          unit_standards: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           banner_color?: string | null
           banner_url?: string | null
+          content_style?: string | null
           created_at?: string
           description?: string | null
           discord_url?: string | null
@@ -1287,12 +1291,15 @@ export type Database = {
           min_league?: Database["public"]["Enums"]["league_tier"]
           name: string
           owner_id: string
+          requirements_text?: string | null
+          unit_standards?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           banner_color?: string | null
           banner_url?: string | null
+          content_style?: string | null
           created_at?: string
           description?: string | null
           discord_url?: string | null
@@ -1306,6 +1313,8 @@ export type Database = {
           min_league?: Database["public"]["Enums"]["league_tier"]
           name?: string
           owner_id?: string
+          requirements_text?: string | null
+          unit_standards?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -3639,6 +3648,76 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "unit_feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_logo_previews: {
+        Row: {
+          created_at: string
+          crew_id: string
+          id: string
+          image_url: string
+          status: string
+          title: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          crew_id: string
+          id?: string
+          image_url: string
+          status?: string
+          title?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          crew_id?: string
+          id?: string
+          image_url?: string
+          status?: string
+          title?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_logo_previews_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_logo_votes: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          preview_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          preview_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          preview_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_logo_votes_preview_id_fkey"
+            columns: ["preview_id"]
+            isOneToOne: false
+            referencedRelation: "unit_logo_previews"
             referencedColumns: ["id"]
           },
         ]
