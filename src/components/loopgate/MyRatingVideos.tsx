@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Video, ExternalLink, Eye, Plus, Trash2, Sparkles, Play } from 'lucide-react';
+import { Video, ExternalLink, Eye, Plus, Trash2, Sparkles, Play, ImagePlus } from 'lucide-react';
 import { useJudgeRatingVideos } from '@/hooks/useJudgeRatingVideos';
 import SubmitRatingVideoModal from './SubmitRatingVideoModal';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useVideoStats } from '@/hooks/useVideoStats';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const platformIcons = {
   tiktok: SiTiktok,
@@ -23,14 +25,35 @@ function VideoCard({
   video, 
   index, 
   onDelete,
-  deleting 
+  deleting,
+  onThumbnailUpdated,
 }: { 
   video: any; 
   index: number;
   onDelete: () => void;
   deleting: boolean;
+  onThumbnailUpdated: () => void;
 }) {
-  const { views, thumbnailUrl, loading: statsLoading } = useVideoStats(video.video_url, video.platform);
+  const { views, thumbnailUrl: fetchedThumb, loading: statsLoading } = useVideoStats(video.video_url, video.platform);
+  const thumbnailUrl = video.thumbnail_url || fetchedThumb;
+  const [showThumbInput, setShowThumbInput] = useState(false);
+  const [thumbUrl, setThumbUrl] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const handleSaveThumb = async () => {
+    if (!thumbUrl.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from('judge_rating_videos')
+      .update({ thumbnail_url: thumbUrl.trim() })
+      .eq('id', video.id);
+    setSaving(false);
+    if (error) { toast.error('Failed to save thumbnail'); return; }
+    toast.success('Thumbnail updated');
+    setShowThumbInput(false);
+    setThumbUrl('');
+    onThumbnailUpdated();
+  };
   const PlatformIcon = platformIcons[video.platform as keyof typeof platformIcons];
   const platformColor = platformColors[video.platform as keyof typeof platformColors];
 
@@ -52,7 +75,7 @@ function VideoCard({
     >
       {/* Thumbnail */}
       <div className="relative aspect-video bg-surface-2">
-        {statsLoading ? (
+        {statsLoading && !thumbnailUrl ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
           </div>
@@ -102,6 +125,27 @@ function VideoCard({
         </a>
       </div>
 
+      {/* Thumbnail URL input overlay */}
+      {showThumbInput && (
+        <div className="absolute inset-0 z-20 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center p-3 gap-2">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Paste thumbnail URL</p>
+          <input
+            type="url"
+            value={thumbUrl}
+            onChange={e => setThumbUrl(e.target.value)}
+            placeholder="https://..."
+            className="w-full bg-surface-2 border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
+            autoFocus
+          />
+          <div className="flex gap-2 w-full">
+            <button onClick={() => setShowThumbInput(false)} className="flex-1 text-[10px] py-1 rounded bg-surface-2 text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+            <button onClick={handleSaveThumb} disabled={saving || !thumbUrl.trim()} className="flex-1 text-[10px] py-1 rounded bg-gold/20 text-gold hover:bg-gold/30 transition-colors disabled:opacity-50">
+              {saving ? '...' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Info */}
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
@@ -113,17 +157,26 @@ function VideoCard({
               {new Date(video.submitted_at).toLocaleDateString()}
             </p>
           </div>
-          <button
-            onClick={onDelete}
-            disabled={deleting}
-            className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors text-muted-foreground hover:text-red-400 disabled:opacity-50 shrink-0"
-          >
-            {deleting ? (
-              <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Trash2 size={14} />
-            )}
-          </button>
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button
+              onClick={() => setShowThumbInput(true)}
+              className="p-1.5 hover:bg-gold/10 rounded-lg transition-colors text-muted-foreground hover:text-gold"
+              title="Set thumbnail"
+            >
+              <ImagePlus size={14} />
+            </button>
+            <button
+              onClick={onDelete}
+              disabled={deleting}
+              className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors text-muted-foreground hover:text-red-400 disabled:opacity-50"
+            >
+              {deleting ? (
+                <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Trash2 size={14} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -131,7 +184,7 @@ function VideoCard({
 }
 
 export default function MyRatingVideos() {
-  const { videos, loading, deleteVideo } = useJudgeRatingVideos();
+  const { videos, loading, deleteVideo, refresh } = useJudgeRatingVideos();
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -181,6 +234,7 @@ export default function MyRatingVideos() {
               index={index}
               onDelete={() => handleDelete(video.id)}
               deleting={deletingId === video.id}
+              onThumbnailUpdated={refresh}
             />
           ))}
         </div>
