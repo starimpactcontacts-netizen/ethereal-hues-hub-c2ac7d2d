@@ -4,7 +4,7 @@ import {
   ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, 
   LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins, Copy, Link2, Calendar, 
   Trophy, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight, Send, Trash2,
-  Swords, Circle, ClipboardList, UserCheck, FolderOpen
+  Swords, Circle, ClipboardList, UserCheck, FolderOpen, Image, Fingerprint
 } from "lucide-react";
 import { SiDiscord } from "@icons-pack/react-simple-icons";
 import { Textarea } from "@/components/ui/textarea";
@@ -22,6 +22,8 @@ import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
 import CrewLiveFeed from "@/components/loopgate/CrewLiveFeed";
 import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
 import UnitFeedTab from "@/components/loopgate/UnitFeedTab";
+import UnitLogoPreviewTab from "@/components/loopgate/UnitLogoPreviewTab";
+import UnitIdentityTab from "@/components/loopgate/UnitIdentityTab";
 import CrewRivalCard from "@/components/loopgate/CrewRivalCard";
 import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
 import CrewChallengesPanel from "@/components/loopgate/CrewChallengesPanel";
@@ -125,7 +127,7 @@ interface CrewSubmission {
   };
 }
 
-type TabType = 'feed' | 'live' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges' | 'applications' | 'editors' | 'assets';
+type TabType = 'feed' | 'live' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges' | 'applications' | 'editors' | 'assets' | 'logos' | 'identity';
 
 const emblemIcons: Record<string, React.ReactNode> = {
   shield: <Shield className="w-10 h-10" />,
@@ -573,8 +575,9 @@ export default function CrewDetailPage() {
     { id: 'applications', icon: <ClipboardList className="w-4 h-4" />, label: 'Apply' },
     { id: 'editors', icon: <UserCheck className="w-4 h-4" />, label: 'Editors' },
     { id: 'assets', icon: <FolderOpen className="w-4 h-4" />, label: 'Assets' },
+    { id: 'logos', icon: <Image className="w-4 h-4" />, label: 'Logos' },
+    { id: 'identity', icon: <Fingerprint className="w-4 h-4" />, label: 'Identity' },
     { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'News', badge: unreadAnnouncementCount },
-    { id: 'rivals', icon: <Swords className="w-4 h-4" />, label: 'Rivals', badge: rivalries.length },
     { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Board' },
     { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Members' },
     { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Quests' },
@@ -834,6 +837,16 @@ export default function CrewDetailPage() {
                 <UnitAssetsTab crewId={crewId} isOfficer={isStaff} />
               )}
 
+              {/* Logo Previews Tab */}
+              {activeTab === 'logos' && crewId && (
+                <UnitLogoPreviewTab crewId={crewId} isStaff={isStaff} />
+              )}
+
+              {/* Unit Identity Tab */}
+              {activeTab === 'identity' && crewId && (
+                <UnitIdentityTab crewId={crewId} isStaff={isStaff} rivalries={rivalries} />
+              )}
+
               {/* Announcements Tab */}
               {activeTab === 'announcements' && (
                 <div className="space-y-4">
@@ -947,25 +960,7 @@ export default function CrewDetailPage() {
                 </div>
               )}
 
-              {/* Rivals Tab - Coming Soon */}
-              {activeTab === 'rivals' && (
-                <div className="bg-surface-1 border border-red-500/20 rounded-lg p-6">
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
-                      <Swords className="w-10 h-10 text-red-500/40" />
-                    </div>
-                    <h3 className="text-lg font-display uppercase tracking-wider text-red-400 mb-2">
-                      Unit Rivalries
-                    </h3>
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20 mb-4">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-gold">Coming Soon</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground max-w-xs">
-                      Mark rival units to track your competition and challenge them to sanctioned tournaments.
-                    </p>
-                  </div>
-                </div>
-              )}
+              {/* Rivals tab removed - now in Identity tab */}
 
               {/* Leaderboard Tab */}
               {activeTab === 'leaderboard' && (

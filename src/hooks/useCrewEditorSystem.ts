@@ -340,6 +340,33 @@ export function useCrewEditorSystem(crewId: string | undefined) {
       }
     }
 
+    // Send auto-DM to applicant
+    const app = applications.find(a => a.id === applicationId);
+    if (app && user) {
+      try {
+        // Get or create conversation
+        const { data: convData } = await supabase.rpc("get_or_create_conversation", {
+          p_user_1: user.id,
+          p_user_2: app.user_id,
+        });
+
+        if (convData) {
+          const tierName = app.tier?.name || "the tier";
+          const dmMessage = status === "approved"
+            ? `🎉 Your application for **${tierName}** has been approved! Welcome to the editor team.${notes ? `\n\nFeedback: ${notes}` : ""}`
+            : `Your application for **${tierName}** was not accepted this time.${notes ? `\n\nFeedback: ${notes}` : ""}\n\nKeep improving and feel free to re-apply!`;
+
+          await supabase.from("direct_messages").insert({
+            conversation_id: convData,
+            sender_id: user.id,
+            message_text: dmMessage,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to send auto-DM:", err);
+      }
+    }
+
     toast.success(status === "approved" ? "Application approved! 🎉" : "Application rejected");
     fetchData();
     fetchApplications();
