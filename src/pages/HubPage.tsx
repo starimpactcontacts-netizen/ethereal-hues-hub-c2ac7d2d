@@ -117,7 +117,7 @@ export default function HubPage() {
   const totalFeatured = liveEvents.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
 
   return (
-    <div className="min-h-screen bg-background pb-24 overflow-x-hidden relative">
+    <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
       <LoopMonster />
       
       {/* Concentric Rings Pattern - Portal effect */}
@@ -153,7 +153,7 @@ export default function HubPage() {
         {/* Subtle top gradient */}
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface-1/50 to-transparent pointer-events-none" />
 
-        <div className="relative px-4 pt-8 pb-3">
+        <div className="relative px-4 pt-5 pb-1">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -228,7 +228,7 @@ export default function HubPage() {
               </div>
 
               {/* XP Progress Bar */}
-              <div className="px-4 pb-3">
+              <div className="px-4 pb-2">
                 <XPProgressBar 
                   xp={profile?.xp || 0} 
                   level={profile?.level || 1} 
@@ -238,7 +238,7 @@ export default function HubPage() {
               </div>
 
               {/* Stats Row */}
-              <div className="border-t border-border/30 px-4 py-3">
+              <div className="border-t border-border/30 px-4 py-2">
                 <div className="grid grid-cols-4 gap-3 text-center">
                   <div>
                     <p className="font-display text-xl text-foreground">{activityStats.totalEvents}</p>
@@ -261,7 +261,7 @@ export default function HubPage() {
 
               {/* Quick Access Rows - Unit & GQT */}
               <div className="border-t border-border/30 divide-y divide-border/20">
-                <div className="px-4 py-3">
+                <div className="px-4 py-2">
                   {userCrew ? (
                     <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
                       <div className="flex items-center gap-2.5">
@@ -295,7 +295,7 @@ export default function HubPage() {
                   )}
                 </div>
 
-                <div className="px-4 py-3">
+                <div className="px-4 py-2">
                   <Link to="/gqt" className="flex items-center justify-between group">
                     <div className="flex items-center gap-2.5">
                       <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center group-hover:border-gold/50 transition-colors">
@@ -382,13 +382,9 @@ export default function HubPage() {
           transition={{ delay: 0.15 }}
           className="mt-2 relative"
         >
-          {/* Top decorative border line */}
-          <div className="relative h-[3px] pointer-events-none overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/10 to-transparent" style={{
-              maskImage: 'repeating-linear-gradient(90deg, white 0px, white 16px, transparent 16px, transparent 20px)',
-              WebkitMaskImage: 'repeating-linear-gradient(90deg, white 0px, white 16px, transparent 16px, transparent 20px)'
-            }} />
+          {/* Top decorative border line - white, subtle */}
+          <div className="relative h-[1px] pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
           </div>
 
           {/* Luxe Background Pattern */}
@@ -410,7 +406,7 @@ export default function HubPage() {
           </div>
 
           {/* Section Header */}
-          <div className="relative flex items-center justify-between px-4 pt-4 mb-3">
+          <div className="relative flex items-center justify-between px-4 pt-2.5 mb-2">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
@@ -425,7 +421,7 @@ export default function HubPage() {
           </div>
           
           {/* Horizontal Carousel - Official events FIRST, then Sanctioned */}
-          <div className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
+          <div className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-1.5">
             {/* Official Live Events - Priority */}
             {liveEvents.map((event, i) => (
               <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
@@ -710,7 +706,7 @@ export default function HubPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.15 }}
-        className="px-4 mt-4"
+        className="px-4 mt-2"
       >
         <div className="bg-surface-1/40 backdrop-blur-sm rounded-2xl p-2 border border-white/5">
           <div className="grid grid-cols-4 gap-1.5">
@@ -760,7 +756,7 @@ export default function HubPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="px-4 mt-4"
+        className="px-4 mt-2"
       >
         <div className="bg-surface-1/30 border border-border/20 p-3">
           <div className="grid grid-cols-3 gap-4 text-center">
@@ -787,10 +783,10 @@ export default function HubPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
-        className="mt-6"
+        className="mt-3"
       >
         {/* Section Header */}
-        <div className="px-4 mb-4">
+        <div className="px-4 mb-2">
           <div className="flex items-center gap-2">
             <div className="w-1 h-5 bg-gold rounded-full" />
             <h2 className="font-display text-lg text-foreground">ACTIVITY</h2>
@@ -800,7 +796,7 @@ export default function HubPage() {
         {/* Unified container with shared border */}
         <div className="mx-4 bg-surface-1/40 border border-border/30 overflow-hidden">
           {/* Live Feed Section */}
-          <div className="p-4 border-b border-border/20">
+          <div className="p-3 border-b border-border/20">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-gold" />
@@ -814,7 +810,7 @@ export default function HubPage() {
           </div>
 
           {/* Reviews Section */}
-          <div className="p-4">
+          <div className="p-3">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Gavel className="w-4 h-4 text-purple-400" />
@@ -837,7 +833,7 @@ export default function HubPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="mt-6 px-4"
+        className="mt-3 px-4"
       >
         <button
           onClick={() => setInviteModalOpen(true)}
