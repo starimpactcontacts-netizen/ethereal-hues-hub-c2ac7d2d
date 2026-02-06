@@ -696,19 +696,28 @@ export default function CrewDetailPage() {
                 <div className="flex flex-col gap-2 mt-4">
                   {/* Primary Row: Channels + Icons */}
                   <div className="flex gap-2">
-                    <Button
-                      onClick={() => navigate(`/units/${crewId}/channels`)}
-                      size="lg"
-                      className="flex-1 bg-gold text-black hover:bg-gold/90 font-bold text-[15px] h-12 relative"
+                    <motion.div
+                      className="flex-1 relative"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
                     >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      Channels
-                      {channelUnreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[20px] text-center animate-pulse">
-                          {channelUnreadCount > 99 ? "99+" : channelUnreadCount}
-                        </span>
-                      )}
-                    </Button>
+                      {/* Glitch offset layers */}
+                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-500 to-red-500 translate-x-[3px] translate-y-[3px] opacity-40 blur-[1px]" />
+                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-400 to-purple-500 -translate-x-[3px] -translate-y-[3px] opacity-30 blur-[1px]" />
+                      <Button
+                        onClick={() => navigate(`/units/${crewId}/channels`)}
+                        size="lg"
+                        className="w-full bg-gold text-black hover:bg-gold/90 font-bold text-base h-14 relative z-10 shadow-[0_0_20px_rgba(234,179,8,0.3)]"
+                      >
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Channels
+                        {channelUnreadCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-[10px] px-2 py-0.5 rounded-full font-bold min-w-[22px] text-center animate-pulse">
+                            {channelUnreadCount > 99 ? "99+" : channelUnreadCount}
+                          </span>
+                        )}
+                      </Button>
+                    </motion.div>
                     <Button
                       variant="outline"
                       onClick={() => setShowInviteModal(true)}
