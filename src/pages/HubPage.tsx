@@ -132,7 +132,7 @@ export default function HubPage() {
             repeat: Infinity, 
             ease: "easeInOut",
           }}
-          className="w-[1000px] h-[1000px] opacity-[0.15]"
+          className="w-[1000px] h-[1000px] opacity-[0.05]"
         >
           <img 
             src={loopRingsPattern} 
@@ -200,7 +200,7 @@ export default function HubPage() {
                         </span>
                       </div>
                       {globalRank && globalRank <= 500 && (
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gold/10 border border-gold/30">
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted border border-border/50 rounded-sm">
                           <Trophy className="w-3 h-3 text-gold" />
                           <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
                         </div>
