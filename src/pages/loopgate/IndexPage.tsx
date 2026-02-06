@@ -227,6 +227,12 @@ export default function IndexPage() {
       // Has profile picture = +6 (highest priority - makes page look alive)
       if (hasAvatar) aliveScore += 6;
       
+      // Has connections = +4 (shows active networking)
+      if ((editor.connection_count || 0) > 0) aliveScore += 4;
+      
+      // Many connections (5+) = extra +2
+      if ((editor.connection_count || 0) >= 5) aliveScore += 2;
+      
       // Verified = +4
       if (editor.verification_status) aliveScore += 4;
       
@@ -250,8 +256,8 @@ export default function IndexPage() {
     const noAvatar = scored.filter(s => !s.hasAvatar);
     
     // Within avatar users, sort by engagement
-    const avatarHigh = withAvatar.filter(s => s.aliveScore >= 10); // Avatar + other signals
-    const avatarMedium = withAvatar.filter(s => s.aliveScore >= 6 && s.aliveScore < 10); // Just avatar or few signals
+    const avatarHigh = withAvatar.filter(s => s.aliveScore >= 12); // Avatar + strong signals
+    const avatarMedium = withAvatar.filter(s => s.aliveScore >= 6 && s.aliveScore < 12); // Avatar + some signals
     
     // Fisher-Yates shuffle within each tier
     const shuffle = <T,>(arr: T[]): T[] => {
