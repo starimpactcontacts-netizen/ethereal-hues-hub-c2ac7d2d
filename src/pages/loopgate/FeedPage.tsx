@@ -277,7 +277,7 @@ export default function FeedPage() {
         if (item.id.startsWith('arena-event-')) return 2;
         if (item.id.startsWith('battle-') && item.battle_status === 'active') return 1.5;
         if (item.id.startsWith('arena-sanctioned-')) return 1;
-        if (item.id.startsWith('judge-video-')) return 0.5;
+        if (item.id.startsWith('judge-video-')) return 1.8;
         return 0;
       };
 
@@ -359,7 +359,7 @@ export default function FeedPage() {
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search edits, editors and units..."
+                placeholder="Search"
                 className="w-full bg-surface-1 border border-border/50 rounded-full pl-7 pr-3 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
               />
             </div>
@@ -444,16 +444,16 @@ export default function FeedPage() {
                     className="flex flex-col items-center gap-0.5 shrink-0"
                   >
                     <div className="relative">
-                      <div className={`w-9 h-9 rounded-full overflow-hidden bg-surface-1 ${editor.is_verified ? 'ring-2 ring-[hsl(214,89%,52%)]/60' : 'border border-border/60'}`}>
-                        <Avatar className="w-full h-full">
-                          <AvatarImage src={editor.avatar_url || undefined} />
+                      <div className="w-10 h-10 rounded-full bg-surface-1 border-2 border-gold/50 flex items-center justify-center shrink-0">
+                        <Avatar className="w-8 h-8 rounded-full">
+                          <AvatarImage src={editor.avatar_url || undefined} className="object-cover" />
                           <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
                             {editor.username[0]?.toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       </div>
                       {editor.is_verified && (
-                        <div className="absolute -bottom-0.5 -right-0.5">
+                        <div className="absolute -bottom-0.5 -right-0.5 z-10">
                           <VerifiedBadge size="sm" />
                         </div>
                       )}
