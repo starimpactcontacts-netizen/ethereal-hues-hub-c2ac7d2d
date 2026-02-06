@@ -74,11 +74,27 @@ export default function AccountSecuritySection({ user, needsPasswordSetup, updat
   const [sessions, setSessions] = useState<ActiveSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
 
+  const [hasPassword, setHasPassword] = useState(true); // default true to avoid false "Not set"
   const userEmail = user?.email || '';
   const hasPlaceholderEmail = userEmail.endsWith('@loopgate.local');
 
-  // Check if user signed up with password (has_password flag or providers include it)
-  const hasPassword = !needsPasswordSetup;
+  // Check has_password from profile on mount
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase
+      .from('profiles')
+      .select('has_password')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        // If has_password is explicitly false, show setup. Otherwise assume set.
+        if (data && (data as any).has_password === false) {
+          setHasPassword(false);
+        } else {
+          setHasPassword(true);
+        }
+      });
+  }, [user?.id]);
 
   // Fetch recovery code status and sessions on mount
   useEffect(() => {
@@ -125,12 +141,13 @@ export default function AccountSecuritySection({ user, needsPasswordSetup, updat
     if (!error && user?.id) {
       // Mark has_password in profile
       await supabase.from('profiles').update({ has_password: true } as any).eq('id', user.id);
+      setHasPassword(true);
     }
     setPasswordLoading(false);
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(needsPasswordSetup ? 'Password set!' : 'Password updated!');
+      toast.success(hasPassword ? 'Password updated!' : 'Password set!');
       setPassword('');
       setConfirmPassword('');
       setShowPasswordForm(false);
