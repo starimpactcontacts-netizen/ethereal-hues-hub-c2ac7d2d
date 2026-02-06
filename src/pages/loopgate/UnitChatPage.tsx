@@ -1,16 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Users, Hash } from "lucide-react";
+import { ArrowLeft, Users, Hash, Megaphone, BookOpen, Lock, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCrewChannels, useChannelMessages, CrewChannel } from "@/hooks/useCrewChannels";
 import { useChannelPresence } from "@/hooks/useChannelPresence";
 import { useChannelUnread } from "@/hooks/useChannelUnread";
+import { useCrewEditorSystem } from "@/hooks/useCrewEditorSystem";
 import PageTransition from "@/components/loopgate/PageTransition";
 import ChannelSidebar from "@/components/loopgate/ChannelSidebar";
 import ChannelChatView from "@/components/loopgate/ChannelChatView";
 import ChannelMembersList from "@/components/loopgate/ChannelMembersList";
+import ChannelPermissionsModal from "@/components/loopgate/ChannelPermissionsModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface Crew {
   id: string;
@@ -29,6 +33,12 @@ interface Member {
   } | null;
 }
 
+const CHANNEL_ICONS: Record<string, React.ReactNode> = {
+  text: <Hash className="w-5 h-5 text-muted-foreground/60" />,
+  announcement: <Megaphone className="w-5 h-5 text-muted-foreground/60" />,
+  rules: <BookOpen className="w-5 h-5 text-muted-foreground/60" />,
+};
+
 export default function UnitChatPage() {
   const { crewId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,20 +50,18 @@ export default function UnitChatPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [myRole, setMyRole] = useState<"owner" | "officer" | "member" | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showMembers, setShowMembers] = useState(!isMobile);
-  const [mobileView, setMobileView] = useState<"sidebar" | "chat">("sidebar");
+  const [showMembers, setShowMembers] = useState(false);
+  const [mobileView, setMobileView] = useState<"channels" | "chat">("channels");
+  const [permissionsChannel, setPermissionsChannel] = useState<CrewChannel | null>(null);
 
-  // Get active channel from URL or default to first
   const activeChannelId = searchParams.get("channel");
 
-  // Hooks for channels
-  const { channels, channelsByCategory, loading: channelsLoading } = useCrewChannels(crewId);
+  const { channels, channelsByCategory, loading: channelsLoading, updateChannel } = useCrewChannels(crewId);
   const { unreadCounts, markChannelAsRead } = useChannelUnread(crewId);
+  const { tiers } = useCrewEditorSystem(crewId || "");
 
-  // Find the active channel object
   const activeChannel = channels.find((c) => c.id === activeChannelId) || channels[0];
 
-  // Hooks for messages and presence (only when we have an active channel)
   const { messages, sendMessage, loading: messagesLoading } = useChannelMessages(activeChannel?.id);
   const { onlineMembers, typingUsers, broadcastTyping } = useChannelPresence(crewId, activeChannel?.id);
 
@@ -64,7 +72,6 @@ export default function UnitChatPage() {
     const fetchCrewData = async () => {
       setLoading(true);
 
-      // Fetch crew
       const { data: crewData, error: crewError } = await supabase
         .from("crews")
         .select("id, name, avatar_url, owner_id")
@@ -78,7 +85,6 @@ export default function UnitChatPage() {
 
       setCrew(crewData);
 
-      // Fetch members
       const { data: membersData } = await supabase
         .from("crew_members")
         .select("user_id, role")
@@ -99,7 +105,6 @@ export default function UnitChatPage() {
 
         setMembers(membersWithProfiles);
 
-        // Check user's role
         if (user) {
           const myMembership = membersData.find((m) => m.user_id === user.id);
           setMyRole(myMembership?.role as "owner" | "officer" | "member" | null);
@@ -112,7 +117,7 @@ export default function UnitChatPage() {
     fetchCrewData();
   }, [crewId, user, navigate]);
 
-  // Set default channel when channels load
+  // Set default channel
   useEffect(() => {
     if (channels.length > 0 && !activeChannelId) {
       const generalChannel = channels.find((c) => c.name === "general") || channels[0];
@@ -144,6 +149,13 @@ export default function UnitChatPage() {
     }
   }, [activeChannel?.id, markChannelAsRead]);
 
+  const handleSavePermissions = useCallback(
+    async (channelId: string, updates: Partial<CrewChannel>) => {
+      return updateChannel(channelId, updates);
+    },
+    [updateChannel]
+  );
+
   const isOfficer = myRole === "owner" || myRole === "officer";
 
   if (loading || channelsLoading || !crew) {
@@ -152,106 +164,166 @@ export default function UnitChatPage() {
         <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground">Loading chat...</p>
+            <p className="text-xs text-muted-foreground">Loading channels...</p>
           </div>
         </div>
       </PageTransition>
     );
   }
 
-  // Mobile layout
+  // Calculate total unread for the back button badge
+  const totalUnread = Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
+
+  // ── MOBILE LAYOUT ──
   if (isMobile) {
     return (
       <div
         className="fixed inset-0 bg-background flex flex-col z-50"
-        style={{ paddingBottom: "calc(56px + env(safe-area-inset-bottom))" }}
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
+        }}
       >
-        {/* Mobile Header */}
-        <div
-          className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0"
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
-        >
-          <div className="px-4 py-3 flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (mobileView === "chat") {
-                  setMobileView("sidebar");
-                } else {
-                  navigate(`/crews/${crewId}`);
-                }
-              }}
-              className="p-2 rounded-lg hover:bg-muted/50 transition-colors"
+        <AnimatePresence mode="wait" initial={false}>
+          {mobileView === "channels" ? (
+            <motion.div
+              key="channels"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -20, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col h-full"
             >
-              <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-            </button>
-
-            {mobileView === "chat" && activeChannel ? (
-              <div className="flex items-center gap-2">
-                <Hash className="w-5 h-5 text-muted-foreground/70" />
-                <span className="text-sm font-semibold">{activeChannel.name}</span>
-                <span className="text-xs text-muted-foreground/60">— {crew.name}</span>
-              </div>
-            ) : (
-              <div>
-                <h2 className="font-semibold text-sm">{crew.name}</h2>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span>{onlineMembers.length} online</span>
+              {/* Mobile Channels Header */}
+              <div className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0">
+                <div className="px-4 py-3 flex items-center gap-3">
+                  <button
+                    onClick={() => navigate(`/crews/${crewId}`)}
+                    className="p-2 rounded-lg hover:bg-muted/50 transition-colors active:scale-95 touch-manipulation"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                  <div className="flex-1">
+                    <h2 className="font-semibold text-sm">{crew.name}</h2>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span>{onlineMembers.length} online</span>
+                      <span className="mx-1">·</span>
+                      <span>{channels.length} channels</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
 
-        {/* Mobile Content */}
-        {mobileView === "sidebar" ? (
-          <div className="flex-1 overflow-y-auto">
-            {Object.entries(channelsByCategory).map(([category, categoryChannels]) => (
-              <div key={category} className="py-2">
-                <h4 className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground/70 px-4 mb-1">
-                  {category}
-                </h4>
-                {categoryChannels
-                  .sort((a, b) => a.channel_order - b.channel_order)
-                  .map((channel) => {
-                    const unread = unreadCounts[channel.id] || 0;
-                    return (
-                      <button
-                        key={channel.id}
-                        onClick={() => handleSelectChannel(channel.id)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors"
-                      >
-                        <Hash className="w-5 h-5 text-muted-foreground/70" />
-                        <span className="flex-1 text-left text-sm">{channel.name}</span>
-                        {unread > 0 && (
-                          <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                            {unread}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
+              {/* Mobile Channel List */}
+              <div className="flex-1 overflow-y-auto">
+                {Object.entries(channelsByCategory)
+                  .sort(([, a], [, b]) => {
+                    const aOrder = a[0]?.category_order ?? 99;
+                    const bOrder = b[0]?.category_order ?? 99;
+                    return aOrder - bOrder;
+                  })
+                  .map(([category, categoryChannels]) => (
+                    <div key={category} className="py-2">
+                      <h4 className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground/60 px-4 mb-1.5">
+                        {category}
+                      </h4>
+                      {categoryChannels
+                        .sort((a, b) => a.channel_order - b.channel_order)
+                        .map((channel) => {
+                          const unread = unreadCounts[channel.id] || 0;
+                          const icon = CHANNEL_ICONS[channel.channel_type] || CHANNEL_ICONS.text;
+                          const isActive = channel.id === activeChannelId;
+
+                          return (
+                            <button
+                              key={channel.id}
+                              onClick={() => handleSelectChannel(channel.id)}
+                              className={cn(
+                                "w-full flex items-center gap-3 px-4 py-3 transition-colors active:bg-muted/40 touch-manipulation",
+                                isActive ? "bg-muted/20" : "hover:bg-muted/10"
+                              )}
+                            >
+                              <span className="shrink-0">{icon}</span>
+                              <div className="flex-1 min-w-0 text-left">
+                                <div className="flex items-center gap-1.5">
+                                  <span className={cn(
+                                    "text-sm truncate",
+                                    unread > 0 ? "font-semibold text-foreground" : "text-muted-foreground"
+                                  )}>
+                                    {channel.name}
+                                  </span>
+                                  {channel.is_locked && <Lock className="w-3 h-3 text-muted-foreground/40 shrink-0" />}
+                                </div>
+                                {channel.description && (
+                                  <p className="text-[11px] text-muted-foreground/40 truncate mt-0.5">
+                                    {channel.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                {unread > 0 && (
+                                  <span className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[18px] text-center">
+                                    {unread > 99 ? "99+" : unread}
+                                  </span>
+                                )}
+                                <ChevronRight className="w-4 h-4 text-muted-foreground/30" />
+                              </div>
+                            </button>
+                          );
+                        })}
+                    </div>
+                  ))}
               </div>
-            ))}
-          </div>
-        ) : activeChannel ? (
-          <ChannelChatView
-            channel={activeChannel}
-            crewId={crewId!}
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            onMarkAsRead={handleMarkAsRead}
-            typingUsers={typingUsers}
-            onTyping={broadcastTyping}
-            isOfficer={isOfficer}
-            crewName={crew.name}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="chat"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 20, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col h-full"
+            >
+              {activeChannel && (
+                <ChannelChatView
+                  channel={activeChannel}
+                  crewId={crewId!}
+                  messages={messages}
+                  onSendMessage={handleSendMessage}
+                  onMarkAsRead={handleMarkAsRead}
+                  typingUsers={typingUsers}
+                  onTyping={broadcastTyping}
+                  isOfficer={isOfficer}
+                  crewName={crew.name}
+                  showBackOnMobile={true}
+                  onBack={() => setMobileView("channels")}
+                  onShowPermissions={
+                    isOfficer && activeChannel
+                      ? () => setPermissionsChannel(activeChannel)
+                      : undefined
+                  }
+                />
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Permissions Modal */}
+        {permissionsChannel && (
+          <ChannelPermissionsModal
+            channel={permissionsChannel}
+            isOpen={!!permissionsChannel}
+            onClose={() => setPermissionsChannel(null)}
+            onSave={handleSavePermissions}
+            tiers={tiers}
           />
-        ) : null}
+        )}
       </div>
     );
   }
 
-  // Desktop layout
+  // ── DESKTOP LAYOUT ──
   return (
     <div
       className="fixed inset-0 bg-background flex z-50"
@@ -260,7 +332,7 @@ export default function UnitChatPage() {
         paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
       }}
     >
-      {/* Channel Sidebar with integrated back button */}
+      {/* Channel Sidebar */}
       <ChannelSidebar
         channels={channels}
         channelsByCategory={channelsByCategory}
@@ -285,16 +357,43 @@ export default function UnitChatPage() {
           onTyping={broadcastTyping}
           isOfficer={isOfficer}
           crewName={crew.name}
+          onShowMembers={() => setShowMembers(!showMembers)}
+          onShowPermissions={
+            isOfficer && activeChannel
+              ? () => setPermissionsChannel(activeChannel)
+              : undefined
+          }
         />
       ) : (
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-muted-foreground">Select a channel to start chatting</p>
+          <p className="text-muted-foreground text-sm">Select a channel to start chatting</p>
         </div>
       )}
 
       {/* Members Panel */}
-      {showMembers && (
-        <ChannelMembersList members={members} onlineMembers={onlineMembers} />
+      <AnimatePresence>
+        {showMembers && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 224, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <ChannelMembersList members={members} onlineMembers={onlineMembers} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Permissions Modal */}
+      {permissionsChannel && (
+        <ChannelPermissionsModal
+          channel={permissionsChannel}
+          isOpen={!!permissionsChannel}
+          onClose={() => setPermissionsChannel(null)}
+          onSave={handleSavePermissions}
+          tiers={tiers}
+        />
       )}
     </div>
   );
