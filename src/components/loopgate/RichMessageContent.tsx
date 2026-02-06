@@ -1,35 +1,62 @@
 import { useNavigate } from "react-router-dom";
 import { Fragment, useMemo } from "react";
+import LinkPreview from "./LinkPreview";
 
 interface RichMessageContentProps {
   content: string;
+  showLinkPreviews?: boolean;
 }
 
 // Regex patterns
 const GIF_PATTERN = /https?:\/\/[^\s]+\.gif(\?[^\s]*)?/gi;
-const MENTION_PATTERN = /@(\w+)/g;
 const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
 
-export default function RichMessageContent({ content }: RichMessageContentProps) {
+// Domains to skip previews for (already handled or not useful)
+const SKIP_PREVIEW_DOMAINS = [
+  'tenor.com',
+  'giphy.com',
+  'media.tenor.com',
+  'media.giphy.com',
+];
+
+function shouldShowPreview(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    // Skip GIFs
+    if (parsed.pathname.endsWith('.gif')) return false;
+    // Skip known GIF domains
+    if (SKIP_PREVIEW_DOMAINS.some(d => parsed.hostname.includes(d))) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export default function RichMessageContent({ content, showLinkPreviews = true }: RichMessageContentProps) {
   const navigate = useNavigate();
 
-  const parsedContent = useMemo(() => {
+  const { elements, previewUrls } = useMemo(() => {
     const elements: JSX.Element[] = [];
+    const previewUrls: string[] = [];
     let lastIndex = 0;
     let key = 0;
 
     // Check if the entire message is just a GIF URL
     const trimmed = content.trim();
+    GIF_PATTERN.lastIndex = 0;
     if (GIF_PATTERN.test(trimmed) && !trimmed.includes(" ")) {
-      return [
-        <img
-          key="gif"
-          src={trimmed}
-          alt="GIF"
-          className="max-w-[250px] max-h-[200px] rounded-lg mt-1"
-          loading="lazy"
-        />
-      ];
+      return {
+        elements: [
+          <img
+            key="gif"
+            src={trimmed}
+            alt="GIF"
+            className="max-w-[250px] max-h-[200px] rounded-lg mt-1"
+            loading="lazy"
+          />
+        ],
+        previewUrls: []
+      };
     }
 
     // Reset regex
@@ -74,17 +101,23 @@ export default function RichMessageContent({ content }: RichMessageContentProps)
         );
       } else if (match[3]) {
         // Regular URL - make it a link
+        const urlText = match[3];
         elements.push(
           <a
             key={key++}
-            href={match[3]}
+            href={urlText}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline break-all"
           >
-            {match[3].length > 50 ? match[3].slice(0, 50) + "..." : match[3]}
+            {urlText.length > 50 ? urlText.slice(0, 50) + "..." : urlText}
           </a>
         );
+        
+        // Collect URLs for previews (only first one to avoid clutter)
+        if (showLinkPreviews && previewUrls.length === 0 && shouldShowPreview(urlText)) {
+          previewUrls.push(urlText);
+        }
       }
 
       lastIndex = match.index + match[0].length;
@@ -99,8 +132,15 @@ export default function RichMessageContent({ content }: RichMessageContentProps)
       );
     }
 
-    return elements;
-  }, [content, navigate]);
+    return { elements, previewUrls };
+  }, [content, navigate, showLinkPreviews]);
 
-  return <>{parsedContent}</>;
+  return (
+    <div>
+      <span>{elements}</span>
+      {previewUrls.map((url) => (
+        <LinkPreview key={url} url={url} />
+      ))}
+    </div>
+  );
 }
