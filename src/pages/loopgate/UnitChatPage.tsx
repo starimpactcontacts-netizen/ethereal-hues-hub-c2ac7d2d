@@ -215,17 +215,13 @@ export default function UnitChatPage() {
     fetchCrewData();
   }, [crewId, user, navigate]);
 
-  // Set default channel and auto-open chat on mobile
+  // Set default channel but always show channel list first on mobile
   useEffect(() => {
     if (channels.length > 0 && !activeChannelId) {
       const generalChannel = channels.find((c) => c.name === "general") || channels[0];
       setSearchParams({ channel: generalChannel.id }, { replace: true });
-      // On mobile, auto-open the general channel chat
-      if (isMobile) {
-        setMobileView("chat");
-      }
     }
-  }, [channels, activeChannelId, setSearchParams, isMobile]);
+  }, [channels, activeChannelId, setSearchParams]);
 
   const handleSelectChannel = useCallback(
     (channelId: string) => {
