@@ -5,6 +5,7 @@ import { useConversations, Conversation } from '@/hooks/useDirectMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,30 +37,36 @@ interface ConversationItemProps {
   userId: string | undefined;
   onDelete: (id: string) => void;
   onOpenLabelSheet: (id: string) => void;
+  onOpenActionsSheet: (id: string) => void;
   currentLabel: string | null;
 }
 
-function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, currentLabel }: ConversationItemProps) {
+function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, onOpenActionsSheet, currentLabel }: ConversationItemProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const unreadCount = conv.participant_1_id === userId 
     ? conv.unread_count_1 
     : conv.unread_count_2;
 
   const handleClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('[data-radix-collection-item]')) {
+    if ((e.target as HTMLElement).closest('[data-menu-button]')) {
       e.preventDefault();
       return;
     }
     navigate(`/messages/${conv.id}`);
   };
 
+  const handleMenuClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isMobile) {
+      onOpenActionsSheet(conv.id);
+    }
+  };
+
   return (
     <div
       onClick={handleClick}
-      onTouchEnd={(e) => {
-        // Prevent double-firing on mobile
-        if ((e.target as HTMLElement).closest('[data-radix-collection-item]')) return;
-      }}
       className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-surface-1 active:bg-surface-1 transition-colors cursor-pointer group touch-manipulation"
     >
       {/* Avatar with verified badge - smaller */}
@@ -116,36 +123,53 @@ function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, currentLab
           </div>
         )}
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
-            <button className="p-2 rounded-lg opacity-100 active:bg-muted/50 hover:bg-muted/50 transition-all touch-manipulation">
-              <MoreVertical className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40 bg-surface-1 border-border">
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenLabelSheet(conv.id);
-              }}
-              className="text-xs"
-            >
-              <Tag className="w-3.5 h-3.5 mr-2" />
-              {currentLabel ? 'Change Label' : 'Add Label'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(conv.id);
-              }}
-              className="text-xs text-destructive"
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-2" />
-              Delete Chat
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Mobile: Simple button that opens sheet */}
+        {isMobile ? (
+          <button 
+            data-menu-button
+            onTouchEnd={handleMenuClick}
+            onClick={handleMenuClick}
+            className="p-3 -m-1 rounded-lg active:bg-muted/50 touch-manipulation"
+          >
+            <MoreVertical className="w-5 h-5 text-muted-foreground" />
+          </button>
+        ) : (
+          /* Desktop: Dropdown menu */
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button 
+                data-menu-button
+                onClick={(e) => e.stopPropagation()} 
+                className="p-2 rounded-lg opacity-100 hover:bg-muted/50 transition-all"
+              >
+                <MoreVertical className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40 bg-surface-1 border-border">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenLabelSheet(conv.id);
+                }}
+                className="text-xs"
+              >
+                <Tag className="w-3.5 h-3.5 mr-2" />
+                {currentLabel ? 'Change Label' : 'Add Label'}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(conv.id);
+                }}
+                className="text-xs text-destructive"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-2" />
+                Delete Chat
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </div>
   );
@@ -156,6 +180,7 @@ export default function MessagesPage() {
   const { conversations, loading, deleteConversation, updateLabel } = useConversations();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [labelSheetId, setLabelSheetId] = useState<string | null>(null);
+  const [actionsSheetId, setActionsSheetId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'connected' | 'other'>('connected');
 
   // Split conversations by connection status
@@ -166,6 +191,12 @@ export default function MessagesPage() {
   const labelSheetConv = conversations.find(c => c.id === labelSheetId);
   const currentLabelForSheet = labelSheetConv
     ? (labelSheetConv.participant_1_id === user?.id ? labelSheetConv.label_1 : labelSheetConv.label_2)
+    : null;
+
+  // Get label for actions sheet conversation
+  const actionsSheetConv = conversations.find(c => c.id === actionsSheetId);
+  const actionsSheetLabel = actionsSheetConv
+    ? (actionsSheetConv.participant_1_id === user?.id ? actionsSheetConv.label_1 : actionsSheetConv.label_2)
     : null;
 
   const handleDelete = async () => {
@@ -205,6 +236,7 @@ export default function MessagesPage() {
         userId={user?.id}
         onDelete={setDeleteId}
         onOpenLabelSheet={setLabelSheetId}
+        onOpenActionsSheet={setActionsSheetId}
         currentLabel={getConvLabel(conv)}
       />
     ));
@@ -331,6 +363,43 @@ export default function MessagesPage() {
                 Remove Label
               </button>
             )}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Mobile Actions Sheet */}
+      <Sheet open={!!actionsSheetId} onOpenChange={(open) => !open && setActionsSheetId(null)}>
+        <SheetContent side="bottom" className="bg-surface-1 border-border rounded-t-2xl px-4 pb-8">
+          <SheetHeader className="pb-4">
+            <SheetTitle className="text-center font-display">Chat Options</SheetTitle>
+          </SheetHeader>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => {
+                if (actionsSheetId) {
+                  setLabelSheetId(actionsSheetId);
+                  setActionsSheetId(null);
+                }
+              }}
+              className="flex items-center gap-3 w-full p-3 rounded-lg bg-muted/30 active:bg-muted/50 touch-manipulation"
+            >
+              <Tag className="w-5 h-5 text-muted-foreground" />
+              <span className="text-sm font-medium">
+                {actionsSheetLabel ? 'Change Label' : 'Add Label'}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                if (actionsSheetId) {
+                  setDeleteId(actionsSheetId);
+                  setActionsSheetId(null);
+                }
+              }}
+              className="flex items-center gap-3 w-full p-3 rounded-lg bg-destructive/10 text-destructive active:bg-destructive/20 touch-manipulation"
+            >
+              <Trash2 className="w-5 h-5" />
+              <span className="text-sm font-medium">Delete Chat</span>
+            </button>
           </div>
         </SheetContent>
       </Sheet>
