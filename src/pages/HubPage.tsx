@@ -380,7 +380,10 @@ export default function HubPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="mt-2 relative"
+          className="mt-2 relative border-y border-border/30"
+          style={{
+            borderImage: `repeating-linear-gradient(90deg, hsl(var(--border)) 0px, hsl(var(--border)) 6px, transparent 6px, transparent 12px) 1`
+          }}
         >
           {/* Luxe Background Pattern */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
