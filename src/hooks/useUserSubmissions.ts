@@ -15,6 +15,7 @@ export interface UserSubmission {
   final_rank: number | null;
   submitted_at: string;
   thumbnail_url: string | null;
+  custom_title: string | null;
   source: 'standard' | 'round' | 'sanctioned';
   event?: {
     id: string;
@@ -87,6 +88,7 @@ export function useUserSubmissions(targetUserId?: string) {
         final_rank: s.final_rank,
         submitted_at: s.submitted_at,
         thumbnail_url: s.thumbnail_url || null,
+        custom_title: (s as any).custom_title || null,
         source: 'standard' as const,
       })),
       ...(roundData || []).map(s => ({
@@ -102,6 +104,7 @@ export function useUserSubmissions(targetUserId?: string) {
         final_rank: null,
         submitted_at: s.submitted_at || s.created_at,
         thumbnail_url: (s as any).thumbnail_url || null,
+        custom_title: (s as any).custom_title || null,
         source: 'round' as const,
       })),
       ...(sanctionedData || []).map(s => ({
@@ -117,6 +120,7 @@ export function useUserSubmissions(targetUserId?: string) {
         final_rank: s.final_rank,
         submitted_at: s.submitted_at || s.joined_at,
         thumbnail_url: (s as any).thumbnail_url || null,
+        custom_title: (s as any).custom_title || null,
         source: 'sanctioned' as const,
       })),
     ];
