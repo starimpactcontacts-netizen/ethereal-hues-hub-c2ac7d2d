@@ -3530,6 +3530,105 @@ export type Database = {
           },
         ]
       }
+      unit_bot_commands: {
+        Row: {
+          channel_id: string
+          command_type: string
+          created_at: string
+          created_by: string
+          crew_id: string
+          data: Json | null
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          message_id: string | null
+          title: string
+        }
+        Insert: {
+          channel_id: string
+          command_type: string
+          created_at?: string
+          created_by: string
+          crew_id: string
+          data?: Json | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          message_id?: string | null
+          title: string
+        }
+        Update: {
+          channel_id?: string
+          command_type?: string
+          created_at?: string
+          created_by?: string
+          crew_id?: string
+          data?: Json | null
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          message_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_bot_commands_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "crew_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unit_bot_commands_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unit_bot_commands_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "crew_channel_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      unit_bot_poll_votes: {
+        Row: {
+          command_id: string
+          created_at: string
+          id: string
+          option_index: number
+          user_id: string
+        }
+        Insert: {
+          command_id: string
+          created_at?: string
+          id?: string
+          option_index: number
+          user_id: string
+        }
+        Update: {
+          command_id?: string
+          created_at?: string
+          id?: string
+          option_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unit_bot_poll_votes_command_id_fkey"
+            columns: ["command_id"]
+            isOneToOne: false
+            referencedRelation: "unit_bot_commands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unit_feed_comments: {
         Row: {
           avatar_url: string | null
