@@ -30,7 +30,7 @@ export function useUnitBot(crewId: string | undefined, channelId: string | undef
   const { user, profile } = useAuth();
   const [sending, setSending] = useState(false);
 
-  const displayName = botName || "Unit Bot";
+  const displayName = botName || "Unit App";
 
   // Post a bot message to the channel
   const postBotMessage = useCallback(async (text: string) => {
