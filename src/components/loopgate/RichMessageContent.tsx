@@ -51,7 +51,7 @@ export default function RichMessageContent({ content, showLinkPreviews = true }:
             key="gif"
             src={trimmed}
             alt="GIF"
-            className="max-w-[250px] max-h-[200px] rounded-lg mt-1"
+            className="max-w-[180px] max-h-[140px] rounded-lg mt-1"
             loading="lazy"
           />
         ],
@@ -89,13 +89,13 @@ export default function RichMessageContent({ content, showLinkPreviews = true }:
           </button>
         );
       } else if (match[2]) {
-        // GIF URL - render inline
+        // GIF URL - render inline - compact for mobile
         elements.push(
           <img
             key={key++}
             src={match[2]}
             alt="GIF"
-            className="max-w-[250px] max-h-[200px] rounded-lg mt-1 block"
+            className="max-w-[180px] max-h-[140px] rounded-lg mt-1 block"
             loading="lazy"
           />
         );

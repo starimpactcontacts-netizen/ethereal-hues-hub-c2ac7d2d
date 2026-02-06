@@ -82,11 +82,11 @@ export default function LinkPreview({ url }: LinkPreviewProps) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-2 block rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors overflow-hidden group"
+      className="mt-1.5 block rounded-lg border border-border/50 bg-muted/20 hover:bg-muted/40 transition-colors overflow-hidden group max-w-[280px]"
     >
-      {/* Image preview if available */}
+      {/* Image preview if available - compact */}
       {preview.image && (
-        <div className="relative w-full h-32 bg-muted">
+        <div className="relative w-full h-20 bg-muted">
           <img 
             src={preview.image} 
             alt="" 
@@ -98,35 +98,35 @@ export default function LinkPreview({ url }: LinkPreviewProps) {
         </div>
       )}
       
-      <div className="p-3">
+      <div className="p-2">
         {/* Site info */}
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-1.5 mb-0.5">
           {preview.favicon && (
             <img 
               src={preview.favicon} 
               alt="" 
-              className="w-4 h-4 rounded"
+              className="w-3 h-3 rounded"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           )}
-          <span className="text-xs text-muted-foreground truncate">
+          <span className="text-[10px] text-muted-foreground truncate">
             {preview.siteName}
           </span>
-          <ExternalLink className="w-3 h-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0" />
+          <ExternalLink className="w-2.5 h-2.5 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0" />
         </div>
 
         {/* Title */}
         {preview.title && (
-          <h4 className="text-sm font-medium text-foreground line-clamp-2 mb-1">
+          <h4 className="text-xs font-medium text-foreground line-clamp-1">
             {preview.title}
           </h4>
         )}
 
         {/* Description */}
         {preview.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
             {preview.description}
           </p>
         )}
