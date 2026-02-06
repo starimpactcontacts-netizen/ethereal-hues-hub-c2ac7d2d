@@ -101,7 +101,7 @@ export default function PublicProfilePage() {
       if (profileData) {
         setProfile(profileData as PublicProfile);
         
-        // Fetch crew if user has one
+        // Fetch unit if user has one
         if (profileData.crew_id) {
           const { data: crewData } = await supabase
             .from("crews")
@@ -410,7 +410,7 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            {/* Crew Badge & Activity - Single row */}
+            {/* Unit Badge & Activity - Single row */}
             <div className="flex items-center gap-4 mb-4">
               {userCrew && <CrewBadge crew={userCrew} size="md" />}
               <div className="flex items-center gap-2">

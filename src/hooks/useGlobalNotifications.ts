@@ -116,7 +116,7 @@ export function useGlobalNotifications() {
 
           playSound('message');
           const displayName = msg.display_name || msg.username;
-          const crewName = crewMap.get(msg.crew_id) || 'Crew';
+          const crewName = crewMap.get(msg.crew_id) || 'Unit';
           const isGif = msg.message_text.includes('tenor.com') || msg.message_text.includes('.gif');
           const preview = isGif ? '🖼️ Sent a GIF' : msg.message_text.slice(0, 50) + (msg.message_text.length > 50 ? '...' : '');
 

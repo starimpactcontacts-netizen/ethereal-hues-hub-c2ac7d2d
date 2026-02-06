@@ -121,20 +121,20 @@ export function useCrewMembership(userId: string | undefined) {
 
       // Check cooldown
       if (!canChangePrimary) {
-        toast.error(`You can change your primary crew on ${cooldownEndsAt?.toLocaleDateString()}`);
+        toast.error(`You can change your primary unit on ${cooldownEndsAt?.toLocaleDateString()}`);
         return false;
       }
 
       // Find the membership
       const membership = memberships.find((m) => m.crew_id === crewId);
       if (!membership) {
-        toast.error("You're not a member of this crew");
+        toast.error("You're not a member of this unit");
         return false;
       }
 
       // If already primary, nothing to do
       if (membership.is_primary) {
-        toast.info("This is already your primary crew");
+        toast.info("This is already your primary unit");
         return true;
       }
 
@@ -182,26 +182,26 @@ export function useCrewMembership(userId: string | undefined) {
         console.error("Error updating profile:", profileError);
       }
 
-      toast.success(`🏴 ${membership.crew?.name} is now your primary crew!`);
+      toast.success(`🏴 ${membership.crew?.name} is now your primary unit!`);
       fetchMemberships();
       return true;
     },
     [userId, memberships, primaryCrew, canChangePrimary, cooldownEndsAt, fetchMemberships]
   );
 
-  // Join a crew as secondary
+  // Join a unit as secondary
   const joinAsSecondary = useCallback(
     async (crewId: string) => {
       if (!userId) return false;
 
       if (!canJoinSecondary) {
-        toast.error("You can only have 3 secondary crews. Leave one first.");
+        toast.error("You can only have 3 secondary units. Leave one first.");
         return false;
       }
 
       // Check if already a member
       if (memberships.some((m) => m.crew_id === crewId)) {
-        toast.error("You're already a member of this crew");
+        toast.error("You're already a member of this unit");
         return false;
       }
 
@@ -225,7 +225,7 @@ export function useCrewMembership(userId: string | undefined) {
     [userId, memberships, canJoinSecondary, fetchMemberships]
   );
 
-  // Leave a secondary crew
+  // Leave a secondary unit
   const leaveSecondary = useCallback(
     async (crewId: string) => {
       if (!userId) return false;
@@ -295,20 +295,20 @@ export function useCrewMembership(userId: string | undefined) {
     [userId, primaryCrew, fetchMemberships]
   );
 
-  // Promote a secondary crew to primary
+  // Promote a secondary unit to primary
   const promoteTorimary = useCallback(
     async (crewId: string) => {
       if (!userId) return false;
 
       // Check cooldown
       if (!canChangePrimary) {
-        toast.error(`You can change your primary crew on ${cooldownEndsAt?.toLocaleDateString()}`);
+        toast.error(`You can change your primary unit on ${cooldownEndsAt?.toLocaleDateString()}`);
         return false;
       }
 
       const membership = secondaryCrews.find((m) => m.crew_id === crewId);
       if (!membership) {
-        toast.error("You're not a secondary member of this crew");
+        toast.error("You're not a secondary member of this unit");
         return false;
       }
 
@@ -355,7 +355,7 @@ export function useCrewMembership(userId: string | undefined) {
         console.error("Error updating profile:", profileError);
       }
 
-      toast.success(`🏴 ${membership.crew?.name} is now your primary crew!`);
+      toast.success(`🏴 ${membership.crew?.name} is now your primary unit!`);
       fetchMemberships();
       return true;
     },

@@ -98,7 +98,7 @@ export default function JoinCrewPage() {
 
   const handleJoin = async () => {
     if (!user) {
-      localStorage.setItem("pending_crew_invite", JSON.stringify({
+      localStorage.setItem("pending_unit_invite", JSON.stringify({
         crewId: crew?.id,
         crewName: crew?.name,
         via,

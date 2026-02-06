@@ -316,7 +316,7 @@ export default function IndexPage() {
     { id: "events", label: "EVENTS", icon: Trophy },
   ];
 
-  // Crews tab handler - navigate to crews page
+  // Units tab handler - navigate to units page
   const handleCrewsTab = () => navigate("/units");
 
   // Event-specific leaderboard view within rankings
@@ -932,7 +932,7 @@ export default function IndexPage() {
               </>
             )}
 
-            {/* Crews Leaderboard */}
+            {/* Units Leaderboard */}
             {rankingSubTab === "crews" && (
               <>
                 <div className="flex items-center justify-between mb-4">
