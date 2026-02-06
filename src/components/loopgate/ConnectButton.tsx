@@ -90,10 +90,10 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
       return (
         <button
           onClick={() => navigate('/login')}
-          className={cn('inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded text-muted-foreground/60 hover:text-muted-foreground transition-colors', className)}
+          className={cn('inline-flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors', className)}
         >
-          <UserPlus size={8} />
-          <span className="hidden sm:inline">Connect</span>
+          <UserPlus size={10} />
+          Connect
         </button>
       );
     }
@@ -296,12 +296,13 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
     );
   }
 
-  // Micro variant - very subtle, top-right corner
+  // Micro variant - very subtle, stacked above stats
   if (variant === 'micro') {
     if (data.status === 'connected') {
       return (
-        <span className={cn('inline-flex items-center gap-0.5 text-[9px] text-emerald-500/70', className)}>
-          <UserCheck size={8} />
+        <span className={cn('inline-flex items-center gap-1 text-[9px] text-emerald-500/80', className)}>
+          <UserCheck size={10} />
+          Connected
         </span>
       );
     }
@@ -311,9 +312,10 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
         <button
           onClick={handleCancel}
           disabled={actionLoading}
-          className={cn('inline-flex items-center gap-0.5 text-[9px] text-gold/70 hover:text-destructive transition-colors', className)}
+          className={cn('inline-flex items-center gap-1 text-[9px] text-gold/80 hover:text-destructive transition-colors', className)}
         >
-          {actionLoading ? <Loader2 size={8} className="animate-spin" /> : <Clock size={8} />}
+          {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <Clock size={10} />}
+          Pending
         </button>
       );
     }
@@ -323,10 +325,10 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
         <button
           onClick={handleAccept}
           disabled={actionLoading}
-          className={cn('inline-flex items-center gap-0.5 text-[9px] text-sky-400/70 hover:text-emerald-500 transition-colors animate-pulse', className)}
+          className={cn('inline-flex items-center gap-1 text-[9px] text-sky-400 hover:text-emerald-500 transition-colors', className)}
         >
-          {actionLoading ? <Loader2 size={8} className="animate-spin" /> : <UserPlus size={8} />}
-          <span className="hidden sm:inline">Accept</span>
+          {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <UserPlus size={10} />}
+          Accept
         </button>
       );
     }
@@ -335,10 +337,10 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
       <button
         onClick={handleConnect}
         disabled={actionLoading || weeklyRemaining <= 0}
-        className={cn('inline-flex items-center gap-0.5 text-[9px] text-muted-foreground/50 hover:text-muted-foreground transition-colors disabled:opacity-50', className)}
+        className={cn('inline-flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50', className)}
       >
-        {actionLoading ? <Loader2 size={8} className="animate-spin" /> : <UserPlus size={8} />}
-        <span className="hidden sm:inline">Connect</span>
+        {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <UserPlus size={10} />}
+        Connect
       </button>
     );
   }

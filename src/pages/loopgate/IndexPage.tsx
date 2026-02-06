@@ -716,30 +716,30 @@ export default function IndexPage() {
                         </div>
                       </div>
 
-                      {/* Quick Connect Button - Top Right, Subtle */}
-                      {profile?.id !== editor.id && (
-                        <div 
-                          onClick={(e) => e.stopPropagation()} 
-                          className="absolute top-2.5 right-3 z-10"
-                        >
-                          <ConnectButton targetUserId={editor.id} variant="micro" />
-                        </div>
-                      )}
-
-                      {/* Level & Index */}
-                      <div className="flex items-center gap-4 flex-shrink-0">
-                        <div className="text-center">
-                          <p className="font-display text-lg text-foreground/80">
-                            {editor.level || 1}
-                          </p>
-                          <p className="text-[7px] text-muted-foreground uppercase tracking-wider">LVL</p>
-                        </div>
+                      {/* Right Column: Connect + Stats stacked */}
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        {/* Quick Connect Button - Above stats */}
+                        {profile?.id !== editor.id && (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <ConnectButton targetUserId={editor.id} variant="micro" />
+                          </div>
+                        )}
                         
-                        <div className="text-right">
-                          <p className={`font-display text-2xl ${isTopThree ? 'text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'text-gold'}`}>
-                            {(editor.global_index_score || 0).toFixed(1)}
-                          </p>
-                          <p className="text-[7px] text-muted-foreground uppercase tracking-wider">Index</p>
+                        {/* Level & Index Row */}
+                        <div className="flex items-center gap-3">
+                          <div className="text-center">
+                            <p className="font-display text-lg text-foreground/80">
+                              {editor.level || 1}
+                            </p>
+                            <p className="text-[7px] text-muted-foreground uppercase tracking-wider">LVL</p>
+                          </div>
+                          
+                          <div className="text-right">
+                            <p className={`font-display text-2xl ${isTopThree ? 'text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'text-gold'}`}>
+                              {(editor.global_index_score || 0).toFixed(1)}
+                            </p>
+                            <p className="text-[7px] text-muted-foreground uppercase tracking-wider">Index</p>
+                          </div>
                         </div>
                       </div>
                     </motion.button>
