@@ -3772,6 +3772,7 @@ export type Database = {
           crew_id: string
           id: string
           image_url: string
+          media_type: string
           status: string
           title: string | null
           uploaded_by: string
@@ -3781,6 +3782,7 @@ export type Database = {
           crew_id: string
           id?: string
           image_url: string
+          media_type?: string
           status?: string
           title?: string | null
           uploaded_by: string
@@ -3790,6 +3792,7 @@ export type Database = {
           crew_id?: string
           id?: string
           image_url?: string
+          media_type?: string
           status?: string
           title?: string | null
           uploaded_by?: string
