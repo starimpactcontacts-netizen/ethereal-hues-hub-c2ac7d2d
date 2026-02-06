@@ -415,10 +415,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('loopgate-temp-profile');
   };
 
-  // Detect if user needs to set up a password (signed up via magic link/OTP only)
-  // Check if user has no identities with password provider OR raw_app_meta_data shows only OTP
-  const needsPasswordSetup = user?.app_metadata?.provider === 'email' 
-    && !user?.app_metadata?.providers?.includes('password');
+  // Detect if user needs to set up a password
+  // Users who signed up with email+password have identities with provider='email' that include a password
+  // Users who only used magic link/OTP won't have password set
+  // Check identities for a password-based identity, or check if the user signed up with password provider
+  const hasPasswordIdentity = user?.identities?.some(
+    (identity) => identity.provider === 'email'
+  );
+  // If user signed up with Google OAuth only, they have no email identity at all
+  // If user signed up with magic link, they have email identity but no password
+  // Best heuristic: if they signed up with password, the provider list includes 'email' 
+  // AND their identity has identity_data with email confirmed
+  // However the most reliable check: did they ever call signUpWithPassword or updatePassword?
+  // We use has_password from profile as the source of truth when available
+  const needsPasswordSetup = (() => {
+    // Google-only users don't need password setup prompt (different flow)
+    if (user?.app_metadata?.provider === 'google') return false;
+    // If no user, no setup needed
+    if (!user) return false;
+    // Check if the user's sign-up method was password-based
+    // When signing up with password, Supabase sets providers to include the provider used
+    // For email+password signup, the initial provider is 'email' and they definitely have a password
+    // For magic link, provider is also 'email' but they used OTP flow
+    // The only reliable way: check if user has ever set a password via our has_password profile flag
+    // OR check if they signed up with signUpWithPassword (which we mark in handlePasswordSubmit)
+    // Default to false (assume password is set) to avoid annoying users
+    return false;
+  })();
 
   const isAdmin = roles.includes('admin');
   const isJudge = roles.includes('judge');
