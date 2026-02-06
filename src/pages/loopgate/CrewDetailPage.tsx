@@ -698,12 +698,13 @@ export default function CrewDetailPage() {
                   <div className="flex gap-2">
                     <Button
                       onClick={() => navigate(`/units/${crewId}/channels`)}
-                      className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold relative"
+                      size="lg"
+                      className="flex-1 bg-gold text-black hover:bg-gold/90 font-bold text-[15px] h-12 relative"
                     >
-                      <MessageCircle className="w-4 h-4 mr-2" />
+                      <MessageCircle className="w-5 h-5 mr-2" />
                       Channels
                       {channelUnreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[18px] text-center">
+                        <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[20px] text-center animate-pulse">
                           {channelUnreadCount > 99 ? "99+" : channelUnreadCount}
                         </span>
                       )}
