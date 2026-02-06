@@ -3873,6 +3873,10 @@ export type Database = {
         Args: { p_event_id: string; p_round_number: number }
         Returns: number
       }
+      ensure_default_channels: {
+        Args: { p_crew_id: string }
+        Returns: undefined
+      }
       find_practice_match: {
         Args: { p_duration: number; p_match_type: string; p_user_id: string }
         Returns: string
