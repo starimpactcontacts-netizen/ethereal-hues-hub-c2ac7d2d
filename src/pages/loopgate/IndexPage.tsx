@@ -716,13 +716,13 @@ export default function IndexPage() {
                         </div>
                       </div>
 
-                      {/* Quick Connect Button */}
+                      {/* Quick Connect Button - Top Right LinkedIn Style */}
                       {profile?.id !== editor.id && (
                         <div 
                           onClick={(e) => e.stopPropagation()} 
-                          className="flex-shrink-0"
+                          className="absolute top-2 right-2 z-10"
                         >
-                          <ConnectButton targetUserId={editor.id} variant="compact" />
+                          <ConnectButton targetUserId={editor.id} variant="pill" />
                         </div>
                       )}
 
