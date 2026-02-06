@@ -4,10 +4,13 @@ import {
   ArrowLeft, MessageCircle, Settings, Shield, Crown, Users, Star, Zap, Award, 
   LogOut, UserPlus, Check, X, Share2, TrendingUp, Coins, Copy, Link2, Calendar, 
   Trophy, Bell, BarChart3, FileVideo, ExternalLink, ChevronRight, Send, Trash2,
-  Swords, Circle
+  Swords, Circle, ClipboardList, UserCheck, FolderOpen
 } from "lucide-react";
 import { SiDiscord } from "@icons-pack/react-simple-icons";
 import { Textarea } from "@/components/ui/textarea";
+import UnitApplicationsTab from "@/components/loopgate/UnitApplicationsTab";
+import UnitEditorsTab from "@/components/loopgate/UnitEditorsTab";
+import UnitAssetsTab from "@/components/loopgate/UnitAssetsTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
@@ -120,7 +123,7 @@ interface CrewSubmission {
   };
 }
 
-type TabType = 'feed' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges';
+type TabType = 'feed' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges' | 'applications' | 'editors' | 'assets';
 
 const emblemIcons: Record<string, React.ReactNode> = {
   shield: <Shield className="w-10 h-10" />,
@@ -563,6 +566,9 @@ export default function CrewDetailPage() {
 
   const tabs: { id: TabType; icon: React.ReactNode; label: string; badge?: number }[] = [
     { id: 'feed', icon: <Zap className="w-4 h-4" />, label: 'Live' },
+    { id: 'applications', icon: <ClipboardList className="w-4 h-4" />, label: 'Apply' },
+    { id: 'editors', icon: <UserCheck className="w-4 h-4" />, label: 'Editors' },
+    { id: 'assets', icon: <FolderOpen className="w-4 h-4" />, label: 'Assets' },
     { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'News', badge: unreadAnnouncementCount },
     { id: 'rivals', icon: <Swords className="w-4 h-4" />, label: 'Rivals', badge: rivalries.length },
     { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Board' },
@@ -798,6 +804,21 @@ export default function CrewDetailPage() {
                     <CrewLiveFeed crewId={crewId} members={members} />
                   </div>
                 </div>
+              )}
+
+              {/* Applications Tab */}
+              {activeTab === 'applications' && crewId && (
+                <UnitApplicationsTab crewId={crewId} isOfficer={isStaff} />
+              )}
+
+              {/* Editors Tab */}
+              {activeTab === 'editors' && crewId && (
+                <UnitEditorsTab crewId={crewId} isOfficer={isStaff} />
+              )}
+
+              {/* Assets Tab */}
+              {activeTab === 'assets' && crewId && (
+                <UnitAssetsTab crewId={crewId} isOfficer={isStaff} />
               )}
 
               {/* Announcements Tab */}
