@@ -39,9 +39,13 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
 
   // Application form state
   const [submissionUrl, setSubmissionUrl] = useState("");
+  const [proofUrl, setProofUrl] = useState("");
   const [platform, setPlatform] = useState("tiktok");
+  const [softwareUsed, setSoftwareUsed] = useState("");
+  const [wantsFeedback, setWantsFeedback] = useState(true);
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [reviewNotes, setReviewNotes] = useState<Record<string, string>>({});
 
   // Tier editor state
   const [tierName, setTierName] = useState("");
@@ -64,12 +68,17 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
     if (result) {
       setShowApplyModal(false);
       setSubmissionUrl("");
+      setProofUrl("");
+      setSoftwareUsed("");
+      setWantsFeedback(true);
       setMessage("");
     }
   };
 
   const handleReview = async (appId: string, status: "approved" | "rejected") => {
-    await reviewApplication(appId, status);
+    const notes = reviewNotes[appId];
+    await reviewApplication(appId, status, notes);
+    setReviewNotes((prev) => { const n = { ...prev }; delete n[appId]; return n; });
   };
 
   const handleSaveTier = async () => {
@@ -361,6 +370,16 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                     "{app.message}"
                   </div>
                 )}
+
+                {/* Feedback Notes */}
+                <div className="mt-3">
+                  <Input
+                    value={reviewNotes[app.id] || ""}
+                    onChange={(e) => setReviewNotes((prev) => ({ ...prev, [app.id]: e.target.value }))}
+                    placeholder="Add feedback notes (optional)..."
+                    className="h-9 text-sm"
+                  />
+                </div>
               </motion.div>
             ))}
           </div>
@@ -429,6 +448,44 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
                     placeholder="https://..."
                     className="h-10"
                   />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">Proof of Edit URL (optional)</label>
+                  <Input
+                    value={proofUrl}
+                    onChange={(e) => setProofUrl(e.target.value)}
+                    placeholder="https://streamable.com/..."
+                    className="h-10"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium mb-1.5 block uppercase tracking-wider text-muted-foreground">What app do you use?</label>
+                  <Input
+                    value={softwareUsed}
+                    onChange={(e) => setSoftwareUsed(e.target.value)}
+                    placeholder="e.g., After Effects, CapCut, InShot"
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between bg-background/50 rounded-lg p-3">
+                  <label className="text-sm font-medium">Do you want feedback?</label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setWantsFeedback(true)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${wantsFeedback ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-muted text-muted-foreground'}`}
+                    >
+                      ✅ Yes
+                    </button>
+                    <button
+                      onClick={() => setWantsFeedback(false)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${!wantsFeedback ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-muted text-muted-foreground'}`}
+                    >
+                      No
+                    </button>
+                  </div>
                 </div>
 
                 <div>
