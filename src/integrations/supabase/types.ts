@@ -3622,6 +3622,13 @@ export type Database = {
         Returns: string
       }
       generate_invite_code: { Args: never; Returns: string }
+      get_channel_unread_counts: {
+        Args: { p_crew_id: string; p_user_id: string }
+        Returns: {
+          channel_id: string
+          unread_count: number
+        }[]
+      }
       get_or_create_conversation: {
         Args: { p_user_1: string; p_user_2: string }
         Returns: string
