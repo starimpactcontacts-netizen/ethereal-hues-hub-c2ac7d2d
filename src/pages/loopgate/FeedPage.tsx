@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Play, Loader2, Search, TrendingUp, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { fetchThumbnailsBatch } from "@/hooks/useThumbnail";
+import { fetchThumbnailsBatch, resolveInstantThumbnail } from "@/hooks/useThumbnail";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
@@ -133,6 +133,24 @@ export default function FeedPage() {
         if (isLoadMore) { setLoadingMore(false); return; }
       }
 
+      // Collect all submissions that need thumbnails resolved
+      const allSubmissions = [
+        ...roundData.map(s => ({ url: s.submission_url!, platform: (s as any).platform || 'tiktok', thumb: (s as any).thumbnail_url })),
+        ...eventData.map(s => ({ url: s.submission_url!, platform: s.platform || 'tiktok', thumb: s.thumbnail_url })),
+        ...sanctionedData.map(s => ({ url: s.submission_url!, platform: s.submission_platform || 'tiktok', thumb: (s as any).thumbnail_url })),
+        ...reviewData.map(r => ({ url: r.submission_url, platform: r.platform || 'tiktok', thumb: null as string | null })),
+      ];
+
+      // Eagerly resolve what we can client-side (YouTube = instant, cached = instant)
+      const needsRemoteFetch: Array<{ submission_url: string; platform: string }> = [];
+      const instantThumbs = new Map<string, string | null>();
+      for (const sub of allSubmissions) {
+        if (sub.thumb) { instantThumbs.set(sub.url, sub.thumb); continue; }
+        const instant = resolveInstantThumbnail(sub.url, sub.platform);
+        if (instant) { instantThumbs.set(sub.url, instant); }
+        else { needsRemoteFetch.push({ submission_url: sub.url, platform: sub.platform }); }
+      }
+
       const allUserIds = [
         ...roundData.map(s => s.user_id),
         ...eventData.map(s => s.user_id),
@@ -143,11 +161,23 @@ export default function FeedPage() {
       const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
       const tournamentIds = [...new Set(sanctionedData.map(s => s.tournament_id))];
 
-      const [profilesRes, eventsRes, tournamentsRes] = await Promise.all([
+      // Fire profile/event lookups AND remote thumbnail fetch in parallel
+      const [profilesRes, eventsRes, tournamentsRes, remoteThumbs] = await Promise.all([
         supabase.from('profiles').select('id, username, avatar_url').in('id', userIds.length > 0 ? userIds : ['']),
         supabase.from('events').select('id, title').in('id', eventIds.length > 0 ? eventIds : ['']),
-        supabase.from('sanctioned_tournaments').select('id, name').in('id', tournamentIds.length > 0 ? tournamentIds : [''])
+        supabase.from('sanctioned_tournaments').select('id, name').in('id', tournamentIds.length > 0 ? tournamentIds : ['']),
+        needsRemoteFetch.length > 0
+          ? fetchThumbnailsBatch(needsRemoteFetch)
+          : Promise.resolve({} as Record<string, string | null>),
       ]);
+
+      // Merge all thumbnails
+      const allThumbs = new Map(instantThumbs);
+      for (const [url, thumb] of Object.entries(remoteThumbs)) {
+        if (thumb) allThumbs.set(url, thumb);
+      }
+
+      const getThumb = (url: string, dbThumb: string | null) => dbThumb || allThumbs.get(url) || null;
 
       const profileMap = new Map(profilesRes.data?.map(p => [p.id, p]) || []);
       const eventMap = new Map(eventsRes.data?.map(e => [e.id, e]) || []);
@@ -159,7 +189,7 @@ export default function FeedPage() {
         user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor',
         avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
         created_at: s.created_at || new Date().toISOString(),
-        thumbnail_url: (s as any).thumbnail_url || null, custom_title: (s as any).custom_title || null,
+        thumbnail_url: getThumb(s.submission_url!, (s as any).thumbnail_url), custom_title: (s as any).custom_title || null,
         qoi_score: s.qoi_score, quality_score: s.quality_score || null,
         originality_score: s.originality_score || null, impact_score: s.impact_score || null,
         event_title: eventMap.get(s.event_id)?.title || 'Open Arena', final_rank: null,
@@ -171,7 +201,7 @@ export default function FeedPage() {
         user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor',
         avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
         created_at: (s as any).submitted_at || new Date().toISOString(),
-        thumbnail_url: s.thumbnail_url || null, custom_title: (s as any).custom_title || null,
+        thumbnail_url: getThumb(s.submission_url!, s.thumbnail_url), custom_title: (s as any).custom_title || null,
         qoi_score: s.qoi_score, quality_score: s.quality_score || null,
         originality_score: s.originality_score || null, impact_score: s.impact_score || null,
         event_title: eventMap.get(s.event_id)?.title || 'Event', final_rank: s.final_rank || null,
@@ -183,7 +213,7 @@ export default function FeedPage() {
         user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor',
         avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
         created_at: s.submitted_at || new Date().toISOString(),
-        thumbnail_url: (s as any).thumbnail_url || null, custom_title: (s as any).custom_title || null,
+        thumbnail_url: getThumb(s.submission_url!, (s as any).thumbnail_url), custom_title: (s as any).custom_title || null,
         qoi_score: s.qoi_score,
         event_title: tournamentMap.get(s.tournament_id)?.title || 'Tournament', final_rank: s.final_rank || null,
       }));
@@ -192,15 +222,16 @@ export default function FeedPage() {
         id: `review-${r.id}`, rawId: r.id, type: 'review' as const,
         submission_url: r.submission_url, platform: r.platform || 'tiktok',
         user_id: r.user_id, username: r.username || 'editor', avatar_url: r.avatar_url,
-        created_at: r.reviewed_at || r.requested_at, thumbnail_url: null, custom_title: null,
+        created_at: r.reviewed_at || r.requested_at,
+        thumbnail_url: getThumb(r.submission_url, null), custom_title: null,
         total_score: r.total_score || 0, judge_comment: r.judge_comment,
         judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url,
       }));
 
       // Boost official events & premium comps higher in feed
       const getBoost = (item: LoopFeedItem) => {
-        if (item.id.startsWith('arena-event-')) return 2; // Official events
-        if (item.id.startsWith('arena-sanctioned-')) return 1; // Sanctioned
+        if (item.id.startsWith('arena-event-')) return 2;
+        if (item.id.startsWith('arena-sanctioned-')) return 1;
         return 0;
       };
 
@@ -221,20 +252,6 @@ export default function FeedPage() {
         setFeedItems(prev => [...prev, ...newItems]);
       } else {
         setFeedItems(newItems);
-      }
-
-      // Auto-fetch thumbnails for items missing them
-      const needThumbnails = newItems.filter(i => !i.thumbnail_url);
-      if (needThumbnails.length > 0) {
-        fetchThumbnailsBatch(needThumbnails.map(i => ({ submission_url: i.submission_url, platform: i.platform })))
-          .then(thumbs => {
-            setFeedItems(prev => prev.map(item => {
-              if (!item.thumbnail_url && thumbs[item.submission_url]) {
-                return { ...item, thumbnail_url: thumbs[item.submission_url] };
-              }
-              return item;
-            }));
-          });
       }
     } catch (error) {
       console.error('Error fetching feed:', error);
