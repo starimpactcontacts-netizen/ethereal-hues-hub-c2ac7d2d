@@ -41,6 +41,13 @@ const METRIC_ICONS: Record<string, string> = {
   members: "👥",
   arena_wins: "🏆",
   gqt_scores: "📊",
+  judge_review_c_plus: "⭐",
+  judge_review_b_plus: "🌟",
+  judge_review_s: "💎",
+  judge_reviews_received: "📝",
+  gqt_score_70_plus: "🎯",
+  badge_displays: "🏅",
+  viral_submission: "🔥",
 };
 
 const METRIC_LABELS: Record<string, string> = {
@@ -49,6 +56,13 @@ const METRIC_LABELS: Record<string, string> = {
   members: "New Members",
   arena_wins: "Arena Wins",
   gqt_scores: "GQT Completions",
+  judge_review_c_plus: "C+ Judge Rating",
+  judge_review_b_plus: "B+ Judge Rating",
+  judge_review_s: "S Tier Rating",
+  judge_reviews_received: "Reviews Received",
+  gqt_score_70_plus: "GQT 70+ Score",
+  badge_displays: "Badge Displays",
+  viral_submission: "Viral Video",
 };
 
 export function useCrewChallenges(crewId: string | undefined) {
@@ -60,6 +74,9 @@ export function useCrewChallenges(crewId: string | undefined) {
     if (!crewId) return;
 
     try {
+      // First, try to generate new challenges if needed
+      await supabase.rpc("generate_crew_challenges", { p_crew_id: crewId });
+
       // Fetch active challenges
       const { data: challengesData, error: challengesError } = await supabase
         .from("crew_challenges")
