@@ -3,43 +3,97 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const USER_AGENTS = [
-  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+const SCRAPE_UAS = [
   'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatype.php)',
+  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
 ];
 
-/** Extract og:image or twitter:image from raw HTML */
+// ── Helpers ──────────────────────────────────────────────
+
+/** Follow redirects on a short URL to get the final destination */
+async function resolveRedirect(url: string): Promise<string> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    // Use HEAD with manual redirect to follow the chain
+    const res = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'follow',
+      headers: { 'User-Agent': SCRAPE_UAS[0] },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    // res.url is the final URL after redirects
+    if (res.url && res.url !== url) {
+      console.log('Resolved redirect:', url, '->', res.url);
+      return res.url;
+    }
+  } catch (e) {
+    console.log('HEAD redirect failed, trying GET:', e);
+    // Fallback: GET request (some servers don't support HEAD)
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const res = await fetch(url, {
+        redirect: 'follow',
+        headers: { 'User-Agent': SCRAPE_UAS[0] },
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (res.url && res.url !== url) {
+        console.log('Resolved redirect (GET):', url, '->', res.url);
+        return res.url;
+      }
+    } catch (e2) {
+      console.log('GET redirect also failed:', e2);
+    }
+  }
+  return url;
+}
+
+/** Check if a URL is a shortened TikTok link */
+function isShortTikTok(url: string): boolean {
+  return /^https?:\/\/(vm|vt)\.tiktok\.com\//i.test(url)
+    || /^https?:\/\/(www\.)?tiktok\.com\/t\//i.test(url);
+}
+
+/** Extract TikTok video ID from a full URL */
+function extractTikTokVideoId(url: string): string | null {
+  const match = url.match(/\/video\/(\d+)/);
+  return match ? match[1] : null;
+}
+
+/** Extract og:image from HTML */
 function extractOgImage(html: string): string | null {
-  // Try og:image
   const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
     || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
   if (ogMatch?.[1]) return ogMatch[1];
 
-  // Try twitter:image
   const twMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
     || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
   if (twMatch?.[1]) return twMatch[1];
 
-  // Try thumbnail_url in JSON-LD or embedded JSON
+  // JSON embedded thumbnail
   const jsonThumb = html.match(/"thumbnail_url"\s*:\s*"([^"]+)"/i)
     || html.match(/"thumbnailUrl"\s*:\s*"([^"]+)"/i)
-    || html.match(/"cover"\s*:\s*"([^"]+)"/i);
-  if (jsonThumb?.[1]) return jsonThumb[1].replace(/\\u002F/g, '/');
+    || html.match(/"cover"\s*:\s*"([^"]+)"/i)
+    || html.match(/"thumbnail"\s*:\s*\{[^}]*"url_list"\s*:\s*\["([^"]+)"/i);
+  if (jsonThumb?.[1]) return jsonThumb[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
 
   return null;
 }
 
-/** Fetch page HTML with multiple user-agent fallbacks */
-async function fetchPageHtml(url: string): Promise<string | null> {
-  for (const ua of USER_AGENTS) {
+/** Scrape a page and extract og:image with UA fallbacks */
+async function scrapeOgImage(url: string): Promise<string | null> {
+  for (const ua of SCRAPE_UAS) {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 6000);
       const res = await fetch(url, {
         headers: {
           'User-Agent': ua,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept': 'text/html,application/xhtml+xml',
           'Accept-Language': 'en-US,en;q=0.5',
         },
         redirect: 'follow',
@@ -48,14 +102,17 @@ async function fetchPageHtml(url: string): Promise<string | null> {
       clearTimeout(timeout);
       if (res.ok) {
         const text = await res.text();
-        if (text.length > 500) return text; // got real content
+        const img = extractOgImage(text);
+        if (img) return img;
       }
     } catch {
-      // try next UA
+      // next UA
     }
   }
   return null;
 }
+
+// ── Main handler ─────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -63,9 +120,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { url, platform } = await req.json();
+    const { url: rawUrl, platform } = await req.json();
 
-    if (!url) {
+    if (!rawUrl) {
       return new Response(
         JSON.stringify({ error: 'URL is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -73,8 +130,9 @@ Deno.serve(async (req) => {
     }
 
     let thumbnailUrl: string | null = null;
+    let url = rawUrl;
 
-    // ---------- YouTube — instant, no fetch needed ----------
+    // ── YouTube — instant, zero network ──
     if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
       const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
       if (match) {
@@ -82,70 +140,85 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ---------- TikTok ----------
+    // ── TikTok ──
     if (!thumbnailUrl && (platform === 'tiktok' || url.includes('tiktok.com'))) {
-      // 1) Try oEmbed first (fast)
+      // Step 1: Resolve short URLs to full URLs
+      if (isShortTikTok(url)) {
+        url = await resolveRedirect(url);
+        console.log('Resolved TikTok URL:', url);
+      }
+
+      // Step 2: Try oEmbed with the FULL URL
       try {
         const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
         const res = await fetch(oembedUrl, {
-          headers: { 'User-Agent': USER_AGENTS[0] },
+          headers: { 'User-Agent': SCRAPE_UAS[0] },
+          signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (res.ok) {
-          const data = await res.json();
-          thumbnailUrl = data.thumbnail_url || null;
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
+            thumbnailUrl = data.thumbnail_url || null;
+            console.log('TikTok oEmbed result:', thumbnailUrl ? 'found' : 'null');
+          } else {
+            console.log('TikTok oEmbed returned non-JSON:', contentType);
+          }
         }
       } catch (e) {
-        console.log('TikTok oEmbed failed:', e);
+        console.log('TikTok oEmbed error:', e);
       }
 
-      // 2) Fallback: scrape og:image from the page
+      // Step 3: Scrape og:image from the page
       if (!thumbnailUrl) {
-        console.log('TikTok oEmbed returned null, scraping page for og:image...');
-        const html = await fetchPageHtml(url);
-        if (html) {
-          thumbnailUrl = extractOgImage(html);
-          console.log('TikTok og:image result:', thumbnailUrl ? 'found' : 'not found');
+        console.log('Scraping TikTok page for og:image...');
+        thumbnailUrl = await scrapeOgImage(url);
+        // Also try original URL if we resolved it
+        if (!thumbnailUrl && url !== rawUrl) {
+          thumbnailUrl = await scrapeOgImage(rawUrl);
         }
       }
     }
 
-    // ---------- Instagram ----------
+    // ── Instagram ──
     if (!thumbnailUrl && (platform === 'instagram' || url.includes('instagram.com'))) {
-      // 1) Try oEmbed
+      // Step 1: Try oEmbed
       try {
         const oembedUrl = `https://api.instagram.com/oembed?url=${encodeURIComponent(url)}`;
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000);
         const res = await fetch(oembedUrl, {
-          headers: { 'User-Agent': USER_AGENTS[0] },
+          headers: { 'User-Agent': SCRAPE_UAS[0] },
+          signal: controller.signal,
         });
+        clearTimeout(timeout);
         if (res.ok) {
-          const data = await res.json();
-          thumbnailUrl = data.thumbnail_url || null;
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
+            thumbnailUrl = data.thumbnail_url || null;
+          }
         }
       } catch (e) {
-        console.log('Instagram oEmbed failed:', e);
+        console.log('Instagram oEmbed error:', e);
       }
 
-      // 2) Fallback: scrape og:image
+      // Step 2: Scrape og:image
       if (!thumbnailUrl) {
-        console.log('Instagram oEmbed returned null, scraping page for og:image...');
-        const html = await fetchPageHtml(url);
-        if (html) {
-          thumbnailUrl = extractOgImage(html);
-          console.log('Instagram og:image result:', thumbnailUrl ? 'found' : 'not found');
-        }
+        console.log('Scraping Instagram page for og:image...');
+        thumbnailUrl = await scrapeOgImage(url);
       }
     }
 
-    // ---------- Generic fallback for unknown platforms ----------
+    // ── Generic fallback ──
     if (!thumbnailUrl) {
-      console.log('Generic fallback: scraping page for og:image...');
-      const html = await fetchPageHtml(url);
-      if (html) {
-        thumbnailUrl = extractOgImage(html);
-      }
+      thumbnailUrl = await scrapeOgImage(url);
     }
 
-    console.log('Final thumbnail result for', url, ':', thumbnailUrl ? 'resolved' : 'null');
+    console.log('FINAL result for', rawUrl, '->', thumbnailUrl ? 'RESOLVED' : 'NULL');
 
     return new Response(
       JSON.stringify({ thumbnailUrl }),
@@ -153,10 +226,9 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error fetching thumbnail:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: errorMessage, thumbnailUrl: null }),
+      JSON.stringify({ error: String(error), thumbnailUrl: null }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
