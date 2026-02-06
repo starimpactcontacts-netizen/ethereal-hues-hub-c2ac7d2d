@@ -13,6 +13,12 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -29,21 +35,17 @@ interface ConversationItemProps {
   conv: Conversation;
   userId: string | undefined;
   onDelete: (id: string) => void;
-  onLabel: (id: string, label: string | null) => void;
+  onOpenLabelSheet: (id: string) => void;
+  currentLabel: string | null;
 }
 
-function ConversationItem({ conv, userId, onDelete, onLabel }: ConversationItemProps) {
+function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, currentLabel }: ConversationItemProps) {
   const navigate = useNavigate();
   const unreadCount = conv.participant_1_id === userId 
     ? conv.unread_count_1 
     : conv.unread_count_2;
-  
-  const myLabel = conv.participant_1_id === userId 
-    ? conv.label_1 
-    : conv.label_2;
 
   const handleClick = (e: React.MouseEvent) => {
-    // Don't navigate if clicking on dropdown
     if ((e.target as HTMLElement).closest('[data-radix-collection-item]')) {
       e.preventDefault();
       return;
@@ -71,15 +73,13 @@ function ConversationItem({ conv, userId, onDelete, onLabel }: ConversationItemP
             </div>
           )}
         </div>
-        {/* Verified badge */}
         {conv.other_user?.verification_status && (
           <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-background rounded-full flex items-center justify-center">
             <BadgeCheck className="w-4 h-4 text-sky-500 fill-sky-500" />
           </div>
         )}
-        {/* Online indicator - only if not verified (to avoid overlap) */}
         {!conv.other_user?.verification_status && conv.other_user?.activity_status === 'online' && (
-          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+          <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background" />
         )}
       </div>
 
@@ -89,9 +89,9 @@ function ConversationItem({ conv, userId, onDelete, onLabel }: ConversationItemP
           <span className={`font-medium truncate ${unreadCount > 0 ? 'text-foreground' : 'text-foreground/80'}`}>
             {conv.other_user?.username || 'Unknown'}
           </span>
-          {myLabel && (
+          {currentLabel && (
             <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium uppercase tracking-wide">
-              {myLabel}
+              {currentLabel}
             </span>
           )}
         </div>
@@ -106,49 +106,29 @@ function ConversationItem({ conv, userId, onDelete, onLabel }: ConversationItemP
           {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: false })}
         </span>
         
-        {/* Unread badge */}
         {unreadCount > 0 && (
           <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </div>
         )}
 
-        {/* Actions dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <button className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-muted/50 transition-all">
+            <button className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 sm:opacity-100 hover:bg-muted/50 transition-all">
               <MoreVertical className="w-4 h-4 text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            <div className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-              <Tag className="w-3 h-3 inline mr-1.5" />
-              Label
-            </div>
-            {LABELS.map((label) => (
-              <DropdownMenuItem
-                key={label}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onLabel(conv.id, label);
-                }}
-                className={`text-xs ${myLabel === label ? 'bg-primary/10 text-primary' : ''}`}
-              >
-                {label}
-                {myLabel === label && <span className="ml-auto text-primary">✓</span>}
-              </DropdownMenuItem>
-            ))}
-            {myLabel && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onLabel(conv.id, null);
-                }}
-                className="text-xs text-muted-foreground"
-              >
-                Remove Label
-              </DropdownMenuItem>
-            )}
+          <DropdownMenuContent align="end" className="w-40 bg-surface-1 border-border">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenLabelSheet(conv.id);
+              }}
+              className="text-xs"
+            >
+              <Tag className="w-3.5 h-3.5 mr-2" />
+              {currentLabel ? 'Change Label' : 'Add Label'}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={(e) => {
@@ -171,17 +151,35 @@ export default function MessagesPage() {
   const { user } = useAuth();
   const { conversations, loading, deleteConversation, updateLabel } = useConversations();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [labelSheetId, setLabelSheetId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'connected' | 'other'>('connected');
 
   // Split conversations by connection status
   const connectedConversations = conversations.filter(c => c.is_connected);
   const otherConversations = conversations.filter(c => !c.is_connected);
 
+  // Get current label for the conversation being edited
+  const labelSheetConv = conversations.find(c => c.id === labelSheetId);
+  const currentLabelForSheet = labelSheetConv
+    ? (labelSheetConv.participant_1_id === user?.id ? labelSheetConv.label_1 : labelSheetConv.label_2)
+    : null;
+
   const handleDelete = async () => {
     if (deleteId) {
       await deleteConversation(deleteId);
       setDeleteId(null);
     }
+  };
+
+  const handleSelectLabel = async (label: string | null) => {
+    if (labelSheetId) {
+      await updateLabel(labelSheetId, label);
+      setLabelSheetId(null);
+    }
+  };
+
+  const getConvLabel = (conv: Conversation) => {
+    return conv.participant_1_id === user?.id ? conv.label_1 : conv.label_2;
   };
 
   const renderConversationList = (convs: Conversation[]) => {
@@ -202,7 +200,8 @@ export default function MessagesPage() {
         conv={conv}
         userId={user?.id}
         onDelete={setDeleteId}
-        onLabel={updateLabel}
+        onOpenLabelSheet={setLabelSheetId}
+        currentLabel={getConvLabel(conv)}
       />
     ));
   };
@@ -296,6 +295,41 @@ export default function MessagesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Label Selection Sheet */}
+      <Sheet open={!!labelSheetId} onOpenChange={(open) => !open && setLabelSheetId(null)}>
+        <SheetContent side="bottom" className="bg-surface-1 border-border rounded-t-2xl">
+          <SheetHeader className="pb-2">
+            <SheetTitle className="text-center font-display">Choose Label</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-1 pb-4">
+            {LABELS.map((label) => (
+              <button
+                key={label}
+                onClick={() => handleSelectLabel(label)}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm transition-colors ${
+                  currentLabelForSheet === label 
+                    ? 'bg-primary/10 text-primary font-medium' 
+                    : 'hover:bg-muted/50'
+                }`}
+              >
+                <span className="flex items-center justify-between">
+                  {label}
+                  {currentLabelForSheet === label && <span className="text-primary">✓</span>}
+                </span>
+              </button>
+            ))}
+            {currentLabelForSheet && (
+              <button
+                onClick={() => handleSelectLabel(null)}
+                className="w-full text-left px-4 py-3 rounded-lg text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
+              >
+                Remove Label
+              </button>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
