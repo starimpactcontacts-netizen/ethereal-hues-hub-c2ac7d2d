@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Play, Loader2, Search, TrendingUp, Shield } from "lucide-react";
+import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import { getThumbnailBatch, getThumbnail } from "@/lib/thumbnail";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -107,7 +108,7 @@ export default function FeedPage() {
       const arenaOffset = offsetRef.current.arena;
       const reviewOffset = offsetRef.current.review;
 
-      const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes] = await Promise.all([
+      const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes, judgeVideosRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at, thumbnail_url, custom_title')
@@ -142,6 +143,11 @@ export default function FeedPage() {
           .in('status', ['active', 'judging', 'completed'])
           .order('updated_at', { ascending: false })
           .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase
+          .from('judge_rating_videos')
+          .select('id, video_url, platform, title, thumbnail_url, current_views, judge_id, submitted_at')
+          .order('submitted_at', { ascending: false })
+          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
       ]);
 
       const roundData = roundRes.data || [];
@@ -149,11 +155,12 @@ export default function FeedPage() {
       const sanctionedData = sanctionedRes.data || [];
       const reviewData = reviewRes.data || [];
       const battlesData = battlesRes.data || [];
+      const judgeVideosData = judgeVideosRes.data || [];
 
-      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length);
+      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length, judgeVideosData.length);
       offsetRef.current.review += reviewData.length;
 
-      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length;
+      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length + judgeVideosData.length;
       if (fetchedCount === 0) {
         setHasMore(false);
         if (isLoadMore) { setLoadingMore(false); return; }
@@ -164,6 +171,7 @@ export default function FeedPage() {
         ...eventData.map(s => s.user_id),
         ...sanctionedData.map(s => s.user_id),
         ...reviewData.map(r => r.user_id),
+        ...judgeVideosData.map(j => j.judge_id),
       ];
       const userIds = [...new Set(allUserIds)];
       const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
@@ -251,15 +259,29 @@ export default function FeedPage() {
           battle_status: b.status,
         }));
 
+      // Build judge video feed items
+      const judgeVideoItems: LoopFeedItem[] = judgeVideosData.map(j => ({
+        id: `judge-video-${j.id}`, rawId: j.id, type: 'judge_video' as const,
+        submission_url: j.video_url, platform: j.platform || 'tiktok',
+        user_id: j.judge_id, username: profileMap.get(j.judge_id)?.username || 'judge',
+        avatar_url: profileMap.get(j.judge_id)?.avatar_url || null,
+        created_at: j.submitted_at || new Date().toISOString(),
+        thumbnail_url: j.thumbnail_url || null, custom_title: null,
+        video_title: j.title || 'Judge Rating Video',
+        current_views: j.current_views,
+        is_verified: true, // judges are verified
+      }));
+
       // Boost official events & premium comps higher in feed
       const getBoost = (item: LoopFeedItem) => {
         if (item.id.startsWith('arena-event-')) return 2;
         if (item.id.startsWith('battle-') && item.battle_status === 'active') return 1.5;
         if (item.id.startsWith('arena-sanctioned-')) return 1;
+        if (item.id.startsWith('judge-video-')) return 0.5;
         return 0;
       };
 
-      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems]
+      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems, ...judgeVideoItems]
         .sort((a, b) => {
           const boostDiff = getBoost(b) - getBoost(a);
           if (boostDiff !== 0) return boostDiff;
@@ -410,7 +432,7 @@ export default function FeedPage() {
             <>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <TrendingUp className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Trending Editors</span>
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Trending Editors & Judges</span>
               </div>
               <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-0.5">
                 {trendingEditors.map(editor => (
@@ -422,7 +444,7 @@ export default function FeedPage() {
                     className="flex flex-col items-center gap-0.5 shrink-0"
                   >
                     <div className="relative">
-                      <div className={`w-9 h-9 rounded-full overflow-hidden bg-surface-1 ${editor.is_verified ? 'ring-2 ring-primary/60' : 'border border-border/60'}`}>
+                      <div className={`w-9 h-9 rounded-full overflow-hidden bg-surface-1 ${editor.is_verified ? 'ring-2 ring-[hsl(214,89%,52%)]/60' : 'border border-border/60'}`}>
                         <Avatar className="w-full h-full">
                           <AvatarImage src={editor.avatar_url || undefined} />
                           <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
@@ -431,8 +453,8 @@ export default function FeedPage() {
                         </Avatar>
                       </div>
                       {editor.is_verified && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center border border-background">
-                          <span className="text-[7px] text-primary-foreground">✓</span>
+                        <div className="absolute -bottom-0.5 -right-0.5">
+                          <VerifiedBadge size="sm" />
                         </div>
                       )}
                     </div>
