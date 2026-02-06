@@ -15,6 +15,7 @@ import ChannelPermissionsModal from "@/components/loopgate/ChannelPermissionsMod
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface Crew {
   id: string;
@@ -160,6 +161,22 @@ export default function UnitChatPage() {
       return updateChannel(channelId, updates);
     },
     [updateChannel]
+  );
+
+  const handleSaveBotSettings = useCallback(
+    async (name: string, avatarUrl: string) => {
+      if (!crewId) return;
+      const { error } = await supabase
+        .from("crews")
+        .update({ bot_name: name, bot_avatar_url: avatarUrl || null })
+        .eq("id", crewId);
+      if (error) {
+        toast.error("Failed to update bot settings");
+      } else {
+        setCrew((prev) => prev ? { ...prev, bot_name: name, bot_avatar_url: avatarUrl || null } : prev);
+      }
+    },
+    [crewId]
   );
 
   const isOfficer = myRole === "owner" || myRole === "officer";
@@ -407,6 +424,9 @@ export default function UnitChatPage() {
           onClose={() => setPermissionsChannel(null)}
           onSave={handleSavePermissions}
           tiers={tiers}
+          botName={crew.bot_name || "Unit Bot"}
+          botAvatarUrl={crew.bot_avatar_url || ""}
+          onSaveBotSettings={handleSaveBotSettings}
         />
       )}
     </div>

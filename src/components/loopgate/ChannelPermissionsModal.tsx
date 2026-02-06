@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { X, Lock, Unlock, Eye, MessageSquare, Shield, Users, Crown, Hash } from "lucide-react";
+import { Lock, Unlock, Eye, MessageSquare, Shield, Crown, Hash, Bot, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CrewChannel } from "@/hooks/useCrewChannels";
@@ -14,6 +16,9 @@ interface ChannelPermissionsModalProps {
   onClose: () => void;
   onSave: (channelId: string, updates: Partial<CrewChannel>) => Promise<boolean>;
   tiers?: { id: string; name: string; tier_order: number; color: string; icon: string }[];
+  botName?: string;
+  botAvatarUrl?: string;
+  onSaveBotSettings?: (name: string, avatarUrl: string) => Promise<void>;
 }
 
 export default function ChannelPermissionsModal({
@@ -22,17 +27,24 @@ export default function ChannelPermissionsModal({
   onClose,
   onSave,
   tiers = [],
+  botName = "Unit Bot",
+  botAvatarUrl = "",
+  onSaveBotSettings,
 }: ChannelPermissionsModalProps) {
   const [isLocked, setIsLocked] = useState(channel.is_locked);
   const [isEditorOnly, setIsEditorOnly] = useState(channel.is_editor_only);
   const [minTierOrder, setMinTierOrder] = useState(channel.min_tier_order);
+  const [localBotName, setLocalBotName] = useState(botName);
+  const [localBotAvatar, setLocalBotAvatar] = useState(botAvatarUrl);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setIsLocked(channel.is_locked);
     setIsEditorOnly(channel.is_editor_only);
     setMinTierOrder(channel.min_tier_order);
-  }, [channel]);
+    setLocalBotName(botName);
+    setLocalBotAvatar(botAvatarUrl);
+  }, [channel, botName, botAvatarUrl]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -42,8 +54,12 @@ export default function ChannelPermissionsModal({
       min_tier_order: minTierOrder,
     });
 
+    if (onSaveBotSettings) {
+      await onSaveBotSettings(localBotName.trim() || "Unit Bot", localBotAvatar.trim());
+    }
+
     if (success) {
-      toast.success("Channel permissions updated");
+      toast.success("Channel settings updated");
       onClose();
     }
     setSaving(false);
@@ -181,6 +197,62 @@ export default function ChannelPermissionsModal({
                   </span>
                 </div>
               </div>
+              {/* Bot Settings */}
+              {onSaveBotSettings && (
+                <div className="space-y-4 pt-2 border-t border-border/30">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Bot className="w-4 h-4 text-primary" />
+                    <p className="text-sm font-semibold">Unit Bot</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Customize your unit's verified bot identity for polls, events, and automated messages.
+                  </p>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs">Bot Name</Label>
+                    <Input
+                      placeholder="Unit Bot"
+                      value={localBotName}
+                      onChange={(e) => setLocalBotName(e.target.value)}
+                      maxLength={32}
+                      className="bg-muted/50 h-9 text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs">Bot Avatar URL</Label>
+                    <Input
+                      placeholder="https://example.com/avatar.png"
+                      value={localBotAvatar}
+                      onChange={(e) => setLocalBotAvatar(e.target.value)}
+                      className="bg-muted/50 h-9 text-sm"
+                    />
+                  </div>
+
+                  {/* Bot Preview */}
+                  <div className="bg-muted/20 border border-border/50 rounded-lg p-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Preview</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full ring-2 ring-primary/30 bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                        {localBotAvatar ? (
+                          <img src={localBotAvatar} alt="Bot" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm">🤖</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[13px] font-semibold text-primary">
+                          {localBotName || "Unit Bot"}
+                        </span>
+                        <span className="inline-flex items-center gap-0.5 px-1 py-[1px] rounded bg-primary/15 border border-primary/20">
+                          <ShieldCheck className="w-3 h-3 text-primary" />
+                          <span className="text-[9px] font-bold text-primary uppercase tracking-wider">BOT</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
@@ -189,7 +261,7 @@ export default function ChannelPermissionsModal({
                 Cancel
               </Button>
               <Button onClick={handleSave} disabled={saving} className="flex-1">
-                {saving ? "Saving..." : "Save Permissions"}
+                {saving ? "Saving..." : "Save Settings"}
               </Button>
             </div>
           </motion.div>
