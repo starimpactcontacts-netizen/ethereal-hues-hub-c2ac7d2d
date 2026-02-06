@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Play, Loader2, Search, TrendingUp } from "lucide-react";
+import { Play, Loader2, Search, TrendingUp, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fetchThumbnailsBatch } from "@/hooks/useThumbnail";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import LoopFeedCard, { type LoopFeedItem } from "@/components/loopgate/LoopFeedCard";
 import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+
 const BATCH_SIZE = 20;
 
 type FeedTab = 'foryou' | 'connections';
@@ -30,6 +31,7 @@ export default function FeedPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [connectionIds, setConnectionIds] = useState<string[]>([]);
   const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null }>>([]);
+  const [trendingUnits, setTrendingUnits] = useState<Array<{ id: string; name: string; avatar_url: string | null; emblem: string }>>([]);
 
   // Fetch connections for the connections tab
   useEffect(() => {
@@ -49,16 +51,24 @@ export default function FeedPage() {
     fetchConnections();
   }, [user]);
 
-  // Fetch trending editors (most recent active)
+  // Fetch trending editors & units
   useEffect(() => {
     const fetchTrending = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, username, avatar_url')
-        .not('avatar_url', 'is', null)
-        .order('updated_at', { ascending: false })
-        .limit(12);
-      setTrendingEditors(data || []);
+      const [editorsRes, unitsRes] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, username, avatar_url')
+          .not('avatar_url', 'is', null)
+          .order('updated_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('crews')
+          .select('id, name, avatar_url, emblem')
+          .order('member_count', { ascending: false })
+          .limit(8)
+      ]);
+      setTrendingEditors(editorsRes.data || []);
+      setTrendingUnits(unitsRes.data || []);
     };
     fetchTrending();
   }, []);
@@ -187,8 +197,19 @@ export default function FeedPage() {
         judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url,
       }));
 
+      // Boost official events & premium comps higher in feed
+      const getBoost = (item: LoopFeedItem) => {
+        if (item.id.startsWith('arena-event-')) return 2; // Official events
+        if (item.id.startsWith('arena-sanctioned-')) return 1; // Sanctioned
+        return 0;
+      };
+
       const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        .sort((a, b) => {
+          const boostDiff = getBoost(b) - getBoost(a);
+          if (boostDiff !== 0) return boostDiff;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
 
       const newItems = allItems.filter(item => {
         if (seenUrls.current.has(item.submission_url)) return false;
@@ -275,7 +296,7 @@ export default function FeedPage() {
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search edits, editors..."
+                placeholder="Search edits, editors and units..."
                 className="w-full bg-surface-1 border border-border/50 rounded-full pl-7 pr-3 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
               />
             </div>
@@ -309,34 +330,70 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* Trending Editors */}
-      {trendingEditors.length > 0 && (
+      {/* Trending Editors & Units */}
+      {(trendingEditors.length > 0 || trendingUnits.length > 0) && (
         <div className="max-w-2xl mx-auto border-b border-border/30 py-2 px-3">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <TrendingUp className="w-3 h-3 text-muted-foreground" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Trending Editors</span>
-          </div>
-          <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-0.5">
-            {trendingEditors.map(editor => (
-              <motion.button
-                key={editor.id}
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(`/editor/${editor.id}`)}
-                className="flex flex-col items-center gap-0.5 shrink-0"
-              >
-                <div className="w-9 h-9 rounded-full border border-border/60 overflow-hidden bg-surface-1">
-                  <Avatar className="w-full h-full">
-                    <AvatarImage src={editor.avatar_url || undefined} />
-                    <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
-                      {editor.username[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <span className="text-[9px] text-muted-foreground truncate max-w-[48px]">@{editor.username}</span>
-              </motion.button>
-            ))}
-          </div>
+          {/* Units row */}
+          {trendingUnits.length > 0 && (
+            <>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Shield className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Units</span>
+              </div>
+              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2">
+                {trendingUnits.map(unit => (
+                  <motion.button
+                    key={unit.id}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate(`/units/${unit.id}`)}
+                    className="flex flex-col items-center gap-0.5 shrink-0"
+                  >
+                    <div className="w-9 h-9 rounded-lg border border-border/60 overflow-hidden bg-surface-1">
+                      <Avatar className="w-full h-full rounded-lg">
+                        <AvatarImage src={unit.avatar_url || undefined} />
+                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold rounded-lg">
+                          {unit.emblem}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground truncate max-w-[48px]">{unit.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Editors row */}
+          {trendingEditors.length > 0 && (
+            <>
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Trending Editors</span>
+              </div>
+              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-0.5">
+                {trendingEditors.map(editor => (
+                  <motion.button
+                    key={editor.id}
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate(`/editor/${editor.id}`)}
+                    className="flex flex-col items-center gap-0.5 shrink-0"
+                  >
+                    <div className="w-9 h-9 rounded-full border border-border/60 overflow-hidden bg-surface-1">
+                      <Avatar className="w-full h-full">
+                        <AvatarImage src={editor.avatar_url || undefined} />
+                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
+                          {editor.username[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground truncate max-w-[48px]">@{editor.username}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
