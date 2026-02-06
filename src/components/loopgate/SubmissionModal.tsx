@@ -103,6 +103,8 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
     }
   };
 
+  const hasSeenThumbnailTip = localStorage.getItem('loopgate_thumbnail_tip_seen') === '1';
+
   if (submitted) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -118,8 +120,24 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Status</p>
             <p className="text-gold font-bold">PENDING REVIEW</p>
           </div>
+
+          {/* One-time thumbnail tip */}
+          {!hasSeenThumbnailTip && (
+            <div className="bg-gold/10 border border-gold/20 rounded-lg p-3 mb-4 text-left">
+              <p className="text-xs text-gold font-semibold mb-1">💡 Pro tip</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Add a custom thumbnail to your submission from your profile — it helps your edit stand out in the feed.
+              </p>
+            </div>
+          )}
+
           <button
-            onClick={onClose}
+            onClick={() => {
+              if (!hasSeenThumbnailTip) {
+                localStorage.setItem('loopgate_thumbnail_tip_seen', '1');
+              }
+              onClose();
+            }}
             className="w-full py-3 bg-foreground text-background font-bold rounded-lg"
           >
             Close
