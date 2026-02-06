@@ -11,6 +11,8 @@ export interface Conversation {
   last_message_preview: string | null;
   unread_count_1: number;
   unread_count_2: number;
+  label_1: string | null;
+  label_2: string | null;
   created_at: string;
   // Joined data
   other_user?: {
@@ -18,7 +20,9 @@ export interface Conversation {
     username: string;
     avatar_url: string | null;
     activity_status: string | null;
+    verification_status: boolean | null;
   };
+  is_connected?: boolean;
 }
 
 export interface DirectMessage {
@@ -51,7 +55,7 @@ export function useConversations() {
 
       if (error) throw error;
 
-      // Fetch other user profiles
+      // Fetch other user profiles and connection status
       const enrichedConversations = await Promise.all(
         (data || []).map(async (conv) => {
           const otherId = conv.participant_1_id === user.id 
@@ -60,13 +64,22 @@ export function useConversations() {
           
           const { data: profile } = await supabase
             .from('profiles')
-            .select('id, username, avatar_url, activity_status')
+            .select('id, username, avatar_url, activity_status, verification_status')
             .eq('id', otherId)
+            .maybeSingle();
+
+          // Check if connected
+          const { data: connection } = await supabase
+            .from('connections')
+            .select('id')
+            .eq('status', 'accepted')
+            .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`)
             .maybeSingle();
 
           return {
             ...conv,
-            other_user: profile || undefined
+            other_user: profile || undefined,
+            is_connected: !!connection
           } as Conversation;
         })
       );
@@ -120,7 +133,66 @@ export function useConversations() {
     };
   }, [user, fetchConversations]);
 
-  return { conversations, loading, totalUnread, refetch: fetchConversations };
+  const deleteConversation = async (conversationId: string) => {
+    if (!user) return false;
+    
+    try {
+      const { error } = await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversationId);
+      
+      if (error) throw error;
+      
+      setConversations(prev => prev.filter(c => c.id !== conversationId));
+      toast.success('Conversation deleted');
+      return true;
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast.error('Failed to delete conversation');
+      return false;
+    }
+  };
+
+  const updateLabel = async (conversationId: string, label: string | null) => {
+    if (!user) return false;
+    
+    try {
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (!conversation) return false;
+      
+      const isParticipant1 = conversation.participant_1_id === user.id;
+      const updateField = isParticipant1 ? 'label_1' : 'label_2';
+      
+      const { error } = await supabase
+        .from('conversations')
+        .update({ [updateField]: label })
+        .eq('id', conversationId);
+      
+      if (error) throw error;
+      
+      setConversations(prev => prev.map(c => 
+        c.id === conversationId 
+          ? { ...c, [updateField]: label }
+          : c
+      ));
+      toast.success(label ? `Labeled as "${label}"` : 'Label removed');
+      return true;
+    } catch (error) {
+      console.error('Error updating label:', error);
+      toast.error('Failed to update label');
+      return false;
+    }
+  };
+
+  return { 
+    conversations, 
+    loading, 
+    totalUnread, 
+    refetch: fetchConversations,
+    deleteConversation,
+    updateLabel
+  };
 }
 
 export function useDirectMessages(conversationId: string | null) {
