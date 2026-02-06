@@ -3,116 +3,212 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const SCRAPE_UAS = [
-  'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatype.php)',
-  'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-];
+// ── Resolve short URLs ──────────────────────────────────
 
-// ── Helpers ──────────────────────────────────────────────
-
-/** Follow redirects on a short URL to get the final destination */
-async function resolveRedirect(url: string): Promise<string> {
+async function resolveShortUrl(url: string): Promise<string> {
+  // Use mobile UA — same as get-video-stats which works
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
-    // Use HEAD with manual redirect to follow the chain
     const res = await fetch(url, {
-      method: 'HEAD',
+      method: 'GET',
       redirect: 'follow',
-      headers: { 'User-Agent': SCRAPE_UAS[0] },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+      },
       signal: controller.signal,
     });
     clearTimeout(timeout);
-    // res.url is the final URL after redirects
-    if (res.url && res.url !== url) {
-      console.log('Resolved redirect:', url, '->', res.url);
-      return res.url;
+    const resolved = res.url || url;
+    // If it resolved to /notfound, the link is dead
+    if (resolved.includes('/notfound')) {
+      console.log('Short URL expired (notfound):', url);
+      return url; // return original, we'll handle failure gracefully
     }
+    if (resolved !== url) {
+      console.log('Resolved:', url, '->', resolved);
+    }
+    return resolved;
   } catch (e) {
-    console.log('HEAD redirect failed, trying GET:', e);
-    // Fallback: GET request (some servers don't support HEAD)
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(url, {
-        redirect: 'follow',
-        headers: { 'User-Agent': SCRAPE_UAS[0] },
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (res.url && res.url !== url) {
-        console.log('Resolved redirect (GET):', url, '->', res.url);
-        return res.url;
-      }
-    } catch (e2) {
-      console.log('GET redirect also failed:', e2);
-    }
+    console.log('Redirect resolve failed:', e);
+    return url;
   }
-  return url;
 }
 
-/** Check if a URL is a shortened TikTok link */
 function isShortTikTok(url: string): boolean {
   return /^https?:\/\/(vm|vt)\.tiktok\.com\//i.test(url)
     || /^https?:\/\/(www\.)?tiktok\.com\/t\//i.test(url);
 }
 
-/** Extract TikTok video ID from a full URL */
-function extractTikTokVideoId(url: string): string | null {
-  const match = url.match(/\/video\/(\d+)/);
-  return match ? match[1] : null;
-}
+// ── TikTok thumbnail — same approach as get-video-stats ──
 
-/** Extract og:image from HTML */
-function extractOgImage(html: string): string | null {
-  const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
-    || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-  if (ogMatch?.[1]) return ogMatch[1];
+async function getTikTokThumbnail(url: string): Promise<string | null> {
+  let resolvedUrl = url;
 
-  const twMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
-    || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["']/i);
-  if (twMatch?.[1]) return twMatch[1];
-
-  // JSON embedded thumbnail
-  const jsonThumb = html.match(/"thumbnail_url"\s*:\s*"([^"]+)"/i)
-    || html.match(/"thumbnailUrl"\s*:\s*"([^"]+)"/i)
-    || html.match(/"cover"\s*:\s*"([^"]+)"/i)
-    || html.match(/"thumbnail"\s*:\s*\{[^}]*"url_list"\s*:\s*\["([^"]+)"/i);
-  if (jsonThumb?.[1]) return jsonThumb[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
-
-  return null;
-}
-
-/** Scrape a page and extract og:image with UA fallbacks */
-async function scrapeOgImage(url: string): Promise<string | null> {
-  for (const ua of SCRAPE_UAS) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent': ua,
-          'Accept': 'text/html,application/xhtml+xml',
-          'Accept-Language': 'en-US,en;q=0.5',
-        },
-        redirect: 'follow',
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-      if (res.ok) {
-        const text = await res.text();
-        const img = extractOgImage(text);
-        if (img) return img;
-      }
-    } catch {
-      // next UA
-    }
+  // Step 1: Resolve short URLs
+  if (isShortTikTok(url)) {
+    resolvedUrl = await resolveShortUrl(url);
   }
+
+  const videoIdMatch = resolvedUrl.match(/video\/(\d+)/);
+  const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+  // Step 2: Mobile page scrape — parse embedded JSON (PROVEN approach from get-video-stats)
+  try {
+    console.log('TikTok mobile scrape for:', resolvedUrl);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(resolvedUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+      },
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const html = await res.text();
+
+      // Try SIGI_STATE
+      const sigiMatch = html.match(/<script id="SIGI_STATE"[^>]*>([^<]+)<\/script>/);
+      if (sigiMatch) {
+        try {
+          const sigiData = JSON.parse(sigiMatch[1]);
+          const itemModule = sigiData?.ItemModule;
+          if (itemModule && videoId && itemModule[videoId]) {
+            const videoData = itemModule[videoId];
+            const thumb = videoData.video?.cover || videoData.video?.dynamicCover || null;
+            if (thumb) { console.log('TikTok thumb from SIGI_STATE'); return thumb; }
+          }
+          // If no videoId match, try first item
+          if (itemModule) {
+            const firstKey = Object.keys(itemModule)[0];
+            if (firstKey) {
+              const videoData = itemModule[firstKey];
+              const thumb = videoData?.video?.cover || videoData?.video?.dynamicCover || null;
+              if (thumb) { console.log('TikTok thumb from SIGI_STATE (first item)'); return thumb; }
+            }
+          }
+        } catch (e) {
+          console.log('SIGI_STATE parse failed');
+        }
+      }
+
+      // Try __UNIVERSAL_DATA_FOR_REHYDRATION__
+      const universalMatch = html.match(/<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__"[^>]*>([^<]+)<\/script>/);
+      if (universalMatch) {
+        try {
+          const universalData = JSON.parse(universalMatch[1]);
+          const defaultScope = universalData?.['__DEFAULT_SCOPE__'];
+          const videoDetail = defaultScope?.['webapp.video-detail']?.itemInfo?.itemStruct;
+          if (videoDetail) {
+            const thumb = videoDetail.video?.cover || videoDetail.video?.dynamicCover || null;
+            if (thumb) { console.log('TikTok thumb from UNIVERSAL_DATA'); return thumb; }
+          }
+        } catch (e) {
+          console.log('UNIVERSAL_DATA parse failed');
+        }
+      }
+
+      // Regex fallback: find cover in any JSON
+      const coverMatch = html.match(/"cover"\s*:\s*"(https?:[^"]+)"/);
+      if (coverMatch) {
+        const thumb = coverMatch[1].replace(/\\u002F/g, '/');
+        console.log('TikTok thumb from cover regex');
+        return thumb;
+      }
+
+      // og:image fallback
+      const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+        || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+      if (ogMatch?.[1]) {
+        console.log('TikTok thumb from og:image');
+        return ogMatch[1];
+      }
+    }
+  } catch (e) {
+    console.log('TikTok mobile scrape error:', e);
+  }
+
+  // Step 3: oEmbed fallback
+  try {
+    const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(resolvedUrl)}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(oembedUrl, {
+      headers: { 'User-Agent': 'facebookexternalhit/1.1' },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const data = await res.json();
+        if (data.thumbnail_url) { console.log('TikTok thumb from oEmbed'); return data.thumbnail_url; }
+      }
+    }
+  } catch (e) {
+    console.log('TikTok oEmbed error:', e);
+  }
+
   return null;
 }
 
-// ── Main handler ─────────────────────────────────────────
+// ── Instagram thumbnail ──
+
+async function getInstagramThumbnail(url: string): Promise<string | null> {
+  // Method 1: oEmbed
+  try {
+    const oembedUrl = `https://api.instagram.com/oembed?url=${encodeURIComponent(url)}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(oembedUrl, {
+      headers: { 'User-Agent': 'facebookexternalhit/1.1' },
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const data = await res.json();
+        if (data.thumbnail_url) { console.log('IG thumb from oEmbed'); return data.thumbnail_url; }
+      }
+    }
+  } catch (e) {
+    console.log('IG oEmbed error:', e);
+  }
+
+  // Method 2: Scrape og:image with mobile UA
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+        'Accept': 'text/html,application/xhtml+xml',
+      },
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const html = await res.text();
+      const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+        || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+      if (ogMatch?.[1]) { console.log('IG thumb from og:image'); return ogMatch[1]; }
+    }
+  } catch (e) {
+    console.log('IG scrape error:', e);
+  }
+
+  return null;
+}
+
+// ── Main ─────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -120,9 +216,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { url: rawUrl, platform } = await req.json();
+    const { url, platform } = await req.json();
 
-    if (!rawUrl) {
+    if (!url) {
       return new Response(
         JSON.stringify({ error: 'URL is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -130,9 +226,8 @@ Deno.serve(async (req) => {
     }
 
     let thumbnailUrl: string | null = null;
-    let url = rawUrl;
 
-    // ── YouTube — instant, zero network ──
+    // YouTube — instant
     if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
       const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
       if (match) {
@@ -140,85 +235,40 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── TikTok ──
+    // TikTok
     if (!thumbnailUrl && (platform === 'tiktok' || url.includes('tiktok.com'))) {
-      // Step 1: Resolve short URLs to full URLs
-      if (isShortTikTok(url)) {
-        url = await resolveRedirect(url);
-        console.log('Resolved TikTok URL:', url);
-      }
-
-      // Step 2: Try oEmbed with the FULL URL
-      try {
-        const oembedUrl = `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`;
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 4000);
-        const res = await fetch(oembedUrl, {
-          headers: { 'User-Agent': SCRAPE_UAS[0] },
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (res.ok) {
-          const contentType = res.headers.get('content-type') || '';
-          if (contentType.includes('application/json')) {
-            const data = await res.json();
-            thumbnailUrl = data.thumbnail_url || null;
-            console.log('TikTok oEmbed result:', thumbnailUrl ? 'found' : 'null');
-          } else {
-            console.log('TikTok oEmbed returned non-JSON:', contentType);
-          }
-        }
-      } catch (e) {
-        console.log('TikTok oEmbed error:', e);
-      }
-
-      // Step 3: Scrape og:image from the page
-      if (!thumbnailUrl) {
-        console.log('Scraping TikTok page for og:image...');
-        thumbnailUrl = await scrapeOgImage(url);
-        // Also try original URL if we resolved it
-        if (!thumbnailUrl && url !== rawUrl) {
-          thumbnailUrl = await scrapeOgImage(rawUrl);
-        }
-      }
+      thumbnailUrl = await getTikTokThumbnail(url);
     }
 
-    // ── Instagram ──
+    // Instagram
     if (!thumbnailUrl && (platform === 'instagram' || url.includes('instagram.com'))) {
-      // Step 1: Try oEmbed
+      thumbnailUrl = await getInstagramThumbnail(url);
+    }
+
+    // Generic fallback — scrape og:image
+    if (!thumbnailUrl) {
       try {
-        const oembedUrl = `https://api.instagram.com/oembed?url=${encodeURIComponent(url)}`;
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 4000);
-        const res = await fetch(oembedUrl, {
-          headers: { 'User-Agent': SCRAPE_UAS[0] },
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+            'Accept': 'text/html,application/xhtml+xml',
+          },
+          redirect: 'follow',
           signal: controller.signal,
         });
         clearTimeout(timeout);
         if (res.ok) {
-          const contentType = res.headers.get('content-type') || '';
-          if (contentType.includes('application/json')) {
-            const data = await res.json();
-            thumbnailUrl = data.thumbnail_url || null;
-          }
+          const html = await res.text();
+          const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+            || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+          if (ogMatch?.[1]) thumbnailUrl = ogMatch[1];
         }
-      } catch (e) {
-        console.log('Instagram oEmbed error:', e);
-      }
-
-      // Step 2: Scrape og:image
-      if (!thumbnailUrl) {
-        console.log('Scraping Instagram page for og:image...');
-        thumbnailUrl = await scrapeOgImage(url);
-      }
+      } catch { /* give up */ }
     }
 
-    // ── Generic fallback ──
-    if (!thumbnailUrl) {
-      thumbnailUrl = await scrapeOgImage(url);
-    }
-
-    console.log('FINAL result for', rawUrl, '->', thumbnailUrl ? 'RESOLVED' : 'NULL');
+    console.log('FINAL:', url.substring(0, 60), '->', thumbnailUrl ? 'RESOLVED' : 'NULL');
 
     return new Response(
       JSON.stringify({ thumbnailUrl }),
