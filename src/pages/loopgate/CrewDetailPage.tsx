@@ -24,6 +24,8 @@ import CrewOnlineIndicator from "@/components/loopgate/CrewOnlineIndicator";
 import UnitFeedTab from "@/components/loopgate/UnitFeedTab";
 import UnitLogoPreviewTab from "@/components/loopgate/UnitLogoPreviewTab";
 import UnitIdentityTab from "@/components/loopgate/UnitIdentityTab";
+import UnitAnnouncementsTab from "@/components/loopgate/UnitAnnouncementsTab";
+import UnitRolesPanel from "@/components/loopgate/UnitRolesPanel";
 import CrewRivalCard from "@/components/loopgate/CrewRivalCard";
 import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
 import CrewChallengesPanel from "@/components/loopgate/CrewChallengesPanel";
@@ -127,7 +129,7 @@ interface CrewSubmission {
   };
 }
 
-type TabType = 'feed' | 'live' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges' | 'applications' | 'editors' | 'assets' | 'logos' | 'identity';
+type TabType = 'feed' | 'live' | 'announcements' | 'rivals' | 'leaderboard' | 'members' | 'submissions' | 'challenges' | 'applications' | 'editors' | 'assets' | 'logos' | 'identity' | 'roles';
 
 const emblemIcons: Record<string, React.ReactNode> = {
   shield: <Shield className="w-10 h-10" />,
@@ -578,6 +580,7 @@ export default function CrewDetailPage() {
     { id: 'logos', icon: <Image className="w-4 h-4" />, label: 'Logos' },
     { id: 'identity', icon: <Fingerprint className="w-4 h-4" />, label: 'Identity' },
     { id: 'announcements', icon: <Bell className="w-4 h-4" />, label: 'News', badge: unreadAnnouncementCount },
+    { id: 'roles', icon: <Shield className="w-4 h-4" />, label: 'Roles' },
     { id: 'leaderboard', icon: <BarChart3 className="w-4 h-4" />, label: 'Board' },
     { id: 'members', icon: <Users className="w-4 h-4" />, label: 'Members' },
     { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Quests' },
@@ -848,116 +851,13 @@ export default function CrewDetailPage() {
               )}
 
               {/* Announcements Tab */}
-              {activeTab === 'announcements' && (
-                <div className="space-y-4">
-                  {/* Join Requests (Staff Only) */}
-                  {isStaff && joinRequests.length > 0 && (
-                    <div className="bg-surface-1 border border-gold/30 rounded-lg p-4">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-gold mb-3 flex items-center gap-2">
-                        <UserPlus className="w-4 h-4" />
-                        Join Requests ({joinRequests.length})
-                      </h3>
-                      <div className="space-y-2">
-                        {joinRequests.map((request) => (
-                          <div key={request.id} className="p-2 bg-background rounded-md flex items-center gap-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage src={request.profile?.avatar_url || undefined} />
-                              <AvatarFallback>{(request.profile?.username || "?")[0].toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-sm truncate">{request.profile?.display_name || request.profile?.username}</p>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-green-500" onClick={() => handleAcceptRequest(request)}>
-                                <Check className="w-4 h-4" />
-                              </Button>
-                              <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500" onClick={() => handleRejectRequest(request.id)}>
-                                <X className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+              {activeTab === 'announcements' && crewId && (
+                <UnitAnnouncementsTab crewId={crewId} isStaff={isStaff} />
+              )}
 
-                  {/* Post Announcement (Staff Only) */}
-                  {isStaff && (
-                    <div className="bg-surface-1 border border-border rounded-lg p-4">
-                      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-                        <Bell className="w-4 h-4" />
-                        Post Announcement
-                      </h3>
-                      <div className="space-y-2">
-                        <Textarea
-                          value={newAnnouncement}
-                          onChange={(e) => setNewAnnouncement(e.target.value)}
-                          placeholder="Write an announcement for unit members..."
-                          className="min-h-[80px] resize-none bg-background"
-                        />
-                        <Button
-                          onClick={handlePostAnnouncement}
-                          disabled={sendingAnnouncement || !newAnnouncement.trim()}
-                          className="w-full bg-gold text-black hover:bg-gold/90 font-semibold"
-                        >
-                          {sendingAnnouncement ? (
-                            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                          ) : (
-                            <>
-                              <Send className="w-4 h-4 mr-2" />
-                              Post
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Announcements List */}
-                  {announcements.length > 0 ? (
-                    <div className="space-y-3">
-                      {announcements.map((announcement) => (
-                        <div key={announcement.id} className="bg-surface-1 border border-border rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage src={announcement.author?.avatar_url || undefined} />
-                              <AvatarFallback>{(announcement.author?.username || "?")[0].toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-semibold text-sm">{announcement.author?.display_name || announcement.author?.username || "Staff"}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {new Date(announcement.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{announcement.message}</p>
-                            </div>
-                            {(isOwner || announcement.author_id === user?.id) && (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-7 w-7 text-red-500 shrink-0"
-                                onClick={() => handleDeleteAnnouncement(announcement.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                        <Bell className="w-8 h-8 text-muted-foreground/50" />
-                      </div>
-                      <h3 className="font-display text-lg text-muted-foreground mb-2">No Announcements</h3>
-                      <p className="text-xs text-muted-foreground/60 max-w-xs">
-                        Staff can post announcements to keep the unit updated.
-                      </p>
-                    </div>
-                  )}
-                </div>
+              {/* Roles Tab */}
+              {activeTab === 'roles' && crewId && (
+                <UnitRolesPanel crewId={crewId} members={members} isOwner={isOwner} onRefresh={fetchCrewData} />
               )}
 
               {/* Rivals tab removed - now in Identity tab */}

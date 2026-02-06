@@ -615,24 +615,33 @@ export type Database = {
       crew_announcements: {
         Row: {
           author_id: string
+          category: string
           created_at: string
           crew_id: string
           id: string
+          is_pinned: boolean
           message: string
+          thumbnail_url: string | null
         }
         Insert: {
           author_id: string
+          category?: string
           created_at?: string
           crew_id: string
           id?: string
+          is_pinned?: boolean
           message: string
+          thumbnail_url?: string | null
         }
         Update: {
           author_id?: string
+          category?: string
           created_at?: string
           crew_id?: string
           id?: string
+          is_pinned?: boolean
           message?: string
+          thumbnail_url?: string | null
         }
         Relationships: [
           {
