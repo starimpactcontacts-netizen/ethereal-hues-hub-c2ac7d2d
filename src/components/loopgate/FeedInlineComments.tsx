@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, Reply, Send, Loader2, MessageCircle, ChevronDown } from 'lucide-react';
+import { Heart, Reply, Send, Loader2, MessageCircle, ChevronDown, Smile } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import GifPicker from './GifPicker';
+
+const isGifUrl = (text: string) =>
+  text.includes('tenor.com') || text.includes('giphy.com') || /\.(gif|gifv)(\?|$)/i.test(text);
 
 interface Comment {
   id: string;
@@ -33,6 +37,7 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
   const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -128,8 +133,8 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
     }
   };
 
-  const handleSubmit = async () => {
-    if (!user || !profile || !newComment.trim()) return;
+  const submitContent = async (content: string) => {
+    if (!user || !profile || !content.trim()) return;
     setSending(true);
     try {
       const { data, error } = await supabase
@@ -138,7 +143,7 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
           submission_id: submissionId,
           submission_type: submissionType,
           user_id: user.id,
-          content: newComment.trim(),
+          content: content.trim(),
           parent_id: replyingTo?.id || null
         })
         .select()
@@ -174,6 +179,13 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
     }
   };
 
+  const handleSubmit = () => submitContent(newComment);
+
+  const handleGifSelect = (gifUrl: string) => {
+    setShowGifPicker(false);
+    submitContent(gifUrl);
+  };
+
   const toggleLike = async (comment: Comment, isReply = false, parentId?: string) => {
     if (!user) { toast.error('Sign in to like'); return; }
     const wasLiked = comment.isLiked;
@@ -200,37 +212,51 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
   return (
     <div className="px-4 py-3">
       {/* Comment input */}
-      <div className="flex items-center gap-2.5 mb-3">
-        <Avatar className="w-7 h-7 shrink-0">
-          <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="bg-muted text-foreground text-[10px]">
-            {profile?.username?.[0]?.toUpperCase() || '?'}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 relative">
-          {replyingTo && (
-            <div className="absolute -top-5 left-0 text-[10px] text-muted-foreground">
-              Replying to <span className="text-primary">@{replyingTo.username}</span>
-              <button onClick={() => setReplyingTo(null)} className="ml-1 text-muted-foreground hover:text-foreground">✕</button>
-            </div>
-          )}
-          <input
-            ref={inputRef}
-            value={newComment}
-            onChange={e => setNewComment(e.target.value)}
-            placeholder={user ? "Post a reply..." : "Sign in to reply"}
+      <div className="relative">
+        {showGifPicker && (
+          <div className="absolute bottom-full left-0 right-0 mb-2 z-50">
+            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+          </div>
+        )}
+        <div className="flex items-center gap-2.5 mb-3">
+          <Avatar className="w-7 h-7 shrink-0">
+            <AvatarImage src={profile?.avatar_url || undefined} />
+            <AvatarFallback className="bg-muted text-foreground text-[10px]">
+              {profile?.username?.[0]?.toUpperCase() || '?'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 relative">
+            {replyingTo && (
+              <div className="absolute -top-5 left-0 text-[10px] text-muted-foreground">
+                Replying to <span className="text-primary">@{replyingTo.username}</span>
+                <button onClick={() => setReplyingTo(null)} className="ml-1 text-muted-foreground hover:text-foreground">✕</button>
+              </div>
+            )}
+            <input
+              ref={inputRef}
+              value={newComment}
+              onChange={e => setNewComment(e.target.value)}
+              placeholder={user ? "Post a reply..." : "Sign in to reply"}
+              disabled={!user}
+              className="w-full bg-surface-2 border border-border rounded-full px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+              onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
+            />
+          </div>
+          <button
+            onClick={() => setShowGifPicker(!showGifPicker)}
             disabled={!user}
-            className="w-full bg-surface-2 border border-border rounded-full px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
-            onKeyDown={e => { if (e.key === 'Enter') handleSubmit(); }}
-          />
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
+          >
+            <Smile className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!user || !newComment.trim() || sending}
+            className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 disabled:opacity-40 hover:opacity-90 transition-opacity"
+          >
+            {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+          </button>
         </div>
-        <button
-          onClick={handleSubmit}
-          disabled={!user || !newComment.trim() || sending}
-          className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 disabled:opacity-40 hover:opacity-90 transition-opacity"
-        >
-          {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-        </button>
       </div>
 
       {/* Comments list */}
@@ -253,7 +279,6 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
                 onLoadReplies={() => loadReplies(comment.id)}
                 isExpanded={expandedReplies.has(comment.id)}
               />
-              {/* Replies */}
               {expandedReplies.has(comment.id) && comment.replies && (
                 <div className="ml-10 border-l border-border/40 pl-3 space-y-0">
                   {comment.replies.map(reply => (
@@ -299,7 +324,11 @@ function ThreadComment({
           <span className="font-semibold text-foreground text-xs">@{comment.username}</span>
           <span className="text-[11px] text-muted-foreground">{timeAgo}</span>
         </div>
-        <p className="text-sm text-foreground mt-0.5 break-words">{comment.content}</p>
+        {isGifUrl(comment.content) ? (
+          <img src={comment.content} alt="GIF" className="max-w-[200px] rounded-lg mt-1" loading="lazy" />
+        ) : (
+          <p className="text-sm text-foreground mt-0.5 break-words">{comment.content}</p>
+        )}
         <div className="flex items-center gap-3 mt-1.5">
           <button onClick={onLike} className="flex items-center gap-1 text-muted-foreground hover:text-red-400 transition-colors">
             <Heart className={`w-3.5 h-3.5 ${comment.isLiked ? 'fill-red-500 text-red-500' : ''}`} />

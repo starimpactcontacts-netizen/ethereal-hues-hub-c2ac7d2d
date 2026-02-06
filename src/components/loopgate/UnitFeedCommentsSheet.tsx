@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Send, Trash2, Reply } from "lucide-react";
+import { Send, Trash2, Reply, Smile } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { usePostComments, FeedComment } from "@/hooks/useUnitFeed";
@@ -8,6 +8,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { LoopedX } from "./LoopedX";
+import GifPicker from "./GifPicker";
+
+const isGifUrl = (text: string) =>
+  text.includes('tenor.com') || text.includes('giphy.com') || /\.(gif|gifv)(\?|$)/i.test(text);
 
 interface UnitFeedCommentsSheetProps {
   postId: string;
@@ -47,7 +51,11 @@ function CommentItem({
                 {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
               </span>
             </div>
-            <p className="text-[13px] break-words">{comment.content}</p>
+            {isGifUrl(comment.content) ? (
+              <img src={comment.content} alt="GIF" className="max-w-[200px] rounded-lg mt-1" loading="lazy" />
+            ) : (
+              <p className="text-[13px] break-words">{comment.content}</p>
+            )}
           </div>
           <div className="flex items-center gap-3 mt-0.5 px-1">
             <button
@@ -69,7 +77,6 @@ function CommentItem({
         </div>
       </div>
 
-      {/* Replies */}
       {comment.replies && comment.replies.length > 0 && (
         <div className="ml-9 space-y-2 border-l-2 border-border/30 pl-3">
           {comment.replies.map((reply) => (
@@ -93,14 +100,22 @@ export default function UnitFeedCommentsSheet({ postId, onClose }: UnitFeedComme
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
 
-  const handleSend = async () => {
-    if (!text.trim()) return;
+  const submitContent = async (content: string) => {
+    if (!content.trim()) return;
     setSending(true);
-    await addComment(text, replyTo || undefined);
+    await addComment(content, replyTo || undefined);
     setText("");
     setReplyTo(null);
     setSending(false);
+    setShowGifPicker(false);
+  };
+
+  const handleSend = () => submitContent(text);
+
+  const handleGifSelect = (gifUrl: string) => {
+    submitContent(gifUrl);
   };
 
   const replyComment = replyTo ? comments.find((c) => c.id === replyTo) || comments.flatMap((c) => c.replies || []).find((r) => r.id === replyTo) : null;
@@ -153,6 +168,13 @@ export default function UnitFeedCommentsSheet({ postId, onClose }: UnitFeedComme
           )}
         </div>
 
+        {/* GIF Picker */}
+        {showGifPicker && (
+          <div className="px-4 border-t border-border/50">
+            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+          </div>
+        )}
+
         {/* Reply indicator */}
         {replyTo && replyComment && (
           <div className="px-4 py-2 bg-muted/30 border-t border-border/50 flex items-center justify-between">
@@ -180,6 +202,12 @@ export default function UnitFeedCommentsSheet({ postId, onClose }: UnitFeedComme
                 }
               }}
             />
+            <button
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Smile className="w-4 h-4" />
+            </button>
             <button
               onClick={handleSend}
               disabled={!text.trim() || sending}

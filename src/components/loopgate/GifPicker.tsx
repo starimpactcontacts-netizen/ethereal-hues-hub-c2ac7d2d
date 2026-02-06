@@ -24,7 +24,7 @@ const TENOR_API_KEY = "AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ"; // Google's pub
 const TENOR_BASE_URL = "https://tenor.googleapis.com/v2";
 
 export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
-  const [search, setSearch] = useState("reaction");
+  const [search, setSearch] = useState("meme");
   const [gifs, setGifs] = useState<TenorGif[]>([]);
   const [loading, setLoading] = useState(false);
   const [categories] = useState(["reaction", "meme", "funny", "shocked", "sad", "happy", "anime"]);
