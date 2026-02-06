@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Play, Loader2, Search } from "lucide-react";
+import { Play, Loader2, Search, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fetchThumbnailsBatch } from "@/hooks/useThumbnail";
 import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { motion } from "framer-motion";
 import LoopFeedCard, { type LoopFeedItem } from "@/components/loopgate/LoopFeedCard";
 import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
 import loopgateLogo from "@/assets/loopgate-logo.png";
-
 const BATCH_SIZE = 20;
 
 type FeedTab = 'foryou' | 'connections';
@@ -28,6 +29,7 @@ export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTab>('foryou');
   const [searchQuery, setSearchQuery] = useState('');
   const [connectionIds, setConnectionIds] = useState<string[]>([]);
+  const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null }>>([]);
 
   // Fetch connections for the connections tab
   useEffect(() => {
@@ -46,6 +48,20 @@ export default function FeedPage() {
     };
     fetchConnections();
   }, [user]);
+
+  // Fetch trending editors (most recent active)
+  useEffect(() => {
+    const fetchTrending = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .not('avatar_url', 'is', null)
+        .order('updated_at', { ascending: false })
+        .limit(12);
+      setTrendingEditors(data || []);
+    };
+    fetchTrending();
+  }, []);
 
   const fetchFeed = useCallback(async (isLoadMore = false) => {
     if (isLoadMore && (loadingMore || !hasMore)) return;
@@ -245,60 +261,91 @@ export default function FeedPage() {
       onScroll={handleScroll}
     >
       {/* Header — logo + tabs + search */}
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-xl border-b border-border/50">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40">
         <div className="max-w-2xl mx-auto">
           {/* Logo row */}
-          <div className="flex items-center justify-center py-2">
-            <img src={loopgateLogo} alt="Loopgate" className="h-6 opacity-80" />
+          <div className="flex items-center justify-center py-1.5">
+            <img src={loopgateLogo} alt="Loopgate" className="h-5 opacity-70" />
           </div>
 
           {/* Search */}
-          <div className="px-3 pb-2">
+          <div className="px-3 pb-1.5">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search edits, editors..."
-                className="w-full bg-surface-1 border border-border/60 rounded-full pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                className="w-full bg-surface-1 border border-border/50 rounded-full pl-7 pr-3 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
               />
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-transparent">
+          <div className="flex">
             <button
               onClick={() => setActiveTab('foryou')}
-              className={`flex-1 text-center py-2 text-xs font-semibold transition-colors relative ${
+              className={`flex-1 text-center py-1.5 text-[11px] font-semibold transition-colors relative ${
                 activeTab === 'foryou' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/70'
               }`}
             >
               For You
               {activeTab === 'foryou' && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
               )}
             </button>
             <button
               onClick={() => setActiveTab('connections')}
-              className={`flex-1 text-center py-2 text-xs font-semibold transition-colors relative ${
+              className={`flex-1 text-center py-1.5 text-[11px] font-semibold transition-colors relative ${
                 activeTab === 'connections' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/70'
               }`}
             >
               Connections
               {activeTab === 'connections' && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
               )}
             </button>
           </div>
         </div>
       </div>
 
+      {/* Trending Editors */}
+      {trendingEditors.length > 0 && (
+        <div className="max-w-2xl mx-auto border-b border-border/30 py-2 px-3">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <TrendingUp className="w-3 h-3 text-muted-foreground" />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Trending Editors</span>
+          </div>
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-0.5">
+            {trendingEditors.map(editor => (
+              <motion.button
+                key={editor.id}
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate(`/editor/${editor.id}`)}
+                className="flex flex-col items-center gap-0.5 shrink-0"
+              >
+                <div className="w-9 h-9 rounded-full border border-border/60 overflow-hidden bg-surface-1">
+                  <Avatar className="w-full h-full">
+                    <AvatarImage src={editor.avatar_url || undefined} />
+                    <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
+                      {editor.username[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+                <span className="text-[9px] text-muted-foreground truncate max-w-[48px]">@{editor.username}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Feed */}
       <div className="max-w-2xl mx-auto">
         {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-6">
-            <Play className="w-10 h-10 text-muted-foreground/40 mb-3" />
-            <p className="text-sm text-muted-foreground text-center">
+          <div className="flex flex-col items-center justify-center py-12 px-6">
+            <Play className="w-8 h-8 text-muted-foreground/30 mb-2" />
+            <p className="text-xs text-muted-foreground text-center">
               {activeTab === 'connections'
                 ? "No edits from your connections yet"
                 : searchQuery
@@ -319,13 +366,13 @@ export default function FeedPage() {
         )}
 
         {loadingMore && (
-          <div className="flex items-center justify-center py-4">
-            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+          <div className="flex items-center justify-center py-3">
+            <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
           </div>
         )}
 
         {!hasMore && filteredItems.length > 0 && (
-          <p className="text-center text-[11px] text-muted-foreground py-6">You've seen it all 🔥</p>
+          <p className="text-center text-[10px] text-muted-foreground py-4">You've seen it all 🔥</p>
         )}
       </div>
 
