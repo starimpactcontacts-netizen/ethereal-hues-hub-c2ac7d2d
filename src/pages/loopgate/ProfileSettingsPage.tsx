@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Trash2, AlertTriangle, ChevronRight, Send, Crown, Shield } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Trash2, AlertTriangle, ChevronRight, Send, Crown, Shield, Mail, KeyRound, Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCrewMembership } from "@/hooks/useCrewMembership";
@@ -14,7 +14,9 @@ import SoftwareSelector from "@/components/loopgate/SoftwareSelector";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import InviteFriendsModal from "@/components/loopgate/InviteFriendsModal";
  import ProfileBackgroundSettings from "@/components/loopgate/ProfileBackgroundSettings";
+import AccountSecuritySection from "@/components/loopgate/AccountSecuritySection";
 import { toast } from "sonner";
+import { z } from "zod";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +46,7 @@ interface EditingPlatform {
 
 export default function ProfileSettingsPage() {
   const navigate = useNavigate();
-  const { profile, platforms, refreshProfile, signOut, loading: authLoading } = useAuth();
+  const { user, profile, platforms, refreshProfile, signOut, needsPasswordSetup, updatePassword, loading: authLoading } = useAuth();
   const { primaryCrew } = useCrewMembership(profile?.id);
   
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -439,6 +441,9 @@ export default function ProfileSettingsPage() {
             )}
           </div>
         </section>
+
+        {/* ─── Email & Password ─── */}
+        <AccountSecuritySection user={user} needsPasswordSetup={needsPasswordSetup} updatePassword={updatePassword} />
 
         {/* ─── Platforms ─── */}
         <section className="space-y-3">

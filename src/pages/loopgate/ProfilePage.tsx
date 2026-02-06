@@ -17,8 +17,6 @@ import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
-import PasswordSetupBanner from "@/components/loopgate/PasswordSetupBanner";
-import EmailSecurityBanner from "@/components/loopgate/EmailSecurityBanner";
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
@@ -177,8 +175,6 @@ export default function ProfilePage() {
 
   return (
     <div className="bg-background">
-      <PasswordSetupBanner />
-      <EmailSecurityBanner />
 
       {/* ═══ HERO SECTION ═══ */}
       <div className="relative">
