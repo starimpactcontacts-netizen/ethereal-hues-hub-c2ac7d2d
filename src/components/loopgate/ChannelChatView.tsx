@@ -13,6 +13,7 @@ import GifPicker from "@/components/loopgate/GifPicker";
 import MentionAutocomplete from "@/components/loopgate/MentionAutocomplete";
 import RichMessageContent from "@/components/loopgate/RichMessageContent";
 import CrewTypingIndicator from "@/components/loopgate/CrewTypingIndicator";
+import MessageReactions from "@/components/loopgate/MessageReactions";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -315,29 +316,36 @@ export default function ChannelChatView({
                           return (
                             <div
                               key={message.id}
-                              className="group/msg flex items-start gap-2 mt-0.5"
+                              className="group/msg mt-0.5"
                             >
-                              <div className="text-sm text-foreground/90 leading-relaxed break-words flex-1">
-                                <RichMessageContent content={message.message_text} />
+                              <div className="flex items-start gap-2">
+                                <div className="text-sm text-foreground/90 leading-relaxed break-words flex-1">
+                                  <RichMessageContent content={message.message_text} />
+                                </div>
+                                {canDelete && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 shrink-0 transition-opacity">
+                                        <MoreVertical className="w-4 h-4 text-muted-foreground/50" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-32">
+                                      <DropdownMenuItem
+                                        onClick={() => handleDeleteMessage(message.id)}
+                                        className="text-destructive text-xs"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </div>
-                              {canDelete && (
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 shrink-0 transition-opacity">
-                                      <MoreVertical className="w-4 h-4 text-muted-foreground/50" />
-                                    </button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-32">
-                                    <DropdownMenuItem
-                                      onClick={() => handleDeleteMessage(message.id)}
-                                      className="text-destructive text-xs"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5 mr-2" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              )}
+                              {/* Emoji Reactions */}
+                              <MessageReactions 
+                                messageId={message.id} 
+                                messageTable="crew_channel_messages" 
+                              />
                             </div>
                           );
                         })}

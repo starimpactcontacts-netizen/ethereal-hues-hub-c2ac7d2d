@@ -24,10 +24,10 @@ const TENOR_API_KEY = "AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ"; // Google's pub
 const TENOR_BASE_URL = "https://tenor.googleapis.com/v2";
 
 export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
-  const [search, setSearch] = useState("tiktok");
+  const [search, setSearch] = useState("reaction");
   const [gifs, setGifs] = useState<TenorGif[]>([]);
   const [loading, setLoading] = useState(false);
-  const [categories] = useState(["tiktok", "discord", "reaction", "meme", "funny", "anime", "trending"]);
+  const [categories] = useState(["reaction", "meme", "funny", "shocked", "sad", "happy", "anime"]);
 
   const fetchGifs = useCallback(async (query: string) => {
     setLoading(true);
