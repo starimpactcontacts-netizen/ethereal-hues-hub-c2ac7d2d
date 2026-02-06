@@ -219,11 +219,13 @@ export default function IndexPage() {
     if (hasActiveFilters) return rankings; // Don't shuffle when filtering
     
     // Score each user by "aliveness" signals
+    // CRITICAL: Users without avatars are deprioritized to train identity creation
     const scored = rankings.map(editor => {
       let aliveScore = 0;
+      const hasAvatar = !!editor.avatar_url;
       
-      // Has profile picture = +5 (high priority - makes page look alive)
-      if (editor.avatar_url) aliveScore += 5;
+      // Has profile picture = +6 (highest priority - makes page look alive)
+      if (hasAvatar) aliveScore += 6;
       
       // Verified = +4
       if (editor.verification_status) aliveScore += 4;
@@ -240,13 +242,16 @@ export default function IndexPage() {
       // Level 2+ = +1
       if ((editor.level || 1) >= 2) aliveScore += 1;
       
-      return { editor, aliveScore };
+      return { editor, aliveScore, hasAvatar };
     });
     
-    // Group by alive tier (high: 5+, medium: 1-4, low: 0)
-    const high = scored.filter(s => s.aliveScore >= 5);
-    const medium = scored.filter(s => s.aliveScore >= 1 && s.aliveScore < 5);
-    const low = scored.filter(s => s.aliveScore === 0);
+    // Group: Avatar users first (high/medium), then no-avatar users (always low priority)
+    const withAvatar = scored.filter(s => s.hasAvatar);
+    const noAvatar = scored.filter(s => !s.hasAvatar);
+    
+    // Within avatar users, sort by engagement
+    const avatarHigh = withAvatar.filter(s => s.aliveScore >= 10); // Avatar + other signals
+    const avatarMedium = withAvatar.filter(s => s.aliveScore >= 6 && s.aliveScore < 10); // Just avatar or few signals
     
     // Fisher-Yates shuffle within each tier
     const shuffle = <T,>(arr: T[]): T[] => {
@@ -258,11 +263,11 @@ export default function IndexPage() {
       return shuffled;
     };
     
-    // Combine: shuffled high tier first, then medium, then low
+    // Combine: engaged avatar users → basic avatar users → no avatar users (pushed to bottom)
     return [
-      ...shuffle(high).map(s => s.editor),
-      ...shuffle(medium).map(s => s.editor),
-      ...shuffle(low).map(s => s.editor),
+      ...shuffle(avatarHigh).map(s => s.editor),
+      ...shuffle(avatarMedium).map(s => s.editor),
+      ...shuffle(noAvatar).map(s => s.editor),
     ];
   }, [rankings, hasActiveFilters]);
 
