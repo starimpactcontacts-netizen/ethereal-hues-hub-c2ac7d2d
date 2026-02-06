@@ -17,14 +17,14 @@ interface UnitBotCommandMenuProps {
   crewId: string;
   channelId: string;
   isOfficer: boolean;
+  botName?: string;
 }
 
 type CommandType = "poll" | "event" | "reminder" | "rules" | null;
-// Desktop-only state for showing the menu popover
 
-export default function UnitBotCommandMenu({ crewId, channelId, isOfficer }: UnitBotCommandMenuProps) {
+export default function UnitBotCommandMenu({ crewId, channelId, isOfficer, botName }: UnitBotCommandMenuProps) {
   const isMobile = useIsMobile();
-  const { createPoll, createEvent, createReminder, postRules, sending } = useUnitBot(crewId, channelId);
+  const { createPoll, createEvent, createReminder, postRules, sending } = useUnitBot(crewId, channelId, botName);
   const [activeCommand, setActiveCommand] = useState<CommandType>(null);
   const [showDesktopMenu, setShowDesktopMenu] = useState(false);
 

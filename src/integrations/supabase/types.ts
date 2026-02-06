@@ -1264,6 +1264,8 @@ export type Database = {
           avatar_url: string | null
           banner_color: string | null
           banner_url: string | null
+          bot_avatar_url: string | null
+          bot_name: string | null
           content_style: string | null
           created_at: string
           description: string | null
@@ -1286,6 +1288,8 @@ export type Database = {
           avatar_url?: string | null
           banner_color?: string | null
           banner_url?: string | null
+          bot_avatar_url?: string | null
+          bot_name?: string | null
           content_style?: string | null
           created_at?: string
           description?: string | null
@@ -1308,6 +1312,8 @@ export type Database = {
           avatar_url?: string | null
           banner_color?: string | null
           banner_url?: string | null
+          bot_avatar_url?: string | null
+          bot_name?: string | null
           content_style?: string | null
           created_at?: string
           description?: string | null

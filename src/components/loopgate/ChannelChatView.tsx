@@ -43,6 +43,8 @@ interface ChannelChatViewProps {
   onTyping: () => void;
   isOfficer?: boolean;
   crewName?: string;
+  botName?: string;
+  botAvatarUrl?: string;
   onShowMembers?: () => void;
   onShowPermissions?: () => void;
   showBackOnMobile?: boolean;
@@ -108,6 +110,8 @@ export default function ChannelChatView({
   onTyping,
   isOfficer = false,
   crewName,
+  botName = "Unit Bot",
+  botAvatarUrl,
   onShowMembers,
   onShowPermissions,
   showBackOnMobile = false,
@@ -346,7 +350,7 @@ export default function ChannelChatView({
 
           {/* Bot command menu for officers */}
           {isOfficer && (
-            <UnitBotCommandMenu crewId={crewId} channelId={channel.id} isOfficer={isOfficer} />
+            <UnitBotCommandMenu crewId={crewId} channelId={channel.id} isOfficer={isOfficer} botName={botName} />
           )}
 
           {/* Permissions (officer only) */}
@@ -401,7 +405,14 @@ export default function ChannelChatView({
                         onClick={() => !group.messages[0]?.is_bot && navigate(`/u/${group.username}`)}
                       >
                         {group.messages[0]?.is_bot ? (
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">🤖</AvatarFallback>
+                          botAvatarUrl ? (
+                            <>
+                              <AvatarImage src={botAvatarUrl} />
+                              <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">🤖</AvatarFallback>
+                            </>
+                          ) : (
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">🤖</AvatarFallback>
+                          )
                         ) : (
                           <>
                             <AvatarImage src={group.avatar_url || undefined} />
@@ -413,7 +424,7 @@ export default function ChannelChatView({
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-2">
+                        <div className="flex items-center gap-2">
                           <span
                             className={cn(
                               "text-[13px] font-semibold hover:underline cursor-pointer",
@@ -421,7 +432,7 @@ export default function ChannelChatView({
                             )}
                             onClick={() => !group.messages[0]?.is_bot && navigate(`/u/${group.username}`)}
                           >
-                            {group.display_name || group.username}
+                            {group.messages[0]?.is_bot ? botName : (group.display_name || group.username)}
                           </span>
                           {group.messages[0]?.is_bot && <BotMessageBadge />}
                           <span className="text-[10px] text-muted-foreground/40">

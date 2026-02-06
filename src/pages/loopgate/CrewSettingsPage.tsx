@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog, ImagePlus, X, Eye, EyeOff, UserMinus, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Shield, Crown, Users, Star, Zap, Award, Trash2, Camera, UserCog, ImagePlus, X, Eye, EyeOff, UserMinus, ChevronDown, ChevronUp, Bot } from "lucide-react";
 import { SiDiscord } from "@icons-pack/react-simple-icons";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -95,6 +95,8 @@ const [formData, setFormData] = useState({
     discord_url: "",
     is_public: true,
     max_members: "" as string,
+    bot_name: "Unit Bot",
+    bot_avatar_url: "" as string,
   });
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
@@ -143,8 +145,10 @@ const [formData, setFormData] = useState({
       banner_url: crew.banner_url || null,
       banner_color: crew.banner_color || "#d4af37",
       discord_url: crew.discord_url || "",
-      is_public: true, // Default to public
+      is_public: true,
       max_members: crew.max_members ? String(crew.max_members) : "",
+      bot_name: crew.bot_name || "Unit Bot",
+      bot_avatar_url: crew.bot_avatar_url || "",
     });
     setCrewAvatarUrl(crew.avatar_url || null);
 
@@ -280,6 +284,8 @@ const [formData, setFormData] = useState({
           banner_color: formData.banner_color,
           discord_url: formData.discord_url.trim() || null,
           max_members: formData.max_members ? parseInt(formData.max_members) : null,
+          bot_name: formData.bot_name.trim() || "Unit Bot",
+          bot_avatar_url: formData.bot_avatar_url.trim() || null,
         })
         .eq("id", crewId);
 
@@ -741,6 +747,67 @@ const [formData, setFormData] = useState({
             )}
           </div>
 
+
+          {/* ==================== BOT SETTINGS ==================== */}
+          <div className="space-y-2">
+            <SectionHeader id="bot" title="Bot Settings" icon={Bot} />
+            
+            {expandedSection === "bot" && (
+              <div className="space-y-5 p-4 bg-muted/30 rounded-lg border border-border">
+                <p className="text-xs text-muted-foreground">
+                  Customize your unit's verified bot. This bot handles polls, events, reminders, and automated messages in your channels.
+                </p>
+
+                {/* Bot Name */}
+                <div className="space-y-2">
+                  <Label>Bot Name</Label>
+                  <Input
+                    placeholder="Unit Bot"
+                    value={formData.bot_name}
+                    onChange={(e) => setFormData({ ...formData, bot_name: e.target.value })}
+                    maxLength={32}
+                    className="bg-muted/50"
+                  />
+                  <p className="text-[10px] text-muted-foreground/70">Max 32 characters. This name appears on all bot messages.</p>
+                </div>
+
+                {/* Bot Avatar URL */}
+                <div className="space-y-2">
+                  <Label>Bot Avatar URL (optional)</Label>
+                  <Input
+                    placeholder="https://example.com/bot-avatar.png"
+                    value={formData.bot_avatar_url}
+                    onChange={(e) => setFormData({ ...formData, bot_avatar_url: e.target.value })}
+                    className="bg-muted/50"
+                  />
+                  <p className="text-[10px] text-muted-foreground/70">Direct image link. Leave blank for default robot emoji.</p>
+                </div>
+
+                {/* Bot Preview */}
+                <div className="bg-background border border-border rounded-lg p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Preview</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-full ring-2 ring-primary/30 bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                      {formData.bot_avatar_url ? (
+                        <img src={formData.bot_avatar_url} alt="Bot" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-sm">🤖</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[13px] font-semibold text-primary">
+                        {formData.bot_name || "Unit Bot"}
+                      </span>
+                      <span className="inline-flex items-center gap-0.5 px-1 py-[1px] rounded bg-primary/15 border border-primary/20">
+                        <Bot className="w-3 h-3 text-primary" />
+                        <span className="text-[9px] font-bold text-primary uppercase tracking-wider">BOT</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Save Button */}
           <Button

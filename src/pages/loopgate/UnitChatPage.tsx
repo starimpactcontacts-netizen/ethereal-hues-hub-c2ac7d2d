@@ -21,6 +21,8 @@ interface Crew {
   name: string;
   avatar_url: string | null;
   owner_id: string;
+  bot_name: string | null;
+  bot_avatar_url: string | null;
 }
 
 interface Member {
@@ -74,7 +76,7 @@ export default function UnitChatPage() {
 
       const { data: crewData, error: crewError } = await supabase
         .from("crews")
-        .select("id, name, avatar_url, owner_id")
+        .select("id, name, avatar_url, owner_id, bot_name, bot_avatar_url")
         .eq("id", crewId)
         .single();
 
@@ -304,6 +306,8 @@ export default function UnitChatPage() {
                   onTyping={broadcastTyping}
                   isOfficer={isOfficer}
                   crewName={crew.name}
+                  botName={crew.bot_name || undefined}
+                  botAvatarUrl={crew.bot_avatar_url || undefined}
                   showBackOnMobile={true}
                   onBack={() => setMobileView("channels")}
                   onShowPermissions={
@@ -365,6 +369,8 @@ export default function UnitChatPage() {
           onTyping={broadcastTyping}
           isOfficer={isOfficer}
           crewName={crew.name}
+          botName={crew.bot_name || undefined}
+          botAvatarUrl={crew.bot_avatar_url || undefined}
           onShowMembers={() => setShowMembers(!showMembers)}
           onShowPermissions={
             isOfficer && activeChannel
