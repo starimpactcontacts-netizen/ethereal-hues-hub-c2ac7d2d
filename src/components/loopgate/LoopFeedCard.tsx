@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { Play, Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, ChevronDown, ChevronUp, Swords } from "lucide-react";
+import { Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, ChevronDown, ChevronUp, Swords } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { useThumbnail } from "@/hooks/useThumbnail";
+import { useUnifiedThumbnail } from "@/lib/thumbnail";
+import ThumbnailImage from "./ThumbnailImage";
 import FeedInlineComments from "./FeedInlineComments";
 
 export interface LoopFeedItem {
@@ -64,12 +65,12 @@ interface LoopFeedCardProps {
 
 export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenPlayer }: LoopFeedCardProps) {
   const navigate = useNavigate();
-  // Self-heal: if feed didn't resolve a thumbnail, try per-card
-  const { thumbnail: hookThumb } = useThumbnail(
-    item.thumbnail_url ? '' : item.submission_url,
-    item.platform
+  const thumb = useUnifiedThumbnail(
+    item.type === 'battle' ? '' : item.submission_url,
+    item.platform,
+    null, // manualThumb — passed via item.thumbnail_url as dbThumb
+    item.thumbnail_url,
   );
-  const resolvedThumb = item.thumbnail_url || hookThumb;
 
   const displayTitle = item.custom_title || item.event_title || 'Untitled Edit';
   const timeAgo = formatDistanceToNow(new Date(item.created_at), { addSuffix: true });
@@ -227,29 +228,13 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                 </div>
               </button>
             ) : (
-              <button onClick={onOpenPlayer} className="relative w-full rounded-md overflow-hidden group mb-1 block">
-                {resolvedThumb ? (
-                  <img
-                    src={resolvedThumb}
-                    alt={displayTitle}
-                    className="w-full aspect-[16/9] object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full aspect-[16/9] bg-surface-2 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Play className="w-5 h-5 text-muted-foreground/30" />
-                    </div>
-                  </div>
-                )}
-                {/* Hover play */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                    <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
-                  </div>
-                </div>
-
+              <ThumbnailImage
+                src={thumb.url}
+                alt={displayTitle}
+                status={thumb.status}
+                sourceUrl={thumb.sourceUrl}
+                onClick={onOpenPlayer}
+              >
                 {/* Score */}
                 {gradeInfo && score != null && (
                   <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-sm rounded px-1 py-px flex items-center gap-0.5">
@@ -278,7 +263,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                 <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm text-white text-[8px] font-bold px-1 py-px rounded">
                   {platformLabels[item.platform] || item.platform}
                 </div>
-              </button>
+              </ThumbnailImage>
             )}
 
             {/* Score breakdown */}
