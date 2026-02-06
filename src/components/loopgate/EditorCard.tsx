@@ -124,10 +124,10 @@ export default function EditorCard({ editor }: EditorCardProps) {
         </div>
 
         {/* Connect & Stats */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Quick Connect - stop propagation to prevent card navigation */}
-          <div onClick={(e) => e.stopPropagation()}>
-            <ConnectButton targetUserId={editor.id} variant="icon" className="opacity-70 hover:opacity-100 transition-opacity" />
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Quick Connect - LinkedIn style */}
+          <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
+            <ConnectButton targetUserId={editor.id} variant="compact" />
           </div>
           
           {/* Level */}
