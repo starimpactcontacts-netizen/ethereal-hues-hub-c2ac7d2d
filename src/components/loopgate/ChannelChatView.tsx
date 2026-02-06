@@ -15,6 +15,8 @@ import RichMessageContent from "@/components/loopgate/RichMessageContent";
 import CrewTypingIndicator from "@/components/loopgate/CrewTypingIndicator";
 import MessageReactions from "@/components/loopgate/MessageReactions";
 import PinnedMessagesPanel from "@/components/loopgate/PinnedMessagesPanel";
+import BotMessageBadge from "@/components/loopgate/BotMessageBadge";
+import UnitBotCommandMenu from "@/components/loopgate/UnitBotCommandMenu";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -387,23 +389,36 @@ export default function ChannelChatView({
                   >
                     <div className="flex gap-2.5">
                       <Avatar
-                        className="w-9 h-9 shrink-0 cursor-pointer"
-                        onClick={() => navigate(`/u/${group.username}`)}
+                        className={cn(
+                          "w-9 h-9 shrink-0",
+                          group.messages[0]?.is_bot ? "ring-2 ring-primary/30" : "cursor-pointer"
+                        )}
+                        onClick={() => !group.messages[0]?.is_bot && navigate(`/u/${group.username}`)}
                       >
-                        <AvatarImage src={group.avatar_url || undefined} />
-                        <AvatarFallback className="bg-muted text-xs font-medium">
-                          {(group.display_name || group.username || "?")[0].toUpperCase()}
-                        </AvatarFallback>
+                        {group.messages[0]?.is_bot ? (
+                          <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">🤖</AvatarFallback>
+                        ) : (
+                          <>
+                            <AvatarImage src={group.avatar_url || undefined} />
+                            <AvatarFallback className="bg-muted text-xs font-medium">
+                              {(group.display_name || group.username || "?")[0].toUpperCase()}
+                            </AvatarFallback>
+                          </>
+                        )}
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
                           <span
-                            className="text-[13px] font-semibold hover:underline cursor-pointer"
-                            onClick={() => navigate(`/u/${group.username}`)}
+                            className={cn(
+                              "text-[13px] font-semibold hover:underline cursor-pointer",
+                              group.messages[0]?.is_bot && "text-primary"
+                            )}
+                            onClick={() => !group.messages[0]?.is_bot && navigate(`/u/${group.username}`)}
                           >
                             {group.display_name || group.username}
                           </span>
+                          {group.messages[0]?.is_bot && <BotMessageBadge />}
                           <span className="text-[10px] text-muted-foreground/40">
                             {format(group.firstMessageTime, "h:mm a")}
                           </span>
@@ -528,6 +543,11 @@ export default function ChannelChatView({
 
         {canPost ? (
           <div className="flex items-center gap-1.5 bg-muted/30 rounded-xl px-3">
+            {/* Bot command menu for officers */}
+            {isOfficer && (
+              <UnitBotCommandMenu crewId={crewId} channelId={channel.id} isOfficer={isOfficer} />
+            )}
+
             <Button
               type="button"
               variant="ghost"
