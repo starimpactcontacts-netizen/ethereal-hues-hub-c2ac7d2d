@@ -32,6 +32,8 @@ export interface LoopFeedItem {
   battle_id?: string;
   opponent_username?: string | null;
   challenger_username?: string | null;
+  challenger_avatar_url?: string | null;
+  opponent_avatar_url?: string | null;
   challenger_score?: number | null;
   opponent_score?: number | null;
   winner_id?: string | null;
@@ -160,59 +162,124 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
               </p>
             )}
 
-            {/* Thumbnail — compact */}
-            <button onClick={onOpenPlayer} className="relative w-full rounded-md overflow-hidden group mb-1 block">
-              {resolvedThumb ? (
-                <img
-                  src={resolvedThumb}
-                  alt={displayTitle}
-                  className="w-full aspect-[16/9] object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full aspect-[16/9] bg-surface-2 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Play className="w-5 h-5 text-muted-foreground/30" />
+            {/* Thumbnail / VS Clash */}
+            {item.type === 'battle' ? (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/battle/${item.battle_id}`); }}
+                className="relative w-full rounded-md overflow-hidden mb-1 block"
+              >
+                <div className="w-full aspect-[16/9] bg-gradient-to-r from-red-950/60 via-surface-2 to-blue-950/60 flex items-center justify-center gap-3 relative">
+                  {/* Diagonal slash lines */}
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-foreground rotate-12" />
+                    <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-foreground -rotate-12" />
                   </div>
-                </div>
-              )}
-              {/* Hover play */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                  <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
-                </div>
-              </div>
 
-              {/* Score */}
-              {gradeInfo && score != null && (
-                <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-sm rounded px-1 py-px flex items-center gap-0.5">
-                  {item.type === 'arena' ? (
-                    <>
-                      <Star className="w-2.5 h-2.5 text-gold" fill="currentColor" />
-                      <span className="text-white font-bold text-[10px]">{Math.round(score)}</span>
-                    </>
-                  ) : (
-                    <span className={`font-display text-xs font-bold ${gradeInfo.color}`}>
-                      {gradeInfo.grade}
+                  {/* Challenger */}
+                  <div className="flex flex-col items-center z-10">
+                    <Avatar className="w-12 h-12 border-2 border-red-500/60 shadow-lg shadow-red-500/20">
+                      <AvatarImage src={item.challenger_avatar_url || item.avatar_url || undefined} />
+                      <AvatarFallback className="bg-muted text-foreground text-sm font-bold">
+                        {(item.challenger_username || '?')[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-[10px] font-bold text-foreground mt-1 truncate max-w-[72px]">
+                      @{item.challenger_username}
                     </span>
+                  </div>
+
+                  {/* VS */}
+                  <div className="flex flex-col items-center z-10">
+                    <span className="text-lg font-black text-foreground/80 tracking-tighter font-display">VS</span>
+                    {item.battle_status === 'active' && (
+                      <span className="text-[8px] font-bold text-red-400 uppercase animate-pulse">LIVE</span>
+                    )}
+                    {item.battle_status === 'judging' && (
+                      <span className="text-[8px] font-bold text-purple-400 uppercase">JUDGING</span>
+                    )}
+                    {item.battle_status === 'completed' && item.challenger_score != null && (
+                      <span className="text-[9px] font-bold text-muted-foreground">
+                        {item.challenger_score} - {item.opponent_score}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Opponent */}
+                  <div className="flex flex-col items-center z-10">
+                    <Avatar className="w-12 h-12 border-2 border-blue-500/60 shadow-lg shadow-blue-500/20">
+                      <AvatarImage src={item.opponent_avatar_url || undefined} />
+                      <AvatarFallback className="bg-muted text-foreground text-sm font-bold">
+                        {(item.opponent_username || '?')[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-[10px] font-bold text-foreground mt-1 truncate max-w-[72px]">
+                      @{item.opponent_username || '???'}
+                    </span>
+                  </div>
+
+                  {/* Winner crown */}
+                  {item.battle_status === 'completed' && item.winner_id && (
+                    <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-gold/20 text-gold text-[8px] font-bold px-1.5 py-px rounded-full flex items-center gap-0.5">
+                      <Trophy className="w-2.5 h-2.5" />
+                      {item.winner_id === item.user_id ? item.challenger_username : item.opponent_username} wins
+                    </div>
                   )}
                 </div>
-              )}
-
-              {/* Rank */}
-              {item.final_rank && (
-                <div className="absolute bottom-1 left-1 bg-gold text-black rounded px-1 py-px flex items-center gap-0.5">
-                  <Trophy className="w-2 h-2" />
-                  <span className="font-bold text-[9px]">#{item.final_rank}</span>
+              </button>
+            ) : (
+              <button onClick={onOpenPlayer} className="relative w-full rounded-md overflow-hidden group mb-1 block">
+                {resolvedThumb ? (
+                  <img
+                    src={resolvedThumb}
+                    alt={displayTitle}
+                    className="w-full aspect-[16/9] object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full aspect-[16/9] bg-surface-2 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Play className="w-5 h-5 text-muted-foreground/30" />
+                    </div>
+                  </div>
+                )}
+                {/* Hover play */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                    <Play className="w-3.5 h-3.5 text-white ml-0.5" fill="white" />
+                  </div>
                 </div>
-              )}
 
-              {/* Platform */}
-              <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm text-white text-[8px] font-bold px-1 py-px rounded">
-                {platformLabels[item.platform] || item.platform}
-              </div>
-            </button>
+                {/* Score */}
+                {gradeInfo && score != null && (
+                  <div className="absolute bottom-1 right-1 bg-black/70 backdrop-blur-sm rounded px-1 py-px flex items-center gap-0.5">
+                    {item.type === 'arena' ? (
+                      <>
+                        <Star className="w-2.5 h-2.5 text-gold" fill="currentColor" />
+                        <span className="text-white font-bold text-[10px]">{Math.round(score)}</span>
+                      </>
+                    ) : (
+                      <span className={`font-display text-xs font-bold ${gradeInfo.color}`}>
+                        {gradeInfo.grade}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Rank */}
+                {item.final_rank && (
+                  <div className="absolute bottom-1 left-1 bg-gold text-black rounded px-1 py-px flex items-center gap-0.5">
+                    <Trophy className="w-2 h-2" />
+                    <span className="font-bold text-[9px]">#{item.final_rank}</span>
+                  </div>
+                )}
+
+                {/* Platform */}
+                <div className="absolute top-1 right-1 bg-black/60 backdrop-blur-sm text-white text-[8px] font-bold px-1 py-px rounded">
+                  {platformLabels[item.platform] || item.platform}
+                </div>
+              </button>
+            )}
 
             {/* Score breakdown */}
             {item.type === 'arena' && item.quality_score != null && (
