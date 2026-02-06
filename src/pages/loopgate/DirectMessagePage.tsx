@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Smile } from 'lucide-react';
+import { ArrowLeft, Send, Smile, MoreVertical, Trash2 } from 'lucide-react';
 import { useDirectMessages, useConversations } from '@/hooks/useDirectMessages';
 import { useAuth } from '@/hooks/useAuth';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -9,6 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import GifPicker from '@/components/loopgate/GifPicker';
 import RichMessageContent from '@/components/loopgate/RichMessageContent';
 import MessageReactions from '@/components/loopgate/MessageReactions';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function DirectMessagePage() {
   const { conversationId } = useParams<{ conversationId: string }>();
@@ -57,6 +65,20 @@ export default function DirectMessagePage() {
     if (isToday(date)) return format(date, 'h:mm a');
     if (isYesterday(date)) return 'Yesterday ' + format(date, 'h:mm a');
     return format(date, 'MMM d, h:mm a');
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    const { error } = await supabase
+      .from('direct_messages')
+      .delete()
+      .eq('id', messageId)
+      .eq('sender_id', user?.id); // Only allow deleting own messages
+
+    if (error) {
+      toast.error("Failed to delete message");
+    } else {
+      toast.success("Message deleted");
+    }
   };
 
   if (!conversationId) {
@@ -155,16 +177,38 @@ export default function DirectMessagePage() {
 
                     {/* Message bubble */}
                     <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
-                      <div
-                        className={`rounded-2xl px-4 py-2 break-words ${
-                          isMe 
-                            ? 'bg-primary text-primary-foreground rounded-br-sm' 
-                            : 'bg-muted text-foreground rounded-bl-sm'
-                        }`}
-                      >
-                        <div className="text-sm">
-                          <RichMessageContent content={msg.message_text} />
+                      <div className="flex items-start gap-1">
+                        <div
+                          className={`rounded-2xl px-4 py-2 break-words ${
+                            isMe 
+                              ? 'bg-primary text-primary-foreground rounded-br-sm' 
+                              : 'bg-muted text-foreground rounded-bl-sm'
+                          }`}
+                        >
+                          <div className="text-sm">
+                            <RichMessageContent content={msg.message_text} />
+                          </div>
                         </div>
+                        
+                        {/* Delete menu for own messages */}
+                        {isMe && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 shrink-0 transition-opacity self-center">
+                                <MoreVertical className="w-4 h-4 text-muted-foreground/50" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-32">
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="text-destructive text-xs"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                       
                       {/* Emoji Reactions */}
