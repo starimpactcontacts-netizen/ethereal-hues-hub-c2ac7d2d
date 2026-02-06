@@ -1,8 +1,11 @@
 import { useState, useCallback } from "react";
-import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight } from "lucide-react";
+import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight, ImagePlus, Upload, Link as LinkIcon } from "lucide-react";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 // Extract thumbnail from platform URL
 function getThumbnailUrl(url: string, platform: string): string | null {
@@ -28,12 +31,22 @@ const platformColors: Record<string, string> = {
 
 const PULL_THRESHOLD = 80;
 
+// Map source type to the correct DB table
+function getTableForSource(source: string) {
+  switch (source) {
+    case 'round': return 'round_participations';
+    case 'sanctioned': return 'sanctioned_tournament_participants';
+    default: return 'event_participations';
+  }
+}
+
 interface SubmissionGridProps {
   userId?: string;
 }
 
 export default function SubmissionGrid({ userId }: SubmissionGridProps) {
   const { submissions, loading, refetch } = useUserSubmissions(userId);
+  const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   
@@ -115,7 +128,8 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
         style={{ touchAction: 'pan-x' }}
       >
         {submissions.map((submission, index) => {
-          const thumbnail = getThumbnailUrl(submission.submission_url, submission.platform);
+          // Custom thumbnail > auto-fetched thumbnail
+          const thumbnail = submission.thumbnail_url || getThumbnailUrl(submission.submission_url, submission.platform);
           const gradient = platformColors[submission.platform] || "from-gray-600 to-gray-400";
           const isScored = submission.status === 'scored' && submission.qoi_score;
           
@@ -136,6 +150,13 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
                 />
               ) : (
                 <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+              )}
+              
+              {/* Custom thumb indicator */}
+              {submission.thumbnail_url && (
+                <div className="absolute top-2 left-8 w-4 h-4 rounded-full bg-gold/80 flex items-center justify-center">
+                  <ImagePlus className="w-2.5 h-2.5 text-black" />
+                </div>
               )}
               
               {/* Gradient overlay */}
@@ -165,7 +186,6 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
               
               {/* Bottom info */}
               <div className="absolute bottom-0 left-0 right-0 p-2">
-                {/* Rank badge if available */}
                 {submission.final_rank && (
                   <div className="flex items-center gap-1 mb-1">
                     <Trophy className="w-3 h-3 text-gold" />
@@ -189,137 +209,261 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
       {/* Detail Modal */}
       <AnimatePresence>
         {selectedSubmission && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
-            onClick={() => setSelectedSubmission(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-sm bg-surface-1 border border-border overflow-hidden"
-            >
-              {(() => {
-                const submission = submissions.find(s => s.id === selectedSubmission);
-                if (!submission) return null;
-                
-                const gradient = platformColors[submission.platform] || "from-gray-600 to-gray-400";
-                const thumbnail = getThumbnailUrl(submission.submission_url, submission.platform);
-                
-                return (
-                  <>
-                    {/* Header with thumbnail/gradient */}
-                    <div className="relative h-48">
-                      {thumbnail ? (
-                        <div 
-                          className="absolute inset-0 bg-cover bg-center"
-                          style={{ backgroundImage: `url(${thumbnail})` }}
-                        />
-                      ) : (
-                        <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-transparent to-black/50" />
-                      
-                      {/* Play button overlay */}
-                      <a
-                        href={submission.submission_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="absolute inset-0 flex items-center justify-center"
-                      >
-                        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
-                          <Play className="w-8 h-8 text-white fill-white ml-1" />
-                        </div>
-                      </a>
-                      
-                      {/* Close button */}
-                      <button
-                        onClick={() => setSelectedSubmission(null)}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white"
-                      >
-                        ×
-                      </button>
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="p-4 space-y-4">
-                      {/* Event title */}
-                      <div>
-                        <Link 
-                          to={`/event/${submission.event_id}`}
-                          className="font-semibold text-sm hover:text-gold transition-colors"
-                        >
-                          {submission.event?.title || 'Unknown Event'}
-                        </Link>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`text-[10px] px-2 py-0.5 uppercase tracking-wider rounded bg-gradient-to-r ${gradient} text-white`}>
-                            {submission.platform}
-                          </span>
-                          {submission.status === 'scored' ? (
-                            <span className="flex items-center gap-1 text-[10px] text-green-500">
-                              <CheckCircle size={10} />
-                              Scored
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-[10px] text-yellow-500">
-                              <Clock size={10} />
-                              Pending
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* QOI Scores */}
-                      {submission.status === 'scored' && submission.qoi_score && (
-                        <div className="grid grid-cols-4 gap-2 text-center p-3 bg-background">
-                          <div>
-                            <p className="text-lg font-bold">{submission.quality_score || '—'}</p>
-                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Quality</p>
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold">{submission.originality_score || '—'}</p>
-                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Original</p>
-                          </div>
-                          <div>
-                            <p className="text-lg font-bold">{submission.impact_score || '—'}</p>
-                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Impact</p>
-                          </div>
-                          <div className="bg-gold/10 -my-1 py-1">
-                            <p className="text-lg font-bold text-gold">{submission.qoi_score.toFixed(1)}</p>
-                            <p className="text-[9px] text-gold uppercase tracking-wider">QOI</p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Final Rank */}
-                      {submission.final_rank && (
-                        <div className="text-center p-3 bg-gold/10 border border-gold/30">
-                          <p className="text-2xl font-bold text-gold">#{submission.final_rank}</p>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Final Rank</p>
-                        </div>
-                      )}
-                      
-                      {/* View button */}
-                      <a
-                        href={submission.submission_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full py-3 bg-gold text-black text-center text-sm font-semibold uppercase tracking-wider hover:bg-gold/90 transition-colors"
-                      >
-                        View Submission →
-                      </a>
-                    </div>
-                  </>
-                );
-              })()}
-            </motion.div>
-          </motion.div>
+          <SubmissionDetailModal
+            submission={submissions.find(s => s.id === selectedSubmission)!}
+            userId={user?.id}
+            onClose={() => setSelectedSubmission(null)}
+            onThumbnailUpdated={refetch}
+          />
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+// ── Detail Modal with Thumbnail Override ──
+function SubmissionDetailModal({
+  submission,
+  userId,
+  onClose,
+  onThumbnailUpdated,
+}: {
+  submission: any;
+  userId?: string;
+  onClose: () => void;
+  onThumbnailUpdated: () => void;
+}) {
+  const [showThumbInput, setShowThumbInput] = useState(false);
+  const [thumbMode, setThumbMode] = useState<'file' | 'url'>('file');
+  const [thumbUrl, setThumbUrl] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  if (!submission) return null;
+
+  const gradient = platformColors[submission.platform] || "from-gray-600 to-gray-400";
+  const thumbnail = submission.thumbnail_url || getThumbnailUrl(submission.submission_url, submission.platform);
+  const tableName = getTableForSource(submission.source);
+
+  const saveThumbnailUrl = async (url: string) => {
+    setSaving(true);
+    const { error } = await supabase
+      .from(tableName)
+      .update({ thumbnail_url: url } as any)
+      .eq('id', submission.id);
+    setSaving(false);
+    if (error) { toast.error('Failed to save thumbnail'); return; }
+    toast.success('Thumbnail updated!');
+    setShowThumbInput(false);
+    setThumbUrl('');
+    onThumbnailUpdated();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please select an image'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
+
+    setSaving(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${userId}/${submission.id}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from('video-thumbnails')
+      .upload(path, file, { upsert: true });
+
+    if (uploadErr) { setSaving(false); toast.error('Upload failed'); return; }
+
+    const { data: urlData } = supabase.storage.from('video-thumbnails').getPublicUrl(path);
+    await saveThumbnailUrl(urlData.publicUrl);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm bg-surface-1 border border-border overflow-hidden relative"
+      >
+        {/* Header with thumbnail/gradient */}
+        <div className="relative h-48">
+          {thumbnail ? (
+            <div 
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${thumbnail})` }}
+            />
+          ) : (
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-transparent to-black/50" />
+          
+          {/* Play button overlay */}
+          <a
+            href={submission.submission_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-colors">
+              <Play className="w-8 h-8 text-white fill-white ml-1" />
+            </div>
+          </a>
+          
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white"
+          >
+            ×
+          </button>
+
+          {/* Thumbnail edit button */}
+          {userId && (
+            <button
+              onClick={() => setShowThumbInput(!showThumbInput)}
+              className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-gold/30 hover:text-gold transition-colors"
+              title="Set custom thumbnail"
+            >
+              <ImagePlus className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Thumbnail override panel */}
+        <AnimatePresence>
+          {showThumbInput && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden border-b border-border"
+            >
+              <div className="p-3 space-y-2 bg-surface-2">
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Custom Thumbnail</p>
+                {/* Mode tabs */}
+                <div className="flex gap-1 bg-background rounded p-0.5">
+                  <button
+                    onClick={() => setThumbMode('file')}
+                    className={`flex-1 text-[10px] py-1 rounded flex items-center justify-center gap-1 transition-colors ${thumbMode === 'file' ? 'bg-gold/20 text-gold' : 'text-muted-foreground'}`}
+                  >
+                    <Upload size={10} /> Upload
+                  </button>
+                  <button
+                    onClick={() => setThumbMode('url')}
+                    className={`flex-1 text-[10px] py-1 rounded flex items-center justify-center gap-1 transition-colors ${thumbMode === 'url' ? 'bg-gold/20 text-gold' : 'text-muted-foreground'}`}
+                  >
+                    <LinkIcon size={10} /> URL
+                  </button>
+                </div>
+
+                {thumbMode === 'file' ? (
+                  <label className="w-full cursor-pointer">
+                    <div className="w-full py-3 border border-dashed border-border rounded flex flex-col items-center gap-1 hover:border-gold/40 transition-colors">
+                      <Upload size={16} className="text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">{saving ? 'Uploading...' : 'Tap to choose image'}</span>
+                    </div>
+                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" disabled={saving} />
+                  </label>
+                ) : (
+                  <div className="flex gap-1.5">
+                    <input
+                      type="url"
+                      value={thumbUrl}
+                      onChange={e => setThumbUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="flex-1 bg-background border border-border rounded px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
+                    />
+                    <button
+                      onClick={() => saveThumbnailUrl(thumbUrl.trim())}
+                      disabled={saving || !thumbUrl.trim()}
+                      className="px-3 py-1.5 rounded bg-gold/20 text-gold text-[10px] hover:bg-gold/30 transition-colors disabled:opacity-50"
+                    >
+                      {saving ? '...' : 'Save'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Content */}
+        <div className="p-4 space-y-4">
+          {/* Event title */}
+          <div>
+            <Link 
+              to={`/event/${submission.event_id}`}
+              className="font-semibold text-sm hover:text-gold transition-colors"
+            >
+              {submission.event?.title || 'Unknown Event'}
+            </Link>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`text-[10px] px-2 py-0.5 uppercase tracking-wider rounded bg-gradient-to-r ${gradient} text-white`}>
+                {submission.platform}
+              </span>
+              {submission.status === 'scored' ? (
+                <span className="flex items-center gap-1 text-[10px] text-green-500">
+                  <CheckCircle size={10} />
+                  Scored
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-[10px] text-yellow-500">
+                  <Clock size={10} />
+                  Pending
+                </span>
+              )}
+            </div>
+          </div>
+          
+          {/* QOI Scores */}
+          {submission.status === 'scored' && submission.qoi_score && (
+            <div className="grid grid-cols-4 gap-2 text-center p-3 bg-background">
+              <div>
+                <p className="text-lg font-bold">{submission.quality_score || '—'}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Quality</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold">{submission.originality_score || '—'}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Original</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold">{submission.impact_score || '—'}</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Impact</p>
+              </div>
+              <div className="bg-gold/10 -my-1 py-1">
+                <p className="text-lg font-bold text-gold">{submission.qoi_score.toFixed(1)}</p>
+                <p className="text-[9px] text-gold uppercase tracking-wider">QOI</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Final Rank */}
+          {submission.final_rank && (
+            <div className="text-center p-3 bg-gold/10 border border-gold/30">
+              <p className="text-2xl font-bold text-gold">#{submission.final_rank}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Final Rank</p>
+            </div>
+          )}
+          
+          {/* View button */}
+          <a
+            href={submission.submission_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-3 bg-gold text-black text-center text-sm font-semibold uppercase tracking-wider hover:bg-gold/90 transition-colors"
+          >
+            View Submission →
+          </a>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
