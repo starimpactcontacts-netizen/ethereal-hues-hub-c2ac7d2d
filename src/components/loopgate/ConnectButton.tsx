@@ -7,11 +7,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
  
- interface ConnectButtonProps {
-   targetUserId: string;
-   variant?: 'default' | 'compact' | 'icon';
-   className?: string;
- }
+interface ConnectButtonProps {
+  targetUserId: string;
+  variant?: 'default' | 'compact' | 'icon' | 'pill';
+  className?: string;
+}
  
 interface ConnectionData {
   status: 'none' | 'pending_sent' | 'pending_received' | 'connected';
@@ -86,6 +86,17 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
 
   // Show login redirect for logged-out users
   if (!user) {
+    if (variant === 'pill') {
+      return (
+        <button
+          onClick={() => navigate('/login')}
+          className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-border bg-surface-1 text-muted-foreground hover:text-white hover:border-foreground/30 transition-colors', className)}
+        >
+          <UserPlus size={10} />
+          Connect
+        </button>
+      );
+    }
     if (variant === 'compact') {
       return (
         <button
@@ -252,13 +263,69 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
      setActionLoading(false);
    };
  
-   if (loading) {
-     return (
-       <Button variant="outline" size="sm" disabled className={className}>
-         <Loader2 size={14} className="animate-spin" />
-       </Button>
-     );
-   }
+  if (loading) {
+    if (variant === 'pill') {
+      return (
+        <span className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-border bg-surface-1 text-muted-foreground', className)}>
+          <Loader2 size={10} className="animate-spin" />
+        </span>
+      );
+    }
+    return (
+      <Button variant="outline" size="sm" disabled className={className}>
+        <Loader2 size={14} className="animate-spin" />
+      </Button>
+    );
+  }
+
+  // Pill variant - LinkedIn style small rounded button
+  if (variant === 'pill') {
+    if (data.status === 'connected') {
+      return (
+        <span className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500', className)}>
+          <UserCheck size={10} />
+          Connected
+        </span>
+      );
+    }
+
+    if (data.status === 'pending_sent') {
+      return (
+        <button
+          onClick={handleCancel}
+          disabled={actionLoading}
+          className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-gold/30 bg-gold/10 text-gold hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive transition-colors', className)}
+        >
+          {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <Clock size={10} />}
+          Pending
+        </button>
+      );
+    }
+
+    if (data.status === 'pending_received') {
+      return (
+        <button
+          onClick={handleAccept}
+          disabled={actionLoading}
+          className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-sky-400/30 bg-sky-400/10 text-sky-400 hover:border-emerald-500/50 hover:bg-emerald-500/10 hover:text-emerald-500 transition-colors animate-pulse', className)}
+        >
+          {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <UserPlus size={10} />}
+          Accept
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleConnect}
+        disabled={actionLoading || weeklyRemaining <= 0}
+        className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-border bg-surface-1 text-muted-foreground hover:text-white hover:border-foreground/30 transition-colors disabled:opacity-50', className)}
+      >
+        {actionLoading ? <Loader2 size={10} className="animate-spin" /> : <UserPlus size={10} />}
+        Connect
+      </button>
+    );
+  }
  
    // Icon-only variant
    if (variant === 'icon') {
