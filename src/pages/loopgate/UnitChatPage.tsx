@@ -11,7 +11,7 @@ import PageTransition from "@/components/loopgate/PageTransition";
 import ChannelSidebar from "@/components/loopgate/ChannelSidebar";
 import ChannelChatView from "@/components/loopgate/ChannelChatView";
 import ChannelMembersList from "@/components/loopgate/ChannelMembersList";
-import ChannelPermissionsModal from "@/components/loopgate/ChannelPermissionsModal";
+import ChannelSettingsPage from "@/components/loopgate/ChannelSettingsPage";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -338,20 +338,22 @@ export default function UnitChatPage() {
           )}
         </AnimatePresence>
 
-        {/* Permissions Modal */}
-        {permissionsChannel && (
-          <ChannelPermissionsModal
-            channel={permissionsChannel}
-            crewId={crewId!}
-            isOpen={!!permissionsChannel}
-            onClose={() => setPermissionsChannel(null)}
-            onSave={handleSavePermissions}
-            tiers={tiers}
-            botName={crew.bot_name || "Unit Bot"}
-            botAvatarUrl={crew.bot_avatar_url || ""}
-            onSaveBotSettings={handleSaveBotSettings}
-          />
-        )}
+        {/* Channel Settings */}
+        <AnimatePresence>
+          {permissionsChannel && (
+            <ChannelSettingsPage
+              channel={permissionsChannel}
+              crewId={crewId!}
+              isOpen={!!permissionsChannel}
+              onClose={() => setPermissionsChannel(null)}
+              onSave={handleSavePermissions}
+              tiers={tiers}
+              botName={crew.bot_name || "Unit Bot"}
+              botAvatarUrl={crew.bot_avatar_url || ""}
+              onSaveBotSettings={handleSaveBotSettings}
+            />
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -420,20 +422,22 @@ export default function UnitChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Permissions Modal */}
-      {permissionsChannel && (
-        <ChannelPermissionsModal
-          channel={permissionsChannel}
-          crewId={crewId!}
-          isOpen={!!permissionsChannel}
-          onClose={() => setPermissionsChannel(null)}
-          onSave={handleSavePermissions}
-          tiers={tiers}
-          botName={crew.bot_name || "Unit Bot"}
-          botAvatarUrl={crew.bot_avatar_url || ""}
-          onSaveBotSettings={handleSaveBotSettings}
-        />
-      )}
+      {/* Channel Settings */}
+      <AnimatePresence>
+        {permissionsChannel && (
+          <ChannelSettingsPage
+            channel={permissionsChannel}
+            crewId={crewId!}
+            isOpen={!!permissionsChannel}
+            onClose={() => setPermissionsChannel(null)}
+            onSave={handleSavePermissions}
+            tiers={tiers}
+            botName={crew.bot_name || "Unit Bot"}
+            botAvatarUrl={crew.bot_avatar_url || ""}
+            onSaveBotSettings={handleSaveBotSettings}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
