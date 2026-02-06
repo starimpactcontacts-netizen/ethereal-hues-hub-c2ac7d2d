@@ -27,6 +27,7 @@ import CrewChallengesPanel from "@/components/loopgate/CrewChallengesPanel";
 import ProposeSanctionedTournament from "@/components/loopgate/ProposeSanctionedTournament";
 import { useCrewRivalries } from "@/hooks/useCrewRivalries";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
+import { useChannelUnread } from "@/hooks/useChannelUnread";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -192,6 +193,7 @@ export default function CrewDetailPage() {
   // Use custom hooks
   const { rivalries, addRival, removeRival } = useCrewRivalries(crewId);
   const { onlineCount } = useCrewPresence(crewId);
+  const { totalUnread: channelUnreadCount } = useChannelUnread(crewId);
 
   useEffect(() => {
     if (crewId) {
@@ -685,14 +687,19 @@ export default function CrewDetailPage() {
               {/* Action Buttons */}
               {myRole && (
                 <div className="flex flex-col gap-2 mt-4">
-                  {/* Primary Row: Chat + Icons */}
+                  {/* Primary Row: Channels + Icons */}
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => navigate(`/crews/${crewId}/chat`)}
-                      className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold"
+                      onClick={() => navigate(`/crews/${crewId}/channels`)}
+                      className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold relative"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
-                      Chat
+                      Channels
+                      {channelUnreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[18px] text-center">
+                          {channelUnreadCount > 99 ? "99+" : channelUnreadCount}
+                        </span>
+                      )}
                     </Button>
                     <Button
                       variant="outline"

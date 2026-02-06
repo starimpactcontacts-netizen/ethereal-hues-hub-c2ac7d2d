@@ -30,6 +30,7 @@ import CrewsPage from "./pages/loopgate/CrewsPage";
 import CreateCrewPage from "./pages/loopgate/CreateCrewPage";
 import CrewDetailPage from "./pages/loopgate/CrewDetailPage";
 import CrewChatPage from "./pages/loopgate/CrewChatPage";
+import UnitChatPage from "./pages/loopgate/UnitChatPage";
 import CrewSettingsPage from "./pages/loopgate/CrewSettingsPage";
 import ShopPage from "./pages/loopgate/ShopPage";
 import FeedPage from "./pages/loopgate/FeedPage";
@@ -277,6 +278,7 @@ export default function App() {
               <Route path="/crews/create" element={<CreateCrewPage />} />
               <Route path="/crews/:crewId" element={<CrewDetailPage />} />
               <Route path="/crews/:crewId/chat" element={<CrewChatPage />} />
+              <Route path="/crews/:crewId/channels" element={<UnitChatPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/messages/:conversationId" element={<DirectMessagePage />} />
               <Route path="/connections" element={<ConnectionsPage />} />
