@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
  
 interface ConnectButtonProps {
   targetUserId: string;
-  variant?: 'default' | 'compact' | 'icon' | 'pill';
+  variant?: 'default' | 'compact' | 'icon' | 'pill' | 'micro';
   className?: string;
 }
  
@@ -86,6 +86,17 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
 
   // Show login redirect for logged-out users
   if (!user) {
+    if (variant === 'micro') {
+      return (
+        <button
+          onClick={() => navigate('/login')}
+          className={cn('inline-flex items-center gap-0.5 text-[9px] px-1.5 py-0.5 rounded text-muted-foreground/60 hover:text-muted-foreground transition-colors', className)}
+        >
+          <UserPlus size={8} />
+          <span className="hidden sm:inline">Connect</span>
+        </button>
+      );
+    }
     if (variant === 'pill') {
       return (
         <button
@@ -264,6 +275,13 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
    };
  
   if (loading) {
+    if (variant === 'micro') {
+      return (
+        <span className={cn('inline-flex items-center text-[9px] text-muted-foreground/40', className)}>
+          <Loader2 size={8} className="animate-spin" />
+        </span>
+      );
+    }
     if (variant === 'pill') {
       return (
         <span className={cn('inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full border border-border bg-surface-1 text-muted-foreground', className)}>
@@ -275,6 +293,53 @@ export default function ConnectButton({ targetUserId, variant = 'default', class
       <Button variant="outline" size="sm" disabled className={className}>
         <Loader2 size={14} className="animate-spin" />
       </Button>
+    );
+  }
+
+  // Micro variant - very subtle, top-right corner
+  if (variant === 'micro') {
+    if (data.status === 'connected') {
+      return (
+        <span className={cn('inline-flex items-center gap-0.5 text-[9px] text-emerald-500/70', className)}>
+          <UserCheck size={8} />
+        </span>
+      );
+    }
+
+    if (data.status === 'pending_sent') {
+      return (
+        <button
+          onClick={handleCancel}
+          disabled={actionLoading}
+          className={cn('inline-flex items-center gap-0.5 text-[9px] text-gold/70 hover:text-destructive transition-colors', className)}
+        >
+          {actionLoading ? <Loader2 size={8} className="animate-spin" /> : <Clock size={8} />}
+        </button>
+      );
+    }
+
+    if (data.status === 'pending_received') {
+      return (
+        <button
+          onClick={handleAccept}
+          disabled={actionLoading}
+          className={cn('inline-flex items-center gap-0.5 text-[9px] text-sky-400/70 hover:text-emerald-500 transition-colors animate-pulse', className)}
+        >
+          {actionLoading ? <Loader2 size={8} className="animate-spin" /> : <UserPlus size={8} />}
+          <span className="hidden sm:inline">Accept</span>
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={handleConnect}
+        disabled={actionLoading || weeklyRemaining <= 0}
+        className={cn('inline-flex items-center gap-0.5 text-[9px] text-muted-foreground/50 hover:text-muted-foreground transition-colors disabled:opacity-50', className)}
+      >
+        {actionLoading ? <Loader2 size={8} className="animate-spin" /> : <UserPlus size={8} />}
+        <span className="hidden sm:inline">Connect</span>
+      </button>
     );
   }
 
