@@ -8,7 +8,7 @@ export interface BotCommand {
   crew_id: string;
   channel_id: string;
   message_id: string | null;
-  command_type: "poll" | "event" | "reminder" | "welcome" | "rules";
+  command_type: "poll" | "event" | "reminder" | "welcome" | "rules" | "embed";
   title: string;
   description: string | null;
   data: Record<string, unknown>;
@@ -175,11 +175,25 @@ export function useUnitBot(crewId: string | undefined, channelId: string | undef
     return true;
   }, [crewId, channelId, user, postBotMessage]);
 
+  // Post a custom embed message
+  const postEmbed = useCallback(async (title: string, body: string) => {
+    if (!crewId || !channelId || !user) return null;
+    setSending(true);
+
+    const messageText = title.trim()
+      ? `**${title.trim()}**\n${body.trim()}`
+      : body.trim();
+    await postBotMessage(messageText);
+
+    toast.success("Message posted!");
+    setSending(false);
+    return true;
+  }, [crewId, channelId, user, postBotMessage]);
+
   // Vote on a poll
   const votePoll = useCallback(async (commandId: string, optionIndex: number) => {
     if (!user) return false;
 
-    // Delete existing vote first (upsert via delete + insert)
     await supabase
       .from("unit_bot_poll_votes")
       .delete()
@@ -207,6 +221,7 @@ export function useUnitBot(crewId: string | undefined, channelId: string | undef
     createEvent,
     createReminder,
     postRules,
+    postEmbed,
     postBotMessage,
     votePoll,
     sending,
