@@ -94,31 +94,31 @@ export default function DirectMessagePage() {
         paddingBottom: 'calc(56px + env(safe-area-inset-bottom))'
       }}
     >
-      {/* Header - fixed height */}
-      <header className="flex-none bg-background border-b border-border/50 px-4 py-3 flex items-center gap-3">
-        <Link to="/messages" className="p-1 -ml-1 text-muted-foreground hover:text-foreground">
-          <ArrowLeft size={20} />
+      {/* Header - compact for mobile */}
+      <header className="flex-none bg-background border-b border-border/50 px-3 py-2 flex items-center gap-2">
+        <Link to="/messages" className="p-1.5 -ml-1 text-muted-foreground hover:text-foreground">
+          <ArrowLeft size={18} />
         </Link>
         
-        <Link to={`/u/${otherUser?.username}`} className="flex items-center gap-3 flex-1 min-w-0">
+        <Link to={`/u/${otherUser?.username}`} className="flex items-center gap-2 flex-1 min-w-0">
           <div className="relative flex-none">
-            <div className="w-10 h-10 rounded-full bg-muted overflow-hidden">
+            <div className="w-8 h-8 rounded-full bg-muted overflow-hidden">
               {otherUser?.avatar_url ? (
                 <img src={otherUser.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-sm font-medium text-muted-foreground">
+                <div className="w-full h-full flex items-center justify-center text-xs font-medium text-muted-foreground">
                   {otherUser?.username?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
             </div>
             {otherUser?.activity_status === 'online' && (
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
+              <div className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 rounded-full border border-background" />
             )}
           </div>
           
           <div className="min-w-0">
-            <p className="font-medium truncate">{otherUser?.username || 'Loading...'}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-sm font-medium truncate">{otherUser?.username || 'Loading...'}</p>
+            <p className="text-[9px] text-muted-foreground">
               {otherUser?.activity_status === 'online' ? 'Online' : 'Tap to view profile'}
             </p>
           </div>
@@ -127,24 +127,24 @@ export default function DirectMessagePage() {
 
       {/* Messages area - fills remaining space */}
       <main className="flex-1 overflow-y-auto overscroll-none">
-        <div className="p-4 space-y-4 min-h-full flex flex-col">
+        <div className="p-3 space-y-2 min-h-full flex flex-col">
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : messages.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-full bg-muted overflow-hidden mb-4">
+              <div className="w-12 h-12 rounded-full bg-muted overflow-hidden mb-3">
                 {otherUser?.avatar_url ? (
                   <img src={otherUser.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl font-medium text-muted-foreground">
+                  <div className="w-full h-full flex items-center justify-center text-lg font-medium text-muted-foreground">
                     {otherUser?.username?.[0]?.toUpperCase() || '?'}
                   </div>
                 )}
               </div>
-              <p className="font-medium">{otherUser?.username}</p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm font-medium">{otherUser?.username}</p>
+              <p className="text-xs text-muted-foreground mt-1">
                 Start a conversation
               </p>
             </div>
@@ -158,16 +158,16 @@ export default function DirectMessagePage() {
                 return (
                   <div
                     key={msg.id}
-                    className={`flex gap-2 group/msg ${isMe ? 'flex-row-reverse' : ''}`}
+                    className={`flex gap-1.5 group/msg ${isMe ? 'flex-row-reverse' : ''}`}
                   >
                     {/* Avatar placeholder for alignment */}
-                    <div className="w-8 flex-none">
+                    <div className="w-6 flex-none">
                       {!isMe && showAvatar && (
-                        <div className="w-8 h-8 rounded-full bg-muted overflow-hidden">
+                        <div className="w-6 h-6 rounded-full bg-muted overflow-hidden">
                           {otherUser?.avatar_url ? (
                             <img src={otherUser.avatar_url} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xs font-medium text-muted-foreground">
+                            <div className="w-full h-full flex items-center justify-center text-[10px] font-medium text-muted-foreground">
                               {otherUser?.username?.[0]?.toUpperCase() || '?'}
                             </div>
                           )}
@@ -176,16 +176,16 @@ export default function DirectMessagePage() {
                     </div>
 
                     {/* Message bubble */}
-                    <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
+                    <div className={`max-w-[80%] ${isMe ? 'items-end' : 'items-start'}`}>
                       <div className="flex items-start gap-1">
                         <div
-                          className={`rounded-2xl px-4 py-2 break-words ${
+                          className={`rounded-2xl px-3 py-1.5 break-words ${
                             isMe 
                               ? 'bg-primary text-primary-foreground rounded-br-sm' 
                               : 'bg-muted text-foreground rounded-bl-sm'
                           }`}
                         >
-                          <div className="text-sm">
+                          <div className="text-[13px]">
                             <RichMessageContent content={msg.message_text} />
                           </div>
                         </div>
@@ -239,15 +239,15 @@ export default function DirectMessagePage() {
       )}
 
       {/* Input area - fixed at bottom */}
-      <footer className="flex-none bg-background border-t border-border/50 p-3">
-        <div className="flex items-end gap-2">
+      <footer className="flex-none bg-background border-t border-border/50 p-2">
+        <div className="flex items-end gap-1.5">
           <Button
             variant="ghost"
             size="icon"
-            className="flex-none h-10 w-10"
+            className="flex-none h-9 w-9"
             onClick={() => setShowGifPicker(!showGifPicker)}
           >
-            <Smile size={20} className={showGifPicker ? 'text-primary' : 'text-muted-foreground'} />
+            <Smile size={18} className={showGifPicker ? 'text-primary' : 'text-muted-foreground'} />
           </Button>
           
           <Textarea
@@ -256,17 +256,17 @@ export default function DirectMessagePage() {
             onChange={(e) => setMessageText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="flex-1 min-h-[40px] max-h-[120px] resize-none bg-muted border-none"
+            className="flex-1 min-h-[36px] max-h-[100px] resize-none bg-muted border-none text-sm py-2"
             rows={1}
           />
           
           <Button
             onClick={handleSend}
             disabled={!messageText.trim() || sending}
-            className="flex-none h-10 w-10 bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="flex-none h-9 w-9 bg-primary hover:bg-primary/90 text-primary-foreground"
             size="icon"
           >
-            <Send size={18} />
+            <Send size={16} />
           </Button>
         </div>
       </footer>

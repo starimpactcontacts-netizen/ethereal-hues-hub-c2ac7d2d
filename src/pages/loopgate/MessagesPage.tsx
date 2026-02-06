@@ -56,11 +56,11 @@ function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, currentLab
   return (
     <div
       onClick={handleClick}
-      className="flex items-center gap-3 p-4 hover:bg-surface-1 transition-colors cursor-pointer group"
+      className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-surface-1 transition-colors cursor-pointer group"
     >
-      {/* Avatar with verified badge */}
+      {/* Avatar with verified badge - smaller */}
       <div className="relative">
-        <div className="w-12 h-12 rounded-full bg-surface-1 overflow-hidden">
+        <div className="w-10 h-10 rounded-full bg-surface-1 overflow-hidden">
           {conv.other_user?.avatar_url ? (
             <img 
               src={conv.other_user.avatar_url} 
@@ -68,46 +68,46 @@ function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, currentLab
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-lg font-display text-muted-foreground">
+            <div className="w-full h-full flex items-center justify-center text-sm font-display text-muted-foreground">
               {conv.other_user?.username?.[0]?.toUpperCase() || '?'}
             </div>
           )}
         </div>
         {conv.other_user?.verification_status && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-background rounded-full flex items-center justify-center">
-            <BadgeCheck className="w-4 h-4 text-sky-500 fill-sky-500" />
+          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-background rounded-full flex items-center justify-center">
+            <BadgeCheck className="w-3.5 h-3.5 text-sky-500 fill-sky-500" />
           </div>
         )}
         {!conv.other_user?.verification_status && conv.other_user?.activity_status === 'online' && (
-          <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background" />
+          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background" />
         )}
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className={`font-medium truncate ${unreadCount > 0 ? 'text-foreground' : 'text-foreground/80'}`}>
+        <div className="flex items-center gap-1.5">
+          <span className={`text-sm font-medium truncate ${unreadCount > 0 ? 'text-foreground' : 'text-foreground/80'}`}>
             {conv.other_user?.username || 'Unknown'}
           </span>
           {currentLabel && (
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium uppercase tracking-wide">
+            <span className="text-[8px] px-1 py-0.5 rounded-full bg-primary/20 text-primary font-medium uppercase tracking-wide">
               {currentLabel}
             </span>
           )}
         </div>
-        <p className={`text-sm truncate ${unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+        <p className={`text-xs truncate ${unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
           {conv.last_message_preview || 'No messages yet'}
         </p>
       </div>
 
       {/* Time + Actions */}
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[9px] text-muted-foreground">
           {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: false })}
         </span>
         
         {unreadCount > 0 && (
-          <div className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+          <div className="w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </div>
         )}
