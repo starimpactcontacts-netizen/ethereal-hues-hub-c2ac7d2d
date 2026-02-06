@@ -716,26 +716,25 @@ export default function IndexPage() {
                         </div>
                       </div>
 
-                      {/* Quick Connect Button - Top Right LinkedIn Style */}
-                      {profile?.id !== editor.id && (
-                        <div 
-                          onClick={(e) => e.stopPropagation()} 
-                          className="absolute top-2 right-2 z-10"
-                        >
-                          <ConnectButton targetUserId={editor.id} variant="pill" />
-                        </div>
-                      )}
-
-                      {/* Level & Index - Enhanced */}
-                      <div className="flex items-center gap-4 flex-shrink-0">
-                        <div className="text-center">
+                      {/* Right side: Connect + Level + Index */}
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        {/* Quick Connect Button */}
+                        {profile?.id !== editor.id && (
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <ConnectButton targetUserId={editor.id} variant="pill" />
+                          </div>
+                        )}
+                        
+                        {/* Level */}
+                        <div className="text-center min-w-[32px]">
                           <p className="font-display text-lg text-foreground/80">
                             {editor.level || 1}
                           </p>
                           <p className="text-[7px] text-muted-foreground uppercase tracking-wider">LVL</p>
                         </div>
                         
-                        <div className="text-right">
+                        {/* Index */}
+                        <div className="text-right min-w-[50px]">
                           <p className={`font-display text-2xl ${isTopThree ? 'text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'text-gold'}`}>
                             {(editor.global_index_score || 0).toFixed(1)}
                           </p>
