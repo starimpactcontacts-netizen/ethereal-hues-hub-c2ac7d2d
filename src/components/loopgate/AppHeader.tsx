@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Send, Gavel } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Send, Gavel, Crown } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import NotificationCenter from './NotificationCenter';
 import BeginnerGuideModal from './BeginnerGuideModal';
@@ -15,6 +16,7 @@ import loopgateBrand from '@/assets/loopgate-brand.png';
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
   { to: '/arena', icon: Calendar, label: 'Arena', primary: true },
+  { to: '/league', icon: Crown, label: 'League' },
   { to: '/rankings', icon: Trophy, label: 'Rankings' },
   { to: '/class', icon: Shield, label: 'Class' },
   { to: '/index', icon: Search, label: 'Index' },
@@ -33,6 +35,7 @@ export default function AppHeader() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [menuSearch, setMenuSearch] = useState('');
 
   const isEnterprise = roles.includes('enterprise');
 
@@ -108,9 +111,26 @@ export default function AppHeader() {
                 )}
               </div>
 
+              {/* Search */}
+              <div className="px-4 pb-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search pages..."
+                    value={menuSearch}
+                    onChange={(e) => setMenuSearch(e.target.value)}
+                    className="pl-9 h-9 text-xs bg-surface-0 border-border"
+                  />
+                </div>
+              </div>
+
               {/* Navigation */}
-              <nav className="flex-1 overflow-y-auto py-4">
-                {menuItems.map((item, index) => {
+              <nav className="flex-1 overflow-y-auto py-2">
+                {menuItems.filter(item => {
+                  if (!menuSearch.trim()) return true;
+                  if ('divider' in item && item.divider) return false;
+                  return item.label?.toLowerCase().includes(menuSearch.toLowerCase());
+                }).map((item, index) => {
                   if ('divider' in item && item.divider) {
                     return <div key={index} className="my-2 border-t border-border" />;
                   }
