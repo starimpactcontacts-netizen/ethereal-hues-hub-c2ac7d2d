@@ -263,7 +263,7 @@ export default function HubPage() {
               <div className="border-t border-border/30 divide-y divide-border/20">
                 <div className="px-4 py-2">
                   {userCrew ? (
-                    <Link to={`/crews/${userCrew.id}`} className="flex items-center justify-between group">
+                    <Link to={`/units/${userCrew.id}`} className="flex items-center justify-between group">
                       <div className="flex items-center gap-2.5">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center overflow-hidden">
                           {userCrew.avatar_url ? (
@@ -280,7 +280,7 @@ export default function HubPage() {
                       <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                     </Link>
                   ) : (
-                    <Link to="/crews" className="flex items-center justify-between group">
+                    <Link to="/units" className="flex items-center justify-between group">
                       <div className="flex items-center gap-2.5">
                         <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center">
                           <Plus className="w-5 h-5 text-muted-foreground" />
@@ -728,7 +728,7 @@ export default function HubPage() {
               </div>
             </Link>
             
-            <Link to="/crews" className="group">
+            <Link to="/units" className="group">
               <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
                 <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
                   <Users2 className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />

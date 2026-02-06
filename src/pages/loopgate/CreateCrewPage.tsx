@@ -49,7 +49,7 @@ const [formData, setFormData] = useState({
   // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/crews');
+      navigate('/units');
     }
   }, [authLoading, user, navigate]);
 
@@ -148,7 +148,7 @@ const [formData, setFormData] = useState({
           .eq("id", user.id);
       }
 
-      navigate(`/crews/${crew.id}`);
+      navigate(`/units/${crew.id}`);
     } catch (error) {
       console.error("Unexpected error creating unit:", error);
       alert("An unexpected error occurred. Please try again.");

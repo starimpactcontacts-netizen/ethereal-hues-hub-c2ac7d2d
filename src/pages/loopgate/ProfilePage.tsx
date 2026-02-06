@@ -265,7 +265,7 @@ export default function ProfilePage() {
 
             {/* Primary Crew */}
             {primaryCrew?.crew && (
-              <Link to={`/crews/${primaryCrew.crew_id}`} className="w-full max-w-xs">
+              <Link to={`/units/${primaryCrew.crew_id}`} className="w-full max-w-xs">
                 <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface-1 border border-border hover:border-foreground/30 transition-colors">
                   <div className="w-6 h-6 rounded overflow-hidden bg-muted/30 flex items-center justify-center">
                     {primaryCrew.crew.avatar_url ? (

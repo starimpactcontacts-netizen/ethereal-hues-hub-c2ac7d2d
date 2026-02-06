@@ -377,7 +377,7 @@ export default function CrewsPage() {
             </div>
             <Button
               size="sm"
-              onClick={() => navigate("/crews/create")}
+              onClick={() => navigate("/units/create")}
               className="bg-purple-600 hover:bg-purple-700 text-white font-semibold h-8"
             >
               <Plus className="w-3.5 h-3.5 mr-1" />
@@ -481,7 +481,7 @@ export default function CrewsPage() {
                   {primaryCrew && getPrimaryCrewDetails() ? (
                     <div className="relative">
                       <div
-                        onClick={() => navigate(`/crews/${primaryCrew.crew_id}`)}
+                        onClick={() => navigate(`/units/${primaryCrew.crew_id}`)}
                         className="relative overflow-hidden rounded-lg border-2 border-gold/30 bg-gradient-to-br from-gold/10 via-surface-1 to-surface-1 cursor-pointer group p-4"
                       >
                         <div className="flex items-center gap-4">
@@ -516,7 +516,7 @@ export default function CrewsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => navigate(`/crews/${primaryCrew.crew_id}/settings`)}
+                          onClick={() => navigate(`/units/${primaryCrew.crew_id}/settings`)}
                           className="text-xs h-8 border-border"
                         >
                           <Settings className="w-3 h-3 mr-1.5" />
@@ -594,7 +594,7 @@ export default function CrewsPage() {
                           className="p-3 rounded-xl border border-border/50 bg-surface-1/40 flex items-center gap-3"
                         >
                           <div
-                            onClick={() => navigate(`/crews/${crew.id}`)}
+                            onClick={() => navigate(`/units/${crew.id}`)}
                             className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
                           >
                             <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-0 border border-border flex items-center justify-center shrink-0">
@@ -703,7 +703,7 @@ export default function CrewsPage() {
                           key={crew.id}
                           crew={crew}
                           index={i}
-                          onClick={() => navigate(`/crews/${crew.id}`)}
+                          onClick={() => navigate(`/units/${crew.id}`)}
                           showActions={!!user && !myCrewIds.includes(crew.id)}
                           onJoinPrimary={() => handleJoinCrew(crew, true)}
                           onJoinSecondary={() => handleJoinCrew(crew, false)}
@@ -747,7 +747,7 @@ export default function CrewsPage() {
                           key={crew.id}
                           crew={crew}
                           index={index}
-                          onClick={() => navigate(`/crews/${crew.id}`)}
+                          onClick={() => navigate(`/units/${crew.id}`)}
                           showActions={!!user && !myCrewIds.includes(crew.id)}
                           onJoinPrimary={() => handleJoinCrew(crew, true)}
                           onJoinSecondary={() => handleJoinCrew(crew, false)}

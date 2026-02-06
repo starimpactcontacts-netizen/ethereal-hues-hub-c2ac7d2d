@@ -305,7 +305,7 @@ export default function IndexPage() {
 
   const tabs: { id: ViewMode; label: string; icon: React.ElementType; navigateTo?: string }[] = [
     { id: "editors", label: "INDEX", icon: Target },
-    { id: "crews", label: "UNITS", icon: Users, navigateTo: "/crews" },
+    { id: "crews", label: "UNITS", icon: Users, navigateTo: "/units" },
     { id: "rankings", label: "RANKINGS", icon: Trophy },
     { id: "judges", label: "JUDGES", icon: Gavel },
   ];
@@ -317,7 +317,7 @@ export default function IndexPage() {
   ];
 
   // Crews tab handler - navigate to crews page
-  const handleCrewsTab = () => navigate("/crews");
+  const handleCrewsTab = () => navigate("/units");
 
   // Event-specific leaderboard view within rankings
   if (viewMode === "rankings" && selectedEvent) {
@@ -958,7 +958,7 @@ export default function IndexPage() {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.02 }}
-                          onClick={() => navigate(`/crews/${crew.id}`)}
+                          onClick={() => navigate(`/units/${crew.id}`)}
                           className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
                         >
                           <div className="w-10 flex items-center justify-center">

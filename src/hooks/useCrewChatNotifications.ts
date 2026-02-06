@@ -74,7 +74,7 @@ export function useCrewChatNotifications() {
     if (message.user_id === user?.id) return;
     
     // Don't notify if user is already on that crew's chat page
-    if (currentPathRef.current.includes(`/crews/${message.crew_id}/chat`)) return;
+    if (currentPathRef.current.includes(`/units/${message.crew_id}/chat`)) return;
 
     // Play sound
     playNotificationSound();
@@ -95,7 +95,7 @@ export function useCrewChatNotifications() {
         action: {
           label: 'View',
           onClick: () => {
-            window.location.href = `/crews/${message.crew_id}/chat`;
+            window.location.href = `/units/${message.crew_id}/chat`;
           },
         },
         duration: 4000,

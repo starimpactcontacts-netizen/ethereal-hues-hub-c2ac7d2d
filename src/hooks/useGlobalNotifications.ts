@@ -112,7 +112,7 @@ export function useGlobalNotifications() {
           const msg = payload.new as CrewMessage;
           if (msg.user_id === user.id) return;
           if (!crewIds.includes(msg.crew_id)) return;
-          if (currentPathRef.current.includes(`/crews/${msg.crew_id}/chat`)) return;
+          if (currentPathRef.current.includes(`/units/${msg.crew_id}/chat`)) return;
 
           playSound('message');
           const displayName = msg.display_name || msg.username;
@@ -124,7 +124,7 @@ export function useGlobalNotifications() {
             description: `${crewName}: ${preview}`,
             action: {
               label: 'View',
-              onClick: () => (window.location.href = `/crews/${msg.crew_id}/chat`),
+              onClick: () => (window.location.href = `/units/${msg.crew_id}/chat`),
             },
             duration: 5000,
           });

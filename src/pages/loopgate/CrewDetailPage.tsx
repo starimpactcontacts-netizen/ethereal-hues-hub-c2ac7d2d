@@ -215,7 +215,7 @@ export default function CrewDetailPage() {
 
     if (crewError || !crewData) {
       console.error("Error fetching crew:", crewError);
-      navigate("/crews");
+      navigate("/units");
       return;
     }
 
@@ -310,7 +310,7 @@ export default function CrewDetailPage() {
   const handleLeaveCrew = async () => {
     if (!user || !crewId) return;
     await supabase.from("crew_members").delete().eq("crew_id", crewId).eq("user_id", user.id);
-    navigate("/crews");
+    navigate("/units");
   };
 
   const handlePromoteMember = async (memberId: string) => {
@@ -607,7 +607,7 @@ export default function CrewDetailPage() {
 
           {/* Back Button */}
           <button 
-            onClick={() => navigate("/crews")} 
+            onClick={() => navigate("/units")} 
             className="absolute top-4 left-4 z-20 w-9 h-9 rounded-md bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -616,7 +616,7 @@ export default function CrewDetailPage() {
           {/* Settings Button */}
           {canAccessSettings && (
             <button 
-              onClick={() => navigate(`/crews/${crewId}/settings`)}
+              onClick={() => navigate(`/units/${crewId}/settings`)}
               className="absolute top-4 right-4 z-20 w-9 h-9 rounded-md bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             >
               <Settings className="w-5 h-5" />
@@ -690,7 +690,7 @@ export default function CrewDetailPage() {
                   {/* Primary Row: Channels + Icons */}
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => navigate(`/crews/${crewId}/channels`)}
+                      onClick={() => navigate(`/units/${crewId}/channels`)}
                       className="flex-1 bg-gold text-black hover:bg-gold/90 font-semibold relative"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />

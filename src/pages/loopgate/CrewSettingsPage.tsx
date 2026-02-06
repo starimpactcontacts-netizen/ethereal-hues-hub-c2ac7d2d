@@ -115,7 +115,7 @@ const [formData, setFormData] = useState({
 
     if (crewResult.error || !crewResult.data) {
       console.error("Error fetching crew:", crewResult.error);
-      navigate("/crews");
+      navigate("/units");
       return;
     }
 
@@ -130,7 +130,7 @@ const [formData, setFormData] = useState({
 
     if (!hasAccess) {
       toast.error("You don't have permission to access unit settings");
-      navigate(`/crews/${crewId}`);
+      navigate(`/units/${crewId}`);
       return;
     }
 
@@ -205,7 +205,7 @@ const [formData, setFormData] = useState({
       if (crewError) throw crewError;
 
       toast.success("Ownership transferred successfully");
-      navigate(`/crews/${crewId}`);
+      navigate(`/units/${crewId}`);
     } catch (error) {
       console.error("Error transferring ownership:", error);
       toast.error("Failed to transfer ownership");
@@ -295,7 +295,7 @@ const [formData, setFormData] = useState({
       }
 
       toast.success("Unit settings saved!");
-      navigate(`/crews/${crewId}`);
+      navigate(`/units/${crewId}`);
     } catch (err) {
       console.error("Unexpected error saving crew:", err);
       toast.error("An unexpected error occurred.");
@@ -320,7 +320,7 @@ const [formData, setFormData] = useState({
       return;
     }
 
-    navigate("/crews");
+    navigate("/units");
   };
 
   const handleBannerUpload = async () => {
@@ -423,7 +423,7 @@ const [formData, setFormData] = useState({
         <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
           <div className="px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => navigate(`/crews/${crewId}`)} className="text-muted-foreground">
+              <button onClick={() => navigate(`/units/${crewId}`)} className="text-muted-foreground">
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <h1 className="text-lg font-bold">Unit Settings</h1>

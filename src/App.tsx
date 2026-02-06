@@ -1,5 +1,5 @@
 /* App Router */
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "sonner";
@@ -150,6 +150,13 @@ function RootRedirect() {
   return <Navigate to="/hub" replace />;
 }
 
+// Legacy /crews/* → /units/* redirect
+function CrewsRedirect() {
+  const location = useLocation();
+  const newPath = location.pathname.replace(/^\/crews/, '/units') + location.search + location.hash;
+  return <Navigate to={newPath} replace />;
+}
+
 
 // Onboarding wrapper
 function OnboardingWrapper() {
@@ -274,15 +281,15 @@ export default function App() {
               <Route path="/profile/settings" element={<ProfileSettingsPage />} />
               <Route path="/profile/stats" element={<ProfileStatsPage />} />
               <Route path="/arenas/:arenaId" element={<ArenaChatPage />} />
-              <Route path="/crews" element={<CrewsPage />} />
-              <Route path="/crews/create" element={<CreateCrewPage />} />
-              <Route path="/crews/:crewId" element={<CrewDetailPage />} />
-              <Route path="/crews/:crewId/chat" element={<CrewChatPage />} />
-              <Route path="/crews/:crewId/channels" element={<UnitChatPage />} />
+            <Route path="/units" element={<CrewsPage />} />
+              <Route path="/units/create" element={<CreateCrewPage />} />
+              <Route path="/units/:crewId" element={<CrewDetailPage />} />
+              <Route path="/units/:crewId/chat" element={<CrewChatPage />} />
+              <Route path="/units/:crewId/channels" element={<UnitChatPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/messages/:conversationId" element={<DirectMessagePage />} />
               <Route path="/connections" element={<ConnectionsPage />} />
-              <Route path="/crews/:crewId/settings" element={<CrewSettingsPage />} />
+              <Route path="/units/:crewId/settings" element={<CrewSettingsPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
@@ -304,6 +311,10 @@ export default function App() {
             {/* Enterprise Portal - NO DEV MODE BYPASS - requires enterprise role only */}
             <Route path="/enterprise" element={<EnterprisePage />} />
             
+            {/* Legacy /crews redirects → /units */}
+            <Route path="/crews" element={<Navigate to="/units" replace />} />
+            <Route path="/crews/*" element={<CrewsRedirect />} />
+
             {/* 404 - public */}
             <Route path="*" element={<NotFound />} />
           </Routes>
