@@ -631,16 +631,32 @@ export function useActiveSession() {
   useEffect(() => {
     if (!user) return;
 
-    const updateSession = async () => {
-      await supabase.rpc('update_active_session');
+    const getDeviceName = () => {
+      const ua = navigator.userAgent;
+      if (/iPhone/i.test(ua)) return 'iPhone';
+      if (/iPad/i.test(ua)) return 'iPad';
+      if (/Android/i.test(ua)) return 'Android';
+      if (/Mac/i.test(ua)) return 'Mac';
+      if (/Windows/i.test(ua)) return 'Windows';
+      if (/Linux/i.test(ua)) return 'Linux';
+      return 'Unknown Device';
     };
 
-    // Update immediately
+    const updateSession = async () => {
+      // Use existing RPC to update/create session
+      await supabase.rpc('update_active_session');
+      // Then update device info on matching row
+      await supabase
+        .from('active_sessions')
+        .update({
+          device_name: getDeviceName(),
+          user_agent: navigator.userAgent.substring(0, 255),
+        } as any)
+        .eq('user_id', user.id);
+    };
+
     updateSession();
-
-    // Update every 5 minutes
     const interval = setInterval(updateSession, 5 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, [user]);
 }
