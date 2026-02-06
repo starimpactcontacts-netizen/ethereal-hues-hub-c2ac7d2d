@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { SOFTWARE_OPTIONS } from "./SoftwareBadge";
@@ -13,24 +13,6 @@ interface SoftwareSelectorProps {
 
 export default function SoftwareSelector({ value, onChange, onClose, isOpen = true }: SoftwareSelectorProps) {
   const [selected, setSelected] = useState<string[]>(value || []);
-  
-  // Lock body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.top = `-${window.scrollY}px`;
-    }
-    return () => {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
-    };
-  }, [isOpen]);
   
   const toggleSoftware = (id: string) => {
     setSelected(prev => 
@@ -52,8 +34,12 @@ export default function SoftwareSelector({ value, onChange, onClose, isOpen = tr
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-background flex flex-col"
-      style={{ height: '100dvh' }}
+      className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden"
+      style={{ 
+        height: '100dvh',
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'env(safe-area-inset-bottom)'
+      }}
     >
       {/* Header - Fixed */}
       <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-border">
@@ -84,8 +70,7 @@ export default function SoftwareSelector({ value, onChange, onClose, isOpen = tr
       
       {/* Options - Scrollable */}
       <div 
-        className="flex-1 overflow-y-auto px-4 pb-24 -webkit-overflow-scrolling-touch"
-        style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+        className="flex-1 overflow-y-auto px-4 pb-8 overscroll-contain"
       >
         <div className="grid gap-2">
           {SOFTWARE_OPTIONS.map((software) => {
