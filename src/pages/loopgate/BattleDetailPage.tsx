@@ -14,6 +14,7 @@ import { useBattle, recordBattleView, acceptBattle, submitToBattle, voteOnBattle
 import { toast } from "sonner";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
+import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -415,6 +416,11 @@ export default function BattleDetailPage() {
           </div>
         )}
 
+        {/* Judge Scoring Panel (for judges/admins) */}
+        {battle.status === 'judging' && (
+          <BattleJudgingPanel battle={battle} />
+        )}
+
         {/* Community Voting (for judging phase) */}
         {battle.status === 'judging' && (
           <div className="bg-surface-1 border border-purple-500/30 p-4">
@@ -489,7 +495,26 @@ export default function BattleDetailPage() {
             <span className="text-2xl font-display text-foreground">
               {battle.winner_id === battle.challenger_id ? battle.challenger_username : battle.opponent_username}
             </span>
-            <p className="text-[10px] text-muted-foreground mt-2">
+            {(battle.challenger_score !== null && battle.opponent_score !== null) && (
+              <div className="flex items-center justify-center gap-6 mt-3">
+                <div>
+                  <span className="text-lg font-bold text-foreground">{battle.challenger_score}</span>
+                  <span className="text-[9px] text-muted-foreground block">{battle.challenger_username}</span>
+                </div>
+                <span className="text-xs text-muted-foreground">vs</span>
+                <div>
+                  <span className="text-lg font-bold text-foreground">{battle.opponent_score}</span>
+                  <span className="text-[9px] text-muted-foreground block">{battle.opponent_username}</span>
+                </div>
+              </div>
+            )}
+            {battle.judge_notes && (
+              <div className="mt-3 pt-3 border-t border-gold/20">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Judge Notes</p>
+                <p className="text-xs text-foreground/80">{battle.judge_notes}</p>
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground mt-3">
               +{battle.winner_index_awarded} Index awarded
             </p>
           </motion.div>
