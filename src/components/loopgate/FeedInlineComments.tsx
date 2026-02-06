@@ -22,7 +22,7 @@ interface Comment {
 
 interface Props {
   submissionId: string;
-  submissionType: 'arena' | 'review';
+  submissionType: 'arena' | 'review' | 'battle';
 }
 
 export default function FeedInlineComments({ submissionId, submissionType }: Props) {
