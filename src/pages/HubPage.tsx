@@ -382,12 +382,17 @@ export default function HubPage() {
           transition={{ delay: 0.15 }}
           className="mt-2 relative"
         >
-          {/* Top rope border - luxe twisted chain effect */}
-          <div className="absolute top-0 left-0 right-0 h-px pointer-events-none" style={{
-            background: `repeating-linear-gradient(90deg, hsl(var(--gold) / 0.15) 0px, hsl(var(--gold) / 0.3) 3px, transparent 3px, transparent 6px, hsl(var(--border)) 6px, hsl(var(--border)) 9px, transparent 9px, transparent 12px)`
-          }} />
+          {/* Top decorative border line */}
+          <div className="relative h-[3px] pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-foreground/10 to-transparent" style={{
+              maskImage: 'repeating-linear-gradient(90deg, white 0px, white 16px, transparent 16px, transparent 20px)',
+              WebkitMaskImage: 'repeating-linear-gradient(90deg, white 0px, white 16px, transparent 16px, transparent 20px)'
+            }} />
+          </div>
+
           {/* Luxe Background Pattern */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute inset-y-0 left-0 right-0 top-[3px] overflow-hidden pointer-events-none">
             <div 
               className="absolute inset-0 opacity-[0.04]"
               style={{
@@ -405,7 +410,7 @@ export default function HubPage() {
           </div>
 
           {/* Section Header */}
-          <div className="relative flex items-center justify-between px-4 mb-3">
+          <div className="relative flex items-center justify-between px-4 pt-4 mb-3">
             <div className="flex items-center gap-2">
               <div className="relative">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 block" />
