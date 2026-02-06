@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Play, Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Play, Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, ChevronDown, ChevronUp, Swords } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,7 +9,7 @@ import FeedInlineComments from "./FeedInlineComments";
 export interface LoopFeedItem {
   id: string;
   rawId: string;
-  type: 'arena' | 'review';
+  type: 'arena' | 'review' | 'battle';
   submission_url: string;
   platform: string;
   user_id: string;
@@ -28,6 +28,14 @@ export interface LoopFeedItem {
   judge_comment?: string | null;
   judge_username?: string | null;
   judge_avatar_url?: string | null;
+  // Battle-specific
+  battle_id?: string;
+  opponent_username?: string | null;
+  challenger_username?: string | null;
+  challenger_score?: number | null;
+  opponent_score?: number | null;
+  winner_id?: string | null;
+  battle_status?: string;
 }
 
 const platformLabels: Record<string, string> = {
@@ -108,6 +116,11 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                   <Trophy className="w-2 h-2" />
                   ARENA
                 </span>
+              ) : item.type === 'battle' ? (
+                <span className="bg-red-500/15 text-red-400 text-[8px] font-bold px-1 py-px rounded flex items-center gap-0.5 shrink-0">
+                  <span className="font-display">⚔</span>
+                  1v1
+                </span>
               ) : (
                 <span className="bg-purple-500/15 text-purple-400 text-[8px] font-bold px-1 py-px rounded flex items-center gap-0.5 shrink-0">
                   <Sparkles className="w-2 h-2" />
@@ -117,9 +130,35 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
             </div>
 
             {/* Title */}
-            <p className="text-[12px] text-foreground/90 leading-tight mb-1 line-clamp-1">
-              {displayTitle}
-            </p>
+            {item.type === 'battle' ? (
+              <div className="mb-1">
+                <p className="text-[12px] text-foreground/90 leading-tight line-clamp-1">
+                  ⚔ <span className="font-semibold">{item.challenger_username}</span>
+                  <span className="text-muted-foreground mx-1">vs</span>
+                  <span className="font-semibold">{item.opponent_username || '???'}</span>
+                </p>
+                {item.battle_status === 'completed' && item.challenger_score != null && item.opponent_score != null && (
+                  <p className="text-[10px] text-muted-foreground">
+                    Score: <span className="text-foreground font-bold">{item.challenger_score}</span> - <span className="text-foreground font-bold">{item.opponent_score}</span>
+                    {item.winner_id && (
+                      <span className="text-gold ml-1">
+                        🏆 {item.winner_id === item.user_id ? item.challenger_username : item.opponent_username}
+                      </span>
+                    )}
+                  </p>
+                )}
+                {item.battle_status === 'active' && (
+                  <p className="text-[10px] text-red-400 font-bold uppercase">🔴 Live Now</p>
+                )}
+                {item.battle_status === 'judging' && (
+                  <p className="text-[10px] text-purple-400 font-bold uppercase">⏳ Judging</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-[12px] text-foreground/90 leading-tight mb-1 line-clamp-1">
+                {displayTitle}
+              </p>
+            )}
 
             {/* Thumbnail — compact */}
             <button onClick={onOpenPlayer} className="relative w-full rounded-md overflow-hidden group mb-1 block">
@@ -202,6 +241,15 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
 
             {/* Actions */}
             <div className="flex items-center -ml-1.5 gap-px">
+              {item.type === 'battle' && item.battle_id && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(`/battle/${item.battle_id}`); }}
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-red-400 hover:bg-red-500/10 transition-colors text-[10px] font-semibold"
+                >
+                  <Swords className="w-3.5 h-3.5" />
+                  <span>Watch</span>
+                </button>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
                 className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors text-[10px]"

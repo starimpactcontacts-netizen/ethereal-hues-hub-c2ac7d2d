@@ -143,11 +143,14 @@ export default function BattleDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">Arena</span>
           </button>
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-              <Eye className="w-3 h-3" />
-              {formatViews(battle.view_count)}
-            </span>
+          <div className="flex items-center gap-3">
+            {/* Live spectator count */}
+            <div className="flex items-center gap-1.5 bg-surface-1 border border-border px-2 py-1 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <Eye className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[10px] text-foreground font-semibold">{formatViews(battle.view_count)}</span>
+              <span className="text-[9px] text-muted-foreground">watching</span>
+            </div>
             <button onClick={handleShare} className="p-2 hover:bg-surface-1 rounded">
               <Share2 className="w-4 h-4 text-muted-foreground" />
             </button>

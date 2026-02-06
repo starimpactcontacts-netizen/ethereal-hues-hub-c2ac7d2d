@@ -88,7 +88,7 @@ export default function FeedPage() {
       const arenaOffset = offsetRef.current.arena;
       const reviewOffset = offsetRef.current.review;
 
-      const [roundRes, eventRes, sanctionedRes, reviewRes] = await Promise.all([
+      const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at, thumbnail_url, custom_title')
@@ -116,18 +116,25 @@ export default function FeedPage() {
           .eq('status', 'reviewed')
           .not('total_score', 'is', null)
           .order('reviewed_at', { ascending: false })
-          .range(reviewOffset, reviewOffset + BATCH_SIZE - 1)
+          .range(reviewOffset, reviewOffset + BATCH_SIZE - 1),
+        supabase
+          .from('battles')
+          .select('*')
+          .in('status', ['active', 'judging', 'completed'])
+          .order('updated_at', { ascending: false })
+          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
       ]);
 
       const roundData = roundRes.data || [];
       const eventData = eventRes.data || [];
       const sanctionedData = sanctionedRes.data || [];
       const reviewData = reviewRes.data || [];
+      const battlesData = battlesRes.data || [];
 
-      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length);
+      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length);
       offsetRef.current.review += reviewData.length;
 
-      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length;
+      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length;
       if (fetchedCount === 0) {
         setHasMore(false);
         if (isLoadMore) { setLoadingMore(false); return; }
@@ -228,14 +235,36 @@ export default function FeedPage() {
         judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url,
       }));
 
+      // Build battle feed items
+      const battleItems: LoopFeedItem[] = battlesData
+        .filter(b => b.challenger_submission_url || b.opponent_submission_url)
+        .map(b => ({
+          id: `battle-${b.id}`, rawId: b.id, type: 'battle' as const,
+          submission_url: b.challenger_submission_url || b.opponent_submission_url || '',
+          platform: b.challenger_submission_platform || b.opponent_submission_platform || 'tiktok',
+          user_id: b.challenger_id,
+          username: b.challenger_username,
+          avatar_url: b.challenger_avatar_url,
+          created_at: b.updated_at || b.created_at,
+          thumbnail_url: null, custom_title: null,
+          battle_id: b.id,
+          challenger_username: b.challenger_username,
+          opponent_username: b.opponent_username,
+          challenger_score: b.challenger_score,
+          opponent_score: b.opponent_score,
+          winner_id: b.winner_id,
+          battle_status: b.status,
+        }));
+
       // Boost official events & premium comps higher in feed
       const getBoost = (item: LoopFeedItem) => {
         if (item.id.startsWith('arena-event-')) return 2;
+        if (item.id.startsWith('battle-') && item.battle_status === 'active') return 1.5;
         if (item.id.startsWith('arena-sanctioned-')) return 1;
         return 0;
       };
 
-      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems]
+      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems]
         .sort((a, b) => {
           const boostDiff = getBoost(b) - getBoost(a);
           if (boostDiff !== 0) return boostDiff;

@@ -27,7 +27,7 @@
    isOpen: boolean;
    onClose: () => void;
    submissionId: string;
-   submissionType: 'arena' | 'review';
+   submissionType: 'arena' | 'review' | 'battle';
    username: string;
  }
  
