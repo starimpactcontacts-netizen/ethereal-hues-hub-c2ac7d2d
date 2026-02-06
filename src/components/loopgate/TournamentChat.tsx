@@ -140,12 +140,12 @@ export default function TournamentChat({ tournamentId }: TournamentChatProps) {
 
   return (
     <>
-      {/* Compact Chat Button */}
+      {/* Compact Chat Button - touch optimized */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-gold/10 border border-gold/30 hover:bg-gold/20 transition-colors shrink-0"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-gold/10 border border-gold/30 hover:bg-gold/20 active:bg-gold/30 transition-colors shrink-0 touch-manipulation"
       >
-        <MessageCircle className="w-3.5 h-3.5 text-gold" />
+        <MessageCircle className="w-4 h-4 text-gold" />
         <span className="text-[10px] font-bold uppercase text-gold">Chat</span>
         {messages.length > 0 && (
           <span className="text-[9px] text-muted-foreground">({messages.length})</span>
@@ -235,7 +235,7 @@ export default function TournamentChat({ tournamentId }: TournamentChatProps) {
                             {((isOwn && canDeleteOwnMessage(message.created_at)) || canModerate) && (
                               <button
                                 onClick={() => handleDeleteMessage(message.id)}
-                                className="ml-auto p-0.5 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-opacity"
+                                className="ml-auto p-1 sm:opacity-0 sm:group-hover:opacity-100 opacity-100 text-muted-foreground hover:text-destructive active:text-destructive transition-opacity touch-manipulation"
                               >
                                 <Trash2 className="w-3 h-3" />
                               </button>
