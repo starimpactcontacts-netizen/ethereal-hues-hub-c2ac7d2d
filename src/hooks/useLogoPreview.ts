@@ -106,16 +106,17 @@ export function useLogoPreview(crewId: string | undefined) {
   const uploadPreview = useCallback(
     async (file: File, title?: string) => {
       if (!crewId || !user) return null;
-      const ext = file.name.split(".").pop();
+      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
       const path = `${crewId}/logo-previews/${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage.from("crew-avatars").upload(path, file, { upsert: true });
       if (uploadError) {
-        toast.error("Failed to upload image");
+        toast.error("Failed to upload file");
         return null;
       }
 
       const { data: urlData } = supabase.storage.from("crew-avatars").getPublicUrl(path);
+      const isVideo = ["mp4", "webm", "mov", "gif"].includes(ext);
 
       const { data, error } = await supabase
         .from("unit_logo_previews")
@@ -124,6 +125,7 @@ export function useLogoPreview(crewId: string | undefined) {
           uploaded_by: user.id,
           image_url: urlData.publicUrl,
           title: title || "Logo Preview",
+          media_type: isVideo ? "video" : "image",
         })
         .select()
         .single();
@@ -133,6 +135,36 @@ export function useLogoPreview(crewId: string | undefined) {
         return null;
       }
       toast.success("Logo preview uploaded!");
+      return data;
+    },
+    [crewId, user]
+  );
+
+  const addUrlPreview = useCallback(
+    async (url: string, title?: string) => {
+      if (!crewId || !user) return null;
+
+      // Detect if URL is a video embed
+      const isVideo = /\.(mp4|webm|mov|gif)/i.test(url) || 
+        /streamable\.com|youtube\.com|youtu\.be/i.test(url);
+
+      const { data, error } = await supabase
+        .from("unit_logo_previews")
+        .insert({
+          crew_id: crewId,
+          uploaded_by: user.id,
+          image_url: url,
+          title: title || "Logo Preview",
+          media_type: isVideo ? "video" : "image",
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Failed to add preview");
+        return null;
+      }
+      toast.success("Logo preview added!");
       return data;
     },
     [crewId, user]
@@ -172,5 +204,5 @@ export function useLogoPreview(crewId: string | undefined) {
     []
   );
 
-  return { previews, loading, uploadPreview, vote, updateStatus, deletePreview, refresh: fetchPreviews };
+  return { previews, loading, uploadPreview, addUrlPreview, vote, updateStatus, deletePreview, refresh: fetchPreviews };
 }
