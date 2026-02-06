@@ -5,6 +5,7 @@ import AuthorityBadge from "./AuthorityBadge";
 import FoundingBadge from "./FoundingBadge";
 import CrewBadge from "./CrewBadge";
 import LevelBadge from "./LevelBadge";
+import ConnectButton from "./ConnectButton";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 
 // Get class letter from GQT score or level
@@ -122,8 +123,11 @@ export default function EditorCard({ editor }: EditorCardProps) {
           </div>
         </div>
 
-        {/* Index & Level */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Connect & Stats */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Quick Connect */}
+          <ConnectButton targetUserId={editor.id} variant="icon" className="opacity-60 hover:opacity-100 transition-opacity" />
+          
           {/* Level */}
           <div className="text-center">
             <p className="font-display text-xl text-foreground/80">
