@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Lock, Unlock, Eye, MessageSquare, Shield, Crown, Hash, Bot, ShieldCheck, BarChart3, Calendar, Bell, BookOpen, Send, X, Plus, Trash2, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Lock, Unlock, Eye, MessageSquare, Shield, Crown, Hash, Bot, ShieldCheck, BadgeCheck, BarChart3, Calendar, Bell, BookOpen, Send, X, Plus, Trash2, ChevronDown, ChevronUp, ArrowLeft, Upload, Link2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CrewChannel } from "@/hooks/useCrewChannels";
 import { useUnitBot } from "@/hooks/useUnitBot";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface ChannelSettingsPageProps {
@@ -42,6 +43,9 @@ export default function ChannelSettingsPage({
   const [localBotName, setLocalBotName] = useState(botName);
   const [localBotAvatar, setLocalBotAvatar] = useState(botAvatarUrl);
   const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarMode, setAvatarMode] = useState<"file" | "url">(botAvatarUrl && !botAvatarUrl.includes("crew-avatars") ? "url" : "file");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showPermissions, setShowPermissions] = useState(false);
   const [showBotIdentity, setShowBotIdentity] = useState(false);
   const [activeCommand, setActiveCommand] = useState<CommandType>(null);
@@ -288,10 +292,64 @@ export default function ChannelSettingsPage({
                        <Label className="text-xs">App Name</Label>
                          <Input placeholder="Unit App" value={localBotName} onChange={(e) => setLocalBotName(e.target.value)} maxLength={32} className="bg-muted/50 h-9 text-sm" />
                       </div>
+
+                      {/* Avatar: File or URL */}
                       <div className="space-y-2">
-                       <Label className="text-xs">App Avatar URL</Label>
-                         <Input placeholder="https://example.com/avatar.png" value={localBotAvatar} onChange={(e) => setLocalBotAvatar(e.target.value)} className="bg-muted/50 h-9 text-sm" />
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs">App Avatar</Label>
+                          <div className="flex items-center gap-1 bg-muted/30 rounded-md p-0.5">
+                            <button
+                              onClick={() => setAvatarMode("file")}
+                              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${avatarMode === "file" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
+                            >
+                              <Upload className="w-3 h-3 inline mr-1" />File
+                            </button>
+                            <button
+                              onClick={() => setAvatarMode("url")}
+                              className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${avatarMode === "url" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"}`}
+                            >
+                              <Link2 className="w-3 h-3 inline mr-1" />URL
+                            </button>
+                          </div>
+                        </div>
+
+                        {avatarMode === "file" ? (
+                          <div className="space-y-2">
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 2 * 1024 * 1024) { toast.error("Max 2MB"); return; }
+                                setAvatarUploading(true);
+                                const ext = file.name.split(".").pop();
+                                const path = `bot-${crewId}.${ext}`;
+                                const { error } = await supabase.storage.from("crew-avatars").upload(path, file, { upsert: true });
+                                if (error) { toast.error("Upload failed"); setAvatarUploading(false); return; }
+                                const { data: urlData } = supabase.storage.from("crew-avatars").getPublicUrl(path);
+                                setLocalBotAvatar(urlData.publicUrl + "?t=" + Date.now());
+                                setAvatarUploading(false);
+                                toast.success("Avatar uploaded");
+                              }}
+                            />
+                            <button
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={avatarUploading}
+                              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-border hover:border-primary/50 hover:bg-muted/20 transition-colors text-sm text-muted-foreground active:scale-[0.98] touch-manipulation"
+                            >
+                              {avatarUploading ? "Uploading..." : (
+                                <><Upload className="w-4 h-4" /> Choose photo</>
+                              )}
+                            </button>
+                          </div>
+                        ) : (
+                          <Input placeholder="https://example.com/avatar.png" value={localBotAvatar} onChange={(e) => setLocalBotAvatar(e.target.value)} className="bg-muted/50 h-9 text-sm" />
+                        )}
                       </div>
+
                       <div className="bg-muted/20 border border-border/50 rounded-lg p-3">
                         <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Preview</p>
                         <div className="flex items-center gap-2">
@@ -301,7 +359,7 @@ export default function ChannelSettingsPage({
                            <div className="flex items-center gap-1.5">
                              <span className="text-[13px] font-semibold text-primary">{localBotName || "Unit App"}</span>
                             <span className="inline-flex items-center gap-0.5 px-1 py-[1px] rounded bg-primary/15 border border-primary/20">
-                              <ShieldCheck className="w-3 h-3 text-primary" />
+                              <BadgeCheck className="w-3 h-3 text-blue-400" />
                               <span className="text-[9px] font-bold text-primary uppercase tracking-wider">APP</span>
                             </span>
                           </div>
