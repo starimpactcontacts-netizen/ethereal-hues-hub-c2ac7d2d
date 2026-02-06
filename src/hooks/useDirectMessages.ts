@@ -158,8 +158,17 @@ export function useConversations() {
     if (!user) return false;
     
     try {
-      const conversation = conversations.find(c => c.id === conversationId);
-      if (!conversation) return false;
+      // First fetch the conversation to determine which participant we are
+      const { data: conversation, error: fetchError } = await supabase
+        .from('conversations')
+        .select('participant_1_id, participant_2_id')
+        .eq('id', conversationId)
+        .single();
+      
+      if (fetchError || !conversation) {
+        console.error('Could not find conversation:', fetchError);
+        return false;
+      }
       
       const isParticipant1 = conversation.participant_1_id === user.id;
       const updateField = isParticipant1 ? 'label_1' : 'label_2';
@@ -171,9 +180,10 @@ export function useConversations() {
       
       if (error) throw error;
       
+      // Update local state with the correct field
       setConversations(prev => prev.map(c => 
         c.id === conversationId 
-          ? { ...c, [updateField]: label }
+          ? { ...c, [isParticipant1 ? 'label_1' : 'label_2']: label }
           : c
       ));
       toast.success(label ? `Labeled as "${label}"` : 'Label removed');
