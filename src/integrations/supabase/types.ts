@@ -718,6 +718,45 @@ export type Database = {
           },
         ]
       }
+      crew_challenge_templates: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          description: string
+          difficulty: string
+          id: string
+          is_active: boolean
+          target_metric: string
+          target_value: number
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          description: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          target_metric: string
+          target_value?: number
+          title: string
+          xp_reward?: number
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          description?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          target_metric?: string
+          target_value?: number
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       crew_challenges: {
         Row: {
           challenge_type: string
@@ -3577,6 +3616,7 @@ export type Database = {
         Args: { p_duration: number; p_match_type: string; p_user_id: string }
         Returns: string
       }
+      generate_crew_challenges: { Args: { p_crew_id: string }; Returns: number }
       generate_hosted_comp_slug: {
         Args: { comp_name: string }
         Returns: string
