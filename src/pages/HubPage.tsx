@@ -132,7 +132,7 @@ export default function HubPage() {
             repeat: Infinity, 
             ease: "easeInOut",
           }}
-          className="w-[1300px] h-[1300px] opacity-[0.10]"
+          className="w-[1300px] h-[1300px] opacity-[0.07]"
         >
           <img 
             src={loopRingsPattern} 
