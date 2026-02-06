@@ -197,10 +197,26 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
                 </p>
               </div>
               
-              {/* Hover overlay */}
+              {/* Hover / tap hint overlay */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <ExternalLink className="w-6 h-6 text-white" />
+                {!thumbnail ? (
+                  <div className="flex flex-col items-center gap-1">
+                    <ImagePlus className="w-5 h-5 text-gold" />
+                    <span className="text-[8px] text-white/80 font-medium">Add Thumb</span>
+                  </div>
+                ) : (
+                  <ExternalLink className="w-6 h-6 text-white" />
+                )}
               </div>
+              
+              {/* No-thumbnail persistent hint */}
+              {!thumbnail && !submission.thumbnail_url && (
+                <div className="absolute bottom-8 right-1">
+                  <div className="w-5 h-5 rounded-full bg-black/60 flex items-center justify-center border border-gold/30">
+                    <ImagePlus className="w-2.5 h-2.5 text-gold/80" />
+                  </div>
+                </div>
+              )}
             </motion.button>
           );
         })}
