@@ -1602,12 +1602,12 @@ export default function OpsPanel() {
       // Then delete the crew
       const { error } = await supabase.from('crews').delete().eq('id', crewId);
       if (error) throw error;
-      toast.success('Crew deleted');
+      toast.success('Unit deleted');
       setDeletingCrewId(null);
       fetchData();
     } catch (error) {
       console.error('Error deleting crew:', error);
-      toast.error('Failed to delete crew');
+      toast.error('Failed to delete unit');
     } finally {
       setActionLoading(false);
     }
@@ -4720,13 +4720,13 @@ export default function OpsPanel() {
       <AlertDialog open={!!deletingCrewId} onOpenChange={(open) => !open && setDeletingCrewId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Crew?</AlertDialogTitle>
-            <AlertDialogDescription>This will permanently delete this crew and remove all members.</AlertDialogDescription>
+            <AlertDialogTitle>Delete Unit?</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete this unit and remove all members.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => deletingCrewId && handleDeleteCrew(deletingCrewId)} disabled={actionLoading} className="bg-destructive text-destructive-foreground">
-              {actionLoading ? 'Deleting...' : 'Delete Crew'}
+              {actionLoading ? 'Deleting...' : 'Delete Unit'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

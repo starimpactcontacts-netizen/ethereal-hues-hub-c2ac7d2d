@@ -164,7 +164,7 @@ export default function CrewAvatarUploadModal({
 
       if (updateError) throw updateError;
 
-      toast.success("Crew avatar updated");
+      toast.success("Unit avatar updated");
       onSuccess();
       onClose();
     } catch (error) {
@@ -188,7 +188,7 @@ export default function CrewAvatarUploadModal({
 
       if (error) throw error;
 
-      toast.success("Crew avatar removed");
+      toast.success("Unit avatar removed");
       onSuccess();
       onClose();
     } catch (error) {
@@ -204,7 +204,7 @@ export default function CrewAvatarUploadModal({
       <div className="bg-background border border-border w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="font-display text-lg">Crew Avatar</h2>
+          <h2 className="font-display text-lg">Unit Avatar</h2>
           <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground">
             <X size={20} />
           </button>

@@ -51,7 +51,7 @@ const METRIC_ICONS: Record<string, string> = {
 };
 
 const METRIC_LABELS: Record<string, string> = {
-  crew_xp: "Crew XP",
+  crew_xp: "Unit XP",
   submissions: "Submissions",
   members: "New Members",
   arena_wins: "Arena Wins",

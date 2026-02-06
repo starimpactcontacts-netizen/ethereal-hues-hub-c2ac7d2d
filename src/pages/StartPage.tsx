@@ -423,7 +423,7 @@ export default function StartPage() {
                   username: newProfile.username,
                   avatar_url: newProfile.avatar_url,
                   title: `Joined ${crew.name}`,
-                  description: via ? `via @${via}'s invite link` : 'Joined the crew',
+                  description: via ? `via @${via}'s invite link` : 'Joined the unit',
                   data: {
                     crew_id: crewId,
                     crew_name: crew.name,

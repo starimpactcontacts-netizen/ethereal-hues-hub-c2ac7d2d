@@ -214,7 +214,7 @@ export default function ProposeSanctionedTournament({
           )}
           <div>
             <p className="text-xs font-bold text-foreground">{crewName}</p>
-            <p className="text-[10px] text-gold uppercase tracking-wider">Host Crew</p>
+            <p className="text-[10px] text-gold uppercase tracking-wider">Host Unit</p>
           </div>
         </div>
       </div>
@@ -519,12 +519,12 @@ export default function ProposeSanctionedTournament({
           <ul className="space-y-1.5 text-[11px] text-muted-foreground">
             <li>• Your proposal goes to admin review</li>
             {tournamentMode === "crew_vs_crew" && (
-              <li>• Challenged crew will be notified to accept</li>
+              <li>• Challenged unit will be notified to accept</li>
             )}
             <li>• If approved, admin sets Index point prizes</li>
             <li>• Tournament becomes visible in Arena → Sanctioned</li>
             {tournamentMode === "crew_vs_crew" ? (
-              <li>• Only members of both crews can participate</li>
+              <li>• Only members of both units can participate</li>
             ) : (
               <li>• Players can join and ready up</li>
             )}

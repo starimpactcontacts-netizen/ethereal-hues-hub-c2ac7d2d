@@ -358,7 +358,7 @@ export default function JudgeApplicationPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500" />
-                  Judge crew matches and friendly tournaments
+                  Judge unit matches and friendly tournaments
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-500" />
