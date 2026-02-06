@@ -192,13 +192,13 @@ export default function NotificationCenter() {
         </button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md bg-background border-border p-0">
-        <SheetHeader className="p-4 border-b border-border">
+        <SheetHeader className="p-4 pl-14 border-b border-border">
           <div className="flex items-center justify-between">
             <SheetTitle className="font-display">Notifications</SheetTitle>
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="text-[10px] text-gold uppercase tracking-wider hover:underline"
+                className="text-[10px] text-primary uppercase tracking-wider hover:underline"
               >
                 Mark all read
               </button>

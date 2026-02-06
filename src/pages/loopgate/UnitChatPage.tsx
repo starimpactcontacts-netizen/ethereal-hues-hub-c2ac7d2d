@@ -260,16 +260,7 @@ export default function UnitChatPage() {
         paddingBottom: "calc(56px + env(safe-area-inset-bottom))",
       }}
     >
-      {/* Back button */}
-      <button
-        onClick={() => navigate(`/crews/${crewId}`)}
-        className="absolute top-4 left-4 p-2 rounded-lg bg-surface-1/80 hover:bg-muted/50 transition-colors z-10"
-        style={{ marginTop: "env(safe-area-inset-top)" }}
-      >
-        <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-      </button>
-
-      {/* Channel Sidebar */}
+      {/* Channel Sidebar with integrated back button */}
       <ChannelSidebar
         channels={channels}
         channelsByCategory={channelsByCategory}
@@ -279,6 +270,7 @@ export default function UnitChatPage() {
         onlineCount={onlineMembers.length}
         crewName={crew.name}
         isOfficer={isOfficer}
+        onBack={() => navigate(`/crews/${crewId}`)}
       />
 
       {/* Main Chat Area */}
