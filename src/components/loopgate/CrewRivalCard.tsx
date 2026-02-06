@@ -53,7 +53,7 @@ export default function CrewRivalCard({
     <div className="relative group">
       <div 
         className="flex items-center gap-3 p-3 bg-surface-1 border border-red-500/20 rounded-lg hover:border-red-500/40 transition-colors cursor-pointer"
-        onClick={() => navigate(`/crews/${rival.id}`)}
+        onClick={() => navigate(`/units/${rival.id}`)}
       >
         {/* Rivalry Icon */}
         <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">

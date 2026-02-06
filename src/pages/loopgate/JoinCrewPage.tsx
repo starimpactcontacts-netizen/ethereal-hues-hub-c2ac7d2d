@@ -128,7 +128,7 @@ export default function JoinCrewPage() {
 
       if (existingMember) {
         toast.error("You're already in this unit");
-        navigate(`/crews/${crew.id}`);
+        navigate(`/units/${crew.id}`);
         setJoining(false);
         return;
       }
@@ -172,7 +172,7 @@ export default function JoinCrewPage() {
           await awardXPAndPostFeed(user.id, crew.name, crew.id, via || undefined);
           toast.success(`Welcome to ${crew.name}!`);
           setJoined(true);
-          setTimeout(() => navigate(`/crews/${crew.id}`), 1500);
+          setTimeout(() => navigate(`/units/${crew.id}`), 1500);
         }
       }
     } catch {
@@ -197,7 +197,7 @@ export default function JoinCrewPage() {
       <PageTransition>
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4">
           <p className="text-muted-foreground">Unit not found</p>
-          <Button variant="outline" onClick={() => navigate("/crews")}>Browse Units</Button>
+          <Button variant="outline" onClick={() => navigate("/units")}>Browse Units</Button>
         </div>
       </PageTransition>
     );

@@ -165,7 +165,7 @@ export default function CrewChatPage() {
 
     if (crewError || !crewData) {
       console.error("Error fetching crew:", crewError);
-      navigate("/crews");
+      navigate("/units");
       return;
     }
 
@@ -330,7 +330,7 @@ export default function CrewChatPage() {
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => navigate(`/crews/${crewId}`)} 
+              onClick={() => navigate(`/units/${crewId}`)} 
               className="p-2 rounded-lg hover:bg-muted/50 transition-colors active:scale-95"
             >
               <ArrowLeft className="w-5 h-5 text-muted-foreground" />

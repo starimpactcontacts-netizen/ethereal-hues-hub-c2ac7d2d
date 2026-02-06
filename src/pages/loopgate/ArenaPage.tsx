@@ -518,7 +518,7 @@ export default function ArenaPage() {
                 </div>
                 {profile?.crew_id && (
                   <Link 
-                    to="/crews" 
+                    to="/units" 
                     className="text-[10px] text-gold hover:text-gold/80 transition-colors flex items-center gap-1"
                   >
                     <Plus className="w-3 h-3" />
@@ -614,7 +614,7 @@ export default function ArenaPage() {
                           Want to host your own tournaments?
                         </p>
                         <Link 
-                          to="/crews"
+                          to="/units"
                           className="inline-flex items-center gap-2 text-[10px] text-gold hover:text-gold/80 font-medium transition-colors"
                         >
                           <Users className="w-3.5 h-3.5" />

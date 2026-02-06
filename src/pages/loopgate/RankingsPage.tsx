@@ -500,7 +500,7 @@ export default function RankingsPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.02 }}
-                      onClick={() => navigate(`/crews/${crew.id}`)}
+                      onClick={() => navigate(`/units/${crew.id}`)}
                       className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
                     >
                       {/* Rank */}

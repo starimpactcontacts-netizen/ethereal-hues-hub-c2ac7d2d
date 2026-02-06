@@ -243,7 +243,7 @@ export default function ProfileSettingsPage() {
         <section className="space-y-3">
           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Crew</h3>
           {primaryCrew?.crew ? (
-            <Link to={`/crews/${primaryCrew.crew_id}`}>
+            <Link to={`/units/${primaryCrew.crew_id}`}>
               <div className="bg-gold/5 border border-gold/20 rounded-xl p-4 flex items-center justify-between hover:border-gold/40 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-gold/10 flex items-center justify-center">
@@ -265,7 +265,7 @@ export default function ProfileSettingsPage() {
               </div>
             </Link>
           ) : (
-            <Link to="/crews">
+            <Link to="/units">
               <div className="border border-dashed border-border rounded-xl p-4 text-center hover:border-gold/30 transition-colors">
                 <p className="text-sm text-muted-foreground">+ Join or Create a Unit</p>
               </div>

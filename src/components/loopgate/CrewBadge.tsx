@@ -68,7 +68,7 @@ export default function CrewBadge({ crew, size = "sm", clickable = true }: CrewB
       <span 
         onClick={(e) => {
           e.stopPropagation();
-          navigate(`/crews/${crew.id}`);
+          navigate(`/units/${crew.id}`);
         }} 
         className="inline-block"
         role="button"

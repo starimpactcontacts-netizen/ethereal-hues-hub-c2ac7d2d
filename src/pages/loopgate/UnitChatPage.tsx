@@ -79,7 +79,7 @@ export default function UnitChatPage() {
         .single();
 
       if (crewError || !crewData) {
-        navigate("/crews");
+        navigate("/units");
         return;
       }
 
@@ -198,7 +198,7 @@ export default function UnitChatPage() {
               <div className="bg-card/95 backdrop-blur-md border-b border-border/50 shrink-0">
                 <div className="px-4 py-3 flex items-center gap-3">
                   <button
-                    onClick={() => navigate(`/crews/${crewId}`)}
+                    onClick={() => navigate(`/units/${crewId}`)}
                     className="p-2 rounded-lg hover:bg-muted/50 transition-colors active:scale-95 touch-manipulation"
                   >
                     <ArrowLeft className="w-5 h-5 text-muted-foreground" />
@@ -342,7 +342,7 @@ export default function UnitChatPage() {
         onlineCount={onlineMembers.length}
         crewName={crew.name}
         isOfficer={isOfficer}
-        onBack={() => navigate(`/crews/${crewId}`)}
+        onBack={() => navigate(`/units/${crewId}`)}
       />
 
       {/* Main Chat Area */}
