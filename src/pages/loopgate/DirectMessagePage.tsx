@@ -190,15 +190,15 @@ export default function DirectMessagePage() {
                           </div>
                         </div>
                         
-                        {/* Delete menu for own messages */}
+                        {/* Delete menu for own messages - visible on mobile, hover on desktop */}
                         {isMe && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button className="opacity-0 group-hover/msg:opacity-100 p-1 rounded hover:bg-muted/50 shrink-0 transition-opacity self-center">
-                                <MoreVertical className="w-4 h-4 text-muted-foreground/50" />
+                              <button className="sm:opacity-0 sm:group-hover/msg:opacity-100 opacity-100 p-1.5 rounded active:bg-muted/50 hover:bg-muted/50 shrink-0 transition-opacity self-center touch-manipulation">
+                                <MoreVertical className="w-3.5 h-3.5 text-muted-foreground/70" />
                               </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-32">
+                            <DropdownMenuContent align="end" className="w-32 bg-surface-1 border-border">
                               <DropdownMenuItem
                                 onClick={() => handleDeleteMessage(msg.id)}
                                 className="text-destructive text-xs"

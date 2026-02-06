@@ -56,7 +56,11 @@ function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, currentLab
   return (
     <div
       onClick={handleClick}
-      className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-surface-1 transition-colors cursor-pointer group"
+      onTouchEnd={(e) => {
+        // Prevent double-firing on mobile
+        if ((e.target as HTMLElement).closest('[data-radix-collection-item]')) return;
+      }}
+      className="flex items-center gap-2.5 px-3 py-2.5 hover:bg-surface-1 active:bg-surface-1 transition-colors cursor-pointer group touch-manipulation"
     >
       {/* Avatar with verified badge - smaller */}
       <div className="relative">
@@ -113,8 +117,8 @@ function ConversationItem({ conv, userId, onDelete, onOpenLabelSheet, currentLab
         )}
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <button className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 sm:opacity-100 hover:bg-muted/50 transition-all">
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
+            <button className="p-2 rounded-lg opacity-100 active:bg-muted/50 hover:bg-muted/50 transition-all touch-manipulation">
               <MoreVertical className="w-4 h-4 text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
