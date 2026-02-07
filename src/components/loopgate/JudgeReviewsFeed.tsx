@@ -21,7 +21,7 @@ interface ReviewItem {
   selected_tier: string | null;
 }
 
-// GQT Class thresholds: S+/S++ (90+), S (80-89), A (70-79), B (60-69), C (50-59), D (40-49), F (0-39)
+// Thresholds: S+/S++ (90+), S (80-89), A (70-79), B (60-69), C (50-59), D (30-49), F (0-29)
 function getDisplayGrade(review: ReviewItem): string {
   // If judge used tier_only mode and selected a tier, use that directly
   if (review.rating_mode === 'tier_only' && review.selected_tier) {
@@ -35,7 +35,7 @@ function getDisplayGrade(review: ReviewItem): string {
   if (score >= 70) return 'A';
   if (score >= 60) return 'B';
   if (score >= 50) return 'C';
-  if (score >= 40) return 'D';
+  if (score >= 30) return 'D';
   return 'F';
 }
 
@@ -45,7 +45,7 @@ function getScoreClass(score: number): string {
   if (score >= 70) return 'A';
   if (score >= 60) return 'B';
   if (score >= 50) return 'C';
-  if (score >= 40) return 'D';
+  if (score >= 30) return 'D';
   return 'F';
 }
 

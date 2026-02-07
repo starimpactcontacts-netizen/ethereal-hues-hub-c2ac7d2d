@@ -160,6 +160,8 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
         identityScore: identityFinal,
         executionScore: executionFinal,
         comment,
+        ratingMode: mode,
+        selectedTier: mode === 'tier_only' ? selectedTier : null,
       });
 
       setShowExport(true);

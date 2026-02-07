@@ -43,7 +43,7 @@ function getScoreColor(score: number, max: number): string {
 }
 
 // Get the display grade - prioritize selected_tier for tier_only mode
-// GQT thresholds: S+/S++ (90+), S (80-89), A (70-79), B (60-69), C (50-59), D (40-49), F (0-39)
+// Thresholds: S+/S++ (90+), S (80-89), A (70-79), B (60-69), C (50-59), D (30-49), F (0-29)
 function getDisplayGrade(review: ReviewResult): { grade: string; color: string } {
   // If judge used tier_only mode and selected a tier, use that directly
   if (review.rating_mode === 'tier_only' && review.selected_tier) {
@@ -68,7 +68,7 @@ function getDisplayGrade(review: ReviewResult): { grade: string; color: string }
   if (score >= 70) return { grade: 'A', color: 'text-emerald-400' };
   if (score >= 60) return { grade: 'B', color: 'text-blue-400' };
   if (score >= 50) return { grade: 'C', color: 'text-slate-300' };
-  if (score >= 40) return { grade: 'D', color: 'text-orange-400' };
+  if (score >= 30) return { grade: 'D', color: 'text-orange-400' };
   return { grade: 'F', color: 'text-red-500' };
 }
 

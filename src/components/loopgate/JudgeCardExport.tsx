@@ -20,6 +20,8 @@ interface JudgeCardExportProps {
     identityScore: number;
     executionScore: number;
     comment?: string;
+    ratingMode?: string | null;
+    selectedTier?: string | null;
   };
   onSubmitToEditor?: () => Promise<void>;
 }

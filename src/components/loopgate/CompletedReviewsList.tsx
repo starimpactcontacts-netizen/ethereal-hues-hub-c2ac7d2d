@@ -177,6 +177,8 @@ export default function CompletedReviewsList() {
             identityScore: exportingReview.identity_score || Math.round(exportingReview.total_score * 0.10),
             executionScore: exportingReview.execution_score || Math.round(exportingReview.total_score * 0.25),
             comment: exportingReview.judge_comment || undefined,
+            ratingMode: exportingReview.rating_mode,
+            selectedTier: exportingReview.selected_tier,
           }}
         />
       )}
