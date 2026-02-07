@@ -32,6 +32,8 @@ interface JudgeReviewCardProps {
   comment?: string;
   template: CardTemplate;
   displayFormat?: CardDisplayFormat;
+  ratingMode?: string | null;
+  selectedTier?: string | null;
   className?: string;
 }
 
@@ -43,14 +45,23 @@ const SCORE_PILLARS = [
   { key: 'execution', label: 'Execution', max: 25 },
 ] as const;
 
-function getGrade(score: number): { grade: string; label: string } {
+function getGrade(score: number, ratingMode?: string | null, selectedTier?: string | null): { grade: string; label: string } {
+  // If tier_only mode with a selected tier, use that directly
+  if (ratingMode === 'tier_only' && selectedTier) {
+    const tierLabels: Record<string, string> = {
+      'S++': 'LEGENDARY', 'S+': 'ELITE', 'S': 'SUPERIOR',
+      'A': 'EXCELLENT', 'B': 'GOOD', 'C': 'AVERAGE',
+      'D': 'BELOW AVG', 'F': 'FAILED',
+    };
+    return { grade: selectedTier, label: tierLabels[selectedTier] || 'RATED' };
+  }
   if (score >= 95) return { grade: 'S++', label: 'LEGENDARY' };
   if (score >= 90) return { grade: 'S+', label: 'ELITE' };
   if (score >= 80) return { grade: 'S', label: 'SUPERIOR' };
   if (score >= 70) return { grade: 'A', label: 'EXCELLENT' };
   if (score >= 60) return { grade: 'B', label: 'GOOD' };
   if (score >= 50) return { grade: 'C', label: 'AVERAGE' };
-  if (score >= 40) return { grade: 'D', label: 'BELOW AVG' };
+  if (score >= 30) return { grade: 'D', label: 'BELOW AVG' };
   return { grade: 'F', label: 'FAILED' };
 }
 
@@ -148,10 +159,12 @@ const JudgeReviewCard = forwardRef<HTMLDivElement, JudgeReviewCardProps>(({
   comment,
   template,
   displayFormat = 'full',
+  ratingMode,
+  selectedTier,
   className = '',
 }, ref) => {
   const style = TEMPLATE_STYLES[template];
-  const { grade, label } = getGrade(totalScore);
+  const { grade, label } = getGrade(totalScore, ratingMode, selectedTier);
   const Icon = style.icon;
   
   const scores = {
