@@ -367,6 +367,66 @@ export default function JudgeProfilePage() {
               {judge.xp.toLocaleString()} XP
             </p>
           </div>
+
+          {/* Request Review - RIGHT AT THE TOP */}
+          <div className="px-4 mt-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-gradient-to-br from-gold/10 to-transparent border border-gold/30 rounded-xl p-4"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Send className="w-5 h-5 text-gold" />
+                <h2 className="font-display text-lg">Get Your Edit Rated</h2>
+              </div>
+
+              {/* Simple step-by-step */}
+              <div className="space-y-1.5 mb-4">
+                <p className="text-xs text-muted-foreground flex items-start gap-2">
+                  <span className="bg-gold/20 text-gold font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">1</span>
+                  <span>Login or create a free Loopgate account</span>
+                </p>
+                <p className="text-xs text-muted-foreground flex items-start gap-2">
+                  <span className="bg-gold/20 text-gold font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">2</span>
+                  <span>Paste a link to your edit (TikTok, Instagram, or YouTube)</span>
+                </p>
+                <p className="text-xs text-muted-foreground flex items-start gap-2">
+                  <span className="bg-gold/20 text-gold font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">3</span>
+                  <span>@{judge.username} reviews it — you get a score, feedback & +15 XP</span>
+                </p>
+              </div>
+
+              {user ? (
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Paste your TikTok, Instagram, or YouTube URL..."
+                    value={submissionUrl}
+                    onChange={(e) => handleUrlChange(e.target.value)}
+                    className="bg-surface-0 border-border"
+                  />
+                  {platform && (
+                    <p className="text-xs text-green-400">
+                      ✓ {platform.charAt(0).toUpperCase() + platform.slice(1)} link detected
+                    </p>
+                  )}
+                  <Button
+                    onClick={handleSubmitRequest}
+                    disabled={!submissionUrl.trim() || !platform || submitting}
+                    className="w-full bg-gold hover:bg-gold/90 text-black font-semibold"
+                  >
+                    {submitting ? 'Submitting...' : 'Submit for Review (+15 XP)'}
+                  </Button>
+                </div>
+              ) : (
+                <Link to="/start">
+                  <Button className="w-full bg-gold hover:bg-gold/90 text-black font-semibold">
+                    Login to Submit
+                  </Button>
+                </Link>
+              )}
+            </motion.div>
+          </div>
         </div>
       </div>
 
@@ -421,53 +481,6 @@ export default function JudgeProfilePage() {
         </div>
       )}
 
-      {/* Submit Your Edit Section */}
-      <div className="px-4 mb-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-gradient-to-br from-gold/10 to-transparent border border-gold/30 rounded-xl p-4"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <Send className="w-5 h-5 text-gold" />
-            <h2 className="font-display text-lg">Request Review</h2>
-          </div>
-          
-          <p className="text-sm text-muted-foreground mb-4">
-            Submit your edit for @{judge.username} to review. Get your score, commentary, and appear in their feed!
-          </p>
-
-          {user ? (
-            <div className="space-y-3">
-              <Input
-                placeholder="Paste your TikTok, Instagram, or YouTube URL..."
-                value={submissionUrl}
-                onChange={(e) => handleUrlChange(e.target.value)}
-                className="bg-surface-0 border-border"
-              />
-              {platform && (
-                <p className="text-xs text-green-400">
-                  ✓ {platform.charAt(0).toUpperCase() + platform.slice(1)} link detected
-                </p>
-              )}
-              <Button
-                onClick={handleSubmitRequest}
-                disabled={!submissionUrl.trim() || !platform || submitting}
-                className="w-full bg-gold hover:bg-gold/90 text-black font-semibold"
-              >
-                {submitting ? 'Submitting...' : 'Submit for Review (+15 XP)'}
-              </Button>
-            </div>
-          ) : (
-            <Link to="/start">
-              <Button className="w-full bg-gold hover:bg-gold/90 text-black font-semibold">
-                Login to Submit
-              </Button>
-            </Link>
-          )}
-        </motion.div>
-      </div>
 
       {/* Top Reviews - Showcase */}
       {topReviews.length > 0 && (
