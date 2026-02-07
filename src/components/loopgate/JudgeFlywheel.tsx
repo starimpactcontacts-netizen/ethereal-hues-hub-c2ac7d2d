@@ -73,6 +73,11 @@ const THEMES = [
   },
 ];
 
+// Sound effect URLs
+const SPIN_TICK_URL = 'https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3'; // click/tick
+const TADA_URL = 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'; // success fanfare
+const WHOOSH_URL = 'https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'; // whoosh start
+
 export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: JudgeFlywheelProps) {
   const [selectedEditors, setSelectedEditors] = useState<FlywheelEditor[]>([]);
   const [spinning, setSpinning] = useState(false);
@@ -84,6 +89,56 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastTickSegment = useRef<number>(-1);
+  const tickAudioPool = useRef<HTMLAudioElement[]>([]);
+  const tadaAudio = useRef<HTMLAudioElement | null>(null);
+  const whooshAudio = useRef<HTMLAudioElement | null>(null);
+
+  // Preload sound effects
+  useEffect(() => {
+    // Create a pool of tick sounds for rapid playback
+    tickAudioPool.current = Array.from({ length: 6 }, () => {
+      const a = new Audio(SPIN_TICK_URL);
+      a.volume = 0.3;
+      a.preload = 'auto';
+      return a;
+    });
+    tadaAudio.current = new Audio(TADA_URL);
+    tadaAudio.current.volume = 0.5;
+    tadaAudio.current.preload = 'auto';
+    whooshAudio.current = new Audio(WHOOSH_URL);
+    whooshAudio.current.volume = 0.35;
+    whooshAudio.current.preload = 'auto';
+
+    return () => {
+      tickAudioPool.current.forEach(a => { a.pause(); a.src = ''; });
+      if (tadaAudio.current) { tadaAudio.current.pause(); tadaAudio.current.src = ''; }
+      if (whooshAudio.current) { whooshAudio.current.pause(); whooshAudio.current.src = ''; }
+    };
+  }, []);
+
+  const playTick = useCallback(() => {
+    // Round-robin through pool so rapid ticks don't cut each other off
+    const pool = tickAudioPool.current;
+    if (pool.length === 0) return;
+    const audio = pool.find(a => a.paused) || pool[0];
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  }, []);
+
+  const playTada = useCallback(() => {
+    if (tadaAudio.current) {
+      tadaAudio.current.currentTime = 0;
+      tadaAudio.current.play().catch(() => {});
+    }
+  }, []);
+
+  const playWhoosh = useCallback(() => {
+    if (whooshAudio.current) {
+      whooshAudio.current.currentTime = 0;
+      whooshAudio.current.play().catch(() => {});
+    }
+  }, []);
 
   const theme = THEMES[themeIndex];
 
@@ -180,12 +235,16 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     ctx.stroke();
   }, [selectedEditors, theme]);
 
-  // Spin with physics
+  // Spin with physics + sound effects
   const spin = useCallback(() => {
     if (spinning || selectedEditors.length < 2) return;
     
     setSpinning(true);
     setWinner(null);
+    lastTickSegment.current = -1;
+
+    // Whoosh on start
+    playWhoosh();
 
     const segAngle = (2 * Math.PI) / selectedEditors.length;
     const totalRotation = (Math.PI * 2 * (8 + Math.random() * 6)); // 8-14 full rotations
@@ -202,6 +261,14 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       const eased = easeOutQuart(progress);
       const currentAngle = startRotation + (targetAngle - startRotation) * eased;
 
+      // Tick sound when crossing segment boundaries
+      const normalizedCurrent = ((currentAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const currentSegment = Math.floor(normalizedCurrent / segAngle) % selectedEditors.length;
+      if (currentSegment !== lastTickSegment.current) {
+        lastTickSegment.current = currentSegment;
+        playTick();
+      }
+
       setRotation(currentAngle);
       drawWheel(currentAngle);
 
@@ -210,7 +277,6 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       } else {
         // Determine winner
         const normalizedAngle = ((currentAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-        // Pointer is at top (- π/2), we need to find which segment is there
         const pointerAngle = ((2 * Math.PI) - normalizedAngle) % (2 * Math.PI);
         const winnerIndex = Math.floor(pointerAngle / segAngle) % selectedEditors.length;
         
@@ -220,12 +286,15 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
         // Flash the winning segment
         drawWheel(currentAngle, winnerIndex);
         
+        // Tada! 🎉
+        playTada();
+        
         setTimeout(() => setPhase('result'), 800);
       }
     };
 
     animRef.current = requestAnimationFrame(animate);
-  }, [spinning, selectedEditors, rotation, drawWheel]);
+  }, [spinning, selectedEditors, rotation, drawWheel, playTick, playTada, playWhoosh]);
 
   // Draw initial wheel when entering wheel phase
   useEffect(() => {
