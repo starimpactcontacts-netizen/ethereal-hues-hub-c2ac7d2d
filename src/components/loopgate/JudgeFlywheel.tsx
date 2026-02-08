@@ -1,10 +1,11 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, RotateCcw, 
-  Maximize2, Minimize2, Zap, Crown, Minus
+  Maximize2, Minimize2, Zap, Crown, Minus, Palette
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 import { LoopedX } from '@/components/loopgate/LoopedX';
 
 interface FlywheelEditor {
@@ -21,13 +22,29 @@ interface JudgeFlywheelProps {
   onSelect: (editor: FlywheelEditor) => void;
 }
 
-// Single luxe palette — black & gold, no goofy color mixing
-const ACCENT = '#D4AF37';
-const ACCENT_DIM = '#B8960B';
+// Helper to generate accent palette from a hue value (0-360)
+function hslToHex(h: number, s: number, l: number): string {
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function makeAccentPalette(hue: number) {
+  return {
+    accent: hslToHex(hue, 0.65, 0.53),
+    accentDim: hslToHex(hue, 0.70, 0.36),
+    accentBright: hslToHex(hue, 0.55, 0.75),
+    segGold: hslToHex(hue, 0.65, 0.53),
+    segGoldDim: hslToHex(hue, 0.70, 0.36),
+  };
+}
+
 const SEG_DARK = '#0c0c0c';
 const SEG_DARKER = '#060606';
-const SEG_GOLD = '#D4AF37';
-const SEG_GOLD_DIM = '#9E7C1A';
 
 // ── Web Audio synth (zero latency) ─────────────────────────────────
 class FlywheelAudio {
@@ -134,6 +151,10 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
   const [winner, setWinner] = useState<FlywheelEditor | null>(null);
   const [phase, setPhase] = useState<'pick' | 'wheel' | 'result'>('pick');
   const [fullscreen, setFullscreen] = useState(false);
+  const [hue, setHue] = useState(45); // default gold ~45
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  const palette = useMemo(() => makeAccentPalette(hue), [hue]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
@@ -176,15 +197,15 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     // Outer ring
     ctx.beginPath();
     ctx.arc(center, center, radius + 3, 0, Math.PI * 2);
-    ctx.strokeStyle = ACCENT + '50';
+    ctx.strokeStyle = palette.accent + '50';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Segments — alternating black/gold
+    // Segments — alternating black/accent
     selectedEditors.forEach((editor, i) => {
       const startA = angle + i * segAngle;
       const endA = startA + segAngle;
-      const isGold = i % 2 === 0;
+      const isColored = i % 2 === 0;
       const isHl = highlightIndex === i;
 
       ctx.beginPath();
@@ -194,18 +215,17 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
 
       if (isHl) {
         const grad = ctx.createRadialGradient(center, center, 0, center, center, radius);
-        grad.addColorStop(0, '#FFE57F');
-        grad.addColorStop(0.5, ACCENT);
-        grad.addColorStop(1, ACCENT_DIM);
+        grad.addColorStop(0, palette.accentBright);
+        grad.addColorStop(0.5, palette.accent);
+        grad.addColorStop(1, palette.accentDim);
         ctx.fillStyle = grad;
-      } else if (isGold) {
-        // Subtle radial gradient on gold segments
+      } else if (isColored) {
         const midA = startA + segAngle / 2;
         const gx = center + Math.cos(midA) * radius * 0.5;
         const gy = center + Math.sin(midA) * radius * 0.5;
         const grad = ctx.createRadialGradient(gx, gy, 0, center, center, radius);
-        grad.addColorStop(0, SEG_GOLD);
-        grad.addColorStop(1, SEG_GOLD_DIM);
+        grad.addColorStop(0, palette.segGold);
+        grad.addColorStop(1, palette.segGoldDim);
         ctx.fillStyle = grad;
       } else {
         ctx.fillStyle = i % 4 === 1 ? SEG_DARK : SEG_DARKER;
@@ -216,7 +236,7 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       ctx.beginPath();
       ctx.moveTo(center, center);
       ctx.lineTo(center + Math.cos(startA) * radius, center + Math.sin(startA) * radius);
-      ctx.strokeStyle = 'rgba(212,175,55,0.12)';
+      ctx.strokeStyle = palette.accent + '1F';
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -225,7 +245,7 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       ctx.translate(center, center);
       ctx.rotate(startA + segAngle / 2);
       ctx.textAlign = 'right';
-      ctx.fillStyle = isHl ? '#000' : (isGold ? '#000' : '#fff');
+      ctx.fillStyle = isHl ? '#000' : (isColored ? '#000' : '#fff');
       const fontSize = Math.max(10, Math.min(14, 150 / selectedEditors.length));
       ctx.font = `700 ${fontSize}px "Bebas Neue", system-ui, sans-serif`;
       ctx.letterSpacing = '0.5px';
@@ -246,12 +266,12 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     ctx.arc(center, center, hubR, 0, Math.PI * 2);
     ctx.fillStyle = hubGrad;
     ctx.fill();
-    ctx.strokeStyle = ACCENT;
+    ctx.strokeStyle = palette.accent;
     ctx.lineWidth = 2;
     ctx.stroke();
 
     // Hub text
-    ctx.fillStyle = ACCENT;
+    ctx.fillStyle = palette.accent;
     ctx.font = '700 10px "Bebas Neue", system-ui';
     ctx.textAlign = 'center';
     ctx.fillText('LOOP', center, center);
@@ -266,14 +286,14 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     ctx.lineTo(center, ptrH);
     ctx.closePath();
     const ptrGrad = ctx.createLinearGradient(center, 0, center, ptrH);
-    ptrGrad.addColorStop(0, '#FFE57F');
-    ptrGrad.addColorStop(1, ACCENT);
+    ptrGrad.addColorStop(0, palette.accentBright);
+    ptrGrad.addColorStop(1, palette.accent);
     ctx.fillStyle = ptrGrad;
     ctx.fill();
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-  }, [selectedEditors]);
+  }, [selectedEditors, palette]);
 
   // ── Spin ─────────────────────────────────────────────────────────
   const spin = useCallback(() => {
@@ -335,6 +355,13 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       requestAnimationFrame(() => drawWheel(rotationRef.current));
     }
   }, [phase, drawWheel]);
+
+  // Redraw when hue changes
+  useEffect(() => {
+    if (phase === 'wheel' && !spinning) {
+      requestAnimationFrame(() => drawWheel(rotationRef.current));
+    }
+  }, [hue, phase, spinning, drawWheel]);
 
   useEffect(() => {
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
@@ -494,21 +521,66 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
             transition={{ duration: 0.3 }}
             className="flex-1 flex flex-col items-center justify-center gap-8 px-4"
           >
-            {/* Wheel */}
-            <div 
-              className="relative"
-              style={{ filter: 'drop-shadow(0 0 60px rgba(212,175,55,0.15))' }}
-            >
-              <canvas
-                ref={canvasRef}
-                className="rounded-full"
-                style={{ width: wheelSize, height: wheelSize }}
-              />
-              {/* Subtle outer glow ring */}
-              <div
-                className="absolute inset-[-5px] rounded-full pointer-events-none"
-                style={{ border: '1px solid rgba(212,175,55,0.15)' }}
-              />
+            {/* Wheel + Color adjuster */}
+            <div className="flex items-center gap-4">
+              {/* Color adjuster (left side) */}
+              <AnimatePresence>
+                {showColorPicker && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="flex flex-col items-center gap-3"
+                  >
+                    <div 
+                      className="w-6 h-6 rounded-full border-2 border-white/20"
+                      style={{ background: palette.accent }}
+                    />
+                    <div className="h-[200px] flex items-center">
+                      <Slider
+                        orientation="vertical"
+                        min={0}
+                        max={360}
+                        step={1}
+                        value={[hue]}
+                        onValueChange={(v) => {
+                          setHue(v[0]);
+                          requestAnimationFrame(() => drawWheel(rotationRef.current));
+                        }}
+                        className="h-full [&_[data-orientation=vertical]]:w-3"
+                      />
+                    </div>
+                    <span className="text-[8px] text-white/30 font-display tracking-widest">HUE</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Wheel */}
+              <div 
+                className="relative"
+                style={{ filter: `drop-shadow(0 0 60px ${palette.accent}26)` }}
+              >
+                <canvas
+                  ref={canvasRef}
+                  className="rounded-full"
+                  style={{ width: wheelSize, height: wheelSize }}
+                />
+                <div
+                  className="absolute inset-[-5px] rounded-full pointer-events-none"
+                  style={{ border: `1px solid ${palette.accent}26` }}
+                />
+              </div>
+
+              {/* Color toggle button (right side) */}
+              <button
+                onClick={() => setShowColorPicker(p => !p)}
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                  showColorPicker ? 'bg-white/12' : 'bg-white/6 hover:bg-white/10'
+                }`}
+                title="Adjust color"
+              >
+                <Palette className="w-4 h-4 text-white/50" />
+              </button>
             </div>
 
             {/* Controls */}
@@ -583,16 +655,20 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
                 animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute inset-[-28px] rounded-full"
-                style={{ boxShadow: '0 0 80px rgba(212,175,55,0.35), 0 0 140px rgba(212,175,55,0.12)' }}
+                style={{ boxShadow: `0 0 80px ${palette.accent}59, 0 0 140px ${palette.accent}1F` }}
               />
               
               {winner.avatar_url ? (
                 <img 
                   src={winner.avatar_url} alt=""
-                  className="w-28 h-28 rounded-full object-cover border-[3px] border-gold"
+                  className="w-28 h-28 rounded-full object-cover border-[3px]"
+                  style={{ borderColor: palette.accent }}
                 />
               ) : (
-                <div className="w-28 h-28 rounded-full flex items-center justify-center border-[3px] border-gold bg-gold/10">
+                <div 
+                  className="w-28 h-28 rounded-full flex items-center justify-center border-[3px]"
+                  style={{ borderColor: palette.accent, background: palette.accent + '1A' }}
+                >
                   <span className="text-3xl font-bold text-white">{winner.username[0]?.toUpperCase()}</span>
                 </div>
               )}
@@ -601,7 +677,8 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.4, type: 'spring', damping: 12 }}
-                className="absolute -top-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center bg-gold shadow-lg"
+                className="absolute -top-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
+                style={{ background: palette.accent }}
               >
                 <Crown className="w-5 h-5 text-black" />
               </motion.div>
@@ -633,7 +710,8 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               </Button>
               <Button
                 onClick={handleRate}
-                className="font-display font-bold tracking-[0.15em] text-black bg-gold hover:bg-gold/90"
+                className="font-display font-bold tracking-[0.15em] text-black"
+                style={{ background: palette.accent }}
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 RATE NOW
