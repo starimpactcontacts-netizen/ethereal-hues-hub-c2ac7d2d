@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  X, Sparkles, RotateCcw, Palette, ChevronRight, 
-  Plus, Minus, Maximize2, Minimize2, Zap, Crown
+  Sparkles, RotateCcw, Palette, 
+  Maximize2, Minimize2, Zap, Crown, Minus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LoopedX } from '@/components/loopgate/LoopedX';
 
 interface FlywheelEditor {
   id: string;
@@ -22,127 +23,359 @@ interface JudgeFlywheelProps {
 
 const THEMES = [
   { 
-    id: 'obsidian', 
-    label: 'Obsidian', 
-    bg: 'bg-black', 
-    accent: '#D4AF37',
+    id: 'obsidian', label: 'Obsidian', accent: '#D4AF37',
     gradient: 'from-zinc-950 via-black to-zinc-950',
-    segmentColors: ['#D4AF37', '#1a1a1a', '#B8860B', '#0d0d0d', '#FFD700', '#262626'],
-    textColor: '#fff',
-    glow: 'shadow-[0_0_80px_rgba(212,175,55,0.3)]'
+    segmentColors: ['#D4AF37', '#111111', '#B8860B', '#0a0a0a', '#FFD700', '#1a1a1a'],
+    glow: '0 0 80px rgba(212,175,55,0.25)'
   },
   { 
-    id: 'neon', 
-    label: 'Neon', 
-    bg: 'bg-black', 
-    accent: '#00FFFF',
+    id: 'neon', label: 'Neon', accent: '#00FFFF',
     gradient: 'from-purple-950 via-black to-cyan-950',
-    segmentColors: ['#00FFFF', '#1a0030', '#FF00FF', '#0a0020', '#7B2FFF', '#150035'],
-    textColor: '#fff',
-    glow: 'shadow-[0_0_80px_rgba(0,255,255,0.3)]'
+    segmentColors: ['#00FFFF', '#12002a', '#FF00FF', '#08001a', '#7B2FFF', '#100030'],
+    glow: '0 0 80px rgba(0,255,255,0.25)'
   },
   { 
-    id: 'inferno', 
-    label: 'Inferno', 
-    bg: 'bg-black', 
-    accent: '#FF4500',
+    id: 'inferno', label: 'Inferno', accent: '#FF4500',
     gradient: 'from-red-950 via-black to-orange-950',
-    segmentColors: ['#FF4500', '#1a0500', '#FF6347', '#0d0200', '#FF8C00', '#261000'],
-    textColor: '#fff',
-    glow: 'shadow-[0_0_80px_rgba(255,69,0,0.3)]'
+    segmentColors: ['#FF4500', '#150400', '#FF6347', '#0a0200', '#FF8C00', '#1a0800'],
+    glow: '0 0 80px rgba(255,69,0,0.25)'
   },
   { 
-    id: 'arctic', 
-    label: 'Arctic', 
-    bg: 'bg-black', 
-    accent: '#60A5FA',
+    id: 'arctic', label: 'Arctic', accent: '#60A5FA',
     gradient: 'from-blue-950 via-slate-950 to-indigo-950',
-    segmentColors: ['#60A5FA', '#0a1628', '#3B82F6', '#050d1a', '#93C5FD', '#0f1f3d'],
-    textColor: '#fff',
-    glow: 'shadow-[0_0_80px_rgba(96,165,250,0.3)]'
+    segmentColors: ['#60A5FA', '#081428', '#3B82F6', '#040c18', '#93C5FD', '#0c1a38'],
+    glow: '0 0 80px rgba(96,165,250,0.25)'
   },
   { 
-    id: 'matrix', 
-    label: 'Matrix', 
-    bg: 'bg-black', 
-    accent: '#22C55E',
+    id: 'matrix', label: 'Matrix', accent: '#22C55E',
     gradient: 'from-green-950 via-black to-emerald-950',
-    segmentColors: ['#22C55E', '#001a0a', '#16A34A', '#000d05', '#4ADE80', '#002612'],
-    textColor: '#fff',
-    glow: 'shadow-[0_0_80px_rgba(34,197,94,0.3)]'
+    segmentColors: ['#22C55E', '#001508', '#16A34A', '#000a04', '#4ADE80', '#001e10'],
+    glow: '0 0 80px rgba(34,197,94,0.25)'
   },
 ];
 
-// Sound effect URLs
-const SPIN_TICK_URL = 'https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3'; // click/tick
-const TADA_URL = 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'; // success fanfare
-const WHOOSH_URL = 'https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3'; // whoosh start
+// ── Web Audio synth sounds (zero latency, no network) ──────────────
+class FlywheelAudio {
+  private ctx: AudioContext | null = null;
+  private tickCount = 0;
 
+  private getCtx() {
+    if (!this.ctx) this.ctx = new AudioContext();
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+    return this.ctx;
+  }
+
+  tick(speed: number) {
+    const ctx = this.getCtx();
+    const now = ctx.currentTime;
+    this.tickCount++;
+
+    // Alternating pitch for a mechanical ratchet feel
+    const baseFreq = this.tickCount % 2 === 0 ? 3200 : 2800;
+    const gain = ctx.createGain();
+    const osc = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+
+    osc.type = 'square';
+    osc.frequency.value = baseFreq;
+    filter.type = 'bandpass';
+    filter.frequency.value = 4000;
+    filter.Q.value = 2;
+
+    // Volume scales with speed (louder when fast)
+    const vol = Math.min(0.12, 0.03 + speed * 0.1);
+    gain.gain.setValueAtTime(vol, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+    osc.connect(filter).connect(gain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.04);
+  }
+
+  whoosh() {
+    const ctx = this.getCtx();
+    const now = ctx.currentTime;
+    const dur = 0.6;
+
+    // White noise burst filtered into a whoosh
+    const bufferSize = ctx.sampleRate * dur;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(800, now);
+    filter.frequency.exponentialRampToValueAtTime(200, now + dur);
+    filter.Q.value = 1;
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.start(now);
+    source.stop(now + dur);
+  }
+
+  victory() {
+    const ctx = this.getCtx();
+    const now = ctx.currentTime;
+
+    // Triumphant ascending chord
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const start = now + i * 0.08;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.12, start + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.8);
+
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.8);
+    });
+
+    // Shimmer overlay
+    setTimeout(() => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 1568; // G6
+      gain.gain.setValueAtTime(0.06, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 1.2);
+    }, 300);
+  }
+
+  dispose() {
+    this.ctx?.close();
+    this.ctx = null;
+  }
+}
+
+// ── Component ──────────────────────────────────────────────────────
 export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: JudgeFlywheelProps) {
   const [selectedEditors, setSelectedEditors] = useState<FlywheelEditor[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState<FlywheelEditor | null>(null);
-  const [rotation, setRotation] = useState(0);
   const [themeIndex, setThemeIndex] = useState(0);
   const [phase, setPhase] = useState<'pick' | 'wheel' | 'result'>('pick');
   const [fullscreen, setFullscreen] = useState(false);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const lastTickSegment = useRef<number>(-1);
-  const tickAudioPool = useRef<HTMLAudioElement[]>([]);
-  const tadaAudio = useRef<HTMLAudioElement | null>(null);
-  const whooshAudio = useRef<HTMLAudioElement | null>(null);
+  const rotationRef = useRef(0);
+  const lastTickSegment = useRef(-1);
+  const audioRef = useRef<FlywheelAudio | null>(null);
 
-  // Preload sound effects
+  // Audio lifecycle
   useEffect(() => {
-    // Create a pool of tick sounds for rapid playback
-    tickAudioPool.current = Array.from({ length: 6 }, () => {
-      const a = new Audio(SPIN_TICK_URL);
-      a.volume = 0.3;
-      a.preload = 'auto';
-      return a;
-    });
-    tadaAudio.current = new Audio(TADA_URL);
-    tadaAudio.current.volume = 0.5;
-    tadaAudio.current.preload = 'auto';
-    whooshAudio.current = new Audio(WHOOSH_URL);
-    whooshAudio.current.volume = 0.35;
-    whooshAudio.current.preload = 'auto';
-
-    return () => {
-      tickAudioPool.current.forEach(a => { a.pause(); a.src = ''; });
-      if (tadaAudio.current) { tadaAudio.current.pause(); tadaAudio.current.src = ''; }
-      if (whooshAudio.current) { whooshAudio.current.pause(); whooshAudio.current.src = ''; }
-    };
-  }, []);
-
-  const playTick = useCallback(() => {
-    // Round-robin through pool so rapid ticks don't cut each other off
-    const pool = tickAudioPool.current;
-    if (pool.length === 0) return;
-    const audio = pool.find(a => a.paused) || pool[0];
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
-  }, []);
-
-  const playTada = useCallback(() => {
-    if (tadaAudio.current) {
-      tadaAudio.current.currentTime = 0;
-      tadaAudio.current.play().catch(() => {});
-    }
-  }, []);
-
-  const playWhoosh = useCallback(() => {
-    if (whooshAudio.current) {
-      whooshAudio.current.currentTime = 0;
-      whooshAudio.current.play().catch(() => {});
-    }
+    audioRef.current = new FlywheelAudio();
+    return () => { audioRef.current?.dispose(); };
   }, []);
 
   const theme = THEMES[themeIndex];
 
-  // Toggle editor selection
+  // ── Canvas drawing ───────────────────────────────────────────────
+  const drawWheel = useCallback((angle: number, highlightIndex?: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas || selectedEditors.length === 0) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const displaySize = canvas.clientWidth;
+    
+    // Only resize buffer when display size changes
+    if (canvas.width !== displaySize * dpr || canvas.height !== displaySize * dpr) {
+      canvas.width = displaySize * dpr;
+      canvas.height = displaySize * dpr;
+      ctx.scale(dpr, dpr);
+    }
+
+    const center = displaySize / 2;
+    const radius = center - 6;
+    const segAngle = (2 * Math.PI) / selectedEditors.length;
+
+    ctx.clearRect(0, 0, displaySize, displaySize);
+
+    // Outer ring glow
+    ctx.beginPath();
+    ctx.arc(center, center, radius + 3, 0, Math.PI * 2);
+    ctx.strokeStyle = theme.accent + '40';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Segments
+    selectedEditors.forEach((editor, i) => {
+      const startA = angle + i * segAngle;
+      const endA = startA + segAngle;
+      const colorIdx = i % theme.segmentColors.length;
+      const isHl = highlightIndex === i;
+
+      // Segment fill
+      ctx.beginPath();
+      ctx.moveTo(center, center);
+      ctx.arc(center, center, radius, startA, endA);
+      ctx.closePath();
+
+      if (isHl) {
+        // Highlighted segment gets a radial gradient
+        const grad = ctx.createRadialGradient(center, center, 0, center, center, radius);
+        grad.addColorStop(0, theme.accent + '80');
+        grad.addColorStop(1, theme.accent);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = theme.segmentColors[colorIdx];
+      }
+      ctx.fill();
+
+      // Thin separator
+      ctx.beginPath();
+      ctx.moveTo(center, center);
+      ctx.lineTo(
+        center + Math.cos(startA) * radius,
+        center + Math.sin(startA) * radius
+      );
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Text label
+      ctx.save();
+      ctx.translate(center, center);
+      ctx.rotate(startA + segAngle / 2);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = isHl ? '#000' : '#fff';
+      const fontSize = Math.max(9, Math.min(13, 140 / selectedEditors.length));
+      ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
+      
+      const name = `@${editor.username}`;
+      const maxLen = selectedEditors.length > 8 ? 7 : 11;
+      const display = name.length > maxLen ? name.slice(0, maxLen) + '…' : name;
+      ctx.fillText(display, radius - 14, fontSize * 0.35);
+      ctx.restore();
+    });
+
+    // Center hub
+    const hubR = 24;
+    const hubGrad = ctx.createRadialGradient(center, center, 0, center, center, hubR);
+    hubGrad.addColorStop(0, '#1a1a1a');
+    hubGrad.addColorStop(1, '#000');
+    ctx.beginPath();
+    ctx.arc(center, center, hubR, 0, Math.PI * 2);
+    ctx.fillStyle = hubGrad;
+    ctx.fill();
+    ctx.strokeStyle = theme.accent;
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Hub text
+    ctx.fillStyle = theme.accent;
+    ctx.font = 'bold 9px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('LOOP', center, center - 1);
+    ctx.font = 'bold 7px system-ui';
+    ctx.fillText('GATE', center, center + 9);
+
+    // Pointer triangle (top center)
+    const ptrW = 10, ptrH = 18;
+    ctx.beginPath();
+    ctx.moveTo(center - ptrW, 0);
+    ctx.lineTo(center + ptrW, 0);
+    ctx.lineTo(center, ptrH);
+    ctx.closePath();
+    ctx.fillStyle = theme.accent;
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }, [selectedEditors, theme]);
+
+  // ── Spin logic ───────────────────────────────────────────────────
+  const spin = useCallback(() => {
+    if (spinning || selectedEditors.length < 2) return;
+
+    setSpinning(true);
+    setWinner(null);
+    lastTickSegment.current = -1;
+    audioRef.current?.whoosh();
+
+    const segAngle = (2 * Math.PI) / selectedEditors.length;
+    const totalRot = Math.PI * 2 * (10 + Math.random() * 8); // 10-18 rotations
+    const startRot = rotationRef.current;
+    const targetRot = startRot + totalRot;
+    const duration = 6000 + Math.random() * 2000; // 6-8s
+    const startTime = performance.now();
+
+    // Custom easing: fast start, very smooth deceleration
+    const ease = (t: number) => {
+      // Quintic ease-out for ultra-smooth stop
+      return 1 - Math.pow(1 - t, 5);
+    };
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = ease(progress);
+      const currentAngle = startRot + (targetRot - startRot) * eased;
+      const speed = 1 - progress; // Approximate speed 0-1
+
+      // Tick on segment boundary cross
+      const norm = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+      const seg = Math.floor(norm / segAngle) % selectedEditors.length;
+      if (seg !== lastTickSegment.current) {
+        lastTickSegment.current = seg;
+        audioRef.current?.tick(speed);
+      }
+
+      rotationRef.current = currentAngle;
+      drawWheel(currentAngle);
+
+      if (progress < 1) {
+        animRef.current = requestAnimationFrame(animate);
+      } else {
+        // Winner
+        const normA = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        const ptrA = ((Math.PI * 2) - normA) % (Math.PI * 2);
+        const winIdx = Math.floor(ptrA / segAngle) % selectedEditors.length;
+
+        setWinner(selectedEditors[winIdx]);
+        setSpinning(false);
+        drawWheel(currentAngle, winIdx);
+        audioRef.current?.victory();
+        setTimeout(() => setPhase('result'), 600);
+      }
+    };
+
+    animRef.current = requestAnimationFrame(animate);
+  }, [spinning, selectedEditors, drawWheel]);
+
+  // ── Init canvas on wheel phase ───────────────────────────────────
+  useEffect(() => {
+    if (phase === 'wheel' && canvasRef.current) {
+      // Small delay to let layout settle
+      requestAnimationFrame(() => drawWheel(rotationRef.current));
+    }
+  }, [phase, drawWheel]);
+
+  useEffect(() => {
+    return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
+  }, []);
+
+  // ── Actions ──────────────────────────────────────────────────────
   const toggleEditor = (editor: FlywheelEditor) => {
     setSelectedEditors(prev => {
       const exists = prev.find(e => e.id === editor.id);
@@ -152,188 +385,17 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     });
   };
 
-  const selectAll = () => {
-    setSelectedEditors(editors.slice(0, 12));
-  };
-
-  // Draw wheel on canvas
-  const drawWheel = useCallback((angle: number, highlightIndex?: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas || selectedEditors.length === 0) return;
-    
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const size = canvas.width;
-    const center = size / 2;
-    const radius = center - 8;
-    const segAngle = (2 * Math.PI) / selectedEditors.length;
-
-    ctx.clearRect(0, 0, size, size);
-
-    // Draw segments
-    selectedEditors.forEach((editor, i) => {
-      const startAngle = angle + i * segAngle;
-      const endAngle = startAngle + segAngle;
-      const colorIdx = i % theme.segmentColors.length;
-      const isHighlighted = highlightIndex === i;
-
-      ctx.beginPath();
-      ctx.moveTo(center, center);
-      ctx.arc(center, center, radius, startAngle, endAngle);
-      ctx.closePath();
-      ctx.fillStyle = isHighlighted ? theme.accent : theme.segmentColors[colorIdx];
-      ctx.fill();
-
-      // Segment border
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Text
-      ctx.save();
-      ctx.translate(center, center);
-      ctx.rotate(startAngle + segAngle / 2);
-      ctx.textAlign = 'right';
-      ctx.fillStyle = theme.textColor;
-      ctx.font = `bold ${Math.max(10, Math.min(14, 160 / selectedEditors.length))}px system-ui`;
-      
-      const name = `@${editor.username}`;
-      const maxLen = selectedEditors.length > 8 ? 8 : 12;
-      const display = name.length > maxLen ? name.slice(0, maxLen) + '…' : name;
-      ctx.fillText(display, radius - 16, 4);
-      ctx.restore();
-    });
-
-    // Center circle
-    ctx.beginPath();
-    ctx.arc(center, center, 28, 0, 2 * Math.PI);
-    ctx.fillStyle = '#000';
-    ctx.fill();
-    ctx.strokeStyle = theme.accent;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Center text
-    ctx.fillStyle = theme.accent;
-    ctx.font = 'bold 11px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText('LOOP', center, center - 2);
-    ctx.font = 'bold 9px system-ui';
-    ctx.fillText('GATE', center, center + 10);
-
-    // Pointer (top)
-    ctx.beginPath();
-    ctx.moveTo(center - 12, 2);
-    ctx.lineTo(center + 12, 2);
-    ctx.lineTo(center, 22);
-    ctx.closePath();
-    ctx.fillStyle = theme.accent;
-    ctx.fill();
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }, [selectedEditors, theme]);
-
-  // Spin with physics + sound effects
-  const spin = useCallback(() => {
-    if (spinning || selectedEditors.length < 2) return;
-    
-    setSpinning(true);
-    setWinner(null);
-    lastTickSegment.current = -1;
-
-    // Whoosh on start
-    playWhoosh();
-
-    const segAngle = (2 * Math.PI) / selectedEditors.length;
-    const totalRotation = (Math.PI * 2 * (8 + Math.random() * 6)); // 8-14 full rotations
-    const targetAngle = rotation + totalRotation;
-    const duration = 5000 + Math.random() * 2000; // 5-7 seconds
-    const startTime = performance.now();
-    const startRotation = rotation;
-
-    const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
-
-    const animate = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOutQuart(progress);
-      const currentAngle = startRotation + (targetAngle - startRotation) * eased;
-
-      // Tick sound when crossing segment boundaries
-      const normalizedCurrent = ((currentAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-      const currentSegment = Math.floor(normalizedCurrent / segAngle) % selectedEditors.length;
-      if (currentSegment !== lastTickSegment.current) {
-        lastTickSegment.current = currentSegment;
-        playTick();
-      }
-
-      setRotation(currentAngle);
-      drawWheel(currentAngle);
-
-      if (progress < 1) {
-        animRef.current = requestAnimationFrame(animate);
-      } else {
-        // Determine winner
-        const normalizedAngle = ((currentAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-        const pointerAngle = ((2 * Math.PI) - normalizedAngle) % (2 * Math.PI);
-        const winnerIndex = Math.floor(pointerAngle / segAngle) % selectedEditors.length;
-        
-        setWinner(selectedEditors[winnerIndex]);
-        setSpinning(false);
-        
-        // Flash the winning segment
-        drawWheel(currentAngle, winnerIndex);
-        
-        // Tada! 🎉
-        playTada();
-        
-        setTimeout(() => setPhase('result'), 800);
-      }
-    };
-
-    animRef.current = requestAnimationFrame(animate);
-  }, [spinning, selectedEditors, rotation, drawWheel, playTick, playTada, playWhoosh]);
-
-  // Draw initial wheel when entering wheel phase
-  useEffect(() => {
-    if (phase === 'wheel' && canvasRef.current) {
-      const dpr = window.devicePixelRatio || 1;
-      const canvas = canvasRef.current;
-      const displaySize = Math.min(340, window.innerWidth - 80);
-      canvas.width = displaySize * dpr;
-      canvas.height = displaySize * dpr;
-      canvas.style.width = `${displaySize}px`;
-      canvas.style.height = `${displaySize}px`;
-      const ctx = canvas.getContext('2d');
-      if (ctx) ctx.scale(dpr, dpr);
-      // Reset internal dimensions for drawing
-      canvas.width = displaySize;
-      canvas.height = displaySize;
-      drawWheel(rotation);
-    }
-  }, [phase, drawWheel, rotation]);
-
-  // Cleanup animation
-  useEffect(() => {
-    return () => {
-      if (animRef.current) cancelAnimationFrame(animRef.current);
-    };
-  }, []);
+  const selectAll = () => setSelectedEditors(editors.slice(0, 12));
 
   const reset = () => {
     setWinner(null);
     setPhase('wheel');
-    setRotation(0);
-    setTimeout(() => drawWheel(0), 50);
+    rotationRef.current = 0;
+    requestAnimationFrame(() => drawWheel(0));
   };
 
   const handleRate = () => {
-    if (winner) {
-      onSelect(winner);
-      onClose();
-    }
+    if (winner) { onSelect(winner); onClose(); }
   };
 
   const toggleFullscreen = () => {
@@ -365,8 +427,8 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 relative z-10">
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-            <X className="w-4 h-4 text-white" />
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+            <LoopedX className="w-4 h-4 text-white" />
           </button>
           
           <div className="flex items-center gap-1.5">
@@ -374,29 +436,29 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
             <span className="font-display text-sm font-bold text-white tracking-wider">FLYWHEEL</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button onClick={toggleFullscreen} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-              {fullscreen ? <Minimize2 className="w-3.5 h-3.5 text-white" /> : <Maximize2 className="w-3.5 h-3.5 text-white" />}
-            </button>
-          </div>
+          <button onClick={toggleFullscreen} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+            {fullscreen ? <Minimize2 className="w-3.5 h-3.5 text-white" /> : <Maximize2 className="w-3.5 h-3.5 text-white" />}
+          </button>
         </div>
 
         {/* Theme selector */}
         <div className="flex items-center justify-center gap-2 px-4 pb-3">
-          <Palette className="w-3 h-3 text-muted-foreground" />
           {THEMES.map((t, i) => (
             <button
               key={t.id}
-              onClick={() => { setThemeIndex(i); if (phase === 'wheel') setTimeout(() => drawWheel(rotation), 50); }}
-              className={`w-6 h-6 rounded-full border-2 transition-transform ${
-                i === themeIndex ? 'scale-110 border-white' : 'border-white/20 hover:border-white/40'
+              onClick={() => {
+                setThemeIndex(i);
+                if (phase === 'wheel') requestAnimationFrame(() => drawWheel(rotationRef.current));
+              }}
+              className={`w-6 h-6 rounded-full border-2 transition-all ${
+                i === themeIndex ? 'scale-110 border-white ring-2 ring-white/20' : 'border-white/20 hover:border-white/40'
               }`}
               style={{ background: t.accent }}
             />
           ))}
         </div>
 
-        {/* Phase: Pick editors */}
+        {/* ── PICK PHASE ──────────────────────────────────────────── */}
         {phase === 'pick' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -410,7 +472,7 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
 
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs text-white/40">{selectedEditors.length}/12 selected</span>
-              <button onClick={selectAll} className="text-xs font-medium px-2 py-1 rounded-md bg-white/10 text-white/70 hover:text-white">
+              <button onClick={selectAll} className="text-xs font-medium px-2 py-1 rounded-md bg-white/10 text-white/70 hover:text-white transition-colors">
                 Select All
               </button>
             </div>
@@ -429,9 +491,7 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
                       key={editor.id}
                       onClick={() => toggleEditor(editor)}
                       className={`flex items-center gap-2 p-2.5 rounded-xl border-2 transition-all ${
-                        selected 
-                          ? 'border-current bg-white/10' 
-                          : 'border-white/10 bg-white/5 hover:bg-white/8'
+                        selected ? 'bg-white/10' : 'border-white/10 bg-white/5 hover:bg-white/8'
                       }`}
                       style={selected ? { borderColor: theme.accent } : undefined}
                     >
@@ -448,9 +508,10 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
                           <p className="text-[9px] text-white/40 uppercase">{editor.platform}</p>
                         )}
                       </div>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                        selected ? 'border-current bg-current' : 'border-white/20'
-                      }`}
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                          selected ? '' : 'border-white/20'
+                        }`}
                         style={selected ? { borderColor: theme.accent, backgroundColor: theme.accent } : undefined}
                       >
                         {selected && <span className="text-black text-[10px] font-bold">✓</span>}
@@ -461,7 +522,6 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               </div>
             )}
 
-            {/* Continue button */}
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent">
               <Button
                 onClick={() => setPhase('wheel')}
@@ -476,24 +536,27 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
           </motion.div>
         )}
 
-        {/* Phase: Wheel */}
+        {/* ── WHEEL PHASE ─────────────────────────────────────────── */}
         {phase === 'wheel' && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
             className="flex-1 flex flex-col items-center justify-center gap-6 px-4"
           >
-            {/* Wheel */}
-            <div className={`relative rounded-full ${theme.glow}`}>
-              <canvas ref={canvasRef} className="rounded-full" />
-              
-              {/* Outer glow ring */}
-              <div 
-                className="absolute inset-0 rounded-full pointer-events-none"
-                style={{ 
-                  boxShadow: `inset 0 0 30px ${theme.accent}15, 0 0 60px ${theme.accent}20`,
-                  border: `2px solid ${theme.accent}30`
-                }}
+            {/* Wheel container */}
+            <div className="relative" style={{ filter: `drop-shadow(${theme.glow})` }}>
+              <canvas
+                ref={canvasRef}
+                className="rounded-full"
+                style={{ width: Math.min(320, window.innerWidth - 64), height: Math.min(320, window.innerWidth - 64) }}
+              />
+              {/* Animated outer ring */}
+              <motion.div
+                animate={spinning ? { rotate: 360 } : {}}
+                transition={spinning ? { duration: 3, repeat: Infinity, ease: 'linear' } : {}}
+                className="absolute inset-[-4px] rounded-full pointer-events-none"
+                style={{ border: `1.5px solid ${theme.accent}25` }}
               />
             </div>
 
@@ -512,16 +575,17 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               <Button
                 onClick={spin}
                 disabled={spinning}
-                className="px-8 py-3 rounded-xl font-display text-sm font-bold tracking-widest text-black relative overflow-hidden"
+                className="px-8 py-3 rounded-xl font-display text-sm font-bold tracking-widest text-black relative overflow-hidden disabled:opacity-60"
                 style={{ backgroundColor: theme.accent }}
               >
                 {spinning ? (
                   <>
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                      className="mr-2"
                     >
-                      <RotateCcw className="w-4 h-4 mr-2" />
+                      <RotateCcw className="w-4 h-4" />
                     </motion.div>
                     SPINNING...
                   </>
@@ -546,46 +610,41 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
             </div>
 
             <p className="text-[10px] text-white/30 text-center">
-              {selectedEditors.length} editors loaded · Tap SPIN to roll
+              {selectedEditors.length} editors · Tap SPIN to roll
             </p>
           </motion.div>
         )}
 
-        {/* Phase: Result */}
+        {/* ── RESULT PHASE ────────────────────────────────────────── */}
         {phase === 'result' && winner && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', damping: 15 }}
+            transition={{ type: 'spring', damping: 18, stiffness: 200 }}
             className="flex-1 flex flex-col items-center justify-center gap-6 px-4"
           >
-            {/* Winner reveal */}
-            <motion.div 
+            <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', damping: 12, delay: 0.2 }}
+              transition={{ type: 'spring', damping: 14, delay: 0.15 }}
               className="relative"
             >
-              {/* Glow rings */}
+              {/* Pulsing glow */}
               <motion.div
-                animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="absolute inset-0 rounded-full"
-                style={{ 
-                  boxShadow: `0 0 80px ${theme.accent}60, 0 0 120px ${theme.accent}30`,
-                  margin: '-20px'
-                }}
+                animate={{ scale: [1, 1.12, 1], opacity: [0.25, 0.5, 0.25] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute inset-[-24px] rounded-full"
+                style={{ boxShadow: `0 0 80px ${theme.accent}50, 0 0 140px ${theme.accent}20` }}
               />
               
               {winner.avatar_url ? (
                 <img 
-                  src={winner.avatar_url} 
-                  alt="" 
+                  src={winner.avatar_url} alt=""
                   className="w-28 h-28 rounded-full object-cover border-4"
                   style={{ borderColor: theme.accent }}
                 />
               ) : (
-                <div 
+                <div
                   className="w-28 h-28 rounded-full flex items-center justify-center border-4"
                   style={{ borderColor: theme.accent, backgroundColor: `${theme.accent}20` }}
                 >
@@ -594,9 +653,9 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               )}
               
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.5 }}
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay: 0.4, type: 'spring', damping: 12 }}
                 className="absolute -top-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center"
                 style={{ backgroundColor: theme.accent }}
               >
@@ -605,9 +664,9 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
+              transition={{ delay: 0.35 }}
               className="text-center"
             >
               <p className="text-white/50 text-xs uppercase tracking-widest mb-1">The Flywheel Chose</p>
@@ -615,16 +674,12 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="flex gap-3 mt-4"
+              transition={{ delay: 0.55 }}
+              className="flex gap-3 mt-2"
             >
-              <Button
-                onClick={reset}
-                variant="outline"
-                className="border-white/20 text-white/70 hover:bg-white/10"
-              >
+              <Button onClick={reset} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10">
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Spin Again
               </Button>
