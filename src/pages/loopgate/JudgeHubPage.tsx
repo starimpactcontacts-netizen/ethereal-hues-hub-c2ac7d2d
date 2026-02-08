@@ -2,19 +2,17 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Trophy, Flame, Star, Users, 
+  Search, Users, 
   ChevronRight, Sparkles, Target,
-  ArrowLeft, Send, ExternalLink, Gavel
+  ArrowLeft, Send, ExternalLink, Gavel, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Input } from '@/components/ui/input';
-import LevelBadge from '@/components/loopgate/LevelBadge';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
 import BottomNav from '@/components/loopgate/BottomNav';
 import RequestJudgeReviewModal from '@/components/loopgate/RequestJudgeReviewModal';
-import JudgeBadge, { JUDGE_BADGES } from '@/components/loopgate/JudgeBadge';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeLeaderboardCard from '@/components/loopgate/JudgeLeaderboardCard';
 import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
@@ -34,9 +32,9 @@ interface JudgeProfile {
   totalReviews: number;
   avgScore: number;
   thisWeek: number;
+  roleType: 'judge' | 'trial_judge';
 }
 
-// Judge level calculation
 function calculateJudgeLevel(xp: number): number {
   if (xp >= 5000) return 10;
   if (xp >= 3500) return 9;
@@ -51,57 +49,90 @@ function calculateJudgeLevel(xp: number): number {
 }
 
 function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge: JudgeProfile) => void }) {
+  const navigate = useNavigate();
+  const isTrial = judge.roleType === 'trial_judge';
+
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => onSelect(judge)}
-      className="w-full bg-card border border-border hover:border-gold/40 rounded-xl p-3 text-left transition-all group"
+      className={`w-full bg-card border rounded-xl p-3 transition-all ${
+        isTrial ? 'border-border' : 'border-gold/30'
+      }`}
     >
-      <div className="flex items-center gap-3">
-        {/* Avatar */}
+      {/* Top row: avatar + name + badge */}
+      <div className="flex items-center gap-3 mb-2">
         <div className="relative shrink-0">
           {judge.avatar_url ? (
             <img 
               src={judge.avatar_url} 
               alt={judge.username}
-              className="w-11 h-11 rounded-full object-cover border border-gold/30 group-hover:border-gold/60 transition-colors"
+              className={`w-11 h-11 rounded-full object-cover border ${isTrial ? 'border-border' : 'border-gold/30'}`}
             />
           ) : (
-            <div className="w-11 h-11 rounded-full bg-gold/20 flex items-center justify-center border border-gold/30">
-              <Gavel size={16} className="text-gold" />
+            <div className={`w-11 h-11 rounded-full flex items-center justify-center border text-sm font-bold ${
+              isTrial ? 'bg-muted border-border text-muted-foreground' : 'bg-gold/20 border-gold/30 text-gold'
+            }`}>
+              {isTrial ? judge.username[0]?.toUpperCase() : <Gavel size={16} />}
             </div>
           )}
         </div>
 
-        {/* Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="font-medium text-sm truncate">
+          <div className="flex items-center gap-1.5">
+            <span className="font-display text-sm truncate max-w-[120px]">
               {judge.display_name || judge.username}
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
-            <JudgeLevelBadge level={judge.judge_level} size="xs" showIcon={false} />
+            {isTrial ? (
+              <span className="text-[8px] px-1.5 py-0.5 bg-muted border border-border rounded font-semibold text-muted-foreground uppercase tracking-wider">Trial</span>
+            ) : (
+              <span className="text-[8px] px-1.5 py-0.5 bg-muted border border-border rounded font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-0.5">
+                <Gavel size={8} /> Judge
+              </span>
+            )}
           </div>
           <p className="text-[11px] text-muted-foreground">@{judge.username}</p>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-3 text-[11px] shrink-0">
-          <div className="text-center">
-            <div className="font-bold text-gold">{judge.judge_xp}</div>
-            <div className="text-muted-foreground text-[9px] uppercase">JXP</div>
-          </div>
-          <div className="text-center">
-            <div className="font-bold">{judge.totalReviews}</div>
-            <div className="text-muted-foreground text-[9px] uppercase">Reviews</div>
-          </div>
-        </div>
-
-        <ChevronRight size={16} className="text-muted-foreground group-hover:text-gold transition-colors shrink-0" />
+        <button
+          onClick={() => onSelect(judge)}
+          className="shrink-0 p-1.5 hover:bg-surface-1 rounded-lg transition-colors"
+        >
+          <ChevronRight size={18} className="text-muted-foreground" />
+        </button>
       </div>
-    </motion.button>
+
+      {/* Bottom row: stats + action */}
+      <div className="flex items-center gap-2">
+        {!isTrial && (
+          <>
+            <div className="text-center px-2">
+              <div className="font-bold text-xs text-gold">{judge.totalReviews}</div>
+              <div className="text-muted-foreground text-[8px] uppercase">Reviews</div>
+            </div>
+            <JudgeLevelBadge level={judge.judge_level} size="xs" showIcon={false} />
+          </>
+        )}
+        {isTrial && (
+          <span className="text-[10px] text-muted-foreground">TRIAL JUDGE</span>
+        )}
+
+        <div className="flex-1" />
+
+        {!isTrial && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/judge/${judge.username}`);
+            }}
+            className="px-3 py-1.5 bg-gold text-black rounded-lg text-[11px] font-bold hover:bg-gold/90 transition-colors"
+          >
+            GET RATED
+          </button>
+        )}
+      </div>
+    </motion.div>
   );
 }
 
@@ -131,7 +162,6 @@ function JudgePreviewModal({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden pb-6"
       >
-        {/* Header with avatar */}
         <div className="relative h-20 bg-gradient-to-b from-gold/20 to-transparent">
           <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
             {judge.avatar_url ? (
@@ -148,7 +178,6 @@ function JudgePreviewModal({
           </div>
         </div>
 
-        {/* Content */}
         <div className="pt-10 px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
             <h3 className="font-display text-lg">{judge.display_name || judge.username}</h3>
@@ -156,18 +185,15 @@ function JudgePreviewModal({
           </div>
           <p className="text-sm text-muted-foreground mb-2">@{judge.username}</p>
           
-          {/* Level + JXP */}
           <div className="flex items-center justify-center gap-2 mb-4">
             <JudgeLevelBadge level={judge.judge_level} size="sm" />
             <span className="text-xs text-muted-foreground">{judge.judge_xp} JXP</span>
           </div>
 
-          {/* Bio */}
           {judge.bio && (
             <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{judge.bio}</p>
           )}
 
-          {/* Stats grid */}
           <div className="grid grid-cols-3 gap-2 mb-5">
             <div className="bg-surface-1 border border-border rounded-lg p-2.5">
               <div className="text-xl font-display text-gold">{judge.totalReviews}</div>
@@ -183,7 +209,6 @@ function JudgePreviewModal({
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2">
             <button
               onClick={() => navigate(`/judge/${judge.username}`)}
@@ -206,9 +231,49 @@ function JudgePreviewModal({
   );
 }
 
+function TrialJudgeBanner() {
+  const [dismissed, setDismissed] = useState(false);
+  
+  if (dismissed) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mx-4 mb-3 bg-gradient-to-r from-amber-500/10 via-gold/10 to-amber-500/10 border border-gold/40 rounded-xl p-4"
+    >
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center shrink-0 mt-0.5">
+          <AlertTriangle size={18} className="text-gold" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display text-sm mb-1">⚡ Complete Your Judge Trial</h3>
+          <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+            You're a Trial Judge — finish your trial reviews to unlock full Judge status, get listed with a "GET RATED" button, and start earning JXP.
+          </p>
+          <div className="flex gap-2">
+            <Link
+              to="/judges/apply"
+              className="px-4 py-2 bg-gold text-black rounded-lg text-xs font-bold hover:bg-gold/90 transition-colors"
+            >
+              Complete Trial →
+            </Link>
+            <button
+              onClick={() => setDismissed(true)}
+              className="px-3 py-2 bg-surface-1 border border-border rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Later
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function JudgeHubPage() {
   const { user, profile } = useAuth();
-  const { isJudge, isDev } = useUserRoles(user?.id);
+  const { isJudge, isTrialJudge, isDev } = useUserRoles(user?.id);
   const navigate = useNavigate();
   
   const [judges, setJudges] = useState<JudgeProfile[]>([]);
@@ -226,20 +291,29 @@ export default function JudgeHubPage() {
   async function fetchJudges() {
     setLoading(true);
     try {
-      // Get all users with judge role
+      // Get all users with judge OR trial_judge role
       const { data: judgeRoles } = await supabase
         .from('user_roles')
-        .select('user_id')
-        .eq('role', 'judge');
+        .select('user_id, role')
+        .in('role', ['judge', 'trial_judge']);
 
       if (!judgeRoles?.length) {
         setLoading(false);
         return;
       }
 
-      const judgeIds = judgeRoles.map(r => r.user_id);
+      // Build role map
+      const roleMap = new Map<string, 'judge' | 'trial_judge'>();
+      judgeRoles.forEach(r => {
+        // If user has both judge and trial_judge, prioritize judge
+        const existing = roleMap.get(r.user_id);
+        if (!existing || r.role === 'judge') {
+          roleMap.set(r.user_id, r.role as 'judge' | 'trial_judge');
+        }
+      });
 
-      // Get judge profiles
+      const judgeIds = Array.from(roleMap.keys());
+
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, username, display_name, avatar_url, bio, level, xp, verification_status, judge_badge, judge_xp, judge_review_count')
@@ -250,7 +324,6 @@ export default function JudgeHubPage() {
         return;
       }
 
-      // Get review stats for each judge
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
@@ -260,30 +333,33 @@ export default function JudgeHubPage() {
         .eq('status', 'reviewed')
         .in('judge_id', judgeIds);
 
-      // Build judge profiles with stats
-      const judgesWithStats: JudgeProfile[] = profiles.map(profile => {
-        const judgeReviews = (reviews || []).filter(r => r.judge_id === profile.id);
+      const judgesWithStats: JudgeProfile[] = profiles.map(p => {
+        const judgeReviews = (reviews || []).filter(r => r.judge_id === p.id);
         const weeklyReviews = judgeReviews.filter(r => 
           r.reviewed_at && new Date(r.reviewed_at) >= oneWeekAgo
         );
         const avgScore = judgeReviews.length > 0
           ? judgeReviews.reduce((acc, r) => acc + (r.total_score || 0), 0) / judgeReviews.length
           : 0;
-
-        const judgeXp = (profile as any).judge_xp || 0;
+        const judgeXp = (p as any).judge_xp || 0;
 
         return {
-          ...profile,
+          ...p,
           judge_xp: judgeXp,
           judge_level: calculateJudgeLevel(judgeXp),
           totalReviews: judgeReviews.length,
           avgScore,
           thisWeek: weeklyReviews.length,
+          roleType: roleMap.get(p.id) || 'trial_judge',
         };
       });
 
-      // Sort by JXP by default
-      judgesWithStats.sort((a, b) => b.judge_xp - a.judge_xp);
+      // Sort: full judges first (by JXP), then trial judges
+      judgesWithStats.sort((a, b) => {
+        if (a.roleType !== b.roleType) return a.roleType === 'judge' ? -1 : 1;
+        return b.judge_xp - a.judge_xp;
+      });
+
       setJudges(judgesWithStats);
     } catch (error) {
       console.error('Error fetching judges:', error);
@@ -292,7 +368,6 @@ export default function JudgeHubPage() {
     }
   }
 
-  // Filter judges
   const filteredJudges = judges.filter(j => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -347,6 +422,9 @@ export default function JudgeHubPage() {
         </div>
       </div>
 
+      {/* Trial Judge Banner */}
+      {isTrialJudge && <div className="pt-4"><TrialJudgeBanner /></div>}
+
       {/* Request Review CTA */}
       <div className="p-4">
         <motion.button
@@ -370,7 +448,7 @@ export default function JudgeHubPage() {
       </div>
 
       {/* Become a Judge CTA */}
-      {!isJudge && (
+      {!isJudge && !isTrialJudge && (
         <div className="px-4 py-4 border-t border-border">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
