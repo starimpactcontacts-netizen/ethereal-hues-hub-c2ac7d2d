@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, User, Mail, Lock, Loader2, Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,9 @@ type MagicSubMethod = 'choose' | 'one-tap' | 'code';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signInWithPassword, signInWithMagicLink, signInWithOtp } = useAuth();
+  const returnTo = searchParams.get('returnTo') || '/hub';
   
   const [method, setMethod] = useState<LoginMethod>('username');
   const [identifier, setIdentifier] = useState(''); // username or email
@@ -78,7 +80,7 @@ export default function LoginPage() {
     }
 
     toast.success('Welcome back!');
-    navigate('/hub');
+    navigate(returnTo);
   };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
@@ -103,7 +105,7 @@ export default function LoginPage() {
     }
 
     toast.success('Welcome back!');
-    navigate('/hub');
+    navigate(returnTo);
   };
 
   const handleMagicLinkRequest = async (e: React.FormEvent) => {
@@ -147,7 +149,7 @@ export default function LoginPage() {
     }
 
     toast.success('Welcome back!');
-    navigate('/hub');
+    navigate(returnTo);
   };
 
   const resetMethod = (newMethod: LoginMethod) => {
@@ -166,7 +168,7 @@ export default function LoginPage() {
       <div className="p-6 flex items-center justify-between">
         <img src={loopgateLogo} alt="Loopgate" className="h-6 opacity-80" />
         <button
-          onClick={() => navigate('/start')}
+          onClick={() => navigate(returnTo !== '/hub' ? `/start?returnTo=${encodeURIComponent(returnTo)}` : '/start')}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
         >
           <ArrowLeft className="h-4 w-4" />

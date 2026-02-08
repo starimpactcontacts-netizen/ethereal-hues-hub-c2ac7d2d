@@ -413,17 +413,24 @@ export default function JudgeProfilePage() {
                   <Button
                     onClick={handleSubmitRequest}
                     disabled={!submissionUrl.trim() || !platform || submitting}
-                    className="w-full bg-gold hover:bg-gold/90 text-black font-semibold"
+                    className="w-full bg-gold hover:bg-gold/90 text-black font-semibold h-12 text-base"
                   >
-                    {submitting ? 'Submitting...' : 'Submit for Review (+15 XP)'}
+                    {submitting ? 'Submitting...' : '🔥 Submit for Review (+15 XP)'}
                   </Button>
                 </div>
               ) : (
-                <Link to="/start">
-                  <Button className="w-full bg-gold hover:bg-gold/90 text-black font-semibold">
-                    Login to Submit
-                  </Button>
-                </Link>
+                <div className="space-y-2">
+                  <Link to={`/login?returnTo=/judge/${username}`}>
+                    <Button className="w-full bg-gold hover:bg-gold/90 text-black font-bold h-12 text-base">
+                      Login & Submit Your Edit
+                    </Button>
+                  </Link>
+                  <Link to={`/start?returnTo=/judge/${username}`}>
+                    <Button variant="outline" className="w-full border-gold/30 text-gold hover:bg-gold/10 h-10">
+                      New here? Create Free Account
+                    </Button>
+                  </Link>
+                </div>
               )}
             </motion.div>
           </div>

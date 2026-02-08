@@ -819,8 +819,19 @@ export default function IndexPage() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <LevelBadge level={judge.level || 1} size="sm" />
+                      {!judge.isTrial && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/judge/${judge.username}`);
+                          }}
+                          className="px-3 py-1.5 bg-gold text-black text-[10px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors whitespace-nowrap"
+                        >
+                          Get Rated
+                        </button>
+                      )}
                       <ChevronRight className={`w-5 h-5 ${judge.isTrial ? 'text-muted-foreground/40' : 'text-gold/60'}`} />
                     </div>
                   </motion.button>
@@ -830,7 +841,7 @@ export default function IndexPage() {
             
             <div className="pt-8 text-center">
               <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em]">
-                Request reviews from our elite judges
+                Tap a judge to submit your edit for review
               </p>
             </div>
           </motion.div>
