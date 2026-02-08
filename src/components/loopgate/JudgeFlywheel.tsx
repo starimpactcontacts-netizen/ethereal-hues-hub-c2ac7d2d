@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Sparkles, RotateCcw, Palette, 
+  Sparkles, RotateCcw, 
   Maximize2, Minimize2, Zap, Crown, Minus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,40 +21,15 @@ interface JudgeFlywheelProps {
   onSelect: (editor: FlywheelEditor) => void;
 }
 
-const THEMES = [
-  { 
-    id: 'obsidian', label: 'Obsidian', accent: '#D4AF37',
-    gradient: 'from-zinc-950 via-black to-zinc-950',
-    segmentColors: ['#D4AF37', '#111111', '#B8860B', '#0a0a0a', '#FFD700', '#1a1a1a'],
-    glow: '0 0 80px rgba(212,175,55,0.25)'
-  },
-  { 
-    id: 'neon', label: 'Neon', accent: '#00FFFF',
-    gradient: 'from-purple-950 via-black to-cyan-950',
-    segmentColors: ['#00FFFF', '#12002a', '#FF00FF', '#08001a', '#7B2FFF', '#100030'],
-    glow: '0 0 80px rgba(0,255,255,0.25)'
-  },
-  { 
-    id: 'inferno', label: 'Inferno', accent: '#FF4500',
-    gradient: 'from-red-950 via-black to-orange-950',
-    segmentColors: ['#FF4500', '#150400', '#FF6347', '#0a0200', '#FF8C00', '#1a0800'],
-    glow: '0 0 80px rgba(255,69,0,0.25)'
-  },
-  { 
-    id: 'arctic', label: 'Arctic', accent: '#60A5FA',
-    gradient: 'from-blue-950 via-slate-950 to-indigo-950',
-    segmentColors: ['#60A5FA', '#081428', '#3B82F6', '#040c18', '#93C5FD', '#0c1a38'],
-    glow: '0 0 80px rgba(96,165,250,0.25)'
-  },
-  { 
-    id: 'matrix', label: 'Matrix', accent: '#22C55E',
-    gradient: 'from-green-950 via-black to-emerald-950',
-    segmentColors: ['#22C55E', '#001508', '#16A34A', '#000a04', '#4ADE80', '#001e10'],
-    glow: '0 0 80px rgba(34,197,94,0.25)'
-  },
-];
+// Single luxe palette — black & gold, no goofy color mixing
+const ACCENT = '#D4AF37';
+const ACCENT_DIM = '#B8960B';
+const SEG_DARK = '#0c0c0c';
+const SEG_DARKER = '#060606';
+const SEG_GOLD = '#D4AF37';
+const SEG_GOLD_DIM = '#9E7C1A';
 
-// ── Web Audio synth sounds (zero latency, no network) ──────────────
+// ── Web Audio synth (zero latency) ─────────────────────────────────
 class FlywheelAudio {
   private ctx: AudioContext | null = null;
   private tickCount = 0;
@@ -70,7 +45,6 @@ class FlywheelAudio {
     const now = ctx.currentTime;
     this.tickCount++;
 
-    // Alternating pitch for a mechanical ratchet feel
     const baseFreq = this.tickCount % 2 === 0 ? 3200 : 2800;
     const gain = ctx.createGain();
     const osc = ctx.createOscillator();
@@ -82,7 +56,6 @@ class FlywheelAudio {
     filter.frequency.value = 4000;
     filter.Q.value = 2;
 
-    // Volume scales with speed (louder when fast)
     const vol = Math.min(0.12, 0.03 + speed * 0.1);
     gain.gain.setValueAtTime(vol, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
@@ -97,7 +70,6 @@ class FlywheelAudio {
     const now = ctx.currentTime;
     const dur = 0.6;
 
-    // White noise burst filtered into a whoosh
     const bufferSize = ctx.sampleRate * dur;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -105,13 +77,11 @@ class FlywheelAudio {
 
     const source = ctx.createBufferSource();
     source.buffer = buffer;
-
     const filter = ctx.createBiquadFilter();
     filter.type = 'bandpass';
     filter.frequency.setValueAtTime(800, now);
     filter.frequency.exponentialRampToValueAtTime(200, now + dur);
     filter.Q.value = 1;
-
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.15, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
@@ -124,31 +94,25 @@ class FlywheelAudio {
   victory() {
     const ctx = this.getCtx();
     const now = ctx.currentTime;
-
-    // Triumphant ascending chord
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6
+    const notes = [523.25, 659.25, 783.99, 1046.50];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.value = freq;
-
       const start = now + i * 0.08;
       gain.gain.setValueAtTime(0, start);
       gain.gain.linearRampToValueAtTime(0.12, start + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.001, start + 0.8);
-
       osc.connect(gain).connect(ctx.destination);
       osc.start(start);
       osc.stop(start + 0.8);
     });
-
-    // Shimmer overlay
     setTimeout(() => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.value = 1568; // G6
+      osc.frequency.value = 1568;
       gain.gain.setValueAtTime(0.06, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
       osc.connect(gain).connect(ctx.destination);
@@ -168,7 +132,6 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
   const [selectedEditors, setSelectedEditors] = useState<FlywheelEditor[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState<FlywheelEditor | null>(null);
-  const [themeIndex, setThemeIndex] = useState(0);
   const [phase, setPhase] = useState<'pick' | 'wheel' | 'result'>('pick');
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -178,14 +141,12 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
   const rotationRef = useRef(0);
   const lastTickSegment = useRef(-1);
   const audioRef = useRef<FlywheelAudio | null>(null);
+  const canvasSizeRef = useRef(0);
 
-  // Audio lifecycle
   useEffect(() => {
     audioRef.current = new FlywheelAudio();
     return () => { audioRef.current?.dispose(); };
   }, []);
-
-  const theme = THEMES[themeIndex];
 
   // ── Canvas drawing ───────────────────────────────────────────────
   const drawWheel = useCallback((angle: number, highlightIndex?: number) => {
@@ -197,80 +158,87 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
 
     const dpr = window.devicePixelRatio || 1;
     const displaySize = canvas.clientWidth;
-    
-    // Only resize buffer when display size changes
-    if (canvas.width !== displaySize * dpr || canvas.height !== displaySize * dpr) {
+
+    // Only resize buffer when display size actually changes
+    if (canvasSizeRef.current !== displaySize) {
+      canvasSizeRef.current = displaySize;
       canvas.width = displaySize * dpr;
       canvas.height = displaySize * dpr;
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     const center = displaySize / 2;
-    const radius = center - 6;
+    const radius = center - 8;
     const segAngle = (2 * Math.PI) / selectedEditors.length;
 
     ctx.clearRect(0, 0, displaySize, displaySize);
 
-    // Outer ring glow
+    // Outer ring
     ctx.beginPath();
     ctx.arc(center, center, radius + 3, 0, Math.PI * 2);
-    ctx.strokeStyle = theme.accent + '40';
+    ctx.strokeStyle = ACCENT + '50';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Segments
+    // Segments — alternating black/gold
     selectedEditors.forEach((editor, i) => {
       const startA = angle + i * segAngle;
       const endA = startA + segAngle;
-      const colorIdx = i % theme.segmentColors.length;
+      const isGold = i % 2 === 0;
       const isHl = highlightIndex === i;
 
-      // Segment fill
       ctx.beginPath();
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius, startA, endA);
       ctx.closePath();
 
       if (isHl) {
-        // Highlighted segment gets a radial gradient
         const grad = ctx.createRadialGradient(center, center, 0, center, center, radius);
-        grad.addColorStop(0, theme.accent + '80');
-        grad.addColorStop(1, theme.accent);
+        grad.addColorStop(0, '#FFE57F');
+        grad.addColorStop(0.5, ACCENT);
+        grad.addColorStop(1, ACCENT_DIM);
+        ctx.fillStyle = grad;
+      } else if (isGold) {
+        // Subtle radial gradient on gold segments
+        const midA = startA + segAngle / 2;
+        const gx = center + Math.cos(midA) * radius * 0.5;
+        const gy = center + Math.sin(midA) * radius * 0.5;
+        const grad = ctx.createRadialGradient(gx, gy, 0, center, center, radius);
+        grad.addColorStop(0, SEG_GOLD);
+        grad.addColorStop(1, SEG_GOLD_DIM);
         ctx.fillStyle = grad;
       } else {
-        ctx.fillStyle = theme.segmentColors[colorIdx];
+        ctx.fillStyle = i % 4 === 1 ? SEG_DARK : SEG_DARKER;
       }
       ctx.fill();
 
-      // Thin separator
+      // Separator line
       ctx.beginPath();
       ctx.moveTo(center, center);
-      ctx.lineTo(
-        center + Math.cos(startA) * radius,
-        center + Math.sin(startA) * radius
-      );
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineTo(center + Math.cos(startA) * radius, center + Math.sin(startA) * radius);
+      ctx.strokeStyle = 'rgba(212,175,55,0.12)';
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Text label
+      // Username text
       ctx.save();
       ctx.translate(center, center);
       ctx.rotate(startA + segAngle / 2);
       ctx.textAlign = 'right';
-      ctx.fillStyle = isHl ? '#000' : '#fff';
-      const fontSize = Math.max(9, Math.min(13, 140 / selectedEditors.length));
-      ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
-      
+      ctx.fillStyle = isHl ? '#000' : (isGold ? '#000' : '#fff');
+      const fontSize = Math.max(10, Math.min(14, 150 / selectedEditors.length));
+      ctx.font = `700 ${fontSize}px "Bebas Neue", system-ui, sans-serif`;
+      ctx.letterSpacing = '0.5px';
+
       const name = `@${editor.username}`;
-      const maxLen = selectedEditors.length > 8 ? 7 : 11;
+      const maxLen = selectedEditors.length > 8 ? 8 : 12;
       const display = name.length > maxLen ? name.slice(0, maxLen) + '…' : name;
-      ctx.fillText(display, radius - 14, fontSize * 0.35);
+      ctx.fillText(display, radius - 16, fontSize * 0.35);
       ctx.restore();
     });
 
     // Center hub
-    const hubR = 24;
+    const hubR = 26;
     const hubGrad = ctx.createRadialGradient(center, center, 0, center, center, hubR);
     hubGrad.addColorStop(0, '#1a1a1a');
     hubGrad.addColorStop(1, '#000');
@@ -278,33 +246,36 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     ctx.arc(center, center, hubR, 0, Math.PI * 2);
     ctx.fillStyle = hubGrad;
     ctx.fill();
-    ctx.strokeStyle = theme.accent;
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = ACCENT;
+    ctx.lineWidth = 2;
     ctx.stroke();
 
     // Hub text
-    ctx.fillStyle = theme.accent;
-    ctx.font = 'bold 9px system-ui';
+    ctx.fillStyle = ACCENT;
+    ctx.font = '700 10px "Bebas Neue", system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('LOOP', center, center - 1);
-    ctx.font = 'bold 7px system-ui';
-    ctx.fillText('GATE', center, center + 9);
+    ctx.fillText('LOOP', center, center);
+    ctx.font = '700 8px "Bebas Neue", system-ui';
+    ctx.fillText('GATE', center, center + 10);
 
-    // Pointer triangle (top center)
-    const ptrW = 10, ptrH = 18;
+    // Pointer (top)
+    const ptrW = 11, ptrH = 20;
     ctx.beginPath();
     ctx.moveTo(center - ptrW, 0);
     ctx.lineTo(center + ptrW, 0);
     ctx.lineTo(center, ptrH);
     ctx.closePath();
-    ctx.fillStyle = theme.accent;
+    const ptrGrad = ctx.createLinearGradient(center, 0, center, ptrH);
+    ptrGrad.addColorStop(0, '#FFE57F');
+    ptrGrad.addColorStop(1, ACCENT);
+    ctx.fillStyle = ptrGrad;
     ctx.fill();
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 1.5;
     ctx.stroke();
-  }, [selectedEditors, theme]);
+  }, [selectedEditors]);
 
-  // ── Spin logic ───────────────────────────────────────────────────
+  // ── Spin ─────────────────────────────────────────────────────────
   const spin = useCallback(() => {
     if (spinning || selectedEditors.length < 2) return;
 
@@ -314,26 +285,21 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     audioRef.current?.whoosh();
 
     const segAngle = (2 * Math.PI) / selectedEditors.length;
-    const totalRot = Math.PI * 2 * (10 + Math.random() * 8); // 10-18 rotations
+    const totalRot = Math.PI * 2 * (10 + Math.random() * 8);
     const startRot = rotationRef.current;
     const targetRot = startRot + totalRot;
-    const duration = 6000 + Math.random() * 2000; // 6-8s
+    const duration = 6000 + Math.random() * 2000;
     const startTime = performance.now();
 
-    // Custom easing: fast start, very smooth deceleration
-    const ease = (t: number) => {
-      // Quintic ease-out for ultra-smooth stop
-      return 1 - Math.pow(1 - t, 5);
-    };
+    const ease = (t: number) => 1 - Math.pow(1 - t, 5);
 
     const animate = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = ease(progress);
       const currentAngle = startRot + (targetRot - startRot) * eased;
-      const speed = 1 - progress; // Approximate speed 0-1
+      const speed = 1 - progress;
 
-      // Tick on segment boundary cross
       const norm = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
       const seg = Math.floor(norm / segAngle) % selectedEditors.length;
       if (seg !== lastTickSegment.current) {
@@ -347,7 +313,6 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       if (progress < 1) {
         animRef.current = requestAnimationFrame(animate);
       } else {
-        // Winner
         const normA = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
         const ptrA = ((Math.PI * 2) - normA) % (Math.PI * 2);
         const winIdx = Math.floor(ptrA / segAngle) % selectedEditors.length;
@@ -363,10 +328,10 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     animRef.current = requestAnimationFrame(animate);
   }, [spinning, selectedEditors, drawWheel]);
 
-  // ── Init canvas on wheel phase ───────────────────────────────────
+  // Init canvas
   useEffect(() => {
-    if (phase === 'wheel' && canvasRef.current) {
-      // Small delay to let layout settle
+    if (phase === 'wheel') {
+      canvasSizeRef.current = 0; // force re-init
       requestAnimationFrame(() => drawWheel(rotationRef.current));
     }
   }, [phase, drawWheel]);
@@ -391,6 +356,7 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     setWinner(null);
     setPhase('wheel');
     rotationRef.current = 0;
+    canvasSizeRef.current = 0;
     requestAnimationFrame(() => drawWheel(0));
   };
 
@@ -416,6 +382,8 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
 
   if (!isOpen) return null;
 
+  const wheelSize = Math.min(340, window.innerWidth - 48);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -423,64 +391,47 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className={`fixed inset-0 z-[100] bg-gradient-to-br ${theme.gradient} flex flex-col`}
+        className="fixed inset-0 z-[100] bg-black flex flex-col"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 relative z-10">
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-            <LoopedX className="w-4 h-4 text-white" />
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/8 flex items-center justify-center hover:bg-white/12 transition-colors">
+            <LoopedX className="w-4 h-4 text-white/70" />
           </button>
           
-          <div className="flex items-center gap-1.5">
-            <Zap className="w-4 h-4" style={{ color: theme.accent }} />
-            <span className="font-display text-sm font-bold text-white tracking-wider">FLYWHEEL</span>
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-gold" />
+            <span className="font-display text-sm font-bold text-white tracking-[0.2em]">FLYWHEEL</span>
           </div>
 
-          <button onClick={toggleFullscreen} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-            {fullscreen ? <Minimize2 className="w-3.5 h-3.5 text-white" /> : <Maximize2 className="w-3.5 h-3.5 text-white" />}
+          <button onClick={toggleFullscreen} className="w-9 h-9 rounded-full bg-white/8 flex items-center justify-center hover:bg-white/12 transition-colors">
+            {fullscreen ? <Minimize2 className="w-4 h-4 text-white/70" /> : <Maximize2 className="w-4 h-4 text-white/70" />}
           </button>
         </div>
 
-        {/* Theme selector */}
-        <div className="flex items-center justify-center gap-2 px-4 pb-3">
-          {THEMES.map((t, i) => (
-            <button
-              key={t.id}
-              onClick={() => {
-                setThemeIndex(i);
-                if (phase === 'wheel') requestAnimationFrame(() => drawWheel(rotationRef.current));
-              }}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${
-                i === themeIndex ? 'scale-110 border-white ring-2 ring-white/20' : 'border-white/20 hover:border-white/40'
-              }`}
-              style={{ background: t.accent }}
-            />
-          ))}
-        </div>
-
-        {/* ── PICK PHASE ──────────────────────────────────────────── */}
+        {/* ── PICK PHASE ──────────────────────────────────────── */}
         {phase === 'pick' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex-1 overflow-auto px-4 pb-24"
           >
-            <div className="text-center mb-4">
-              <h2 className="font-display text-xl font-bold text-white mb-1">Pick Your Lineup</h2>
-              <p className="text-xs text-white/50">Select 2-12 editors for the flywheel</p>
+            <div className="text-center mb-5">
+              <h2 className="font-display text-xl font-bold text-white mb-1 tracking-wide">Pick Your Lineup</h2>
+              <p className="text-xs text-white/40">Select 2-12 editors for the flywheel</p>
             </div>
 
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-white/40">{selectedEditors.length}/12 selected</span>
-              <button onClick={selectAll} className="text-xs font-medium px-2 py-1 rounded-md bg-white/10 text-white/70 hover:text-white transition-colors">
-                Select All
+              <span className="text-xs text-white/40 font-display tracking-wide">{selectedEditors.length}/12</span>
+              <button onClick={selectAll} className="text-xs font-display font-bold tracking-wider px-3 py-1.5 rounded-lg bg-white/8 text-white/60 hover:text-white hover:bg-white/12 transition-colors">
+                SELECT ALL
               </button>
             </div>
 
             {editors.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-white/50 text-sm">No editors in inbox</p>
-                <p className="text-white/30 text-xs mt-1">Review requests will appear here</p>
+              <div className="text-center py-16">
+                <p className="text-white/40 text-sm font-display">No editors in inbox</p>
+                <p className="text-white/25 text-xs mt-1">Review requests will appear here</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-2">
@@ -490,29 +441,29 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
                     <button
                       key={editor.id}
                       onClick={() => toggleEditor(editor)}
-                      className={`flex items-center gap-2 p-2.5 rounded-xl border-2 transition-all ${
-                        selected ? 'bg-white/10' : 'border-white/10 bg-white/5 hover:bg-white/8'
+                      className={`flex items-center gap-2.5 p-3 rounded-xl border transition-all ${
+                        selected 
+                          ? 'border-gold/50 bg-gold/8' 
+                          : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.06]'
                       }`}
-                      style={selected ? { borderColor: theme.accent } : undefined}
                     >
                       {editor.avatar_url ? (
-                        <img src={editor.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        <img src={editor.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">
                           <span className="text-xs font-bold text-white">{editor.username[0]?.toUpperCase()}</span>
                         </div>
                       )}
                       <div className="flex-1 min-w-0 text-left">
                         <p className="text-xs font-medium text-white truncate">@{editor.username}</p>
                         {editor.platform && (
-                          <p className="text-[9px] text-white/40 uppercase">{editor.platform}</p>
+                          <p className="text-[9px] text-white/30 uppercase tracking-wider">{editor.platform}</p>
                         )}
                       </div>
                       <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                          selected ? '' : 'border-white/20'
+                          selected ? 'border-gold bg-gold' : 'border-white/15'
                         }`}
-                        style={selected ? { borderColor: theme.accent, backgroundColor: theme.accent } : undefined}
                       >
                         {selected && <span className="text-black text-[10px] font-bold">✓</span>}
                       </div>
@@ -522,12 +473,11 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               </div>
             )}
 
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 to-transparent">
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/90 to-transparent">
               <Button
                 onClick={() => setPhase('wheel')}
                 disabled={selectedEditors.length < 2}
-                className="w-full py-3 rounded-xl font-display text-sm font-bold tracking-wider text-black disabled:opacity-40"
-                style={{ backgroundColor: theme.accent }}
+                className="w-full h-12 rounded-xl font-display text-sm font-bold tracking-[0.15em] text-black bg-gold hover:bg-gold/90 disabled:opacity-30"
               >
                 <Zap className="w-4 h-4 mr-2" />
                 LOAD FLYWHEEL ({selectedEditors.length})
@@ -536,27 +486,28 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
           </motion.div>
         )}
 
-        {/* ── WHEEL PHASE ─────────────────────────────────────────── */}
+        {/* ── WHEEL PHASE ─────────────────────────────────────── */}
         {phase === 'wheel' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
-            className="flex-1 flex flex-col items-center justify-center gap-6 px-4"
+            className="flex-1 flex flex-col items-center justify-center gap-8 px-4"
           >
-            {/* Wheel container */}
-            <div className="relative" style={{ filter: `drop-shadow(${theme.glow})` }}>
+            {/* Wheel */}
+            <div 
+              className="relative"
+              style={{ filter: 'drop-shadow(0 0 60px rgba(212,175,55,0.15))' }}
+            >
               <canvas
                 ref={canvasRef}
                 className="rounded-full"
-                style={{ width: Math.min(320, window.innerWidth - 64), height: Math.min(320, window.innerWidth - 64) }}
+                style={{ width: wheelSize, height: wheelSize }}
               />
-              {/* Animated outer ring */}
-              <motion.div
-                animate={spinning ? { rotate: 360 } : {}}
-                transition={spinning ? { duration: 3, repeat: Infinity, ease: 'linear' } : {}}
-                className="absolute inset-[-4px] rounded-full pointer-events-none"
-                style={{ border: `1.5px solid ${theme.accent}25` }}
+              {/* Subtle outer glow ring */}
+              <div
+                className="absolute inset-[-5px] rounded-full pointer-events-none"
+                style={{ border: '1px solid rgba(212,175,55,0.15)' }}
               />
             </div>
 
@@ -564,22 +515,21 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => setPhase('pick')}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="border-white/20 text-white/70 hover:bg-white/10 text-xs"
+                className="text-white/50 hover:text-white hover:bg-white/8 text-xs font-display tracking-wider border border-white/10"
               >
-                <Minus className="w-3 h-3 mr-1" />
+                <Minus className="w-3 h-3 mr-1.5" />
                 Edit
               </Button>
               
               <Button
                 onClick={spin}
                 disabled={spinning}
-                className="px-8 py-3 rounded-xl font-display text-sm font-bold tracking-widest text-black relative overflow-hidden disabled:opacity-60"
-                style={{ backgroundColor: theme.accent }}
+                className="px-10 h-12 rounded-xl font-display text-sm font-bold tracking-[0.2em] text-black bg-gold hover:bg-gold/90 disabled:opacity-50 relative overflow-hidden"
               >
                 {spinning ? (
-                  <>
+                  <span className="flex items-center">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
@@ -588,34 +538,34 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
                       <RotateCcw className="w-4 h-4" />
                     </motion.div>
                     SPINNING...
-                  </>
+                  </span>
                 ) : (
-                  <>
+                  <span className="flex items-center">
                     <Sparkles className="w-4 h-4 mr-2" />
                     SPIN
-                  </>
+                  </span>
                 )}
               </Button>
 
               <Button
                 onClick={reset}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="border-white/20 text-white/70 hover:bg-white/10 text-xs"
+                className="text-white/50 hover:text-white hover:bg-white/8 text-xs font-display tracking-wider border border-white/10"
                 disabled={spinning}
               >
-                <RotateCcw className="w-3 h-3 mr-1" />
+                <RotateCcw className="w-3 h-3 mr-1.5" />
                 Reset
               </Button>
             </div>
 
-            <p className="text-[10px] text-white/30 text-center">
+            <p className="text-[10px] text-white/25 text-center font-display tracking-wider">
               {selectedEditors.length} editors · Tap SPIN to roll
             </p>
           </motion.div>
         )}
 
-        {/* ── RESULT PHASE ────────────────────────────────────────── */}
+        {/* ── RESULT PHASE ────────────────────────────────────── */}
         {phase === 'result' && winner && (
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
@@ -629,25 +579,20 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               transition={{ type: 'spring', damping: 14, delay: 0.15 }}
               className="relative"
             >
-              {/* Pulsing glow */}
               <motion.div
-                animate={{ scale: [1, 1.12, 1], opacity: [0.25, 0.5, 0.25] }}
+                animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.4, 0.2] }}
                 transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute inset-[-24px] rounded-full"
-                style={{ boxShadow: `0 0 80px ${theme.accent}50, 0 0 140px ${theme.accent}20` }}
+                className="absolute inset-[-28px] rounded-full"
+                style={{ boxShadow: '0 0 80px rgba(212,175,55,0.35), 0 0 140px rgba(212,175,55,0.12)' }}
               />
               
               {winner.avatar_url ? (
                 <img 
                   src={winner.avatar_url} alt=""
-                  className="w-28 h-28 rounded-full object-cover border-4"
-                  style={{ borderColor: theme.accent }}
+                  className="w-28 h-28 rounded-full object-cover border-[3px] border-gold"
                 />
               ) : (
-                <div
-                  className="w-28 h-28 rounded-full flex items-center justify-center border-4"
-                  style={{ borderColor: theme.accent, backgroundColor: `${theme.accent}20` }}
-                >
+                <div className="w-28 h-28 rounded-full flex items-center justify-center border-[3px] border-gold bg-gold/10">
                   <span className="text-3xl font-bold text-white">{winner.username[0]?.toUpperCase()}</span>
                 </div>
               )}
@@ -656,8 +601,7 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.4, type: 'spring', damping: 12 }}
-                className="absolute -top-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: theme.accent }}
+                className="absolute -top-2 -right-2 w-10 h-10 rounded-full flex items-center justify-center bg-gold shadow-lg"
               >
                 <Crown className="w-5 h-5 text-black" />
               </motion.div>
@@ -669,24 +613,27 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               transition={{ delay: 0.35 }}
               className="text-center"
             >
-              <p className="text-white/50 text-xs uppercase tracking-widest mb-1">The Flywheel Chose</p>
-              <h2 className="font-display text-2xl font-bold text-white">@{winner.username}</h2>
+              <p className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-display mb-2">The Flywheel Chose</p>
+              <h2 className="font-display text-3xl font-bold text-white tracking-wide">@{winner.username}</h2>
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.55 }}
-              className="flex gap-3 mt-2"
+              className="flex gap-3 mt-4"
             >
-              <Button onClick={reset} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10">
+              <Button 
+                onClick={reset} 
+                variant="ghost" 
+                className="text-white/50 hover:text-white hover:bg-white/8 border border-white/10 font-display tracking-wider"
+              >
                 <RotateCcw className="w-4 h-4 mr-2" />
                 Spin Again
               </Button>
               <Button
                 onClick={handleRate}
-                className="font-display font-bold tracking-wider text-black"
-                style={{ backgroundColor: theme.accent }}
+                className="font-display font-bold tracking-[0.15em] text-black bg-gold hover:bg-gold/90"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 RATE NOW
