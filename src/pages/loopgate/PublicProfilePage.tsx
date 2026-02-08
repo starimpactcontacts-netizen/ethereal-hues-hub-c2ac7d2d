@@ -446,8 +446,16 @@ export default function PublicProfilePage() {
               </div>
             )}
 
-            {/* Action Buttons - Connect & Message */}
+            {/* Action Buttons - Connect, Message & Get Rated */}
             <div className="flex items-center gap-3">
+              {isJudge && (
+                <button
+                  onClick={() => navigate(`/judge/${profile.username}`)}
+                  className="px-4 py-2 bg-gold text-black text-xs font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors"
+                >
+                  Get Rated
+                </button>
+              )}
               <ConnectButton targetUserId={profile.id} />
               <MessageButton userId={profile.id} username={profile.username} variant="icon" />
             </div>

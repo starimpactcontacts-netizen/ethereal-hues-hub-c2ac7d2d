@@ -42,6 +42,7 @@ export default function StartPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setProfile: setTempProfile } = useTempProfile();
+  const returnTo = searchParams.get('returnTo');
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -457,7 +458,7 @@ export default function StartPage() {
       
       navigate('/judges/apply');
     } else {
-      navigate('/hub');
+      navigate(returnTo || '/hub');
     }
   };
 
