@@ -333,9 +333,10 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
       if (progress < 1) {
         animRef.current = requestAnimationFrame(animate);
       } else {
-        const normA = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-        const ptrA = ((Math.PI * 2) - normA) % (Math.PI * 2);
-        const winIdx = Math.floor(ptrA / segAngle) % selectedEditors.length;
+        // Pointer is at the top of the canvas = -π/2 radians
+        const pointerAngle = -Math.PI / 2;
+        const relativeAngle = ((pointerAngle - currentAngle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        const winIdx = Math.floor(relativeAngle / segAngle) % selectedEditors.length;
 
         setWinner(selectedEditors[winIdx]);
         setSpinning(false);
