@@ -1,9 +1,4 @@
-// @ts-nocheck
-import React from "https://esm.sh/react@18.3.1"
 import { Resend } from "https://esm.sh/resend@4.0.0"
-import {
-  Body, Container, Head, Heading, Html, Link, Preview, Text, Section, Hr, render,
-} from "https://esm.sh/@react-email/components@0.0.22"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string)
@@ -13,62 +8,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 }
 
-// ── Email Template ──────────────────────────────────────────────────
-const BattleMatchedEmail = ({
-  username,
-  opponentUsername,
-  durationHours,
-  battleUrl,
-}: {
-  username: string
-  opponentUsername: string
-  durationHours: number
-  battleUrl: string
-}) =>
-  React.createElement(Html, null,
-    React.createElement(Head),
-    React.createElement(Preview, null, `Your 1v1 battle has started — ${username} vs ${opponentUsername}!`),
-    React.createElement(Body, { style: main },
-      React.createElement(Container, { style: container },
-        React.createElement(Section, { style: headerSection },
-          React.createElement(Text, { style: logoText }, "LOOPGATE")
-        ),
-        React.createElement(Heading, { style: h1 }, "⚔️ Battle Auto-Matched!"),
-        React.createElement(Text, { style: subText },
-          `Hey ${username}, your open 1v1 challenge has been matched.`
-        ),
-        React.createElement(Section, { style: matchupSection },
-          React.createElement(Text, { style: vsText }, `${username}  VS  ${opponentUsername}`)
-        ),
-        React.createElement(Hr, { style: divider }),
-        React.createElement(Text, { style: deadlineText },
-          `⏰ ${durationHours}h battle — clock is ticking!`
-        ),
-        React.createElement(Link, { href: battleUrl, target: "_blank", style: linkButton },
-          "View Battle →"
-        ),
-        React.createElement(Text, { style: footer },
-          "Submit your best edit before the timer runs out."
-        ),
-        React.createElement(Text, { style: footerBrand }, "© Loopgate — Competitive Editing Index")
-      )
-    )
-  )
-
-// Styles
-const main = { backgroundColor: "#0a0a0a", fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
-const container = { padding: "40px 20px", margin: "0 auto", maxWidth: "500px" }
-const headerSection = { textAlign: "center" as const, marginBottom: "24px" }
-const logoText = { fontSize: "24px", fontWeight: "900", color: "#d4af37", letterSpacing: "4px", margin: "0" }
-const h1 = { color: "#ffffff", fontSize: "28px", fontWeight: "600", textAlign: "center" as const, margin: "0 0 16px 0" }
-const subText = { color: "#ccc", fontSize: "14px", textAlign: "center" as const, margin: "0 0 24px 0" }
-const matchupSection = { backgroundColor: "#1a1a1a", borderRadius: "12px", padding: "24px", textAlign: "center" as const, border: "1px solid #333", marginBottom: "24px" }
-const vsText = { color: "#d4af37", fontSize: "20px", fontWeight: "700", margin: "0", letterSpacing: "2px" }
-const divider = { borderColor: "#333", margin: "24px 0" }
-const deadlineText = { color: "#f97316", fontSize: "14px", textAlign: "center" as const, margin: "0 0 24px 0", fontWeight: "600" }
-const linkButton = { display: "block", backgroundColor: "#d4af37", color: "#000000", fontSize: "16px", fontWeight: "700", textDecoration: "none", textAlign: "center" as const, padding: "16px 24px", borderRadius: "8px", margin: "0 auto" }
-const footer = { color: "#666", fontSize: "12px", textAlign: "center" as const, margin: "32px 0 8px 0" }
-const footerBrand = { color: "#444", fontSize: "11px", textAlign: "center" as const, margin: "0" }
+// ── Email Template (raw HTML) ────────────────────────────────────────
+function buildBattleEmail(username: string, opponentUsername: string, durationHours: number, battleUrl: string): string {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"/></head>
+<body style="background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:0">
+<div style="padding:40px 20px;margin:0 auto;max-width:500px">
+  <p style="font-size:24px;font-weight:900;color:#d4af37;letter-spacing:4px;text-align:center;margin:0 0 24px 0">LOOPGATE</p>
+  <h1 style="color:#fff;font-size:28px;font-weight:600;text-align:center;margin:0 0 16px 0">⚔️ Battle Auto-Matched!</h1>
+  <p style="color:#ccc;font-size:14px;text-align:center;margin:0 0 24px 0">Hey ${username}, your open 1v1 challenge has been matched.</p>
+  <div style="background:#1a1a1a;border-radius:12px;padding:24px;text-align:center;border:1px solid #333;margin-bottom:24px">
+    <p style="color:#d4af37;font-size:20px;font-weight:700;margin:0;letter-spacing:2px">${username}  VS  ${opponentUsername}</p>
+  </div>
+  <hr style="border-color:#333;margin:24px 0"/>
+  <p style="color:#f97316;font-size:14px;text-align:center;margin:0 0 24px 0;font-weight:600">⏰ ${durationHours}h battle — clock is ticking!</p>
+  <a href="${battleUrl}" target="_blank" style="display:block;background:#d4af37;color:#000;font-size:16px;font-weight:700;text-decoration:none;text-align:center;padding:16px 24px;border-radius:8px;margin:0 auto">View Battle →</a>
+  <p style="color:#666;font-size:12px;text-align:center;margin:32px 0 8px 0">Submit your best edit before the timer runs out.</p>
+  <p style="color:#444;font-size:11px;text-align:center;margin:0">© Loopgate — Competitive Editing Index</p>
+</div>
+</body></html>`
+}
 
 // ── Main handler ────────────────────────────────────────────────────
 Deno.serve(async (req) => {
@@ -201,13 +159,11 @@ Deno.serve(async (req) => {
           const opponentName = isChallenger ? partner.challenger_username : battle.challenger_username
 
           try {
-            const emailHtml = render(
-              React.createElement(BattleMatchedEmail, {
-                username: profile.username || "Editor",
-                opponentUsername: opponentName,
-                durationHours: battle.duration_hours,
-                battleUrl,
-              })
+            const emailHtml = buildBattleEmail(
+              profile.username || "Editor",
+              opponentName,
+              battle.duration_hours,
+              battleUrl,
             )
 
             await resend.emails.send({
