@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.refresh-video-stats]
 verify_jwt = false
+
+[functions.auto-match-battles]
+verify_jwt = false
