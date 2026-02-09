@@ -19,6 +19,7 @@ import SanctionedTournamentManagement from "@/components/loopgate/SanctionedTour
 import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdmin";
 import HostedCompManagement from "@/components/loopgate/HostedCompManagement";
 import { awardReviewXP } from "@/hooks/useJudgeXP";
+import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
 
 interface RealEvent {
   id: string;
@@ -2341,6 +2342,9 @@ export default function OpsPanel() {
             <span className="text-muted-foreground">{users.length} users</span>
           </div>
         </section>
+
+        {/* 1v1 Battle Admin */}
+        <BattleAdminPanel />
 
         {/* Event Control */}
         <section>
