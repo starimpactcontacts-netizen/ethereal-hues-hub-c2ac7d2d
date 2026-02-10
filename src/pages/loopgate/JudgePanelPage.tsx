@@ -23,16 +23,30 @@ export default function JudgePanelPage() {
   const [flywheelEditors, setFlywheelEditors] = useState<any[]>([]);
   const [scoringFromFlywheel, setScoringFromFlywheel] = useState<any>(null);
 
-  // Fetch inbox editors for flywheel
+  // Fetch inbox editors for flywheel — pull from judge_inbox so all routed submissions appear
   useEffect(() => {
     if (!user?.id) return;
     const fetchInbox = async () => {
-      const { data } = await supabase
+      // Get all non-dismissed inbox items for this judge
+      const { data: inboxData } = await supabase
+        .from('judge_inbox')
+        .select('review_request_id')
+        .eq('judge_id', user.id)
+        .eq('dismissed', false)
+        .order('added_at', { ascending: false });
+
+      if (!inboxData || inboxData.length === 0) {
+        setFlywheelEditors([]);
+        return;
+      }
+
+      const requestIds = inboxData.map(i => i.review_request_id);
+      const { data: requests } = await supabase
         .from('review_requests')
         .select('id, user_id, username, avatar_url, submission_url, platform')
-        .eq('status', 'pending')
-        .order('requested_at', { ascending: false });
-      setFlywheelEditors(data || []);
+        .in('id', requestIds);
+
+      setFlywheelEditors(requests || []);
     };
     fetchInbox();
   }, [user?.id]);
