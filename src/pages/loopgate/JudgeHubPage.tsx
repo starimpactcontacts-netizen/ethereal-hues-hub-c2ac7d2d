@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Input } from '@/components/ui/input';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
+import FeaturedJudgeHero from '@/components/loopgate/FeaturedJudgeHero';
 import BottomNav from '@/components/loopgate/BottomNav';
 import RequestJudgeReviewModal from '@/components/loopgate/RequestJudgeReviewModal';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
@@ -454,6 +455,9 @@ export default function JudgeHubPage() {
 
       {/* Trial Judge Banner */}
       {isTrialJudge && <div className="pt-4"><TrialJudgeBanner /></div>}
+
+      {/* Featured Judge Hero — Forbes-style */}
+      <FeaturedJudgeHero />
 
       {/* Request Review CTA */}
       <div className="p-4">
