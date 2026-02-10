@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  ChevronRight, ArrowLeft, Send, AlertTriangle
-} from 'lucide-react';
+import { Search, ArrowLeft, Send, AlertTriangle } from 'lucide-react';
 import { AuthorityGavel, ScopeTarget, ContendersIcon, NexusStar, ArrowLink } from '@/components/loopgate/LoopgateIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +14,7 @@ import RequestJudgeReviewModal from '@/components/loopgate/RequestJudgeReviewMod
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeLeaderboardCard from '@/components/loopgate/JudgeLeaderboardCard';
 import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
+import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 
 interface JudgeProfile {
   id: string;
@@ -49,111 +47,117 @@ function calculateJudgeLevel(xp: number): number {
   return 1;
 }
 
-function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge: JudgeProfile) => void }) {
+/* ═══════════════════════════════════════════════════
+   ROSTER ENTRY — institutional table row, not a card
+   ═══════════════════════════════════════════════════ */
+function JudgeRosterEntry({ judge, onSelect, index }: { judge: JudgeProfile; onSelect: (j: JudgeProfile) => void; index: number }) {
   const navigate = useNavigate();
   const isTrial = judge.roleType === 'trial_judge';
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`w-full bg-card border rounded-xl p-3 transition-all ${
-        isTrial ? 'border-border' : 'border-gold/30'
-      }`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: index * 0.02 }}
+      className="group"
     >
-      {/* Top row: avatar + name + badge */}
-      <div className="flex items-center gap-3 mb-2">
+      <div className={`flex items-center gap-3 py-3 px-3 transition-colors hover:bg-white/[0.03] ${
+        !isTrial ? 'border-l-2 border-l-red-600' : 'border-l-2 border-l-zinc-700'
+      }`}>
+        {/* Rank # */}
+        <span className="text-[10px] text-zinc-600 font-mono w-5 text-right shrink-0">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+
+        {/* Avatar */}
         <div className="relative shrink-0">
           {judge.avatar_url ? (
-            <img 
-              src={judge.avatar_url} 
+            <img
+              src={judge.avatar_url}
               alt={judge.username}
-              className={`w-11 h-11 rounded-full object-cover border ${isTrial ? 'border-border' : 'border-gold/30'}`}
+              className="w-9 h-9 rounded-sm object-cover grayscale-[30%] group-hover:grayscale-0 transition-all"
             />
           ) : (
-            <div className={`w-11 h-11 rounded-full flex items-center justify-center border text-sm font-bold ${
-              isTrial ? 'bg-muted border-border text-muted-foreground' : 'bg-gold/20 border-gold/30 text-gold'
+            <div className={`w-9 h-9 rounded-sm flex items-center justify-center text-xs font-bold ${
+              isTrial ? 'bg-zinc-900 text-zinc-500' : 'bg-red-950 text-red-400'
             }`}>
-              {isTrial ? judge.username[0]?.toUpperCase() : <AuthorityGavel size={16} />}
+              {judge.username[0]?.toUpperCase()}
             </div>
           )}
         </div>
 
+        {/* Name + handle */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-display text-sm truncate max-w-[120px]">
-              {judge.display_name || judge.username}
+            <span className="font-display text-[13px] text-white truncate">
+              {(judge.display_name || judge.username).toUpperCase()}
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
-            {isTrial ? (
-              <span className="text-[8px] px-1.5 py-0.5 bg-muted border border-border rounded font-semibold text-muted-foreground uppercase tracking-wider">Trial</span>
-            ) : (
-              <span className="text-[8px] px-1.5 py-0.5 bg-muted border border-border rounded font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-0.5">
-                <AuthorityGavel size={8} /> Judge
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-zinc-500">@{judge.username}</span>
+            {!isTrial && <JudgeClassBadge reviewCount={judge.totalReviews} size="sm" />}
+            {isTrial && (
+              <span className="text-[8px] px-1.5 py-0.5 bg-zinc-900 text-zinc-500 font-mono uppercase tracking-wider">
+                TRIAL
               </span>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground">@{judge.username}</p>
         </div>
 
-        <button
-          onClick={() => onSelect(judge)}
-          className="shrink-0 p-1.5 hover:bg-surface-1 rounded-lg transition-colors"
-        >
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
-      </div>
-
-      {/* Bottom row: stats + action */}
-      <div className="flex items-center gap-2">
+        {/* Stats column */}
         {!isTrial && (
-          <>
-            <div className="text-center px-2">
-              <div className="font-bold text-xs text-gold">{judge.totalReviews}</div>
-              <div className="text-muted-foreground text-[8px] uppercase">Reviews</div>
-            </div>
-            <JudgeLevelBadge level={judge.judge_level} size="xs" showIcon={false} />
-          </>
-        )}
-        {isTrial && (
-          <span className="text-[10px] text-muted-foreground">TRIAL JUDGE</span>
+          <div className="text-right shrink-0 mr-2">
+            <div className="text-sm font-display text-white">{judge.totalReviews}</div>
+            <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">Reviews</div>
+          </div>
         )}
 
-        <div className="flex-1" />
-
-        {!isTrial && (
+        {/* Action */}
+        {!isTrial ? (
           <button
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/judge/${judge.username}`);
             }}
-            className="px-3 py-1.5 bg-gold text-black rounded-lg text-[11px] font-bold hover:bg-gold/90 transition-colors"
+            className="shrink-0 px-3 py-1.5 border border-red-700 text-red-400 text-[10px] font-bold uppercase tracking-wider hover:bg-red-950 transition-colors"
           >
-            GET RATED
+            View
+          </button>
+        ) : (
+          <button
+            onClick={() => onSelect(judge)}
+            className="shrink-0 p-1.5 hover:bg-white/5 transition-colors"
+          >
+            <ArrowLink size={14} className="text-zinc-500" />
           </button>
         )}
       </div>
+      <div className="h-px bg-zinc-900 ml-8" />
     </motion.div>
   );
 }
 
-function JudgePreviewModal({ 
-  judge, 
-  onClose, 
-  onSubmit 
-}: { 
-  judge: JudgeProfile; 
+/* ═══════════════════════════════════════════════
+   JUDGE PREVIEW MODAL — institutional dossier
+   ═══════════════════════════════════════════════ */
+function JudgePreviewModal({
+  judge,
+  onClose,
+  onSubmit
+}: {
+  judge: JudgeProfile;
   onClose: () => void;
   onSubmit: (judgeId: string) => void;
 }) {
   const navigate = useNavigate();
-  
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-sm px-4"
       onClick={onClose}
     >
       <motion.div
@@ -161,66 +165,69 @@ function JudgePreviewModal({
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-card border border-border rounded-t-2xl sm:rounded-2xl overflow-hidden pb-6"
+        className="w-full max-w-md bg-black border border-zinc-800 overflow-hidden pb-6"
       >
-        <div className="relative h-20 bg-gradient-to-b from-gold/20 to-transparent">
-          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+        {/* Red accent bar */}
+        <div className="h-1 bg-red-700" />
+
+        <div className="p-5">
+          {/* Header */}
+          <div className="flex items-start gap-4 mb-5">
             {judge.avatar_url ? (
-              <img 
-                src={judge.avatar_url} 
+              <img
+                src={judge.avatar_url}
                 alt={judge.username}
-                className="w-16 h-16 rounded-full object-cover border-4 border-card"
+                className="w-16 h-16 rounded-sm object-cover"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center border-4 border-card">
-                <AuthorityGavel size={24} className="text-gold" />
+              <div className="w-16 h-16 rounded-sm bg-red-950 flex items-center justify-center">
+                <AuthorityGavel size={24} className="text-red-400" />
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="pt-10 px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <h3 className="font-display text-lg">{judge.display_name || judge.username}</h3>
-            {judge.verification_status && <VerifiedBadge />}
-          </div>
-          <p className="text-sm text-muted-foreground mb-2">@{judge.username}</p>
-          
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <JudgeLevelBadge level={judge.judge_level} size="sm" />
-            <span className="text-xs text-muted-foreground">{judge.judge_xp} JXP</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-display text-lg text-white">{(judge.display_name || judge.username).toUpperCase()}</h3>
+                {judge.verification_status && <VerifiedBadge />}
+              </div>
+              <p className="text-xs text-zinc-500 mb-2">@{judge.username}</p>
+              <div className="flex items-center gap-2">
+                <JudgeLevelBadge level={judge.judge_level} size="sm" />
+                <span className="text-[10px] text-zinc-500">{judge.judge_xp} JXP</span>
+              </div>
+            </div>
           </div>
 
           {judge.bio && (
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{judge.bio}</p>
+            <p className="text-sm text-zinc-400 mb-5 border-l-2 border-red-800 pl-3 italic">{judge.bio}</p>
           )}
 
-          <div className="grid grid-cols-3 gap-2 mb-5">
-            <div className="bg-surface-1 border border-border rounded-lg p-2.5">
-              <div className="text-xl font-display text-gold">{judge.totalReviews}</div>
-              <div className="text-[10px] text-muted-foreground uppercase">Reviews</div>
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-px bg-zinc-800 mb-5">
+            <div className="bg-black p-3 text-center">
+              <div className="text-xl font-display text-white">{judge.totalReviews}</div>
+              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-mono">Reviews</div>
             </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-2.5">
-              <div className="text-xl font-display">{judge.avgScore.toFixed(0)}</div>
-              <div className="text-[10px] text-muted-foreground uppercase">Avg Score</div>
+            <div className="bg-black p-3 text-center">
+              <div className="text-xl font-display text-white">{judge.avgScore.toFixed(0)}</div>
+              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-mono">Avg Score</div>
             </div>
-            <div className="bg-surface-1 border border-border rounded-lg p-2.5">
-              <div className="text-xl font-display text-orange-400">{judge.thisWeek}</div>
-              <div className="text-[10px] text-muted-foreground uppercase">This Week</div>
+            <div className="bg-black p-3 text-center">
+              <div className="text-xl font-display text-red-400">{judge.thisWeek}</div>
+              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-mono">This Week</div>
             </div>
           </div>
 
           <div className="flex gap-2">
             <button
               onClick={() => navigate(`/judge/${judge.username}`)}
-              className="flex-1 py-2.5 bg-surface-1 border border-border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 border border-zinc-700 text-sm font-display uppercase tracking-wider text-zinc-300 hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLink size={14} />
-              Profile
+              Dossier
             </button>
             <button
               onClick={() => onSubmit(judge.id)}
-              className="flex-1 py-2.5 bg-gold text-black rounded-lg text-sm font-bold hover:bg-gold/90 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 bg-red-700 text-white text-sm font-display uppercase tracking-wider hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
             >
               <Send size={14} />
               Submit
@@ -234,36 +241,36 @@ function JudgePreviewModal({
 
 function TrialJudgeBanner() {
   const [dismissed, setDismissed] = useState(false);
-  
+
   if (dismissed) return null;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-4 mb-3 bg-gradient-to-r from-amber-500/10 via-gold/10 to-amber-500/10 border border-gold/40 rounded-xl p-4"
+      className="mx-4 mb-3 border border-zinc-800 bg-zinc-950 p-4"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center shrink-0 mt-0.5">
-          <AlertTriangle size={18} className="text-gold" />
+        <div className="w-8 h-8 flex items-center justify-center shrink-0 mt-0.5 border border-zinc-700">
+          <AlertTriangle size={14} className="text-zinc-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-display text-sm mb-1">⚡ Complete Your Judge Trial</h3>
-          <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-            You're a Trial Judge — finish your trial reviews to unlock full Judge status, get listed with a "GET RATED" button, and start earning JXP.
+          <h3 className="font-display text-xs uppercase tracking-wider mb-1">Complete Your Trial</h3>
+          <p className="text-[11px] text-zinc-500 leading-relaxed mb-3">
+            Finish your trial reviews to unlock full Judge status and be listed in the Bureau.
           </p>
           <div className="flex gap-2">
             <Link
               to="/judges/apply"
-              className="px-4 py-2 bg-gold text-black rounded-lg text-xs font-bold hover:bg-gold/90 transition-colors"
+              className="px-4 py-2 bg-red-700 text-white text-[10px] font-display uppercase tracking-wider hover:bg-red-600 transition-colors"
             >
               Complete Trial →
             </Link>
             <button
               onClick={() => setDismissed(true)}
-              className="px-3 py-2 bg-surface-1 border border-border rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="px-3 py-2 border border-zinc-800 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
             >
-              Later
+              Dismiss
             </button>
           </div>
         </div>
@@ -272,15 +279,18 @@ function TrialJudgeBanner() {
   );
 }
 
+/* ═══════════════════════════════════════════
+   MAIN PAGE — THE AUTHORITY BUREAU
+   ═══════════════════════════════════════════ */
 export default function JudgeHubPage() {
   const { user, profile } = useAuth();
   const { isJudge, isTrialJudge, isDev } = useUserRoles(user?.id);
   const navigate = useNavigate();
-  
+
   const [judges, setJudges] = useState<JudgeProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const [selectedJudge, setSelectedJudge] = useState<JudgeProfile | null>(null);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [targetJudgeId, setTargetJudgeId] = useState<string | null>(null);
@@ -292,21 +302,15 @@ export default function JudgeHubPage() {
   async function fetchJudges() {
     setLoading(true);
     try {
-      // Get all users with judge OR trial_judge role
       const { data: judgeRoles } = await supabase
         .from('user_roles')
         .select('user_id, role')
         .in('role', ['judge', 'trial_judge']);
 
-      if (!judgeRoles?.length) {
-        setLoading(false);
-        return;
-      }
+      if (!judgeRoles?.length) { setLoading(false); return; }
 
-      // Build role map
       const roleMap = new Map<string, 'judge' | 'trial_judge'>();
       judgeRoles.forEach(r => {
-        // If user has both judge and trial_judge, prioritize judge
         const existing = roleMap.get(r.user_id);
         if (!existing || r.role === 'judge') {
           roleMap.set(r.user_id, r.role as 'judge' | 'trial_judge');
@@ -320,10 +324,7 @@ export default function JudgeHubPage() {
         .select('id, username, display_name, avatar_url, bio, level, xp, verification_status, judge_badge, judge_xp, judge_review_count')
         .in('id', judgeIds);
 
-      if (!profiles) {
-        setLoading(false);
-        return;
-      }
+      if (!profiles) { setLoading(false); return; }
 
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -336,7 +337,7 @@ export default function JudgeHubPage() {
 
       const judgesWithStats: JudgeProfile[] = profiles.map(p => {
         const judgeReviews = (reviews || []).filter(r => r.judge_id === p.id);
-        const weeklyReviews = judgeReviews.filter(r => 
+        const weeklyReviews = judgeReviews.filter(r =>
           r.reviewed_at && new Date(r.reviewed_at) >= oneWeekAgo
         );
         const avgScore = judgeReviews.length > 0
@@ -355,7 +356,6 @@ export default function JudgeHubPage() {
         };
       });
 
-      // Sort: full judges first (by JXP), then trial judges
       judgesWithStats.sort((a, b) => {
         if (a.roleType !== b.roleType) return a.roleType === 'judge' ? -1 : 1;
         return b.judge_xp - a.judge_xp;
@@ -372,193 +372,205 @@ export default function JudgeHubPage() {
   const filteredJudges = judges.filter(j => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
-    return j.username.toLowerCase().includes(query) || 
-           (j.display_name?.toLowerCase().includes(query));
+    return j.username.toLowerCase().includes(query) ||
+      (j.display_name?.toLowerCase().includes(query));
   });
 
-  const handleJudgeSelect = (judge: JudgeProfile) => {
-    setSelectedJudge(judge);
-  };
-
+  const handleJudgeSelect = (judge: JudgeProfile) => setSelectedJudge(judge);
   const handleSubmitToJudge = (judgeId: string) => {
     setTargetJudgeId(judgeId);
     setSelectedJudge(null);
     setShowSubmitModal(true);
   };
-
   const handleQuickSubmit = () => {
     setTargetJudgeId(null);
     setShowSubmitModal(true);
   };
 
-  return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* ═══════════ CINEMATIC HEADER ═══════════ */}
-      <div className="relative overflow-hidden">
-        {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/12 via-gold/4 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.2),transparent_55%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-gold/10 blur-[100px] rounded-full" />
-        
-        {/* Gold line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-        <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-gold/15" />
-        <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-gold/15" />
+  const todayDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        <div className="relative z-10 px-4 pt-4 pb-6">
-          {/* Nav bar */}
+  return (
+    <div className="min-h-screen bg-black pb-24">
+      {/* ═══════════ MASTHEAD — THE BUREAU ═══════════ */}
+      <div className="relative">
+        {/* Thin red accent line at very top */}
+        <div className="h-[2px] bg-red-700" />
+
+        <div className="px-4 pt-4 pb-5">
+          {/* Top bar */}
           <div className="flex items-center justify-between mb-5">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-1.5 hover:bg-white/5 transition-colors"
+            >
+              <ArrowLeft size={18} className="text-zinc-400" />
+            </button>
+
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate(-1)}
-                className="p-1.5 hover:bg-white/5 rounded-full transition-colors"
-              >
-                <ArrowLeft size={18} />
-              </button>
-              <div className="flex items-center gap-2 px-3 py-1 bg-gold/10 border border-gold/20 rounded-full">
-                <AuthorityGavel size={12} className="text-gold" />
-                <span className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold">Authority</span>
-              </div>
+              {(isJudge || isDev) && (
+                <Link
+                  to="/judge-panel"
+                  className="px-3 py-1.5 border border-zinc-700 text-[10px] font-display uppercase tracking-[0.2em] text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors flex items-center gap-1.5"
+                >
+                  <ScopeTarget size={10} />
+                  Panel
+                </Link>
+              )}
             </div>
-            
-            {(isJudge || isDev) && (
-              <Link
-                to="/judge-panel"
-                className="px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-lg text-xs font-medium text-gold hover:bg-gold/20 transition-colors flex items-center gap-1.5"
-              >
-                <ScopeTarget size={12} />
-                Panel
-              </Link>
-            )}
           </div>
 
-          {/* Hero title */}
-          <div className="text-center">
+          {/* Masthead */}
+          <div className="text-center mb-2">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-3"
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="flex-1 h-px bg-zinc-800" />
+                <span className="text-[9px] text-zinc-600 uppercase tracking-[0.4em] font-mono">Est. 2025</span>
+                <div className="flex-1 h-px bg-zinc-800" />
+              </div>
+            </motion.div>
+
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="font-display text-4xl tracking-wider text-white mb-2 drop-shadow-[0_0_30px_rgba(212,175,55,0.15)]"
+              className="font-display text-[40px] leading-none tracking-wider text-white mb-1"
             >
-              QOI JUDGES
+              THE BUREAU
             </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
             >
-              The elite authority that rates, ranks, and elevates
-            </motion.p>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-[0.35em] font-mono mb-3">
+                QOI Authority · Judge Division
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex-1 h-px bg-zinc-800" />
+                <span className="text-[9px] text-zinc-600 font-mono">{todayDate.toUpperCase()}</span>
+                <div className="flex-1 h-px bg-zinc-800" />
+              </div>
+            </motion.div>
           </div>
         </div>
+
+        {/* Double rule */}
+        <div className="h-px bg-zinc-800" />
+        <div className="h-[2px] mt-px bg-zinc-800" />
       </div>
 
       {/* Trial Judge Banner */}
       {isTrialJudge && <div className="pt-4"><TrialJudgeBanner /></div>}
 
-      {/* Featured Judge Hero — Forbes-style */}
+      {/* Featured Judge — Editorial Feature */}
       <FeaturedJudgeHero />
 
-      {/* Request Review CTA */}
-      <div className="p-4">
+      {/* Submit for Review — institutional CTA */}
+      <div className="px-4 py-4">
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={handleQuickSubmit}
-          className="w-full py-3.5 bg-gradient-to-r from-gold via-gold to-amber-500 text-black rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
+          className="w-full py-3.5 bg-red-700 hover:bg-red-600 text-white font-display text-sm uppercase tracking-[0.15em] flex items-center justify-center gap-2 transition-colors"
         >
-          <Send size={16} />
-          Request Judge Review
+          <Send size={14} />
+          Request Official Review
         </motion.button>
       </div>
 
-      {/* Judge Leaderboard */}
+      {/* Rankings Bureau */}
       <div className="px-4 pb-4">
         <JudgeLeaderboardCard limit={5} />
       </div>
 
-      {/* Recent Reviews */}
-      <div className="border-t border-border pt-4">
+      {/* Wire Feed — Recent Reviews */}
+      <div className="border-t border-zinc-800">
+        <div className="px-4 pt-3 pb-1">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+            <span className="text-[9px] text-zinc-500 uppercase tracking-[0.3em] font-mono">Live Wire · Recent Verdicts</span>
+          </div>
+        </div>
         <JudgeReviewsFeed />
       </div>
 
-      {/* Become a Judge CTA */}
+      {/* Become a Judge — Recruitment */}
       {!isJudge && !isTrialJudge && (
-        <div className="px-4 py-4 border-t border-border">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-surface-1 via-surface-1 to-gold/5 border border-gold/30 rounded-xl p-4"
-          >
+        <div className="px-4 py-4 border-t border-zinc-800">
+          <div className="border border-zinc-800 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gold/20 flex items-center justify-center shrink-0">
-                <NexusStar className="text-gold" size={20} />
+              <div className="w-10 h-10 flex items-center justify-center shrink-0 border border-zinc-700">
+                <NexusStar className="text-zinc-400" size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-display text-sm mb-0.5">Become a QOI Judge</h3>
-                <p className="text-xs text-muted-foreground line-clamp-1">
-                  Join the elite. Rate and review the community's best work.
+                <h3 className="font-display text-xs uppercase tracking-wider text-white mb-0.5">Join the Bureau</h3>
+                <p className="text-[10px] text-zinc-500">
+                  Apply to become an official QOI authority. Rate, rank, and shape the standard.
                 </p>
               </div>
               <Link
                 to="/judges/apply"
-                className="shrink-0 px-4 py-2 bg-gold hover:bg-gold/90 text-black rounded-lg text-xs font-bold transition-colors"
+                className="shrink-0 px-4 py-2 bg-white text-black text-[10px] font-display uppercase tracking-wider hover:bg-zinc-200 transition-colors"
               >
                 Apply
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
 
-      {/* All Judges Section */}
-      <div className="px-4 pt-4 border-t border-border">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <ContendersIcon size={14} className="text-muted-foreground" />
-            <h2 className="font-display text-sm tracking-wide">ALL JUDGES</h2>
+      {/* Judge Roster */}
+      <div className="border-t border-zinc-800">
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-4 bg-red-700" />
+              <h2 className="font-display text-sm tracking-[0.15em] text-white">OFFICIAL ROSTER</h2>
+            </div>
+            <span className="text-[10px] text-zinc-600 font-mono">
+              {filteredJudges.length} REGISTERED
+            </span>
           </div>
-          <span className="text-[11px] text-muted-foreground">
-            {filteredJudges.length} judge{filteredJudges.length !== 1 ? 's' : ''}
-          </span>
+
+          {/* Search */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" />
+            <Input
+              placeholder="Search the roster..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 bg-black border-zinc-800 text-sm placeholder:text-zinc-700 focus:border-red-800"
+            />
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search judges..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 bg-surface-1 border-border text-sm"
-          />
-        </div>
-
-        {/* Judges List */}
-        <div className="space-y-2">
+        {/* Roster entries */}
+        <div>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-red-700 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredJudges.length === 0 ? (
-            <div className="text-center py-10">
-              <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center mb-3">
-                <AuthorityGavel className="text-gold" size={24} />
+            <div className="text-center py-10 px-4">
+              <div className="w-12 h-12 mx-auto border border-zinc-800 flex items-center justify-center mb-3">
+                <AuthorityGavel className="text-zinc-600" size={20} />
               </div>
-              <p className="font-display text-sm mb-1">NO JUDGES FOUND</p>
-              <p className="text-xs text-muted-foreground">
-                {searchQuery ? 'Try a different search' : 'Judges coming soon'}
+              <p className="font-display text-xs tracking-wider text-zinc-400 mb-1">NO RECORDS FOUND</p>
+              <p className="text-[10px] text-zinc-600">
+                {searchQuery ? 'Adjust your query' : 'The Bureau is assembling'}
               </p>
             </div>
           ) : (
             filteredJudges.map((judge, index) => (
-              <motion.div
+              <JudgeRosterEntry
                 key={judge.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-              >
-                <JudgeCard judge={judge} onSelect={handleJudgeSelect} />
-              </motion.div>
+                judge={judge}
+                onSelect={handleJudgeSelect}
+                index={index}
+              />
             ))
           )}
         </div>
