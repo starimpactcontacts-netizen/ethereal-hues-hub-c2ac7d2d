@@ -259,74 +259,50 @@ export default function HubPage() {
                 </div>
               </div>
 
-              {/* Quick Access Rows - Judges, Unit & GQT */}
-              <div className="border-t border-border/30 divide-y divide-border/20">
-                {/* GET RATED — Judge CTA (priority placement) */}
-                <div className="px-4 py-2">
-                  <Link to="/judges" className="flex items-center justify-between group">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
-                        <Gavel className="w-5 h-5 text-gold" />
+              {/* Quick Access — Horizontal scrollable cards */}
+              <div className="border-t border-border/30 px-3 py-2.5 overflow-x-auto scrollbar-hide">
+                <div className="flex gap-2">
+                  {/* Get Rated */}
+                  <Link to="/judges" className="shrink-0 group">
+                    <div className="w-[130px] bg-gold/8 border border-gold/20 rounded-xl p-3 group-hover:border-gold/40 transition-colors h-full">
+                      <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center mb-2">
+                        <Gavel className="w-4 h-4 text-gold" />
                       </div>
-                      <div>
-                        <p className="text-[10px] text-gold uppercase tracking-[0.12em] font-semibold">Get Rated</p>
-                        <p className="font-display text-base text-foreground group-hover:text-gold transition-colors">
-                          Submit to a Judge
-                        </p>
-                      </div>
+                      <p className="text-[9px] text-gold uppercase tracking-[0.12em] font-semibold mb-0.5">Get Rated</p>
+                      <p className="font-display text-xs text-foreground leading-tight">Submit to a Judge</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
                   </Link>
-                </div>
 
-                <div className="px-4 py-2">
-                  {userCrew ? (
-                    <Link to={`/units/${userCrew.id}`} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center overflow-hidden">
-                          {userCrew.avatar_url ? (
-                            <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
-                          ) : (
-                            <Users2 className="w-5 h-5 text-foreground" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Your Unit</p>
-                          <p className="font-display text-base text-foreground group-hover:text-gold transition-colors">{userCrew.name}</p>
-                        </div>
+                  {/* Unit */}
+                  <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="shrink-0 group">
+                    <div className="w-[130px] bg-surface-1/60 border border-border/40 rounded-xl p-3 group-hover:border-foreground/20 transition-colors h-full">
+                      <div className="w-8 h-8 rounded-lg bg-muted/50 border border-border flex items-center justify-center mb-2 overflow-hidden">
+                        {userCrew?.avatar_url ? (
+                          <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Users2 className="w-4 h-4 text-muted-foreground" />
+                        )}
                       </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                    </Link>
-                  ) : (
-                    <Link to="/units" className="flex items-center justify-between group">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center">
-                          <Plus className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Join a Unit</p>
-                          <p className="text-base text-foreground group-hover:text-gold transition-colors font-medium">Find your group</p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                    </Link>
-                  )}
-                </div>
-
-                <div className="px-4 py-2">
-                  <Link to="/gqt" className="flex items-center justify-between group">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border flex items-center justify-center group-hover:border-gold/50 transition-colors">
-                        <Target className="w-5 h-5 text-foreground group-hover:text-gold transition-colors" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.12em] font-semibold">Global QOI Test</p>
-                        <p className="font-display text-base text-foreground group-hover:text-gold transition-colors">
-                          {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
-                        </p>
-                      </div>
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold mb-0.5">
+                        {userCrew ? 'Your Unit' : 'Join a Unit'}
+                      </p>
+                      <p className="font-display text-xs text-foreground leading-tight truncate">
+                        {userCrew ? userCrew.name : 'Find your group'}
+                      </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+
+                  {/* GQT */}
+                  <Link to="/gqt" className="shrink-0 group">
+                    <div className="w-[130px] bg-surface-1/60 border border-border/40 rounded-xl p-3 group-hover:border-foreground/20 transition-colors h-full">
+                      <div className="w-8 h-8 rounded-lg bg-muted/50 border border-border flex items-center justify-center mb-2">
+                        <Target className="w-4 h-4 text-foreground" />
+                      </div>
+                      <p className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold mb-0.5">GQT</p>
+                      <p className="font-display text-xs text-foreground leading-tight">
+                        {bestScore ? `Best: ${bestScore.toFixed(0)}` : 'Get your score'}
+                      </p>
+                    </div>
                   </Link>
                 </div>
               </div>
