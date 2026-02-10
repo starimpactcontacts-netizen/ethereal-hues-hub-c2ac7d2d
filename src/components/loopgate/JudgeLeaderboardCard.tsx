@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useJudgeLeaderboard, JudgeLeaderboardEntry } from '@/hooks/useJudgeLeaderboard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import JudgeLevelBadge from './JudgeLevelBadge';
-import JudgeClassBadge from './JudgeClassBadge';
+import JudgeDivisionBadge from './JudgeDivisionBadge';
 import VerifiedBadge from './VerifiedBadge';
 import { cn } from '@/lib/utils';
 
@@ -62,9 +61,7 @@ function JudgeRow({ judge, index }: { judge: JudgeLeaderboardEntry; index: numbe
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
           </div>
-          <div className="flex items-center gap-1.5">
-            <JudgeClassBadge reviewCount={judge.judge_review_count} size="sm" />
-          </div>
+          <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />
         </div>
 
         {/* Stats */}
