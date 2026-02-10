@@ -760,11 +760,11 @@ export default function IndexPage() {
             className="px-4 py-5 space-y-3"
           >
             <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border/30">
-              <div className="w-8 h-8 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                <Gavel className="w-4 h-4 text-gold" />
+                <div className="w-8 h-8 bg-red-950/50 border border-red-800/40 flex items-center justify-center">
+                <Gavel className="w-4 h-4 text-red-400" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-foreground">Gate Judges</p>
+                <p className="text-xs font-semibold text-foreground">The Bureau</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   Contributors • QOI Judges
                 </p>
@@ -773,7 +773,7 @@ export default function IndexPage() {
             
             {judgesLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-gold" />
+                <Loader2 className="w-8 h-8 animate-spin text-red-400" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading judges...</span>
               </div>
             ) : judges.length === 0 ? (
@@ -790,12 +790,12 @@ export default function IndexPage() {
                     className={`w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all duration-200 text-left ${
                       judge.isTrial 
                         ? 'bg-surface-0/40 border-border/30 opacity-70 hover:opacity-100' 
-                        : 'bg-surface-0/60 border-border/50 hover:border-gold/40 hover:bg-surface-1/60 hover:shadow-[0_0_20px_rgba(212,175,55,0.08)]'
+                        : 'bg-surface-0/60 border-border/50 hover:border-red-800/50 hover:bg-surface-1/60'
                     }`}
                   >
-                    <Avatar className={`w-12 h-12 border-2 ${judge.isTrial ? 'border-muted/30' : 'border-gold/30'}`}>
+                    <Avatar className={`w-12 h-12 border-2 ${judge.isTrial ? 'border-muted/30' : 'border-red-800/40'}`}>
                       <AvatarImage src={judge.avatar_url || undefined} />
-                      <AvatarFallback className={`${judge.isTrial ? 'bg-muted/10 text-muted-foreground' : 'bg-gold/10 text-gold'} font-bold`}>
+                      <AvatarFallback className={`${judge.isTrial ? 'bg-muted/10 text-muted-foreground' : 'bg-red-950/50 text-red-400'} font-bold`}>
                         {judge.username[0]?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -814,7 +814,7 @@ export default function IndexPage() {
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">
                         <span>@{judge.username}</span>
-                        {!judge.isTrial && <span className="text-gold">{judge.totalReviews} reviews</span>}
+                        {!judge.isTrial && <span className="text-red-400">{judge.totalReviews} reviews</span>}
                         {judge.isTrial && <span className="text-muted-foreground/60">Trial Judge</span>}
                       </div>
                     </div>
@@ -827,12 +827,12 @@ export default function IndexPage() {
                             e.stopPropagation();
                             navigate(`/judge/${judge.username}`);
                           }}
-                          className="px-3 py-1.5 bg-gold text-black text-[10px] font-bold uppercase tracking-wider hover:bg-gold/90 transition-colors whitespace-nowrap"
-                        >
-                          Get Rated
-                        </button>
-                      )}
-                      <ChevronRight className={`w-5 h-5 ${judge.isTrial ? 'text-muted-foreground/40' : 'text-gold/60'}`} />
+                           className="px-3 py-1.5 bg-red-700 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-red-600 transition-colors whitespace-nowrap"
+                         >
+                           Get Rated
+                         </button>
+                       )}
+                       <ChevronRight className={`w-5 h-5 ${judge.isTrial ? 'text-muted-foreground/40' : 'text-zinc-500'}`} />
                     </div>
                   </motion.button>
                 ))}

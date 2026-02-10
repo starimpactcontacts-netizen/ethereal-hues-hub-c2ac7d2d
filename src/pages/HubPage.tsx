@@ -320,11 +320,11 @@ export default function HubPage() {
                 <div className="grid grid-cols-3 gap-2">
                   {/* Get Rated */}
                   <Link to="/judges" className="group">
-                    <div className="bg-gold/8 border border-gold/20 rounded-xl p-3 group-hover:border-gold/40 transition-colors h-full">
-                      <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center mb-2">
-                        <Gavel className="w-4 h-4 text-gold" />
+                    <div className="bg-red-950/30 border border-red-800/30 rounded-xl p-3 group-hover:border-red-700/50 transition-colors h-full">
+                      <div className="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center mb-2">
+                        <Gavel className="w-4 h-4 text-red-400" />
                       </div>
-                      <p className="text-[9px] text-gold uppercase tracking-[0.12em] font-semibold mb-0.5">Get Rated</p>
+                      <p className="text-[9px] text-red-400 uppercase tracking-[0.12em] font-semibold mb-0.5">Get Rated</p>
                       <p className="font-display text-xs text-foreground leading-tight">Submit to a Judge</p>
                     </div>
                   </Link>
@@ -754,24 +754,22 @@ export default function HubPage() {
       >
         <Link to="/judges" className="block group">
           <div className="relative overflow-hidden rounded-xl bg-background border border-white/[0.06] group-hover:border-white/15 transition-all duration-500">
-            {/* Cinematic gold scanline sweep */}
+            {/* Scanline sweep */}
             <motion.div
               animate={{ x: ['-100%', '200%'] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'linear', repeatDelay: 3 }}
-              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-gold/[0.04] to-transparent pointer-events-none z-0"
+              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-red-700/[0.04] to-transparent pointer-events-none z-0"
             />
             
             <div className="relative p-4 flex items-center gap-4">
-              {/* Judge Icon — Signature gold ring with depth */}
+              {/* Judge Icon — Authority red */}
               <div className="relative shrink-0">
-                <div className="w-14 h-14 rounded-full border border-gold/30 flex items-center justify-center bg-gold/[0.04] group-hover:bg-gold/[0.08] transition-colors">
-                  <div className="w-10 h-10 rounded-full border border-gold/20 flex items-center justify-center">
-                    <Gavel className="w-5 h-5 text-gold" />
-                  </div>
+                <div className="w-14 h-14 rounded-sm border border-red-800/40 flex items-center justify-center bg-red-950/30 group-hover:bg-red-950/50 transition-colors">
+                  <Gavel className="w-5 h-5 text-red-400" />
                 </div>
                 {/* Live indicator */}
-                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background">
-                  <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
+                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-red-600 border-2 border-background">
+                  <span className="absolute inset-0 rounded-full bg-red-600 animate-ping opacity-75" />
                 </div>
               </div>
               
@@ -779,14 +777,14 @@ export default function HubPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h2 className="font-display text-xl tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
-                  <span className="text-[8px] px-1.5 py-0.5 bg-gold/10 border border-gold/20 text-gold font-bold uppercase tracking-widest rounded-sm">Authority</span>
+                  <span className="text-[8px] px-1.5 py-0.5 bg-red-950/50 border border-red-800/40 text-red-400 font-bold uppercase tracking-widest rounded-sm">Authority</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1 font-medium">Submit your work. Get rated by the panel.</p>
               </div>
               
-              {/* CTA — Minimal arrow, not a copy of Arena */}
-              <div className="shrink-0 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-gold/40 group-hover:bg-gold/5 transition-all duration-300">
-                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+              {/* CTA arrow */}
+              <div className="shrink-0 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-red-700/50 group-hover:bg-red-950/30 transition-all duration-300">
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-white group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
           </div>
