@@ -332,6 +332,39 @@
   100% { background-position: 200% 0; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   LOOPGATE GLITCH EDGES — Infinite color-morphing metamorphosis
+═══════════════════════════════════════════════════════════════════ */
+@keyframes glitch-morph-left {
+  0%   { background: linear-gradient(135deg, #f59e0b, #ef4444); box-shadow: 0 0 12px rgba(245,158,11,0.6); }
+  14%  { background: linear-gradient(135deg, #ef4444, #ec4899); box-shadow: 0 0 12px rgba(239,68,68,0.6); }
+  28%  { background: linear-gradient(135deg, #ec4899, #a855f7); box-shadow: 0 0 12px rgba(236,72,153,0.6); }
+  42%  { background: linear-gradient(135deg, #a855f7, #6366f1); box-shadow: 0 0 12px rgba(168,85,247,0.6); }
+  57%  { background: linear-gradient(135deg, #6366f1, #06b6d4); box-shadow: 0 0 12px rgba(99,102,241,0.6); }
+  71%  { background: linear-gradient(135deg, #06b6d4, #10b981); box-shadow: 0 0 12px rgba(6,182,212,0.6); }
+  85%  { background: linear-gradient(135deg, #10b981, #f59e0b); box-shadow: 0 0 12px rgba(16,185,129,0.6); }
+  100% { background: linear-gradient(135deg, #f59e0b, #ef4444); box-shadow: 0 0 12px rgba(245,158,11,0.6); }
+}
+
+@keyframes glitch-morph-right {
+  0%   { background: linear-gradient(135deg, #06b6d4, #a855f7); box-shadow: 0 0 12px rgba(6,182,212,0.6); }
+  14%  { background: linear-gradient(135deg, #a855f7, #6366f1); box-shadow: 0 0 12px rgba(168,85,247,0.6); }
+  28%  { background: linear-gradient(135deg, #6366f1, #3b82f6); box-shadow: 0 0 12px rgba(99,102,241,0.6); }
+  42%  { background: linear-gradient(135deg, #3b82f6, #10b981); box-shadow: 0 0 12px rgba(59,130,246,0.6); }
+  57%  { background: linear-gradient(135deg, #10b981, #f59e0b); box-shadow: 0 0 12px rgba(16,185,129,0.6); }
+  71%  { background: linear-gradient(135deg, #f59e0b, #ef4444); box-shadow: 0 0 12px rgba(245,158,11,0.6); }
+  85%  { background: linear-gradient(135deg, #ef4444, #06b6d4); box-shadow: 0 0 12px rgba(239,68,68,0.6); }
+  100% { background: linear-gradient(135deg, #06b6d4, #a855f7); box-shadow: 0 0 12px rgba(6,182,212,0.6); }
+}
+
+.glitch-edge-left {
+  animation: glitch-morph-left 4s ease-in-out infinite;
+}
+
+.glitch-edge-right {
+  animation: glitch-morph-right 4s ease-in-out infinite;
+}
+
 html {
   font-size: var(--font-size);
   scroll-behavior: smooth;
