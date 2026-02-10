@@ -410,15 +410,19 @@ export default function HubPage() {
                 </div>
                 
                 {/* Right side — big ENTER NOW with left-fade */}
-                <div className="relative shrink-0 self-stretch flex items-center">
-                  {/* Ultra-long smooth fade — white takeover creeping from right */}
-                  <div className="absolute top-0 bottom-0 z-20 pointer-events-none" style={{ left: '-220px', width: '240px' }}>
-                    <div className="w-full h-full" style={{ background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.01) 15%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0.4) 65%, rgba(255,255,255,0.6) 75%, rgba(255,255,255,0.82) 85%, rgba(255,255,255,0.95) 93%, white 100%)' }} />
-                  </div>
-                  {/* Glitch edges — only on the outer right edge of the card, not the fade zone */}
+                {/* Right side — ENTER NOW with seamless blend */}
+                <div className="relative shrink-0 self-stretch flex items-center ml-auto">
+                  {/* Glitch edge on outer right */}
                   <GlitchEdge side="right" className="absolute top-0 bottom-0 z-0" style={{ left: '2px', right: '-5px', borderRadius: '0 12px 12px 0' }} />
-                  <div className="relative bg-white text-black px-8 py-4 self-stretch flex items-center rounded-r-xl z-10 group-hover:bg-zinc-100 transition-colors">
-                    <div className="flex items-center gap-2 font-display text-sm tracking-wide">
+                  {/* Single white block that fades out to the left */}
+                  <div
+                    className="relative self-stretch flex items-center px-8 py-4 rounded-r-xl z-10 text-black group-hover:brightness-95 transition-all"
+                    style={{
+                      background: 'linear-gradient(to left, white 40%, rgba(255,255,255,0.97) 50%, rgba(255,255,255,0.88) 58%, rgba(255,255,255,0.7) 66%, rgba(255,255,255,0.45) 74%, rgba(255,255,255,0.22) 82%, rgba(255,255,255,0.08) 90%, rgba(255,255,255,0.02) 96%, transparent 100%)',
+                      paddingLeft: '80px',
+                    }}
+                  >
+                    <div className="flex items-center gap-2 font-display text-sm tracking-wide whitespace-nowrap">
                       <span>ENTER NOW</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </div>
