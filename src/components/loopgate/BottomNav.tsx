@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Home, IterationCcw, Search, User, LogIn, Infinity as InfinityIcon } from "lucide-react";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import GlitchEdge from "@/components/loopgate/GlitchEdge";
 
 const navItems = [
   { to: "/hub", icon: Home, label: "Hub" },
@@ -71,8 +72,8 @@ export default function BottomNav() {
           >
             {/* Offset glitch layers - infinite color morphing */}
             <div className="relative">
-              <div className="absolute w-11 h-9 rounded-[6px] glitch-edge-left" style={{ left: '-4px' }} />
-              <div className="absolute w-11 h-9 rounded-[6px] glitch-edge-right" style={{ left: '4px' }} />
+              <GlitchEdge side="left" className="absolute w-11 h-9 rounded-[6px]" style={{ left: '-4px' }} />
+              <GlitchEdge side="right" className="absolute w-11 h-9 rounded-[6px]" style={{ left: '4px' }} />
               <div className="relative w-11 h-9 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
                 <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
               </div>

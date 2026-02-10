@@ -17,6 +17,7 @@ import { useBattles } from '@/hooks/useBattles';
 import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import LoopMonster from '@/components/loopgate/LoopMonster';
+import GlitchEdge from '@/components/loopgate/GlitchEdge';
 import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
@@ -386,8 +387,8 @@ export default function HubPage() {
                 <div className="flex items-center gap-4">
                   {/* Arena Icon - Infinite color-morphing glitch edges */}
                   <div className="relative flex items-center justify-center">
-                    <div className="absolute w-12 h-10 rounded-[6px] glitch-edge-left" style={{ left: '-4px' }} />
-                    <div className="absolute w-12 h-10 rounded-[6px] glitch-edge-right" style={{ left: '4px' }} />
+                    <GlitchEdge side="left" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '-4px' }} />
+                    <GlitchEdge side="right" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '4px' }} />
                     <div className="relative w-12 h-10 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
                       <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
                     </div>
@@ -401,8 +402,8 @@ export default function HubPage() {
                 
                 {/* Enter Button - Infinite color-morphing glitch edges */}
                 <div className="shrink-0 relative">
-                  <div className="absolute inset-0 rounded-[6px] glitch-edge-left" style={{ left: '-3px', right: '3px' }} />
-                  <div className="absolute inset-0 rounded-[6px] glitch-edge-right" style={{ left: '3px', right: '-3px' }} />
+                  <GlitchEdge side="left" className="absolute inset-0 rounded-[6px]" style={{ left: '-3px', right: '3px' }} />
+                  <GlitchEdge side="right" className="absolute inset-0 rounded-[6px]" style={{ left: '3px', right: '-3px' }} />
                   <div className="relative bg-white text-black font-display text-xs px-5 py-2.5 rounded-[6px] group-hover:scale-[1.02] transition-transform">
                     <div className="flex items-center gap-2">
                       <span>ENTER NOW</span>
