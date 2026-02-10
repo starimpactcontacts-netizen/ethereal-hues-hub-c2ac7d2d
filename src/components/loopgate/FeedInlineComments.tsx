@@ -134,7 +134,11 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
   };
 
   const submitContent = async (content: string) => {
-    if (!user || !profile || !content.trim()) return;
+    if (!user || !profile) {
+      toast.error('You must be signed in to comment');
+      return;
+    }
+    if (!content.trim()) return;
     setSending(true);
     try {
       const { data, error } = await supabase
@@ -149,7 +153,10 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Comment insert error:', error);
+        throw error;
+      }
 
       const obj: Comment = {
         ...data,
