@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Gavel, Trophy, Star, TrendingUp, Users, Crown, Medal, Award, ExternalLink, Flame, Target, Zap, Shield } from 'lucide-react';
+import { ArrowLink, AuthorityGavel, CrownSigil, MedalRing, TrophyPillar, ClassShield, PulseFlame, BoltCircuit, ContendersIcon, AwardCrest } from '@/components/loopgate/LoopgateIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,9 +26,9 @@ interface JudgeLeaderboardEntry {
 }
 
 function getRankIcon(rank: number) {
-  if (rank === 1) return <Crown className="w-6 h-6 text-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,0.6)]" />;
-  if (rank === 2) return <Medal className="w-5 h-5 text-slate-300 drop-shadow-[0_0_8px_rgba(203,213,225,0.4)]" />;
-  if (rank === 3) return <Award className="w-5 h-5 text-amber-600 drop-shadow-[0_0_8px_rgba(217,119,6,0.4)]" />;
+  if (rank === 1) return <CrownSigil className="text-yellow-400 drop-shadow-[0_0_12px_rgba(250,204,21,0.6)]" size={24} />;
+  if (rank === 2) return <MedalRing className="text-slate-300 drop-shadow-[0_0_8px_rgba(203,213,225,0.4)]" size={20} />;
+  if (rank === 3) return <AwardCrest className="text-amber-600 drop-shadow-[0_0_8px_rgba(217,119,6,0.4)]" size={20} />;
   return <span className="font-display text-lg text-muted-foreground">{rank}</span>;
 }
 
@@ -162,7 +162,7 @@ export default function JudgeLeaderboardPage() {
             animate={{ scale: 1, opacity: 1 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 bg-gold/10 border border-gold/30 rounded-full mb-5"
           >
-            <Shield size={12} className="text-gold" />
+            <ClassShield className="text-gold" size={12} />
             <span className="text-[10px] text-gold uppercase tracking-[0.4em] font-bold">Global Authority</span>
           </motion.div>
 
@@ -210,7 +210,7 @@ export default function JudgeLeaderboardPage() {
             transition={{ delay: 0.35 }}
             className="bg-black/40 backdrop-blur-md border border-gold/20 rounded-xl p-3.5 text-center"
           >
-            <Users className="w-4 h-4 text-gold mx-auto mb-1.5" />
+            <ContendersIcon className="text-gold mx-auto mb-1.5" size={16} />
             <p className="text-2xl font-display text-gold">{judges.length}</p>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Active Judges</p>
           </motion.div>
@@ -220,7 +220,7 @@ export default function JudgeLeaderboardPage() {
             transition={{ delay: 0.4 }}
             className="bg-black/40 backdrop-blur-md border border-border rounded-xl p-3.5 text-center"
           >
-            <Trophy className="w-4 h-4 text-gold mx-auto mb-1.5" />
+            <TrophyPillar className="text-gold mx-auto mb-1.5" size={16} />
             <p className="text-2xl font-display">{totalReviews}</p>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Total Reviews</p>
           </motion.div>
@@ -230,7 +230,7 @@ export default function JudgeLeaderboardPage() {
             transition={{ delay: 0.45 }}
             className="bg-black/40 backdrop-blur-md border border-border rounded-xl p-3.5 text-center"
           >
-            <Flame className="w-4 h-4 text-orange-400 mx-auto mb-1.5" />
+            <PulseFlame className="text-orange-400 mx-auto mb-1.5" size={16} />
             <p className="text-2xl font-display text-orange-400">{totalWeekly}</p>
             <p className="text-[9px] text-muted-foreground uppercase tracking-wider">This Week</p>
           </motion.div>
@@ -265,7 +265,7 @@ export default function JudgeLeaderboardPage() {
                 </div>
               </Link>
               <div className="h-16 bg-gradient-to-t from-slate-500/20 to-slate-400/5 border border-slate-400/20 rounded-t-lg mt-2 flex items-center justify-center">
-                <Medal className="w-5 h-5 text-slate-400/60" />
+                <MedalRing className="text-slate-400/60" size={20} />
               </div>
             </motion.div>
 
@@ -286,7 +286,7 @@ export default function JudgeLeaderboardPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                      <Crown className="w-6 h-6 text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]" />
+                      <CrownSigil className="text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.6)]" size={24} />
                     </div>
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-gold flex items-center justify-center text-[10px] font-bold text-background border-2 border-background">1</div>
                   </div>
@@ -297,7 +297,7 @@ export default function JudgeLeaderboardPage() {
                 </div>
               </Link>
               <div className="h-24 bg-gradient-to-t from-gold/20 to-gold/5 border border-gold/30 rounded-t-lg mt-2 flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-                <Crown className="w-6 h-6 text-gold/40" />
+                <CrownSigil className="text-gold/40" size={24} />
               </div>
             </motion.div>
 
@@ -325,7 +325,7 @@ export default function JudgeLeaderboardPage() {
                 </div>
               </Link>
               <div className="h-12 bg-gradient-to-t from-amber-700/20 to-amber-600/5 border border-amber-600/20 rounded-t-lg mt-2 flex items-center justify-center">
-                <Award className="w-5 h-5 text-amber-600/40" />
+                <AwardCrest className="text-amber-600/40" size={20} />
               </div>
             </motion.div>
           </div>
@@ -337,19 +337,19 @@ export default function JudgeLeaderboardPage() {
         <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
           <TabsList className="w-full grid grid-cols-4 bg-black/40 backdrop-blur-md border border-white/10 h-10">
             <TabsTrigger value="reviews" className="text-[10px] font-bold tracking-wider data-[state=active]:bg-gold data-[state=active]:text-background">
-              <Trophy className="w-3 h-3 mr-1" />
+              <TrophyPillar size={12} className="mr-1" />
               REVIEWS
             </TabsTrigger>
             <TabsTrigger value="class" className="text-[10px] font-bold tracking-wider data-[state=active]:bg-gold data-[state=active]:text-background">
-              <Shield className="w-3 h-3 mr-1" />
+              <ClassShield size={12} className="mr-1" />
               CLASS
             </TabsTrigger>
             <TabsTrigger value="weekly" className="text-[10px] font-bold tracking-wider data-[state=active]:bg-gold data-[state=active]:text-background">
-              <Flame className="w-3 h-3 mr-1" />
+              <PulseFlame size={12} className="mr-1" />
               WEEKLY
             </TabsTrigger>
             <TabsTrigger value="jxp" className="text-[10px] font-bold tracking-wider data-[state=active]:bg-gold data-[state=active]:text-background">
-              <Zap className="w-3 h-3 mr-1" />
+              <BoltCircuit size={12} className="mr-1" />
               JXP
             </TabsTrigger>
           </TabsList>
@@ -366,7 +366,7 @@ export default function JudgeLeaderboardPage() {
           </div>
         ) : sortedJudges.length === 0 ? (
           <div className="text-center py-16">
-            <Gavel className="w-14 h-14 text-muted-foreground mx-auto mb-4" />
+            <AuthorityGavel className="text-muted-foreground mx-auto mb-4" size={56} />
             <p className="font-display text-lg mb-1">NO JUDGES YET</p>
             <p className="text-sm text-muted-foreground">The authority awaits its first members</p>
           </div>
@@ -452,7 +452,7 @@ export default function JudgeLeaderboardPage() {
                       </p>
                     </div>
 
-                    <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <ArrowLink className="text-muted-foreground shrink-0" size={16} />
                   </div>
 
                   {/* Forbes headline for top 3 */}
