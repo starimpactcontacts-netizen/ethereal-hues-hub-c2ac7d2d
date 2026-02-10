@@ -16,10 +16,10 @@ export default function JudgeFormatInfo({ title, description, steps, contentTip 
     <>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-        className="p-1 hover:bg-white/10 rounded-full transition-colors"
+        className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
         title={`How ${title} works`}
       >
-        <Info className="w-3 h-3 text-zinc-500" />
+        <Info className="w-3.5 h-3.5 text-white/70" />
       </button>
 
       <AnimatePresence>
