@@ -1,22 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Gavel, Star, ExternalLink, Trophy, TrendingUp, Clock, Send, AlertCircle,
-  Share2, Download, Eye, Sparkles, MessageSquare, Crown, Zap, ArrowLeft
-} from 'lucide-react';
+import { Send, ArrowLeft, Share2, ExternalLink, AlertCircle } from 'lucide-react';
+import { AuthorityGavel, ScopeTarget, ArrowLink } from '@/components/loopgate/LoopgateIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import AuthorityBadge from '@/components/loopgate/AuthorityBadge';
-import LevelBadge from '@/components/loopgate/LevelBadge';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
-import JudgeBadge, { JUDGE_BADGES, REVIEW_STYLES } from '@/components/loopgate/JudgeBadge';
-import JudgeClassBadge, { getJudgeClassFromReviews } from '@/components/loopgate/JudgeClassBadge';
+import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
+import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
+import PublicJudgeVideos from '@/components/loopgate/PublicJudgeVideos';
+import BottomNav from '@/components/loopgate/BottomNav';
 import { detectPlatform } from '@/lib/urlValidation';
 
 interface JudgeProfile {
@@ -32,6 +27,7 @@ interface JudgeProfile {
   judge_specialty: string | null;
   judge_badge: string | null;
   review_style: string | null;
+  judge_xp: number;
 }
 
 interface JudgeStats {
@@ -51,46 +47,55 @@ interface RecentReview {
   judge_comment: string | null;
 }
 
-function getGrade(score: number): { grade: string; color: string; label: string } {
-  if (score >= 90) return { grade: 'S+', color: 'text-gold', label: 'Elite' };
-  if (score >= 80) return { grade: 'S', color: 'text-gold', label: 'Excellent' };
-  if (score >= 70) return { grade: 'A', color: 'text-green-400', label: 'Great' };
-  if (score >= 60) return { grade: 'B', color: 'text-blue-400', label: 'Good' };
-  if (score >= 50) return { grade: 'C', color: 'text-orange-400', label: 'Average' };
-  if (score >= 40) return { grade: 'D', color: 'text-orange-500', label: 'Below Avg' };
-  return { grade: 'F', color: 'text-red-500', label: 'Needs Work' };
+function getGrade(score: number): { grade: string; color: string } {
+  if (score >= 90) return { grade: 'S+', color: 'text-red-400' };
+  if (score >= 80) return { grade: 'S', color: 'text-red-400' };
+  if (score >= 70) return { grade: 'A', color: 'text-white' };
+  if (score >= 60) return { grade: 'B', color: 'text-zinc-300' };
+  if (score >= 50) return { grade: 'C', color: 'text-zinc-400' };
+  if (score >= 40) return { grade: 'D', color: 'text-zinc-500' };
+  return { grade: 'F', color: 'text-zinc-600' };
+}
+
+function calculateJudgeLevel(xp: number): number {
+  if (xp >= 5000) return 10;
+  if (xp >= 3500) return 9;
+  if (xp >= 2500) return 8;
+  if (xp >= 1800) return 7;
+  if (xp >= 1200) return 6;
+  if (xp >= 800) return 5;
+  if (xp >= 500) return 4;
+  if (xp >= 250) return 3;
+  if (xp >= 100) return 2;
+  return 1;
 }
 
 export default function JudgeProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { user, profile: userProfile } = useAuth();
   const navigate = useNavigate();
-  
+
   const [judge, setJudge] = useState<JudgeProfile | null>(null);
   const [stats, setStats] = useState<JudgeStats | null>(null);
   const [recentReviews, setRecentReviews] = useState<RecentReview[]>([]);
-  const [topReviews, setTopReviews] = useState<RecentReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [isJudge, setIsJudge] = useState(false);
-  
-  // Submit form state
+
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [platform, setPlatform] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<'verdicts' | 'videos'>('videos');
 
   useEffect(() => {
-    if (username) {
-      fetchJudgeProfile();
-    }
+    if (username) fetchJudgeProfile();
   }, [username]);
 
   async function fetchJudgeProfile() {
     setLoading(true);
     try {
-      // Find user by username
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, bio, level, xp, verification_status, judge_bio, judge_specialty, judge_badge, review_style')
+        .select('id, username, display_name, avatar_url, bio, level, xp, verification_status, judge_bio, judge_specialty, judge_badge, review_style, judge_xp')
         .eq('username', username)
         .single();
 
@@ -100,7 +105,6 @@ export default function JudgeProfilePage() {
         return;
       }
 
-      // Check if they have judge role
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -110,48 +114,38 @@ export default function JudgeProfilePage() {
 
       if (!roleData) {
         setIsJudge(false);
-        setJudge(profileData);
+        setJudge(profileData as any);
         setLoading(false);
         return;
       }
 
       setIsJudge(true);
-      setJudge(profileData);
+      setJudge(profileData as any);
 
-      // Fetch judge stats
-      const { data: reviewsData, error: reviewsError } = await supabase
+      const { data: reviewsData } = await supabase
         .from('review_requests')
         .select('id, total_score, reviewed_at, username, avatar_url, submission_url, judge_comment')
         .eq('judge_id', profileData.id)
         .eq('status', 'reviewed')
         .order('reviewed_at', { ascending: false });
 
-      if (!reviewsError && reviewsData) {
-        setRecentReviews(reviewsData.slice(0, 10) as RecentReview[]);
-        
-        // Get top reviews (highest scored)
-        const sorted = [...reviewsData].sort((a, b) => (b.total_score || 0) - (a.total_score || 0));
-        setTopReviews(sorted.slice(0, 5) as RecentReview[]);
-        
+      if (reviewsData) {
+        setRecentReviews(reviewsData.slice(0, 15) as RecentReview[]);
+
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        
-        const weeklyReviews = reviewsData.filter(r => 
+        const weeklyReviews = reviewsData.filter(r =>
           r.reviewed_at && new Date(r.reviewed_at) >= oneWeekAgo
         );
-        
         const avgScore = reviewsData.length > 0
           ? reviewsData.reduce((acc, r) => acc + (r.total_score || 0), 0) / reviewsData.length
           : 0;
-
-        // Calculate total XP awarded (25 per review for judges + 15 per for editors = 40 impact per review)
-        const totalXPAwarded = reviewsData.length * 40;
 
         setStats({
           totalReviews: reviewsData.length,
           avgScore: Math.round(avgScore * 10) / 10,
           thisWeek: weeklyReviews.length,
-          totalXPAwarded,
+          totalXPAwarded: reviewsData.length * 40,
         });
       }
     } catch (error) {
@@ -172,7 +166,6 @@ export default function JudgeProfilePage() {
       toast.error('Please enter a valid TikTok, Instagram, or YouTube URL');
       return;
     }
-
     setSubmitting(true);
     try {
       const { error } = await supabase
@@ -185,9 +178,7 @@ export default function JudgeProfilePage() {
           platform,
           status: 'pending',
         });
-
       if (error) throw error;
-
       toast.success(`Review requested from @${judge.username}!`);
       setSubmissionUrl('');
       setPlatform(null);
@@ -200,40 +191,33 @@ export default function JudgeProfilePage() {
   };
 
   const handleShare = async () => {
-    const shareText = `Check out @${judge?.username} on Loopgate - they've given ${stats?.totalReviews || 0} reviews with an average score of ${stats?.avgScore || 0}! 🔥\n\nGet your edits rated: loopgate.io/judges`;
-    
+    const shareText = `Get your edit rated by @${judge?.username} on Loopgate — ${stats?.totalReviews || 0} verdicts filed.\n\nloopgate.io/judge/${judge?.username}`;
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: `${judge?.username} - Loopgate Judge`,
-          text: shareText,
-          url: window.location.href,
-        });
-      } catch {
-        // User cancelled
-      }
+        await navigator.share({ title: `${judge?.username} — QOI Judge`, text: shareText, url: window.location.href });
+      } catch { /* cancelled */ }
     } else {
       navigator.clipboard.writeText(shareText + `\n${window.location.href}`);
-      toast.success('Copied to clipboard!');
+      toast.success('Copied to clipboard');
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-red-700 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!judge) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
-        <h1 className="font-display text-2xl mb-2">Judge Not Found</h1>
-        <p className="text-muted-foreground mb-6">@{username} doesn't exist or is not a judge.</p>
-        <Link to="/judges">
-          <Button variant="outline">View All Judges</Button>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+        <AlertCircle className="w-12 h-12 text-zinc-600 mb-4" />
+        <h1 className="font-display text-2xl mb-2 text-white">Not Found</h1>
+        <p className="text-zinc-500 mb-6">@{username} doesn't exist or is not a judge.</p>
+        <Link to="/judges" className="px-4 py-2 border border-zinc-700 text-sm text-zinc-300 hover:bg-zinc-900 transition-colors">
+          View Bureau
         </Link>
       </div>
     );
@@ -241,369 +225,286 @@ export default function JudgeProfilePage() {
 
   if (!isJudge) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <AlertCircle className="w-12 h-12 text-orange-500 mb-4" />
-        <h1 className="font-display text-2xl mb-2">Not a Judge</h1>
-        <p className="text-muted-foreground mb-6">@{username} is not currently a Loopgate judge.</p>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+        <AlertCircle className="w-12 h-12 text-zinc-600 mb-4" />
+        <h1 className="font-display text-2xl mb-2 text-white">Not a Judge</h1>
+        <p className="text-zinc-500 mb-6">@{username} is not currently in the Bureau.</p>
         <div className="flex gap-2">
-          <Link to={`/editor/${judge.id}`}>
-            <Button variant="outline">View Profile</Button>
+          <Link to={`/editor/${judge.id}`} className="px-4 py-2 border border-zinc-700 text-sm text-zinc-300 hover:bg-zinc-900 transition-colors">
+            View Profile
           </Link>
-          <Link to="/judges">
-            <Button className="bg-gold text-black hover:bg-gold/90">View All Judges</Button>
+          <Link to="/judges" className="px-4 py-2 bg-red-700 text-white text-sm hover:bg-red-600 transition-colors">
+            View Bureau
           </Link>
         </div>
       </div>
     );
   }
 
-  const judgeBadge = judge.judge_badge ? JUDGE_BADGES[judge.judge_badge] : null;
-  const reviewStyle = judge.review_style ? REVIEW_STYLES[judge.review_style as keyof typeof REVIEW_STYLES] : REVIEW_STYLES.full_qoi;
+  const judgeLevel = calculateJudgeLevel((judge as any).judge_xp || 0);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Hero Header */}
-      <div className="relative bg-gradient-to-b from-gold/10 via-background to-background overflow-hidden">
-        {/* Glow effects */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(218,165,32,0.15),transparent_50%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-gold/10 blur-[80px] rounded-full" />
-        
-        <div className="relative px-4 pt-4 pb-6">
-          {/* Back button & Share */}
-          <div className="flex items-center justify-between mb-4">
-            <button 
-              onClick={() => navigate(-1)}
-              className="p-2 hover:bg-surface-1 rounded-full transition-colors"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <button
-              onClick={handleShare}
-              className="p-2 hover:bg-surface-1 rounded-full transition-colors"
-            >
-              <Share2 size={20} />
-            </button>
-          </div>
+    <div className="min-h-screen bg-black pb-24">
+      {/* ═══ RED TOP ACCENT ═══ */}
+      <div className="h-[2px] bg-red-700" />
 
+      {/* ═══ HEADER BAR ═══ */}
+      <div className="flex items-center justify-between px-4 py-3">
+        <button onClick={() => navigate(-1)} className="p-1.5 hover:bg-white/5 transition-colors">
+          <ArrowLeft size={18} className="text-zinc-400" />
+        </button>
+        <div className="flex items-center gap-1">
+          <span className="text-[9px] text-zinc-600 uppercase tracking-[0.3em] font-mono">QOI Authority</span>
+        </div>
+        <button onClick={handleShare} className="p-1.5 hover:bg-white/5 transition-colors">
+          <Share2 size={16} className="text-zinc-400" />
+        </button>
+      </div>
+
+      {/* ═══ DOSSIER HEADER — compact, institutional ═══ */}
+      <div className="px-4 pb-4">
+        <div className="flex items-start gap-4">
           {/* Avatar */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="relative flex justify-center mb-4"
-          >
-            <div className="relative">
-              <Avatar className="w-28 h-28 border-4 border-gold/50 ring-4 ring-gold/20 shadow-lg shadow-gold/30">
-                <AvatarImage src={judge.avatar_url || undefined} alt={judge.username} />
-                <AvatarFallback className="bg-gold/20 text-gold text-3xl">
-                  {judge.username.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1">
-                <div className="bg-gold text-black p-2 rounded-full shadow-lg">
-                  <Gavel className="w-5 h-5" />
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Name & Badges */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <h1 className="font-display text-2xl">@{judge.username}</h1>
-              {judge.verification_status && <VerifiedBadge size="md" />}
-            </div>
-            
-            {judge.display_name && judge.display_name !== judge.username && (
-              <p className="text-sm text-muted-foreground mb-2">{judge.display_name}</p>
-            )}
-            
-            {/* Role badges */}
-            <div className="flex items-center justify-center gap-2 mb-2 flex-wrap">
-              <AuthorityBadge role="judge" size="sm" />
-              <LevelBadge level={judge.level} size="sm" />
-              {judgeBadge && <JudgeBadge badge={judgeBadge} size="sm" />}
-            </div>
-
-            {/* Judge Class Badge - based on reviews completed */}
-            {stats && (
-              <div className="flex justify-center mb-3">
-                <JudgeClassBadge 
-                  reviewCount={stats.totalReviews} 
-                  size="lg" 
-                  showLabel 
-                  showProgress 
-                />
+          <div className="relative shrink-0">
+            {judge.avatar_url ? (
+              <img
+                src={judge.avatar_url}
+                alt={judge.username}
+                className="w-20 h-20 rounded-sm object-cover"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-sm bg-red-950 flex items-center justify-center">
+                <AuthorityGavel size={28} className="text-red-400" />
               </div>
             )}
-
-            {/* Review Style */}
-            {reviewStyle && (
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-400 bg-purple-500/10">
-                  <Eye className="w-3 h-3 mr-1" />
-                  {reviewStyle.label}
-                </Badge>
-              </div>
-            )}
-
-            {/* Judge Bio */}
-            {judge.judge_bio && (
-              <p className="text-sm text-muted-foreground max-w-sm mx-auto mb-2">
-                {judge.judge_bio}
-              </p>
-            )}
-            
-            {/* What they look for */}
-            {judge.judge_specialty && (
-              <div className="bg-surface-1/50 border border-border/50 rounded-lg px-4 py-2 inline-block mb-4">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">What I look for:</p>
-                <p className="text-sm font-medium">{judge.judge_specialty}</p>
-              </div>
-            )}
-
-            {/* XP */}
-            <p className="text-xs text-muted-foreground">
-              <Zap className="w-3 h-3 inline mr-1 text-gold" />
-              {judge.xp.toLocaleString()} XP
-            </p>
           </div>
 
-          {/* Request Review - RIGHT AT THE TOP */}
-          <div className="px-4 mt-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-gradient-to-br from-gold/10 to-transparent border border-gold/30 rounded-xl p-4"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Send className="w-5 h-5 text-gold" />
-                <h2 className="font-display text-lg">Get Your Edit Rated</h2>
-              </div>
+          {/* Identity */}
+          <div className="flex-1 min-w-0 pt-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="font-display text-xl text-white tracking-wide">
+                {(judge.display_name || judge.username).toUpperCase()}
+              </h1>
+              {judge.verification_status && <VerifiedBadge size="sm" />}
+            </div>
+            <p className="text-[11px] text-zinc-500 mb-2">@{judge.username}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <JudgeLevelBadge level={judgeLevel} size="sm" />
+              {stats && <JudgeClassBadge reviewCount={stats.totalReviews} size="sm" />}
+              <span className="text-[10px] text-zinc-600 font-mono">{(judge as any).judge_xp || 0} JXP</span>
+            </div>
+          </div>
+        </div>
 
-              {/* Simple step-by-step */}
-              <div className="space-y-1.5 mb-4">
-                <p className="text-xs text-muted-foreground flex items-start gap-2">
-                  <span className="bg-gold/20 text-gold font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">1</span>
-                  <span>Login or create a free Loopgate account</span>
-                </p>
-                <p className="text-xs text-muted-foreground flex items-start gap-2">
-                  <span className="bg-gold/20 text-gold font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">2</span>
-                  <span>Paste a link to your edit (TikTok, Instagram, or YouTube)</span>
-                </p>
-                <p className="text-xs text-muted-foreground flex items-start gap-2">
-                  <span className="bg-gold/20 text-gold font-bold rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-[10px]">3</span>
-                  <span>@{judge.username} reviews it — you get a score, feedback & +15 XP</span>
-                </p>
-              </div>
+        {/* Bio line */}
+        {judge.judge_bio && (
+          <p className="text-[12px] text-zinc-400 mt-3 border-l-2 border-red-800 pl-3 italic leading-relaxed">
+            {judge.judge_bio}
+          </p>
+        )}
 
-              {user ? (
-                <div className="space-y-3">
-                  <Input
-                    placeholder="Paste your TikTok, Instagram, or YouTube URL..."
-                    value={submissionUrl}
-                    onChange={(e) => handleUrlChange(e.target.value)}
-                    className="bg-surface-0 border-border"
-                  />
-                  {platform && (
-                    <p className="text-xs text-green-400">
-                      ✓ {platform.charAt(0).toUpperCase() + platform.slice(1)} link detected
-                    </p>
-                  )}
-                  <Button
-                    onClick={handleSubmitRequest}
-                    disabled={!submissionUrl.trim() || !platform || submitting}
-                    className="w-full bg-gold hover:bg-gold/90 text-black font-semibold h-12 text-base"
-                  >
-                    {submitting ? 'Submitting...' : '🔥 Submit for Review (+15 XP)'}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Link to={`/login?returnTo=/judge/${username}`}>
-                    <Button className="w-full bg-gold hover:bg-gold/90 text-black font-bold h-12 text-base">
-                      Login & Submit Your Edit
-                    </Button>
-                  </Link>
-                  <Link to={`/start?returnTo=/judge/${username}`}>
-                    <Button variant="outline" className="w-full border-gold/30 text-gold hover:bg-gold/10 h-10">
-                      New here? Create Free Account
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </motion.div>
+        {/* Specialty */}
+        {judge.judge_specialty && (
+          <div className="mt-3 flex items-center gap-2">
+            <ScopeTarget size={12} className="text-zinc-600" />
+            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">Focus:</span>
+            <span className="text-[11px] text-zinc-300">{judge.judge_specialty}</span>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ STATS — wire-service row ═══ */}
+      {stats && (
+        <>
+          <div className="h-px bg-zinc-800" />
+          <div className="grid grid-cols-3 gap-px bg-zinc-800">
+            <div className="bg-black p-3 text-center">
+              <div className="text-2xl font-display text-white">{stats.totalReviews}</div>
+              <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">Verdicts</div>
+            </div>
+            <div className="bg-black p-3 text-center">
+              <div className="text-2xl font-display text-white">{stats.avgScore}</div>
+              <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">Avg Score</div>
+            </div>
+            <div className="bg-black p-3 text-center">
+              <div className="text-2xl font-display text-red-400">{stats.thisWeek}</div>
+              <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">This Week</div>
+            </div>
+          </div>
+          <div className="h-px bg-zinc-800" />
+        </>
+      )}
+
+      {/* ═══ SUBMIT CTA — RIGHT AT TOP, institutional ═══ */}
+      <div className="px-4 py-4">
+        <div className="border border-red-800/50 bg-red-950/20">
+          <div className="h-0.5 bg-red-700" />
+          <div className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Send size={14} className="text-red-400" />
+              <h2 className="font-display text-sm uppercase tracking-[0.15em] text-white">Submit for Official Review</h2>
+            </div>
+
+            {user ? (
+              <div className="space-y-3">
+                <Input
+                  placeholder="Paste TikTok, Instagram, or YouTube URL..."
+                  value={submissionUrl}
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  className="h-10 bg-black border-zinc-800 text-sm placeholder:text-zinc-700 focus:border-red-800"
+                />
+                {platform && (
+                  <p className="text-[10px] text-green-500 font-mono">
+                    ✓ {platform.toUpperCase()} DETECTED
+                  </p>
+                )}
+                <button
+                  onClick={handleSubmitRequest}
+                  disabled={!submissionUrl.trim() || !platform || submitting}
+                  className="w-full py-3 bg-red-700 hover:bg-red-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-sm font-display uppercase tracking-[0.15em] transition-colors flex items-center justify-center gap-2"
+                >
+                  <Send size={14} />
+                  {submitting ? 'Filing...' : 'File Review Request'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
+                  Submit your edit and @{judge.username} will score, grade, and give feedback. You earn +15 XP.
+                </p>
+                <Link to={`/login?returnTo=/judge/${username}`}>
+                  <button className="w-full py-3 bg-red-700 hover:bg-red-600 text-white text-sm font-display uppercase tracking-[0.15em] transition-colors">
+                    Login & Submit Your Edit
+                  </button>
+                </Link>
+                <Link to={`/start?returnTo=/judge/${username}`}>
+                  <button className="w-full py-2.5 border border-zinc-700 text-zinc-400 text-[11px] font-display uppercase tracking-wider hover:bg-zinc-900 transition-colors">
+                    New Here? Create Free Account
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      {stats && (
-        <div className="px-4 -mt-2 mb-6">
-          <div className="grid grid-cols-4 gap-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-surface-1 border border-border rounded-xl p-3 text-center"
-            >
-              <Trophy className="w-4 h-4 text-gold mx-auto mb-1" />
-              <p className="text-xl font-display text-gold">{stats.totalReviews}</p>
-              <p className="text-[9px] text-muted-foreground">Reviews</p>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-surface-1 border border-border rounded-xl p-3 text-center"
-            >
-              <Star className="w-4 h-4 text-gold mx-auto mb-1" />
-              <p className="text-xl font-display">{stats.avgScore}</p>
-              <p className="text-[9px] text-muted-foreground">Avg Score</p>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-surface-1 border border-border rounded-xl p-3 text-center"
-            >
-              <TrendingUp className="w-4 h-4 text-green-400 mx-auto mb-1" />
-              <p className="text-xl font-display text-green-400">{stats.thisWeek}</p>
-              <p className="text-[9px] text-muted-foreground">This Week</p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-surface-1 border border-border rounded-xl p-3 text-center"
-            >
-              <Sparkles className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-              <p className="text-xl font-display text-purple-400">{stats.totalXPAwarded}</p>
-              <p className="text-[9px] text-muted-foreground">XP Given</p>
-            </motion.div>
-          </div>
+      {/* ═══ TAB BAR — Videos / Verdicts ═══ */}
+      <div className="border-t border-zinc-800">
+        <div className="flex">
+          <button
+            onClick={() => setActiveTab('videos')}
+            className={`flex-1 py-3 text-center text-[11px] font-display uppercase tracking-[0.2em] transition-colors border-b-2 ${
+              activeTab === 'videos'
+                ? 'text-white border-b-red-600'
+                : 'text-zinc-600 border-b-transparent hover:text-zinc-400'
+            }`}
+          >
+            Videos
+          </button>
+          <button
+            onClick={() => setActiveTab('verdicts')}
+            className={`flex-1 py-3 text-center text-[11px] font-display uppercase tracking-[0.2em] transition-colors border-b-2 ${
+              activeTab === 'verdicts'
+                ? 'text-white border-b-red-600'
+                : 'text-zinc-600 border-b-transparent hover:text-zinc-400'
+            }`}
+          >
+            Verdicts ({stats?.totalReviews || 0})
+          </button>
         </div>
-      )}
+      </div>
 
+      {/* ═══ TAB CONTENT ═══ */}
+      {activeTab === 'videos' ? (
+        <PublicJudgeVideos userId={judge.id} />
+      ) : (
+        <div>
+          {recentReviews.length > 0 ? (
+            <div>
+              {/* Column header */}
+              <div className="flex items-center gap-3 px-4 py-2 border-b border-zinc-900">
+                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono w-8">Grade</span>
+                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono flex-1">Editor</span>
+                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono w-12 text-right">Score</span>
+                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono w-16 text-right">Date</span>
+              </div>
 
-      {/* Top Reviews - Showcase */}
-      {topReviews.length > 0 && (
-        <div className="px-4 mb-6">
-          <h2 className="font-display text-lg mb-3 flex items-center gap-2">
-            <Crown className="w-4 h-4 text-gold" />
-            Top Rated Reviews
-          </h2>
-          
-          <div className="space-y-2">
-            {topReviews.slice(0, 3).map((review, i) => {
-              const { grade, color, label } = getGrade(review.total_score || 0);
-              return (
-                <motion.div
-                  key={review.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * i }}
-                  className="bg-gradient-to-r from-gold/5 to-transparent border border-gold/20 rounded-lg p-3"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-display text-lg ${color} bg-surface-1`}>
+              {recentReviews.map((review, i) => {
+                const { grade, color } = getGrade(review.total_score || 0);
+                return (
+                  <motion.div
+                    key={review.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.02 }}
+                    className="group"
+                  >
+                    <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
+                      {/* Grade */}
+                      <div className={`w-8 text-center font-display text-sm ${color}`}>
                         {grade}
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">@{review.username}</p>
-                        <p className="text-[10px] text-muted-foreground">{label} • {review.total_score}/100</p>
+
+                      {/* Editor */}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {review.avatar_url ? (
+                          <img src={review.avatar_url} alt="" className="w-6 h-6 rounded-sm object-cover" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-sm bg-zinc-900 flex items-center justify-center text-[9px] text-zinc-500 font-bold">
+                            {review.username[0]?.toUpperCase()}
+                          </div>
+                        )}
+                        <span className="text-[12px] text-zinc-300 truncate">@{review.username}</span>
                       </div>
+
+                      {/* Score */}
+                      <span className="text-[12px] text-zinc-400 font-mono w-12 text-right">
+                        {review.total_score}
+                      </span>
+
+                      {/* Date */}
+                      <span className="text-[10px] text-zinc-600 font-mono w-16 text-right">
+                        {new Date(review.reviewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </span>
+
+                      {/* Link */}
+                      <a
+                        href={review.submission_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 p-1 hover:bg-white/5 transition-colors"
+                      >
+                        <ExternalLink size={12} className="text-zinc-600" />
+                      </a>
                     </div>
-                    <a
-                      href={review.submission_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gold hover:text-gold/80"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </div>
-                  {review.judge_comment && (
-                    <div className="bg-surface-1/50 rounded-lg p-2">
-                      <p className="text-xs text-muted-foreground line-clamp-2">"{review.judge_comment}"</p>
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
+
+                    {/* Comment preview */}
+                    {review.judge_comment && (
+                      <div className="px-4 pb-2 pl-16">
+                        <p className="text-[10px] text-zinc-600 italic line-clamp-1">"{review.judge_comment}"</p>
+                      </div>
+                    )}
+
+                    <div className="h-px bg-zinc-900 ml-12" />
+                  </motion.div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 px-4">
+              <div className="w-12 h-12 mx-auto border border-zinc-800 flex items-center justify-center mb-3">
+                <AuthorityGavel className="text-zinc-600" size={20} />
+              </div>
+              <p className="font-display text-xs tracking-wider text-zinc-400 mb-1">NO VERDICTS FILED</p>
+              <p className="text-[10px] text-zinc-600">
+                Be the first to get reviewed by @{judge.username}
+              </p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Recent Reviews */}
-      {recentReviews.length > 0 && (
-        <div className="px-4">
-          <h2 className="font-display text-lg mb-3 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            Recent Reviews
-          </h2>
-          
-          <div className="space-y-2">
-            {recentReviews.map((review, i) => {
-              const { grade, color } = getGrade(review.total_score || 0);
-              return (
-                <motion.div
-                  key={review.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * i }}
-                  className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={review.avatar_url || undefined} />
-                      <AvatarFallback className="text-xs">
-                        {review.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">@{review.username}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(review.reviewed_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className={`font-display text-lg ${color}`}>{grade}</p>
-                      <p className="text-xs text-muted-foreground">{review.total_score}/100</p>
-                    </div>
-                    <a
-                      href={review.submission_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gold hover:text-gold/80"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {recentReviews.length === 0 && (
-        <div className="px-4 py-12 text-center">
-          <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <p className="font-display text-lg mb-2">No Reviews Yet</p>
-          <p className="text-sm text-muted-foreground">
-            Be the first to get reviewed by @{judge.username}!
-          </p>
-        </div>
-      )}
+      <BottomNav />
     </div>
   );
 }
