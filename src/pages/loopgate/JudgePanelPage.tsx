@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User } from 'lucide-react';
 import JudgeOnboardingCard, { useJudgeOnboarding } from '@/components/loopgate/JudgeOnboardingCard';
+import JudgeFormatInfo from '@/components/loopgate/JudgeFormatInfo';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,9 +16,37 @@ import JudgeFlywheel from '@/components/loopgate/JudgeFlywheel';
 import JudgeScoringModal from '@/components/loopgate/JudgeScoringModal';
 import JudgeMissionsPanel from '@/components/loopgate/JudgeMissionsPanel';
 import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
+import Judge1v1Rating from '@/components/loopgate/Judge1v1Rating';
+
+type JudgeFormat = 'solo' | '1v1';
+
+const SOLO_INFO = {
+  title: 'Solo Edit Rating',
+  description: 'Rate individual edits submitted to your inbox. The classic judge format — editors submit, you score, export the result card.',
+  steps: [
+    'Share your judge link so editors submit to your inbox',
+    'Watch their edit and pick a scoring mode (QOI, 1-10, Tier, etc.)',
+    'Score and export the result card for your TikTok/Reels',
+    'Editors get notified, see their score, and come back for more',
+  ],
+  contentTip: 'Screen record yourself reacting + scoring for the best engagement. The result card auto-brands with Loopgate.',
+};
+
+const VS_INFO = {
+  title: '1v1 Edit Rating',
+  description: 'Compare two edits head-to-head, pick a winner, and auto-generate a TikTok-ready VS result card.',
+  steps: [
+    'Upload screenshots or thumbnails of both edits',
+    'Enter both editor usernames',
+    'Pick the winner and set scores',
+    'Export the VS card — screen record or screenshot for content',
+  ],
+  contentTip: 'Show 5 sec of each edit in your video, then reveal the result card. Editors go crazy for revenge matches.',
+};
 
 export default function JudgePanelPage() {
   const { profile, user } = useAuth();
+  const [activeFormat, setActiveFormat] = useState<JudgeFormat>('solo');
   const [activeTab, setActiveTab] = useState('inbox');
   const [showTemplates, setShowTemplates] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -26,11 +55,10 @@ export default function JudgePanelPage() {
   const [scoringFromFlywheel, setScoringFromFlywheel] = useState<any>(null);
   const onboarding = useJudgeOnboarding();
 
-  // Fetch inbox editors for flywheel — pull from judge_inbox so all routed submissions appear
+  // Fetch inbox editors for flywheel
   useEffect(() => {
     if (!user?.id) return;
     const fetchInbox = async () => {
-      // Get all non-dismissed inbox items for this judge
       const { data: inboxData } = await supabase
         .from('judge_inbox')
         .select('review_request_id')
@@ -116,55 +144,91 @@ export default function JudgePanelPage() {
         <JudgePanelStats />
       </div>
 
-      {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full bg-black rounded-none border-b border-zinc-800 h-10 p-0">
-          <TabsTrigger
-            value="missions"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
+      {/* FORMAT SELECTOR — big clear tabs */}
+      <div className="px-3 py-2 border-b border-zinc-800">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveFormat('solo')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+              activeFormat === 'solo'
+                ? 'bg-white text-black border-white'
+                : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+            }`}
           >
-            <Target className="w-3 h-3" />
-            Missions
-          </TabsTrigger>
-          <TabsTrigger
-            value="inbox"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
+            <User className="w-3.5 h-3.5" />
+            Solo Rating
+            <JudgeFormatInfo {...SOLO_INFO} />
+          </button>
+          <button
+            onClick={() => setActiveFormat('1v1')}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+              activeFormat === '1v1'
+                ? 'bg-white text-black border-white'
+                : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+            }`}
           >
-            <Inbox className="w-3 h-3" />
-            Inbox
-          </TabsTrigger>
-          <TabsTrigger
-            value="completed"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
-          >
-            <CheckCircle className="w-3 h-3" />
-            Done
-          </TabsTrigger>
-          <TabsTrigger
-            value="feed"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
-          >
-            <BarChart3 className="w-3 h-3" />
-            Feed
-          </TabsTrigger>
-        </TabsList>
+            <Swords className="w-3.5 h-3.5" />
+            1v1 Rating
+            <JudgeFormatInfo {...VS_INFO} />
+          </button>
+        </div>
+      </div>
 
-        <TabsContent value="missions" className="mt-0">
-          <JudgeMissionsPanel />
-        </TabsContent>
+      {/* SOLO FORMAT */}
+      {activeFormat === 'solo' && (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full bg-black rounded-none border-b border-zinc-800 h-10 p-0">
+            <TabsTrigger
+              value="missions"
+              className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
+            >
+              <Target className="w-3 h-3" />
+              Missions
+            </TabsTrigger>
+            <TabsTrigger
+              value="inbox"
+              className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
+            >
+              <Inbox className="w-3 h-3" />
+              Inbox
+            </TabsTrigger>
+            <TabsTrigger
+              value="completed"
+              className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
+            >
+              <CheckCircle className="w-3 h-3" />
+              Done
+            </TabsTrigger>
+            <TabsTrigger
+              value="feed"
+              className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
+            >
+              <BarChart3 className="w-3 h-3" />
+              Feed
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="inbox" className="mt-0">
-          <JudgeInbox />
-        </TabsContent>
+          <TabsContent value="missions" className="mt-0">
+            <JudgeMissionsPanel />
+          </TabsContent>
+          <TabsContent value="inbox" className="mt-0">
+            <JudgeInbox />
+          </TabsContent>
+          <TabsContent value="completed" className="mt-0">
+            <CompletedReviewsList />
+          </TabsContent>
+          <TabsContent value="feed" className="mt-0">
+            <JudgeLiveFeed />
+          </TabsContent>
+        </Tabs>
+      )}
 
-        <TabsContent value="completed" className="mt-0">
-          <CompletedReviewsList />
-        </TabsContent>
-
-        <TabsContent value="feed" className="mt-0">
-          <JudgeLiveFeed />
-        </TabsContent>
-      </Tabs>
+      {/* 1v1 FORMAT */}
+      {activeFormat === '1v1' && (
+        <div className="px-3 pt-3">
+          <Judge1v1Rating />
+        </div>
+      )}
 
       {/* Card Template Preview Modal */}
       <CardTemplatePreview 
