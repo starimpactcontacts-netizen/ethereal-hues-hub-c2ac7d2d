@@ -475,8 +475,18 @@ export default function JudgeHubPage() {
       {/* Featured Judge — Editorial Feature */}
       <FeaturedJudgeHero />
 
-      {/* Submit for Review — institutional CTA */}
-      <div className="px-4 py-4">
+      {/* Judge Actions — Start Judging + Submit for Review */}
+      <div className="px-4 py-4 space-y-2">
+        {(isJudge || isDev) && (
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate('/judge-panel')}
+            className="w-full py-4 bg-white hover:bg-zinc-100 text-black font-display text-sm uppercase tracking-[0.2em] flex items-center justify-center gap-2.5 transition-colors"
+          >
+            <AuthorityGavel size={16} />
+            Start Judging
+          </motion.button>
+        )}
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={handleQuickSubmit}
