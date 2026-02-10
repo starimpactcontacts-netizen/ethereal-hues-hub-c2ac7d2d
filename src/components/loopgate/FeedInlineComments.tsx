@@ -214,8 +214,10 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
       {/* Comment input */}
       <div className="relative">
         {showGifPicker && (
-          <div className="absolute bottom-full left-0 right-0 mb-2 z-50">
-            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+          <div className="fixed inset-x-0 bottom-[120px] z-50 px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+            <div className="bg-card border border-border rounded-xl shadow-2xl max-h-[300px] overflow-hidden">
+              <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+            </div>
           </div>
         )}
         <div className="flex items-center gap-2.5 mb-3">
