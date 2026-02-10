@@ -389,16 +389,13 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-r from-surface-1 via-background to-transparent group-hover:border-white/20 transition-colors">
-            {/* One-sided shiny glow effect */}
-            <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-gold/15 via-purple-500/10 to-transparent" />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-24 h-24 bg-gold/20 rounded-full blur-2xl group-hover:bg-gold/30 transition-colors" />
-            
+          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background group-hover:border-white/20 transition-colors">
             {/* Content */}
-            <div className="relative p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <div className="relative flex items-center">
+                {/* Left side — icon + text */}
+                <div className="flex items-center gap-4 p-4 flex-1 min-w-0">
                   {/* Arena Icon - Infinite color-morphing glitch edges */}
-                  <div className="relative flex items-center justify-center">
+                  <div className="relative flex items-center justify-center shrink-0">
                     <GlitchEdge side="left" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '-4px' }} />
                     <GlitchEdge side="right" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '4px' }} />
                     <div className="relative w-12 h-10 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
@@ -407,19 +404,22 @@ export default function HubPage() {
                   </div>
                   
                   <div>
-                    <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
+                    <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-white transition-colors duration-300">ARENA</h2>
                     <p className="text-xs text-muted-foreground font-medium">Enter the competition</p>
                   </div>
                 </div>
                 
-                {/* Enter Button - Infinite color-morphing glitch edges */}
-                <div className="shrink-0 relative">
-                  <GlitchEdge side="left" className="absolute inset-0 rounded-[6px]" style={{ left: '-3px', right: '3px' }} />
-                  <GlitchEdge side="right" className="absolute inset-0 rounded-[6px]" style={{ left: '3px', right: '-3px' }} />
-                  <div className="relative bg-white text-black font-display text-xs px-5 py-2.5 rounded-[6px] group-hover:scale-[1.02] transition-transform">
-                    <div className="flex items-center gap-2">
+                {/* Right side — big ENTER NOW with left-fade */}
+                <div className="relative shrink-0 self-stretch flex items-center">
+                  {/* Fade from dark to white */}
+                  <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-white/95 z-10" />
+                  {/* Glitch edges on the white block */}
+                  <GlitchEdge side="left" className="absolute top-0 bottom-0 rounded-r-xl z-0" style={{ left: '-5px', right: '5px' }} />
+                  <GlitchEdge side="right" className="absolute top-0 bottom-0 rounded-r-xl z-0" style={{ left: '5px', right: '-5px' }} />
+                  <div className="relative bg-white text-black px-8 py-4 self-stretch flex items-center rounded-r-xl z-10 group-hover:bg-zinc-100 transition-colors">
+                    <div className="flex items-center gap-2 font-display text-sm tracking-wide">
                       <span>ENTER NOW</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </div>
