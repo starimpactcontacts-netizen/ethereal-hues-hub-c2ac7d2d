@@ -392,33 +392,63 @@ export default function JudgeHubPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Compact Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => navigate(-1)}
-              className="p-1.5 hover:bg-surface-1 rounded-full transition-colors"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center">
-                <Gavel size={16} className="text-gold" />
+      {/* ═══════════ CINEMATIC HEADER ═══════════ */}
+      <div className="relative overflow-hidden">
+        {/* Background layers */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/12 via-gold/4 to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.2),transparent_55%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-gold/10 blur-[100px] rounded-full" />
+        
+        {/* Gold line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+        <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-gold/15" />
+        <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-gold/15" />
+
+        <div className="relative z-10 px-4 pt-4 pb-6">
+          {/* Nav bar */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => navigate(-1)}
+                className="p-1.5 hover:bg-white/5 rounded-full transition-colors"
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <div className="flex items-center gap-2 px-3 py-1 bg-gold/10 border border-gold/20 rounded-full">
+                <Gavel size={12} className="text-gold" />
+                <span className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold">Authority</span>
               </div>
-              <h1 className="font-display text-lg tracking-wide">QOI JUDGES</h1>
             </div>
+            
+            {(isJudge || isDev) && (
+              <Link
+                to="/judge-panel"
+                className="px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-lg text-xs font-medium text-gold hover:bg-gold/20 transition-colors flex items-center gap-1.5"
+              >
+                <Target size={12} />
+                Panel
+              </Link>
+            )}
           </div>
-          
-          {(isJudge || isDev) && (
-            <Link
-              to="/judge-panel"
-              className="px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-lg text-xs font-medium text-gold hover:bg-gold/20 transition-colors flex items-center gap-1.5"
+
+          {/* Hero title */}
+          <div className="text-center">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="font-display text-4xl tracking-wider text-white mb-2 drop-shadow-[0_0_30px_rgba(212,175,55,0.15)]"
             >
-              <Target size={12} />
-              Panel
-            </Link>
-          )}
+              QOI JUDGES
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-[11px] text-muted-foreground uppercase tracking-[0.2em]"
+            >
+              The elite authority that rates, ranks, and elevates
+            </motion.p>
+          </div>
         </div>
       </div>
 
