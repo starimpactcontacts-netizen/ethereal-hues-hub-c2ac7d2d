@@ -2550,6 +2550,41 @@ export type Database = {
         }
         Relationships: []
       }
+      judge_inbox: {
+        Row: {
+          added_at: string
+          dismissed: boolean
+          dismissed_at: string | null
+          id: string
+          judge_id: string
+          review_request_id: string
+        }
+        Insert: {
+          added_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          id?: string
+          judge_id: string
+          review_request_id: string
+        }
+        Update: {
+          added_at?: string
+          dismissed?: boolean
+          dismissed_at?: string | null
+          id?: string
+          judge_id?: string
+          review_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "judge_inbox_review_request_id_fkey"
+            columns: ["review_request_id"]
+            isOneToOne: false
+            referencedRelation: "review_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       judge_rating_videos: {
         Row: {
           bonus_xp_awarded: number | null
