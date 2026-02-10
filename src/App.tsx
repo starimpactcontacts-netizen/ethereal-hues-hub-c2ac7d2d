@@ -42,6 +42,7 @@ import JudgeLeaderboardPage from "./pages/loopgate/JudgeLeaderboardPage";
 import JudgeHubPage from "./pages/loopgate/JudgeHubPage";
 import JudgePanelPage from "./pages/loopgate/JudgePanelPage";
 import JudgeApplicationPage from "./pages/loopgate/JudgeApplicationPage";
+import CreateJudgeDivisionPage from "./pages/loopgate/CreateJudgeDivisionPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import SanctionedTournamentPage from "./pages/loopgate/SanctionedTournamentPage";
 import BattleDetailPage from "./pages/loopgate/BattleDetailPage";
@@ -271,6 +272,7 @@ export default function App() {
               <Route path="/judges/leaderboard" element={<JudgeLeaderboardPage />} />
               <Route path="/judges/apply" element={<JudgeApplicationPage />} />
               <Route path="/judge/:username" element={<JudgeProfilePage />} />
+              <Route path="/judges/divisions/create" element={<CreateJudgeDivisionPage />} />
             </Route>
 
             {/* Protected routes - auth required */}

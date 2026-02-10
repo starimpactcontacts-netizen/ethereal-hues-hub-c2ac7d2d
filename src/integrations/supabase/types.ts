@@ -1274,6 +1274,7 @@ export type Database = {
           featured_at: string | null
           id: string
           is_featured: boolean | null
+          is_judge_division: boolean
           join_type: string
           max_members: number | null
           member_count: number
@@ -1298,6 +1299,7 @@ export type Database = {
           featured_at?: string | null
           id?: string
           is_featured?: boolean | null
+          is_judge_division?: boolean
           join_type?: string
           max_members?: number | null
           member_count?: number
@@ -1322,6 +1324,7 @@ export type Database = {
           featured_at?: string | null
           id?: string
           is_featured?: boolean | null
+          is_judge_division?: boolean
           join_type?: string
           max_members?: number | null
           member_count?: number

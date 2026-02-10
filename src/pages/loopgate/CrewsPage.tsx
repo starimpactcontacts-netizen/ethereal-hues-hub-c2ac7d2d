@@ -247,6 +247,7 @@ export default function CrewsPage() {
     const { data: allCrews, error } = await supabase
       .from("crews")
       .select("*")
+      .neq("is_judge_division", true)
       .order("member_count", { ascending: false });
 
     if (error) {

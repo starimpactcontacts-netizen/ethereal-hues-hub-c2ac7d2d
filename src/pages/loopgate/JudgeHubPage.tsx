@@ -17,6 +17,7 @@ import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import JudgeSpotlight from '@/components/loopgate/JudgeSpotlight';
 import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
+import JudgeDivisionsSection from '@/components/loopgate/JudgeDivisionsSection';
 
 interface JudgeProfile {
   id: string;
@@ -501,6 +502,9 @@ export default function JudgeHubPage() {
         </div>
         <JudgeReviewsFeed />
       </div>
+
+      {/* Judge Divisions */}
+      <JudgeDivisionsSection />
 
       {/* Become a Judge — Recruitment */}
       {!isJudge && !isTrialJudge && (
