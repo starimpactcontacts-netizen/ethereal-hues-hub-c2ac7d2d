@@ -24,13 +24,15 @@ interface ReviewRequest {
 }
 
 // Scoring modes
-type ScoringMode = 'full' | 'vibes' | 'two_pillar' | 'tier_only';
+type ScoringMode = 'full' | 'vibes' | 'two_pillar' | 'tier_only' | 'simple_10' | 'comment_only';
 
 const SCORING_MODES = [
   { id: 'full' as const, label: 'Full QOI', desc: '5 pillars' },
   { id: 'vibes' as const, label: 'Vibes', desc: '1 score' },
+  { id: 'simple_10' as const, label: '1-10', desc: 'Simple' },
   { id: 'two_pillar' as const, label: 'Quick', desc: '2 pillars' },
   { id: 'tier_only' as const, label: 'Tier', desc: 'S-F only' },
+  { id: 'comment_only' as const, label: 'Comment', desc: 'Words only' },
 ];
 
 // Score pillars for full mode (matching JudgeReviewCard: 15+25+25+10+25=100)
@@ -66,8 +68,10 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
     execution: 15,
   });
   const [vibesScore, setVibesScore] = useState(70);
+  const [simpleScore, setSimpleScore] = useState(7);
   const [selectedTier, setSelectedTier] = useState<string>('B');
   const [comment, setComment] = useState('');
+  const [commentOnlyText, setCommentOnlyText] = useState('');
   const [saving, setSaving] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [completedReviewData, setCompletedReviewData] = useState<any>(null);
@@ -78,10 +82,14 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
         return scores.emotion + scores.creativity + scores.sync + scores.identity + scores.execution;
       case 'vibes':
         return vibesScore;
+      case 'simple_10':
+        return simpleScore * 10;
       case 'two_pillar':
         return Math.round(((scores.sync / 25) + (scores.execution / 20)) / 2 * 100);
       case 'tier_only':
         return TIER_SCORES[selectedTier];
+      case 'comment_only':
+        return 0;
       default:
         return 0;
     }
@@ -105,7 +113,7 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
           sync_score: mode === 'full' || mode === 'two_pillar' ? scores.sync : null,
           identity_score: mode === 'full' ? scores.identity : null,
           execution_score: mode === 'full' || mode === 'two_pillar' ? scores.execution : null,
-          judge_comment: comment || null,
+          judge_comment: mode === 'comment_only' ? commentOnlyText : (comment || null),
           judge_id: user.id,
           judge_username: profile.username,
           judge_avatar_url: profile.avatar_url || null,
@@ -125,7 +133,9 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
         user_id: request.user_id,
         type: 'review_complete',
         title: 'Review Complete!',
-        message: `Your edit was reviewed by @${profile.username}. Score: ${totalScore}/100`,
+        message: mode === 'comment_only' 
+          ? `Your edit was reviewed by @${profile.username}. Commentary verdict!`
+          : `Your edit was reviewed by @${profile.username}. Score: ${totalScore}/100`,
         data: { review_id: request.id, score: totalScore, judge: profile.username },
       });
 
@@ -231,7 +241,7 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
               <label className="text-xs text-muted-foreground uppercase tracking-wider">
                 Rating Mode
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {SCORING_MODES.map((m) => (
                   <button
                     key={m.id}
@@ -349,7 +359,49 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
               </div>
             )}
 
+            {/* Simple 1-10 Mode */}
+            {mode === 'simple_10' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Rating</span>
+                  <span className="text-4xl font-bold text-gold">{simpleScore}/10</span>
+                </div>
+                <div className="grid grid-cols-10 gap-1.5">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setSimpleScore(n)}
+                      className={`py-3 rounded-lg text-sm font-bold transition-all border ${
+                        simpleScore === n
+                          ? 'bg-gold text-black border-transparent'
+                          : 'bg-surface-1 border-border hover:border-gold/50'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Comment Only Mode */}
+            {mode === 'comment_only' && (
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                  Your Verdict (Words Only)
+                </label>
+                <Textarea
+                  value={commentOnlyText}
+                  onChange={(e) => setCommentOnlyText(e.target.value)}
+                  placeholder="Drop your full verdict — no score, just raw words..."
+                  className="bg-surface-1 border-border resize-none h-32"
+                />
+                <p className="text-[10px] text-muted-foreground">No score attached — pure commentary review.</p>
+              </div>
+            )}
+
             {/* Total Score Display */}
+            {mode !== 'comment_only' && (
             <div className="bg-surface-1 border border-gold/30 rounded-xl p-4 text-center">
               {mode === 'tier_only' ? (
                 <>
@@ -372,8 +424,10 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
                 </>
               )}
             </div>
+            )}
 
-            {/* Comment */}
+            {/* Comment (not shown for comment_only since it has its own textarea) */}
+            {mode !== 'comment_only' && (
             <div className="space-y-2">
               <label className="text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <MessageSquare size={10} />
@@ -386,13 +440,14 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
                 className="bg-surface-1 border-border resize-none h-24"
               />
             </div>
+            )}
           </div>
 
           {/* Footer */}
           <div className="p-4 border-t border-border shrink-0">
             <Button
               onClick={handleSubmit}
-              disabled={saving}
+              disabled={saving || (mode === 'comment_only' && !commentOnlyText.trim())}
               className="w-full bg-gold text-black hover:bg-gold/90 font-bold"
             >
               {saving ? (
@@ -403,7 +458,9 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
               ) : (
                 <>
                   <Sparkles className="w-4 h-4 mr-2" />
-                  {mode === 'tier_only' 
+                  {mode === 'comment_only' 
+                    ? 'Submit Commentary Verdict'
+                    : mode === 'tier_only' 
                     ? `Submit Review (${selectedTier} Class)` 
                     : `Submit Review (${calculateTotal()}/100)`
                   }
