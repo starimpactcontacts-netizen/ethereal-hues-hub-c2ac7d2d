@@ -389,11 +389,16 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-background group-hover:border-white/20 transition-colors">
+          <div className="relative overflow-hidden rounded-xl border border-white/10 group-hover:border-white/20 transition-colors">
+            {/* Full-width gradient bg — black left to white right, no cutoff */}
+            <div className="absolute inset-0 z-0" style={{
+              background: 'linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)) 30%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0.08) 48%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0.35) 62%, rgba(255,255,255,0.55) 70%, rgba(255,255,255,0.75) 78%, rgba(255,255,255,0.9) 86%, white 94%)'
+            }} />
+
             {/* Content */}
-            <div className="relative flex items-center">
+            <div className="relative z-10 flex items-center justify-between p-4">
                 {/* Left side — icon + text */}
-                <div className="flex items-center gap-4 p-4 flex-1 min-w-0">
+                <div className="flex items-center gap-4">
                   {/* Arena Icon - Infinite color-morphing glitch edges */}
                   <div className="relative flex items-center justify-center shrink-0">
                     <GlitchEdge side="left" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '-4px' }} />
@@ -409,24 +414,10 @@ export default function HubPage() {
                   </div>
                 </div>
                 
-                {/* Right side — big ENTER NOW with left-fade */}
-                {/* Right side — ENTER NOW with seamless blend */}
-                <div className="relative shrink-0 self-stretch flex items-center ml-auto">
-                  {/* Glitch edge on outer right */}
-                  <GlitchEdge side="right" className="absolute top-0 bottom-0 z-0" style={{ left: '2px', right: '-5px', borderRadius: '0 12px 12px 0' }} />
-                  {/* Single white block that fades out to the left */}
-                  <div
-                    className="relative self-stretch flex items-center px-8 py-4 rounded-r-xl z-10 text-black group-hover:brightness-95 transition-all"
-                    style={{
-                      background: 'linear-gradient(to left, white 40%, rgba(255,255,255,0.97) 50%, rgba(255,255,255,0.88) 58%, rgba(255,255,255,0.7) 66%, rgba(255,255,255,0.45) 74%, rgba(255,255,255,0.22) 82%, rgba(255,255,255,0.08) 90%, rgba(255,255,255,0.02) 96%, transparent 100%)',
-                      paddingLeft: '80px',
-                    }}
-                  >
-                    <div className="flex items-center gap-2 font-display text-sm tracking-wide whitespace-nowrap">
-                      <span>ENTER NOW</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
+                {/* Right side — ENTER NOW text, no box, just lives in the white zone */}
+                <div className="flex items-center gap-2 font-display text-sm tracking-wide text-black whitespace-nowrap">
+                  <span>ENTER NOW</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
             </div>
           </div>
