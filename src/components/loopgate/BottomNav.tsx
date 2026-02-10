@@ -71,8 +71,8 @@ export default function BottomNav() {
           >
             {/* Offset glitch layers - infinite color morphing */}
             <div className="relative">
-              <div className="absolute w-11 h-9 rounded-[6px] -translate-x-[4px] glitch-edge-left" />
-              <div className="absolute w-11 h-9 rounded-[6px] translate-x-[4px] glitch-edge-right" />
+              <div className="absolute w-11 h-9 rounded-[6px] glitch-edge-left" style={{ left: '-4px' }} />
+              <div className="absolute w-11 h-9 rounded-[6px] glitch-edge-right" style={{ left: '4px' }} />
               <div className="relative w-11 h-9 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
                 <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
               </div>
