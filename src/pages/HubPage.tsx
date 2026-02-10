@@ -260,11 +260,11 @@ export default function HubPage() {
               </div>
 
               {/* Quick Access — Horizontal scrollable cards */}
-              <div className="border-t border-border/30 px-3 py-2.5 overflow-x-auto scrollbar-hide">
-                <div className="flex gap-2">
+              <div className="border-t border-border/30 px-3 py-2.5">
+                <div className="grid grid-cols-3 gap-2">
                   {/* Get Rated */}
-                  <Link to="/judges" className="shrink-0 group">
-                    <div className="w-[130px] bg-gold/8 border border-gold/20 rounded-xl p-3 group-hover:border-gold/40 transition-colors h-full">
+                  <Link to="/judges" className="group">
+                    <div className="bg-gold/8 border border-gold/20 rounded-xl p-3 group-hover:border-gold/40 transition-colors h-full">
                       <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center mb-2">
                         <Gavel className="w-4 h-4 text-gold" />
                       </div>
@@ -274,8 +274,8 @@ export default function HubPage() {
                   </Link>
 
                   {/* Unit */}
-                  <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="shrink-0 group">
-                    <div className="w-[130px] bg-surface-1/60 border border-border/40 rounded-xl p-3 group-hover:border-foreground/20 transition-colors h-full">
+                  <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group">
+                    <div className="bg-surface-1/60 border border-border/40 rounded-xl p-3 group-hover:border-foreground/20 transition-colors h-full">
                       <div className="w-8 h-8 rounded-lg bg-muted/50 border border-border flex items-center justify-center mb-2 overflow-hidden">
                         {userCrew?.avatar_url ? (
                           <img src={userCrew.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -293,8 +293,8 @@ export default function HubPage() {
                   </Link>
 
                   {/* GQT */}
-                  <Link to="/gqt" className="shrink-0 group">
-                    <div className="w-[130px] bg-surface-1/60 border border-border/40 rounded-xl p-3 group-hover:border-foreground/20 transition-colors h-full">
+                  <Link to="/gqt" className="group">
+                    <div className="bg-surface-1/60 border border-border/40 rounded-xl p-3 group-hover:border-foreground/20 transition-colors h-full">
                       <div className="w-8 h-8 rounded-lg bg-muted/50 border border-border flex items-center justify-center mb-2">
                         <Target className="w-4 h-4 text-foreground" />
                       </div>
