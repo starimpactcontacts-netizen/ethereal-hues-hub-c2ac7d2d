@@ -318,16 +318,28 @@ export default function HubPage() {
               {/* Quick Access — Horizontal scrollable cards */}
               <div className="border-t border-border/30 px-3 py-2.5">
                 <div className="grid grid-cols-3 gap-2">
-                  {/* Get Rated */}
-                  <Link to="/judges" className="group">
-                    <div className="bg-red-950/30 border border-red-800/30 rounded-xl p-3 group-hover:border-red-700/50 transition-colors h-full">
-                      <div className="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center mb-2">
-                        <Gavel className="w-4 h-4 text-red-400" />
+                  {/* Judge-optimized: Start Judging replaces Get Rated */}
+                  {isJudge ? (
+                    <Link to="/judge-panel" className="group">
+                      <div className="bg-red-950/30 border border-red-800/30 rounded-xl p-3 group-hover:border-red-700/50 transition-colors h-full">
+                        <div className="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center mb-2">
+                          <Gavel className="w-4 h-4 text-red-400" />
+                        </div>
+                        <p className="text-[9px] text-red-400 uppercase tracking-[0.12em] font-semibold mb-0.5">Panel</p>
+                        <p className="font-display text-xs text-foreground leading-tight">Start Judging</p>
                       </div>
-                      <p className="text-[9px] text-red-400 uppercase tracking-[0.12em] font-semibold mb-0.5">Get Rated</p>
-                      <p className="font-display text-xs text-foreground leading-tight">Submit to a Judge</p>
-                    </div>
-                  </Link>
+                    </Link>
+                  ) : (
+                    <Link to="/judges" className="group">
+                      <div className="bg-red-950/30 border border-red-800/30 rounded-xl p-3 group-hover:border-red-700/50 transition-colors h-full">
+                        <div className="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center mb-2">
+                          <Gavel className="w-4 h-4 text-red-400" />
+                        </div>
+                        <p className="text-[9px] text-red-400 uppercase tracking-[0.12em] font-semibold mb-0.5">Get Rated</p>
+                        <p className="font-display text-xs text-foreground leading-tight">Submit to a Judge</p>
+                      </div>
+                    </Link>
+                  )}
 
                   {/* Unit */}
                   <Link to={userCrew ? `/units/${userCrew.id}` : '/units'} className="group">
