@@ -587,8 +587,8 @@ export default function IndexPage() {
             {/* Results Header - Enhanced */}
             <div className="px-4 py-3.5 border-t border-b border-border/40 flex items-center justify-between bg-gradient-to-r from-surface-0/40 via-surface-0/60 to-surface-0/40">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                  <Users className="w-3.5 h-3.5 text-gold" />
+                <div className="w-7 h-7 bg-surface-1 shadow-[0_0_8px_rgba(212,175,55,0.25)] flex items-center justify-center">
+                  <Users className="w-3.5 h-3.5 text-gold/80" />
                 </div>
                 <span className="font-display text-xl text-white">
                   {filteredEditors.length} <span className="text-muted-foreground text-base">Editors</span>
