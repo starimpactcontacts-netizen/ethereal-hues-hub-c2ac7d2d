@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target } from 'lucide-react';
+import JudgeOnboardingCard, { useJudgeOnboarding } from '@/components/loopgate/JudgeOnboardingCard';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,12 +18,13 @@ import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
 
 export default function JudgePanelPage() {
   const { profile, user } = useAuth();
-  const [activeTab, setActiveTab] = useState('missions');
+  const [activeTab, setActiveTab] = useState('inbox');
   const [showTemplates, setShowTemplates] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showFlywheel, setShowFlywheel] = useState(false);
   const [flywheelEditors, setFlywheelEditors] = useState<any[]>([]);
   const [scoringFromFlywheel, setScoringFromFlywheel] = useState<any>(null);
+  const onboarding = useJudgeOnboarding();
 
   // Fetch inbox editors for flywheel — pull from judge_inbox so all routed submissions appear
   useEffect(() => {
@@ -195,6 +197,9 @@ export default function JudgePanelPage() {
           onComplete={() => setScoringFromFlywheel(null)}
         />
       )}
+
+      {/* Judge Onboarding — shows 3 times */}
+      <JudgeOnboardingCard isOpen={onboarding.show} onDismiss={onboarding.dismiss} />
     </div>
   );
 }
