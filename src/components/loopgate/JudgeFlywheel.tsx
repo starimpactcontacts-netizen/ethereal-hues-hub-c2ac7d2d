@@ -7,6 +7,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { LoopedX } from '@/components/loopgate/LoopedX';
+import FlywheelVideoExport from '@/components/loopgate/FlywheelVideoExport';
+import { useAuth } from '@/hooks/useAuth';
 
 interface FlywheelEditor {
   id: string;
@@ -146,6 +148,7 @@ class FlywheelAudio {
 
 // ── Component ──────────────────────────────────────────────────────
 export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: JudgeFlywheelProps) {
+  const { profile } = useAuth();
   const [selectedEditors, setSelectedEditors] = useState<FlywheelEditor[]>([]);
   const [spinning, setSpinning] = useState(false);
   const [winner, setWinner] = useState<FlywheelEditor | null>(null);
@@ -153,6 +156,7 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
   const [fullscreen, setFullscreen] = useState(false);
   const [hue, setHue] = useState(45); // default gold ~45
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [isVideoRecording, setIsVideoRecording] = useState(false);
 
   const palette = useMemo(() => makeAccentPalette(hue), [hue]);
 
@@ -632,8 +636,21 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
               </Button>
             </div>
 
+            {/* Video Export */}
+            <div className="flex items-center gap-2">
+              <FlywheelVideoExport
+                isRecording={isVideoRecording}
+                onStartRecording={() => setIsVideoRecording(true)}
+                onStopRecording={() => setIsVideoRecording(false)}
+                sourceCanvas={canvasRef.current}
+                judgeUsername={profile?.username || 'judge'}
+                winnerUsername={winner?.username || null}
+                accentColor={palette.accent}
+              />
+            </div>
+
             <p className="text-[10px] text-white/25 text-center font-display tracking-wider">
-              {selectedEditors.length} editors · Tap SPIN to roll
+              {selectedEditors.length} editors · Tap SPIN to roll{isVideoRecording ? ' · 🔴 Recording' : ''}
             </p>
           </motion.div>
         )}
