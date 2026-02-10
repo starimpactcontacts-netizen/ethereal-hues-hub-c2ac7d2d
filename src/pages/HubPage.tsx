@@ -259,8 +259,26 @@ export default function HubPage() {
                 </div>
               </div>
 
-              {/* Quick Access Rows - Unit & GQT */}
+              {/* Quick Access Rows - Judges, Unit & GQT */}
               <div className="border-t border-border/30 divide-y divide-border/20">
+                {/* GET RATED — Judge CTA (priority placement) */}
+                <div className="px-4 py-2">
+                  <Link to="/judges" className="flex items-center justify-between group">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                        <Gavel className="w-5 h-5 text-gold" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gold uppercase tracking-[0.12em] font-semibold">Get Rated</p>
+                        <p className="font-display text-base text-foreground group-hover:text-gold transition-colors">
+                          Submit to a Judge
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                  </Link>
+                </div>
+
                 <div className="px-4 py-2">
                   {userCrew ? (
                     <Link to={`/units/${userCrew.id}`} className="flex items-center justify-between group">
@@ -700,12 +718,48 @@ export default function HubPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          QUICK MENU - Soft rounded white pills
+          ⚖️ JUDGE SPOTLIGHT — Prominent gateway to /judges
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.15 }}
+        className="px-4 mt-2"
+      >
+        <Link to="/judges" className="block group">
+          <div className="relative overflow-hidden rounded-xl border border-gold/20 bg-gradient-to-r from-gold/8 via-surface-1/60 to-surface-1/40 group-hover:border-gold/40 transition-colors">
+            {/* Ambient glow */}
+            <div className="absolute left-0 top-0 bottom-0 w-1/4 bg-gradient-to-r from-gold/10 to-transparent" />
+            
+            <div className="relative p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/25 flex items-center justify-center group-hover:bg-gold/25 transition-colors">
+                  <Gavel className="w-6 h-6 text-gold" />
+                </div>
+                <div>
+                  <h2 className="font-display text-lg tracking-wide text-foreground group-hover:text-gold transition-colors">JUDGES</h2>
+                  <p className="text-[10px] text-muted-foreground">The authority that rates & ranks</p>
+                </div>
+              </div>
+              
+              <div className="shrink-0 px-4 py-2 bg-gold/10 border border-gold/25 rounded-lg group-hover:bg-gold/20 transition-colors">
+                <div className="flex items-center gap-2">
+                  <span className="font-display text-xs text-gold">GET RATED</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-gold group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          QUICK MENU - Soft rounded white pills
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.18 }}
         className="px-4 mt-2"
       >
         <div className="bg-surface-1/40 backdrop-blur-sm rounded-2xl p-2 border border-white/5">
@@ -719,12 +773,12 @@ export default function HubPage() {
               </div>
             </Link>
             
-            <Link to="/judges" className="group">
+            <Link to="/league" className="group">
               <div className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl hover:bg-white/5 transition-colors">
                 <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/15 transition-colors">
-                  <Gavel className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
+                  <Shield className="w-5 h-5 text-foreground/80 group-hover:text-foreground transition-colors" />
                 </div>
-                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">Judges</span>
+                <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors">League</span>
               </div>
             </Link>
             
