@@ -98,7 +98,7 @@ function JudgeRosterEntry({ judge, onSelect, index }: { judge: JudgeProfile; onS
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-zinc-500">@{judge.username}</span>
-            {!isTrial && <JudgeClassBadge reviewCount={judge.totalReviews} size="sm" />}
+            {!isTrial && <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />}
             {isTrial && (
               <span className="text-[8px] px-1.5 py-0.5 bg-zinc-900 text-zinc-500 font-mono uppercase tracking-wider">
                 TRIAL

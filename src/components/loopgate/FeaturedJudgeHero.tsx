@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import VerifiedBadge from './VerifiedBadge';
-import JudgeClassBadge from './JudgeClassBadge';
+import JudgeDivisionBadge from './JudgeDivisionBadge';
 import { AuthorityGavel } from './LoopgateIcons';
 
 interface FeaturedJudge {
@@ -185,7 +185,7 @@ export default function FeaturedJudgeHero() {
               </div>
               <p className="text-[10px] text-zinc-600 mb-2 font-mono">@{judge.username}</p>
               <div className="flex items-center gap-3 flex-wrap">
-                <JudgeClassBadge reviewCount={judge.judge_review_count || 0} size="sm" />
+                <JudgeDivisionBadge jxp={judge.judge_xp || 0} size="sm" />
                 <span className="text-[10px] text-zinc-500 font-mono">{(judge.judge_xp || 0).toLocaleString()} JXP</span>
                 <span className="text-[10px] text-zinc-600">·</span>
                 <span className="text-[10px] text-zinc-500 font-mono">{judge.judge_review_count || 0} verdicts</span>
