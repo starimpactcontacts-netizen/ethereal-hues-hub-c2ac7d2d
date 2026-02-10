@@ -7,7 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
 import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
-import JudgeClassBadge, { getJudgeClassFromReviews } from '@/components/loopgate/JudgeClassBadge';
+import JudgeDivisionBadge, { getDivisionFromJxp } from '@/components/loopgate/JudgeDivisionBadge';
 import { cn } from '@/lib/utils';
 
 interface JudgeLeaderboardEntry {
@@ -19,6 +19,7 @@ interface JudgeLeaderboardEntry {
   xp: number;
   judge_xp: number;
   judge_review_count: number;
+  judge_bio: string | null;
   verification_status: boolean | null;
   totalReviews: number;
   avgScore: number;
@@ -51,7 +52,7 @@ function getHeadline(rank: number, username: string, reviews: number): string {
 export default function JudgeLeaderboardPage() {
   const [judges, setJudges] = useState<JudgeLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<'reviews' | 'weekly' | 'jxp' | 'class'>('reviews');
+  const [sortBy, setSortBy] = useState<'reviews' | 'weekly' | 'jxp' | 'division'>('reviews');
 
   useEffect(() => {
     fetchJudges();
@@ -74,7 +75,7 @@ export default function JudgeLeaderboardPage() {
 
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, level, xp, verification_status, judge_xp, judge_review_count')
+        .select('id, username, display_name, avatar_url, level, xp, verification_status, judge_xp, judge_review_count, judge_bio')
         .in('id', judgeIds);
 
       if (!profiles) {
@@ -102,8 +103,9 @@ export default function JudgeLeaderboardPage() {
 
         return {
           ...profile,
-          judge_xp: (profile as any).judge_xp || 0,
-          judge_review_count: (profile as any).judge_review_count || 0,
+          judge_xp: profile.judge_xp || 0,
+          judge_review_count: profile.judge_review_count || 0,
+          judge_bio: profile.judge_bio || null,
           totalReviews: judgeReviews.length,
           avgScore: Math.round(avgScore * 10) / 10,
           weeklyReviews: weeklyReviews.length,
@@ -122,15 +124,16 @@ export default function JudgeLeaderboardPage() {
     if (sortBy === 'reviews') return b.totalReviews - a.totalReviews;
     if (sortBy === 'weekly') return b.weeklyReviews - a.weeklyReviews;
     if (sortBy === 'jxp') return b.judge_xp - a.judge_xp;
-    if (sortBy === 'class') {
-      const classA = getJudgeClassFromReviews(a.totalReviews);
-      const classB = getJudgeClassFromReviews(b.totalReviews);
-      return classB.minReviews - classA.minReviews || b.totalReviews - a.totalReviews;
+    if (sortBy === 'division') {
+      const divA = getDivisionFromJxp(a.judge_xp);
+      const divB = getDivisionFromJxp(b.judge_xp);
+      return divB.minJxp - divA.minJxp || b.judge_xp - a.judge_xp;
     }
     return b.totalReviews - a.totalReviews;
   });
 
   const top3 = sortedJudges.slice(0, 3);
+  const top4Featured = sortedJudges.slice(0, 4);
   const rest = sortedJudges.slice(3);
   const totalReviews = judges.reduce((acc, j) => acc + j.totalReviews, 0);
   const totalWeekly = judges.reduce((acc, j) => acc + j.weeklyReviews, 0);
@@ -237,6 +240,60 @@ export default function JudgeLeaderboardPage() {
         </div>
       </div>
 
+      {/* ═══════════ FEATURED OFFICIALS — Forbes 30u30 style ═══════════ */}
+      {top4Featured.length >= 4 && (
+        <div className="px-4 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-px flex-1 bg-gradient-to-r from-red-700/60 to-transparent" />
+            <h2 className="font-display text-sm tracking-[0.3em] text-red-500 uppercase">Featured Officials</h2>
+            <div className="h-px flex-1 bg-gradient-to-l from-red-700/60 to-transparent" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {top4Featured.map((judge, i) => (
+              <motion.div
+                key={judge.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+              >
+                <Link
+                  to={`/judge/${judge.username}`}
+                  className="block bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-600 transition-colors"
+                >
+                  <div className="p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <Avatar className="w-14 h-14 ring-1 ring-zinc-700 shrink-0">
+                        <AvatarImage src={judge.avatar_url || undefined} />
+                        <AvatarFallback className="bg-zinc-800 text-zinc-400 font-bold">
+                          {judge.username.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-display text-sm text-white truncate">
+                          {judge.display_name || judge.username}
+                        </p>
+                        <p className="text-[10px] text-zinc-500 font-mono">@{judge.username}</p>
+                        {judge.verification_status && <VerifiedBadge size="sm" />}
+                      </div>
+                    </div>
+                    <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />
+                    {judge.judge_bio ? (
+                      <p className="text-[10px] text-zinc-400 mt-2 line-clamp-3 leading-relaxed">
+                        {judge.judge_bio}
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-zinc-600 italic mt-2">
+                        {judge.totalReviews} career verdicts · {(judge.judge_xp || 0).toLocaleString()} JXP
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ═══════════ TOP 3 PODIUM ═══════════ */}
       {top3.length >= 3 && (
         <div className="px-4 mb-6">
@@ -260,7 +317,7 @@ export default function JudgeLeaderboardPage() {
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-slate-600 flex items-center justify-center text-[10px] font-bold text-white border-2 border-background">2</div>
                   </div>
                   <p className="font-display text-xs truncate">{top3[1].display_name || top3[1].username}</p>
-                  <JudgeClassBadge reviewCount={top3[1].totalReviews} size="sm" />
+                  <JudgeDivisionBadge jxp={top3[1].judge_xp} size="sm" />
                   <p className="text-[10px] text-muted-foreground mt-1">{top3[1].totalReviews} reviews</p>
                 </div>
               </Link>
@@ -292,7 +349,7 @@ export default function JudgeLeaderboardPage() {
                   </div>
                   <p className="font-display text-sm truncate">{top3[0].display_name || top3[0].username}</p>
                   {top3[0].verification_status && <VerifiedBadge size="sm" />}
-                  <JudgeClassBadge reviewCount={top3[0].totalReviews} size="sm" />
+                  <JudgeDivisionBadge jxp={top3[0].judge_xp} size="sm" />
                   <p className="text-[10px] text-gold mt-1">{top3[0].totalReviews} reviews</p>
                 </div>
               </Link>
@@ -320,7 +377,7 @@ export default function JudgeLeaderboardPage() {
                     <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-700 flex items-center justify-center text-[10px] font-bold text-white border-2 border-background">3</div>
                   </div>
                   <p className="font-display text-xs truncate">{top3[2].display_name || top3[2].username}</p>
-                  <JudgeClassBadge reviewCount={top3[2].totalReviews} size="sm" />
+                  <JudgeDivisionBadge jxp={top3[2].judge_xp} size="sm" />
                   <p className="text-[10px] text-muted-foreground mt-1">{top3[2].totalReviews} reviews</p>
                 </div>
               </Link>
@@ -340,9 +397,9 @@ export default function JudgeLeaderboardPage() {
               <TrophyPillar size={12} className="mr-1" />
               REVIEWS
             </TabsTrigger>
-            <TabsTrigger value="class" className="text-[10px] font-bold tracking-wider data-[state=active]:bg-gold data-[state=active]:text-background">
+            <TabsTrigger value="division" className="text-[10px] font-bold tracking-wider data-[state=active]:bg-gold data-[state=active]:text-background">
               <ClassShield size={12} className="mr-1" />
-              CLASS
+              DIVISION
             </TabsTrigger>
             <TabsTrigger value="weekly" className="text-[10px] font-bold tracking-wider data-[state=active]:bg-gold data-[state=active]:text-background">
               <PulseFlame size={12} className="mr-1" />
@@ -373,7 +430,7 @@ export default function JudgeLeaderboardPage() {
         ) : (
           sortedJudges.map((judge, index) => {
             const rank = index + 1;
-            const classConfig = getJudgeClassFromReviews(judge.totalReviews);
+            const division = getDivisionFromJxp(judge.judge_xp);
             const isTopThree = rank <= 3;
             const isTop10 = rank <= 10;
 
@@ -428,7 +485,7 @@ export default function JudgeLeaderboardPage() {
                         {judge.verification_status && <VerifiedBadge size="sm" />}
                       </div>
                       <div className="flex items-center gap-2">
-                        <JudgeClassBadge reviewCount={judge.totalReviews} size="sm" />
+                        <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />
                         <JudgeLevelBadge level={Math.min(10, Math.max(1, Math.floor((judge.judge_xp || 0) / 500) + 1))} size="xs" showIcon={false} />
                       </div>
                     </div>
@@ -442,13 +499,13 @@ export default function JudgeLeaderboardPage() {
                         {sortBy === 'reviews' && judge.totalReviews}
                         {sortBy === 'weekly' && judge.weeklyReviews}
                         {sortBy === 'jxp' && (judge.judge_xp || 0).toLocaleString()}
-                        {sortBy === 'class' && classConfig.class}
+                        {sortBy === 'division' && division.label.replace(' DIVISION', '')}
                       </p>
                       <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
                         {sortBy === 'reviews' && 'reviews'}
                         {sortBy === 'weekly' && 'this week'}
                         {sortBy === 'jxp' && 'JXP'}
-                        {sortBy === 'class' && classConfig.label}
+                        {sortBy === 'division' && 'division'}
                       </p>
                     </div>
 
