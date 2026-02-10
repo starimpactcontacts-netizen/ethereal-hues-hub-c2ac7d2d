@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Flame, Crown, Medal, ChevronRight, Gavel } from 'lucide-react';
+import { Trophy, Flame, Crown, Medal, ChevronRight, Gavel, Shield } from 'lucide-react';
 import { useJudgeLeaderboard, JudgeLeaderboardEntry } from '@/hooks/useJudgeLeaderboard';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import JudgeLevelBadge from './JudgeLevelBadge';
+import JudgeClassBadge from './JudgeClassBadge';
 import VerifiedBadge from './VerifiedBadge';
 import { cn } from '@/lib/utils';
 
 function getRankIcon(rank: number) {
-  if (rank === 1) return <Crown size={12} className="text-gold" />;
+  if (rank === 1) return <Crown size={14} className="text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />;
   if (rank === 2) return <Medal size={12} className="text-zinc-400" />;
   if (rank === 3) return <Medal size={12} className="text-amber-700" />;
   return null;
@@ -26,10 +27,17 @@ function JudgeRow({ judge, index }: { judge: JudgeLeaderboardEntry; index: numbe
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: index * 0.04 }}
         className={cn(
-          'flex items-center gap-2.5 p-2.5 rounded-lg transition-all hover:bg-surface-1 group',
-          isTop3 && 'bg-gradient-to-r from-gold/5 to-transparent'
+          'flex items-center gap-2.5 p-2.5 rounded-lg transition-all hover:bg-surface-1 group relative overflow-hidden',
+          isTop3 && 'bg-gradient-to-r from-gold/8 to-transparent'
         )}
       >
+        {/* Shimmer for #1 */}
+        {rank === 1 && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/3 to-transparent" />
+          </div>
+        )}
+
         {/* Rank */}
         <div className={cn(
           'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0',
@@ -47,7 +55,10 @@ function JudgeRow({ judge, index }: { judge: JudgeLeaderboardEntry; index: numbe
             <img 
               src={judge.avatar_url} 
               alt={judge.username}
-              className="w-9 h-9 rounded-full object-cover border border-gold/20"
+              className={cn(
+                "w-9 h-9 rounded-full object-cover border",
+                rank === 1 ? "border-gold/40 shadow-[0_0_12px_rgba(212,175,55,0.2)]" : "border-gold/20"
+              )}
             />
           ) : (
             <div className="w-9 h-9 rounded-full bg-gold/20 flex items-center justify-center">
@@ -63,15 +74,20 @@ function JudgeRow({ judge, index }: { judge: JudgeLeaderboardEntry; index: numbe
               {judge.display_name || judge.username}
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <JudgeClassBadge reviewCount={judge.judge_review_count} size="sm" />
             <JudgeLevelBadge level={judge.judge_level} size="xs" showIcon={false} />
           </div>
-          <p className="text-[10px] text-muted-foreground">@{judge.username}</p>
         </div>
 
         {/* Stats */}
         <div className="text-right shrink-0">
-          <div className="text-sm font-bold text-gold">{judge.judge_xp.toLocaleString()}</div>
-          <div className="text-[9px] text-muted-foreground uppercase">JXP</div>
+          <div className={cn(
+            "text-sm font-bold",
+            rank === 1 ? "text-gold" : "text-foreground"
+          )}>{judge.judge_xp.toLocaleString()}</div>
+          <div className="text-[9px] text-muted-foreground uppercase tracking-wider">JXP</div>
         </div>
 
         <ChevronRight size={14} className="text-muted-foreground group-hover:text-gold transition-colors shrink-0" />
@@ -95,8 +111,10 @@ export default function JudgeLeaderboardCard({ compact = false, limit = 10 }: Ju
       <div className="p-3 border-b border-border">
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <Trophy size={14} className="text-gold" />
-            <h3 className="font-display text-xs tracking-wide">JUDGE LEADERBOARD</h3>
+            <div className="w-6 h-6 rounded-md bg-gold/15 flex items-center justify-center">
+              <Shield size={12} className="text-gold" />
+            </div>
+            <h3 className="font-display text-xs tracking-wide">JUDGE INDEX</h3>
           </div>
           {judges.length > 0 && (
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -146,7 +164,7 @@ export default function JudgeLeaderboardCard({ compact = false, limit = 10 }: Ju
             to="/judges/leaderboard"
             className="flex items-center justify-center gap-1 text-[11px] text-gold hover:underline py-1.5"
           >
-            View Full Leaderboard
+            View Full Judge Index
             <ChevronRight size={12} />
           </Link>
         </div>
