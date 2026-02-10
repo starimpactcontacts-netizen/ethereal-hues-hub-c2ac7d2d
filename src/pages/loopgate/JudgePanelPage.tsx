@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, Disc3 } from 'lucide-react';
 import JudgeOnboardingCard, { useJudgeOnboarding } from '@/components/loopgate/JudgeOnboardingCard';
 import JudgeFormatInfo from '@/components/loopgate/JudgeFormatInfo';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,7 @@ import JudgeMissionsPanel from '@/components/loopgate/JudgeMissionsPanel';
 import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
 import Judge1v1Rating from '@/components/loopgate/Judge1v1Rating';
 
-type JudgeFormat = 'solo' | '1v1';
+type JudgeFormat = 'solo' | '1v1' | 'flywheel';
 
 const SOLO_INFO = {
   title: 'Solo Edit Rating',
@@ -42,6 +42,18 @@ const VS_INFO = {
     'Export the VS card — screen record or screenshot for content',
   ],
   contentTip: 'Show 5 sec of each edit in your video, then reveal the result card. Editors go crazy for revenge matches.',
+};
+
+const FLYWHEEL_INFO = {
+  title: 'Flywheel Spin',
+  description: 'Spin a cinematic wheel of your inbox submissions to randomly pick who gets rated next. Perfect for live content and TikTok.',
+  steps: [
+    'Your inbox submissions auto-load onto the wheel',
+    'Hit spin — the wheel picks a random editor with a cinematic reveal',
+    'The scoring modal opens automatically for the winner',
+    'Record the full spin + scoring for a viral TikTok clip',
+  ],
+  contentTip: 'The spin animation is designed for screen recording. Use the fullscreen mode for 9:16 TikTok export with Loopgate branding baked in.',
 };
 
 export default function JudgePanelPage() {
@@ -82,6 +94,13 @@ export default function JudgePanelPage() {
     fetchInbox();
   }, [user?.id]);
 
+  // Auto-open flywheel when switching to flywheel format
+  useEffect(() => {
+    if (activeFormat === 'flywheel') {
+      setShowFlywheel(true);
+    }
+  }, [activeFormat]);
+
   return (
     <div className="min-h-screen bg-black" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header — compact mobile-first */}
@@ -106,13 +125,6 @@ export default function JudgePanelPage() {
           
           {/* Action buttons — icon-only on mobile */}
           <div className="flex items-center gap-1">
-            <button 
-              onClick={() => setShowFlywheel(true)}
-              className="p-2 bg-red-700 hover:bg-red-600 transition-colors rounded-sm"
-              title="Flywheel"
-            >
-              <Zap className="w-3.5 h-3.5 text-white" />
-            </button>
             <button 
               onClick={() => setShowVideoModal(true)}
               className="p-2 hover:bg-white/5 transition-colors rounded-sm"
@@ -144,32 +156,56 @@ export default function JudgePanelPage() {
         <JudgePanelStats />
       </div>
 
-      {/* FORMAT SELECTOR — big clear tabs */}
-      <div className="px-3 py-2 border-b border-zinc-800">
+      {/* FORMAT SELECTOR — 3 big clear tabs */}
+      <div className="px-3 py-2.5 border-b border-zinc-800">
+        <p className="text-[9px] text-zinc-600 uppercase tracking-[0.2em] font-mono mb-2">Rating Format</p>
         <div className="flex gap-2">
+          {/* Solo */}
           <button
             onClick={() => setActiveFormat('solo')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-[11px] font-bold transition-all border relative ${
               activeFormat === 'solo'
                 ? 'bg-white text-black border-white'
                 : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
             }`}
           >
-            <User className="w-3.5 h-3.5" />
-            Solo Rating
-            <JudgeFormatInfo {...SOLO_INFO} />
+            <User className="w-4 h-4" />
+            Solo
+            <div className="absolute top-1 right-1">
+              <JudgeFormatInfo {...SOLO_INFO} />
+            </div>
           </button>
+
+          {/* 1v1 */}
           <button
             onClick={() => setActiveFormat('1v1')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-[11px] font-bold transition-all border relative ${
               activeFormat === '1v1'
                 ? 'bg-white text-black border-white'
                 : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
             }`}
           >
-            <Swords className="w-3.5 h-3.5" />
-            1v1 Rating
-            <JudgeFormatInfo {...VS_INFO} />
+            <Swords className="w-4 h-4" />
+            1v1
+            <div className="absolute top-1 right-1">
+              <JudgeFormatInfo {...VS_INFO} />
+            </div>
+          </button>
+
+          {/* Flywheel */}
+          <button
+            onClick={() => setActiveFormat('flywheel')}
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-[11px] font-bold transition-all border relative ${
+              activeFormat === 'flywheel'
+                ? 'bg-red-600 text-white border-red-600'
+                : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+            }`}
+          >
+            <Disc3 className="w-4 h-4" />
+            Flywheel
+            <div className="absolute top-1 right-1">
+              <JudgeFormatInfo {...FLYWHEEL_INFO} />
+            </div>
           </button>
         </div>
       </div>
@@ -227,6 +263,31 @@ export default function JudgePanelPage() {
       {activeFormat === '1v1' && (
         <div className="px-3 pt-3">
           <Judge1v1Rating />
+        </div>
+      )}
+
+      {/* FLYWHEEL FORMAT — inline prompt to spin */}
+      {activeFormat === 'flywheel' && !showFlywheel && (
+        <div className="px-3 pt-8 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-red-950 flex items-center justify-center">
+            <Disc3 className="w-8 h-8 text-red-400" />
+          </div>
+          <div>
+            <h3 className="font-display text-lg font-bold text-white">SPIN THE WHEEL</h3>
+            <p className="text-xs text-zinc-500 mt-1 max-w-[260px] mx-auto">
+              {flywheelEditors.length > 0
+                ? `${flywheelEditors.length} editor${flywheelEditors.length > 1 ? 's' : ''} loaded from your inbox`
+                : 'No editors in inbox yet — share your judge link!'}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowFlywheel(true)}
+            disabled={flywheelEditors.length === 0}
+            className="px-8 py-3 bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-bold text-sm rounded-xl transition-colors"
+          >
+            <Zap className="w-4 h-4 inline mr-2" />
+            Launch Flywheel
+          </button>
         </div>
       )}
 
