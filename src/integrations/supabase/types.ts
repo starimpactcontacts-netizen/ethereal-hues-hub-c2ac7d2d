@@ -2550,6 +2550,50 @@ export type Database = {
         }
         Relationships: []
       }
+      judge_division_standings: {
+        Row: {
+          division: string
+          id: string
+          judge_id: string
+          peak_division: string | null
+          reviews_this_season: number
+          season_id: string
+          seasonal_jxp: number
+          updated_at: string
+          videos_this_season: number
+        }
+        Insert: {
+          division?: string
+          id?: string
+          judge_id: string
+          peak_division?: string | null
+          reviews_this_season?: number
+          season_id: string
+          seasonal_jxp?: number
+          updated_at?: string
+          videos_this_season?: number
+        }
+        Update: {
+          division?: string
+          id?: string
+          judge_id?: string
+          peak_division?: string | null
+          reviews_this_season?: number
+          season_id?: string
+          seasonal_jxp?: number
+          updated_at?: string
+          videos_this_season?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "judge_division_standings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "judge_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       judge_inbox: {
         Row: {
           added_at: string
@@ -2584,6 +2628,92 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      judge_mission_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_count: number
+          id: string
+          judge_id: string
+          jxp_claimed: boolean
+          mission_id: string
+          period_start: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number
+          id?: string
+          judge_id: string
+          jxp_claimed?: boolean
+          mission_id: string
+          period_start: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number
+          id?: string
+          judge_id?: string
+          jxp_claimed?: boolean
+          mission_id?: string
+          period_start?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "judge_mission_progress_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "judge_mission_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      judge_mission_templates: {
+        Row: {
+          action_type: string
+          created_at: string
+          description: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          jxp_reward: number
+          mission_type: string
+          target_count: number
+          title: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          description: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          jxp_reward?: number
+          mission_type?: string
+          target_count?: number
+          title: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          description?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          jxp_reward?: number
+          mission_type?: string
+          target_count?: number
+          title?: string
+        }
+        Relationships: []
       }
       judge_rating_videos: {
         Row: {
@@ -2627,6 +2757,66 @@ export type Database = {
           video_url?: string
           views_at_submission?: number | null
           viral_bonus_awarded?: boolean | null
+        }
+        Relationships: []
+      }
+      judge_seasons: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          is_active: boolean
+          season_name: string
+          season_number: number
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          season_name: string
+          season_number: number
+          starts_at: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          season_name?: string
+          season_number?: number
+          starts_at?: string
+        }
+        Relationships: []
+      }
+      judge_spotlights: {
+        Row: {
+          created_at: string
+          headline: string | null
+          id: string
+          judge_id: string
+          spotlight_date: string
+          spotlight_type: string
+          stat_value: number
+        }
+        Insert: {
+          created_at?: string
+          headline?: string | null
+          id?: string
+          judge_id: string
+          spotlight_date: string
+          spotlight_type: string
+          stat_value?: number
+        }
+        Update: {
+          created_at?: string
+          headline?: string | null
+          id?: string
+          judge_id?: string
+          spotlight_date?: string
+          spotlight_type?: string
+          stat_value?: number
         }
         Relationships: []
       }
