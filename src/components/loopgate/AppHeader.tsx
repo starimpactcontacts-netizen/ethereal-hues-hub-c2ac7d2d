@@ -190,21 +190,20 @@ export default function AppHeader() {
                   <SheetClose asChild>
                     <Link
                       to="/judges"
-                      className="group relative flex items-center gap-3 p-3 rounded-lg bg-gradient-to-r from-gold/5 via-amber-500/10 to-gold/5 border border-gold/20 hover:border-gold/40 transition-all overflow-hidden"
+                      className="group relative flex items-center gap-3 p-3 rounded-lg bg-red-950/20 border border-red-800/30 hover:border-red-700/50 transition-all overflow-hidden"
                     >
-                      {/* Subtle shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-red-700/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                       
-                      <div className="relative flex items-center justify-center w-10 h-10 rounded-lg bg-gold/10 border border-gold/30">
-                        <Gavel className="w-5 h-5 text-gold" />
+                      <div className="relative flex items-center justify-center w-10 h-10 rounded-sm bg-red-950/50 border border-red-800/40">
+                        <Gavel className="w-5 h-5 text-red-400" />
                       </div>
                       
                       <div className="relative flex-1">
-                        <p className="font-display text-sm text-gold">QOI Judges</p>
+                        <p className="font-display text-sm text-white">The Bureau</p>
                         <p className="text-[10px] text-muted-foreground">Get elite feedback on your edits</p>
                       </div>
                       
-                      <div className="relative text-gold/50 group-hover:text-gold transition-colors">
+                      <div className="relative text-zinc-500 group-hover:text-white transition-colors">
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M9 18l6-6-6-6" />
                         </svg>
