@@ -53,43 +53,7 @@ export async function judgeBattle(
 
     if (error) throw error;
 
-    // Award index points to winner
-    try {
-      const { data: winnerProfile } = await supabase
-        .from('profiles')
-        .select('global_index_score')
-        .eq('id', winnerId)
-        .single();
-
-      if (winnerProfile) {
-        await supabase
-          .from('profiles')
-          .update({ global_index_score: (winnerProfile.global_index_score || 0) + (battle.winner_index_awarded || 20) })
-          .eq('id', winnerId);
-      }
-    } catch (e) {
-      console.error('Error awarding winner index:', e);
-    }
-
-    // Penalize loser
-    if (loserId) {
-      try {
-        const { data: loserProfile } = await supabase
-          .from('profiles')
-          .select('global_index_score')
-          .eq('id', loserId)
-          .single();
-
-        if (loserProfile) {
-          await supabase
-            .from('profiles')
-            .update({ global_index_score: Math.max(0, (loserProfile.global_index_score || 0) - (battle.loser_index_penalty || 5)) })
-            .eq('id', loserId);
-        }
-      } catch (e) {
-        console.error('Error applying loser penalty:', e);
-      }
-    }
+    // Index points are now distributed automatically via database trigger (distribute_battle_index)
 
     // Create notifications
     try {
