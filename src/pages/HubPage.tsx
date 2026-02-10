@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
-  ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords
+  ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -15,15 +15,70 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
 import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
+import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import LoopMonster from '@/components/loopgate/LoopMonster';
-import ActivityFeed from '@/components/loopgate/ActivityFeed';
 import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import XPProgressBar from '@/components/loopgate/XPProgressBar';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
+
+// ── Live Feed for Hub ──────────────────────────────────────────────────
+const actionColors: Record<string, string> = {
+  submission: 'text-gold',
+  review: 'text-purple-400',
+  battle: 'text-red-400',
+  judge_video: 'text-purple-400',
+  connection: 'text-blue-400',
+};
+
+function HubLiveFeed() {
+  const { items, loading } = useLiveActivity(8);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-3">
+        <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <p className="text-xs text-muted-foreground text-center py-3">No recent activity yet</p>
+    );
+  }
+
+  return (
+    <div className="space-y-0">
+      <AnimatePresence initial={false}>
+        {items.map((item, i) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, delay: i * 0.03 }}
+            className="flex items-center gap-2 py-1.5 text-[10px] border-b border-border/20 last:border-0"
+          >
+            <span className="text-foreground font-semibold truncate max-w-[80px]">{item.username}</span>
+            <span className="text-muted-foreground shrink-0">{item.action}</span>
+            <span className={`${actionColors[item.type] || 'text-gold'} truncate flex-1 font-medium`}>{item.target}</span>
+            {item.score != null && item.score > 0 && (
+              <span className="text-gold font-bold shrink-0">{Math.round(item.score)}</span>
+            )}
+            <span className="text-muted-foreground/50 shrink-0">
+              {formatDistanceToNow(new Date(item.timestamp), { addSuffix: false })}
+            </span>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 const leagueConfig = {
   cartel: { label: 'CARTEL', icon: Crown, gradient: 'from-gold via-amber-400 to-gold', glow: 'shadow-gold/30' },
@@ -825,18 +880,19 @@ export default function HubPage() {
 
         {/* Unified container with shared border */}
         <div className="mx-4 bg-surface-1/40 border border-border/30 overflow-hidden">
-          {/* Live Feed Section */}
+          {/* Live Feed Section — Real-time aggregated */}
           <div className="p-3 border-b border-border/20">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-gold" />
                 <span className="text-xs text-foreground font-medium uppercase tracking-wide">Live Feed</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               </div>
               <Link to="/feed" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
                 VIEW ALL <ArrowRight size={10} />
               </Link>
             </div>
-            <ActivityFeed limit={5} compact />
+            <HubLiveFeed />
           </div>
 
           {/* Reviews Section */}
