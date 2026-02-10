@@ -384,13 +384,10 @@ export default function HubPage() {
             {/* Content */}
             <div className="relative p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {/* Arena Icon - Vibrant offset layers */}
+                  {/* Arena Icon - Infinite color-morphing glitch edges */}
                   <div className="relative flex items-center justify-center">
-                    {/* Left offset layer - vibrant gold/orange */}
-                    <div className="absolute w-12 h-10 bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-[6px] -translate-x-[4px] shadow-[0_0_12px_rgba(251,191,36,0.6)]" />
-                    {/* Right offset layer - vibrant blue/purple */}
-                    <div className="absolute w-12 h-10 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-[6px] translate-x-[4px] shadow-[0_0_12px_rgba(139,92,246,0.6)]" />
-                    {/* Main icon container - white bg, black icon */}
+                    <div className="absolute w-12 h-10 rounded-[6px] -translate-x-[4px] glitch-edge-left" />
+                    <div className="absolute w-12 h-10 rounded-[6px] translate-x-[4px] glitch-edge-right" />
                     <div className="relative w-12 h-10 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
                       <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
                     </div>
@@ -402,13 +399,10 @@ export default function HubPage() {
                   </div>
                 </div>
                 
-                {/* Enter Button - Subtle Gold Glitch Style */}
+                {/* Enter Button - Infinite color-morphing glitch edges */}
                 <div className="shrink-0 relative">
-                  {/* Left offset layer - vibrant gold/orange */}
-                  <div className="absolute h-full w-full bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-[6px] -translate-x-[3px] shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
-                  {/* Right offset layer - vibrant blue/purple */}
-                  <div className="absolute h-full w-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-[6px] translate-x-[3px] shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
-                  {/* Main button - white bg, black text */}
+                  <div className="absolute h-full w-full rounded-[6px] -translate-x-[3px] glitch-edge-left" />
+                  <div className="absolute h-full w-full rounded-[6px] translate-x-[3px] glitch-edge-right" />
                   <div className="relative bg-white text-black font-display text-xs px-5 py-2.5 rounded-[6px] group-hover:scale-[1.02] transition-transform">
                     <div className="flex items-center gap-2">
                       <span>ENTER NOW</span>
@@ -749,7 +743,7 @@ export default function HubPage() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════
-          ⚖️ JUDGE SPOTLIGHT — Prominent gateway to /judges
+          ⚖️ JUDGE AUTHORITY — Cinematic gateway to /judges
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -758,26 +752,40 @@ export default function HubPage() {
         className="px-4 mt-2"
       >
         <Link to="/judges" className="block group">
-          <div className="relative overflow-hidden rounded-xl border border-gold/20 bg-gradient-to-r from-gold/8 via-surface-1/60 to-surface-1/40 group-hover:border-gold/40 transition-colors">
-            {/* Ambient glow */}
-            <div className="absolute left-0 top-0 bottom-0 w-1/4 bg-gradient-to-r from-gold/10 to-transparent" />
+          <div className="relative overflow-hidden rounded-xl bg-background border border-white/[0.06] group-hover:border-white/15 transition-all duration-500">
+            {/* Cinematic gold scanline sweep */}
+            <motion.div
+              animate={{ x: ['-100%', '200%'] }}
+              transition={{ duration: 5, repeat: Infinity, ease: 'linear', repeatDelay: 3 }}
+              className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-gold/[0.04] to-transparent pointer-events-none z-0"
+            />
             
-            <div className="relative p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/25 flex items-center justify-center group-hover:bg-gold/25 transition-colors">
-                  <Gavel className="w-6 h-6 text-gold" />
+            <div className="relative p-4 flex items-center gap-4">
+              {/* Judge Icon — Signature gold ring with depth */}
+              <div className="relative shrink-0">
+                <div className="w-14 h-14 rounded-full border border-gold/30 flex items-center justify-center bg-gold/[0.04] group-hover:bg-gold/[0.08] transition-colors">
+                  <div className="w-10 h-10 rounded-full border border-gold/20 flex items-center justify-center">
+                    <Gavel className="w-5 h-5 text-gold" />
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-display text-lg tracking-wide text-foreground group-hover:text-gold transition-colors">JUDGES</h2>
-                  <p className="text-[10px] text-muted-foreground">The authority that rates & ranks</p>
+                {/* Live indicator */}
+                <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background">
+                  <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
                 </div>
               </div>
               
-              <div className="shrink-0 px-4 py-2 bg-gold/10 border border-gold/25 rounded-lg group-hover:bg-gold/20 transition-colors">
+              {/* Text block */}
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-display text-xs text-gold">GET RATED</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-gold group-hover:translate-x-1 transition-transform" />
+                  <h2 className="font-display text-xl tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
+                  <span className="text-[8px] px-1.5 py-0.5 bg-gold/10 border border-gold/20 text-gold font-bold uppercase tracking-widest rounded-sm">Authority</span>
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-1 font-medium">Submit your work. Get rated by the panel.</p>
+              </div>
+              
+              {/* CTA — Minimal arrow, not a copy of Arena */}
+              <div className="shrink-0 w-10 h-10 rounded-full border border-white/10 flex items-center justify-center group-hover:border-gold/40 group-hover:bg-gold/5 transition-all duration-300">
+                <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
           </div>
