@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Users, 
-  ChevronRight, Sparkles, Target,
-  ArrowLeft, Send, ExternalLink, Gavel, AlertTriangle
+  Search, 
+  ChevronRight, ArrowLeft, Send, AlertTriangle
 } from 'lucide-react';
+import { AuthorityGavel, ScopeTarget, ContendersIcon, NexusStar, ArrowLink } from '@/components/loopgate/LoopgateIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -73,7 +73,7 @@ function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge:
             <div className={`w-11 h-11 rounded-full flex items-center justify-center border text-sm font-bold ${
               isTrial ? 'bg-muted border-border text-muted-foreground' : 'bg-gold/20 border-gold/30 text-gold'
             }`}>
-              {isTrial ? judge.username[0]?.toUpperCase() : <Gavel size={16} />}
+              {isTrial ? judge.username[0]?.toUpperCase() : <AuthorityGavel size={16} />}
             </div>
           )}
         </div>
@@ -88,7 +88,7 @@ function JudgeCard({ judge, onSelect }: { judge: JudgeProfile; onSelect: (judge:
               <span className="text-[8px] px-1.5 py-0.5 bg-muted border border-border rounded font-semibold text-muted-foreground uppercase tracking-wider">Trial</span>
             ) : (
               <span className="text-[8px] px-1.5 py-0.5 bg-muted border border-border rounded font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-0.5">
-                <Gavel size={8} /> Judge
+                <AuthorityGavel size={8} /> Judge
               </span>
             )}
           </div>
@@ -172,7 +172,7 @@ function JudgePreviewModal({
               />
             ) : (
               <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center border-4 border-card">
-                <Gavel size={24} className="text-gold" />
+                <AuthorityGavel size={24} className="text-gold" />
               </div>
             )}
           </div>
@@ -214,7 +214,7 @@ function JudgePreviewModal({
               onClick={() => navigate(`/judge/${judge.username}`)}
               className="flex-1 py-2.5 bg-surface-1 border border-border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors flex items-center justify-center gap-2"
             >
-              <ExternalLink size={14} />
+              <ArrowLink size={14} />
               Profile
             </button>
             <button
@@ -415,7 +415,7 @@ export default function JudgeHubPage() {
                 <ArrowLeft size={18} />
               </button>
               <div className="flex items-center gap-2 px-3 py-1 bg-gold/10 border border-gold/20 rounded-full">
-                <Gavel size={12} className="text-gold" />
+                <AuthorityGavel size={12} className="text-gold" />
                 <span className="text-[10px] text-gold uppercase tracking-[0.3em] font-bold">Authority</span>
               </div>
             </div>
@@ -425,7 +425,7 @@ export default function JudgeHubPage() {
                 to="/judge-panel"
                 className="px-3 py-1.5 bg-gold/10 border border-gold/30 rounded-lg text-xs font-medium text-gold hover:bg-gold/20 transition-colors flex items-center gap-1.5"
               >
-                <Target size={12} />
+                <ScopeTarget size={12} />
                 Panel
               </Link>
             )}
@@ -487,7 +487,7 @@ export default function JudgeHubPage() {
           >
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-xl bg-gold/20 flex items-center justify-center shrink-0">
-                <Sparkles className="w-5 h-5 text-gold" />
+                <NexusStar className="text-gold" size={20} />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-display text-sm mb-0.5">Become a QOI Judge</h3>
@@ -510,7 +510,7 @@ export default function JudgeHubPage() {
       <div className="px-4 pt-4 border-t border-border">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Users size={14} className="text-muted-foreground" />
+            <ContendersIcon size={14} className="text-muted-foreground" />
             <h2 className="font-display text-sm tracking-wide">ALL JUDGES</h2>
           </div>
           <span className="text-[11px] text-muted-foreground">
@@ -538,7 +538,7 @@ export default function JudgeHubPage() {
           ) : filteredJudges.length === 0 ? (
             <div className="text-center py-10">
               <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center mb-3">
-                <Gavel className="w-6 h-6 text-gold" />
+                <AuthorityGavel className="text-gold" size={24} />
               </div>
               <p className="font-display text-sm mb-1">NO JUDGES FOUND</p>
               <p className="text-xs text-muted-foreground">
