@@ -6,12 +6,37 @@ export interface LiveActivityItem {
   user_id: string;
   username: string;
   avatar_url: string | null;
-  action: string; // 'submitted' | 'reviewed' | 'battled' | 'rated' | 'joined' | 'won'
-  target: string; // event name, battle opponent, etc
+  action: string;
+  target: string;
   score?: number | null;
   timestamp: string;
   type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection';
 }
+
+// Randomized action text for variety
+const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+const submissionVerbs = [
+  'submitted to', 'entered', 'dropped an edit in', 'threw down in', 'competed in',
+];
+const reviewVerbs = [
+  'got rated by', 'was judged by', 'received a verdict from', 'got scored by', 'faced the gavel of',
+];
+const battleActiveVerbs = [
+  'is battling', 'is going head-to-head with', 'stepped into the ring vs', 'is clashing with',
+];
+const battleJudgingVerbs = [
+  'awaiting judgement vs', 'pending verdict against', 'in the judges\' hands vs',
+];
+const battleWonVerbs = [
+  'defeated', 'took down', 'outclassed', 'dismantled', 'bodied',
+];
+const battleLostVerbs = [
+  'lost to', 'fell to', 'was eliminated by', 'got outperformed by',
+];
+const judgeVideoVerbs = [
+  'posted', 'dropped', 'published', 'released',
+];
 
 export function useLiveActivity(limit = 8) {
   const [items, setItems] = useState<LiveActivityItem[]>([]);
@@ -87,7 +112,7 @@ export function useLiveActivity(limit = 8) {
           user_id: r.user_id,
           username: p?.username || 'editor',
           avatar_url: p?.avatar_url || null,
-          action: 'submitted to',
+          action: pick(submissionVerbs),
           target: eventMap.get(r.event_id) || 'Open Arena',
           score: r.qoi_score,
           timestamp: r.submitted_at || new Date().toISOString(),
@@ -103,7 +128,7 @@ export function useLiveActivity(limit = 8) {
           user_id: e.user_id,
           username: p?.username || 'editor',
           avatar_url: p?.avatar_url || null,
-          action: 'submitted to',
+          action: pick(submissionVerbs),
           target: eventMap.get(e.event_id) || 'Event',
           score: e.qoi_score,
           timestamp: e.submitted_at || new Date().toISOString(),
@@ -118,7 +143,7 @@ export function useLiveActivity(limit = 8) {
           user_id: r.user_id,
           username: r.username || 'editor',
           avatar_url: r.avatar_url || null,
-          action: 'got rated by',
+          action: pick(reviewVerbs),
           target: r.judge_username || 'a judge',
           score: r.total_score,
           timestamp: r.reviewed_at || new Date().toISOString(),
@@ -128,7 +153,13 @@ export function useLiveActivity(limit = 8) {
 
       // Battles
       battleData.forEach(b => {
-        const action = b.status === 'active' ? 'is battling' : b.status === 'judging' ? 'awaiting judgement vs' : b.winner_id === b.challenger_id ? 'defeated' : 'lost to';
+        const action = b.status === 'active' 
+          ? pick(battleActiveVerbs) 
+          : b.status === 'judging' 
+            ? pick(battleJudgingVerbs) 
+            : b.winner_id === b.challenger_id 
+              ? pick(battleWonVerbs) 
+              : pick(battleLostVerbs);
         all.push({
           id: `battle-${b.id}`,
           user_id: b.challenger_id,
@@ -150,7 +181,7 @@ export function useLiveActivity(limit = 8) {
           user_id: j.judge_id,
           username: p?.username || 'judge',
           avatar_url: p?.avatar_url || null,
-          action: 'posted',
+          action: pick(judgeVideoVerbs),
           target: j.title || 'a rating video',
           score: j.current_views,
           timestamp: j.submitted_at || new Date().toISOString(),
