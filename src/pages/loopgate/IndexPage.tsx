@@ -463,8 +463,8 @@ export default function IndexPage() {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         
         {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-white/10" />
-        <div className="absolute top-0 right-0 w-24 h-24 border-r-2 border-t-2 border-white/10" />
+        <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-gold/20" />
+        <div className="absolute top-0 right-0 w-24 h-24 border-r-2 border-t-2 border-gold/20" />
         
         <header className="relative z-10 px-4 pt-6 pb-8">
           <div className="flex items-center justify-between mb-6">
