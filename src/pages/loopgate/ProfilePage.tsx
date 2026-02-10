@@ -9,7 +9,7 @@ import { useXP } from "@/hooks/useXP";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { useJudgeRatingVideos } from "@/hooks/useJudgeRatingVideos";
-import { useReviewRequests } from "@/hooks/useReviewRequests";
+
 import { useCrewMembership } from "@/hooks/useCrewMembership";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { motion } from "framer-motion";
@@ -20,7 +20,7 @@ import XPProgressBar from "@/components/loopgate/XPProgressBar";
 import SubmissionGrid from "@/components/loopgate/SubmissionGrid";
 import ArchetypeBadge from "@/components/loopgate/ArchetypeBadge";
 import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
-import ReviewResultCard from "@/components/loopgate/ReviewResultCard";
+
 import MyJudgeReviews from "@/components/loopgate/MyJudgeReviews";
 import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
 import { getRankFromScore } from "@/data/gqtConfig";
@@ -36,7 +36,7 @@ export default function ProfilePage() {
   const { xp, level } = useXP();
   const { submissions } = useUserSubmissions();
   const { videos: judgeVideos } = useJudgeRatingVideos();
-  const { completedReviews } = useReviewRequests();
+  
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
@@ -394,21 +394,7 @@ export default function ProfilePage() {
 
       {/* ═══ TAB CONTENT ═══ */}
       {activeTab === 'edits' && (
-        <>
-          {/* Completed Reviews (reviews I received) */}
-          {completedReviews.length > 0 && (
-            <div className="px-4 mb-4">
-              <div className="space-y-2">
-                {completedReviews.slice(0, 3).map((review) => (
-                  <ReviewResultCard key={review.id} review={review} />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Submission Grid */}
-          <SubmissionGrid />
-        </>
+        <SubmissionGrid />
       )}
       
       {activeTab === 'reviews' && (
