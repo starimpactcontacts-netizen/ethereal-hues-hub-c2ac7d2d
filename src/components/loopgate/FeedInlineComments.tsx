@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, Reply, Send, Loader2, MessageCircle, ChevronDown, Smile } from 'lucide-react';
+import { Heart, Reply, Send, Loader2, MessageCircle, ChevronDown, Smile, Trash2 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,9 +27,10 @@ interface Comment {
 interface Props {
   submissionId: string;
   submissionType: 'arena' | 'review' | 'battle' | 'judge_video';
+  onCommentCountChange?: (count: number) => void;
 }
 
-export default function FeedInlineComments({ submissionId, submissionType }: Props) {
+export default function FeedInlineComments({ submissionId, submissionType, onCommentCountChange }: Props) {
   const { user, profile } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,12 +75,14 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
           likedIds = likes?.map(l => l.comment_id) || [];
         }
 
-        setComments((commentsData || []).map(c => ({
+        const mapped = (commentsData || []).map(c => ({
           ...c,
           username: profileMap.get(c.user_id)?.username || 'Unknown',
           avatar_url: profileMap.get(c.user_id)?.avatar_url || null,
           isLiked: likedIds.includes(c.id)
-        })));
+        }));
+        setComments(mapped);
+        onCommentCountChange?.(mapped.reduce((sum, c) => sum + 1 + (c.reply_count || 0), 0));
       } catch (err) {
         console.error('Error fetching comments:', err);
       } finally {
@@ -179,10 +182,30 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
         setComments(prev => [obj, ...prev]);
       }
       setNewComment('');
+      onCommentCountChange?.(
+        (replyingTo ? comments : [obj, ...comments]).reduce((sum, c) => sum + 1 + (c.reply_count || 0) + (c.replies?.length || 0), 0) + (replyingTo ? 1 : 0)
+      );
     } catch {
       toast.error('Failed to post comment');
     } finally {
       setSending(false);
+    }
+  };
+
+  const deleteComment = async (commentId: string, parentId?: string) => {
+    try {
+      await supabase.from('feed_comments').delete().eq('id', commentId).eq('user_id', user!.id);
+      if (parentId) {
+        setComments(prev => prev.map(c =>
+          c.id === parentId
+            ? { ...c, reply_count: Math.max(0, c.reply_count - 1), replies: c.replies?.filter(r => r.id !== commentId) }
+            : c
+        ));
+      } else {
+        setComments(prev => prev.filter(c => c.id !== commentId));
+      }
+    } catch {
+      toast.error('Failed to delete comment');
     }
   };
 
@@ -286,6 +309,7 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
                 onLike={() => toggleLike(comment)}
                 onReply={() => { setReplyingTo(comment); inputRef.current?.focus(); }}
                 onLoadReplies={() => loadReplies(comment.id)}
+                onDelete={user?.id === comment.user_id ? () => deleteComment(comment.id) : undefined}
                 isExpanded={expandedReplies.has(comment.id)}
               />
               {expandedReplies.has(comment.id) && comment.replies && (
@@ -295,6 +319,7 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
                       key={reply.id}
                       comment={reply}
                       onLike={() => toggleLike(reply, true, comment.id)}
+                      onDelete={user?.id === reply.user_id ? () => deleteComment(reply.id, comment.id) : undefined}
                       isReply
                     />
                   ))}
@@ -309,12 +334,13 @@ export default function FeedInlineComments({ submissionId, submissionType }: Pro
 }
 
 function ThreadComment({
-  comment, onLike, onReply, onLoadReplies, isExpanded, isReply
+  comment, onLike, onReply, onLoadReplies, onDelete, isExpanded, isReply
 }: {
   comment: Comment;
   onLike: () => void;
   onReply?: () => void;
   onLoadReplies?: () => void;
+  onDelete?: () => void;
   isExpanded?: boolean;
   isReply?: boolean;
 }) {
@@ -353,6 +379,11 @@ function ThreadComment({
             <button onClick={onLoadReplies} className="flex items-center gap-1 text-primary text-[11px] hover:underline">
               <ChevronDown className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
               {isExpanded ? 'Hide' : `${comment.reply_count} ${comment.reply_count === 1 ? 'reply' : 'replies'}`}
+            </button>
+          )}
+          {onDelete && (
+            <button onClick={onDelete} className="flex items-center gap-1 text-muted-foreground hover:text-red-400 transition-colors text-[11px] ml-auto">
+              <Trash2 className="w-3 h-3" />
             </button>
           )}
         </div>

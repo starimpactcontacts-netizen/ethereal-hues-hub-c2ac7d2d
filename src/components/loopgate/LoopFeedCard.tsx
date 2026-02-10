@@ -1,9 +1,11 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, ChevronDown, ChevronUp, Swords, Video } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUnifiedThumbnail } from "@/lib/thumbnail";
+import { supabase } from "@/integrations/supabase/client";
 import ThumbnailImage from "./ThumbnailImage";
 import FeedInlineComments from "./FeedInlineComments";
 import VerifiedBadge from "./VerifiedBadge";
@@ -52,6 +54,9 @@ const platformLabels: Record<string, string> = {
   youtube: "YT",
 };
 
+const isGifUrl = (text: string) =>
+  text.includes('tenor.com') || text.includes('giphy.com') || /\.(gif|gifv)(\?|$)/i.test(text);
+
 function getGrade(score: number): { grade: string; color: string } {
   if (score >= 90) return { grade: 'S+', color: 'text-gold' };
   if (score >= 80) return { grade: 'S', color: 'text-gold' };
@@ -70,10 +75,46 @@ interface LoopFeedCardProps {
 
 export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenPlayer }: LoopFeedCardProps) {
   const navigate = useNavigate();
+  const [commentCount, setCommentCount] = useState(0);
+  const [previewComments, setPreviewComments] = useState<{ username: string; content: string }[]>([]);
+
+  // Fetch comment count + preview on mount
+  useEffect(() => {
+    const fetchPreview = async () => {
+      const { count } = await supabase
+        .from('feed_comments')
+        .select('*', { count: 'exact', head: true })
+        .eq('submission_id', item.rawId)
+        .eq('submission_type', item.type);
+      setCommentCount(count || 0);
+
+      if ((count || 0) > 0) {
+        const { data } = await supabase
+          .from('feed_comments')
+          .select('user_id, content')
+          .eq('submission_id', item.rawId)
+          .eq('submission_type', item.type)
+          .is('parent_id', null)
+          .order('created_at', { ascending: false })
+          .limit(2);
+        if (data && data.length > 0) {
+          const userIds = [...new Set(data.map(c => c.user_id))];
+          const { data: profiles } = await supabase.from('profiles').select('id, username').in('id', userIds);
+          const pm = new Map(profiles?.map(p => [p.id, p.username]) || []);
+          setPreviewComments(data.map(c => ({
+            username: pm.get(c.user_id) || 'user',
+            content: c.content.length > 60 ? c.content.slice(0, 60) + '…' : c.content,
+          })));
+        }
+      }
+    };
+    fetchPreview();
+  }, [item.rawId, item.type]);
+
   const thumb = useUnifiedThumbnail(
     item.type === 'battle' ? '' : item.submission_url,
     item.platform,
-    null, // manualThumb — passed via item.thumbnail_url as dbThumb
+    null,
     item.thumbnail_url,
   );
 
@@ -323,6 +364,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                 className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors text-[10px]"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
+                {commentCount > 0 && <span className="font-medium">{commentCount}</span>}
                 {isExpanded ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
               </button>
               <button
@@ -345,6 +387,24 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
         </div>
       </div>
 
+      {/* Thread preview when collapsed */}
+      {!isExpanded && previewComments.length > 0 && (
+        <button
+          onClick={onToggleExpand}
+          className="px-4 pb-2 pt-0.5 w-full text-left"
+        >
+          {previewComments.map((pc, i) => (
+            <p key={i} className="text-[11px] text-muted-foreground leading-snug truncate">
+              <span className="font-semibold text-foreground/70">@{pc.username}</span>{' '}
+              {isGifUrl(pc.content) ? 'sent a GIF' : pc.content}
+            </p>
+          ))}
+          {commentCount > 2 && (
+            <p className="text-[10px] text-primary mt-0.5">View all {commentCount} comments</p>
+          )}
+        </button>
+      )}
+
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -357,6 +417,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
             <FeedInlineComments
               submissionId={item.rawId}
               submissionType={item.type}
+              onCommentCountChange={setCommentCount}
             />
           </motion.div>
         )}
