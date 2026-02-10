@@ -411,13 +411,12 @@ export default function HubPage() {
                 
                 {/* Right side — big ENTER NOW with left-fade */}
                 <div className="relative shrink-0 self-stretch flex items-center">
-                  {/* Long stretched fade — dark to white takeover */}
-                  <div className="absolute top-0 bottom-0 z-10 pointer-events-none" style={{ left: '-160px', width: '180px' }}>
-                    <div className="w-full h-full" style={{ background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.03) 20%, rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0.6) 80%, rgba(255,255,255,0.95) 100%)' }} />
+                  {/* Ultra-long smooth fade — white takeover creeping from right */}
+                  <div className="absolute top-0 bottom-0 z-20 pointer-events-none" style={{ left: '-220px', width: '240px' }}>
+                    <div className="w-full h-full" style={{ background: 'linear-gradient(to right, transparent 0%, rgba(255,255,255,0.01) 15%, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0.4) 65%, rgba(255,255,255,0.6) 75%, rgba(255,255,255,0.82) 85%, rgba(255,255,255,0.95) 93%, white 100%)' }} />
                   </div>
-                  {/* Glitch edges on the white block */}
-                  <GlitchEdge side="left" className="absolute top-0 bottom-0 rounded-r-xl z-0" style={{ left: '-5px', right: '5px' }} />
-                  <GlitchEdge side="right" className="absolute top-0 bottom-0 rounded-r-xl z-0" style={{ left: '5px', right: '-5px' }} />
+                  {/* Glitch edges — only on the outer right edge of the card, not the fade zone */}
+                  <GlitchEdge side="right" className="absolute top-0 bottom-0 z-0" style={{ left: '2px', right: '-5px', borderRadius: '0 12px 12px 0' }} />
                   <div className="relative bg-white text-black px-8 py-4 self-stretch flex items-center rounded-r-xl z-10 group-hover:bg-zinc-100 transition-colors">
                     <div className="flex items-center gap-2 font-display text-sm tracking-wide">
                       <span>ENTER NOW</span>
