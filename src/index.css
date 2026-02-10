@@ -335,26 +335,44 @@
 /* ═══════════════════════════════════════════════════════════════════
    LOOPGATE GLITCH EDGES — Infinite color-morphing metamorphosis
    Uses hue-rotate for 60fps GPU-accelerated smooth color cycling
-   Works on all browsers including Safari/WebKit
+   Full Safari/iOS WebKit compatibility with -webkit- prefixes
 ═══════════════════════════════════════════════════════════════════ */
+@-webkit-keyframes glitch-hue-cycle {
+  0%   { -webkit-filter: hue-rotate(0deg); filter: hue-rotate(0deg); }
+  100% { -webkit-filter: hue-rotate(360deg); filter: hue-rotate(360deg); }
+}
+
 @keyframes glitch-hue-cycle {
-  0%   { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
+  0%   { -webkit-filter: hue-rotate(0deg); filter: hue-rotate(0deg); }
+  100% { -webkit-filter: hue-rotate(360deg); filter: hue-rotate(360deg); }
 }
 
 .glitch-edge-left {
   background: linear-gradient(135deg, #f59e0b, #ef4444);
   box-shadow: 0 0 14px rgba(245,158,11,0.5);
+  -webkit-animation: glitch-hue-cycle 8s linear infinite;
   animation: glitch-hue-cycle 8s linear infinite;
-  will-change: filter;
+  -webkit-filter: hue-rotate(0deg);
+  filter: hue-rotate(0deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .glitch-edge-right {
   background: linear-gradient(135deg, #06b6d4, #a855f7);
   box-shadow: 0 0 14px rgba(139,92,246,0.5);
+  -webkit-animation: glitch-hue-cycle 8s linear infinite;
   animation: glitch-hue-cycle 8s linear infinite;
+  -webkit-animation-delay: -4s;
   animation-delay: -4s;
-  will-change: filter;
+  -webkit-filter: hue-rotate(0deg);
+  filter: hue-rotate(0deg);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 html {
