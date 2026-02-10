@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -54,101 +53,96 @@ export default function JudgePanelPage() {
   }, [user?.id]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-black" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      {/* Header — compact mobile-first */}
+      <div className="sticky top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-800">
+        <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center gap-2">
             <Link to="/judges">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
+              <button className="p-1.5 hover:bg-white/5 transition-colors">
+                <ArrowLeft className="w-4 h-4 text-zinc-400" />
+              </button>
             </Link>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center">
-                <Gavel className="w-4 h-4 text-gold" />
+              <div className="w-7 h-7 rounded-sm bg-red-950 flex items-center justify-center">
+                <Gavel className="w-3.5 h-3.5 text-red-400" />
               </div>
               <div>
-                <h1 className="font-display text-lg font-bold text-foreground">Judge Panel</h1>
-                <p className="text-xs text-muted-foreground">@{profile?.username || 'judge'}</p>
+                <h1 className="font-display text-sm font-bold text-white tracking-wide">JUDGE PANEL</h1>
+                <p className="text-[10px] text-zinc-500 font-mono">@{profile?.username || 'judge'}</p>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Button 
+          {/* Action buttons — icon-only on mobile */}
+          <div className="flex items-center gap-1">
+            <button 
               onClick={() => setShowFlywheel(true)}
-              size="sm" 
-              className="bg-gold text-black hover:bg-gold/90 font-display font-bold tracking-wider text-[10px]"
+              className="p-2 bg-red-700 hover:bg-red-600 transition-colors rounded-sm"
+              title="Flywheel"
             >
-              <Zap className="w-3 h-3 mr-1" />
-              Flywheel
-            </Button>
-            <Button 
+              <Zap className="w-3.5 h-3.5 text-white" />
+            </button>
+            <button 
               onClick={() => setShowVideoModal(true)}
-              variant="outline" 
-              size="sm" 
-              className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+              className="p-2 hover:bg-white/5 transition-colors rounded-sm"
+              title="Videos"
             >
-              <Video className="w-3 h-3 mr-1" />
-              Videos
-            </Button>
-            <Button 
+              <Video className="w-3.5 h-3.5 text-zinc-400" />
+            </button>
+            <button 
               onClick={() => setShowTemplates(true)}
-              variant="outline" 
-              size="sm" 
-              className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+              className="p-2 hover:bg-white/5 transition-colors rounded-sm"
+              title="Cards"
             >
-              <Palette className="w-3 h-3 mr-1" />
-              Cards
-            </Button>
+              <Palette className="w-3.5 h-3.5 text-zinc-400" />
+            </button>
             <Link to={`/judge/${profile?.username}`}>
-              <Button variant="outline" size="sm" className="border-gold/30 text-gold hover:bg-gold/10">
-                <Star className="w-3 h-3 mr-1" />
-                Profile
-              </Button>
+              <button className="p-2 hover:bg-white/5 transition-colors rounded-sm" title="Profile">
+                <Star className="w-3.5 h-3.5 text-zinc-400" />
+              </button>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Division + Stats Section */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center gap-3 mb-3">
-          <JudgeDivisionBadge jxp={profile?.judge_xp || 0} size="md" showProgress />
+      {/* Division + Stats — compact */}
+      <div className="px-3 py-2.5 border-b border-zinc-800">
+        <div className="flex items-center gap-2 mb-2">
+          <JudgeDivisionBadge jxp={profile?.judge_xp || 0} size="sm" showProgress />
         </div>
         <JudgePanelStats />
       </div>
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full bg-surface-1 rounded-none border-b border-border h-12 p-0">
+        <TabsList className="w-full bg-black rounded-none border-b border-zinc-800 h-10 p-0">
           <TabsTrigger
             value="missions"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
           >
-            <Target className="w-3.5 h-3.5 mr-1.5" />
+            <Target className="w-3 h-3" />
             Missions
           </TabsTrigger>
           <TabsTrigger
             value="inbox"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
           >
-            <Inbox className="w-3.5 h-3.5 mr-1.5" />
+            <Inbox className="w-3 h-3" />
             Inbox
           </TabsTrigger>
           <TabsTrigger
             value="completed"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
           >
-            <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+            <CheckCircle className="w-3 h-3" />
             Done
           </TabsTrigger>
           <TabsTrigger
             value="feed"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
           >
-            <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+            <BarChart3 className="w-3 h-3" />
             Feed
           </TabsTrigger>
         </TabsList>
