@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
+import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
 import PublicJudgeVideos from '@/components/loopgate/PublicJudgeVideos';
 import BottomNav from '@/components/loopgate/BottomNav';
 import { detectPlatform } from '@/lib/urlValidation';
@@ -289,9 +290,9 @@ export default function JudgeProfilePage() {
             </div>
             <p className="text-[11px] text-zinc-500 mb-2">@{judge.username}</p>
             <div className="flex items-center gap-2 flex-wrap">
+              <JudgeDivisionBadge jxp={(judge as any).judge_xp || 0} size="sm" />
               <JudgeLevelBadge level={judgeLevel} size="sm" />
               {stats && <JudgeClassBadge reviewCount={stats.totalReviews} size="sm" />}
-              <span className="text-[10px] text-zinc-600 font-mono">{(judge as any).judge_xp || 0} JXP</span>
             </div>
           </div>
         </div>

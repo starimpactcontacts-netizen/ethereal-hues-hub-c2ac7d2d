@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,10 +13,12 @@ import JudgePanelStats from '@/components/loopgate/JudgePanelStats';
 import SubmitRatingVideoModal from '@/components/loopgate/SubmitRatingVideoModal';
 import JudgeFlywheel from '@/components/loopgate/JudgeFlywheel';
 import JudgeScoringModal from '@/components/loopgate/JudgeScoringModal';
+import JudgeMissionsPanel from '@/components/loopgate/JudgeMissionsPanel';
+import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
 
 export default function JudgePanelPage() {
   const { profile, user } = useAuth();
-  const [activeTab, setActiveTab] = useState('inbox');
+  const [activeTab, setActiveTab] = useState('missions');
   const [showTemplates, setShowTemplates] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showFlywheel, setShowFlywheel] = useState(false);
@@ -110,8 +112,11 @@ export default function JudgePanelPage() {
         </div>
       </div>
 
-      {/* Enhanced Stats Section */}
+      {/* Division + Stats Section */}
       <div className="p-4 border-b border-border">
+        <div className="flex items-center gap-3 mb-3">
+          <JudgeDivisionBadge jxp={profile?.judge_xp || 0} size="md" showProgress />
+        </div>
         <JudgePanelStats />
       </div>
 
@@ -119,27 +124,38 @@ export default function JudgePanelPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full bg-surface-1 rounded-none border-b border-border h-12 p-0">
           <TabsTrigger
-            value="inbox"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-gold data-[state=active]:text-gold"
+            value="missions"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
           >
-            <Inbox className="w-4 h-4 mr-2" />
+            <Target className="w-3.5 h-3.5 mr-1.5" />
+            Missions
+          </TabsTrigger>
+          <TabsTrigger
+            value="inbox"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
+          >
+            <Inbox className="w-3.5 h-3.5 mr-1.5" />
             Inbox
           </TabsTrigger>
           <TabsTrigger
             value="completed"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-gold data-[state=active]:text-gold"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
           >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Completed
+            <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+            Done
           </TabsTrigger>
           <TabsTrigger
             value="feed"
-            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-gold data-[state=active]:text-gold"
+            className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-600 data-[state=active]:text-white text-[11px]"
           >
-            <BarChart3 className="w-4 h-4 mr-2" />
-            Live Feed
+            <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+            Feed
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="missions" className="mt-0">
+          <JudgeMissionsPanel />
+        </TabsContent>
 
         <TabsContent value="inbox" className="mt-0">
           <JudgeInbox />
