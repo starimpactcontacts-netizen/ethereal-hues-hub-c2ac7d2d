@@ -374,43 +374,40 @@ export default function HubPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-        className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-r from-surface-1 via-background to-transparent group-hover:border-white/20 transition-colors">
-            {/* One-sided shiny glow effect */}
-            <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-gold/15 via-purple-500/10 to-transparent" />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-24 h-24 bg-gold/20 rounded-full blur-2xl group-hover:bg-gold/30 transition-colors" />
+          <div className="relative overflow-hidden border-y border-white/10 bg-black group-hover:border-white/15 transition-colors">
+            {/* Left fade-out gradient */}
+            <div className="absolute left-0 top-0 bottom-0 w-2/5 bg-gradient-to-r from-gold/12 via-purple-500/8 to-transparent z-0" />
+            <div className="absolute left-0 top-0 bottom-0 w-1/4 bg-gradient-to-r from-background to-transparent z-[1]" />
+            
+            {/* Right glow */}
+            <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-gold/15 via-purple-500/8 to-transparent z-0" />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 w-20 h-20 bg-gold/15 rounded-full blur-2xl group-hover:bg-gold/25 transition-colors z-0" />
             
             {/* Content */}
-            <div className="relative p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {/* Arena Icon - Infinite color-morphing glitch edges */}
-                  <div className="relative flex items-center justify-center">
-                    <GlitchEdge side="left" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '-4px' }} />
-                    <GlitchEdge side="right" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '4px' }} />
-                    <div className="relative w-12 h-10 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
-                      <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
-                    <p className="text-xs text-muted-foreground font-medium">Enter the competition</p>
+            <div className="relative z-[2] px-4 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {/* Arena Icon */}
+                <div className="relative flex items-center justify-center">
+                  <GlitchEdge side="left" className="absolute w-11 h-9 rounded-[6px]" style={{ left: '-4px' }} />
+                  <GlitchEdge side="right" className="absolute w-11 h-9 rounded-[6px]" style={{ left: '4px' }} />
+                  <div className="relative w-11 h-9 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
+                    <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
                   </div>
                 </div>
                 
-                {/* Enter Button - Infinite color-morphing glitch edges */}
-                <div className="shrink-0 relative">
-                  <GlitchEdge side="left" className="absolute inset-0 rounded-[6px]" style={{ left: '-3px', right: '3px' }} />
-                  <GlitchEdge side="right" className="absolute inset-0 rounded-[6px]" style={{ left: '3px', right: '-3px' }} />
-                  <div className="relative bg-white text-black font-display text-xs px-5 py-2.5 rounded-[6px] group-hover:scale-[1.02] transition-transform">
-                    <div className="flex items-center gap-2">
-                      <span>ENTER NOW</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
+                <div>
+                  <h2 className="font-display text-xl tracking-wide text-foreground group-hover:text-gold transition-colors duration-300">ARENA</h2>
+                  <p className="text-[10px] text-muted-foreground font-medium">Enter the competition</p>
                 </div>
+              </div>
+              
+              {/* Enter button */}
+              <div className="shrink-0 flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full pl-4 pr-3 py-2 group-hover:bg-white/10 group-hover:border-white/20 transition-all">
+                <span className="font-display text-[11px] tracking-wider text-foreground">ENTER NOW</span>
+                <ArrowRight className="w-3.5 h-3.5 text-foreground group-hover:translate-x-0.5 transition-transform" />
+              </div>
             </div>
           </div>
         </Link>
