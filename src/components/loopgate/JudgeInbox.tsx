@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Inbox, Clock, ExternalLink, Play, ChevronRight, 
-  Sparkles, MessageSquare, Filter, Check, Loader2
+  Inbox, Clock, ExternalLink, Play, 
+  Sparkles, MessageSquare, Check, Loader2, X
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,19 +25,29 @@ interface ReviewRequest {
   notes?: string;
 }
 
+interface InboxItem {
+  id: string; // judge_inbox id
+  review_request_id: string;
+  dismissed: boolean;
+  request: ReviewRequest;
+}
+
 function RequestCard({ 
-  request, 
-  onScore 
+  item, 
+  onScore,
+  onDismiss
 }: { 
-  request: ReviewRequest; 
-  onScore: (request: ReviewRequest) => void;
+  item: InboxItem;
+  onScore: (item: InboxItem) => void;
+  onDismiss: (inboxId: string) => void;
 }) {
-  const { thumbnail, loading: thumbnailLoading } = useThumbnail(request.submission_url, request.platform);
+  const { thumbnail, loading: thumbnailLoading } = useThumbnail(item.request.submission_url, item.request.platform);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
       className="bg-card border border-border rounded-xl overflow-hidden hover:border-gold/50 transition-colors"
     >
       <div className="flex gap-3 p-3">
@@ -53,58 +63,63 @@ function RequestCard({
             </div>
           )}
           
-          {/* Platform badge */}
           <div className="absolute top-1 left-1">
             <span className={`text-[8px] font-bold uppercase px-1 py-0.5 rounded ${
-              request.platform === 'tiktok' ? 'bg-black text-white' :
-              request.platform === 'instagram' ? 'bg-purple-500 text-white' :
+              item.request.platform === 'tiktok' ? 'bg-black text-white' :
+              item.request.platform === 'instagram' ? 'bg-purple-500 text-white' :
               'bg-red-500 text-white'
             }`}>
-              {request.platform.slice(0, 2)}
+              {item.request.platform.slice(0, 2)}
             </span>
           </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            {request.avatar_url ? (
-              <img src={request.avatar_url} alt="" className="w-5 h-5 rounded-full" />
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center">
-                <span className="text-[8px] font-bold text-gold">
-                  {request.username.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-            <span className="text-sm font-medium truncate">@{request.username}</span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2 min-w-0">
+              {item.request.avatar_url ? (
+                <img src={item.request.avatar_url} alt="" className="w-5 h-5 rounded-full" />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center">
+                  <span className="text-[8px] font-bold text-gold">
+                    {item.request.username.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <span className="text-sm font-medium truncate">@{item.request.username}</span>
+            </div>
+            {/* Dismiss button */}
+            <button
+              onClick={() => onDismiss(item.id)}
+              className="p-1 hover:bg-surface-2 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+              title="Remove from inbox"
+            >
+              <X size={14} />
+            </button>
           </div>
 
-          {/* Time */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
             <Clock size={10} />
-            <span>{formatDistanceToNow(new Date(request.requested_at), { addSuffix: true })}</span>
+            <span>{formatDistanceToNow(new Date(item.request.requested_at), { addSuffix: true })}</span>
           </div>
 
-          {/* Review tag if present */}
-          {request.review_tag && (
+          {item.request.review_tag && (
             <Badge variant="outline" className="text-[10px] border-gold/30 text-gold mb-2">
-              {request.review_tag}
+              {item.request.review_tag}
             </Badge>
           )}
 
-          {/* Notes preview */}
-          {request.notes && (
+          {item.request.notes && (
             <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
               <MessageSquare size={10} className="inline mr-1" />
-              {request.notes}
+              {item.request.notes}
             </p>
           )}
 
-          {/* Actions */}
           <div className="flex gap-2">
             <a
-              href={request.submission_url}
+              href={item.request.submission_url}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 py-1.5 bg-surface-1 border border-border rounded-lg text-xs font-medium hover:bg-surface-2 transition-colors flex items-center justify-center gap-1"
@@ -113,7 +128,7 @@ function RequestCard({
               Watch
             </a>
             <button
-              onClick={() => onScore(request)}
+              onClick={() => onScore(item)}
               className="flex-1 py-1.5 bg-gold text-black rounded-lg text-xs font-bold hover:bg-gold/90 transition-colors flex items-center justify-center gap-1"
             >
               <Sparkles size={10} />
@@ -132,25 +147,25 @@ interface JudgeInboxProps {
 
 export default function JudgeInbox({ onReviewComplete }: JudgeInboxProps) {
   const { user } = useAuth();
-  const [requests, setRequests] = useState<ReviewRequest[]>([]);
+  const [items, setItems] = useState<InboxItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'pending' | 'all'>('pending');
-  const [scoringRequest, setScoringRequest] = useState<ReviewRequest | null>(null);
+  const [filter, setFilter] = useState<'active' | 'all'>('active');
+  const [scoringItem, setScoringItem] = useState<InboxItem | null>(null);
 
   useEffect(() => {
     if (user?.id) {
-      fetchRequests();
+      fetchInbox();
 
-      // Subscribe to new requests
       const channel = supabase
-        .channel('judge-inbox')
+        .channel('judge-inbox-realtime')
         .on('postgres_changes', { 
           event: 'INSERT', 
           schema: 'public', 
-          table: 'review_requests' 
+          table: 'judge_inbox',
+          filter: `judge_id=eq.${user.id}`
         }, () => {
-          fetchRequests();
-          toast.info('New review request received!');
+          fetchInbox();
+          toast.info('New submission in your inbox!');
         })
         .subscribe();
 
@@ -160,35 +175,84 @@ export default function JudgeInbox({ onReviewComplete }: JudgeInboxProps) {
     }
   }, [user?.id]);
 
-  async function fetchRequests() {
+  async function fetchInbox() {
+    if (!user?.id) return;
     setLoading(true);
     try {
+      // Fetch judge_inbox entries for this judge
       let query = supabase
-        .from('review_requests')
-        .select('*')
-        .order('requested_at', { ascending: false });
+        .from('judge_inbox')
+        .select('id, review_request_id, dismissed')
+        .eq('judge_id', user.id)
+        .order('added_at', { ascending: false });
 
-      if (filter === 'pending') {
-        query = query.eq('status', 'pending');
+      if (filter === 'active') {
+        query = query.eq('dismissed', false);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      setRequests(data || []);
+      const { data: inboxData, error: inboxError } = await query;
+      if (inboxError) throw inboxError;
+
+      if (!inboxData || inboxData.length === 0) {
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch the actual review requests
+      const requestIds = inboxData.map(i => i.review_request_id);
+      const { data: requests, error: reqError } = await supabase
+        .from('review_requests')
+        .select('*')
+        .in('id', requestIds);
+
+      if (reqError) throw reqError;
+
+      const requestMap = new Map((requests || []).map(r => [r.id, r]));
+
+      const mapped: InboxItem[] = inboxData
+        .map(inbox => {
+          const req = requestMap.get(inbox.review_request_id);
+          if (!req) return null;
+          return {
+            id: inbox.id,
+            review_request_id: inbox.review_request_id,
+            dismissed: inbox.dismissed || false,
+            request: req as ReviewRequest,
+          };
+        })
+        .filter(Boolean) as InboxItem[];
+
+      setItems(mapped);
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      console.error('Error fetching inbox:', error);
     } finally {
       setLoading(false);
     }
   }
 
+  async function dismissItem(inboxId: string) {
+    const { error } = await supabase
+      .from('judge_inbox')
+      .update({ dismissed: true, dismissed_at: new Date().toISOString() })
+      .eq('id', inboxId);
+
+    if (error) {
+      toast.error('Failed to dismiss');
+      return;
+    }
+
+    setItems(prev => prev.filter(i => i.id !== inboxId));
+    toast.success('Removed from inbox');
+  }
+
   const handleScoreComplete = () => {
-    setScoringRequest(null);
-    fetchRequests();
+    setScoringItem(null);
+    fetchInbox();
     onReviewComplete?.();
   };
 
-  const pendingCount = requests.filter(r => r.status === 'pending').length;
+  const activeCount = items.filter(i => !i.dismissed).length;
 
   return (
     <div className="space-y-4">
@@ -197,27 +261,26 @@ export default function JudgeInbox({ onReviewComplete }: JudgeInboxProps) {
         <div className="flex items-center gap-2">
           <Inbox className="w-5 h-5 text-gold" />
           <h3 className="font-display text-lg">Judge Inbox</h3>
-          {pendingCount > 0 && (
+          {activeCount > 0 && (
             <span className="px-2 py-0.5 bg-gold text-black text-xs font-bold rounded-full">
-              {pendingCount}
+              {activeCount}
             </span>
           )}
         </div>
 
-        {/* Filter */}
         <div className="flex gap-1">
           <button
-            onClick={() => { setFilter('pending'); fetchRequests(); }}
+            onClick={() => { setFilter('active'); setTimeout(fetchInbox, 0); }}
             className={`px-3 py-1 text-xs rounded-lg transition-colors ${
-              filter === 'pending' 
+              filter === 'active' 
                 ? 'bg-gold text-black font-bold' 
                 : 'bg-surface-1 text-muted-foreground hover:text-foreground'
             }`}
           >
-            Pending
+            Active
           </button>
           <button
-            onClick={() => { setFilter('all'); fetchRequests(); }}
+            onClick={() => { setFilter('all'); setTimeout(fetchInbox, 0); }}
             className={`px-3 py-1 text-xs rounded-lg transition-colors ${
               filter === 'all' 
                 ? 'bg-gold text-black font-bold' 
@@ -229,20 +292,20 @@ export default function JudgeInbox({ onReviewComplete }: JudgeInboxProps) {
         </div>
       </div>
 
-      {/* Request List */}
+      {/* Items */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-6 h-6 text-gold animate-spin" />
         </div>
-      ) : requests.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="text-center py-12 bg-surface-1 rounded-xl border border-border">
           <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center mb-4">
             <Check className="w-6 h-6 text-gold" />
           </div>
           <p className="font-display text-lg mb-1">ALL CAUGHT UP</p>
           <p className="text-sm text-muted-foreground">
-            {filter === 'pending' 
-              ? 'No pending reviews. Check back soon!' 
+            {filter === 'active' 
+              ? 'No active reviews. Check back soon!' 
               : 'No review requests yet.'
             }
           </p>
@@ -250,11 +313,12 @@ export default function JudgeInbox({ onReviewComplete }: JudgeInboxProps) {
       ) : (
         <div className="space-y-3">
           <AnimatePresence>
-            {requests.map((request) => (
+            {items.map((item) => (
               <RequestCard 
-                key={request.id} 
-                request={request} 
-                onScore={setScoringRequest}
+                key={item.id} 
+                item={item} 
+                onScore={setScoringItem}
+                onDismiss={dismissItem}
               />
             ))}
           </AnimatePresence>
@@ -262,10 +326,10 @@ export default function JudgeInbox({ onReviewComplete }: JudgeInboxProps) {
       )}
 
       {/* Scoring Modal */}
-      {scoringRequest && (
+      {scoringItem && (
         <JudgeScoringModal
-          request={scoringRequest}
-          onClose={() => setScoringRequest(null)}
+          request={scoringItem.request}
+          onClose={() => setScoringItem(null)}
           onComplete={handleScoreComplete}
         />
       )}

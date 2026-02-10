@@ -373,12 +373,12 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
     setSelectedEditors(prev => {
       const exists = prev.find(e => e.id === editor.id);
       if (exists) return prev.filter(e => e.id !== editor.id);
-      if (prev.length >= 12) return prev;
+      if (prev.length >= 200) return prev;
       return [...prev, editor];
     });
   };
 
-  const selectAll = () => setSelectedEditors(editors.slice(0, 12));
+  const selectAll = () => setSelectedEditors(editors.slice(0, 200));
 
   const reset = () => {
     setWinner(null);
@@ -446,11 +446,11 @@ export default function JudgeFlywheel({ isOpen, onClose, editors, onSelect }: Ju
           >
             <div className="text-center mb-5">
               <h2 className="font-display text-xl font-bold text-white mb-1 tracking-wide">Pick Your Lineup</h2>
-              <p className="text-xs text-white/40">Select 2-12 editors for the flywheel</p>
+              <p className="text-xs text-white/40">Select 2-200 editors for the flywheel</p>
             </div>
 
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-white/40 font-display tracking-wide">{selectedEditors.length}/12</span>
+              <span className="text-xs text-white/40 font-display tracking-wide">{selectedEditors.length}/200</span>
               <button onClick={selectAll} className="text-xs font-display font-bold tracking-wider px-3 py-1.5 rounded-lg bg-white/8 text-white/60 hover:text-white hover:bg-white/12 transition-colors">
                 SELECT ALL
               </button>
