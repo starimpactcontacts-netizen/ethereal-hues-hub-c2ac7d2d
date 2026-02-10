@@ -411,8 +411,10 @@ export default function HubPage() {
                 
                 {/* Right side — big ENTER NOW with left-fade */}
                 <div className="relative shrink-0 self-stretch flex items-center">
-                  {/* Fade from dark to white */}
-                  <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-background to-white/95 z-10" />
+                  {/* Long stretched fade — dark to white takeover */}
+                  <div className="absolute top-0 bottom-0 z-10 pointer-events-none" style={{ left: '-80px', width: '100px' }}>
+                    <div className="w-full h-full bg-gradient-to-r from-transparent via-white/20 to-white/90" />
+                  </div>
                   {/* Glitch edges on the white block */}
                   <GlitchEdge side="left" className="absolute top-0 bottom-0 rounded-r-xl z-0" style={{ left: '-5px', right: '5px' }} />
                   <GlitchEdge side="right" className="absolute top-0 bottom-0 rounded-r-xl z-0" style={{ left: '5px', right: '-5px' }} />
