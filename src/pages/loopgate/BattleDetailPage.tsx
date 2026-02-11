@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, Flame, 
   CheckCircle, XCircle, ExternalLink, ThumbsUp, 
-  Send, Share2, Users
+  Send, Share2, Users, Gavel, Zap
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
+import BattleChat from "@/components/loopgate/BattleChat";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -281,6 +282,46 @@ export default function BattleDetailPage() {
 
       {/* Content */}
       <div className="px-4 space-y-4">
+        {/* Rapid Mode Badge */}
+        {(battle as any).is_rapid && (
+          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-2">
+            <Zap className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">⚡ Rapid Battle</span>
+            <span className="text-[10px] text-muted-foreground ml-auto">Reuse existing edits</span>
+          </div>
+        )}
+
+        {/* Assigned Judge Card */}
+        {((battle as any).requested_judge_username || battle.judge_id) && (
+          <div className="bg-surface-1 border border-purple-500/30 p-4">
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+              <Gavel className="w-4 h-4 text-purple-400" />
+              Official Judge
+            </h3>
+            <div className="flex items-center gap-3">
+              <Avatar className="w-10 h-10 border-2 border-purple-500">
+                <AvatarFallback className="bg-purple-500/20 text-purple-400">
+                  {((battle as any).requested_judge_username || 'J').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <span className="text-sm font-medium text-foreground">
+                  {(battle as any).requested_judge_username || 'Assigned Judge'}
+                </span>
+                <span className={`text-[10px] block uppercase tracking-wider ${
+                  (battle as any).judge_status === 'accepted' ? 'text-emerald-400' :
+                  (battle as any).judge_status === 'declined' ? 'text-red-400' :
+                  'text-amber-400'
+                }`}>
+                  {(battle as any).judge_status === 'accepted' ? '✓ Accepted' :
+                   (battle as any).judge_status === 'declined' ? '✗ Declined' :
+                   '⏳ Requested'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stakes Card */}
         <div className="bg-surface-1 border border-border p-4">
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -484,6 +525,16 @@ export default function BattleDetailPage() {
               </p>
             )}
           </div>
+        )}
+
+        {/* Battle Chat — UFC Showdown */}
+        {battle.opponent_id && (
+          <BattleChat
+            battleId={battle.id}
+            challengerId={battle.challenger_id}
+            opponentId={battle.opponent_id}
+            judgeId={battle.judge_id}
+          />
         )}
 
         {/* Winner Announcement */}

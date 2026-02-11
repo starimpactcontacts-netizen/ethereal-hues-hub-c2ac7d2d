@@ -168,6 +168,50 @@ export type Database = {
           },
         ]
       }
+      battle_messages: {
+        Row: {
+          avatar_url: string | null
+          battle_id: string
+          created_at: string
+          id: string
+          is_public: boolean | null
+          is_system: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          battle_id: string
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
+          is_system?: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          battle_id?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
+          is_system?: boolean | null
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_messages_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       battle_views: {
         Row: {
           battle_id: string
@@ -269,9 +313,11 @@ export type Database = {
           duration_hours: number
           ends_at: string | null
           id: string
+          is_rapid: boolean | null
           judge_claimed_at: string | null
           judge_id: string | null
           judge_notes: string | null
+          judge_status: string | null
           judged_at: string | null
           league_tier: string
           loser_index_penalty: number | null
@@ -283,8 +329,11 @@ export type Database = {
           opponent_submitted_at: string | null
           opponent_username: string | null
           opponent_votes: number
+          requested_judge_id: string | null
+          requested_judge_username: string | null
           starts_at: string | null
           status: string
+          submission_mode: string | null
           updated_at: string
           view_count: number
           winner_id: string | null
@@ -305,9 +354,11 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          is_rapid?: boolean | null
           judge_claimed_at?: string | null
           judge_id?: string | null
           judge_notes?: string | null
+          judge_status?: string | null
           judged_at?: string | null
           league_tier?: string
           loser_index_penalty?: number | null
@@ -319,8 +370,11 @@ export type Database = {
           opponent_submitted_at?: string | null
           opponent_username?: string | null
           opponent_votes?: number
+          requested_judge_id?: string | null
+          requested_judge_username?: string | null
           starts_at?: string | null
           status?: string
+          submission_mode?: string | null
           updated_at?: string
           view_count?: number
           winner_id?: string | null
@@ -341,9 +395,11 @@ export type Database = {
           duration_hours?: number
           ends_at?: string | null
           id?: string
+          is_rapid?: boolean | null
           judge_claimed_at?: string | null
           judge_id?: string | null
           judge_notes?: string | null
+          judge_status?: string | null
           judged_at?: string | null
           league_tier?: string
           loser_index_penalty?: number | null
@@ -355,8 +411,11 @@ export type Database = {
           opponent_submitted_at?: string | null
           opponent_username?: string | null
           opponent_votes?: number
+          requested_judge_id?: string | null
+          requested_judge_username?: string | null
           starts_at?: string | null
           status?: string
+          submission_mode?: string | null
           updated_at?: string
           view_count?: number
           winner_id?: string | null
@@ -380,6 +439,13 @@ export type Database = {
           {
             foreignKeyName: "battles_opponent_id_fkey"
             columns: ["opponent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_requested_judge_id_fkey"
+            columns: ["requested_judge_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
