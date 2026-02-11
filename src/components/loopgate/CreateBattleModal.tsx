@@ -103,31 +103,59 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
       selectedOpponent?.avatar_url
     );
 
-    // If judge selected, update the battle with judge request
-    if (result.success && result.battleId && selectedJudge) {
-      await supabase
-        .from('battles')
-        .update({
-          requested_judge_id: selectedJudge.id,
-          requested_judge_username: selectedJudge.username,
-          judge_status: 'requested',
-          is_rapid: isRapid,
-        })
-        .eq('id', result.battleId);
+    if (result.success && result.battleId) {
+      // Always update is_rapid flag
+      const updateData: any = { is_rapid: isRapid };
 
-      // Notify the judge
-      await supabase.from('notifications').insert({
-        user_id: selectedJudge.id,
-        type: 'battle_judge_request',
-        title: '⚔️ Judge Request',
-        message: `@${profile.username} wants you to judge their 1v1 battle!`,
-        data: { battle_id: result.battleId, challenger_username: profile.username },
-      });
-    } else if (result.success && result.battleId && isRapid) {
-      await supabase
-        .from('battles')
-        .update({ is_rapid: true })
-        .eq('id', result.battleId);
+      if (selectedJudge) {
+        // Specific judge selected — send them a request
+        updateData.requested_judge_id = selectedJudge.id;
+        updateData.requested_judge_username = selectedJudge.username;
+        updateData.judge_status = 'requested';
+
+        await supabase
+          .from('battles')
+          .update(updateData)
+          .eq('id', result.battleId);
+
+        await supabase.from('notifications').insert({
+          user_id: selectedJudge.id,
+          type: 'battle_judge_request',
+          title: '⚔️ Judge Request',
+          message: `@${profile.username} wants you to judge their 1v1 battle!`,
+          data: { battle_id: result.battleId, challenger_username: profile.username },
+        });
+      } else {
+        // No judge selected — broadcast to ALL judges' inboxes
+        updateData.judge_status = 'open';
+
+        await supabase
+          .from('battles')
+          .update(updateData)
+          .eq('id', result.battleId);
+
+        // Get all judge user IDs
+        const { data: judgeRoles } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'judge');
+
+        if (judgeRoles && judgeRoles.length > 0) {
+          const notifications = judgeRoles
+            .filter(r => r.user_id !== profile.id)
+            .map(r => ({
+              user_id: r.user_id,
+              type: 'battle_judge_open',
+              title: '⚔️ Battle Needs a Judge',
+              message: `@${profile.username} posted a 1v1 battle — claim it to officiate!`,
+              data: { battle_id: result.battleId, challenger_username: profile.username },
+            }));
+
+          if (notifications.length > 0) {
+            await supabase.from('notifications').insert(notifications);
+          }
+        }
+      }
     }
 
     setLoading(false);
