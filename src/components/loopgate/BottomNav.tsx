@@ -3,6 +3,7 @@ import { Home, IterationCcw, Search, User, LogIn, Infinity as InfinityIcon } fro
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
 import GlitchEdge from "@/components/loopgate/GlitchEdge";
+import { motion } from "framer-motion";
 
 const navItems = [
   { to: "/hub", icon: Home, label: "Hub" },
@@ -58,7 +59,16 @@ export default function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                  {item.label === 'Loop' ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    >
+                      <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                    </motion.div>
+                  ) : (
+                    <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                  )}
                   <span className="text-[10px] font-semibold tracking-wide">
                     {item.label}
                   </span>
