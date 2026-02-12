@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Home, IterationCcw, Search, User, LogIn, Infinity as InfinityIcon } from "lucide-react";
 import { useGuestMode } from "@/hooks/useGuestMode";
+import { useActiveBattles } from "@/hooks/useActiveBattles";
 import GlitchEdge from "@/components/loopgate/GlitchEdge";
 
 const navItems = [
@@ -12,6 +13,7 @@ const navItems = [
 
 export default function BottomNav() {
   const { isGuest, clearGuest } = useGuestMode();
+  const { hasActiveBattle } = useActiveBattles();
   const navigate = useNavigate();
 
   const handleSignIn = () => {
@@ -70,6 +72,10 @@ export default function BottomNav() {
             onClick={handleArenaClick}
             className="flex flex-col items-center justify-center group relative"
           >
+            {/* Active battle indicator */}
+            {hasActiveBattle && (
+              <span className="absolute -top-1 right-2 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse z-10 border border-background" />
+            )}
             {/* Offset glitch layers - infinite color morphing */}
             <div className="relative">
               <GlitchEdge side="left" className="absolute w-11 h-9 rounded-[6px]" style={{ left: '-4px' }} />

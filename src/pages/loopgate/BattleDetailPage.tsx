@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useBattle, recordBattleView, acceptBattle, submitToBattle, voteOnBattle, getMyVote } from "@/hooks/useBattles";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
@@ -72,7 +73,11 @@ export default function BattleDetailPage() {
   const isChallenger = user?.id === battle.challenger_id;
   const isOpponent = user?.id === battle.opponent_id;
   const isParticipant = isChallenger || isOpponent;
-  const canAccept = battle.status === 'pending' && !battle.opponent_id && user?.id && !isChallenger;
+  // Open challenge: anyone except challenger can accept (no opponent set yet)
+  const canAcceptOpen = battle.status === 'pending' && !battle.opponent_id && user?.id && !isChallenger;
+  // Direct challenge: the specifically invited opponent must accept
+  const canAcceptDirect = battle.status === 'pending' && battle.opponent_id && isOpponent;
+  const canAccept = canAcceptOpen || canAcceptDirect;
   const canSubmit = battle.status === 'active' && isParticipant && (
     (isChallenger && !battle.challenger_submitted_at) ||
     (isOpponent && !battle.opponent_submitted_at)
@@ -182,7 +187,8 @@ export default function BattleDetailPage() {
             }`}>
               <span className="text-xs font-bold uppercase tracking-wider">
                 {battle.status === 'active' && <><Flame className="w-3 h-3 inline mr-1 animate-pulse" />LIVE</>}
-                {battle.status === 'pending' && 'OPEN CHALLENGE'}
+                {battle.status === 'pending' && !battle.opponent_id && 'OPEN CHALLENGE'}
+                {battle.status === 'pending' && battle.opponent_id && 'AWAITING ACCEPTANCE'}
                 {battle.status === 'judging' && 'JUDGING'}
                 {battle.status === 'completed' && <>DECIDED</>}
               </span>
@@ -361,11 +367,12 @@ export default function BattleDetailPage() {
           </motion.div>
         )}
 
-        {/* Accept Challenge (for open battles) */}
+        {/* Accept Challenge (for open battles OR direct opponent) */}
         {canAccept && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            className="space-y-2"
           >
             <Button
               onClick={handleAccept}
@@ -379,7 +386,29 @@ export default function BattleDetailPage() {
                 </>
               )}
             </Button>
+            {canAcceptDirect && (
+              <Button
+                onClick={async () => {
+                  await supabase.from('battles').update({ status: 'cancelled' }).eq('id', battle.id);
+                  toast.info("Challenge declined");
+                  navigate('/arena');
+                }}
+                variant="outline"
+                className="w-full border-red-500/30 text-red-400 hover:bg-red-500/10"
+              >
+                Decline Challenge
+              </Button>
+            )}
           </motion.div>
+        )}
+
+        {/* Waiting for opponent to accept (challenger's view of direct challenge) */}
+        {isChallenger && battle.status === 'pending' && battle.opponent_id && (
+          <div className="bg-surface-1 border border-amber-500/30 p-4 text-center">
+            <Clock className="w-5 h-5 text-amber-400 mx-auto mb-2" />
+            <p className="text-sm font-display text-foreground">Waiting for {battle.opponent_username} to accept</p>
+            <p className="text-[10px] text-muted-foreground mt-1">They've been notified of your challenge</p>
+          </div>
         )}
 
         {/* Submission Form (for active battles) */}

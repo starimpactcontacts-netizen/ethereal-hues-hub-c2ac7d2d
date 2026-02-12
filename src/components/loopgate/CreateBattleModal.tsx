@@ -112,12 +112,18 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
         updateData.requested_judge_id = selectedJudge.id;
         updateData.requested_judge_username = selectedJudge.username;
         updateData.judge_status = 'requested';
+      } else {
+        // No judge selected — broadcast to ALL judges' inboxes
+        updateData.judge_status = 'open';
+      }
 
-        await supabase
-          .from('battles')
-          .update(updateData)
-          .eq('id', result.battleId);
+      await supabase
+        .from('battles')
+        .update(updateData)
+        .eq('id', result.battleId);
 
+      // Judge notifications
+      if (selectedJudge) {
         await supabase.from('notifications').insert({
           user_id: selectedJudge.id,
           type: 'battle_judge_request',
@@ -126,15 +132,6 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
           data: { battle_id: result.battleId, challenger_username: profile.username },
         });
       } else {
-        // No judge selected — broadcast to ALL judges' inboxes
-        updateData.judge_status = 'open';
-
-        await supabase
-          .from('battles')
-          .update(updateData)
-          .eq('id', result.battleId);
-
-        // Get all judge user IDs
         const { data: judgeRoles } = await supabase
           .from('user_roles')
           .select('user_id')
@@ -155,6 +152,17 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
             await supabase.from('notifications').insert(notifications);
           }
         }
+      }
+
+      // Notify opponent for direct challenges
+      if (challengeType === 'direct' && selectedOpponent) {
+        await supabase.from('notifications').insert({
+          user_id: selectedOpponent.id,
+          type: 'battle_challenge',
+          title: '⚔️ You\'ve Been Challenged!',
+          message: `@${profile.username} is calling you out for a 1v1 battle!`,
+          data: { battle_id: result.battleId, challenger_username: profile.username },
+        });
       }
     }
 
