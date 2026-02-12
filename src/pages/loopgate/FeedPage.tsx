@@ -140,7 +140,7 @@ export default function FeedPage() {
         supabase
           .from('battles')
           .select('*')
-          .in('status', ['active', 'judging', 'completed'])
+          .in('status', ['pending', 'active', 'judging', 'completed'])
           .order('updated_at', { ascending: false })
           .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
         supabase
@@ -236,9 +236,8 @@ export default function FeedPage() {
         judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url,
       }));
 
-      // Build battle feed items
+      // Build battle feed items — include ALL battles (pending showdowns create pressure)
       const battleItems: LoopFeedItem[] = battlesData
-        .filter(b => b.challenger_submission_url || b.opponent_submission_url)
         .map(b => ({
           id: `battle-${b.id}`, rawId: b.id, type: 'battle' as const,
           submission_url: b.challenger_submission_url || b.opponent_submission_url || '',
@@ -274,10 +273,11 @@ export default function FeedPage() {
 
       // Boost official events & premium comps higher in feed
       const getBoost = (item: LoopFeedItem) => {
+        if (item.id.startsWith('battle-') && (item.battle_status === 'active' || item.battle_status === 'pending')) return 3;
+        if (item.id.startsWith('battle-') && item.battle_status === 'judging') return 2.5;
         if (item.id.startsWith('arena-event-')) return 2;
-        if (item.id.startsWith('battle-') && item.battle_status === 'active') return 1.5;
-        if (item.id.startsWith('arena-sanctioned-')) return 1;
         if (item.id.startsWith('judge-video-')) return 1.8;
+        if (item.id.startsWith('arena-sanctioned-')) return 1;
         return 0;
       };
 
