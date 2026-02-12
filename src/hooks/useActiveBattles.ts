@@ -13,6 +13,7 @@ export interface ActiveBattle {
   challenger_id: string;
   opponent_id: string | null;
   is_rapid: boolean;
+  judge_id: string | null;
 }
 
 export function useActiveBattles() {
@@ -30,8 +31,8 @@ export function useActiveBattles() {
     const fetchActive = async () => {
       const { data } = await supabase
         .from('battles')
-        .select('id, status, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, ends_at, challenger_id, opponent_id, is_rapid')
-        .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id}`)
+        .select('id, status, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, ends_at, challenger_id, opponent_id, is_rapid, judge_id')
+        .or(`challenger_id.eq.${user.id},opponent_id.eq.${user.id},judge_id.eq.${user.id}`)
         .in('status', ['pending', 'active', 'judging'])
         .order('created_at', { ascending: false });
 

@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { ChevronRight, MapPin, Clock, Zap, Users, Trophy, Flame, Swords } from "lucide-react";
+import { ChevronRight, MapPin, Clock, Zap, Users, Trophy, Flame, Swords, Gavel } from "lucide-react";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import PosterStrip from "@/components/loopgate/PosterStrip";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { useRealEvents, useGlobalStats, useActiveSession } from "@/hooks/useRealData";
+import { useAuth } from "@/hooks/useAuth";
 import { useEventRounds } from "@/hooks/useOpenArenaData";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -141,6 +142,7 @@ export default function HomePage() {
   const { events, loading } = useRealEvents();
   const { stats } = useGlobalStats();
   const { activeBattles } = useActiveBattles();
+  const { user } = useAuth();
   
   // Keep session active
   useActiveSession();
@@ -197,42 +199,48 @@ export default function HomePage() {
       {/* Active Battle Banner */}
       {activeBattles.length > 0 && (
         <section className="px-4 pt-3">
-          {activeBattles.map(battle => (
-            <Link
-              key={battle.id}
-              to={`/battle/${battle.id}`}
-              className="block mb-2 bg-gradient-to-r from-red-500/15 via-surface-1 to-red-500/15 border border-red-500/40 p-3 hover:border-red-500/60 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <Swords className="w-4 h-4 text-red-400" />
+          {activeBattles.map(battle => {
+            const isJudge = battle.judge_id === user?.id;
+            const isChallenger = battle.challenger_id === user?.id;
+            const roleLabel = isJudge ? '⚖️ YOU\'RE JUDGING' : isChallenger ? '🗡️ YOUR CHALLENGE' : '🛡️ YOU\'RE DEFENDING';
+            
+            return (
+              <Link
+                key={battle.id}
+                to={`/battle/${battle.id}`}
+                className="block mb-2 bg-gradient-to-r from-red-500/15 via-surface-1 to-red-500/15 border border-red-500/40 p-3 hover:border-red-500/60 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-9 h-9 rounded-full bg-red-500/20 flex items-center justify-center">
+                      {isJudge ? <Gavel className="w-4 h-4 text-purple-400" /> : <Swords className="w-4 h-4 text-red-400" />}
+                    </div>
+                    <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
                   </div>
-                  <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${isJudge ? 'text-purple-400' : 'text-red-400'}`}>
+                        {battle.status === 'active' ? `⚔️ LIVE — ${roleLabel}` : 
+                         battle.status === 'pending' ? `⏳ PENDING — ${roleLabel}` : `⚖️ JUDGING — ${roleLabel}`}
+                      </span>
+                      {battle.is_rapid && (
+                        <span className="text-[8px] bg-amber-500/20 text-amber-400 px-1 py-0.5 rounded">⚡ RAPID</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-foreground truncate mt-0.5">
+                      {battle.challenger_username} vs {battle.opponent_username || '???'}
+                    </p>
+                  </div>
+                  {battle.status === 'active' && battle.ends_at && (
+                    <div className="text-right flex-shrink-0">
+                      <CountdownTimer endDate={battle.ends_at} />
+                    </div>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
-                      {battle.status === 'active' ? '⚔️ LIVE BATTLE' : 
-                       battle.status === 'pending' ? '⏳ PENDING' : '⚖️ JUDGING'}
-                    </span>
-                    {battle.is_rapid && (
-                      <span className="text-[8px] bg-amber-500/20 text-amber-400 px-1 py-0.5 rounded">⚡ RAPID</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-foreground truncate mt-0.5">
-                    {battle.challenger_username} vs {battle.opponent_username || '???'}
-                  </p>
-                </div>
-                {battle.status === 'active' && battle.ends_at && (
-                  <div className="text-right flex-shrink-0">
-                    <CountdownTimer endDate={battle.ends_at} />
-                  </div>
-                )}
-                <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </section>
       )}
 
