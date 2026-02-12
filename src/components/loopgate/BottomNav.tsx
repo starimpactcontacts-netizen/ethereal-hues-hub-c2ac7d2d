@@ -62,7 +62,7 @@ export default function BottomNav() {
                   {item.label === 'Loop' ? (
                     <motion.div
                       animate={{ rotate: -360 }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                      transition={{ duration: 12, repeat: Infinity, ease: [0.4, 0, 0.2, 1] }}
                     >
                       <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
                     </motion.div>
