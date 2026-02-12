@@ -40,8 +40,14 @@ export default function ProfilePage() {
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('videos');
+  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
   
+  // Set default tab to videos for judges once roles load
+  useEffect(() => {
+    if (isAnyJudge) setActiveTab('videos');
+    else setActiveTab('edits');
+  }, [isAnyJudge]);
+
   useActiveSession();
 
   // Guest mode
@@ -403,7 +409,7 @@ export default function ProfilePage() {
         </div>
       )}
       
-      {activeTab === 'videos' && (
+      {activeTab === 'videos' && isAnyJudge && (
         <div className="px-4">
           <MyRatingVideos />
         </div>
