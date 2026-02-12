@@ -73,11 +73,14 @@ export default function BattleDetailPage() {
   const isChallenger = user?.id === battle.challenger_id;
   const isOpponent = user?.id === battle.opponent_id;
   const isParticipant = isChallenger || isOpponent;
+  const isRequestedJudge = user?.id === battle.requested_judge_id;
   // Open challenge: anyone except challenger can accept (no opponent set yet)
   const canAcceptOpen = battle.status === 'pending' && !battle.opponent_id && user?.id && !isChallenger;
   // Direct challenge: the specifically invited opponent must accept
   const canAcceptDirect = battle.status === 'pending' && battle.opponent_id && isOpponent;
   const canAccept = canAcceptOpen || canAcceptDirect;
+  // Judge can accept if requested and status is still 'requested'
+  const canJudgeAccept = isRequestedJudge && battle.judge_status === 'requested';
   const canSubmit = battle.status === 'active' && isParticipant && (
     (isChallenger && !battle.challenger_submitted_at) ||
     (isOpponent && !battle.opponent_submitted_at)
@@ -298,7 +301,7 @@ export default function BattleDetailPage() {
         )}
 
         {/* Assigned Judge Card */}
-        {((battle as any).requested_judge_username || battle.judge_id) && (
+        {(battle.requested_judge_username || battle.judge_id) && (
           <div className="bg-surface-1 border border-purple-500/30 p-4">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
               <Gavel className="w-4 h-4 text-purple-400" />
@@ -307,24 +310,87 @@ export default function BattleDetailPage() {
             <div className="flex items-center gap-3">
               <Avatar className="w-10 h-10 border-2 border-purple-500">
                 <AvatarFallback className="bg-purple-500/20 text-purple-400">
-                  {((battle as any).requested_judge_username || 'J').charAt(0).toUpperCase()}
+                  {(battle.requested_judge_username || 'J').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <span className="text-sm font-medium text-foreground">
-                  {(battle as any).requested_judge_username || 'Assigned Judge'}
+                  {battle.requested_judge_username || 'Assigned Judge'}
                 </span>
                 <span className={`text-[10px] block uppercase tracking-wider ${
-                  (battle as any).judge_status === 'accepted' ? 'text-emerald-400' :
-                  (battle as any).judge_status === 'declined' ? 'text-red-400' :
+                  battle.judge_status === 'accepted' ? 'text-emerald-400' :
+                  battle.judge_status === 'declined' ? 'text-red-400' :
                   'text-amber-400'
                 }`}>
-                  {(battle as any).judge_status === 'accepted' ? '✓ Accepted' :
-                   (battle as any).judge_status === 'declined' ? '✗ Declined' :
+                  {battle.judge_status === 'accepted' ? '✓ Accepted' :
+                   battle.judge_status === 'declined' ? '✗ Declined' :
                    '⏳ Requested'}
                 </span>
               </div>
             </div>
+
+            {/* Judge Accept/Decline Buttons */}
+            {canJudgeAccept && (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <Button
+                  onClick={async () => {
+                    const { error } = await supabase
+                      .from('battles')
+                      .update({ judge_status: 'accepted', judge_id: user!.id, judge_claimed_at: new Date().toISOString() })
+                      .eq('id', battle.id);
+                    if (!error) {
+                      toast.success("You're officiating this battle!");
+                      // Notify both fighters
+                      const notifications = [battle.challenger_id, battle.opponent_id].filter(Boolean).map(uid => ({
+                        user_id: uid!,
+                        type: 'battle_judge_accepted',
+                        title: '⚖️ Judge Accepted!',
+                        message: `@${profile?.username} will officiate your battle`,
+                        data: { battle_id: battle.id },
+                      }));
+                      await supabase.from('notifications').insert(notifications);
+                    } else {
+                      toast.error("Failed to accept");
+                    }
+                  }}
+                  className="bg-emerald-500 hover:bg-emerald-600 text-white font-display uppercase tracking-wider"
+                >
+                  <CheckCircle className="w-4 h-4 mr-1" /> Accept
+                </Button>
+                <Button
+                  onClick={async () => {
+                    const { error } = await supabase
+                      .from('battles')
+                      .update({ judge_status: 'declined', requested_judge_id: null, requested_judge_username: null })
+                      .eq('id', battle.id);
+                    if (!error) {
+                      toast.info("Declined — battle is now open for other judges");
+                      // Broadcast to all judges since requested declined
+                      const { data: judgeRoles } = await supabase.from('user_roles').select('user_id').eq('role', 'judge');
+                      if (judgeRoles && judgeRoles.length > 0) {
+                        const notifications = judgeRoles
+                          .filter(r => r.user_id !== user!.id)
+                          .map(r => ({
+                            user_id: r.user_id,
+                            type: 'battle_judge_open',
+                            title: '⚔️ Battle Needs a Judge',
+                            message: `${battle.challenger_username} vs ${battle.opponent_username || '???'} — claim it!`,
+                            data: { battle_id: battle.id },
+                          }));
+                        await supabase.from('notifications').insert(notifications);
+                      }
+                      await supabase.from('battles').update({ judge_status: 'open' }).eq('id', battle.id);
+                    } else {
+                      toast.error("Failed to decline");
+                    }
+                  }}
+                  variant="outline"
+                  className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                >
+                  <XCircle className="w-4 h-4 mr-1" /> Decline
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

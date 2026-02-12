@@ -25,6 +25,9 @@ export interface Battle {
   opponent_submitted_at: string | null;
   judge_id: string | null;
   judge_claimed_at: string | null;
+  judge_status: string | null;
+  requested_judge_id: string | null;
+  requested_judge_username: string | null;
   challenger_score: number | null;
   opponent_score: number | null;
   judge_notes: string | null;
@@ -35,6 +38,7 @@ export interface Battle {
   winner_id: string | null;
   winner_index_awarded: number;
   loser_index_penalty: number;
+  is_rapid: boolean | null;
   created_at: string;
   updated_at: string;
 }
