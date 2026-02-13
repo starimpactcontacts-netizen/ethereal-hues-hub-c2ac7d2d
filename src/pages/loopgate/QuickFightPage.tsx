@@ -100,9 +100,18 @@ export default function QuickFightPage() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between">
-          <button onClick={() => navigate('/hub')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => {
+              if (isParticipant && (fight.status === 'active' || fight.status === 'judging')) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                navigate('/hub');
+              }
+            }}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back</span>
+            <span className="text-sm">{isParticipant && (fight.status === 'active' || fight.status === 'judging') ? 'Overview' : 'Back'}</span>
           </button>
           <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
             {fight.status === 'active' ? '⚔️ LIVE FIGHT' :
