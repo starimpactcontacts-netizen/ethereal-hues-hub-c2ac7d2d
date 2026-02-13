@@ -93,7 +93,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">01</span>
               </div>
-              <h3 className="font-display text-lg text-white mb-1">Quick Fight</h3>
+              <h3 className="font-display text-lg text-white mb-1">Quick Edit Battle</h3>
               <p className="text-xs text-zinc-500 mb-4">
                 Battle another editor. 1v1. Right now.
               </p>
@@ -104,7 +104,7 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                   onClick={handleStartFight}
                   className="relative w-full px-4 py-3 bg-black text-white font-semibold text-sm rounded-[5px] flex items-center justify-center gap-2 transition-all"
                 >
-                  ⚔️ Start Fighting
+                  ⚔️ Quick Edit Battle
                   <ArrowRight size={14} />
                 </button>
               </div>
