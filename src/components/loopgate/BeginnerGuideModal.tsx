@@ -44,9 +44,9 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
     localStorage.setItem(GUIDE_STORAGE_KEY, GUIDE_VERSION);
   };
 
-  const handleStartGQT = () => {
+  const handleStartFight = () => {
     handleClose();
-    navigate("/gqt");
+    navigate("/hub");
   };
 
   const toggleStep = (step: number) => {
@@ -93,18 +93,18 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">01</span>
               </div>
-              <h3 className="font-display text-lg text-white mb-1">Take the GQT</h3>
+              <h3 className="font-display text-lg text-white mb-1">Quick Fight</h3>
               <p className="text-xs text-zinc-500 mb-4">
-                Get your first score. Enter the rankings.
+                Battle another editor. 1v1. Right now.
               </p>
               {/* TikTok-style button with gradient border */}
               <div className="relative group">
-                <div className="absolute -inset-[1px] bg-gradient-to-r from-cyan-400 via-white to-rose-400 rounded-[6px] opacity-80 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute -inset-[1px] bg-gradient-to-r from-red-500 via-white to-blue-500 rounded-[6px] opacity-80 group-hover:opacity-100 transition-opacity" />
                 <button
-                  onClick={handleStartGQT}
+                  onClick={handleStartFight}
                   className="relative w-full px-4 py-3 bg-black text-white font-semibold text-sm rounded-[5px] flex items-center justify-center gap-2 transition-all"
                 >
-                  Start GQT
+                  ⚔️ Start Fighting
                   <ArrowRight size={14} />
                 </button>
               </div>
