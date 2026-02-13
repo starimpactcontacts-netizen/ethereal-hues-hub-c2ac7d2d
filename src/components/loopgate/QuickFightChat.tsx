@@ -17,6 +17,10 @@ const AUTO_TEXTS = {
     "Try your best 😭",
     "This is gonna be easy 💀",
     "I'm not even trying rn",
+    "Bet.",
+    "Loser posts first.",
+    "Send your clip.",
+    "Let's see who's stronger.",
   ],
   theme: [
     "Pick an anime?",
@@ -24,11 +28,17 @@ const AUTO_TEXTS = {
     "Cartel aesthetic or clean?",
     "Let's do horror themed 🎃",
     "Slow motion only?",
+    "Any anime??",
+    "Romantic reggaeton 💘",
+    "Random fight scene ⚔️",
+    "Random mood 🎭",
+    "Random song 🎵",
   ],
   judge: [
     "Pick the judge",
     "Let the judge decide",
     "Any judge works",
+    "I'll pick the judge",
   ],
 };
 
