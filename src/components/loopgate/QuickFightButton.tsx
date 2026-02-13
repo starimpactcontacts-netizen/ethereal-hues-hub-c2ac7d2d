@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Swords, Loader2 } from 'lucide-react';
+import { Swords, Loader2, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { findQuickFight, useMyQuickFights } from '@/hooks/useQuickFight';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface QuickFightButtonProps {
   size?: 'sm' | 'lg';
   className?: string;
+}
+
+function formatElapsed(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 export default function QuickFightButton({ size = 'lg', className = '' }: QuickFightButtonProps) {
@@ -18,8 +25,35 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
   const { inQueue, fights } = useMyQuickFights();
   const navigate = useNavigate();
   const [searching, setSearching] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const activeFight = fights.find(f => f.status === 'active' || f.status === 'judging');
+
+  // Queue timer
+  useEffect(() => {
+    if (inQueue || searching) {
+      setElapsed(0);
+      timerRef.current = setInterval(() => setElapsed(prev => prev + 1), 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setElapsed(0);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [inQueue, searching]);
+
+  // Listen for match while in queue — auto-navigate
+  useEffect(() => {
+    if (!inQueue && !searching) return;
+    const matched = fights.find(f => f.status === 'active');
+    if (matched) {
+      toast.success('⚔️ Match found!');
+      navigate(`/fight/${matched.id}`);
+      setSearching(false);
+      // Trigger email notification
+      supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: matched.id } }).catch(() => {});
+    }
+  }, [fights, inQueue, searching]);
 
   const handleClick = async () => {
     if (!user || !profile) {
@@ -38,9 +72,11 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
       if (fightId) {
         toast.success('⚔️ Match found!');
         navigate(`/fight/${fightId}`);
+        // Trigger email
+        supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: fightId } }).catch(() => {});
+        setSearching(false);
       } else {
-        toast('🔍 Searching for opponent...', { duration: 3000 });
-        setTimeout(() => setSearching(false), 5000);
+        toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });
       }
     } catch {
       toast.error('Matchmaking failed');
@@ -67,11 +103,15 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
         transition={{ duration: 2, repeat: Infinity }}
         className={`${isSmall ? 'px-4 py-2.5' : 'px-8 py-4'} bg-gradient-to-r from-red-600 via-red-500 to-red-600 flex items-center justify-center gap-2 rounded-lg`}
       >
-        {isSearching ? (
+      {isSearching ? (
           <>
             <Loader2 className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white animate-spin`} />
             <span className={`font-display ${isSmall ? 'text-sm' : 'text-xl'} text-white uppercase tracking-wider`}>
               Searching...
+            </span>
+            <span className={`flex items-center gap-1 ${isSmall ? 'text-xs' : 'text-sm'} text-white/70 font-mono`}>
+              <Clock className="w-3 h-3" />
+              {formatElapsed(elapsed)}
             </span>
           </>
         ) : activeFight ? (

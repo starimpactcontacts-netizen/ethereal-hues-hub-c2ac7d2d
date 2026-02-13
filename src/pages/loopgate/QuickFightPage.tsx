@@ -88,12 +88,7 @@ export default function QuickFightPage() {
 
     if (!error) {
       toast.success('⚖️ Winner declared!');
-      // Award XP
-      await supabase.rpc('award_xp', { p_user_id: winnerId, p_amount: 20, p_action: 'quick_fight_win', p_description: 'Won a Quick Fight' });
-      const loserId = winnerId === fight.player_1_id ? fight.player_2_id : fight.player_1_id;
-      if (loserId) {
-        await supabase.rpc('award_xp', { p_user_id: loserId, p_amount: 5, p_action: 'quick_fight_loss', p_description: 'Participated in Quick Fight' });
-      }
+      // XP is now awarded automatically by database trigger (on_quick_fight_completed)
     } else {
       toast.error('Failed to judge');
     }
