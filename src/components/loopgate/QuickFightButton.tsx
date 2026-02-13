@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Swords, Loader2, Clock } from 'lucide-react';
+import { Swords, Loader2, Clock, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { findQuickFight, useMyQuickFights } from '@/hooks/useQuickFight';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
@@ -55,6 +55,17 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
     }
   }, [fights, inQueue, searching]);
 
+  const handleCancel = async () => {
+    if (!user) return;
+    // Remove from queue
+    await supabase
+      .from('quick_fight_queue')
+      .delete()
+      .eq('user_id', user.id);
+    setSearching(false);
+    toast('Search cancelled', { duration: 2000 });
+  };
+
   const handleClick = async () => {
     if (!user || !profile) {
       openAccountPrompt('send_message', () => {});
@@ -72,7 +83,6 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
       if (fightId) {
         toast.success('⚔️ Match found!');
         navigate(`/fight/${fightId}`);
-        // Trigger email
         supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: fightId } }).catch(() => {});
         setSearching(false);
       } else {
@@ -130,6 +140,19 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
           </>
         )}
       </motion.div>
+
+      {isSearching && (
+        <motion.button
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0 }}
+          onClick={(e) => { e.stopPropagation(); handleCancel(); }}
+          className={`mt-2 flex items-center justify-center gap-1.5 ${isSmall ? 'px-3 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'} rounded-lg border border-destructive/40 bg-destructive/10 text-destructive font-display uppercase tracking-wider hover:bg-destructive/20 transition-colors w-full`}
+        >
+          <X className="w-4 h-4" />
+          Cancel Search
+        </motion.button>
+      )}
     </motion.button>
   );
 }
