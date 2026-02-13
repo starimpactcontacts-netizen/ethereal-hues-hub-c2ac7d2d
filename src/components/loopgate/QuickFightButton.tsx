@@ -98,61 +98,63 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
   const isSearching = searching || inQueue;
 
   return (
-    <motion.button
-      onClick={handleClick}
-      disabled={isSearching}
-      whileTap={{ scale: 0.95 }}
-      className={`relative overflow-hidden group ${className}`}
-    >
-      <motion.div
-        animate={{
-          boxShadow: isSearching
-            ? ['0 0 20px rgba(239,68,68,0.3)', '0 0 40px rgba(239,68,68,0.5)', '0 0 20px rgba(239,68,68,0.3)']
-            : ['0 0 15px rgba(239,68,68,0.2)', '0 0 30px rgba(239,68,68,0.4)', '0 0 15px rgba(239,68,68,0.2)']
-        }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className={`${isSmall ? 'px-4 py-2.5' : 'px-8 py-4'} bg-gradient-to-r from-red-600 via-red-500 to-red-600 flex items-center justify-center gap-2 rounded-lg`}
+    <div className={`flex flex-col items-stretch gap-2 ${className}`}>
+      <motion.button
+        onClick={isSearching ? undefined : handleClick}
+        disabled={isSearching}
+        whileTap={{ scale: 0.95 }}
+        className="relative overflow-hidden group touch-manipulation select-none"
       >
-      {isSearching ? (
-          <>
-            <Loader2 className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white animate-spin`} />
-            <span className={`font-display ${isSmall ? 'text-sm' : 'text-xl'} text-white uppercase tracking-wider`}>
-              Searching...
-            </span>
-            <span className={`flex items-center gap-1 ${isSmall ? 'text-xs' : 'text-sm'} text-white/70 font-mono`}>
-              <Clock className="w-3 h-3" />
-              {formatElapsed(elapsed)}
-            </span>
-          </>
-        ) : activeFight ? (
-          <>
-            <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white`} />
-            <span className={`font-display ${isSmall ? 'text-sm' : 'text-xl'} text-white uppercase tracking-wider`}>
-              Return to Fight
-            </span>
-          </>
-        ) : (
-          <>
-            <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white`} />
-            <span className={`font-display ${isSmall ? 'text-sm' : 'text-xl'} text-white uppercase tracking-wider`}>
-              Quick Edit Battle
-            </span>
-          </>
-        )}
-      </motion.div>
+        <motion.div
+          animate={{
+            boxShadow: isSearching
+              ? ['0 0 20px rgba(239,68,68,0.3)', '0 0 40px rgba(239,68,68,0.5)', '0 0 20px rgba(239,68,68,0.3)']
+              : ['0 0 15px rgba(239,68,68,0.2)', '0 0 30px rgba(239,68,68,0.4)', '0 0 15px rgba(239,68,68,0.2)']
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className={`${isSmall ? 'px-4 py-3' : 'px-6 py-3.5'} bg-gradient-to-r from-red-600 via-red-500 to-red-600 flex items-center justify-center gap-2 rounded-lg active:opacity-90`}
+        >
+          {isSearching ? (
+            <>
+              <Loader2 className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white animate-spin`} />
+              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider`}>
+                Searching...
+              </span>
+              <span className={`flex items-center gap-1 ${isSmall ? 'text-[10px]' : 'text-xs'} text-white/70 font-mono`}>
+                <Clock className="w-3 h-3" />
+                {formatElapsed(elapsed)}
+              </span>
+            </>
+          ) : activeFight ? (
+            <>
+              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white`} />
+              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider`}>
+                Return to Fight
+              </span>
+            </>
+          ) : (
+            <>
+              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white`} />
+              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider`}>
+                Quick Edit Battle
+              </span>
+            </>
+          )}
+        </motion.div>
+      </motion.button>
 
       {isSearching && (
         <motion.button
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          onClick={(e) => { e.stopPropagation(); handleCancel(); }}
-          className={`mt-2 flex items-center justify-center gap-1.5 ${isSmall ? 'px-3 py-1.5 text-xs' : 'px-5 py-2.5 text-sm'} rounded-lg border border-destructive/40 bg-destructive/10 text-destructive font-display uppercase tracking-wider hover:bg-destructive/20 transition-colors w-full`}
+          onClick={handleCancel}
+          className={`flex items-center justify-center gap-1.5 ${isSmall ? 'px-3 py-2 text-xs' : 'px-5 py-2.5 text-sm'} rounded-lg border border-destructive/40 bg-destructive/10 text-destructive font-display uppercase tracking-wider hover:bg-destructive/20 active:bg-destructive/25 transition-colors touch-manipulation select-none`}
         >
           <X className="w-4 h-4" />
           Cancel Search
         </motion.button>
       )}
-    </motion.button>
+    </div>
   );
 }
