@@ -85,7 +85,7 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
           <>
             <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white`} />
             <span className={`font-display ${isSmall ? 'text-sm' : 'text-xl'} text-white uppercase tracking-wider`}>
-              Quick Fight
+              Quick Edit Battle
             </span>
           </>
         )}
