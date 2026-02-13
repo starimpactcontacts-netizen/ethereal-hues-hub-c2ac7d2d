@@ -22,6 +22,7 @@ export default function QuickFightPage() {
   const { isJudge } = useUserRoles(user?.id);
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showOverview, setShowOverview] = useState(false);
   const [judgeScore1, setJudgeScore1] = useState('');
   const [judgeScore2, setJudgeScore2] = useState('');
   const [judgeNotes, setJudgeNotes] = useState('');
@@ -95,6 +96,99 @@ export default function QuickFightPage() {
     setJudging(false);
   };
 
+  // Overview mode — compact fight card
+  if (showOverview) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <button onClick={() => navigate('/hub')} className="flex items-center gap-2 text-muted-foreground hover:text-foreground touch-manipulation">
+              <ArrowLeft className="w-4 h-4" />
+              <span className="text-sm">Hub</span>
+            </button>
+            <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
+              {fight.status === 'active' ? '⚔️ LIVE FIGHT' :
+               fight.status === 'judging' ? '⚖️ AWAITING JUDGE' :
+               fight.status === 'completed' ? '🏆 DECIDED' : fight.status.toUpperCase()}
+            </span>
+          </div>
+        </div>
+
+        <div className="px-4 mt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-surface-1 border border-border rounded-lg overflow-hidden"
+          >
+            {/* Compact VS */}
+            <div className="relative p-4">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/10" />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Avatar className="w-12 h-12 border-2 border-red-500">
+                    <AvatarImage src={fight.player_1_avatar_url || ''} />
+                    <AvatarFallback className="bg-red-500/20 text-red-400 font-bold">
+                      {fight.player_1_username.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-display text-foreground">{fight.player_1_username}</p>
+                    <p className="text-[9px] text-red-400 font-bold uppercase">RED</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center">
+                  <Swords className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-[9px] text-muted-foreground mt-0.5">VS</span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-sm font-display text-foreground">{fight.player_2_username || '???'}</p>
+                    <p className="text-[9px] text-blue-400 font-bold uppercase">BLUE</p>
+                  </div>
+                  <Avatar className="w-12 h-12 border-2 border-blue-500">
+                    <AvatarImage src={fight.player_2_avatar_url || ''} />
+                    <AvatarFallback className="bg-blue-500/20 text-blue-400 font-bold">
+                      {fight.player_2_username?.charAt(0).toUpperCase() || '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              </div>
+            </div>
+
+            {/* Timer strip */}
+            {fight.status === 'active' && fight.ends_at && (
+              <div className="px-4 py-2 border-t border-border bg-background/50">
+                <CountdownTimer endDate={fight.ends_at} label="Time Left" />
+              </div>
+            )}
+
+            {/* Status strip */}
+            <div className="px-4 py-2 border-t border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {fight.player_1_submitted_at && <span className="text-[9px] text-emerald-400">✓ RED submitted</span>}
+                {fight.player_2_submitted_at && <span className="text-[9px] text-emerald-400">✓ BLUE submitted</span>}
+                {!fight.player_1_submitted_at && !fight.player_2_submitted_at && (
+                  <span className="text-[9px] text-muted-foreground">Waiting for submissions...</span>
+                )}
+              </div>
+            </div>
+
+            {/* Return to fight button */}
+            <button
+              onClick={() => setShowOverview(false)}
+              className="w-full py-3 bg-destructive text-destructive-foreground font-display text-sm uppercase tracking-wider flex items-center justify-center gap-2 touch-manipulation active:opacity-90"
+            >
+              <Swords className="w-4 h-4" />
+              Return to Fight
+            </button>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -103,12 +197,12 @@ export default function QuickFightPage() {
           <button
             onClick={() => {
               if (isParticipant && (fight.status === 'active' || fight.status === 'judging')) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                setShowOverview(true);
               } else {
                 navigate('/hub');
               }
             }}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm">{isParticipant && (fight.status === 'active' || fight.status === 'judging') ? 'Overview' : 'Back'}</span>
