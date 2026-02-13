@@ -18,6 +18,7 @@ import { useBattles } from '@/hooks/useBattles';
 import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import LoopMonster from '@/components/loopgate/LoopMonster';
+import QuickFightButton from '@/components/loopgate/QuickFightButton';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
 import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
@@ -438,6 +439,11 @@ export default function HubPage() {
           })}
         </div>
       )}
+
+      {/* ⚔️ QUICK FIGHT — Primary CTA */}
+      <div className="px-4 mt-3">
+        <QuickFightButton size="lg" className="w-full" />
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}

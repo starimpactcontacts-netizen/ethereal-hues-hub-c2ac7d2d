@@ -3369,6 +3369,196 @@ export type Database = {
           },
         ]
       }
+      quick_fight_messages: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          fight_id: string
+          id: string
+          is_auto_text: boolean | null
+          is_system: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          fight_id: string
+          id?: string
+          is_auto_text?: boolean | null
+          is_system?: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          fight_id?: string
+          id?: string
+          is_auto_text?: boolean | null
+          is_system?: boolean | null
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_fight_messages_fight_id_fkey"
+            columns: ["fight_id"]
+            isOneToOne: false
+            referencedRelation: "quick_fights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quick_fight_queue: {
+        Row: {
+          avatar_url: string | null
+          expires_at: string
+          id: string
+          queued_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          expires_at?: string
+          id?: string
+          queued_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          expires_at?: string
+          id?: string
+          queued_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      quick_fight_votes: {
+        Row: {
+          created_at: string
+          fight_id: string
+          id: string
+          user_id: string
+          voted_for: string
+        }
+        Insert: {
+          created_at?: string
+          fight_id: string
+          id?: string
+          user_id: string
+          voted_for: string
+        }
+        Update: {
+          created_at?: string
+          fight_id?: string
+          id?: string
+          user_id?: string
+          voted_for?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_fight_votes_fight_id_fkey"
+            columns: ["fight_id"]
+            isOneToOne: false
+            referencedRelation: "quick_fights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quick_fights: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          ends_at: string | null
+          id: string
+          judge_id: string | null
+          judge_notes: string | null
+          judge_username: string | null
+          judged_at: string | null
+          loser_score: number | null
+          matched_at: string | null
+          player_1_avatar_url: string | null
+          player_1_id: string
+          player_1_submission_url: string | null
+          player_1_submitted_at: string | null
+          player_1_username: string
+          player_2_avatar_url: string | null
+          player_2_id: string | null
+          player_2_submission_url: string | null
+          player_2_submitted_at: string | null
+          player_2_username: string | null
+          starts_at: string | null
+          status: string
+          updated_at: string
+          view_count: number | null
+          winner_id: string | null
+          winner_score: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          judge_id?: string | null
+          judge_notes?: string | null
+          judge_username?: string | null
+          judged_at?: string | null
+          loser_score?: number | null
+          matched_at?: string | null
+          player_1_avatar_url?: string | null
+          player_1_id: string
+          player_1_submission_url?: string | null
+          player_1_submitted_at?: string | null
+          player_1_username: string
+          player_2_avatar_url?: string | null
+          player_2_id?: string | null
+          player_2_submission_url?: string | null
+          player_2_submitted_at?: string | null
+          player_2_username?: string | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          view_count?: number | null
+          winner_id?: string | null
+          winner_score?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          ends_at?: string | null
+          id?: string
+          judge_id?: string | null
+          judge_notes?: string | null
+          judge_username?: string | null
+          judged_at?: string | null
+          loser_score?: number | null
+          matched_at?: string | null
+          player_1_avatar_url?: string | null
+          player_1_id?: string
+          player_1_submission_url?: string | null
+          player_1_submitted_at?: string | null
+          player_1_username?: string
+          player_2_avatar_url?: string | null
+          player_2_id?: string | null
+          player_2_submission_url?: string | null
+          player_2_submitted_at?: string | null
+          player_2_username?: string | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+          view_count?: number | null
+          winner_id?: string | null
+          winner_score?: number | null
+        }
+        Relationships: []
+      }
       redemptions: {
         Row: {
           admin_notes: string | null
@@ -4408,6 +4598,14 @@ export type Database = {
           new_xp: number
           streak_xp: number
         }[]
+      }
+      quick_fight_match: {
+        Args: { p_avatar_url?: string; p_user_id: string; p_username: string }
+        Returns: string
+      }
+      quick_fight_submit: {
+        Args: { p_fight_id: string; p_url: string; p_user_id: string }
+        Returns: boolean
       }
       recalculate_user_index: {
         Args: { user_uuid: string }
