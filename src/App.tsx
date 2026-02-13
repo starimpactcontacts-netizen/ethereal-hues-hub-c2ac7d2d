@@ -46,6 +46,8 @@ import CreateJudgeDivisionPage from "./pages/loopgate/CreateJudgeDivisionPage";
 import OpsPanel from "./pages/loopgate/OpsPanel";
 import SanctionedTournamentPage from "./pages/loopgate/SanctionedTournamentPage";
 import BattleDetailPage from "./pages/loopgate/BattleDetailPage";
+import QuickFightPage from "./pages/loopgate/QuickFightPage";
+import JudgeQueuePage from "./pages/loopgate/JudgeQueuePage";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import EnterprisePage from "./pages/EnterprisePage";
 import SupportPage from "./pages/SupportPage";
@@ -266,6 +268,8 @@ export default function App() {
               <Route path="/arena" element={<ArenaPage />} />
               <Route path="/sanctioned/:id" element={<SanctionedTournamentPage />} />
               <Route path="/battle/:battleId" element={<BattleDetailPage />} />
+              <Route path="/fight/:fightId" element={<QuickFightPage />} />
+              <Route path="/judge-queue" element={<JudgeQueuePage />} />
               <Route path="/hosted-comps" element={<HostedCompsPage />} />
               <Route path="/hosted-comp/:id" element={<HostedCompDetailPage />} />
               <Route path="/judges" element={<JudgeHubPage />} />
