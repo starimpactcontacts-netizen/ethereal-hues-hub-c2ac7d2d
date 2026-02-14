@@ -13,6 +13,11 @@ import { Textarea } from '@/components/ui/textarea';
 import GatePattern from '@/components/loopgate/GatePattern';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import viralCartelLogo from '@/assets/viral-cartel-logo.png';
+import culturePhonk from '@/assets/culture-phonk-artist.jpeg';
+import cultureMovie from '@/assets/culture-movie-character.png';
+import cultureArtist from '@/assets/culture-artist.png';
+import cultureNFL from '@/assets/culture-nfl.jpg';
+import cultureSpiderNoir from '@/assets/culture-spider-noir.webp';
 
 const GATE_PASSWORD = 'cartel';
 const bebas = { fontFamily: "var(--font-display)" };
@@ -42,14 +47,14 @@ const SLOT_AVAILABILITY: Record<string, { left: number; total: number }> = {
   takeover: { left: 3, total: 3 },
 };
 
-// Cinematic culture imagery — real-world faces, artists, sports, film
-const CULTURE_IMAGES = [
-  'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop', // artist on stage
-  'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=500&fit=crop', // studio headphones
-  'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=500&fit=crop', // NFL athlete
-  'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=500&fit=crop', // concert crowd
-  'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=500&fit=crop', // cinema
-  'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop', // DJ set
+// Culture imagery — phonk, film, artists, sports — shows Loopgate spans everything
+const CULTURE_IMAGES: { src: string; label: string; category: string }[] = [
+  { src: culturePhonk, label: 'MXZI', category: 'Music' },
+  { src: cultureMovie, label: 'Kill Bill', category: 'Film' },
+  { src: cultureArtist, label: 'Artist', category: 'Music' },
+  { src: cultureNFL, label: 'NFL', category: 'Sports' },
+  { src: cultureSpiderNoir, label: 'Spider Noir', category: 'Film' },
+  { src: culturePhonk, label: 'Phonk', category: 'Music' },
 ];
 
 const MOCK_CAMPAIGNS = [
@@ -427,7 +432,7 @@ export default function EnterprisePage() {
 
           {/* ─── Culture Image Strip ─── */}
           <div className="absolute bottom-0 right-0 md:right-8 flex gap-2 opacity-[0.18] pointer-events-none select-none">
-            {CULTURE_IMAGES.slice(0, 3).map((src, i) => (
+            {CULTURE_IMAGES.slice(0, 3).map((img, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -436,8 +441,9 @@ export default function EnterprisePage() {
                 className="w-[100px] md:w-[130px] h-[140px] md:h-[180px] overflow-hidden relative"
                 style={{ clipPath: 'polygon(0 8%, 100% 0%, 100% 92%, 0% 100%)' }}
               >
-                <img src={src} alt="" className="w-full h-full object-cover grayscale" />
+                <img src={img.src} alt={img.label} className="w-full h-full object-cover grayscale" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
+                <span className="absolute bottom-2 left-2 text-[7px] text-white/40 uppercase tracking-wider">{img.category}</span>
               </motion.div>
             ))}
           </div>
@@ -515,7 +521,7 @@ export default function EnterprisePage() {
                 <GoldCorners size={12} />
                 {/* Background culture image per tier */}
                 <div className="absolute inset-0 pointer-events-none">
-                  <img src={CULTURE_IMAGES[ti + 3]} alt="" className="w-full h-full object-cover opacity-[0.06] grayscale" />
+                  <img src={CULTURE_IMAGES[ti + 3]?.src || CULTURE_IMAGES[0].src} alt="" className="w-full h-full object-cover opacity-[0.06] grayscale" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60" />
                 </div>
                 {/* Top accent */}
@@ -581,7 +587,7 @@ export default function EnterprisePage() {
             <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Who's Using the System</p>
           </div>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-            {CULTURE_IMAGES.map((src, i) => (
+            {CULTURE_IMAGES.map((img, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -589,12 +595,13 @@ export default function EnterprisePage() {
                 transition={{ delay: 0.6 + i * 0.08 }}
                 className="aspect-[3/4] overflow-hidden relative group/img border border-white/5 hover:border-[#C8A96E]/20 transition-all"
               >
-                <img src={src} alt="" className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all duration-700 scale-105 group-hover/img:scale-110" />
+                <img src={img.src} alt={img.label} className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all duration-700 scale-105 group-hover/img:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
                 <div className="absolute bottom-2 left-2 right-2">
-                  <div className="flex items-center gap-1">
+                  <p className="text-[8px] text-white/50 font-bold uppercase tracking-wider">{img.label}</p>
+                  <div className="flex items-center gap-1 mt-0.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#1B4332]" />
-                    <span className="text-[7px] text-white/30 uppercase tracking-wider">Client {String.fromCharCode(65 + i)}</span>
+                    <span className="text-[7px] text-white/25 uppercase tracking-wider">{img.category}</span>
                   </div>
                 </div>
               </motion.div>
