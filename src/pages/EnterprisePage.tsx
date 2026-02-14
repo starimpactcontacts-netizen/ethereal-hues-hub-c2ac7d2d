@@ -195,18 +195,33 @@ export default function EnterprisePage() {
       {/* GatePattern background */}
       <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
 
-      {/* 24K-style vertical stripe — right side, inset, with forest pattern + crest */}
-      <div className="fixed top-0 bottom-0 right-[40px] md:right-[80px] w-[70px] md:w-[90px] z-[5] overflow-hidden">
-        {/* Deep forest background */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #081a10 0%, #0d2818 30%, #081a10 60%, #0d2818 85%, #081a10 100%)' }} />
-        {/* Subtle vein texture */}
-        <div className="absolute inset-0 opacity-10" style={{ background: 'repeating-linear-gradient(135deg, transparent, transparent 25px, rgba(255,255,255,0.02) 25px, rgba(255,255,255,0.02) 27px), repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(100,180,100,0.03) 35px, rgba(100,180,100,0.03) 37px)' }} />
-        {/* Thin red border lines on each side of the stripe */}
-        <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-[#8B0000]" />
-        <div className="absolute top-0 bottom-0 right-0 w-[2px] bg-[#8B0000]" />
-        {/* VC Crest centered on stripe */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img src={viralCartelCrest} alt="" className="w-[50px] md:w-[65px] h-auto opacity-40 mix-blend-lighten" />
+      {/* 24K-style vertical stripe — dark marble with depth */}
+      <div className="fixed top-0 bottom-0 right-[40px] md:right-[80px] w-[80px] md:w-[100px] z-[5] overflow-hidden">
+        {/* Rich dark marble base — layered gradients for depth */}
+        <div className="absolute inset-0" style={{ 
+          background: `
+            radial-gradient(ellipse at 30% 20%, rgba(20,60,35,0.6) 0%, transparent 50%),
+            radial-gradient(ellipse at 70% 60%, rgba(15,50,30,0.5) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 90%, rgba(20,55,35,0.4) 0%, transparent 40%),
+            linear-gradient(180deg, #050f08 0%, #0a1e12 20%, #0d2516 40%, #081a0e 60%, #0a1e12 80%, #050f08 100%)
+          `
+        }} />
+        {/* Marble vein network — diagonal cracks */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.07]" preserveAspectRatio="none" viewBox="0 0 100 800">
+          <path d="M30 0 Q45 80 20 160 Q10 240 40 320 Q55 400 25 480 Q15 560 45 640 Q50 720 30 800" stroke="rgba(140,200,160,0.8)" strokeWidth="0.8" fill="none" />
+          <path d="M70 0 Q55 100 75 200 Q85 300 60 400 Q50 500 80 600 Q90 700 65 800" stroke="rgba(100,170,130,0.6)" strokeWidth="0.5" fill="none" />
+          <path d="M15 100 Q30 150 50 180 Q70 210 85 280" stroke="rgba(120,180,140,0.4)" strokeWidth="0.4" fill="none" />
+          <path d="M80 400 Q60 450 40 500 Q25 540 10 600" stroke="rgba(130,190,150,0.3)" strokeWidth="0.3" fill="none" />
+          <path d="M50 200 Q65 260 45 340" stroke="rgba(110,175,135,0.35)" strokeWidth="0.4" fill="none" />
+        </svg>
+        {/* Subtle surface sheen */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%, rgba(255,255,255,0.02) 70%, transparent 100%)' }} />
+        {/* Thin dark red border lines */}
+        <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-[#5a0000]" />
+        <div className="absolute top-0 bottom-0 right-0 w-[2px] bg-[#5a0000]" />
+        {/* VC Crest — centered with presence */}
+        <div className="absolute inset-0 flex items-center justify-center" style={{ top: '15%' }}>
+          <img src={viralCartelCrest} alt="" className="w-[55px] md:w-[72px] h-auto opacity-30" style={{ filter: 'brightness(1.8) contrast(0.8)' }} />
         </div>
       </div>
       
