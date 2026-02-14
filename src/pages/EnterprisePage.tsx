@@ -36,6 +36,22 @@ const SLOT_TIERS: SlotTier[] = [
   { id: 'takeover', name: 'Takeover Slot', price: 1200, priceLabel: '$1,200', desc: 'Pinned event. Guaranteed multi-format distribution.', tag: 'Max Impact', color: '#1B4332' },
 ];
 
+const SLOT_AVAILABILITY: Record<string, { left: number; total: number }> = {
+  trial: { left: 3, total: 3 },
+  standard: { left: 3, total: 3 },
+  takeover: { left: 3, total: 3 },
+};
+
+// Cinematic culture imagery — real-world faces, artists, sports, film
+const CULTURE_IMAGES = [
+  'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=500&fit=crop', // artist on stage
+  'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=500&fit=crop', // studio headphones
+  'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=500&fit=crop', // NFL athlete
+  'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&h=500&fit=crop', // concert crowd
+  'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=500&fit=crop', // cinema
+  'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=500&fit=crop', // DJ set
+];
+
 const MOCK_CAMPAIGNS = [
   { id: '1', name: 'Summer Vibes Drop', tier: 'Standard Slot', status: 'Live', edits: 47, battles: 12, feedHits: 1240000, judges: 3, thumb: '🎵' },
   { id: '2', name: 'Brand X Takeover', tier: 'Takeover Slot', status: 'Completed', edits: 128, battles: 34, feedHits: 8700000, judges: 8, thumb: '🔥' },
@@ -408,6 +424,23 @@ export default function EnterprisePage() {
               <Diamond className="w-2.5 h-2.5 text-[#C8A96E]/20" />
             </div>
           </div>
+
+          {/* ─── Culture Image Strip ─── */}
+          <div className="absolute bottom-0 right-0 md:right-8 flex gap-2 opacity-[0.18] pointer-events-none select-none">
+            {CULTURE_IMAGES.slice(0, 3).map((src, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + i * 0.15 }}
+                className="w-[100px] md:w-[130px] h-[140px] md:h-[180px] overflow-hidden relative"
+                style={{ clipPath: 'polygon(0 8%, 100% 0%, 100% 92%, 0% 100%)' }}
+              >
+                <img src={src} alt="" className="w-full h-full object-cover grayscale" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
+              </motion.div>
+            ))}
+          </div>
         </motion.section>
 
         {/* ─── Availability Banner ─── */}
@@ -416,7 +449,7 @@ export default function EnterprisePage() {
             <GoldCorners size={10} />
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-[#1B4332] animate-pulse shadow-[0_0_8px_rgba(27,67,50,0.5)]" />
-              <span className="text-[10px] text-white/50 uppercase tracking-[0.2em]">3 / 3 Arena Slots Available Today</span>
+              <span className="text-[10px] text-white/50 uppercase tracking-[0.2em]">Drop pricing active — 3 / 3 available per tier</span>
             </div>
             <span className="text-[9px] text-[#1B4332] uppercase tracking-wider font-medium">Open</span>
           </div>
@@ -470,30 +503,50 @@ export default function EnterprisePage() {
             <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Available Tiers</p>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
-            {SLOT_TIERS.map(tier => (
+            {SLOT_TIERS.map((tier, ti) => {
+              const avail = SLOT_AVAILABILITY[tier.id];
+              return (
               <motion.div
                 key={tier.id}
                 whileHover={{ y: -4 }}
-                className="border border-white/6 bg-black/30 p-6 relative group cursor-pointer hover:border-[#C8A96E]/20 transition-all duration-300"
+                className="border border-white/6 bg-black/30 p-6 relative group cursor-pointer hover:border-[#C8A96E]/20 transition-all duration-300 overflow-hidden"
                 onClick={() => { setSelectedTier(tier); setLaunchOpen(true); }}
               >
                 <GoldCorners size={12} />
+                {/* Background culture image per tier */}
+                <div className="absolute inset-0 pointer-events-none">
+                  <img src={CULTURE_IMAGES[ti + 3]} alt="" className="w-full h-full object-cover opacity-[0.06] grayscale" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60" />
+                </div>
                 {/* Top accent */}
                 <div className="absolute top-0 left-3 right-3 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${tier.color}40, transparent)` }} />
                 
-                {tier.tag && (
-                  <span className="absolute top-4 right-4 text-[7px] uppercase tracking-wider px-2 py-0.5 border" style={{ color: `${tier.color}90`, borderColor: `${tier.color}30`, background: `${tier.color}08` }}>{tier.tag}</span>
-                )}
-                <p className="text-xs text-white/40 uppercase tracking-wider mb-2" style={bebas}>{tier.name}</p>
-                <p className="text-3xl text-white mb-3" style={bebas}>{tier.priceLabel}</p>
-                <div className="h-px bg-white/5 mb-3" />
-                <p className="text-[10px] text-white/25 leading-relaxed">{tier.desc}</p>
-                
-                <div className="mt-5 flex items-center gap-1.5 text-[9px] text-[#C8A96E]/30 group-hover:text-[#C8A96E]/60 transition-colors uppercase tracking-wider">
-                  Select <ChevronRight className="w-3 h-3" />
+                <div className="relative z-10">
+                  {tier.tag && (
+                    <span className="absolute top-0 right-0 text-[7px] uppercase tracking-wider px-2 py-0.5 border" style={{ color: `${tier.color}90`, borderColor: `${tier.color}30`, background: `${tier.color}08` }}>{tier.tag}</span>
+                  )}
+                  <p className="text-xs text-white/40 uppercase tracking-wider mb-2" style={bebas}>{tier.name}</p>
+                  <p className="text-3xl text-white mb-3" style={bebas}>{tier.priceLabel}</p>
+                  <div className="h-px bg-white/5 mb-3" />
+                  <p className="text-[10px] text-white/25 leading-relaxed">{tier.desc}</p>
+                  
+                  {/* Availability */}
+                  <div className="mt-4 flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {Array.from({ length: avail.total }).map((_, i) => (
+                        <div key={i} className={`w-2 h-2 rounded-full ${i < avail.left ? 'bg-[#1B4332] shadow-[0_0_6px_rgba(27,67,50,0.5)]' : 'bg-white/10'}`} />
+                      ))}
+                    </div>
+                    <span className="text-[8px] text-white/20 uppercase tracking-wider">{avail.left}/{avail.total} left</span>
+                  </div>
+
+                  <div className="mt-4 flex items-center gap-1.5 text-[9px] text-[#C8A96E]/30 group-hover:text-[#C8A96E]/60 transition-colors uppercase tracking-wider">
+                    Select <ChevronRight className="w-3 h-3" />
+                  </div>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </motion.div>
 
@@ -519,6 +572,35 @@ export default function EnterprisePage() {
               ))}
             </div>
           </div>
+        </motion.section>
+
+        {/* ─── Culture Mosaic ─── */}
+        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.58 }} className="mb-14">
+          <div className="flex items-center gap-3 mb-6">
+            <Diamond className="w-3 h-3 text-[#C8A96E]/30" />
+            <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Who's Using the System</p>
+          </div>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+            {CULTURE_IMAGES.map((src, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 + i * 0.08 }}
+                className="aspect-[3/4] overflow-hidden relative group/img border border-white/5 hover:border-[#C8A96E]/20 transition-all"
+              >
+                <img src={src} alt="" className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all duration-700 scale-105 group-hover/img:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                <div className="absolute bottom-2 left-2 right-2">
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#1B4332]" />
+                    <span className="text-[7px] text-white/30 uppercase tracking-wider">Client {String.fromCharCode(65 + i)}</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          <p className="text-[8px] text-white/10 text-center mt-3 uppercase tracking-[0.3em]">Labels · Studios · Artists · Athletes · Film</p>
         </motion.section>
 
         {/* ─── Dashboard ─── */}
