@@ -513,27 +513,41 @@ export default function ArenaPage() {
           )}
 
           {/* ═══ PREMIUM COMPS ═══ */}
-          {activeFilter === "all" && hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length > 0 && (
-            <motion.section key="premium-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {(activeFilter === "all") && (
+            <motion.section key="premium-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
               <SectionHeader
                 icon={<Crown className="w-4 h-4 text-purple-400" />}
                 title="Premium Comps"
                 badgeColor="bg-purple-500/20 border-purple-500/40 text-purple-400"
                 badge="Easy Entry"
               />
-              <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
-                {hostedComps
-                  .filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging'))
-                  .map(comp => (
-                    <PremiumCompCard key={comp.id} comp={comp} onClick={() => navigate(`/hosted-comp/${comp.slug || comp.id}`)} />
-                  ))}
-              </div>
+              {hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length > 0 ? (
+                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
+                  {hostedComps
+                    .filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging'))
+                    .map(comp => (
+                      <PremiumCompCard key={comp.id} comp={comp} onClick={() => navigate(`/hosted-comp/${comp.slug || comp.id}`)} />
+                    ))}
+                  {hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length < 3 &&
+                    Array.from({ length: Math.max(0, 3 - hostedComps.filter(c => c.is_premium && (c.status === 'live' || c.status === 'judging')).length) }).map((_, i) => (
+                      <GhostSlot key={`ghost-prem-${i}`} icon={<Crown className="w-4 h-4 text-purple-400/20" />} label="Open slot" accentColor="border-purple-500/15" />
+                    ))
+                  }
+                </div>
+              ) : (
+                <div className="bg-surface-1/60 border border-purple-500/15 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
+                  <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(168,85,247,0.1)]">
+                    <Crown className="w-5 h-5 text-purple-400/30" />
+                  </div>
+                  <p className="text-xs text-muted-foreground">No premium comps right now</p>
+                </div>
+              )}
             </motion.section>
           )}
 
           {/* ═══ SANCTIONED TOURNAMENTS ═══ */}
           {(activeFilter === "all" || activeFilter === "sanctioned") && (
-            <motion.section key="sanctioned-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <motion.section key="sanctioned-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
               <SectionHeader
                 icon={<Shield className="w-4 h-4 text-gold" />}
                 title="Sanctioned"
@@ -548,29 +562,42 @@ export default function ArenaPage() {
                 }
               />
 
+              {/* Clickable CTA card */}
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/units')}
+                className="w-full bg-surface-1 border border-border hover:border-gold/40 rounded-xl p-4 flex items-center gap-4 text-left transition-all mb-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_6px_28px_-4px_rgba(202,138,4,0.15),0_0_0_1px_rgba(202,138,4,0.1)]"
+              >
+                <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0 shadow-[0_0_20px_-4px_rgba(202,138,4,0.15)]">
+                  <Shield className="w-6 h-6 text-gold" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-display text-sm text-foreground block">Unit Tournaments</span>
+                  <span className="text-[10px] text-muted-foreground">Single elimination brackets • Up to 100 editors</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </motion.button>
+
+              {/* Carousel */}
               {sanctionedLoading ? (
-                <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
-                  <Skeleton className="h-48 w-[200px] shrink-0" />
-                  <Skeleton className="h-48 w-[200px] shrink-0" />
+                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
+                  <Skeleton className="h-48 w-[200px] shrink-0 rounded-lg" />
+                  <Skeleton className="h-48 w-[200px] shrink-0 rounded-lg" />
                 </div>
               ) : sanctionedTournaments.length > 0 ? (
-                <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
+                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
                   {sanctionedTournaments.map(t => (
                     <SanctionedTournamentCard key={t.id} tournament={t} onClick={() => navigate(`/sanctioned/${t.id}`)} />
                   ))}
-                  {/* Ghost slots */}
                   {sanctionedTournaments.length < 3 && Array.from({ length: Math.max(0, 3 - sanctionedTournaments.length) }).map((_, i) => (
                     <GhostSlot key={`ghost-sanc-${i}`} icon={<Shield className="w-4 h-4 text-gold/20" />} label="Open slot" accentColor="border-gold/15" />
                   ))}
                 </div>
               ) : (
-                <div className="px-4">
-                  <div className="bg-surface-1/60 border border-border/50 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
-                    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(202,138,4,0.1)]">
-                      <Shield className="w-5 h-5 text-gold/30" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">No active tournaments</p>
-                  </div>
+                <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <GhostSlot key={`ghost-sanc-empty-${i}`} icon={<Shield className="w-4 h-4 text-gold/20" />} label="No tournaments" accentColor="border-gold/15" />
+                  ))}
                 </div>
               )}
             </motion.section>
