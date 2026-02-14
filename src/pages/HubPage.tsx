@@ -28,6 +28,7 @@ import XPProgressBar from '@/components/loopgate/XPProgressBar';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
+import GatePattern from '@/components/loopgate/GatePattern';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -177,6 +178,8 @@ export default function HubPage() {
 
   return (
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
+      {/* Gate lattice — Dubai Mall inspired geometric overlay */}
+      <GatePattern opacity={3} tileSize={100} className="z-0" />
       <LoopMonster />
       
       {/* Concentric Rings Pattern - Portal effect */}
