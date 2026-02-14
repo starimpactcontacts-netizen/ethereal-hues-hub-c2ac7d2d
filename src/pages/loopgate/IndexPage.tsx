@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBatchPinnedEdits } from "@/hooks/usePinnedEdits";
 import SEO, { pageSEO } from "@/components/SEO";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
+import JudgeDivisionBadge from "@/components/loopgate/JudgeDivisionBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
 import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import CrewBadge from "@/components/loopgate/CrewBadge";
@@ -32,6 +33,9 @@ interface JudgeEntry {
   level: number;
   xp: number;
   verification_status: boolean | null;
+  judge_xp: number;
+  judge_review_count: number;
+  judge_bio: string | null;
   totalReviews: number;
   isTrial: boolean;
 }
@@ -176,7 +180,7 @@ export default function IndexPage() {
 
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, level, xp, verification_status')
+        .select('id, username, display_name, avatar_url, level, xp, verification_status, judge_xp, judge_review_count, judge_bio')
         .in('id', judgeIds);
 
       if (!profiles) {
@@ -196,6 +200,9 @@ export default function IndexPage() {
         const isTrial = trialJudgeIds.has(profile.id) && !judgeRoles.some(r => r.user_id === profile.id && r.role === 'judge');
         return {
           ...profile,
+          judge_xp: profile.judge_xp || 0,
+          judge_review_count: profile.judge_review_count || 0,
+          judge_bio: profile.judge_bio || null,
           totalReviews: judgeReviews.length,
           isTrial,
         };
@@ -308,6 +315,10 @@ export default function IndexPage() {
   // Batch fetch pinned edits for visible editors
   const editorIds = useMemo(() => filteredEditors.slice(0, 50).map(e => e.id), [filteredEditors]);
   const { editsByUser: pinnedEditsByUser } = useBatchPinnedEdits(editorIds);
+
+  // Batch fetch pinned edits for judges
+  const judgeIds = useMemo(() => judges.slice(0, 50).map(j => j.id), [judges]);
+  const { editsByUser: judgePinnedEdits } = useBatchPinnedEdits(judgeIds);
 
   const tabs: { id: ViewMode; label: string; icon: React.ElementType; navigateTo?: string }[] = [
     { id: "editors", label: "INDEX", icon: Target },
@@ -782,100 +793,177 @@ export default function IndexPage() {
           </motion.div>
         )}
 
-        {/* Judges View */}
+        {/* Judges View — Prestige Feed */}
         {viewMode === "judges" && (
           <motion.div
             key="judges"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="px-4 py-5 space-y-3"
           >
-            <div className="flex items-center gap-3 mb-5 pb-4 border-b border-border/30">
-                <div className="w-8 h-8 bg-red-950/50 border border-red-800/40 flex items-center justify-center">
-                <Gavel className="w-4 h-4 text-red-400" />
+            {/* Header */}
+            <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-display text-lg text-foreground">
+                  {judges.length} <span className="text-muted-foreground text-sm">Officials</span>
+                </span>
               </div>
-              <div>
-                <p className="text-xs font-semibold text-foreground">The Bureau</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  Contributors • QOI Judges
-                </p>
-              </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
+                The Bureau
+              </span>
             </div>
             
             {judgesLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <Loader2 className="w-8 h-8 animate-spin text-red-400" />
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading judges...</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading officials...</span>
               </div>
             ) : judges.length === 0 ? (
               <EmptyState icon={Gavel} message="No judges found" />
             ) : (
-              <div className="space-y-2">
-                {judges.map((judge, index) => (
-                  <motion.button
-                    key={judge.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => navigate(`/editor/${judge.id}`)}
-                    className={`w-full p-4 border backdrop-blur-sm flex items-center gap-4 transition-all duration-200 text-left ${
-                      judge.isTrial 
-                        ? 'bg-surface-0/40 border-border/30 opacity-70 hover:opacity-100' 
-                        : 'bg-surface-0/60 border-border/50 hover:border-red-800/50 hover:bg-surface-1/60'
-                    }`}
-                  >
-                    <Avatar className={`w-12 h-12 border-2 ${judge.isTrial ? 'border-muted/30' : 'border-red-800/40'}`}>
-                      <AvatarImage src={judge.avatar_url || undefined} />
-                      <AvatarFallback className={`${judge.isTrial ? 'bg-muted/10 text-muted-foreground' : 'bg-red-950/50 text-red-400'} font-bold`}>
-                        {judge.username[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-display text-base tracking-wide text-foreground truncate">
-                          {judge.display_name || judge.username}
-                        </h3>
-                        {judge.verification_status && <VerifiedBadge size="sm" />}
-                        {judge.isTrial ? (
-                          <span className="text-[8px] px-1.5 py-0.5 bg-muted/20 border border-muted/30 text-muted-foreground uppercase tracking-wider">Trial</span>
-                        ) : (
-                          <AuthorityBadge role="judge" size="sm" />
+              <div className="py-2">
+                {judges.map((judge, index) => {
+                  const isTop = index === 0;
+                  const displayName = judge.display_name || judge.username;
+                  const bio = judge.judge_bio || (
+                    judge.totalReviews >= 50 ? `${displayName} is one of Loopgate's most prolific authorities, having filed over ${judge.totalReviews} official verdicts across all divisions.`
+                    : judge.totalReviews >= 20 ? `A rising force in the Bureau, ${displayName} has established a reputation for precision across ${judge.totalReviews} career verdicts.`
+                    : judge.totalReviews >= 5 ? `${displayName} is an active member of the Bureau's reviewing corps with ${judge.totalReviews} verdicts on record.`
+                    : `${displayName} is a newly appointed authority in the Bureau, building their verdict record.`
+                  );
+                  const edits = judgePinnedEdits[judge.id] || [];
+
+                  return (
+                    <motion.div
+                      key={judge.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.02, duration: 0.3 }}
+                      className={`relative border-b border-border/30 ${isTop ? 'bg-surface-1/30' : ''}`}
+                    >
+                      {isTop && (
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
+                      )}
+
+                      <div className="px-4 py-4">
+                        {/* Row 1: Avatar + Identity + Division Badge */}
+                        <div className="flex items-start gap-3.5 mb-3">
+                          <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-shrink-0">
+                            <Avatar className={`w-14 h-14 border-2 ${isTop ? 'border-red-700/60' : judge.isTrial ? 'border-border/40' : 'border-red-900/40'}`}>
+                              <AvatarImage src={judge.avatar_url || undefined} />
+                              <AvatarFallback className="bg-surface-1 text-base font-bold">
+                                {judge.username[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          </button>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <button
+                                onClick={() => navigate(`/judge/${judge.username}`)}
+                                className="font-semibold text-[15px] text-foreground hover:underline truncate"
+                              >
+                                {displayName}
+                              </button>
+                              {judge.verification_status && <VerifiedBadge size="sm" />}
+                              {judge.isTrial ? (
+                                <span className="text-[8px] px-1.5 py-0.5 bg-muted/20 border border-muted/30 text-muted-foreground uppercase tracking-wider">Trial</span>
+                              ) : (
+                                <AuthorityBadge role="judge" size="sm" />
+                              )}
+                            </div>
+                            <p className="text-[12px] text-muted-foreground mt-0.5">@{judge.username}</p>
+                          </div>
+
+                          {/* Division Badge — right aligned */}
+                          {!judge.isTrial && (
+                            <div className="flex-shrink-0">
+                              <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Row 2: Stats strip */}
+                        <div className="flex items-center gap-4 mb-3 text-[11px]">
+                          <span className="text-muted-foreground">
+                            Rank <span className={`font-bold ${isTop ? 'text-red-400' : 'text-foreground'}`}>#{index + 1}</span>
+                          </span>
+                          <span className="text-border">•</span>
+                          <span className="text-muted-foreground">
+                            Verdicts <span className="font-bold text-foreground">{judge.totalReviews}</span>
+                          </span>
+                          <span className="text-border">•</span>
+                          <span className="text-muted-foreground">
+                            JXP <span className="font-bold text-foreground">{(judge.judge_xp || 0).toLocaleString()}</span>
+                          </span>
+                          <span className="text-border">•</span>
+                          <span className="text-muted-foreground">
+                            Level <span className="font-bold text-foreground">{judge.level || 1}</span>
+                          </span>
+                        </div>
+
+                        {/* Row 3: Bio */}
+                        {!judge.isTrial && (
+                          <p className="text-[11px] text-muted-foreground/80 leading-relaxed mb-3 line-clamp-2">
+                            {bio}
+                          </p>
                         )}
+
+                        {/* Row 3.5: Pinned Edits */}
+                        {edits.length > 0 && (
+                          <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-hide">
+                            {edits.map((edit) => (
+                              <a
+                                key={edit.id}
+                                href={edit.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="relative flex-shrink-0 w-24 h-14 rounded-md overflow-hidden bg-surface-0 border border-border/30 hover:border-red-800/40 transition-colors group"
+                              >
+                                {edit.thumbnail_url ? (
+                                  <ThumbnailImage src={edit.thumbnail_url} alt={edit.title || "Edit"} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Play className="w-4 h-4 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                  <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                                {edit.title && (
+                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-0.5">
+                                    <p className="text-[8px] text-white truncate">{edit.title}</p>
+                                  </div>
+                                )}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Row 4: Action buttons */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/judge/${judge.username}`)}
+                            className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors rounded-md"
+                          >
+                            View Dossier
+                          </button>
+                          {!judge.isTrial && (
+                            <button
+                              onClick={() => navigate(`/judge/${judge.username}`)}
+                              className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider bg-red-700 text-white hover:bg-red-600 transition-colors rounded-md"
+                            >
+                              Get Rated
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">
-                        <span>@{judge.username}</span>
-                        {!judge.isTrial && <span className="text-red-400">{judge.totalReviews} reviews</span>}
-                        {judge.isTrial && <span className="text-muted-foreground/60">Trial Judge</span>}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <LevelBadge level={judge.level || 1} size="sm" />
-                      {!judge.isTrial && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/judge/${judge.username}`);
-                          }}
-                           className="px-3 py-1.5 bg-red-700 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-red-600 transition-colors whitespace-nowrap"
-                         >
-                           Get Rated
-                         </button>
-                       )}
-                       <ChevronRight className={`w-5 h-5 ${judge.isTrial ? 'text-muted-foreground/40' : 'text-zinc-500'}`} />
-                    </div>
-                  </motion.button>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
-            
-            <div className="pt-8 text-center">
-              <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em]">
-                Tap a judge to submit your edit for review
-              </p>
-            </div>
           </motion.div>
         )}
 
