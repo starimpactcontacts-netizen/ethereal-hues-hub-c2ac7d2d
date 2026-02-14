@@ -72,14 +72,13 @@ export default function LandingPage() {
               <span className="text-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">COMPETE</span>
             </motion.h1>
 
-            <motion.p
+             <motion.p
               className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.45, duration: 0.6 }}
             >
-              1v1 battles, judge-scored ratings, global rankings, units — 
-              the competitive infrastructure for video editors.
+              The competitive platform for video editors. Battle head to head, get rated by real judges, and climb the global rankings.
             </motion.p>
 
             <motion.div
@@ -131,10 +130,10 @@ export default function LandingPage() {
               </div>
               <h2 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.9] mb-5">FIGHT FOR YOUR RANK</h2>
               <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-lg mb-6">
-                Challenge any editor to a 1v1 battle. Submit your best edit, get judged by certified judges, and climb the global rankings. Rapid or standard — you choose the stakes.
+                Challenge any editor to a head to head battle. Submit your best work, get judged by certified judges, and watch your rank move. Rapid or standard. You choose the stakes.
               </p>
               <ul className="space-y-2.5">
-                {['Judge-decided outcomes', 'Rapid & standard modes', 'XP & index points on the line'].map(f => (
+                {['Judge decided outcomes', 'Rapid and standard modes', 'XP and index points on the line'].map(f => (
                   <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" /> {f}
                   </li>
@@ -210,10 +209,10 @@ export default function LandingPage() {
               </div>
               <h2 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.9] mb-5">GET RATED BY REAL JUDGES</h2>
               <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-lg mb-6">
-                Submit any edit and receive a detailed QOI score across 5 pillars. Know exactly where you stand with your official Class ranking from S++ to F.
+                Submit any edit and receive a detailed QOI score across five pillars. Know exactly where you stand with your official class ranking, from S++ all the way down to F.
               </p>
               <ul className="space-y-2.5">
-                {['5-pillar QOI scoring system', 'Certified judge panel', 'S++ to F class tiers'].map(f => (
+                {['Five pillar QOI scoring', 'Certified judge panel', 'S++ to F class tiers'].map(f => (
                   <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0" /> {f}
                   </li>
@@ -282,10 +281,10 @@ export default function LandingPage() {
               </div>
               <h2 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.9] mb-5">BUILD YOUR CREW</h2>
               <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-lg mb-6">
-                Create or join a Unit — your editing team. Private channels, role hierarchies, shared assets, announcements, and crew challenges. Represent your squad.
+                Create or join a Unit. Your editing team with private channels, role hierarchies, shared assets, announcements, and crew challenges. Represent your squad.
               </p>
               <ul className="space-y-2.5">
-                {['Channel-based comms', 'Editor tiers & roles', 'Unit challenges & XP'].map(f => (
+                {['Channel based communication', 'Editor tiers and roles', 'Unit challenges and XP'].map(f => (
                   <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" /> {f}
                   </li>
@@ -359,10 +358,10 @@ export default function LandingPage() {
               </div>
               <h2 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.9] mb-5">COMPETE IN LIVE EVENTS</h2>
               <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-lg mb-6">
-                Official arena events, open arenas with multiple rounds, hosted competitions from external communities — all running through Loopgate. Real stakes, real prizes.
+                Official arena events with multiple rounds. Hosted competitions from external communities. Everything runs through Loopgate. Real stakes, real prizes.
               </p>
               <ul className="space-y-2.5">
-                {['Multi-round open arenas', 'Hosted external comps', 'Live leaderboards & chat'].map(f => (
+                {['Multi round open arenas', 'Hosted external competitions', 'Live leaderboards and chat'].map(f => (
                   <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" /> {f}
                   </li>
@@ -437,10 +436,10 @@ export default function LandingPage() {
               </div>
               <h2 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.9] mb-5">WATCH. LEARN. RISE.</h2>
               <p className="text-muted-foreground text-base sm:text-lg leading-relaxed max-w-lg mb-6">
-                The Loop Feed surfaces the highest-rated edits from across the platform. Track the global index, discover rising talent, and see what S++ looks like.
+                The Loop Feed surfaces the highest rated edits from across the platform. Track the global index, discover rising talent, and see what S++ really looks like.
               </p>
               <ul className="space-y-2.5">
-                {['Top-rated edit discovery', 'Global index rankings', 'Editor profiles & stats'].map(f => (
+                {['Top rated edit discovery', 'Global index rankings', 'Editor profiles and stats'].map(f => (
                   <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" /> {f}
                   </li>
@@ -496,7 +495,7 @@ export default function LandingPage() {
                 AVAILABLE <span className="text-gold">EVERYWHERE</span>
               </h2>
               <p className="text-muted-foreground text-base sm:text-lg max-w-lg mx-auto mb-10">
-                On your phone or your browser — your rank follows you.
+                On your phone or in your browser. Your rank follows you everywhere.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
                 <Link to="/download">
@@ -526,7 +525,7 @@ export default function LandingPage() {
           <div className="max-w-3xl mx-auto text-center relative z-10">
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="font-display text-5xl sm:text-6xl md:text-7xl mb-6">Ready to Compete?</h2>
-              <p className="text-muted-foreground text-lg mb-10 max-w-md mx-auto">Create your profile and start climbing the global index.</p>
+              <p className="text-muted-foreground text-lg mb-10 max-w-md mx-auto">Create your profile. Start climbing the global index.</p>
               <Link to="/start">
                 <Button size="lg" className="group bg-gold hover:bg-gold/90 text-background font-display text-xl px-12 py-8 h-auto">
                   Get Started <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
