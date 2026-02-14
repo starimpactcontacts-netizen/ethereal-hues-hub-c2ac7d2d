@@ -156,13 +156,13 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
       transition={{ duration: 0.2 }}
       className="border-b border-border/30 hover:bg-muted/5 transition-colors"
     >
-      <div className="px-4 pt-3 pb-1">
-        <div className="flex gap-3">
+      <div className="px-3 pt-2.5 pb-0.5">
+        <div className="flex gap-2.5">
           {/* Avatar column */}
           <button onClick={() => navigate(`/editor/${item.user_id}`)} className="shrink-0 mt-0.5">
-            <Avatar className="w-10 h-10 border border-border/50">
+            <Avatar className="w-9 h-9 border border-border/50">
               <AvatarImage src={item.avatar_url || undefined} className="object-cover" />
-              <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
+              <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
                 {item.username[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -171,17 +171,17 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
           {/* Content column */}
           <div className="flex-1 min-w-0">
             {/* Author row */}
-            <div className="flex items-center gap-1.5 mb-0.5">
+            <div className="flex items-center gap-1 mb-0.5">
               <button
                 onClick={() => navigate(`/editor/${item.user_id}`)}
-                className="font-bold text-foreground text-[13px] hover:underline truncate"
+                className="font-bold text-foreground text-[12px] hover:underline truncate"
               >
                 {item.username}
               </button>
               {item.is_verified && <VerifiedBadge size="sm" />}
-              <span className="text-muted-foreground text-[13px] truncate">@{item.username}</span>
-              <span className="text-muted-foreground text-[13px]">·</span>
-              <span className="text-muted-foreground text-[13px] shrink-0">{timeAgo.replace(' ago', '').replace('about ', '').replace('less than a minute', 'now')}</span>
+              <span className="text-muted-foreground text-[11px] truncate">@{item.username}</span>
+              <span className="text-muted-foreground text-[11px]">·</span>
+              <span className="text-muted-foreground text-[11px] shrink-0">{timeAgo.replace(' ago', '').replace('about ', '').replace('less than a minute', 'now')}</span>
             </div>
 
             {/* Post text / title */}
@@ -366,7 +366,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
             )}
 
             {/* ─── Engagement Bar (X-style) ─── */}
-            <div className="flex items-center justify-between max-w-[360px] -ml-2 mt-0.5 mb-1">
+            <div className="flex items-center justify-between max-w-[320px] -ml-1.5 mt-0 mb-0.5">
               {/* Comments */}
               <button
                 onClick={(e) => { e.stopPropagation(); onToggleExpand(); }}
@@ -423,7 +423,7 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
       {!isExpanded && previewComments.length > 0 && (
         <button
           onClick={onToggleExpand}
-          className="px-4 pb-2.5 pt-0 w-full text-left pl-[68px]"
+          className="px-3 pb-2 pt-0 w-full text-left pl-[56px]"
         >
           {previewComments.map((pc, i) => (
             <p key={i} className="text-[13px] text-muted-foreground leading-snug truncate">
