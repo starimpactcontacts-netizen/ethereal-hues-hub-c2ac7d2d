@@ -492,23 +492,21 @@ export default function EnterprisePage() {
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
               <span className="relative inline-block">
-                <span className="text-[#E00000] relative z-10">Culture.</span>
-                {/* Netflix-style curved arc line underneath */}
-                <svg 
-                  className="absolute left-0 right-0 w-full pointer-events-none z-0"
-                  style={{ bottom: '-4px', height: '24px' }}
-                  viewBox="0 0 400 24" 
-                  preserveAspectRatio="none"
-                  fill="none"
-                >
-                  <path 
-                    d="M 0,2 Q 200,24 400,2" 
-                    stroke="#E00000" 
-                    strokeWidth="3" 
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                <span 
+                  className="text-[#E00000] relative z-10"
+                  style={{ 
+                    textShadow: '0 0 60px rgba(224,0,0,0.25)',
+                  }}
+                >Culture.</span>
+                {/* Netflix-style curved arc shadow underneath */}
+                <span 
+                  className="absolute left-1/2 -translate-x-1/2 bottom-[-8px] md:bottom-[-14px] w-[90%] h-[18px] md:h-[28px] z-0 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(ellipse at center, rgba(224,0,0,0.5) 0%, rgba(224,0,0,0.2) 40%, transparent 70%)',
+                    borderRadius: '50%',
+                    filter: 'blur(6px)',
+                  }}
+                />
               </span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
