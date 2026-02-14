@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import GatePattern from '@/components/loopgate/GatePattern';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import viralCartelLogo from '@/assets/viral-cartel-logo.png';
+import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 import culturePhonk from '@/assets/culture-phonk-artist.jpg';
 import cultureMovie from '@/assets/culture-movie-character.webp';
 import cultureArtist from '@/assets/culture-artist.png';
@@ -364,6 +365,16 @@ export default function EnterprisePage() {
       </header>
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
+        {/* VC Crest - top corner */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.15, scale: 1 }}
+          transition={{ delay: 0.1, duration: 1 }}
+          className="absolute left-6 top-6 z-20 pointer-events-none"
+        >
+          <img src={viralCartelCrest} alt="" className="w-16 md:w-20 h-auto" />
+        </motion.div>
+
         {/* ─── Hero / Welcome ─── */}
         <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="pt-14 pb-16 relative">
           {/* Luxury animated emblem behind hero */}
