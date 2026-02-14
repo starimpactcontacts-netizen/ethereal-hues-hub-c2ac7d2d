@@ -850,7 +850,7 @@ export default function HubPage() {
                   <h2 className="font-display text-xl tracking-[0.08em] text-foreground leading-none">JUDGES</h2>
                   <span className="text-[8px] px-1.5 py-0.5 bg-red-950/50 border border-red-800/40 text-red-400 font-bold uppercase tracking-widest rounded-sm">Authority</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1 font-medium">Submit your work. Get rated by the panel.</p>
+                <p className="text-[10px] text-muted-foreground mt-1 font-medium">Submit your edit, get rated by your favorite judges.</p>
               </div>
               
               {/* CTA arrow */}
