@@ -195,9 +195,20 @@ export default function EnterprisePage() {
       {/* GatePattern background */}
       <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
 
-      {/* Red vertical stripes — dual flanking bands */}
-      <div className="fixed top-0 bottom-0 left-0 w-[40px] md:w-[60px] z-[5] bg-[#E00000]" />
-      <div className="fixed top-0 bottom-0 right-0 w-[40px] md:w-[60px] z-[5] bg-[#E00000]" />
+      {/* 24K-style vertical stripe — right side, inset, with forest pattern + crest */}
+      <div className="fixed top-0 bottom-0 right-[40px] md:right-[80px] w-[70px] md:w-[90px] z-[5] overflow-hidden">
+        {/* Dark forest marble background */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #0a1a0f 0%, #1B4332 30%, #0a1a0f 60%, #1B4332 85%, #0a1a0f 100%)' }} />
+        {/* Marble vein texture overlay */}
+        <div className="absolute inset-0 opacity-20" style={{ background: 'repeating-linear-gradient(135deg, transparent, transparent 20px, rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 22px), repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(100,200,120,0.05) 30px, rgba(100,200,120,0.05) 32px)' }} />
+        {/* Thin red border lines on each side of the stripe */}
+        <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-[#8B0000]" />
+        <div className="absolute top-0 bottom-0 right-0 w-[2px] bg-[#8B0000]" />
+        {/* VC Crest centered on stripe */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <img src={viralCartelCrest} alt="" className="w-[50px] md:w-[65px] h-auto opacity-40 mix-blend-lighten" />
+        </div>
+      </div>
       
       {/* Radial vignette */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.8)_100%)] z-[2]" />
@@ -207,16 +218,6 @@ export default function EnterprisePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/[0.02] rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-white/[0.02] rounded-full blur-[100px]" />
       </div>
-
-      {/* VC Crest — side positioned, transparent */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.08 }}
-        transition={{ delay: 0.5, duration: 1.5 }}
-        className="fixed right-8 top-1/2 -translate-y-1/2 pointer-events-none z-[3]"
-      >
-        <img src={viralCartelCrest} alt="" className="w-28 md:w-40 h-auto mix-blend-lighten" />
-      </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="relative z-10 max-w-sm w-full text-center">
         {/* Viral Cartel Logo */}
