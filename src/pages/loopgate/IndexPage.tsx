@@ -19,6 +19,7 @@ import ThumbnailImage from "@/components/loopgate/ThumbnailImage";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 import { supabase } from "@/integrations/supabase/client";
+import GatePattern from "@/components/loopgate/GatePattern";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
@@ -77,43 +78,43 @@ function getClassColors(classLetter: GQTRank, hasTakenGQT: boolean): string {
   return colors[classLetter] || colors['F'];
 }
 
-// Rank tier styles for visual hierarchy - AAA polish
+// Rank tier styles — clean, minimal, no heavy gradients
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
-    bg: "bg-gradient-to-r from-yellow-500/30 via-amber-400/20 to-yellow-500/30",
-    border: "border-l-4 border-yellow-400",
-    glow: "shadow-[0_0_20px_rgba(250,204,21,0.25),inset_0_1px_0_rgba(250,204,21,0.2)]",
-    text: "text-yellow-400",
+    bg: "bg-gold/8",
+    border: "border-l-2 border-gold",
+    glow: "",
+    text: "text-gold",
     icon: Crown,
-    shimmer: true,
+    shimmer: false,
   };
   if (rank === 2) return {
-    bg: "bg-gradient-to-r from-slate-400/20 via-gray-300/12 to-slate-400/20",
-    border: "border-l-4 border-slate-300",
-    glow: "shadow-[0_0_15px_rgba(203,213,225,0.2)]",
-    text: "text-slate-300",
+    bg: "bg-surface-1/40",
+    border: "border-l-2 border-foreground/30",
+    glow: "",
+    text: "text-foreground/70",
     icon: Medal,
-    shimmer: true,
+    shimmer: false,
   };
   if (rank === 3) return {
-    bg: "bg-gradient-to-r from-amber-700/25 via-orange-600/15 to-amber-700/25",
-    border: "border-l-4 border-amber-600",
-    glow: "shadow-[0_0_15px_rgba(217,119,6,0.2)]",
-    text: "text-amber-500",
+    bg: "bg-surface-1/30",
+    border: "border-l-2 border-foreground/20",
+    glow: "",
+    text: "text-foreground/50",
     icon: Medal,
-    shimmer: true,
+    shimmer: false,
   };
   if (rank <= 10) return {
-    bg: "bg-gradient-to-r from-gold/12 via-gold/6 to-gold/12",
-    border: "border-l-2 border-gold/60",
-    glow: "shadow-[0_0_10px_rgba(212,175,55,0.1)]",
-    text: "text-gold",
+    bg: "bg-surface-1/20",
+    border: "border-l border-border/50",
+    glow: "",
+    text: "text-muted-foreground",
     icon: null,
     shimmer: false,
   };
   return {
-    bg: "bg-surface-1/70",
-    border: "border-l-2 border-border/80",
+    bg: "",
+    border: "border-l border-border/20",
     glow: "",
     text: "text-muted-foreground",
     icon: null,
@@ -469,11 +470,8 @@ export default function IndexPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(255,255,255,0.12),transparent_55%)]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] rounded-full" />
         
-        {/* Decorative grid pattern */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
-        }} />
+        {/* Dubai Mall gate pattern */}
+        <GatePattern opacity={3} tileSize={100} />
         
         {/* Decorative lines - neutral */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
@@ -1012,7 +1010,7 @@ export default function IndexPage() {
                 {xpUsers.length === 0 && !xpLoading ? (
                   <EmptyState icon={Zap} message="No XP rankings yet" />
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {xpUsers.map((user, index) => {
                       const rank = user.rank || index + 1;
                       const style = getRankStyle(rank);
@@ -1021,39 +1019,39 @@ export default function IndexPage() {
                       return (
                         <motion.button
                           key={user.id}
-                          initial={{ opacity: 0, x: -20 }}
+                          initial={{ opacity: 0, x: -12 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.02 }}
+                          transition={{ delay: index * 0.015 }}
                           onClick={() => navigate(`/editor/${user.id}`)}
-                          className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100`}
                         >
-                          <div className="w-10 flex items-center justify-center">
+                          <div className="w-7 flex items-center justify-center flex-shrink-0">
                             {IconComponent ? (
-                              <IconComponent className={`w-5 h-5 ${style.text}`} />
+                              <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
                             ) : (
-                              <span className={`font-display text-xl ${style.text}`}>{rank}</span>
+                              <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
                             )}
                           </div>
                           
-                          <Avatar className="w-10 h-10 border-2 border-border">
+                          <Avatar className={`w-8 h-8 border ${rank === 1 ? 'border-gold/40' : 'border-border/60'}`}>
                             <AvatarImage src={user.avatar_url || undefined} />
-                            <AvatarFallback className="bg-surface-1 text-xs">
+                            <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
                               {user.username[0]?.toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-white truncate">{user.username}</span>
-                              <LevelBadge level={user.level} size="sm" showAura />
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-sm text-foreground truncate">{user.username}</span>
+                              <LevelBadge level={user.level} size="sm" />
                             </div>
                           </div>
                           
-                          <div className="text-right">
-                            <span className="font-display text-2xl text-white">
+                          <div className="text-right flex-shrink-0">
+                            <span className={`font-display text-xl tabular-nums ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>
                               {user.xp.toLocaleString()}
                             </span>
-                            <p className="text-[9px] text-gold uppercase tracking-wider">XP</p>
+                            <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">XP</p>
                           </div>
                         </motion.button>
                       );
@@ -1077,7 +1075,7 @@ export default function IndexPage() {
                 {xpCrews.length === 0 && !crewsLoading ? (
                   <EmptyState icon={Users} message="No units yet" />
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {xpCrews.map((crew, index) => {
                       const rank = crew.rank || index + 1;
                       const style = getRankStyle(rank);
@@ -1086,41 +1084,41 @@ export default function IndexPage() {
                       return (
                         <motion.button
                           key={crew.id}
-                          initial={{ opacity: 0, x: -20 }}
+                          initial={{ opacity: 0, x: -12 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.02 }}
+                          transition={{ delay: index * 0.015 }}
                           onClick={() => navigate(`/units/${crew.id}`)}
-                          className={`w-full relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4 text-left hover:scale-[1.01] transition-transform`}
+                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100`}
                         >
-                          <div className="w-10 flex items-center justify-center">
+                          <div className="w-7 flex items-center justify-center flex-shrink-0">
                             {IconComponent ? (
-                              <IconComponent className={`w-5 h-5 ${style.text}`} />
+                              <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
                             ) : (
-                              <span className={`font-display text-xl ${style.text}`}>{rank}</span>
+                              <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
                             )}
                           </div>
                           
-                          <Avatar className="w-10 h-10 border-2 border-gold/30">
+                          <Avatar className={`w-8 h-8 border ${rank === 1 ? 'border-gold/40' : 'border-border/60'}`}>
                             <AvatarImage src={crew.avatar_url || undefined} />
-                            <AvatarFallback className="bg-surface-1 text-lg">
+                            <AvatarFallback className="bg-surface-1 text-sm">
                               {crew.emblem}
                             </AvatarFallback>
                           </Avatar>
                           
                           <div className="flex-1 min-w-0">
-                            <span className="font-semibold text-white truncate block">{crew.name}</span>
-                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <span className="font-semibold text-sm text-foreground truncate block">{crew.name}</span>
+                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                               <span>{crew.member_count} editors</span>
-                              <span>•</span>
-                              <span className="text-gold">Lv {crew.crewLevel}</span>
+                              <span className="text-border">•</span>
+                              <span>Lv {crew.crewLevel}</span>
                             </div>
                           </div>
                           
-                          <div className="text-right">
-                            <span className="font-display text-2xl text-white">
+                          <div className="text-right flex-shrink-0">
+                            <span className={`font-display text-xl tabular-nums ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>
                               {crew.totalXP.toLocaleString()}
                             </span>
-                            <p className="text-[9px] text-gold uppercase tracking-wider">Total XP</p>
+                            <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">Total XP</p>
                           </div>
                         </motion.button>
                       );
