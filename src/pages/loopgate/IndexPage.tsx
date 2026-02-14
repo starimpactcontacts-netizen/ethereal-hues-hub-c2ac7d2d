@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus } from "lucide-react";
+import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
 import { useAuth } from "@/hooks/useAuth";
+import { useBatchPinnedEdits } from "@/hooks/usePinnedEdits";
 import SEO, { pageSEO } from "@/components/SEO";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import AuthorityBadge from "@/components/loopgate/AuthorityBadge";
@@ -13,6 +14,7 @@ import CrewBadge from "@/components/loopgate/CrewBadge";
 import LevelBadge from "@/components/loopgate/LevelBadge";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import ConnectButton from "@/components/loopgate/ConnectButton";
+import ThumbnailImage from "@/components/loopgate/ThumbnailImage";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 import { supabase } from "@/integrations/supabase/client";
@@ -303,6 +305,10 @@ export default function IndexPage() {
     });
   }, [rankings, shuffledRankings, searchQuery, leagueFilter, rankFilter, hasActiveFilters]);
 
+  // Batch fetch pinned edits for visible editors
+  const editorIds = useMemo(() => filteredEditors.slice(0, 50).map(e => e.id), [filteredEditors]);
+  const { editsByUser: pinnedEditsByUser } = useBatchPinnedEdits(editorIds);
+
   const tabs: { id: ViewMode; label: string; icon: React.ElementType; navigateTo?: string }[] = [
     { id: "editors", label: "INDEX", icon: Target },
     { id: "crews", label: "UNITS", icon: Users, navigateTo: "/units" },
@@ -592,7 +598,7 @@ export default function IndexPage() {
                 </span>
               </div>
               <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
-                Prestige Feed
+                Global Index
               </span>
             </div>
 
@@ -720,6 +726,38 @@ export default function IndexPage() {
                             </>
                           )}
                         </div>
+                        
+                        {/* Row 3.5: Pinned Edits */}
+                        {pinnedEditsByUser[editor.id]?.length > 0 && (
+                          <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-hide">
+                            {pinnedEditsByUser[editor.id].map((edit) => (
+                              <a
+                                key={edit.id}
+                                href={edit.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="relative flex-shrink-0 w-24 h-14 rounded-md overflow-hidden bg-surface-0 border border-border/30 hover:border-foreground/30 transition-colors group"
+                              >
+                                {edit.thumbnail_url ? (
+                                  <ThumbnailImage src={edit.thumbnail_url} alt={edit.title || "Edit"} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Play className="w-4 h-4 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                  <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </div>
+                                {edit.title && (
+                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-0.5">
+                                    <p className="text-[8px] text-white truncate">{edit.title}</p>
+                                  </div>
+                                )}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                         
                         {/* Row 4: Action buttons */}
                         <div className="flex items-center gap-2">

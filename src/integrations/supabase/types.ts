@@ -3038,6 +3038,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pinned_edits: {
+        Row: {
+          created_at: string
+          id: string
+          pin_order: number
+          platform: string
+          thumbnail_url: string | null
+          title: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pin_order?: number
+          platform?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pin_order?: number
+          platform?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       practice_matches: {
         Row: {
           compensation_xp_awarded: number | null
