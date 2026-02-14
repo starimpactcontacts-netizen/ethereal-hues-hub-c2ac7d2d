@@ -494,9 +494,9 @@ export default function EnterprisePage() {
               <span 
                 className="inline-block text-[#E00000]"
                 style={{ 
-                  transform: 'perspective(600px) rotateX(8deg)',
-                  textShadow: '0 4px 30px rgba(224,0,0,0.35), 0 0 60px rgba(224,0,0,0.15)',
-                  transformOrigin: 'center bottom',
+                  transform: 'perspective(400px) rotateX(-6deg) scaleY(1.03)',
+                  textShadow: '0 6px 40px rgba(224,0,0,0.4), 0 0 80px rgba(224,0,0,0.12)',
+                  transformOrigin: 'center top',
                 }}
               >Culture.</span>
             </h1>
