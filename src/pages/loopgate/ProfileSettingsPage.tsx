@@ -15,6 +15,7 @@ import { SoftwareBadges } from "@/components/loopgate/SoftwareBadge";
 import InviteFriendsModal from "@/components/loopgate/InviteFriendsModal";
  import ProfileBackgroundSettings from "@/components/loopgate/ProfileBackgroundSettings";
 import AccountSecuritySection from "@/components/loopgate/AccountSecuritySection";
+import PinnedEditsManager from "@/components/loopgate/PinnedEditsManager";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
@@ -272,6 +273,14 @@ export default function ProfileSettingsPage() {
             </Link>
           )}
         </section>
+
+         {/* ─── Pinned Edits ─── */}
+         <section className="space-y-3">
+           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Pinned Edits</h3>
+           <div className="bg-surface-1 border border-border rounded-xl p-4">
+             <PinnedEditsManager userId={profile.id} />
+           </div>
+         </section>
 
          {/* ─── Profile Background ─── */}
          <section className="space-y-3">
