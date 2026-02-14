@@ -23,10 +23,10 @@ const levelColors: Record<number, { bg: string; text: string; border: string; gl
 };
 
 const sizeClasses = {
-  xs: "text-[8px] px-1 py-0.5",
-  sm: "text-[9px] px-1.5 py-0.5",
-  md: "text-[10px] px-2 py-1",
-  lg: "text-xs px-2.5 py-1",
+  xs: "text-[7px] px-1.5 py-px",
+  sm: "text-[8px] px-2 py-0.5",
+  md: "text-[9px] px-2 py-0.5",
+  lg: "text-[10px] px-2.5 py-1",
 };
 
 export default function LevelBadge({ 
