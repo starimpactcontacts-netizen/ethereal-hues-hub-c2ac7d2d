@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
-  Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
+  Users2, TrendingUp, Coins, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2
 } from 'lucide-react';
 import { useActiveBattles } from '@/hooks/useActiveBattles';
@@ -270,19 +270,12 @@ export default function HubPage() {
                 </button>
 
                 <Link to="/shop" className="group shrink-0">
-                  <div className="flex items-center gap-2 bg-surface-1 border border-border hover:border-gold/50 px-3 py-2 transition-colors">
-                    <div className="w-9 h-9 bg-muted/50 border border-border flex items-center justify-center group-hover:bg-gold/10 transition-colors">
-                      <ShoppingBag className="w-4 h-4 text-foreground group-hover:text-gold transition-colors" />
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1">
-                        <Coins className="w-3 h-3 text-gold" />
-                        <span className="font-display text-xl text-foreground leading-none">
-                          {(profile as any)?.spendable_index || 0}
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-medium">INDEX</p>
-                    </div>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <Coins className="w-3.5 h-3.5 text-gold" />
+                    <span className="font-display text-lg text-foreground leading-none tabular-nums">
+                      {(profile as any)?.spendable_index || 0}
+                    </span>
+                    <span className="text-[8px] text-muted-foreground uppercase tracking-wider font-semibold">idx</span>
                   </div>
                 </Link>
               </div>
@@ -358,7 +351,7 @@ export default function HubPage() {
                       <p className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold mb-0.5">
                         {userCrew ? 'Your Unit' : 'Join a Unit'}
                       </p>
-                      <p className="font-display text-xs text-foreground leading-tight truncate">
+                      <p className="font-display text-xs text-foreground leading-tight truncate max-w-full">
                         {userCrew ? userCrew.name : 'Find your group'}
                       </p>
                     </div>
