@@ -50,9 +50,9 @@ function EventCard({ event }: { event: Event }) {
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="bg-surface-1 border border-border hover:border-gold/50 transition-all overflow-hidden group touch-manipulation"
+        className="bg-surface-1 border border-border hover:border-gold/50 transition-all overflow-hidden group touch-manipulation rounded-lg shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.06)]"
       >
-        <div className="relative h-28 overflow-hidden">
+        <div className="relative h-28 overflow-hidden rounded-t-lg">
           {event.poster_url ? (
             <img src={event.poster_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
@@ -62,17 +62,17 @@ function EventCard({ event }: { event: Event }) {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-surface-1/40 to-transparent" />
           {isLive && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500 px-2 py-0.5">
+            <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500 px-2 py-0.5 rounded-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-background animate-pulse" />
               <span className="text-[8px] font-bold uppercase text-background">Live</span>
             </div>
           )}
           {event.prize_pool && (
-            <div className="absolute top-2 right-2 bg-background/90 border border-gold/50 px-2 py-0.5">
+            <div className="absolute top-2 right-2 bg-background/90 border border-gold/50 px-2 py-0.5 rounded-sm">
               <span className="text-[10px] font-display text-gold">{event.prize_pool}</span>
             </div>
           )}
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-gold/90 px-1.5 py-0.5">
+          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-gold/90 px-1.5 py-0.5 rounded-sm">
             <InfinityIcon className="w-2.5 h-2.5 text-background" />
             <span className="text-[7px] font-bold uppercase text-background">Official</span>
           </div>
@@ -114,7 +114,7 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
     <motion.button
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left"
+      className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left rounded-lg shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_4px_20px_-2px_rgba(239,68,68,0.15),0_0_0_1px_rgba(239,68,68,0.1)]"
     >
       {/* P1 avatar */}
       <Avatar className="w-9 h-9 border border-red-500/40 shrink-0">
@@ -160,12 +160,12 @@ function SectionHeader({ icon, title, badge, badgeColor = "bg-emerald-500/20 bor
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between px-4 mb-2.5">
+          <div className="flex items-center justify-between px-4 mb-2.5">
       <div className="flex items-center gap-2">
         {icon}
         <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{title}</span>
         {badge && (
-          <span className={`flex items-center gap-1 border px-1.5 py-0.5 text-[8px] font-bold uppercase ${badgeColor}`}>
+          <span className={`flex items-center gap-1 border px-1.5 py-0.5 text-[8px] font-bold uppercase rounded-full ${badgeColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {badge}
           </span>
@@ -263,15 +263,15 @@ export default function ArenaPage() {
             )}
           </div>
 
-          {/* Quick Action Row - Brain-dead simple */}
+      {/* Quick Action Row - Brain-dead simple */}
           <div className="grid grid-cols-2 gap-2 mb-4">
             {/* Quick 1v1 CTA */}
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-              className="relative overflow-hidden py-4 bg-gradient-to-br from-red-600 to-red-500 flex flex-col items-center justify-center gap-1 shadow-lg shadow-red-500/30 touch-manipulation"
+              className="relative overflow-hidden py-4 bg-gradient-to-br from-red-600 to-red-500 flex flex-col items-center justify-center gap-1 touch-manipulation rounded-xl shadow-[0_6px_24px_-4px_rgba(239,68,68,0.5),0_0_0_1px_rgba(255,255,255,0.08)_inset] hover:shadow-[0_8px_32px_-4px_rgba(239,68,68,0.6)]"
             >
-              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.1)_50%,transparent_70%)]" />
+              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.1)_50%,transparent_70%)] rounded-xl" />
               <Zap className="w-5 h-5 text-white" />
               <span className="font-display text-xs text-white uppercase tracking-wider">Quick 1v1</span>
               <span className="text-[9px] text-white/70 font-bold">+20 IDX</span>
@@ -281,7 +281,7 @@ export default function ArenaPage() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-              className="py-4 bg-surface-1 border border-border hover:border-red-500/40 flex flex-col items-center justify-center gap-1 touch-manipulation transition-colors"
+              className="py-4 bg-surface-1 border border-border hover:border-red-500/40 flex flex-col items-center justify-center gap-1 touch-manipulation transition-colors rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset] hover:shadow-[0_6px_28px_-4px_rgba(0,0,0,0.6),0_0_0_1px_rgba(239,68,68,0.1)]"
             >
               <Swords className="w-5 h-5 text-foreground" />
               <span className="font-display text-xs text-foreground uppercase tracking-wider">1v1 Battle</span>
@@ -361,7 +361,7 @@ export default function ArenaPage() {
                     placeholder="Search fights..."
                     value={quickSearch}
                     onChange={(e) => setQuickSearch(e.target.value)}
-                    className="h-9 pl-9 pr-8 bg-surface-1 border-border text-xs placeholder:text-muted-foreground/50"
+                    className="h-9 pl-9 pr-8 bg-surface-1 border-border text-xs placeholder:text-muted-foreground/50 rounded-lg shadow-[0_2px_10px_-2px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.03)] focus:shadow-[0_4px_16px_-2px_rgba(239,68,68,0.15),0_0_0_1px_rgba(239,68,68,0.2)]"
                   />
                   {quickSearch && (
                     <button onClick={() => setQuickSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -395,8 +395,8 @@ export default function ArenaPage() {
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-8">
-                    <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2">
+                  <div className="text-center py-8 bg-surface-1/60 rounded-xl border border-border/50 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
+                    <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(239,68,68,0.15)]">
                       <Zap className="w-5 h-5 text-red-400/40" />
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">{quickSearch ? "No matches found" : "No Quick 1v1s Yet"}</p>
@@ -404,7 +404,7 @@ export default function ArenaPage() {
                     <Button
                       size="sm"
                       onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-                      className="bg-red-500 hover:bg-red-600 text-white text-[10px]"
+                      className="bg-red-500 hover:bg-red-600 text-white text-[10px] rounded-lg shadow-[0_4px_16px_-4px_rgba(239,68,68,0.4)]"
                     >
                       <Zap className="w-3 h-3 mr-1" /> Start Quick 1v1
                     </Button>
@@ -438,13 +438,15 @@ export default function ArenaPage() {
                 </div>
               ) : (
                 <div className="px-4">
-                  <div className="bg-surface-1/50 border border-red-500/20 border-dashed p-6 text-center">
-                    <Swords className="w-6 h-6 text-red-400/30 mx-auto mb-2" />
+                  <div className="bg-surface-1/60 border border-red-500/15 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
+                    <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(239,68,68,0.1)]">
+                      <Swords className="w-5 h-5 text-red-400/30" />
+                    </div>
                     <p className="text-xs text-muted-foreground mb-3">No active battles</p>
                     <Button
                       size="sm"
                       onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-                      className="bg-red-500 hover:bg-red-600 text-white text-[10px]"
+                      className="bg-red-500 hover:bg-red-600 text-white text-[10px] rounded-lg shadow-[0_4px_16px_-4px_rgba(239,68,68,0.4)]"
                     >
                       <Swords className="w-3 h-3 mr-1" /> Start a Battle
                     </Button>
@@ -473,8 +475,10 @@ export default function ArenaPage() {
                 </div>
               ) : (
                 <div className="px-4">
-                  <div className="bg-surface-1/50 border border-border border-dashed p-6 text-center">
-                    <InfinityIcon className="w-6 h-6 text-gold/30 mx-auto mb-2" />
+                  <div className="bg-surface-1/60 border border-border/50 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
+                    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(202,138,4,0.1)]">
+                      <InfinityIcon className="w-5 h-5 text-gold/30" />
+                    </div>
                     <p className="text-xs text-muted-foreground">No active events</p>
                   </div>
                 </div>
@@ -531,8 +535,10 @@ export default function ArenaPage() {
                 </div>
               ) : (
                 <div className="px-4">
-                  <div className="bg-surface-1/50 border border-border border-dashed p-6 text-center">
-                    <Shield className="w-6 h-6 text-gold/30 mx-auto mb-2" />
+                  <div className="bg-surface-1/60 border border-border/50 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
+                    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(202,138,4,0.1)]">
+                      <Shield className="w-5 h-5 text-gold/30" />
+                    </div>
                     <p className="text-xs text-muted-foreground">No active tournaments</p>
                   </div>
                 </div>
