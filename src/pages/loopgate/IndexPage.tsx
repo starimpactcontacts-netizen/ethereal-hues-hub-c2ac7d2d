@@ -584,22 +584,16 @@ export default function IndexPage() {
               </div>
             </div>
 
-            {/* Results Header - Enhanced */}
-            <div className="px-4 py-3.5 border-t border-b border-border/40 flex items-center justify-between bg-gradient-to-r from-surface-0/40 via-surface-0/60 to-surface-0/40">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 bg-surface-1 shadow-[0_0_8px_rgba(212,175,55,0.25)] flex items-center justify-center">
-                  <Users className="w-3.5 h-3.5 text-gold/80" />
-                </div>
-                <span className="font-display text-xl text-white">
-                  {filteredEditors.length} <span className="text-muted-foreground text-base">Editors</span>
-                </span>
-              </div>
+            {/* Results Header */}
+            <div className="px-4 py-3 border-t border-b border-border/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target className="w-3 h-3 text-gold/60" />
-                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
-                  Global Index
+                <span className="font-display text-lg text-foreground">
+                  {filteredEditors.length} <span className="text-muted-foreground text-sm">Editors</span>
                 </span>
               </div>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
+                Prestige Feed
+              </span>
             </div>
 
             {/* Loading State */}
@@ -638,13 +632,11 @@ export default function IndexPage() {
               </div>
             )}
 
-            {/* Editor Cards - AAA Polish */}
+            {/* Editor Feed — Prestige Full-Width Cards */}
             {!loading && !error && filteredEditors.length > 0 && (
-              <div className="px-4 py-3 space-y-2.5">
+              <div className="py-2">
                 {filteredEditors.map((editor, index) => {
                   const rank = editor.rank || 999;
-                  const style = getRankStyle(rank);
-                  const IconComponent = style.icon;
                   const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
                   const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
                   const classColorStyle = getClassColors(classLetter, hasTakenGQT);
@@ -652,97 +644,99 @@ export default function IndexPage() {
                   const isTopThree = rank <= 3;
                   
                   return (
-                    <motion.button
+                    <motion.div
                       key={editor.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.012, duration: 0.3 }}
-                      onClick={() => navigate(`/editor/${editor.id}`)}
-                      className={`w-full relative overflow-hidden ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-3 text-left hover:scale-[1.008] transition-transform duration-200 active:scale-[0.995]`}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.015, duration: 0.3 }}
+                      className={`relative border-b border-border/30 ${isTopThree ? 'bg-surface-1/30' : ''}`}
                     >
-                      {/* Shimmer effect for top 3 */}
-                      {style.shimmer && (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                          <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                        </div>
+                      {/* Top accent for #1 */}
+                      {rank === 1 && (
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
                       )}
                       
-                      {/* Top 3 glow accent */}
-                      {isTopThree && (
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-                      )}
-                      
-                      {/* Avatar - enhanced border for top ranks */}
-                      <Avatar className={`w-11 h-11 border-2 ${isTopThree ? 'border-gold/50' : 'border-border/80'}`}>
-                        <AvatarImage src={editor.avatar_url || undefined} />
-                        <AvatarFallback className="bg-surface-1 text-xs font-bold">
-                          {editor.username[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      {/* Rank */}
-                      <div className="w-12 text-center flex-shrink-0">
-                        {IconComponent ? (
-                          <div className="relative">
-                            <IconComponent className={`w-6 h-6 mx-auto ${style.text} ${isTopThree ? 'drop-shadow-[0_0_8px_currentColor]' : ''}`} />
-                          </div>
-                        ) : (
-                          <span className={`font-display text-2xl ${style.text}`}>{rank}</span>
-                        )}
-                        <p className="text-[7px] text-muted-foreground uppercase tracking-wider mt-0.5">Rank</p>
-                      </div>
-                      
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                          <h3 className={`font-semibold text-sm truncate ${isTopThree ? 'text-white' : 'text-foreground'}`}>
-                            {editor.display_name || editor.username}
-                          </h3>
-                          {editor.verification_status && <VerifiedBadge size="sm" />}
-                          {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
-                          {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
-                          <span className={`text-[8px] font-bold uppercase tracking-wider border px-1.5 py-0.5 ${classColorStyle}`}>
-                            {classLetter}
-                          </span>
-                        </div>
-                        {editor.display_name && (
-                          <p className="text-[10px] text-muted-foreground mb-1">@{editor.username}</p>
-                        )}
-                        <div className="flex items-center gap-2.5 text-[9px] text-muted-foreground uppercase tracking-wider flex-wrap">
-                         <span className="flex items-center gap-1">
-                           <span className="text-foreground/70">{editor.connection_count || 0}</span> Connections
-                         </span>
-                          {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
-                        </div>
-                      </div>
-
-                      {/* Right Column: Connect + Stats stacked */}
-                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                        {/* Quick Connect Button - Above stats */}
-                        {profile?.id !== editor.id && (
-                          <div onClick={(e) => e.stopPropagation()}>
-                            <ConnectButton targetUserId={editor.id} variant="micro" />
-                          </div>
-                        )}
-                        
-                        {/* Level & Index Row */}
-                        <div className="flex items-center gap-3">
-                          <div className="text-center">
-                            <p className="font-display text-lg text-foreground/80">
-                              {editor.level || 1}
-                            </p>
-                            <p className="text-[7px] text-muted-foreground uppercase tracking-wider">LVL</p>
+                      <div className="px-4 py-4">
+                        {/* Row 1: Avatar + Identity + Class Badge */}
+                        <div className="flex items-start gap-3.5 mb-3">
+                          <button 
+                            onClick={() => navigate(`/editor/${editor.id}`)} 
+                            className="flex-shrink-0"
+                          >
+                            <Avatar className={`w-14 h-14 border-2 ${rank === 1 ? 'border-gold/50' : isTopThree ? 'border-foreground/30' : 'border-border/60'}`}>
+                              <AvatarImage src={editor.avatar_url || undefined} />
+                              <AvatarFallback className="bg-surface-1 text-base font-bold">
+                                {editor.username[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          </button>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <button
+                                onClick={() => navigate(`/editor/${editor.id}`)}
+                                className="font-semibold text-[15px] text-foreground hover:underline truncate"
+                              >
+                                {editor.display_name || editor.username}
+                              </button>
+                              {editor.verification_status && <VerifiedBadge size="sm" />}
+                              {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+                              {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
+                            </div>
+                            <p className="text-[12px] text-muted-foreground mt-0.5">@{editor.username}</p>
                           </div>
                           
-                          <div className="text-right">
-                            <p className={`font-display text-2xl ${isTopThree ? 'text-gold drop-shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'text-gold'}`}>
-                              {(editor.global_index_score || 0).toFixed(1)}
-                            </p>
-                            <p className="text-[7px] text-muted-foreground uppercase tracking-wider">Index</p>
-                          </div>
+                          {/* Class Badge — right aligned */}
+                          <span className={`text-[9px] font-bold uppercase tracking-wider border px-2 py-1 flex-shrink-0 ${classColorStyle}`}>
+                            {classLetter} Class
+                          </span>
+                        </div>
+                        
+                        {/* Row 2: Stats strip — rank, index, level, connections */}
+                        <div className="flex items-center gap-4 mb-3 text-[11px]">
+                          <span className="text-muted-foreground">
+                            Rank <span className={`font-bold ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>#{rank}</span>
+                          </span>
+                          <span className="text-border">•</span>
+                          <span className="text-muted-foreground">
+                            Index <span className={`font-bold ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>{(editor.global_index_score || 0).toFixed(1)}</span>
+                          </span>
+                          <span className="text-border">•</span>
+                          <span className="text-muted-foreground">
+                            Level <span className="font-bold text-foreground">{editor.level || 1}</span>
+                          </span>
+                        </div>
+                        
+                        {/* Row 3: Unit + Connections */}
+                        <div className="flex items-center gap-3 mb-3 text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            <span className="text-foreground/70 font-medium">{editor.connection_count || 0}</span> connections
+                          </span>
+                          {editor.crew && (
+                            <>
+                              <span className="text-border">•</span>
+                              <CrewBadge crew={editor.crew} size="sm" />
+                            </>
+                          )}
+                        </div>
+                        
+                        {/* Row 4: Action buttons */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/editor/${editor.id}`)}
+                            className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors rounded-md"
+                          >
+                            View Profile
+                          </button>
+                          {profile?.id !== editor.id && (
+                            <div onClick={(e) => e.stopPropagation()} className="flex-1">
+                              <ConnectButton targetUserId={editor.id} variant="micro" className="w-full" />
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </motion.button>
+                    </motion.div>
                   );
                 })}
               </div>
