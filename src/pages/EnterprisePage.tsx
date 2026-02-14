@@ -489,34 +489,32 @@ export default function EnterprisePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-8 pb-20 w-full">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
-            <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
+            <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-2" style={luxuryFont}>
               Control the
             </h1>
-            {/* Netflix-style arced "Culture." using SVG textPath */}
+            {/* Netflix-style "Culture." — flat text with bottom shadow gradient to simulate the arc feel */}
             <div className="relative mb-6" style={{ width: 'fit-content' }}>
-              <svg viewBox="0 0 720 160" className="w-[320px] md:w-[680px] h-auto overflow-visible" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <path id="netflix-arc" d="M 0,20 Q 360,160 720,20" fill="none" />
-                  <filter id="culture-glow">
-                    <feGaussianBlur stdDeviation="8" result="blur" />
-                    <feFlood floodColor="#E00000" floodOpacity="0.5" />
-                    <feComposite in2="blur" operator="in" />
-                    <feMerge>
-                      <feMergeNode />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-                <text
-                  fill="#E00000"
-                  style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '130px', letterSpacing: '0.06em' }}
-                  filter="url(#culture-glow)"
-                >
-                  <textPath href="#netflix-arc" startOffset="50%" textAnchor="middle">
-                    CULTURE.
-                  </textPath>
-                </text>
-              </svg>
+              <span
+                className="text-6xl md:text-[120px] text-[#E00000] block"
+                style={{
+                  ...luxuryFont,
+                  lineHeight: 0.85,
+                  letterSpacing: '-0.02em',
+                  textShadow: '0 4px 30px rgba(224,0,0,0.35), 0 0 80px rgba(224,0,0,0.15)',
+                }}
+              >
+                Culture.
+              </span>
+              {/* Netflix-style bottom shadow — creates the illusion of curved depth */}
+              <div 
+                className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                style={{
+                  height: '40%',
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)',
+                  maskImage: 'linear-gradient(to top, black 0%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to top, black 0%, transparent 100%)',
+                }}
+              />
             </div>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
