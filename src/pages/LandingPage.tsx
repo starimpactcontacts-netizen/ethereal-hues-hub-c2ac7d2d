@@ -53,14 +53,8 @@ export default function LandingPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.img
-              src={loopgateBrand}
-              alt="LOOPGATE"
-              className="h-28 sm:h-40 md:h-56 lg:h-64 w-auto mx-auto mb-2 drop-shadow-[0_0_80px_rgba(255,255,255,0.25)]"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.7 }}
-            />
+
+
 
             <motion.h1
               className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl tracking-[0.06em] leading-[0.9] mb-4"
