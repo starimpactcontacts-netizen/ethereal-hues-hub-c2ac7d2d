@@ -214,8 +214,8 @@ export default function EnterprisePage() {
         {/* Surface sheen */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 40%, rgba(255,255,255,0.01) 70%, transparent 100%)' }} />
         {/* Border lines — layered dark red with inner glow */}
-        <div className="absolute top-0 bottom-0 left-0 w-[3px]" style={{ background: 'linear-gradient(180deg, #2a0000 0%, #4a0000 30%, #3a0000 50%, #4a0000 70%, #2a0000 100%)', boxShadow: 'inset -1px 0 2px rgba(80,0,0,0.4), 1px 0 4px rgba(60,0,0,0.2)' }} />
-        <div className="absolute top-0 bottom-0 right-0 w-[3px]" style={{ background: 'linear-gradient(180deg, #2a0000 0%, #4a0000 30%, #3a0000 50%, #4a0000 70%, #2a0000 100%)', boxShadow: 'inset 1px 0 2px rgba(80,0,0,0.4), -1px 0 4px rgba(60,0,0,0.2)' }} />
+        <div className="absolute top-0 bottom-0 left-0 w-[6px]" style={{ background: 'linear-gradient(180deg, #3a0000 0%, #6a0000 30%, #500000 50%, #6a0000 70%, #3a0000 100%)', boxShadow: 'inset -1px 0 3px rgba(100,0,0,0.5), 2px 0 8px rgba(80,0,0,0.3)' }} />
+        <div className="absolute top-0 bottom-0 right-0 w-[6px]" style={{ background: 'linear-gradient(180deg, #3a0000 0%, #6a0000 30%, #500000 50%, #6a0000 70%, #3a0000 100%)', boxShadow: 'inset 1px 0 3px rgba(100,0,0,0.5), -2px 0 8px rgba(80,0,0,0.3)' }} />
         {/* VC Crest */}
         <div className="absolute inset-0 flex items-center justify-center" style={{ top: '15%' }}>
           <img src={viralCartelCrest} alt="" className="w-[55px] md:w-[72px] h-auto opacity-25" style={{ filter: 'brightness(1.6) contrast(0.7)' }} />
