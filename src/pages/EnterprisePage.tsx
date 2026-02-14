@@ -26,6 +26,7 @@ import tierTakeover from '@/assets/tier-takeover.png';
 const GATE_PASSWORD = 'cartel';
 const luxuryFont = { fontFamily: "'Bebas Neue', sans-serif" };
 const bebas = luxuryFont;
+const headerFont = { fontFamily: "'Jost', 'Futura', sans-serif", fontWeight: 400, letterSpacing: '0.25em' };
 
 type PortalView = 'gate' | 'portal' | 'payment' | 'receipt' | 'revshare';
 type GateMode = 'code' | 'login' | 'otp';
@@ -336,7 +337,7 @@ export default function EnterprisePage() {
         </div>
 
         <h1 className="text-5xl tracking-[0.08em] mb-2 text-white/90" style={luxuryFont}>THE GATE</h1>
-        <p className="text-[9px] text-white/20 uppercase tracking-[0.5em] mb-1">Loopgate Client Portal</p>
+        <p className="text-[9px] text-white/20 uppercase mb-1" style={headerFont}>Loopgate Client Portal</p>
 
         {/* Decorative line */}
         <div className="flex items-center gap-3 justify-center mt-4 mb-10">
@@ -442,11 +443,11 @@ export default function EnterprisePage() {
         <div className="max-w-7xl mx-auto px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-5">
             <img src={loopgateBrand} alt="LOOPGATE" className="h-4 w-auto opacity-70" />
-            <span className="text-[8px] text-white/20 uppercase tracking-[0.5em]">Client Portal</span>
+            <span className="text-[8px] text-white/20 uppercase" style={headerFont}>Client Portal</span>
           </div>
           <div className="flex items-center gap-5">
-            <button onClick={() => setGateMode('login')} className="text-[9px] text-white/30 hover:text-white/60 uppercase tracking-[0.2em] transition-colors">Account</button>
-            <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/15 hover:text-white/30 uppercase tracking-[0.2em] transition-colors">Exit</button>
+            <button onClick={() => setGateMode('login')} className="text-[9px] text-white/30 hover:text-white/60 uppercase transition-colors" style={headerFont}>Account</button>
+            <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/15 hover:text-white/30 uppercase transition-colors" style={headerFont}>Exit</button>
           </div>
         </div>
       </header>
@@ -490,7 +491,14 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span className="text-[#E00000]">Culture.</span>
+              <span 
+                className="inline-block text-[#E00000]"
+                style={{ 
+                  transform: 'perspective(800px) rotateY(-4deg) scaleX(1.02)',
+                  textShadow: '3px 0 20px rgba(224,0,0,0.4), -1px 0 10px rgba(224,0,0,0.2)',
+                  transformOrigin: 'left center',
+                }}
+              >Culture.</span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
