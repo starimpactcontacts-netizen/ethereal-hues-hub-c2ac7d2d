@@ -375,7 +375,7 @@ export default function EnterprisePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-8 pb-20 w-full">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
-            <h1 className="text-5xl md:text-8xl text-white leading-[0.9] mb-6" style={bebas}>
+            <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[0.02em] mb-6" style={bebas}>
               Control the<br />
               <span className="text-[#E00000]">Culture.</span>
             </h1>
