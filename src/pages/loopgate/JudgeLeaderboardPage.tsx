@@ -1,13 +1,17 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Play } from 'lucide-react';
 import { ArrowLink, AuthorityGavel, CrownSigil, MedalRing, TrophyPillar, ClassShield, PulseFlame, BoltCircuit, ContendersIcon, AwardCrest } from '@/components/loopgate/LoopgateIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VerifiedBadge from '@/components/loopgate/VerifiedBadge';
+import AuthorityBadge from '@/components/loopgate/AuthorityBadge';
 import JudgeLevelBadge from '@/components/loopgate/JudgeLevelBadge';
 import JudgeDivisionBadge, { getDivisionFromJxp } from '@/components/loopgate/JudgeDivisionBadge';
+import ThumbnailImage from '@/components/loopgate/ThumbnailImage';
+import { useBatchPinnedEdits } from '@/hooks/usePinnedEdits';
 import BottomNav from '@/components/loopgate/BottomNav';
 import { cn } from '@/lib/utils';
 
@@ -61,6 +65,7 @@ export default function JudgeLeaderboardPage() {
   const [judges, setJudges] = useState<JudgeLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'reviews' | 'weekly' | 'jxp' | 'division'>('reviews');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchJudges();
@@ -145,6 +150,10 @@ export default function JudgeLeaderboardPage() {
   const rest = sortedJudges.slice(3);
   const totalReviews = judges.reduce((acc, j) => acc + j.totalReviews, 0);
   const totalWeekly = judges.reduce((acc, j) => acc + j.weeklyReviews, 0);
+
+  // Batch fetch pinned edits for all judges
+  const judgeIds = useMemo(() => sortedJudges.slice(0, 50).map(j => j.id), [sortedJudges]);
+  const { editsByUser: judgePinnedEdits } = useBatchPinnedEdits(judgeIds);
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -380,12 +389,12 @@ export default function JudgeLeaderboardPage() {
         </Tabs>
       </div>
 
-      {/* ═══════════ FULL LEADERBOARD ═══════════ */}
-      <div className="px-4 space-y-2">
+      {/* ═══════════ FULL LEADERBOARD — PRESTIGE FEED ═══════════ */}
+      <div>
         {loading ? (
-          <div className="space-y-2">
+          <div className="px-4 space-y-2">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-20 bg-surface-1 rounded-xl animate-pulse" />
+              <div key={i} className="h-32 bg-surface-1 animate-pulse" />
             ))}
           </div>
         ) : sortedJudges.length === 0 ? (
@@ -395,93 +404,142 @@ export default function JudgeLeaderboardPage() {
             <p className="text-sm text-muted-foreground">The authority awaits its first members</p>
           </div>
         ) : (
-          sortedJudges.map((judge, index) => {
-            const rank = index + 1;
-            const division = getDivisionFromJxp(judge.judge_xp);
-            const isTopThree = rank <= 3;
-            const isTop10 = rank <= 10;
+          <div className="py-2">
+            {sortedJudges.map((judge, index) => {
+              const rank = index + 1;
+              const isTop = rank === 1;
+              const isTopThree = rank <= 3;
+              const displayName = judge.display_name || judge.username;
+              const bio = judge.judge_bio || getTemplateBio(displayName, judge.totalReviews);
+              const edits = judgePinnedEdits[judge.id] || [];
 
-            return (
-              <motion.div
-                key={judge.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03 }}
-              >
-                <Link
-                  to={`/judge/${judge.username}`}
-                  className={cn(
-                    'block rounded-xl p-3.5 transition-all hover:scale-[1.008] active:scale-[0.998] relative overflow-hidden',
-                    getRankBg(rank)
-                  )}
+              return (
+                <motion.div
+                  key={judge.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.02, duration: 0.3 }}
+                  className={`relative border-b border-border/30 ${isTop ? 'bg-surface-1/30' : ''}`}
                 >
-                  {isTopThree && (
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                      <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                    </div>
+                  {isTop && (
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
                   )}
 
-                  <div className="flex items-center gap-3 relative z-10">
-                    <div className="w-8 flex justify-center shrink-0">
-                      {getRankIcon(rank)}
-                    </div>
+                  <div className="px-4 py-4">
+                    {/* Row 1: Avatar + Identity + Division Badge */}
+                    <div className="flex items-start gap-3.5 mb-3">
+                      <Link to={`/judge/${judge.username}`} className="flex-shrink-0">
+                        <Avatar className={`w-14 h-14 border-2 ${isTop ? 'border-red-700/60' : isTopThree ? 'border-foreground/30' : 'border-border/60'}`}>
+                          <AvatarImage src={judge.avatar_url || undefined} />
+                          <AvatarFallback className="bg-surface-1 text-base font-bold">
+                            {judge.username[0]?.toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Link>
 
-                    <Avatar className={cn(
-                      'w-11 h-11 shrink-0',
-                      isTopThree && 'ring-2 ring-gold/40',
-                      !isTopThree && isTop10 && 'ring-1 ring-gold/20'
-                    )}>
-                      <AvatarImage src={judge.avatar_url || undefined} alt={judge.username} />
-                      <AvatarFallback className="bg-gold/20 text-gold text-sm font-bold">
-                        {judge.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className={cn(
-                          'font-medium truncate',
-                          isTopThree ? 'text-white' : 'text-foreground'
-                        )}>
-                          {judge.display_name || `@${judge.username}`}
-                        </p>
-                        {judge.verification_status && <VerifiedBadge size="sm" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Link
+                            to={`/judge/${judge.username}`}
+                            className="font-semibold text-[15px] text-foreground hover:underline truncate"
+                          >
+                            {displayName}
+                          </Link>
+                          {judge.verification_status && <VerifiedBadge size="sm" />}
+                          <AuthorityBadge role="judge" size="sm" />
+                        </div>
+                        <p className="text-[12px] text-muted-foreground mt-0.5">@{judge.username}</p>
                       </div>
-                      <div className="flex items-center gap-2">
+
+                      {/* Rank + Division — right aligned */}
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                        <div className="flex items-center gap-1.5">
+                          {isTopThree && getRankIcon(rank)}
+                          <span className={`font-display text-lg ${isTop ? 'text-gold' : 'text-foreground'}`}>#{rank}</span>
+                        </div>
                         <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
-                      <p className={cn(
-                        'font-display text-lg',
-                        isTopThree ? 'text-gold' : 'text-foreground'
-                      )}>
-                        {sortBy === 'reviews' && judge.totalReviews}
-                        {sortBy === 'weekly' && judge.weeklyReviews}
-                        {sortBy === 'jxp' && (judge.judge_xp || 0).toLocaleString()}
-                        {sortBy === 'division' && division.label.replace(' DIVISION', '')}
-                      </p>
-                      <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
-                        {sortBy === 'reviews' && 'reviews'}
-                        {sortBy === 'weekly' && 'this week'}
-                        {sortBy === 'jxp' && 'JXP'}
-                        {sortBy === 'division' && 'division'}
-                      </p>
+                    {/* Row 2: Stats strip */}
+                    <div className="flex items-center gap-4 mb-3 text-[11px]">
+                      <span className="text-muted-foreground">
+                        Verdicts <span className="font-bold text-foreground">{judge.totalReviews}</span>
+                      </span>
+                      <span className="text-border">•</span>
+                      <span className="text-muted-foreground">
+                        JXP <span className={`font-bold ${isTop ? 'text-red-400' : 'text-foreground'}`}>{(judge.judge_xp || 0).toLocaleString()}</span>
+                      </span>
+                      <span className="text-border">•</span>
+                      <span className="text-muted-foreground">
+                        Weekly <span className="font-bold text-foreground">{judge.weeklyReviews}</span>
+                      </span>
+                      {judge.avgScore > 0 && (
+                        <>
+                          <span className="text-border">•</span>
+                          <span className="text-muted-foreground">
+                            Avg <span className="font-bold text-foreground">{judge.avgScore}</span>
+                          </span>
+                        </>
+                      )}
                     </div>
 
-                    <ArrowLink className="text-muted-foreground shrink-0" size={16} />
-                  </div>
-
-                  {isTopThree && getHeadline(rank, judge.display_name || judge.username, judge.totalReviews) && (
-                    <p className="text-[9px] text-gold/50 italic mt-2 ml-11 truncate">
-                      {getHeadline(rank, judge.display_name || judge.username, judge.totalReviews)}
+                    {/* Row 3: Bio */}
+                    <p className="text-[11px] text-muted-foreground/80 leading-relaxed mb-3 line-clamp-2">
+                      {bio}
                     </p>
-                  )}
-                </Link>
-              </motion.div>
-            );
-          })
+
+                    {/* Row 3.5: Pinned Edits */}
+                    {edits.length > 0 && (
+                      <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-hide">
+                        {edits.map((edit) => (
+                          <a
+                            key={edit.id}
+                            href={edit.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="relative flex-shrink-0 w-24 h-14 rounded-md overflow-hidden bg-surface-0 border border-border/30 hover:border-red-800/40 transition-colors group"
+                          >
+                            {edit.thumbnail_url ? (
+                              <ThumbnailImage src={edit.thumbnail_url} alt={edit.title || "Edit"} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Play className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            {edit.title && (
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-0.5">
+                                <p className="text-[8px] text-white truncate">{edit.title}</p>
+                              </div>
+                            )}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Row 4: Action buttons */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => navigate(`/judge/${judge.username}`)}
+                        className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors rounded-md"
+                      >
+                        View Dossier
+                      </button>
+                      <button
+                        onClick={() => navigate(`/judge/${judge.username}`)}
+                        className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider bg-red-700 text-white hover:bg-red-600 transition-colors rounded-md"
+                      >
+                        Get Rated
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         )}
       </div>
 
