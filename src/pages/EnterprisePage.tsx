@@ -492,24 +492,22 @@ export default function EnterprisePage() {
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
               <span className="relative inline-block">
-                <span className="relative z-10 inline-flex" style={{ textShadow: '0 0 60px rgba(224,0,0,0.25)' }}>
-                  {['C','u','l','t','u','r','e','.'].map((letter, i) => {
-                    // Netflix-style concave arc: edges lift up, center dips down
-                    const total = 8;
-                    const mid = (total - 1) / 2;
-                    const t = (i - mid) / mid; // -1 to 1
-                    const yOffset = Math.abs(t) * -6; // edges go UP (negative = up)
-                    const rotation = t * 2.5; // subtle tilt outward
-                    return (
-                      <span
-                        key={i}
-                        className="text-[#E00000] inline-block"
-                        style={{
-                          transform: `translateY(${yOffset}px) rotate(${rotation}deg)`,
-                        }}
-                      >{letter}</span>
-                    );
-                  })}
+                <span className="text-[#E00000] relative z-10" style={{ 
+                  textShadow: '0 0 60px rgba(224,0,0,0.25)',
+                }}>
+                  <svg viewBox="0 0 600 140" className="w-[320px] md:w-[620px] h-auto block" style={{ overflow: 'visible' }}>
+                    <defs>
+                      <path id="culture-arc" d="M 0,20 Q 300,95 600,20" fill="none" />
+                    </defs>
+                    <text
+                      style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '120px', letterSpacing: '0.02em' }}
+                      fill="#E00000"
+                    >
+                      <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">
+                        CULTURE.
+                      </textPath>
+                    </text>
+                  </svg>
                 </span>
                 {/* Netflix-style curved arc shadow underneath */}
                 <span 
