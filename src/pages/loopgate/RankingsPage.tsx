@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ChevronRight, Lock, ArrowLeft, Zap, Users, Trophy, Crown, Medal, Target, Flame, TrendingUp } from "lucide-react";
+import { ChevronRight, Lock, ArrowLeft, Zap, Users, Trophy, Crown, Medal, Target, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealEvents, useRealRankings, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -14,41 +14,36 @@ type TabType = "index" | "xp" | "crews" | "events";
 
 const getRankStyle = (rank: number) => {
   if (rank === 1) return {
-    bg: "bg-gradient-to-r from-yellow-500/20 via-amber-400/10 to-yellow-500/20",
-    border: "border-l-3 border-yellow-400",
-    glow: "shadow-[0_0_16px_rgba(250,204,21,0.2)]",
-    text: "text-yellow-400",
+    bg: "bg-gradient-to-r from-gold/12 via-gold/5 to-gold/12",
+    border: "border-l-2 border-gold/60",
+    text: "text-gold",
     icon: Crown,
     shimmer: true,
   };
   if (rank === 2) return {
-    bg: "bg-gradient-to-r from-slate-400/15 via-gray-300/8 to-slate-400/15",
-    border: "border-l-3 border-slate-300",
-    glow: "shadow-[0_0_12px_rgba(203,213,225,0.15)]",
-    text: "text-slate-300",
+    bg: "bg-surface-1/50",
+    border: "border-l-2 border-foreground/30",
+    text: "text-foreground/70",
     icon: Medal,
-    shimmer: true,
+    shimmer: false,
   };
   if (rank === 3) return {
-    bg: "bg-gradient-to-r from-amber-700/20 via-orange-600/10 to-amber-700/20",
-    border: "border-l-3 border-amber-600",
-    glow: "shadow-[0_0_12px_rgba(217,119,6,0.15)]",
-    text: "text-amber-500",
+    bg: "bg-surface-1/40",
+    border: "border-l-2 border-foreground/20",
+    text: "text-foreground/50",
     icon: Medal,
-    shimmer: true,
+    shimmer: false,
   };
   if (rank <= 10) return {
-    bg: "bg-surface-1/60",
-    border: "border-l-2 border-gold/50",
-    glow: "",
-    text: "text-gold",
+    bg: "bg-surface-1/30",
+    border: "border-l border-border/50",
+    text: "text-muted-foreground",
     icon: null,
     shimmer: false,
   };
   return {
-    bg: "bg-surface-1/40",
-    border: "border-l border-border/40",
-    glow: "",
+    bg: "",
+    border: "border-l border-border/20",
     text: "text-muted-foreground",
     icon: null,
     shimmer: false,
@@ -87,48 +82,42 @@ export default function RankingsPage() {
   if (selectedEvent) {
     return (
       <div className="min-h-screen pb-24 bg-background">
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-gold/8 via-background to-background" />
+        <header className="px-4 pt-3 pb-4 border-b border-border/30">
+          <div className="flex items-center gap-3 mb-3">
+            <button onClick={() => setSelectedEventId(null)} className="p-1.5 -ml-1 hover:bg-white/5 rounded-lg transition-colors">
+              <ArrowLeft size={18} className="text-foreground" />
+            </button>
+            <StatusBadge status={selectedEvent.status} />
+          </div>
           
-          <header className="relative z-10 px-4 pt-3 pb-4">
-            <div className="flex items-center gap-3 mb-3">
-              <button onClick={() => setSelectedEventId(null)} className="p-1.5 -ml-1 hover:bg-white/5 rounded-lg transition-colors">
-                <ArrowLeft size={18} />
-              </button>
-              <StatusBadge status={selectedEvent.status} />
-            </div>
-            
-            <h1 className="font-display text-2xl tracking-wide text-white mb-0.5">{selectedEvent.title}</h1>
-            <p className="text-[10px] text-gold/80 uppercase tracking-[0.3em]">
-              {selectedEvent.league} League • Leaderboard
-            </p>
-          </header>
+          <h1 className="font-display text-2xl tracking-wide text-foreground mb-0.5">{selectedEvent.title}</h1>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">
+            {selectedEvent.league} League • Leaderboard
+          </p>
+        </header>
 
-          {isLiveEvent && (
-            <div className="relative px-4 pb-3">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <div className="relative">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest">Live Rankings</span>
-              </div>
+        {isLiveEvent && (
+          <div className="px-4 py-2 flex items-center gap-2">
+            <div className="relative">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
             </div>
-          )}
+            <span className="text-[10px] font-bold uppercase tracking-widest text-red-400">Live Rankings</span>
+          </div>
+        )}
 
-          {isClosedEvent && (
-            <div className="px-4 pb-3 flex items-center gap-2 text-muted-foreground">
-              <Lock size={12} />
-              <span className="text-[10px] uppercase tracking-widest">Final Results</span>
-            </div>
-          )}
-        </div>
+        {isClosedEvent && (
+          <div className="px-4 py-2 flex items-center gap-2 text-muted-foreground">
+            <Lock size={12} />
+            <span className="text-[10px] uppercase tracking-widest">Final Results</span>
+          </div>
+        )}
 
         {isLiveEvent && (
           <div className="px-4 py-2 bg-surface-0/40 border-y border-border/30 flex items-center justify-center gap-5 text-[9px] uppercase tracking-[0.2em]">
-            <span><span className="text-gold font-bold">Q</span> <span className="text-muted-foreground">Quality</span></span>
-            <span><span className="text-gold font-bold">O</span> <span className="text-muted-foreground">Originality</span></span>
-            <span><span className="text-gold font-bold">I</span> <span className="text-muted-foreground">Impact</span></span>
+            <span><span className="text-foreground font-bold">Q</span> <span className="text-muted-foreground">Quality</span></span>
+            <span><span className="text-foreground font-bold">O</span> <span className="text-muted-foreground">Originality</span></span>
+            <span><span className="text-foreground font-bold">I</span> <span className="text-muted-foreground">Impact</span></span>
           </div>
         )}
 
@@ -136,7 +125,7 @@ export default function RankingsPage() {
           {eventRankings.length === 0 && !eventRankingsLoading ? (
             <EmptyState icon={Trophy} message="No rankings yet" sub="Submissions are being reviewed" />
           ) : (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {eventRankings.map((ranking, index) => {
                 const displayRank = ranking.final_rank || index + 1;
                 const style = getRankStyle(displayRank);
@@ -148,13 +137,13 @@ export default function RankingsPage() {
                     initial={{ opacity: 0, x: -16 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.025 }}
-                    className={`relative ${style.bg} ${style.border} ${style.glow} p-3 flex items-center gap-3 rounded-md`}
+                    className={`${style.bg} ${style.border} p-3 flex items-center gap-3 rounded-md`}
                   >
-                    <div className="w-8 flex items-center justify-center">
+                    <div className="w-7 flex items-center justify-center">
                       {IconComponent ? (
-                        <IconComponent className={`w-5 h-5 ${style.text}`} />
+                        <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
                       ) : (
-                        <span className={`font-display text-lg ${style.text}`}>{displayRank}</span>
+                        <span className={`font-display text-base ${style.text} tabular-nums`}>{displayRank}</span>
                       )}
                     </div>
                     
@@ -170,12 +159,12 @@ export default function RankingsPage() {
                           <span>{ranking.impact_score || '—'}</span>
                         </div>
                         <div className="w-px h-5 bg-border/40" />
-                        <span className="font-display text-xl text-gold min-w-[44px] text-right tabular-nums">
+                        <span className="font-display text-xl text-foreground min-w-[44px] text-right tabular-nums">
                           {ranking.qoi_score?.toFixed(1) || '—'}
                         </span>
                       </div>
                     ) : (
-                      <span className="font-display text-xl text-gold tabular-nums">
+                      <span className="font-display text-xl text-foreground tabular-nums">
                         {ranking.qoi_score?.toFixed(1) || '—'}
                       </span>
                     )}
@@ -194,59 +183,51 @@ export default function RankingsPage() {
     <div className="min-h-screen pb-24 bg-background">
       <SEO {...pageSEO.rankings} />
       
-      {/* Compact Hero */}
-      <div className="relative overflow-hidden">
-        {/* Subtle radial glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(212,175,55,0.1),transparent_60%)]" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+      {/* Header — clean, no gold glow */}
+      <header className="px-4 pt-4 pb-3 border-b border-border/30">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-foreground" />
+            <span className="text-[9px] text-muted-foreground uppercase tracking-[0.35em] font-semibold">Global Leaderboard</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="relative">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-red-500 animate-ping opacity-75" />
+            </div>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-red-400/80">Live</span>
+          </div>
+        </div>
         
-        <header className="relative z-10 px-4 pt-4 pb-3">
-          {/* Top bar */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-gold" />
-              <span className="text-[9px] text-gold/80 uppercase tracking-[0.35em] font-semibold">Global Leaderboard</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="relative">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping opacity-75" />
-              </div>
-              <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-400/70">Live</span>
-            </div>
-          </div>
-          
-          {/* Title - compact */}
-          <h1 className="font-display text-4xl tracking-wider text-white leading-none">
-            RANKINGS
-          </h1>
-          <p className="text-[10px] text-muted-foreground/70 uppercase tracking-[0.2em] mt-1">
-            Top editors worldwide
-          </p>
-        </header>
+        <h1 className="font-display text-4xl tracking-wider text-foreground leading-none">
+          RANKINGS
+        </h1>
+        <p className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em] mt-1">
+          Top editors worldwide
+        </p>
+      </header>
 
-        {/* Tab Nav - tight, no glass bloat */}
-        <div className="relative z-10 px-3 pb-3">
-          <div className="flex bg-surface-0/60 border border-border/40 rounded-lg p-1 gap-0.5">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold tracking-wider rounded-md transition-all duration-150 ${
-                    isActive
-                      ? "bg-gold text-background shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+      {/* Tab Nav — white active, no gold */}
+      <div className="px-3 py-3">
+        <div className="flex bg-surface-0/60 border border-border/40 rounded-lg p-1 gap-0.5">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold tracking-wider rounded-md transition-all duration-150 ${
+                  isActive
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -260,25 +241,22 @@ export default function RankingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-3 py-3"
+            className="px-3"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-gold" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Skill Index</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground/60">Top 50</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Skill Index</span>
+              <span className="text-[10px] text-muted-foreground/50">Top 50</span>
             </div>
             
             {globalRankings.length === 0 && !rankingsLoading ? (
               <EmptyState icon={Target} message="No rankings yet" />
             ) : (
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {globalRankings.slice(0, 50).map((editor, index) => {
                   const rank = editor.rank || index + 1;
                   const style = getRankStyle(rank);
                   const IconComponent = style.icon;
-                  const isTopThree = rank <= 3;
+                  const isFirst = rank === 1;
                   
                   return (
                     <motion.button
@@ -287,36 +265,32 @@ export default function RankingsPage() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.012, duration: 0.25 }}
                       onClick={() => navigate(`/editor/${editor.id}`)}
-                      className={`w-full relative overflow-hidden ${style.bg} ${style.border} ${style.glow} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
+                      className={`w-full relative overflow-hidden ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
                     >
-                      {/* Shimmer for top 3 */}
                       {style.shimmer && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
                           <div className="absolute -inset-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                         </div>
                       )}
                       
-                      {/* Rank number */}
                       <div className="w-7 flex items-center justify-center flex-shrink-0">
                         {IconComponent ? (
-                          <IconComponent className={`w-5 h-5 ${style.text} ${isTopThree ? 'drop-shadow-[0_0_6px_currentColor]' : ''}`} />
+                          <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
                         ) : (
                           <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
                         )}
                       </div>
                       
-                      {/* Avatar */}
-                      <Avatar className={`w-8 h-8 border ${isTopThree ? 'border-gold/50' : 'border-border/60'}`}>
+                      <Avatar className={`w-8 h-8 border ${isFirst ? 'border-gold/40' : 'border-border/60'}`}>
                         <AvatarImage src={editor.avatar_url || undefined} />
                         <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
                           {editor.username[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       
-                      {/* Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className={`font-semibold text-sm truncate ${isTopThree ? 'text-white' : 'text-foreground'}`}>{editor.username}</span>
+                          <span className="font-semibold text-sm truncate text-foreground">{editor.username}</span>
                           {editor.verification_status && (
                             <div className="w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
                               <span className="text-[7px] text-white font-bold">✓</span>
@@ -335,12 +309,11 @@ export default function RankingsPage() {
                         </div>
                       </div>
                       
-                      {/* Score */}
                       <div className="text-right flex-shrink-0">
-                        <span className={`font-display text-2xl tabular-nums ${isTopThree ? 'text-gold drop-shadow-[0_0_8px_rgba(212,175,55,0.25)]' : 'text-gold'}`}>
+                        <span className={`font-display text-xl tabular-nums ${isFirst ? 'text-gold' : 'text-foreground'}`}>
                           {editor.global_index_score?.toFixed(1) || '0.0'}
                         </span>
-                        <p className="text-[8px] text-muted-foreground/60 uppercase tracking-wider font-semibold">Index</p>
+                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">Index</p>
                       </div>
                     </motion.button>
                   );
@@ -358,25 +331,22 @@ export default function RankingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-3 py-3"
+            className="px-3"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-gold" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Experience Points</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground/60">Top Grinders</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Experience Points</span>
+              <span className="text-[10px] text-muted-foreground/50">Top Grinders</span>
             </div>
             
             {xpUsers.length === 0 && !xpLoading ? (
               <EmptyState icon={Zap} message="No XP rankings yet" />
             ) : (
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {xpUsers.map((user, index) => {
                   const rank = user.rank || index + 1;
                   const style = getRankStyle(rank);
                   const IconComponent = style.icon;
-                  const isTopThree = rank <= 3;
+                  const isFirst = rank === 1;
                   
                   return (
                     <motion.button
@@ -385,7 +355,7 @@ export default function RankingsPage() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.015 }}
                       onClick={() => navigate(`/editor/${user.id}`)}
-                      className={`w-full relative ${style.bg} ${style.border} ${style.glow} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
+                      className={`w-full relative ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
                     >
                       {style.shimmer && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -395,13 +365,13 @@ export default function RankingsPage() {
                       
                       <div className="w-7 flex items-center justify-center">
                         {IconComponent ? (
-                          <IconComponent className={`w-5 h-5 ${style.text}`} />
+                          <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
                         ) : (
                           <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
                         )}
                       </div>
                       
-                      <Avatar className={`w-8 h-8 border ${isTopThree ? 'border-gold/40' : 'border-border/60'}`}>
+                      <Avatar className={`w-8 h-8 border ${isFirst ? 'border-gold/40' : 'border-border/60'}`}>
                         <AvatarImage src={user.avatar_url || undefined} />
                         <AvatarFallback className="bg-surface-1 text-[10px]">
                           {user.username[0]?.toUpperCase()}
@@ -419,7 +389,7 @@ export default function RankingsPage() {
                         <span className="font-display text-xl text-foreground tabular-nums">
                           {user.xp.toLocaleString()}
                         </span>
-                        <p className="text-[8px] text-gold/70 uppercase tracking-wider font-semibold">XP</p>
+                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">XP</p>
                       </div>
                     </motion.button>
                   );
@@ -437,25 +407,22 @@ export default function RankingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-3 py-3"
+            className="px-3"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gold" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Unit Rankings</span>
-              </div>
-              <span className="text-[10px] text-muted-foreground/60">Combined XP</span>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Unit Rankings</span>
+              <span className="text-[10px] text-muted-foreground/50">Combined XP</span>
             </div>
             
             {xpCrews.length === 0 && !crewsLoading ? (
               <EmptyState icon={Users} message="No units ranked yet" />
             ) : (
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {xpCrews.map((crew, index) => {
                   const rank = crew.rank || index + 1;
                   const style = getRankStyle(rank);
                   const IconComponent = style.icon;
-                  const isTopThree = rank <= 3;
+                  const isFirst = rank === 1;
                   
                   return (
                     <motion.button
@@ -464,7 +431,7 @@ export default function RankingsPage() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.015 }}
                       onClick={() => navigate(`/units/${crew.id}`)}
-                      className={`w-full relative ${style.bg} ${style.border} ${style.glow} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
+                      className={`w-full relative ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left rounded-md active:scale-[0.995] transition-transform duration-100`}
                     >
                       {style.shimmer && (
                         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -474,13 +441,13 @@ export default function RankingsPage() {
                       
                       <div className="w-7 flex items-center justify-center">
                         {IconComponent ? (
-                          <IconComponent className={`w-5 h-5 ${style.text}`} />
+                          <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
                         ) : (
                           <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
                         )}
                       </div>
                       
-                      <Avatar className={`w-8 h-8 border ${isTopThree ? 'border-gold/40' : 'border-border/60'}`}>
+                      <Avatar className={`w-8 h-8 border ${isFirst ? 'border-gold/40' : 'border-border/60'}`}>
                         <AvatarImage src={crew.avatar_url || undefined} />
                         <AvatarFallback className="bg-surface-1 text-sm">
                           {crew.emblem}
@@ -492,7 +459,7 @@ export default function RankingsPage() {
                         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                           <span>{crew.member_count} editors</span>
                           <span className="text-border">•</span>
-                          <span className="text-gold/70">Lv {crew.crewLevel}</span>
+                          <span>Lv {crew.crewLevel}</span>
                         </div>
                       </div>
                       
@@ -500,7 +467,7 @@ export default function RankingsPage() {
                         <span className="font-display text-xl text-foreground tabular-nums">
                           {crew.totalXP.toLocaleString()}
                         </span>
-                        <p className="text-[8px] text-gold/70 uppercase tracking-wider font-semibold">XP</p>
+                        <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">XP</p>
                       </div>
                     </motion.button>
                   );
@@ -518,19 +485,16 @@ export default function RankingsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="px-3 py-3"
+            className="px-3"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-gold" />
-                <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Event Leaderboards</span>
-              </div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-semibold">Event Leaderboards</span>
             </div>
             
             {rankedEvents.length === 0 ? (
               <EmptyState icon={Trophy} message="No ranked events yet" />
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {rankedEvents.map((event, index) => (
                   <motion.button
                     key={event.id}
@@ -538,7 +502,7 @@ export default function RankingsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.04 }}
                     onClick={() => setSelectedEventId(event.id)}
-                    className="w-full bg-surface-1/60 border border-border/40 hover:border-gold/30 p-3 text-left flex items-center gap-3 rounded-md transition-all active:scale-[0.995] duration-100"
+                    className="w-full bg-surface-1/40 border border-border/30 hover:border-foreground/20 p-3 text-left flex items-center gap-3 rounded-md transition-all active:scale-[0.995] duration-100"
                   >
                     {event.poster_url ? (
                       <div
@@ -559,12 +523,12 @@ export default function RankingsPage() {
                       {event.subtitle && (
                         <p className="text-[10px] text-muted-foreground truncate mb-0.5">{event.subtitle}</p>
                       )}
-                      <p className="text-[9px] text-gold/70 uppercase tracking-[0.15em] font-semibold">
+                      <p className="text-[9px] text-muted-foreground/70 uppercase tracking-[0.15em] font-semibold">
                         {event.league} League
                       </p>
                     </div>
                     
-                    <ChevronRight size={16} className="text-muted-foreground/50 flex-shrink-0" />
+                    <ChevronRight size={16} className="text-muted-foreground/40 flex-shrink-0" />
                   </motion.button>
                 ))}
               </div>
@@ -579,8 +543,8 @@ export default function RankingsPage() {
 function EmptyState({ icon: Icon, message, sub }: { icon: React.ElementType; message: string; sub?: string }) {
   return (
     <div className="text-center py-12">
-      <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-surface-1/60 flex items-center justify-center">
-        <Icon className="w-6 h-6 text-muted-foreground/60" />
+      <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-surface-1/40 flex items-center justify-center">
+        <Icon className="w-6 h-6 text-muted-foreground/50" />
       </div>
       <p className="text-sm text-muted-foreground font-medium">{message}</p>
       {sub && <p className="text-[10px] text-muted-foreground/50 mt-0.5">{sub}</p>}
