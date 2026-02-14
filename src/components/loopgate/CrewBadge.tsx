@@ -27,16 +27,16 @@ export default function CrewBadge({ crew, size = "sm", clickable = true }: CrewB
   
   const sizeClasses = {
     sm: {
+      container: "h-5 px-1.5 gap-1",
+      avatar: "w-3.5 h-3.5",
+      icon: "w-2.5 h-2.5",
+      text: "text-[9px]",
+    },
+    md: {
       container: "h-6 px-2 gap-1.5",
       avatar: "w-4 h-4",
       icon: "w-3 h-3",
       text: "text-[10px]",
-    },
-    md: {
-      container: "h-7 px-2.5 gap-1.5",
-      avatar: "w-5 h-5",
-      icon: "w-4 h-4",
-      text: "text-xs",
     },
   };
 
@@ -44,8 +44,8 @@ export default function CrewBadge({ crew, size = "sm", clickable = true }: CrewB
 
   const content = (
     <span
-      className={`inline-flex items-center bg-surface-1/80 border border-border/60 text-muted-foreground ${s.container} ${
-        clickable ? "cursor-pointer hover:bg-surface-2 hover:border-border hover:text-foreground transition-all duration-150" : ""
+      className={`inline-flex items-center rounded-full bg-background/60 border border-white/[0.06] shadow-[0_0_6px_rgba(255,255,255,0.04)] text-muted-foreground ${s.container} ${
+        clickable ? "cursor-pointer hover:bg-surface-2 hover:border-white/10 hover:text-foreground transition-all duration-150" : ""
       }`}
     >
       {crew.avatar_url ? (
@@ -57,7 +57,7 @@ export default function CrewBadge({ crew, size = "sm", clickable = true }: CrewB
       ) : (
         <IconComponent className={`${s.icon} text-muted-foreground/70`} />
       )}
-      <span className={`${s.text} font-medium uppercase tracking-wider truncate max-w-[70px]`}>
+      <span className={`${s.text} font-medium tracking-wider truncate max-w-[60px]`}>
         {crew.name}
       </span>
     </span>
