@@ -13,7 +13,7 @@ import VerifiedBadge from "./VerifiedBadge";
 export interface LoopFeedItem {
   id: string;
   rawId: string;
-  type: 'arena' | 'review' | 'battle' | 'judge_video';
+  type: 'arena' | 'review' | 'battle' | 'judge_video' | 'quick_fight';
   submission_url: string;
   platform: string;
   user_id: string;
@@ -46,6 +46,20 @@ export interface LoopFeedItem {
   video_title?: string | null;
   current_views?: number | null;
   is_verified?: boolean;
+  // Quick fight specific
+  fight_id?: string;
+  fight_status?: string;
+  player_1_username?: string;
+  player_1_avatar_url?: string | null;
+  player_2_username?: string | null;
+  player_2_avatar_url?: string | null;
+  winner_score?: number | null;
+  loser_score?: number | null;
+  duration_minutes?: number;
+  ends_at?: string | null;
+  // Unit info
+  unit_name?: string | null;
+  unit_emblem?: string | null;
 }
 
 const platformLabels: Record<string, string> = {
@@ -166,6 +180,11 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
                   <Trophy className="w-2 h-2" />
                   ARENA
                 </span>
+              ) : item.type === 'quick_fight' ? (
+                <span className="bg-red-500/15 text-red-400 text-[8px] font-bold px-1 py-px rounded flex items-center gap-0.5 shrink-0">
+                  <Swords className="w-2 h-2" />
+                  QUICK 1v1
+                </span>
               ) : item.type === 'battle' ? (
                 <span className="bg-red-500/15 text-red-400 text-[8px] font-bold px-1 py-px rounded flex items-center gap-0.5 shrink-0">
                   <span className="font-display">⚔</span>
@@ -185,7 +204,38 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
             </div>
 
             {/* Title */}
-            {item.type === 'battle' ? (
+            {item.type === 'quick_fight' ? (
+              <div className="mb-1">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[12px] text-foreground/90 leading-tight line-clamp-1">
+                    ⚔ <span className="font-semibold">{item.player_1_username}</span>
+                    <span className="text-muted-foreground mx-1">vs</span>
+                    <span className="font-semibold">{item.player_2_username || '???'}</span>
+                  </p>
+                </div>
+                {item.unit_name && (
+                  <p className="text-[9px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <span>{item.unit_emblem || '🛡'}</span> {item.unit_name}
+                  </p>
+                )}
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[9px] text-gold font-bold">+20 IDX</span>
+                  <span className="text-[9px] text-muted-foreground">•</span>
+                  <span className="text-[9px] text-muted-foreground">{item.duration_minutes || 180}min</span>
+                  {item.fight_status === 'active' && (
+                    <span className="text-[9px] text-red-400 font-bold uppercase animate-pulse">🔴 LIVE</span>
+                  )}
+                  {item.fight_status === 'judging' && (
+                    <span className="text-[9px] text-purple-400 font-bold uppercase">⚖️ JUDGING</span>
+                  )}
+                  {item.fight_status === 'completed' && item.winner_score != null && (
+                    <span className="text-[9px] text-gold font-bold">
+                      🏆 {item.winner_score}-{item.loser_score}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : item.type === 'battle' ? (
               <div className="mb-1">
                 <p className="text-[12px] text-foreground/90 leading-tight line-clamp-1">
                   ⚔ <span className="font-semibold">{item.challenger_username}</span>
@@ -221,7 +271,65 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
             )}
 
             {/* Thumbnail / VS Clash */}
-            {item.type === 'battle' ? (
+            {item.type === 'quick_fight' ? (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/fight/${item.fight_id}`); }}
+                className="relative w-full rounded-md overflow-hidden mb-1 block"
+              >
+                <div className="w-full aspect-[16/9] bg-gradient-to-r from-red-950/60 via-surface-2 to-blue-950/60 flex items-center justify-center gap-3 relative">
+                  <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-foreground rotate-12" />
+                    <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-foreground -rotate-12" />
+                  </div>
+                  {/* P1 */}
+                  <div className="flex flex-col items-center z-10">
+                    <Avatar className="w-12 h-12 border-2 border-red-500/60 shadow-lg shadow-red-500/20">
+                      <AvatarImage src={item.player_1_avatar_url || undefined} />
+                      <AvatarFallback className="bg-muted text-foreground text-sm font-bold">
+                        {(item.player_1_username || '?')[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-[10px] font-bold text-foreground mt-1 truncate max-w-[72px]">
+                      @{item.player_1_username}
+                    </span>
+                    <span className="text-[8px] text-red-400 font-bold">RED</span>
+                  </div>
+                  {/* VS + Prize */}
+                  <div className="flex flex-col items-center z-10">
+                    <span className="text-lg font-black text-foreground/80 tracking-tighter font-display">VS</span>
+                    <span className="text-[9px] font-bold text-gold">+20 IDX</span>
+                    {item.fight_status === 'active' && (
+                      <span className="text-[8px] font-bold text-red-400 uppercase animate-pulse">LIVE</span>
+                    )}
+                    {item.fight_status === 'completed' && item.winner_score != null && (
+                      <span className="text-[9px] font-bold text-muted-foreground">
+                        {item.winner_score} - {item.loser_score}
+                      </span>
+                    )}
+                  </div>
+                  {/* P2 */}
+                  <div className="flex flex-col items-center z-10">
+                    <Avatar className="w-12 h-12 border-2 border-blue-500/60 shadow-lg shadow-blue-500/20">
+                      <AvatarImage src={item.player_2_avatar_url || undefined} />
+                      <AvatarFallback className="bg-muted text-foreground text-sm font-bold">
+                        {(item.player_2_username || '?')[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-[10px] font-bold text-foreground mt-1 truncate max-w-[72px]">
+                      @{item.player_2_username || '???'}
+                    </span>
+                    <span className="text-[8px] text-blue-400 font-bold">BLUE</span>
+                  </div>
+                  {/* Winner crown */}
+                  {item.fight_status === 'completed' && item.winner_id && (
+                    <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-gold/20 text-gold text-[8px] font-bold px-1.5 py-px rounded-full flex items-center gap-0.5">
+                      <Trophy className="w-2.5 h-2.5" />
+                      Winner
+                    </div>
+                  )}
+                </div>
+              </button>
+            ) : item.type === 'battle' ? (
               <button
                 onClick={(e) => { e.stopPropagation(); navigate(`/battle/${item.battle_id}`); }}
                 className="relative w-full rounded-md overflow-hidden mb-1 block"
@@ -350,6 +458,15 @@ export default function LoopFeedCard({ item, isExpanded, onToggleExpand, onOpenP
 
             {/* Actions */}
             <div className="flex items-center -ml-1.5 gap-px">
+              {item.type === 'quick_fight' && item.fight_id && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(`/fight/${item.fight_id}`); }}
+                  className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-red-400 hover:bg-red-500/10 transition-colors text-[10px] font-semibold"
+                >
+                  <Swords className="w-3.5 h-3.5" />
+                  <span>{item.fight_status === 'active' ? 'Watch' : item.fight_status === 'judging' ? 'Judge' : 'View'}</span>
+                </button>
+              )}
               {item.type === 'battle' && item.battle_id && (
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(`/battle/${item.battle_id}`); }}

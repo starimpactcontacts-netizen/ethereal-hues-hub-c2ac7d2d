@@ -17,8 +17,9 @@ import JudgeScoringModal from '@/components/loopgate/JudgeScoringModal';
 import JudgeMissionsPanel from '@/components/loopgate/JudgeMissionsPanel';
 import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
 import Judge1v1Rating from '@/components/loopgate/Judge1v1Rating';
+import JudgeQuickFightsTab from '@/components/loopgate/JudgeQuickFightsTab';
 
-type JudgeFormat = 'solo' | '1v1' | 'flywheel';
+type JudgeFormat = 'solo' | '1v1' | 'quick' | 'flywheel';
 
 const SOLO_INFO = {
   title: 'Solo Edit Rating',
@@ -159,19 +160,19 @@ export default function JudgePanelPage() {
       {/* FORMAT SELECTOR — 3 big clear tabs */}
       <div className="px-3 py-2.5 border-b border-zinc-800">
         <p className="text-[9px] text-zinc-600 uppercase tracking-[0.2em] font-mono mb-2">Rating Format</p>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
           {/* Solo */}
           <button
             onClick={() => setActiveFormat('solo')}
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-[11px] font-bold transition-all border relative ${
+            className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-bold transition-all border relative ${
               activeFormat === 'solo'
                 ? 'bg-white text-black border-white'
                 : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
             }`}
           >
-            <User className="w-4 h-4" />
+            <User className="w-3.5 h-3.5" />
             Solo
-            <div className="absolute top-1 right-1">
+            <div className="absolute top-0.5 right-0.5">
               <JudgeFormatInfo {...SOLO_INFO} />
             </div>
           </button>
@@ -179,31 +180,44 @@ export default function JudgePanelPage() {
           {/* 1v1 */}
           <button
             onClick={() => setActiveFormat('1v1')}
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-[11px] font-bold transition-all border relative ${
+            className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-bold transition-all border relative ${
               activeFormat === '1v1'
                 ? 'bg-white text-black border-white'
                 : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
             }`}
           >
-            <Swords className="w-4 h-4" />
+            <Swords className="w-3.5 h-3.5" />
             1v1
-            <div className="absolute top-1 right-1">
+            <div className="absolute top-0.5 right-0.5">
               <JudgeFormatInfo {...VS_INFO} />
             </div>
+          </button>
+
+          {/* Quick 1v1 */}
+          <button
+            onClick={() => setActiveFormat('quick')}
+            className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-bold transition-all border relative ${
+              activeFormat === 'quick'
+                ? 'bg-red-600 text-white border-red-600'
+                : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            Quick
           </button>
 
           {/* Flywheel */}
           <button
             onClick={() => setActiveFormat('flywheel')}
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 rounded-xl text-[11px] font-bold transition-all border relative ${
+            className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-bold transition-all border relative ${
               activeFormat === 'flywheel'
                 ? 'bg-red-600 text-white border-red-600'
                 : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
             }`}
           >
-            <Disc3 className="w-4 h-4" />
+            <Disc3 className="w-3.5 h-3.5" />
             Flywheel
-            <div className="absolute top-1 right-1">
+            <div className="absolute top-0.5 right-0.5">
               <JudgeFormatInfo {...FLYWHEEL_INFO} />
             </div>
           </button>
@@ -264,6 +278,11 @@ export default function JudgePanelPage() {
         <div className="px-3 pt-3">
           <Judge1v1Rating />
         </div>
+      )}
+
+      {/* QUICK 1v1 FORMAT */}
+      {activeFormat === 'quick' && (
+        <JudgeQuickFightsTab />
       )}
 
       {/* FLYWHEEL FORMAT — inline prompt to spin */}

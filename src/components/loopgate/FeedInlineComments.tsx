@@ -26,7 +26,7 @@ interface Comment {
 
 interface Props {
   submissionId: string;
-  submissionType: 'arena' | 'review' | 'battle' | 'judge_video';
+  submissionType: 'arena' | 'review' | 'battle' | 'judge_video' | 'quick_fight';
   onCommentCountChange?: (count: number) => void;
 }
 

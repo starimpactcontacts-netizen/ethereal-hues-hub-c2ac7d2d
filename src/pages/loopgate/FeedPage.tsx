@@ -108,7 +108,7 @@ export default function FeedPage() {
       const arenaOffset = offsetRef.current.arena;
       const reviewOffset = offsetRef.current.review;
 
-      const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes, judgeVideosRes] = await Promise.all([
+      const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes, judgeVideosRes, quickFightsRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at, thumbnail_url, custom_title')
@@ -148,6 +148,12 @@ export default function FeedPage() {
           .select('id, video_url, platform, title, thumbnail_url, current_views, judge_id, submitted_at')
           .order('submitted_at', { ascending: false })
           .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase
+          .from('quick_fights')
+          .select('*')
+          .in('status', ['active', 'judging', 'completed', 'waiting'])
+          .order('created_at', { ascending: false })
+          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
       ]);
 
       const roundData = roundRes.data || [];
@@ -156,11 +162,12 @@ export default function FeedPage() {
       const reviewData = reviewRes.data || [];
       const battlesData = battlesRes.data || [];
       const judgeVideosData = judgeVideosRes.data || [];
+      const quickFightsData = quickFightsRes.data || [];
 
-      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length, judgeVideosData.length);
+      offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length, judgeVideosData.length, quickFightsData.length);
       offsetRef.current.review += reviewData.length;
 
-      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length + judgeVideosData.length;
+      const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length + judgeVideosData.length + quickFightsData.length;
       if (fetchedCount === 0) {
         setHasMore(false);
         if (isLoadMore) { setLoadingMore(false); return; }
@@ -271,8 +278,33 @@ export default function FeedPage() {
         is_verified: true, // judges are verified
       }));
 
+      // Build quick fight feed items
+      const quickFightItems: LoopFeedItem[] = quickFightsData.map((f: any) => ({
+        id: `qf-${f.id}`, rawId: f.id, type: 'quick_fight' as const,
+        submission_url: f.player_1_submission_url || f.player_2_submission_url || '',
+        platform: 'tiktok',
+        user_id: f.player_1_id,
+        username: f.player_1_username,
+        avatar_url: f.player_1_avatar_url,
+        created_at: f.created_at,
+        thumbnail_url: null, custom_title: null,
+        fight_id: f.id,
+        fight_status: f.status,
+        player_1_username: f.player_1_username,
+        player_1_avatar_url: f.player_1_avatar_url,
+        player_2_username: f.player_2_username,
+        player_2_avatar_url: f.player_2_avatar_url,
+        winner_id: f.winner_id,
+        winner_score: f.winner_score,
+        loser_score: f.loser_score,
+        duration_minutes: f.duration_minutes,
+        ends_at: f.ends_at,
+      }));
+
       // Boost official events & premium comps higher in feed
       const getBoost = (item: LoopFeedItem) => {
+        if (item.id.startsWith('qf-') && (item.fight_status === 'active' || item.fight_status === 'waiting')) return 3.5;
+        if (item.id.startsWith('qf-') && item.fight_status === 'judging') return 3;
         if (item.id.startsWith('battle-') && (item.battle_status === 'active' || item.battle_status === 'pending')) return 3;
         if (item.id.startsWith('battle-') && item.battle_status === 'judging') return 2.5;
         if (item.id.startsWith('arena-event-')) return 2;
@@ -281,7 +313,7 @@ export default function FeedPage() {
         return 0;
       };
 
-      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems, ...judgeVideoItems]
+      const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems, ...judgeVideoItems, ...quickFightItems]
         .sort((a, b) => {
           const boostDiff = getBoost(b) - getBoost(a);
           if (boostDiff !== 0) return boostDiff;
