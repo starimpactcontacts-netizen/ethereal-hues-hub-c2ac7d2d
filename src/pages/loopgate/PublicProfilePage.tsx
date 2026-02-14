@@ -381,7 +381,7 @@ export default function PublicProfilePage() {
             {/* Name & Badges - Compact */}
             <div className="flex items-center gap-2 mb-1 flex-wrap justify-center">
               <h1 className="font-display text-2xl tracking-wide">{profile.display_name || profile.username}</h1>
-              {profile.level > 1 && <LevelBadge level={profile.level} size="md" />}
+              {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
               {profile.verification_status && <VerifiedBadge size="md" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
               {profile.is_founding_member && <FoundingBadge size="sm" />}
