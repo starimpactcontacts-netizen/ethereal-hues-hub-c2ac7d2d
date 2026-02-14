@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Play, Loader2, Search, TrendingUp, Shield } from "lucide-react";
+import { Play, Loader2, Search, TrendingUp, Shield, Pen, X } from "lucide-react";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
-import { getThumbnailBatch, getThumbnail } from "@/lib/thumbnail";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import LoopFeedCard, { type LoopFeedItem } from "@/components/loopgate/LoopFeedCard";
 import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
 import loopgateLogo from "@/assets/loopgate-logo.png";
@@ -29,6 +28,7 @@ export default function FeedPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<FeedTab>('foryou');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const [connectionIds, setConnectionIds] = useState<string[]>([]);
   const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null; is_verified: boolean }>>([]);
   const [trendingUnits, setTrendingUnits] = useState<Array<{ id: string; name: string; avatar_url: string | null; emblem: string }>>([]);
@@ -67,7 +67,6 @@ export default function FeedPage() {
           .limit(8)
       ]);
 
-      // Score and sort editors by prestige algorithm
       const scored = (editorsRes.data || []).map(p => {
         let score = 0;
         const isVerified = !!p.verification_status;
@@ -184,8 +183,6 @@ export default function FeedPage() {
       const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
       const tournamentIds = [...new Set(sanctionedData.map(s => s.tournament_id))];
 
-      // Thumbnail resolution uses the unified system inside each card now (useUnifiedThumbnail hook).
-      // We still resolve DB-stored thumbs inline for instant display.
       const getThumb = (dbThumb: string | null) => dbThumb || null;
 
       const [profilesRes, eventsRes, tournamentsRes] = await Promise.all([
@@ -243,7 +240,6 @@ export default function FeedPage() {
         judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url,
       }));
 
-      // Build battle feed items — include ALL battles (pending showdowns create pressure)
       const battleItems: LoopFeedItem[] = battlesData
         .map(b => ({
           id: `battle-${b.id}`, rawId: b.id, type: 'battle' as const,
@@ -265,7 +261,6 @@ export default function FeedPage() {
           battle_status: b.status,
         }));
 
-      // Build judge video feed items
       const judgeVideoItems: LoopFeedItem[] = judgeVideosData.map(j => ({
         id: `judge-video-${j.id}`, rawId: j.id, type: 'judge_video' as const,
         submission_url: j.video_url, platform: j.platform || 'tiktok',
@@ -275,10 +270,9 @@ export default function FeedPage() {
         thumbnail_url: j.thumbnail_url || null, custom_title: null,
         video_title: j.title || 'Judge Rating Video',
         current_views: j.current_views,
-        is_verified: true, // judges are verified
+        is_verified: true,
       }));
 
-      // Build quick fight feed items
       const quickFightItems: LoopFeedItem[] = quickFightsData.map((f: any) => ({
         id: `qf-${f.id}`, rawId: f.id, type: 'quick_fight' as const,
         submission_url: f.player_1_submission_url || f.player_2_submission_url || '',
@@ -301,7 +295,6 @@ export default function FeedPage() {
         ends_at: f.ends_at,
       }));
 
-      // Boost official events & premium comps higher in feed
       const getBoost = (item: LoopFeedItem) => {
         if (item.id.startsWith('qf-') && (item.fight_status === 'active' || item.fight_status === 'waiting')) return 3.5;
         if (item.id.startsWith('qf-') && item.fight_status === 'judging') return 3;
@@ -348,7 +341,6 @@ export default function FeedPage() {
     }
   }, [fetchFeed, hasMore, loadingMore]);
 
-  // Filter items based on tab & search
   const filteredItems = feedItems.filter(item => {
     if (activeTab === 'connections' && !connectionIds.includes(item.user_id)) return false;
     if (searchQuery.trim()) {
@@ -376,140 +368,145 @@ export default function FeedPage() {
       className="min-h-screen bg-background pb-16 overflow-y-auto"
       onScroll={handleScroll}
     >
-      {/* Header — logo + tabs + search */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border/40">
+      {/* ─── X-style Header ─── */}
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto">
-          {/* Logo row */}
-          <div className="flex items-center justify-center py-1.5">
-            <img src={loopgateLogo} alt="Loopgate" className="h-5 opacity-70" />
+          {/* Top bar: logo + search toggle */}
+          <div className="flex items-center justify-between px-4 h-11">
+            <img src={loopgateLogo} alt="Loopgate" className="h-5 opacity-80" />
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+            >
+              {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+            </button>
           </div>
 
-          {/* Search */}
-          <div className="px-3 pb-1.5">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
-              <input
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search"
-                className="w-full bg-surface-1 border border-border/50 rounded-full pl-7 pr-3 py-1 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
-              />
-            </div>
-          </div>
+          {/* Search bar — expandable */}
+          <AnimatePresence>
+            {showSearch && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="overflow-hidden px-4"
+              >
+                <div className="relative pb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search editors, events, edits..."
+                    autoFocus
+                    className="w-full bg-muted/40 border border-border/40 rounded-full pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-muted/60 transition-all"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          {/* Tabs */}
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('foryou')}
-              className={`flex-1 text-center py-1.5 text-[11px] font-semibold transition-colors relative ${
-                activeTab === 'foryou' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/70'
-              }`}
-            >
-              For You
-              {activeTab === 'foryou' && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab('connections')}
-              className={`flex-1 text-center py-1.5 text-[11px] font-semibold transition-colors relative ${
-                activeTab === 'connections' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/70'
-              }`}
-            >
-              Connections
-              {activeTab === 'connections' && (
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
-              )}
-            </button>
+          {/* Tabs — bold X-style */}
+          <div className="flex border-b border-border/40">
+            {(['foryou', 'connections'] as FeedTab[]).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 text-center py-3 text-sm font-bold transition-colors relative ${
+                  activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/60 hover:bg-muted/10'
+                }`}
+              >
+                {tab === 'foryou' ? 'For You' : 'Connections'}
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="feedTabIndicator"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-[3px] bg-primary rounded-full"
+                  />
+                )}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Trending Editors & Units */}
+      {/* ─── Trending Strip (Stories-style) ─── */}
       {(trendingEditors.length > 0 || trendingUnits.length > 0) && (
-        <div className="max-w-2xl mx-auto border-b border-border/30 py-2 px-3">
-          {/* Units row */}
-          {trendingUnits.length > 0 && (
-            <>
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <Shield className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Units</span>
-              </div>
-              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2">
-                {trendingUnits.map(unit => (
-                  <motion.button
-                    key={unit.id}
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate(`/units/${unit.id}`)}
-                    className="flex flex-col items-center gap-0.5 shrink-0"
-                  >
-                    <div className="w-9 h-9 rounded-lg border border-border/60 overflow-hidden bg-surface-1">
-                      <Avatar className="w-full h-full rounded-lg">
-                        <AvatarImage src={unit.avatar_url || undefined} />
-                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold rounded-lg">
-                          {unit.emblem}
+        <div className="max-w-2xl mx-auto border-b border-border/30">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
+            {/* Units first */}
+            {trendingUnits.map(unit => (
+              <motion.button
+                key={`u-${unit.id}`}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => navigate(`/units/${unit.id}`)}
+                className="flex flex-col items-center gap-1 shrink-0"
+              >
+                <div className="w-[52px] h-[52px] rounded-full p-[2px] bg-gradient-to-br from-primary/60 to-gold/40">
+                  <div className="w-full h-full rounded-full bg-background p-[2px]">
+                    <Avatar className="w-full h-full rounded-full">
+                      <AvatarImage src={unit.avatar_url || undefined} className="object-cover" />
+                      <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
+                        {unit.emblem}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted-foreground truncate max-w-[52px] leading-none">{unit.name}</span>
+              </motion.button>
+            ))}
+
+            {/* Editors */}
+            {trendingEditors.map(editor => (
+              <motion.button
+                key={`e-${editor.id}`}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => navigate(`/editor/${editor.id}`)}
+                className="flex flex-col items-center gap-1 shrink-0"
+              >
+                <div className="relative">
+                  <div className="w-[52px] h-[52px] rounded-full p-[2px] bg-gradient-to-br from-red-500/50 to-primary/40">
+                    <div className="w-full h-full rounded-full bg-background p-[2px]">
+                      <Avatar className="w-full h-full rounded-full">
+                        <AvatarImage src={editor.avatar_url || undefined} className="object-cover" />
+                        <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
+                          {editor.username[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </div>
-                    <span className="text-[9px] text-muted-foreground truncate max-w-[48px]">{unit.name}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </>
-          )}
-
-          {/* Editors row */}
-          {trendingEditors.length > 0 && (
-            <>
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <TrendingUp className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Trending Editors & Judges</span>
-              </div>
-              <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-0.5">
-                {trendingEditors.map(editor => (
-                  <motion.button
-                    key={editor.id}
-                    whileHover={{ scale: 1.08 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate(`/editor/${editor.id}`)}
-                    className="flex flex-col items-center gap-0.5 shrink-0"
-                  >
-                    <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-surface-1 border-2 border-gold/50 flex items-center justify-center shrink-0">
-                        <Avatar className="w-8 h-8 rounded-full">
-                          <AvatarImage src={editor.avatar_url || undefined} className="object-cover" />
-                          <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
-                            {editor.username[0]?.toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                      {editor.is_verified && (
-                        <div className="absolute -bottom-0.5 -right-0.5 z-10">
-                          <VerifiedBadge size="sm" />
-                        </div>
-                      )}
+                  </div>
+                  {editor.is_verified && (
+                    <div className="absolute -bottom-0.5 -right-0.5 z-10">
+                      <VerifiedBadge size="sm" />
                     </div>
-                    <span className="text-[9px] text-muted-foreground truncate max-w-[48px]">@{editor.username}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </>
-          )}
+                  )}
+                </div>
+                <span className="text-[10px] text-muted-foreground truncate max-w-[52px] leading-none">@{editor.username}</span>
+              </motion.button>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Feed */}
+      {/* ─── Feed ─── */}
       <div className="max-w-2xl mx-auto">
         {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 px-6">
-            <Play className="w-8 h-8 text-muted-foreground/30 mb-2" />
-            <p className="text-xs text-muted-foreground text-center">
+          <div className="flex flex-col items-center justify-center py-16 px-6">
+            <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
+              <Play className="w-6 h-6 text-muted-foreground/40" />
+            </div>
+            <p className="text-sm font-semibold text-foreground/60 mb-1">
               {activeTab === 'connections'
-                ? "No edits from your connections yet"
+                ? "Nothing from connections yet"
                 : searchQuery
-                  ? "No results found"
-                  : "No content yet"}
+                  ? "No results"
+                  : "The Loop is quiet"}
+            </p>
+            <p className="text-xs text-muted-foreground text-center max-w-[240px]">
+              {activeTab === 'connections'
+                ? "Connect with editors to see their edits here"
+                : searchQuery
+                  ? "Try a different search"
+                  : "Submit an edit to the Arena to get things moving"}
             </p>
           </div>
         ) : (
@@ -525,15 +522,24 @@ export default function FeedPage() {
         )}
 
         {loadingMore && (
-          <div className="flex items-center justify-center py-3">
-            <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
           </div>
         )}
 
         {!hasMore && filteredItems.length > 0 && (
-          <p className="text-center text-[10px] text-muted-foreground py-4">You've seen it all 🔥</p>
+          <p className="text-center text-xs text-muted-foreground py-6">You've reached the end 🔥</p>
         )}
       </div>
+
+      {/* ─── Compose FAB ─── */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={() => navigate('/arena')}
+        className="fixed bottom-20 right-4 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center justify-center"
+      >
+        <Pen className="w-5 h-5" />
+      </motion.button>
 
       {/* Video Player */}
       {playerItem && (
