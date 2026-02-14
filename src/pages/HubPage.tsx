@@ -473,7 +473,7 @@ export default function HubPage() {
                   
                   <div>
                     <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-white transition-colors duration-300">ARENA</h2>
-                    <p className="text-xs text-muted-foreground font-medium">Enter the competition</p>
+                    <p className="text-xs text-muted-foreground font-medium">Enter editing battles</p>
                   </div>
                 </div>
                 
