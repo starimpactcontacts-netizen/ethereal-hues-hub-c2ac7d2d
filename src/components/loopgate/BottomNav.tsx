@@ -78,10 +78,21 @@ export default function BottomNav() {
             )}
             {/* Offset glitch layers - infinite color morphing */}
             <div className="relative">
-              <GlitchEdge side="left" className="absolute w-11 h-9 rounded-[6px]" style={{ left: '-4px' }} />
-              <GlitchEdge side="right" className="absolute w-11 h-9 rounded-[6px]" style={{ left: '4px' }} />
-              <div className="relative w-11 h-9 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
-                <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
+              {/* Outer glow */}
+              <div className="absolute -inset-2 rounded-2xl bg-white/[0.06] blur-md" />
+              <GlitchEdge side="left" className="absolute w-14 h-11 rounded-xl" style={{ left: '-4px' }} />
+              <GlitchEdge side="right" className="absolute w-14 h-11 rounded-xl" style={{ left: '4px' }} />
+              <div className="relative w-14 h-11 bg-white rounded-xl flex items-center justify-center group-active:scale-95 transition-transform shadow-[0_0_16px_rgba(255,255,255,0.15)]">
+                {/* Subtle gate pattern in white space */}
+                <div className="absolute inset-0 rounded-xl overflow-hidden opacity-[0.04]">
+                  <svg className="w-full h-full" viewBox="0 0 56 44">
+                    <pattern id="nav-gate" x="0" y="0" width="11" height="11" patternUnits="userSpaceOnUse">
+                      <polygon points="5.5,1 10,4 10,8 5.5,11 1,8 1,4" fill="none" stroke="black" strokeWidth="0.5" />
+                    </pattern>
+                    <rect width="100%" height="100%" fill="url(#nav-gate)" />
+                  </svg>
+                </div>
+                <InfinityIcon className="w-6 h-6 text-black relative z-10" strokeWidth={2.5} />
               </div>
             </div>
           </button>
