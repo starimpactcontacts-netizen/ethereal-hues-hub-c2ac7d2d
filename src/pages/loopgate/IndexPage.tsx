@@ -470,8 +470,10 @@ export default function IndexPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(255,255,255,0.12),transparent_55%)]" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] rounded-full" />
         
-        {/* Dubai Mall gate pattern */}
-        <GatePattern opacity={3} tileSize={100} />
+        {/* Dubai Mall gate pattern — boosted for mobile visibility */}
+        <GatePattern opacity={5} tileSize={80} />
+        {/* Shadow vignette over pattern for depth silhouette */}
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)]" />
         
         {/* Decorative lines - neutral */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
