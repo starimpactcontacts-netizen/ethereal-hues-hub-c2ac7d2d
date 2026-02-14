@@ -664,7 +664,7 @@ export default function IndexPage() {
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.015, duration: 0.3 }}
-                      className={`relative border-b border-border/30 ${isTopThree ? 'bg-surface-1/30' : ''}`}
+                      className={`relative border-b border-border/30 ${isTopThree ? 'bg-surface-1/30' : ''} shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_1px_3px_rgba(0,0,0,0.25)]`}
                     >
                       {/* Top accent for #1 */}
                       {rank === 1 && (
@@ -1023,7 +1023,7 @@ export default function IndexPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.015 }}
                           onClick={() => navigate(`/editor/${user.id}`)}
-                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100`}
+                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_1px_3px_rgba(0,0,0,0.3)]`}
                         >
                           <div className="w-7 flex items-center justify-center flex-shrink-0">
                             {IconComponent ? (
@@ -1088,7 +1088,7 @@ export default function IndexPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.015 }}
                           onClick={() => navigate(`/units/${crew.id}`)}
-                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100`}
+                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_1px_3px_rgba(0,0,0,0.3)]`}
                         >
                           <div className="w-7 flex items-center justify-center flex-shrink-0">
                             {IconComponent ? (
@@ -1149,7 +1149,7 @@ export default function IndexPage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                         onClick={() => setSelectedEventId(event.id)}
-                        className="w-full bg-surface-1/80 backdrop-blur-sm border border-border/50 hover:border-gold/30 p-4 text-left flex items-center gap-4 transition-all hover:scale-[1.01]"
+                        className="w-full bg-surface-1/80 backdrop-blur-sm border border-border/50 hover:border-gold/30 p-4 text-left flex items-center gap-4 transition-all active:scale-[0.995] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_2px_6px_rgba(0,0,0,0.3)]"
                       >
                         {event.poster_url ? (
                           <div
