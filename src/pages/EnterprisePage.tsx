@@ -24,7 +24,8 @@ import tierStandard from '@/assets/tier-standard.png';
 import tierTakeover from '@/assets/tier-takeover.png';
 
 const GATE_PASSWORD = 'cartel';
-const bebas = { fontFamily: "var(--font-display)" };
+const luxuryFont = { fontFamily: "'Playfair Display', serif", fontWeight: 700 };
+const bebas = { fontFamily: "'Bebas Neue', sans-serif" };
 
 type PortalView = 'gate' | 'portal' | 'payment' | 'receipt' | 'revshare';
 type GateMode = 'code' | 'login' | 'otp';
@@ -41,7 +42,7 @@ interface SlotTier {
 }
 
 const SLOT_TIERS: SlotTier[] = [
-  { id: 'trial', name: 'Trial Slot', price: 150, priceLabel: '$150', desc: '20–30 edits in 48 hours. Arena + 1v1 distribution.', color: '#E00000' },
+  { id: 'trial', name: 'Trial Slot', price: 150, priceLabel: '$150', desc: '20 to 30 edits in 48 hours. Arena + 1v1 distribution.', color: '#E00000' },
   { id: 'standard', name: 'Standard Slot', price: 400, priceLabel: '$400', desc: 'Full arena cycle. Judges + Loop Feed exposure.', tag: 'Most Chosen', color: '#E00000' },
   { id: 'takeover', name: 'Takeover Slot', price: 1200, priceLabel: '$1,200', desc: 'Pinned event. Guaranteed multi-format distribution.', tag: 'Max Impact', color: '#1B4332' },
 ];
@@ -334,7 +335,7 @@ export default function EnterprisePage() {
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-white/10" />
         </div>
 
-        <h1 className="text-5xl tracking-[0.2em] mb-2 text-white/90" style={bebas}>THE GATE</h1>
+        <h1 className="text-5xl tracking-[0.08em] mb-2 text-white/90" style={luxuryFont}>THE GATE</h1>
         <p className="text-[9px] text-white/20 uppercase tracking-[0.5em] mb-1">Loopgate Client Portal</p>
 
         {/* Decorative line */}
@@ -487,12 +488,12 @@ export default function EnterprisePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-8 pb-20 w-full">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
-            <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[0.02em] mb-6" style={bebas}>
+            <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
               <span className="text-[#E00000]">Culture.</span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
-              Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads — all within minutes.
+              Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
             </p>
             <div className="flex items-center gap-4">
               <Button onClick={() => setLaunchOpen(true)} className="bg-white text-black hover:bg-white/90 h-12 px-8 text-[11px] uppercase tracking-[0.3em] rounded-none font-medium transition-all">
@@ -529,10 +530,10 @@ export default function EnterprisePage() {
                   <p className="text-[10px] text-white/25 uppercase tracking-[0.5em]">Trial Slot</p>
                 </div>
                 <div>
-                  <p className="text-4xl md:text-5xl text-white mb-2" style={bebas}>$150</p>
-                  <h3 className="text-2xl md:text-3xl text-white/60 leading-[0.9] mb-4" style={bebas}>TEST THE WATERS.</h3>
-                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">20–30 edits · 500K–1M impressions</p>
-                  <p className="text-[10px] text-white/10 leading-relaxed mb-4">48-hour arena cycle. 1v1 battles included.</p>
+                  <p className="text-4xl md:text-5xl text-white mb-2" style={luxuryFont}>$150</p>
+                  <h3 className="text-2xl md:text-3xl text-white/60 leading-[0.9] mb-4" style={luxuryFont}>TEST THE WATERS.</h3>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">20 to 30 edits · 500K to 1M impressions</p>
+                  <p className="text-[10px] text-white/10 leading-relaxed mb-4">48 hour arena cycle. 1v1 battles included.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
@@ -563,12 +564,12 @@ export default function EnterprisePage() {
                   <span className="text-[7px] text-white/40 uppercase tracking-wider border border-white/15 px-2 py-0.5">Most Chosen</span>
                 </div>
                 <div>
-                  <p className="text-4xl md:text-5xl text-white mb-2" style={bebas}>$400</p>
-                  <h3 className="text-2xl md:text-3xl leading-[0.9] mb-4" style={bebas}>
+                  <p className="text-4xl md:text-5xl text-white mb-2" style={luxuryFont}>$400</p>
+                  <h3 className="text-2xl md:text-3xl leading-[0.9] mb-4" style={luxuryFont}>
                     <span className="text-white/80">OWN THE </span>
                     <span className="text-[#E00000]">CYCLE.</span>
                   </h3>
-                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">40–80 edits · 2M–5M impressions</p>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">40 to 80 edits · 2M to 5M impressions</p>
                   <p className="text-[10px] text-white/10 leading-relaxed mb-4">Full arena cycle. Judge scoring. Loop Feed exposure.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -602,12 +603,12 @@ export default function EnterprisePage() {
                   <span className="text-[7px] text-[#E00000]/60 uppercase tracking-wider border border-[#E00000]/20 px-2 py-0.5 bg-[#E00000]/5">Max Impact</span>
                 </div>
                 <div>
-                  <p className="text-4xl md:text-6xl text-white mb-2" style={bebas}>$1,200</p>
-                  <h3 className="text-2xl md:text-3xl leading-[0.9] mb-4" style={bebas}>
+                  <p className="text-4xl md:text-6xl text-white mb-2" style={luxuryFont}>$1,200</p>
+                  <h3 className="text-2xl md:text-3xl leading-[0.9] mb-4" style={luxuryFont}>
                     <span className="text-white/80">BECOME </span>
                     <span className="text-[#E00000]">UNDENIABLE.</span>
                   </h3>
-                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">100–130+ edits · 5M–10M+ impressions</p>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">100 to 130+ edits · 5M to 10M+ impressions</p>
                   <p className="text-[10px] text-white/10 leading-relaxed mb-4">Pinned event. Full ecosystem takeover. Multi-format distribution.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -629,12 +630,12 @@ export default function EnterprisePage() {
           <div className="border-y border-white/[0.04] mt-12 relative" style={{ background: 'rgba(255,255,255,0.01)' }}>
             <div className="py-8 grid grid-cols-3 gap-0">
               {[
-                { label: 'Edits Generated', value: '20–130+' },
+                { label: 'Edits Generated', value: '20 to 130+' },
                 { label: 'Time to Start', value: '<2 Hours' },
-                { label: 'Feed Impressions', value: '500K–10M+' },
+                { label: 'Feed Impressions', value: '500K to 10M+' },
               ].map((m, i) => (
                 <div key={m.label} className={`text-center py-2 ${i < 2 ? 'border-r border-white/[0.04]' : ''}`}>
-                  <p className="text-2xl md:text-3xl text-white/80 mb-1" style={bebas}>{m.value}</p>
+                  <p className="text-2xl md:text-3xl text-white/80 mb-1" style={luxuryFont}>{m.value}</p>
                   <p className="text-[8px] text-white/20 uppercase tracking-[0.3em]">{m.label}</p>
                 </div>
               ))}
@@ -655,7 +656,7 @@ export default function EnterprisePage() {
               ].map(item => (
                 <div key={item.step}>
                   <span className="text-[10px] text-white/20 font-mono">{item.step}</span>
-                  <h3 className="text-xl text-white/80 mt-2 mb-3" style={bebas}>{item.title}</h3>
+                  <h3 className="text-xl text-white/80 mt-2 mb-3" style={luxuryFont}>{item.title}</h3>
                   <p className="text-[11px] text-white/15 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
@@ -682,7 +683,7 @@ export default function EnterprisePage() {
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{campaign.thumb}</span>
                         <div>
-                          <h3 className="text-xl text-white/90" style={bebas}>{campaign.name}</h3>
+                          <h3 className="text-xl text-white/90" style={luxuryFont}>{campaign.name}</h3>
                           <p className="text-[9px] text-white/20 uppercase tracking-wider">{campaign.tier}</p>
                         </div>
                       </div>
@@ -699,7 +700,7 @@ export default function EnterprisePage() {
                         { label: 'Judges', value: campaign.judges, icon: Star },
                       ].map(stat => (
                         <div key={stat.label} className="p-4 text-center" style={{ background: '#0A0A0A' }}>
-                          <p className="text-lg text-white/70 tabular-nums" style={bebas}>{stat.value}</p>
+                          <p className="text-lg text-white/70 tabular-nums" style={luxuryFont}>{stat.value}</p>
                           <p className="text-[7px] text-white/15 uppercase tracking-[0.2em] mt-1">{stat.label}</p>
                         </div>
                       ))}
@@ -728,7 +729,7 @@ export default function EnterprisePage() {
                   <Handshake className="w-4 h-4 text-[#1B4332]/50" />
                   <span className="text-[8px] text-[#1B4332]/50 uppercase tracking-[0.4em]">No Budget? No Problem.</span>
                 </div>
-                <h3 className="text-2xl text-white/70 mb-2" style={bebas}>Revenue Share Program</h3>
+                <h3 className="text-2xl text-white/70 mb-2" style={luxuryFont}>Revenue Share Program</h3>
                 <p className="text-[11px] text-white/20 leading-relaxed max-w-md">
                   Got a fire project but no cash? Pitch us. If we believe in it, we run the full Loopgate engine and take a cut of revenue. It ain't free — it's smart.
                 </p>
@@ -742,13 +743,13 @@ export default function EnterprisePage() {
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }} className="pb-20 grid md:grid-cols-2 gap-[1px] bg-white/[0.04]">
           <div className="p-8 md:p-12" style={{ background: '#0A0A0A' }}>
             <Shield className="w-5 h-5 text-white/10 mb-5" />
-            <h3 className="text-lg text-white/70 mb-2" style={bebas}>Anonymous Mode</h3>
+            <h3 className="text-lg text-white/70 mb-2" style={luxuryFont}>Anonymous Mode</h3>
             <p className="text-[11px] text-white/15 leading-relaxed max-w-xs">
               Purchase without an account. Receive a secure dashboard link via email. Full privacy, full control.
             </p>
           </div>
           <div className="p-8 md:p-12 flex flex-col items-center text-center" style={{ background: '#0A0A0A' }}>
-            <h3 className="text-lg text-white/70 mb-2" style={bebas}>Join the Cartel Circle</h3>
+            <h3 className="text-lg text-white/70 mb-2" style={luxuryFont}>Join the Cartel Circle</h3>
             <p className="text-[11px] text-white/15 leading-relaxed max-w-xs mb-5">
               Get pinged first on new drops, system updates, and exclusive slot releases.
             </p>
@@ -764,7 +765,7 @@ export default function EnterprisePage() {
 
         {/* ─── Contact ─── */}
         <section className="border-t border-white/[0.04] py-24 text-center">
-          <h2 className="text-3xl md:text-4xl mb-3 text-white/50" style={bebas}>Custom Packages</h2>
+          <h2 className="text-3xl md:text-4xl mb-3 text-white/50" style={luxuryFont}>Custom Packages</h2>
           <p className="text-[11px] text-white/12 mb-8">We build bespoke campaigns for labels, studios, and agencies.</p>
           <Button onClick={() => window.location.href = 'mailto:team@loopgate.io'} className="bg-transparent hover:bg-white/[0.03] border border-white/[0.08] text-white/30 hover:text-white/60 h-12 px-10 text-[10px] uppercase tracking-[0.3em] rounded-none transition-all duration-300">
             <Mail className="w-3.5 h-3.5 mr-2" /> Contact Team
@@ -786,7 +787,7 @@ export default function EnterprisePage() {
         <DialogContent className="border-white/[0.06] text-white max-w-lg rounded-none p-0 [&>button]:text-white/40" style={{ background: '#0A0A0A' }}>
           <div className="p-6 pb-0 border-b border-white/[0.04]">
             <DialogHeader>
-              <DialogTitle className="text-xl tracking-[0.1em]" style={bebas}>Launch Campaign</DialogTitle>
+              <DialogTitle className="text-xl tracking-[0.05em]" style={luxuryFont}>Launch Campaign</DialogTitle>
             </DialogHeader>
             <p className="text-[9px] text-white/15 uppercase tracking-[0.3em] mt-1 mb-4">Configure your slot details</p>
           </div>
@@ -870,8 +871,8 @@ export default function EnterprisePage() {
                     className={`w-full text-left border p-4 transition-all ${selectedTier?.id === tier.id ? 'border-white/20 bg-white/[0.03]' : 'border-white/[0.04] bg-white/[0.01] hover:border-white/[0.08]'}`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-white/80" style={bebas}>{tier.name}</span>
-                      <span className="text-sm text-white/50" style={bebas}>{tier.priceLabel}</span>
+                      <span className="text-sm text-white/80" style={luxuryFont}>{tier.name}</span>
+                      <span className="text-sm text-white/50" style={luxuryFont}>{tier.priceLabel}</span>
                     </div>
                     <p className="text-[10px] text-white/15">{tier.desc}</p>
                   </button>
@@ -912,7 +913,7 @@ export default function EnterprisePage() {
            <div className="h-px bg-white/5" />
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-white/25 uppercase tracking-wider">Price</span>
-            <span className="text-2xl text-white/90" style={bebas}>{selectedTier?.priceLabel}</span>
+            <span className="text-2xl text-white/90" style={luxuryFont}>{selectedTier?.priceLabel}</span>
           </div>
         </div>
 
@@ -931,7 +932,7 @@ export default function EnterprisePage() {
                 className={`p-4 text-center transition-all ${paymentMethod === method.id ? 'bg-white/[0.06] border-t-2 border-t-[#E00000]' : 'bg-[#0A0A0A] hover:bg-white/[0.02]'} ${method.id !== 'card' ? 'opacity-50' : ''}`}
               >
                 <method.icon className={`w-4 h-4 mx-auto mb-1.5 ${paymentMethod === method.id ? 'text-white/60' : 'text-white/20'}`} />
-                <p className={`text-[10px] uppercase tracking-wider ${paymentMethod === method.id ? 'text-white/70' : 'text-white/20'}`} style={bebas}>{method.label}</p>
+                <p className={`text-[10px] uppercase tracking-wider ${paymentMethod === method.id ? 'text-white/70' : 'text-white/20'}`} style={luxuryFont}>{method.label}</p>
                 <p className="text-[7px] text-white/10 mt-0.5">{method.sublabel}</p>
               </button>
             ))}
@@ -981,7 +982,7 @@ export default function EnterprisePage() {
           <Check className="w-7 h-7 text-[#1B4332]" />
         </motion.div>
 
-        <h1 className="text-4xl text-white mb-2" style={bebas}>Campaign Activated.</h1>
+        <h1 className="text-4xl text-white mb-2" style={luxuryFont}>Campaign Activated.</h1>
         <p className="text-xs text-white/25 leading-relaxed mb-8">
           Your slot has entered the Loopgate system.<br />
           You will receive updates as distribution begins.
@@ -1028,7 +1029,7 @@ export default function EnterprisePage() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-md w-full relative z-10">
         <Handshake className="w-4 h-4 md:w-5 md:h-5 text-[#1B4332]/60 mx-auto mb-3" />
-        <h1 className="text-2xl md:text-3xl text-white text-center mb-1.5" style={bebas}>Revenue Share Program</h1>
+        <h1 className="text-2xl md:text-3xl text-white text-center mb-1.5" style={luxuryFont}>Revenue Share Program</h1>
         <p className="text-[9px] md:text-[10px] text-white/20 text-center mb-6 md:mb-8 leading-relaxed max-w-xs mx-auto">
           No budget? No problem. If your project is fire, we'll push it through the Loopgate engine and take a percentage of revenue generated. We decide what's worth it.
         </p>
@@ -1038,7 +1039,7 @@ export default function EnterprisePage() {
             <div className="w-12 h-12 md:w-16 md:h-16 border border-[#1B4332]/40 bg-[#1B4332]/10 flex items-center justify-center mx-auto mb-4 md:mb-6">
               <Check className="w-5 h-5 md:w-7 md:h-7 text-[#1B4332]" />
             </div>
-            <h2 className="text-xl md:text-2xl text-white mb-2" style={bebas}>Application Received.</h2>
+            <h2 className="text-xl md:text-2xl text-white mb-2" style={luxuryFont}>Application Received.</h2>
             <p className="text-[10px] md:text-xs text-white/25 mb-6 md:mb-8">We review every pitch personally. If it's fire, you'll hear from us within 48 hours.</p>
             <Button onClick={() => { setView('portal'); setRevShareSubmitted(false); }} className="bg-transparent border border-white/10 text-white/40 hover:text-white/70 h-10 md:h-12 px-6 md:px-8 text-[9px] md:text-[10px] uppercase tracking-[0.3em] rounded-none">
               Back to Portal
