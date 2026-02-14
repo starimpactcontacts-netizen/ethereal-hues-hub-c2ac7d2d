@@ -96,6 +96,24 @@ function EventCard({ event }: { event: Event }) {
   );
 }
 
+// ─── Ghost Placeholder Slot (shows empty carousel space) ───────
+function GhostSlot({ icon, label, width = "w-[200px]", height = "h-44", accentColor = "border-border/40" }: {
+  icon: React.ReactNode;
+  label: string;
+  width?: string;
+  height?: string;
+  accentColor?: string;
+}) {
+  return (
+    <div className={`shrink-0 ${width} ${height} rounded-lg border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2 shadow-[inset_0_2px_12px_-4px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.01)]`}>
+      <div className="w-8 h-8 rounded-full bg-surface-2/60 flex items-center justify-center">
+        {icon}
+      </div>
+      <span className="text-[9px] text-muted-foreground/40 font-semibold uppercase tracking-wider">{label}</span>
+    </div>
+  );
+}
+
 // ─── Quick 1v1 Row Card (Browse) ───────────────────────────────
 function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
   const statusMap: Record<string, { label: string; color: string }> = {
@@ -435,6 +453,10 @@ export default function ArenaPage() {
                   {battles.slice(0, 10).map(battle => (
                     <BattleCard key={battle.id} battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
                   ))}
+                  {/* Ghost slots to fill carousel */}
+                  {battles.length < 4 && Array.from({ length: Math.max(0, 3 - battles.length) }).map((_, i) => (
+                    <GhostSlot key={`ghost-battle-${i}`} icon={<Swords className="w-4 h-4 text-muted-foreground/20" />} label="More battles" accentColor="border-red-500/15" />
+                  ))}
                 </div>
               ) : (
                 <div className="px-4">
@@ -472,6 +494,10 @@ export default function ArenaPage() {
               {allActiveEvents.length > 0 ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
                   {allActiveEvents.map(event => <EventCard key={event.id} event={event} />)}
+                  {/* Ghost slots */}
+                  {allActiveEvents.length < 3 && Array.from({ length: Math.max(0, 3 - allActiveEvents.length) }).map((_, i) => (
+                    <GhostSlot key={`ghost-event-${i}`} width="w-[260px]" icon={<Trophy className="w-4 h-4 text-gold/20" />} label="Upcoming" accentColor="border-gold/15" />
+                  ))}
                 </div>
               ) : (
                 <div className="px-4">
@@ -532,6 +558,10 @@ export default function ArenaPage() {
                   {sanctionedTournaments.map(t => (
                     <SanctionedTournamentCard key={t.id} tournament={t} onClick={() => navigate(`/sanctioned/${t.id}`)} />
                   ))}
+                  {/* Ghost slots */}
+                  {sanctionedTournaments.length < 3 && Array.from({ length: Math.max(0, 3 - sanctionedTournaments.length) }).map((_, i) => (
+                    <GhostSlot key={`ghost-sanc-${i}`} icon={<Shield className="w-4 h-4 text-gold/20" />} label="Open slot" accentColor="border-gold/15" />
+                  ))}
                 </div>
               ) : (
                 <div className="px-4">
@@ -549,13 +579,29 @@ export default function ArenaPage() {
           {/* ═══ HOSTED COMPS ═══ */}
           {(activeFilter === "all" || activeFilter === "hosted") && (
             <motion.section key="hosted-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
-              <div className="flex items-center gap-2 mb-2.5">
-                <Globe className="w-4 h-4 text-cyan-400" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">Hosted Comps</span>
-                <span className="bg-cyan-500/20 border border-cyan-500/30 px-1.5 py-0.5 text-[8px] font-bold uppercase text-cyan-400">New</span>
-              </div>
-              <HostedCompCard onEnter={() => navigate('/hosted-comps')} />
+              <SectionHeader
+                icon={<Globe className="w-4 h-4 text-cyan-400" />}
+                title="Hosted Comps"
+                badge="New"
+                badgeColor="bg-cyan-500/20 border-cyan-500/30 text-cyan-400"
+              />
+              {/* Big clickable CTA card */}
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/hosted-comps')}
+                className="w-full bg-surface-1 border border-border hover:border-cyan-500/40 rounded-xl p-4 flex items-center gap-4 text-left transition-all shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_6px_28px_-4px_rgba(6,182,212,0.15),0_0_0_1px_rgba(6,182,212,0.1)]"
+              >
+                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 shadow-[0_0_20px_-4px_rgba(6,182,212,0.15)]">
+                  <Globe className="w-6 h-6 text-cyan-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-display text-sm text-foreground block">Browse or Host a Competition</span>
+                  <span className="text-[10px] text-muted-foreground">Discord servers & creators run comps with Loopgate infrastructure</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </motion.button>
 
+              {/* Featured carousel */}
               {hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length > 0 && (
                 <div className="mt-3">
                   <span className="text-[9px] font-semibold uppercase tracking-widest text-cyan-400 mb-2 block">Featured</span>
@@ -566,6 +612,12 @@ export default function ArenaPage() {
                       .map(comp => (
                         <FeaturedHostedCompCard key={comp.id} comp={comp} onClick={() => navigate(`/hosted-comp/${comp.id}`)} />
                       ))}
+                    {/* Ghost slots for featured */}
+                    {hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length < 3 && 
+                      Array.from({ length: Math.max(0, 3 - hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length) }).map((_, i) => (
+                        <GhostSlot key={`ghost-hosted-${i}`} icon={<Globe className="w-4 h-4 text-cyan-400/20" />} label="Open slot" accentColor="border-cyan-500/15" />
+                      ))
+                    }
                   </div>
                 </div>
               )}
@@ -575,11 +627,25 @@ export default function ArenaPage() {
           {/* ═══ PRACTICE ═══ */}
           {(activeFilter === "all" || activeFilter === "practice") && (
             <motion.section key="practice-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
-              <div className="flex items-center gap-2 mb-2.5">
-                <Target className="w-4 h-4 text-emerald-400" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">Practice Mode</span>
-              </div>
-              <PracticeModeCard onEnter={() => setShowPracticeMode(true)} />
+              <SectionHeader
+                icon={<Target className="w-4 h-4 text-emerald-400" />}
+                title="Practice Mode"
+              />
+              {/* Clickable CTA card */}
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowPracticeMode(true)}
+                className="w-full bg-surface-1 border border-border hover:border-emerald-500/40 rounded-xl p-4 flex items-center gap-4 text-left transition-all shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_6px_28px_-4px_rgba(16,185,129,0.15),0_0_0_1px_rgba(16,185,129,0.1)]"
+              >
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-[0_0_20px_-4px_rgba(16,185,129,0.15)]">
+                  <Target className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="font-display text-sm text-foreground block">Get Feedback</span>
+                  <span className="text-[10px] text-muted-foreground">Submit work for judge review • +30 XP</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+              </motion.button>
             </motion.section>
           )}
 
