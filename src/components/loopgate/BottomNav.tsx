@@ -70,7 +70,7 @@ export default function BottomNav() {
           {/* Center Arena Button - White x Gold Neon Glitch Aura */}
           <button
             onClick={handleArenaClick}
-            className="flex flex-col items-center justify-center group relative -mt-4"
+            className="flex flex-col items-center justify-center group relative -mt-2"
           >
             {/* Active battle indicator */}
             {hasActiveBattle && (
