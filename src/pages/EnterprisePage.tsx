@@ -24,8 +24,8 @@ import tierStandard from '@/assets/tier-standard.png';
 import tierTakeover from '@/assets/tier-takeover.png';
 
 const GATE_PASSWORD = 'cartel';
-const luxuryFont = { fontFamily: "'Playfair Display', serif", fontWeight: 700 };
-const bebas = { fontFamily: "'Bebas Neue', sans-serif" };
+const luxuryFont = { fontFamily: "'Bebas Neue', sans-serif" };
+const bebas = luxuryFont;
 
 type PortalView = 'gate' | 'portal' | 'payment' | 'receipt' | 'revshare';
 type GateMode = 'code' | 'login' | 'otp';

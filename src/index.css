@@ -7,7 +7,7 @@
 
 :root {
   --font-size: 16px;
-  --font-display: 'Playfair Display', 'Bebas Neue', serif;
+  --font-display: 'Bebas Neue', sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   
   /* Loopgate Dark Authority Theme - Pure Black */
