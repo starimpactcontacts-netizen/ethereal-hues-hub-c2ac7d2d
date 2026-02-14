@@ -11,7 +11,7 @@
    submissionUrl: string;
    platform: string;
    submissionId: string;
-   submissionType: 'arena' | 'review' | 'battle' | 'judge_video';
+   submissionType: 'arena' | 'review' | 'battle' | 'judge_video' | 'quick_fight';
    username: string;
  }
  
