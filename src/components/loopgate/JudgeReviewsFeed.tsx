@@ -5,6 +5,19 @@ import { Flame, ChevronLeft, ChevronRight, Star, ExternalLink, X, Play, ArrowRig
 import { supabase } from '@/integrations/supabase/client';
 import { useThumbnail } from '@/hooks/useThumbnail';
 import { formatDistanceToNow } from 'date-fns';
+import loopgateLogo from '@/assets/loopgate-logo.png';
+
+// Branded gradient backgrounds for when thumbnails can't load
+const CARD_GRADIENTS = [
+  'from-purple-900/80 via-black to-indigo-900/60',
+  'from-emerald-900/70 via-black to-teal-900/50',
+  'from-amber-900/70 via-black to-orange-900/50',
+  'from-red-900/60 via-black to-rose-900/50',
+  'from-blue-900/70 via-black to-cyan-900/50',
+  'from-fuchsia-900/60 via-black to-pink-900/50',
+  'from-violet-900/70 via-black to-purple-900/50',
+  'from-sky-900/60 via-black to-blue-900/50',
+];
 
 interface ReviewItem {
   id: string;
@@ -84,18 +97,37 @@ function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (revie
       className="flex-shrink-0 w-[120px] text-left group"
     >
       <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-black ring-1 ring-border group-hover:ring-gold/60 transition-all shadow-lg group-hover:shadow-gold/20">
-        {/* Thumbnail */}
+        {/* Thumbnail or Branded Fallback */}
         {loading ? (
-          <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black animate-pulse" />
+          <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-background animate-pulse">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <img src={loopgateLogo} alt="" className="w-8 h-8 opacity-20" />
+            </div>
+          </div>
         ) : thumbnail ? (
           <img
             src={thumbnail}
             alt="Edit thumbnail"
             className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).parentElement?.querySelector('.fallback-bg')?.classList.remove('hidden');
+            }}
           />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-black to-purple-900/20" />
-        )}
+        ) : null}
+        
+        {/* Branded fallback — always rendered behind, visible when no thumbnail */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${CARD_GRADIENTS[Math.abs(review.id.charCodeAt(0)) % CARD_GRADIENTS.length]} ${thumbnail && !loading ? 'hidden' : ''} fallback-bg`}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <img src={loopgateLogo} alt="" className="w-10 h-10 opacity-40 drop-shadow-lg" />
+            <div className="w-8 h-[1px] bg-white/10" />
+          </div>
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: 'radial-gradient(circle at 50% 50%, white 1px, transparent 1px)',
+            backgroundSize: '12px 12px'
+          }} />
+        </div>
         
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
@@ -216,7 +248,9 @@ function ReviewPreviewModal({ review, onClose }: { review: ReviewItem; onClose: 
           {thumbnail ? (
             <img src={thumbnail} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gold/10 to-purple-900/20" />
+            <div className={`w-full h-full bg-gradient-to-br ${CARD_GRADIENTS[Math.abs(review.id.charCodeAt(0)) % CARD_GRADIENTS.length]} flex items-center justify-center`}>
+              <img src={loopgateLogo} alt="" className="w-16 h-16 opacity-30 drop-shadow-lg" />
+            </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           
