@@ -372,8 +372,8 @@ export default function FeedPage() {
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl">
         <div className="max-w-2xl mx-auto">
           {/* Top bar: logo + search toggle */}
-          <div className="flex items-center justify-between px-4 h-11">
-            <img src={loopgateLogo} alt="Loopgate" className="h-5 opacity-80" />
+           <div className="flex items-center justify-between px-3 h-10">
+            <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-80" />
             <button
               onClick={() => setShowSearch(!showSearch)}
               className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
@@ -432,7 +432,7 @@ export default function FeedPage() {
       {/* ─── Trending Strip (Stories-style) ─── */}
       {(trendingEditors.length > 0 || trendingUnits.length > 0) && (
         <div className="max-w-2xl mx-auto border-b border-border/30">
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
+          <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-3 py-2.5">
             {/* Units first */}
             {trendingUnits.map(unit => (
               <motion.button
@@ -441,17 +441,17 @@ export default function FeedPage() {
                 onClick={() => navigate(`/units/${unit.id}`)}
                 className="flex flex-col items-center gap-1 shrink-0"
               >
-                <div className="w-[52px] h-[52px] rounded-full p-[2px] bg-gradient-to-br from-primary/60 to-gold/40">
-                  <div className="w-full h-full rounded-full bg-background p-[2px]">
+                <div className="w-[46px] h-[46px] rounded-full p-[2px] bg-gradient-to-br from-primary/60 to-gold/40">
+                  <div className="w-full h-full rounded-full bg-background p-[1.5px]">
                     <Avatar className="w-full h-full rounded-full">
                       <AvatarImage src={unit.avatar_url || undefined} className="object-cover" />
-                      <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
+                      <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
                         {unit.emblem}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                 </div>
-                <span className="text-[10px] text-muted-foreground truncate max-w-[52px] leading-none">{unit.name}</span>
+                <span className="text-[9px] text-muted-foreground truncate max-w-[46px] leading-none">{unit.name}</span>
               </motion.button>
             ))}
 
@@ -464,11 +464,11 @@ export default function FeedPage() {
                 className="flex flex-col items-center gap-1 shrink-0"
               >
                 <div className="relative">
-                  <div className="w-[52px] h-[52px] rounded-full p-[2px] bg-gradient-to-br from-red-500/50 to-primary/40">
-                    <div className="w-full h-full rounded-full bg-background p-[2px]">
+                  <div className="w-[46px] h-[46px] rounded-full p-[2px] bg-gradient-to-br from-red-500/50 to-primary/40">
+                    <div className="w-full h-full rounded-full bg-background p-[1.5px]">
                       <Avatar className="w-full h-full rounded-full">
                         <AvatarImage src={editor.avatar_url || undefined} className="object-cover" />
-                        <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
+                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
                           {editor.username[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -480,7 +480,7 @@ export default function FeedPage() {
                     </div>
                   )}
                 </div>
-                <span className="text-[10px] text-muted-foreground truncate max-w-[52px] leading-none">@{editor.username}</span>
+                <span className="text-[9px] text-muted-foreground truncate max-w-[46px] leading-none">@{editor.username}</span>
               </motion.button>
             ))}
           </div>
@@ -536,9 +536,9 @@ export default function FeedPage() {
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => navigate('/arena')}
-        className="fixed bottom-20 right-4 z-30 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] flex items-center justify-center"
+        className="fixed bottom-[72px] right-3 z-30 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
       >
-        <Pen className="w-5 h-5" />
+        <Pen className="w-4 h-4" />
       </motion.button>
 
       {/* Video Player */}
