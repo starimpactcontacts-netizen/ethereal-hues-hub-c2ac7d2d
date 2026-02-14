@@ -1,474 +1,296 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, Mail, User, Briefcase, ArrowRight, CheckCircle, Loader2, KeyRound } from 'lucide-react';
+import { Lock, ArrowRight, Zap, Trophy, Users, DollarSign, Calendar, Mail, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Link, useNavigate } from 'react-router-dom';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import SEO, { pageSEO } from '@/components/SEO';
+import { Link } from 'react-router-dom';
 
-type ViewMode = 'form' | 'login' | 'otp';
+const GATE_PASSWORD = 'cartel';
+
+type PortalView = 'gate' | 'portal';
 
 export default function EnterprisePage() {
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('form');
-  const [loginEmail, setLoginEmail] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    company: '',
-    role: '',
-    message: ''
-  });
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [view, setView] = useState<PortalView>('gate');
+  const [shaking, setShaking] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Create account with random password (they'll reset later)
-      const tempPassword = crypto.randomUUID();
-      
-      const { error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: tempPassword,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: formData.fullName,
-            company: formData.company,
-            role: formData.role,
-            enterprise_inquiry: true,
-            message: formData.message
-          }
-        }
-      });
-
-      if (authError) {
-        // If user already exists, that's fine - just log the inquiry
-        if (!authError.message.includes('already registered')) {
-          throw authError;
-        }
-      }
-
-      // Send email notification to team
-      const { error: emailError } = await supabase.functions.invoke('send-enterprise-lead', {
-        body: {
-          fullName: formData.fullName,
-          email: formData.email,
-          company: formData.company,
-          role: formData.role,
-          message: formData.message
-        }
-      });
-
-      if (emailError) {
-        console.error('Failed to send notification email:', emailError);
-        // Don't block submission if email fails
-      }
-      
-      toast.success('Request submitted! We\'ll reach out within 24 hours.');
-      setIsSubmitted(true);
-    } catch (error: any) {
-      console.error('Enterprise signup error:', error);
-      toast.error(error.message || 'Something went wrong. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    if (password.toLowerCase().trim() === GATE_PASSWORD) {
+      setError('');
+      setView('portal');
+    } else {
+      setError('Access denied');
+      setShaking(true);
+      setTimeout(() => setShaking(false), 500);
     }
   };
-
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!loginEmail) {
-      toast.error('Please enter your email');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: loginEmail,
-        options: {
-          shouldCreateUser: false, // Only allow existing users
-        }
-      });
-
-      if (error) {
-        if (error.message.includes('Signups not allowed')) {
-          toast.error('No enterprise account found with this email');
-        } else {
-          throw error;
-        }
-        setIsSubmitting(false);
-        return;
-      }
-
-      toast.success('Verification code sent to your email');
-      setViewMode('otp');
-    } catch (error: any) {
-      console.error('OTP send error:', error);
-      toast.error(error.message || 'Failed to send code');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (otpCode.length !== 6) {
-      toast.error('Please enter the 6-digit code');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: loginEmail,
-        token: otpCode,
-        type: 'email'
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Welcome back!');
-      navigate('/hub');
-    } catch (error: any) {
-      console.error('OTP verify error:', error);
-      toast.error(error.message || 'Invalid code');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center"
-        >
-          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground mb-3">Request Received</h1>
-          <p className="text-muted-foreground mb-6">
-            Thanks for your interest in Loopgate Enterprise. Our team will reach out within 24 hours to schedule a call.
-          </p>
-          <Link to="/">
-            <Button variant="outline">Return to Home</Button>
-          </Link>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black text-white">
       <SEO {...pageSEO.enterprise} />
-      {/* Header */}
-      <header className="border-b border-border/50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-foreground">
-            LOOPGATE
-          </Link>
-          <span className="text-xs text-muted-foreground uppercase tracking-wider">
-            Enterprise
-          </span>
-        </div>
-      </header>
 
-      <div className="max-w-6xl mx-auto px-6 py-16 grid lg:grid-cols-2 gap-16 items-center">
-        {/* Left: Value Prop */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 leading-tight">
-            Launch UGC Campaigns with Top Creators
-          </h1>
-          <p className="text-lg text-muted-foreground mb-8">
-            Access Loopgate's network of verified video editors and content creators. 
-            Run branded competitions, source authentic content, and scale your UGC production.
-          </p>
-          
-          <div className="space-y-4">
-            {[
-              'Access to ranked, verified creators',
-              'Custom branded events & competitions',
-              'Real-time performance analytics',
-              'Direct content licensing & usage rights'
-            ].map((benefit, i) => (
-              <div key={i} className="flex items-center gap-3 text-foreground">
-                <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                <span>{benefit}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Right: Form / Login */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="bg-surface-1 border border-border rounded-2xl p-8">
-            {/* Toggle between new/existing enterprise */}
-            <div className="flex items-center justify-between mb-6">
-              <AnimatePresence mode="wait">
-                {viewMode === 'form' ? (
-                  <motion.div
-                    key="form-header"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <h2 className="text-xl font-semibold text-foreground">
-                      Get in Touch
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      Fill out the form and we'll schedule a call.
-                    </p>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="login-header"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <h2 className="text-xl font-semibold text-foreground">
-                      {viewMode === 'otp' ? 'Enter Code' : 'Enterprise Sign In'}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {viewMode === 'otp' 
-                        ? `Code sent to ${loginEmail}` 
-                        : 'Access your enterprise portal'}
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+      <AnimatePresence mode="wait">
+        {view === 'gate' ? (
+          <motion.div
+            key="gate"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
+            className="min-h-screen flex flex-col items-center justify-center px-6"
+          >
+            {/* Subtle ambient glow */}
+            <div className="fixed inset-0 pointer-events-none">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.02] rounded-full blur-[120px]" />
             </div>
 
-            <AnimatePresence mode="wait">
-              {/* New Enterprise Form */}
-              {viewMode === 'form' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="relative z-10 max-w-sm w-full text-center"
+            >
+              {/* Lock icon */}
+              <motion.div
+                animate={{ opacity: [0.3, 0.6, 0.3] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="mb-8"
+              >
+                <Lock className="w-8 h-8 text-white/40 mx-auto" />
+              </motion.div>
+
+              <h1 className="font-display text-2xl tracking-wider mb-2 text-white/90">
+                THE GATE
+              </h1>
+              <p className="text-[11px] text-white/30 uppercase tracking-[0.3em] mb-10">
+                Enter password to proceed
+              </p>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <motion.div
-                  key="form"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
+                  animate={shaking ? { x: [-8, 8, -6, 6, -3, 3, 0] } : {}}
+                  transition={{ duration: 0.4 }}
                 >
-                  {/* Already Enterprise Link */}
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('login')}
-                    className="w-full mb-6 py-3 border border-purple-500/30 bg-purple-500/10 text-purple-400 text-sm font-medium hover:bg-purple-500/20 transition-colors rounded-lg"
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                    placeholder="••••••"
+                    className="bg-transparent border-white/10 text-center text-lg tracking-[0.5em] placeholder:text-white/15 focus:border-white/30 h-14"
+                    autoFocus
+                  />
+                </motion.div>
+
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-red-500/80 text-xs uppercase tracking-wider"
                   >
-                    Already Enterprise? Sign in here →
-                  </button>
+                    {error}
+                  </motion.p>
+                )}
 
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Full Name"
-                        value={formData.fullName}
-                        onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                        className="pl-10"
-                        required
-                      />
+                <Button
+                  type="submit"
+                  className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white h-12 text-xs uppercase tracking-[0.2em]"
+                >
+                  Enter
+                </Button>
+              </form>
+
+              <p className="text-[10px] text-white/15 mt-8">
+                LOOPGATE CLIENT PORTAL
+              </p>
+            </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="portal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="min-h-screen"
+          >
+            {/* Portal Header */}
+            <header className="border-b border-white/5">
+              <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-display tracking-wider text-white/90">LOOPGATE</span>
+                  <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] border border-white/10 px-2 py-0.5">
+                    Client Portal
+                  </span>
+                </div>
+                <button
+                  onClick={() => { setView('gate'); setPassword(''); }}
+                  className="text-[10px] text-white/30 hover:text-white/60 uppercase tracking-wider transition-colors"
+                >
+                  Exit
+                </button>
+              </div>
+            </header>
+
+            {/* Hero */}
+            <section className="max-w-6xl mx-auto px-6 py-16 md:py-24">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <p className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-4">
+                  Welcome to the inside
+                </p>
+                <h1 className="font-display text-4xl md:text-6xl leading-tight mb-6 text-white">
+                  Run Campaigns.<br />
+                  <span className="text-white/40">Own the Culture.</span>
+                </h1>
+                <p className="text-white/50 max-w-lg text-sm leading-relaxed">
+                  Access Loopgate's network of elite video editors. Launch branded arena events, 
+                  commission full interrogation packages, and let our community create content that moves.
+                </p>
+              </motion.div>
+            </section>
+
+            {/* Products Grid */}
+            <section className="max-w-6xl mx-auto px-6 pb-16">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <p className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">
+                  Select a Package
+                </p>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Arena Event Slot */}
+                  <div className="group border border-white/8 hover:border-white/15 bg-white/[0.02] p-8 transition-all duration-300 cursor-pointer">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="p-3 border border-white/10 bg-white/5">
+                        <Trophy className="w-5 h-5 text-white/60" />
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors" />
                     </div>
-
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="email"
-                        placeholder="Work Email"
-                        value={formData.email}
-                        onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Company"
-                        value={formData.company}
-                        onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-
-                    <div className="relative">
-                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Your Role"
-                        value={formData.role}
-                        onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-
-                    <Textarea
-                      placeholder="Tell us about your campaign goals (optional)"
-                      value={formData.message}
-                      onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                      rows={3}
-                    />
-
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          Request a Call
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
-
-                    <p className="text-xs text-muted-foreground text-center">
-                      By submitting, you agree to our terms and privacy policy.
+                    <h3 className="font-display text-xl mb-2 text-white/90">Arena Event Slot</h3>
+                    <p className="text-xs text-white/40 leading-relaxed mb-6">
+                      Sponsor an official arena event. Your brand gets featured, editors compete using your brief, 
+                      and you own the content. Guest mode available — no account needed.
                     </p>
-                  </form>
-                </motion.div>
-              )}
-
-              {/* Enterprise Login - Email */}
-              {viewMode === 'login' && (
-                <motion.div
-                  key="login"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <form onSubmit={handleSendOTP} className="space-y-4">
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        type="email"
-                        placeholder="Enterprise Email"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                        autoFocus
-                      />
+                    <div className="flex items-center gap-4 text-[10px] text-white/25 uppercase tracking-wider">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3 h-3" /> 50-500 editors
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3" /> 3-7 day event
+                      </span>
                     </div>
+                    <div className="mt-6 pt-4 border-t border-white/5">
+                      <p className="text-white/60 font-display text-lg">From $2,500</p>
+                      <p className="text-[10px] text-white/25 uppercase tracking-wider mt-1">Per event slot</p>
+                    </div>
+                  </div>
 
-                    <Button
-                      type="submit"
-                      className="w-full bg-purple-600 hover:bg-purple-700"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          Send Verification Code
-                          <KeyRound className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
-                  </form>
+                  {/* Full Interrogation Package */}
+                  <div className="group border border-gold/20 hover:border-gold/30 bg-gold/[0.02] p-8 transition-all duration-300 cursor-pointer relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-gold/10 border-l border-b border-gold/20 px-3 py-1">
+                      <span className="text-[9px] text-gold uppercase tracking-wider font-semibold">Premium</span>
+                    </div>
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="p-3 border border-gold/20 bg-gold/5">
+                        <Zap className="w-5 h-5 text-gold/70" />
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-gold/50 transition-colors" />
+                    </div>
+                    <h3 className="font-display text-xl mb-2 text-white/90">Loopgate Interrogation</h3>
+                    <p className="text-xs text-white/40 leading-relaxed mb-6">
+                      Full-service campaign. We plug your brand into the Loopgate ecosystem — editors go crazy on your brief, 
+                      our marketing amplifies, seeding across platforms. End-to-end.
+                    </p>
+                    <div className="flex items-center gap-4 text-[10px] text-white/25 uppercase tracking-wider">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3 h-3" /> Full network
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Zap className="w-3 h-3" /> Marketing + Seeding
+                      </span>
+                    </div>
+                    <div className="mt-6 pt-4 border-t border-gold/10">
+                      <p className="text-gold/80 font-display text-lg">Custom Pricing</p>
+                      <p className="text-[10px] text-white/25 uppercase tracking-wider mt-1">Tailored to campaign scope</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </section>
 
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('form')}
-                    className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    ← Back to inquiry form
-                  </button>
-                </motion.div>
-              )}
-
-              {/* Enterprise Login - OTP */}
-              {viewMode === 'otp' && (
+            {/* How It Works */}
+            <section className="border-t border-white/5">
+              <div className="max-w-6xl mx-auto px-6 py-16">
                 <motion.div
-                  key="otp"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
                 >
-                  <div className="flex justify-center">
-                    <InputOTP
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={setOtpCode}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-
-                  <Button
-                    onClick={handleVerifyOTP}
-                    className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={isSubmitting || otpCode.length !== 6}
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        Verify & Sign In
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setViewMode('login');
-                        setOtpCode('');
-                      }}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      ← Change email
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSendOTP}
-                      disabled={isSubmitting}
-                      className="text-purple-400 hover:text-purple-300 transition-colors"
-                    >
-                      Resend code
-                    </button>
+                  <p className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-8">
+                    How It Works
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-8">
+                    {[
+                      { step: '01', title: 'Brief Us', desc: 'Share your campaign goals, brand assets, and target audience. We design the arena format.' },
+                      { step: '02', title: 'Editors Compete', desc: 'Our ranked editors create content based on your brief. Real competition, real quality.' },
+                      { step: '03', title: 'Own the Content', desc: 'Review submissions, select winners, license content. We handle seeding and amplification.' },
+                    ].map((item) => (
+                      <div key={item.step} className="space-y-3">
+                        <span className="text-[10px] text-white/20 font-mono">{item.step}</span>
+                        <h3 className="font-display text-lg text-white/80">{item.title}</h3>
+                        <p className="text-xs text-white/35 leading-relaxed">{item.desc}</p>
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-      </div>
+              </div>
+            </section>
+
+            {/* Contact CTA */}
+            <section className="border-t border-white/5">
+              <div className="max-w-6xl mx-auto px-6 py-16 text-center">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 }}
+                >
+                  <h2 className="font-display text-2xl mb-3 text-white/80">Ready to Move?</h2>
+                  <p className="text-xs text-white/30 mb-8">
+                    Reach out and we'll build your campaign within 48 hours.
+                  </p>
+                  <Button
+                    onClick={() => window.location.href = 'mailto:team@loopgate.io'}
+                    className="bg-white text-black hover:bg-white/90 h-12 px-8 text-xs uppercase tracking-[0.2em]"
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Contact Team
+                  </Button>
+                </motion.div>
+              </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="border-t border-white/5 py-6">
+              <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
+                <span className="text-[10px] text-white/15 uppercase tracking-wider">
+                  Viral Cartel × Loopgate
+                </span>
+                <Link to="/" className="text-[10px] text-white/20 hover:text-white/40 transition-colors">
+                  Back to Loopgate
+                </Link>
+              </div>
+            </footer>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
