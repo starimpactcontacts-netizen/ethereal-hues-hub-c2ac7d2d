@@ -1020,58 +1020,58 @@ export default function EnterprisePage() {
 
   // ─── REVENUE SHARE APPLICATION ───
   const renderRevShare = () => (
-    <motion.div key="revshare" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0D0D 50%, #080808 100%)' }}>
+    <motion.div key="revshare" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="min-h-screen flex items-center justify-center px-4 md:px-6 py-12 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0D0D 50%, #080808 100%)' }}>
       <GrainOverlay />
       <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.85)_100%)] z-[2]" />
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-md w-full relative z-10">
-        <Handshake className="w-5 h-5 text-[#1B4332]/60 mx-auto mb-4" />
-        <h1 className="text-3xl text-white text-center mb-2" style={bebas}>Revenue Share Program</h1>
-        <p className="text-[10px] text-white/20 text-center mb-8 leading-relaxed max-w-xs mx-auto">
+        <Handshake className="w-4 h-4 md:w-5 md:h-5 text-[#1B4332]/60 mx-auto mb-3" />
+        <h1 className="text-2xl md:text-3xl text-white text-center mb-1.5" style={bebas}>Revenue Share Program</h1>
+        <p className="text-[9px] md:text-[10px] text-white/20 text-center mb-6 md:mb-8 leading-relaxed max-w-xs mx-auto">
           No budget? No problem. If your project is fire, we'll push it through the Loopgate engine and take a percentage of revenue generated. We decide what's worth it.
         </p>
 
         {revShareSubmitted ? (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-            <div className="w-16 h-16 border border-[#1B4332]/40 bg-[#1B4332]/10 flex items-center justify-center mx-auto mb-6">
-              <Check className="w-7 h-7 text-[#1B4332]" />
+            <div className="w-12 h-12 md:w-16 md:h-16 border border-[#1B4332]/40 bg-[#1B4332]/10 flex items-center justify-center mx-auto mb-4 md:mb-6">
+              <Check className="w-5 h-5 md:w-7 md:h-7 text-[#1B4332]" />
             </div>
-            <h2 className="text-2xl text-white mb-2" style={bebas}>Application Received.</h2>
-            <p className="text-xs text-white/25 mb-8">We review every pitch personally. If it's fire, you'll hear from us within 48 hours.</p>
-            <Button onClick={() => { setView('portal'); setRevShareSubmitted(false); }} className="bg-transparent border border-white/10 text-white/40 hover:text-white/70 h-12 px-8 text-[10px] uppercase tracking-[0.3em] rounded-none">
+            <h2 className="text-xl md:text-2xl text-white mb-2" style={bebas}>Application Received.</h2>
+            <p className="text-[10px] md:text-xs text-white/25 mb-6 md:mb-8">We review every pitch personally. If it's fire, you'll hear from us within 48 hours.</p>
+            <Button onClick={() => { setView('portal'); setRevShareSubmitted(false); }} className="bg-transparent border border-white/10 text-white/40 hover:text-white/70 h-10 md:h-12 px-6 md:px-8 text-[9px] md:text-[10px] uppercase tracking-[0.3em] rounded-none">
               Back to Portal
             </Button>
           </motion.div>
         ) : (
-          <div className="border border-white/10 bg-black/40 p-6 space-y-4 relative">
-            <GoldCorners size={14} />
+          <div className="border border-white/10 bg-black/40 p-4 md:p-6 space-y-3 md:space-y-4 relative">
+            <GoldCorners size={12} />
             <div>
-              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Your Name</label>
-              <Input value={revShareName} onChange={(e) => setRevShareName(e.target.value)} placeholder="Artist / Label name" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+              <label className="text-[8px] md:text-[9px] text-white/20 uppercase tracking-wider block mb-1.5">Your Name</label>
+              <Input value={revShareName} onChange={(e) => setRevShareName(e.target.value)} placeholder="Artist / Label name" className="bg-white/[0.02] border-white/[0.06] text-[13px] md:text-sm placeholder:text-white/10 focus:border-white/20 h-9 md:h-11 rounded-none" />
             </div>
             <div>
-              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Email *</label>
-              <Input value={revShareEmail} onChange={(e) => setRevShareEmail(e.target.value)} placeholder="your@email.com" type="email" required className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+              <label className="text-[8px] md:text-[9px] text-white/20 uppercase tracking-wider block mb-1.5">Email *</label>
+              <Input value={revShareEmail} onChange={(e) => setRevShareEmail(e.target.value)} placeholder="your@email.com" type="email" required className="bg-white/[0.02] border-white/[0.06] text-[13px] md:text-sm placeholder:text-white/10 focus:border-white/20 h-9 md:h-11 rounded-none" />
             </div>
             <div>
-              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Project Name *</label>
-              <Input value={revShareProject} onChange={(e) => setRevShareProject(e.target.value)} placeholder="Song title, brand, campaign..." required className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+              <label className="text-[8px] md:text-[9px] text-white/20 uppercase tracking-wider block mb-1.5">Project Name *</label>
+              <Input value={revShareProject} onChange={(e) => setRevShareProject(e.target.value)} placeholder="Song title, brand, campaign..." required className="bg-white/[0.02] border-white/[0.06] text-[13px] md:text-sm placeholder:text-white/10 focus:border-white/20 h-9 md:h-11 rounded-none" />
             </div>
             <div>
-              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Link to Project</label>
-              <Input value={revShareUrl} onChange={(e) => setRevShareUrl(e.target.value)} placeholder="https://..." className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+              <label className="text-[8px] md:text-[9px] text-white/20 uppercase tracking-wider block mb-1.5">Link to Project</label>
+              <Input value={revShareUrl} onChange={(e) => setRevShareUrl(e.target.value)} placeholder="https://..." className="bg-white/[0.02] border-white/[0.06] text-[13px] md:text-sm placeholder:text-white/10 focus:border-white/20 h-9 md:h-11 rounded-none" />
             </div>
             <div>
-              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Why Should We Invest? *</label>
-              <Textarea value={revSharePitch} onChange={(e) => setRevSharePitch(e.target.value)} placeholder="Sell us on it. Why is this going to blow up?" required className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 rounded-none min-h-[100px] resize-none" />
+              <label className="text-[8px] md:text-[9px] text-white/20 uppercase tracking-wider block mb-1.5">Why Should We Invest? *</label>
+              <Textarea value={revSharePitch} onChange={(e) => setRevSharePitch(e.target.value)} placeholder="Sell us on it. Why is this going to blow up?" required className="bg-white/[0.02] border-white/[0.06] text-[13px] md:text-sm placeholder:text-white/10 focus:border-white/20 rounded-none min-h-[80px] md:min-h-[100px] resize-none" />
             </div>
 
-            <Button onClick={handleRevShareSubmit} disabled={revShareSubmitting} className="w-full bg-[#1B4332] hover:bg-[#1B4332]/80 text-white h-14 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#1B4332]/40">
+            <Button onClick={handleRevShareSubmit} disabled={revShareSubmitting} className="w-full bg-[#1B4332] hover:bg-[#1B4332]/80 text-white h-11 md:h-14 text-[10px] md:text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#1B4332]/40">
               {revShareSubmitting ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Submitting...</> : <>Submit Pitch <ArrowRight className="w-3.5 h-3.5 ml-2" /></>}
             </Button>
 
-            <button onClick={() => setView('portal')} className="w-full text-[9px] text-white/20 hover:text-white/40 uppercase tracking-[0.2em] transition-colors text-center block pt-2">← Back to Portal</button>
+            <button onClick={() => setView('portal')} className="w-full text-[8px] md:text-[9px] text-white/20 hover:text-white/40 uppercase tracking-[0.2em] transition-colors text-center block pt-1">← Back to Portal</button>
           </div>
         )}
       </motion.div>
