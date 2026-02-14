@@ -523,47 +523,116 @@ export default function EnterprisePage() {
 
         {/* ─── Slot Tiers ─── */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="py-20">
-          <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-10">Select Your Tier</p>
-          <div className="grid md:grid-cols-3 gap-[1px] bg-white/[0.04]">
-            {SLOT_TIERS.map((tier) => {
-              const avail = SLOT_AVAILABILITY[tier.id];
-              return (
-                <motion.button
-                  key={tier.id}
-                  whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
-                  className="text-left p-8 md:p-10 relative group transition-all duration-500"
-                  style={{ background: '#0A0A0A' }}
-                  onClick={() => { setSelectedTier(tier); setLaunchOpen(true); }}
-                >
-                  {/* Hover accent line */}
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-transparent group-hover:bg-white/10 transition-all duration-500" />
-                  
-                  <div className="flex items-start justify-between mb-6">
-                    <p className="text-[10px] text-white/25 uppercase tracking-[0.3em]" style={bebas}>{tier.name}</p>
-                    {tier.tag && (
-                      <span className="text-[7px] text-white/30 uppercase tracking-wider border border-white/10 px-2 py-0.5">{tier.tag}</span>
-                    )}
-                  </div>
-                  
-                  <p className="text-4xl md:text-5xl text-white mb-4" style={bebas}>{tier.priceLabel}</p>
-                  <p className="text-[11px] text-white/20 leading-relaxed mb-6">{tier.desc}</p>
-                  
-                  {/* Availability dots */}
-                  <div className="flex items-center gap-2 mb-4">
+          <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-16">Select Your Tier</p>
+          
+          <div className="space-y-0">
+            {/* ─── TRIAL ─── */}
+            <motion.button
+              whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+              className="w-full text-left relative group transition-all duration-700 border-t border-white/[0.06] py-14 md:py-20 px-2 md:px-4"
+              style={{ background: 'transparent' }}
+              onClick={() => { setSelectedTier(SLOT_TIERS[0]); setLaunchOpen(true); }}
+            >
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                <div className="flex-1">
+                  <p className="text-[10px] text-white/20 uppercase tracking-[0.5em] mb-4">Trial Slot</p>
+                  <h2 className="text-5xl md:text-[88px] text-white/90 leading-[0.85] tracking-[0.01em] mb-4 group-hover:text-white transition-colors duration-500" style={bebas}>
+                    TEST THE<br />
+                    <span className="text-white/40 group-hover:text-white/70 transition-colors duration-500">WATERS.</span>
+                  </h2>
+                  <p className="text-[12px] text-white/20 leading-relaxed max-w-sm">
+                    20 to 30 edits in 48 hours. Arena distribution. 1v1 battles. See what happens when real editors touch your sound.
+                  </p>
+                </div>
+                <div className="flex flex-col items-start md:items-end gap-4">
+                  <p className="text-5xl md:text-6xl text-white" style={bebas}>$150</p>
+                  <div className="flex items-center gap-3">
                     <div className="flex gap-1">
-                      {Array.from({ length: avail.total }).map((_, i) => (
-                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < avail.left ? 'bg-[#1B4332]' : 'bg-white/8'}`} />
-                      ))}
+                      {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#1B4332]" />)}
                     </div>
-                    <span className="text-[8px] text-white/15 uppercase tracking-wider">{avail.left}/{avail.total} left</span>
+                    <span className="text-[8px] text-white/15 uppercase tracking-wider">3/3 Left</span>
                   </div>
-
-                  <span className="text-[9px] text-white/15 group-hover:text-white/40 uppercase tracking-[0.2em] transition-colors flex items-center gap-1">
-                    Select <ChevronRight className="w-3 h-3" />
+                  <span className="text-[9px] text-white/15 group-hover:text-white/50 uppercase tracking-[0.3em] transition-colors duration-500 flex items-center gap-2">
+                    Select <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                   </span>
-                </motion.button>
-              );
-            })}
+                </div>
+              </div>
+            </motion.button>
+
+            {/* ─── STANDARD ─── */}
+            <motion.button
+              whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+              className="w-full text-left relative group transition-all duration-700 border-t border-white/[0.06] py-14 md:py-20 px-2 md:px-4"
+              style={{ background: 'transparent' }}
+              onClick={() => { setSelectedTier(SLOT_TIERS[1]); setLaunchOpen(true); }}
+            >
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-4">
+                    <p className="text-[10px] text-white/20 uppercase tracking-[0.5em]">Standard Slot</p>
+                    <span className="text-[7px] text-white/40 uppercase tracking-wider border border-white/15 px-3 py-1">Most Chosen</span>
+                  </div>
+                  <h2 className="text-5xl md:text-[88px] text-white leading-[0.85] tracking-[0.01em] mb-4 transition-colors duration-500" style={bebas}>
+                    OWN THE<br />
+                    <span className="text-[#E00000] group-hover:text-[#FF1A1A] transition-colors duration-500">CYCLE.</span>
+                  </h2>
+                  <p className="text-[12px] text-white/20 leading-relaxed max-w-sm">
+                    Full arena cycle. Judges score every submission. Loop Feed exposure. Your campaign becomes the main event.
+                  </p>
+                </div>
+                <div className="flex flex-col items-start md:items-end gap-4">
+                  <p className="text-5xl md:text-6xl text-white" style={bebas}>$400</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-1">
+                      {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#1B4332]" />)}
+                    </div>
+                    <span className="text-[8px] text-white/15 uppercase tracking-wider">3/3 Left</span>
+                  </div>
+                  <span className="text-[9px] text-white/15 group-hover:text-white/50 uppercase tracking-[0.3em] transition-colors duration-500 flex items-center gap-2">
+                    Select <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </div>
+            </motion.button>
+
+            {/* ─── TAKEOVER ─── */}
+            <motion.button
+              whileHover={{ backgroundColor: 'rgba(224,0,0,0.02)' }}
+              className="w-full text-left relative group transition-all duration-700 border-t border-b border-white/[0.06] py-14 md:py-20 px-2 md:px-4 overflow-hidden"
+              style={{ background: 'transparent' }}
+              onClick={() => { setSelectedTier(SLOT_TIERS[2]); setLaunchOpen(true); }}
+            >
+              {/* Subtle ambient glow on hover */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 50%, rgba(224,0,0,0.03) 0%, transparent 70%)' }} />
+              
+              <div className="relative flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-4">
+                    <p className="text-[10px] text-white/20 uppercase tracking-[0.5em]">Takeover Slot</p>
+                    <span className="text-[7px] text-[#E00000]/60 uppercase tracking-wider border border-[#E00000]/20 px-3 py-1 bg-[#E00000]/5">Max Impact</span>
+                  </div>
+                  <h2 className="text-5xl md:text-[88px] text-white leading-[0.85] tracking-[0.01em] mb-4 transition-colors duration-500" style={bebas}>
+                    BECOME<br />
+                    <span className="text-[#E00000] group-hover:text-[#FF1A1A] transition-colors duration-500">UNDENIABLE.</span>
+                  </h2>
+                  <p className="text-[12px] text-white/20 leading-relaxed max-w-sm">
+                    Pinned event. Full ecosystem takeover. Every editor sees your name. Guaranteed multi-format distribution across the entire platform.
+                  </p>
+                </div>
+                <div className="flex flex-col items-start md:items-end gap-4">
+                  <p className="text-5xl md:text-7xl text-white" style={bebas}>$1,200</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-1">
+                      {[0,1,2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#1B4332]" />)}
+                    </div>
+                    <span className="text-[8px] text-white/15 uppercase tracking-wider">3/3 Left</span>
+                  </div>
+                  <span className="text-[9px] text-white/15 group-hover:text-[#E00000]/50 uppercase tracking-[0.3em] transition-colors duration-500 flex items-center gap-2">
+                    Select <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </div>
+            </motion.button>
           </div>
         </motion.section>
 
