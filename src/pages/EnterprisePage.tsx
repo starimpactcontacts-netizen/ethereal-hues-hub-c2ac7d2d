@@ -492,8 +492,8 @@ export default function EnterprisePage() {
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-2" style={luxuryFont}>
               Control the
             </h1>
-            {/* Netflix-style "Culture." — flat text with bottom shadow gradient to simulate the arc feel */}
-            <div className="relative mb-6" style={{ width: 'fit-content' }}>
+            {/* Netflix-style "Culture." — text with arc-shaped bottom clip */}
+            <div className="relative mb-6 overflow-hidden" style={{ width: 'fit-content' }}>
               <span
                 className="text-6xl md:text-[120px] text-[#E00000] block"
                 style={{
@@ -501,18 +501,19 @@ export default function EnterprisePage() {
                   lineHeight: 0.85,
                   letterSpacing: '-0.02em',
                   textShadow: '0 4px 30px rgba(224,0,0,0.35), 0 0 80px rgba(224,0,0,0.15)',
+                  paddingBottom: '20px',
                 }}
               >
                 Culture.
               </span>
-              {/* Netflix-style bottom shadow — creates the illusion of curved depth */}
+              {/* Arc-shaped clip overlay — curves the bottom edge of the letters like Netflix */}
               <div 
-                className="absolute bottom-0 left-0 right-0 pointer-events-none"
+                className="absolute bottom-0 left-[-5%] right-[-5%] pointer-events-none"
                 style={{
-                  height: '40%',
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)',
-                  maskImage: 'linear-gradient(to top, black 0%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to top, black 0%, transparent 100%)',
+                  height: '35%',
+                  background: '#000000',
+                  borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
+                  transform: 'translateY(55%)',
                 }}
               />
             </div>
