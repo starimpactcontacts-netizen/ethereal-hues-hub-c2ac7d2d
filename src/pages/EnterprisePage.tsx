@@ -37,8 +37,8 @@ const SLOT_TIERS: SlotTier[] = [
 ];
 
 const MOCK_CAMPAIGNS = [
-  { id: '1', name: 'Summer Vibes Drop', tier: 'Standard Slot', status: 'Live', edits: 47, battles: 12, feedHits: 2340, judges: 3, thumb: '🎵' },
-  { id: '2', name: 'Brand X Takeover', tier: 'Takeover Slot', status: 'Completed', edits: 128, battles: 34, feedHits: 12800, judges: 8, thumb: '🔥' },
+  { id: '1', name: 'Summer Vibes Drop', tier: 'Standard Slot', status: 'Live', edits: 47, battles: 12, feedHits: 1240000, judges: 3, thumb: '🎵' },
+  { id: '2', name: 'Brand X Takeover', tier: 'Takeover Slot', status: 'Completed', edits: 128, battles: 34, feedHits: 8700000, judges: 8, thumb: '🔥' },
 ];
 
 // Fake online clients for social proof
@@ -446,7 +446,7 @@ export default function EnterprisePage() {
               {[
                 { label: 'Edits Generated', value: '20–130+', icon: Play, accent: '#C8A96E' },
                 { label: 'Time to Start', value: '<2 Hours', icon: Clock, accent: '#E00000' },
-                { label: 'Feed Impressions', value: '5K–50K+', icon: Eye, accent: '#1B4332' },
+                { label: 'Feed Impressions', value: '500K–10M+', icon: Eye, accent: '#1B4332' },
               ].map(m => (
                 <div key={m.label} className="bg-black/30 border border-white/5 p-4 text-center relative group/metric hover:border-white/10 transition-colors">
                   <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${m.accent}30, transparent)` }} />
@@ -557,7 +557,7 @@ export default function EnterprisePage() {
                       {[
                         { label: 'Edits', value: campaign.edits, icon: Play, color: '#C8A96E' },
                         { label: '1v1 Battles', value: campaign.battles, icon: Zap, color: '#E00000' },
-                        { label: 'Feed Hits', value: campaign.feedHits.toLocaleString(), icon: TrendingUp, color: '#1B4332' },
+                        { label: 'Feed Hits', value: campaign.feedHits >= 1000000 ? `${(campaign.feedHits / 1000000).toFixed(1)}M` : campaign.feedHits >= 1000 ? `${(campaign.feedHits / 1000).toFixed(0)}K` : campaign.feedHits.toString(), icon: TrendingUp, color: '#1B4332' },
                         { label: 'Judges', value: campaign.judges, icon: Star, color: '#C8A96E' },
                       ].map(stat => (
                         <div key={stat.label} className="bg-black/40 border border-white/5 p-3 text-center">
