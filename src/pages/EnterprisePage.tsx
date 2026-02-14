@@ -200,16 +200,23 @@ export default function EnterprisePage() {
         {/* Near-black marble base */}
         <div className="absolute inset-0" style={{ 
           background: `
-            radial-gradient(ellipse at 30% 20%, rgba(10,30,18,0.5) 0%, transparent 50%),
-            radial-gradient(ellipse at 70% 60%, rgba(8,25,14,0.4) 0%, transparent 50%),
-            linear-gradient(180deg, #030a06 0%, #06120a 25%, #081510 50%, #06120a 75%, #030a06 100%)
+            radial-gradient(ellipse at 25% 15%, rgba(6,20,10,0.7) 0%, transparent 45%),
+            radial-gradient(ellipse at 75% 50%, rgba(5,18,9,0.6) 0%, transparent 45%),
+            radial-gradient(ellipse at 40% 80%, rgba(7,22,12,0.5) 0%, transparent 40%),
+            linear-gradient(180deg, #020805 0%, #040e08 25%, #06110a 50%, #040e08 75%, #020805 100%)
           `
         }} />
-        {/* Marble veins — very subtle */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.05]" preserveAspectRatio="none" viewBox="0 0 100 800">
-          <path d="M30 0 Q45 80 20 160 Q10 240 40 320 Q55 400 25 480 Q15 560 45 640 Q50 720 30 800" stroke="rgba(100,160,120,0.8)" strokeWidth="0.6" fill="none" />
-          <path d="M70 0 Q55 100 75 200 Q85 300 60 400 Q50 500 80 600 Q90 700 65 800" stroke="rgba(80,140,100,0.6)" strokeWidth="0.4" fill="none" />
-          <path d="M15 100 Q30 150 50 180 Q70 210 85 280" stroke="rgba(90,150,110,0.4)" strokeWidth="0.3" fill="none" />
+        {/* Dense marble vein network */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.06]" preserveAspectRatio="none" viewBox="0 0 100 800">
+          <path d="M30 0 Q45 80 20 160 Q10 240 40 320 Q55 400 25 480 Q15 560 45 640 Q50 720 30 800" stroke="rgba(80,130,95,0.9)" strokeWidth="0.7" fill="none" />
+          <path d="M70 0 Q55 100 75 200 Q85 300 60 400 Q50 500 80 600 Q90 700 65 800" stroke="rgba(60,110,80,0.7)" strokeWidth="0.5" fill="none" />
+          <path d="M15 100 Q30 150 50 180 Q70 210 85 280" stroke="rgba(70,120,85,0.5)" strokeWidth="0.4" fill="none" />
+          <path d="M80 400 Q60 450 40 500 Q25 540 10 600" stroke="rgba(65,115,80,0.4)" strokeWidth="0.4" fill="none" />
+          <path d="M50 200 Q65 260 45 340 Q30 400 50 480" stroke="rgba(75,125,90,0.45)" strokeWidth="0.4" fill="none" />
+          <path d="M10 0 Q25 60 15 120 Q5 180 20 250 Q35 320 18 400" stroke="rgba(55,100,70,0.5)" strokeWidth="0.35" fill="none" />
+          <path d="M85 200 Q70 280 90 360 Q80 440 65 520 Q75 600 60 700" stroke="rgba(50,95,65,0.4)" strokeWidth="0.3" fill="none" />
+          <path d="M45 500 Q55 560 40 620 Q30 680 50 750" stroke="rgba(60,105,75,0.35)" strokeWidth="0.3" fill="none" />
+          <path d="M60 50 Q40 110 55 170 Q70 230 50 290" stroke="rgba(65,110,78,0.3)" strokeWidth="0.25" fill="none" />
         </svg>
         {/* Surface sheen */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 40%, rgba(255,255,255,0.01) 70%, transparent 100%)' }} />
