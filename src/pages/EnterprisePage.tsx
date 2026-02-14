@@ -87,6 +87,7 @@ export default function EnterprisePage() {
   const [otpCode, setOtpCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [launchOpen, setLaunchOpen] = useState(false);
+  const [briefFiles, setBriefFiles] = useState<File[]>([]);
   const [campaignName, setCampaignName] = useState('');
   const [campaignLink, setCampaignLink] = useState('');
   const [campaignNotes, setCampaignNotes] = useState('');
@@ -799,8 +800,64 @@ export default function EnterprisePage() {
               <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="e.g. Summer Drop 2026" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
             </div>
             <div>
-              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Notes for Founder (Optional)</label>
-              <Textarea value={campaignNotes} onChange={(e) => setCampaignNotes(e.target.value)} placeholder="Any special instructions..." className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 rounded-none min-h-[70px] resize-none" />
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Brief / Notes for Founder (Optional)</label>
+              <Textarea 
+                value={campaignNotes} 
+                onChange={(e) => { if (e.target.value.length <= 1500) setCampaignNotes(e.target.value); }} 
+                placeholder="Describe the vibe, target audience, references, special instructions... go as deep as you need." 
+                className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 rounded-none min-h-[120px] resize-y" 
+                maxLength={1500}
+              />
+              <div className="flex items-center justify-between mt-1.5">
+                <span className="text-[8px] text-white/10 uppercase tracking-wider">Up to 1,500 characters</span>
+                <span className={`text-[8px] uppercase tracking-wider ${campaignNotes.length > 1300 ? 'text-[#E00000]/50' : 'text-white/10'}`}>{campaignNotes.length}/1,500</span>
+              </div>
+            </div>
+            
+            {/* File Attachments */}
+            <div>
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Attach Files (Optional)</label>
+              <p className="text-[8px] text-white/10 mb-3">Reference images, mood boards, logos, artwork — anything that helps us understand the vision.</p>
+              <label className="flex flex-col items-center justify-center border border-dashed border-white/[0.08] hover:border-white/[0.15] p-5 cursor-pointer transition-colors group" style={{ background: 'rgba(255,255,255,0.01)' }}>
+                <Upload className="w-4 h-4 text-white/10 group-hover:text-white/25 mb-2 transition-colors" />
+                <span className="text-[9px] text-white/15 group-hover:text-white/30 uppercase tracking-wider transition-colors">Drop files or click to upload</span>
+                <span className="text-[7px] text-white/8 mt-1">PNG, JPG, PDF, MP3 · Max 10MB each</span>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  multiple 
+                  accept="image/*,.pdf,.mp3,.wav,.m4a" 
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      const newFiles = Array.from(e.target.files).filter(f => f.size <= 10 * 1024 * 1024);
+                      setBriefFiles(prev => [...prev, ...newFiles].slice(0, 5));
+                    }
+                  }} 
+                />
+              </label>
+              {briefFiles.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  {briefFiles.map((file, i) => (
+                    <div key={i} className="flex items-center justify-between px-3 py-2 border border-white/[0.04]" style={{ background: 'rgba(255,255,255,0.01)' }}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {file.type.startsWith('image/') ? (
+                          <img src={URL.createObjectURL(file)} alt="" className="w-6 h-6 object-cover rounded-sm opacity-60" />
+                        ) : (
+                          <div className="w-6 h-6 flex items-center justify-center bg-white/[0.04] rounded-sm">
+                            <span className="text-[6px] text-white/20 uppercase">{file.name.split('.').pop()}</span>
+                          </div>
+                        )}
+                        <span className="text-[10px] text-white/30 truncate">{file.name}</span>
+                        <span className="text-[8px] text-white/10 shrink-0">{(file.size / 1024).toFixed(0)}KB</span>
+                      </div>
+                      <button onClick={() => setBriefFiles(prev => prev.filter((_, j) => j !== i))} className="text-white/10 hover:text-white/40 transition-colors ml-2 shrink-0">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <p className="text-[7px] text-white/8 uppercase tracking-wider">{briefFiles.length}/5 files attached</p>
+                </div>
+              )}
             </div>
             <div>
               <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-3">Select Tier</label>
