@@ -156,6 +156,8 @@ export default function JudgeQuickFightsTab() {
                       <Trophy className="w-3 h-3 text-gold" />
                       <span className="text-[9px] text-gold font-bold">{fight.winner_score}-{fight.loser_score}</span>
                     </div>
+                  ) : fight.status === 'cancelled' ? (
+                    <span className="text-[9px] text-zinc-500 font-bold">CANCELLED</span>
                   ) : fight.status === 'active' ? (
                     <span className="text-[9px] text-red-400 font-bold animate-pulse">LIVE</span>
                   ) : fight.status === 'judging' ? (

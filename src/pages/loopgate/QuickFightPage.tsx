@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search } from 'lucide-react';
@@ -29,6 +29,11 @@ export default function QuickFightPage() {
   const [judgeScore2, setJudgeScore2] = useState('');
   const [judgeNotes, setJudgeNotes] = useState('');
   const [judging, setJudging] = useState(false);
+
+  // Auto-resolve expired fights on page load
+  useEffect(() => {
+    supabase.rpc('resolve_expired_quick_fights').then(() => {});
+  }, [fightId]);
 
   if (loading) {
     return (
@@ -226,7 +231,9 @@ export default function QuickFightPage() {
           <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">
             {fight.status === 'active' ? '⚔️ LIVE FIGHT' :
              fight.status === 'judging' ? '⚖️ AWAITING JUDGE' :
-             fight.status === 'completed' ? '🏆 DECIDED' : fight.status.toUpperCase()}
+             fight.status === 'completed' ? '🏆 DECIDED' :
+             fight.status === 'cancelled' ? '🚫 CANCELLED' :
+             fight.status === 'forfeited' ? '🏳️ FORFEIT' : fight.status.toUpperCase()}
           </span>
         </div>
       </div>
@@ -419,6 +426,24 @@ export default function QuickFightPage() {
         {/* Result Card (shareable) */}
         {fight.status === 'completed' && fight.winner_id && (
           <QuickFightResultCard fight={fight} />
+        )}
+
+        {/* Cancelled Banner */}
+        {fight.status === 'cancelled' && (
+          <div className="bg-muted border border-border rounded-lg p-4 text-center">
+            <p className="text-sm font-display text-muted-foreground uppercase tracking-wider">🚫 Fight Cancelled</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Neither player submitted before the deadline. No index awarded.</p>
+          </div>
+        )}
+
+        {/* Forfeit Result */}
+        {fight.status === 'completed' && fight.judge_notes?.includes('forfeit') && (
+          <div className="bg-muted border border-destructive/30 rounded-lg p-4 text-center">
+            <p className="text-sm font-display text-foreground uppercase tracking-wider">🏳️ Won by Forfeit</p>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Opponent did not submit. Winner receives <span className="text-gold font-bold">+20 IDX</span>, forfeiter penalized <span className="text-destructive font-bold">-10 IDX</span>
+            </p>
+          </div>
         )}
 
         {/* Chat */}

@@ -10,7 +10,7 @@ export interface QuickFight {
   player_2_id: string | null;
   player_2_username: string | null;
   player_2_avatar_url: string | null;
-  status: 'waiting' | 'active' | 'submitted' | 'judging' | 'completed' | 'forfeited';
+  status: 'waiting' | 'active' | 'submitted' | 'judging' | 'completed' | 'forfeited' | 'cancelled';
   player_1_submission_url: string | null;
   player_1_submitted_at: string | null;
   player_2_submission_url: string | null;
@@ -214,7 +214,7 @@ export function useRecentQuickFights(limit = 20) {
       const { data } = await supabase
         .from('quick_fights')
         .select('*')
-        .in('status', ['active', 'judging', 'completed'])
+        .in('status', ['active', 'judging', 'completed', 'cancelled'])
         .order('created_at', { ascending: false })
         .limit(limit);
       setFights((data as unknown as QuickFight[]) || []);
