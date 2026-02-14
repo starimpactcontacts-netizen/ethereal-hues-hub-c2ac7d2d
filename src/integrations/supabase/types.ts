@@ -4619,6 +4619,7 @@ export type Database = {
           success: boolean
         }[]
       }
+      resolve_expired_quick_fights: { Args: never; Returns: number }
       spend_index: {
         Args: { p_amount: number; p_user_id: string }
         Returns: boolean
