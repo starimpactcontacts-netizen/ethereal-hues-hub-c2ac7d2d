@@ -42,7 +42,7 @@ export default function LevelBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 font-semibold uppercase tracking-wider border transition-shadow",
+        "inline-flex items-center gap-1 font-semibold uppercase tracking-wider border rounded-md transition-shadow",
         colors.bg,
         colors.text,
         colors.border,

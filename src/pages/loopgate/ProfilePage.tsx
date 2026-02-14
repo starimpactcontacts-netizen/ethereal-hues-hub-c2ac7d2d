@@ -295,12 +295,12 @@ export default function ProfilePage() {
       </div>
       {/* ═══ XP BAR ═══ */}
       <div className="px-4 mb-1.5">
-        <div className="flex items-center justify-between text-[8px] text-muted-foreground mb-0.5">
-          <span className="flex items-center gap-0.5">
-            <Zap className="w-2 h-2 text-purple-400" />
-            LV {level}
+        <div className="flex items-center justify-between text-[9px] text-muted-foreground mb-0.5">
+          <span className="flex items-center gap-1">
+            <Zap className="w-2.5 h-2.5 text-purple-400" />
+            <span className="uppercase tracking-wider font-medium">Lv {level}</span>
           </span>
-          <span>{xp} XP</span>
+          <span className="tabular-nums">{xp} XP</span>
         </div>
         <XPProgressBar xp={xp} level={level} size="sm" />
       </div>

@@ -237,14 +237,15 @@ export default function HubPage() {
                         )}
                       </div>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center shadow-lg">
-                      <span className="font-display text-xs text-foreground">{profile?.level || 1}</span>
+                    <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg">
+                      <span className="font-display text-[9px] text-muted-foreground uppercase tracking-wider">Lv</span>
+                      <span className="font-display text-xs text-foreground ml-0.5">{profile?.level || 1}</span>
                     </div>
                   </div>
                   
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h1 className="font-display text-2xl text-foreground leading-none truncate max-w-[140px]">
+                      <h1 className="font-display text-2xl text-foreground leading-none truncate max-w-[200px]">
                         {displayUsername}
                       </h1>
                       {isJudge && (
