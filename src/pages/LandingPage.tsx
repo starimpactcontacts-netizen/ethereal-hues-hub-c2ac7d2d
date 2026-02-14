@@ -497,7 +497,7 @@ export default function LandingPage() {
               <p className="text-muted-foreground text-base sm:text-lg max-w-lg mx-auto mb-10">
                 On your phone or in your browser. Your rank follows you everywhere.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
                 <Link to="/download">
                   <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-base px-8 py-4 h-auto gap-2">
                     <Smartphone className="w-5 h-5" /> Download for iOS
@@ -509,6 +509,9 @@ export default function LandingPage() {
                   </Button>
                 </Link>
               </div>
+              <p className="text-sm text-muted-foreground mb-10 max-w-md mx-auto">
+                Not available in your region? Use the web version for the full experience. No download needed. Works on any device.
+              </p>
               <div className="flex flex-wrap justify-center gap-3">
                 {['iOS', 'Web', 'Android (Soon)'].map(p => (
                   <span key={p} className="px-4 py-2 bg-surface-1 border border-border text-xs text-muted-foreground font-medium uppercase tracking-wider">{p}</span>
