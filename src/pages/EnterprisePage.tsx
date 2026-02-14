@@ -528,21 +528,24 @@ export default function EnterprisePage() {
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="py-20">
           <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-12">Select Your Tier</p>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* TRIAL */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px]">
+            {/* TRIAL — Artist/Music bg */}
             <motion.button
-              whileHover={{ scale: 1.02, y: -4 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="relative group overflow-hidden text-left"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="relative group overflow-hidden text-left aspect-[3/4]"
               onClick={() => { setSelectedTier(SLOT_TIERS[0]); setLaunchOpen(true); }}
             >
-              <div className="relative aspect-[9/16] w-full overflow-hidden">
-                <img src={tierTrial} alt="Trial Slot" className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" />
-                {/* Overlay info at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                  <p className="text-[10px] text-white/30 uppercase tracking-[0.5em] mb-1">Trial Slot</p>
-                  <p className="text-[11px] text-white/25 leading-relaxed mb-3">20 to 30 edits in 48 hours. Arena distribution. 1v1 battles.</p>
+              <img src={cultureArtist} alt="" className="absolute inset-0 w-full h-full object-cover grayscale opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
+              <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8">
+                <div>
+                  <p className="text-[10px] text-white/25 uppercase tracking-[0.5em]">Trial Slot</p>
+                </div>
+                <div>
+                  <p className="text-4xl md:text-5xl text-white mb-2" style={bebas}>$150</p>
+                  <h3 className="text-2xl md:text-3xl text-white/60 leading-[0.9] mb-4" style={bebas}>TEST THE WATERS.</h3>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-4">20 to 30 edits in 48 hours. Arena distribution. 1v1 battles.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
@@ -550,7 +553,7 @@ export default function EnterprisePage() {
                       </div>
                       <span className="text-[8px] text-white/15 uppercase tracking-wider">3/3 Left</span>
                     </div>
-                    <span className="text-[9px] text-white/20 group-hover:text-white/50 uppercase tracking-[0.3em] transition-colors flex items-center gap-1">
+                    <span className="text-[9px] text-white/15 group-hover:text-white/40 uppercase tracking-[0.3em] transition-colors flex items-center gap-1">
                       Select <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
@@ -558,22 +561,27 @@ export default function EnterprisePage() {
               </div>
             </motion.button>
 
-            {/* STANDARD */}
+            {/* STANDARD — Phonk/Music bg */}
             <motion.button
-              whileHover={{ scale: 1.02, y: -4 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="relative group overflow-hidden text-left"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="relative group overflow-hidden text-left aspect-[3/4]"
               onClick={() => { setSelectedTier(SLOT_TIERS[1]); setLaunchOpen(true); }}
             >
-              <div className="relative aspect-[9/16] w-full overflow-hidden">
-                <img src={tierStandard} alt="Standard Slot" className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" />
-                <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                  <div className="flex items-center gap-3 mb-1">
-                    <p className="text-[10px] text-white/30 uppercase tracking-[0.5em]">Standard Slot</p>
-                    <span className="text-[7px] text-white/40 uppercase tracking-wider border border-white/15 px-2 py-0.5">Most Chosen</span>
-                  </div>
-                  <p className="text-[11px] text-white/25 leading-relaxed mb-3">Full arena cycle. Judges score every submission. Loop Feed exposure.</p>
+              <img src={culturePhonk} alt="" className="absolute inset-0 w-full h-full object-cover grayscale opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
+              <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-white/25 uppercase tracking-[0.5em]">Standard Slot</p>
+                  <span className="text-[7px] text-white/40 uppercase tracking-wider border border-white/15 px-2 py-0.5">Most Chosen</span>
+                </div>
+                <div>
+                  <p className="text-4xl md:text-5xl text-white mb-2" style={bebas}>$400</p>
+                  <h3 className="text-2xl md:text-3xl leading-[0.9] mb-4" style={bebas}>
+                    <span className="text-white/80">OWN THE </span>
+                    <span className="text-[#E00000]">CYCLE.</span>
+                  </h3>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-4">Full arena cycle. Judges score every submission. Loop Feed exposure.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
@@ -581,7 +589,7 @@ export default function EnterprisePage() {
                       </div>
                       <span className="text-[8px] text-white/15 uppercase tracking-wider">3/3 Left</span>
                     </div>
-                    <span className="text-[9px] text-white/20 group-hover:text-white/50 uppercase tracking-[0.3em] transition-colors flex items-center gap-1">
+                    <span className="text-[9px] text-white/15 group-hover:text-white/40 uppercase tracking-[0.3em] transition-colors flex items-center gap-1">
                       Select <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
@@ -589,22 +597,29 @@ export default function EnterprisePage() {
               </div>
             </motion.button>
 
-            {/* TAKEOVER */}
+            {/* TAKEOVER — NFL/Sports bg */}
             <motion.button
-              whileHover={{ scale: 1.02, y: -4 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="relative group overflow-hidden text-left"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="relative group overflow-hidden text-left aspect-[3/4]"
               onClick={() => { setSelectedTier(SLOT_TIERS[2]); setLaunchOpen(true); }}
             >
-              <div className="relative aspect-[9/16] w-full overflow-hidden">
-                <img src={tierTakeover} alt="Takeover Slot" className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" />
-                <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                  <div className="flex items-center gap-3 mb-1">
-                    <p className="text-[10px] text-white/30 uppercase tracking-[0.5em]">Takeover Slot</p>
-                    <span className="text-[7px] text-[#E00000]/60 uppercase tracking-wider border border-[#E00000]/20 px-2 py-0.5 bg-[#E00000]/5">Max Impact</span>
-                  </div>
-                  <p className="text-[11px] text-white/25 leading-relaxed mb-3">Pinned event. Full ecosystem takeover. Guaranteed multi-format distribution.</p>
+              <img src={cultureNFL} alt="" className="absolute inset-0 w-full h-full object-cover grayscale opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
+              {/* Subtle red ambient */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700" style={{ background: 'radial-gradient(ellipse at 50% 80%, rgba(224,0,0,0.06) 0%, transparent 60%)' }} />
+              <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-white/25 uppercase tracking-[0.5em]">Takeover Slot</p>
+                  <span className="text-[7px] text-[#E00000]/60 uppercase tracking-wider border border-[#E00000]/20 px-2 py-0.5 bg-[#E00000]/5">Max Impact</span>
+                </div>
+                <div>
+                  <p className="text-4xl md:text-6xl text-white mb-2" style={bebas}>$1,200</p>
+                  <h3 className="text-2xl md:text-3xl leading-[0.9] mb-4" style={bebas}>
+                    <span className="text-white/80">BECOME </span>
+                    <span className="text-[#E00000]">UNDENIABLE.</span>
+                  </h3>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-4">Pinned event. Full ecosystem takeover. Guaranteed multi-format distribution.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
@@ -612,7 +627,7 @@ export default function EnterprisePage() {
                       </div>
                       <span className="text-[8px] text-white/15 uppercase tracking-wider">3/3 Left</span>
                     </div>
-                    <span className="text-[9px] text-white/20 group-hover:text-[#E00000]/50 uppercase tracking-[0.3em] transition-colors flex items-center gap-1">
+                    <span className="text-[9px] text-white/15 group-hover:text-[#E00000]/50 uppercase tracking-[0.3em] transition-colors flex items-center gap-1">
                       Select <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                     </span>
                   </div>
