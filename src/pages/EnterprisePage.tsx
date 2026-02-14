@@ -449,10 +449,10 @@ export default function EnterprisePage() {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 + i * 0.15 }}
-                className="w-[100px] md:w-[130px] h-[140px] md:h-[180px] overflow-hidden relative"
+                className={`${i === 1 ? 'w-[180px] md:w-[240px]' : 'w-[100px] md:w-[130px]'} h-[140px] md:h-[180px] overflow-hidden relative`}
                 style={{ clipPath: 'polygon(0 8%, 100% 0%, 100% 92%, 0% 100%)' }}
               >
-                <img src={img.src} alt={img.label} className="w-full h-full object-cover grayscale" />
+                <img src={img.src} alt={img.label} className={`w-full h-full object-cover grayscale ${i === 1 ? 'object-center' : ''}`} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
                 <span className="absolute bottom-2 left-2 text-[7px] text-white/40 uppercase tracking-wider">{img.category}</span>
               </motion.div>
