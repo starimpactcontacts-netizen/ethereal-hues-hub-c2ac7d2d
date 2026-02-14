@@ -197,31 +197,28 @@ export default function EnterprisePage() {
 
       {/* 24K-style vertical stripe — dark marble with depth */}
       <div className="fixed top-0 bottom-0 right-[40px] md:right-[80px] w-[80px] md:w-[100px] z-[5] overflow-hidden">
-        {/* Rich dark marble base — layered gradients for depth */}
+        {/* Near-black marble base */}
         <div className="absolute inset-0" style={{ 
           background: `
-            radial-gradient(ellipse at 30% 20%, rgba(20,60,35,0.6) 0%, transparent 50%),
-            radial-gradient(ellipse at 70% 60%, rgba(15,50,30,0.5) 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 90%, rgba(20,55,35,0.4) 0%, transparent 40%),
-            linear-gradient(180deg, #050f08 0%, #0a1e12 20%, #0d2516 40%, #081a0e 60%, #0a1e12 80%, #050f08 100%)
+            radial-gradient(ellipse at 30% 20%, rgba(10,30,18,0.5) 0%, transparent 50%),
+            radial-gradient(ellipse at 70% 60%, rgba(8,25,14,0.4) 0%, transparent 50%),
+            linear-gradient(180deg, #030a06 0%, #06120a 25%, #081510 50%, #06120a 75%, #030a06 100%)
           `
         }} />
-        {/* Marble vein network — diagonal cracks */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.07]" preserveAspectRatio="none" viewBox="0 0 100 800">
-          <path d="M30 0 Q45 80 20 160 Q10 240 40 320 Q55 400 25 480 Q15 560 45 640 Q50 720 30 800" stroke="rgba(140,200,160,0.8)" strokeWidth="0.8" fill="none" />
-          <path d="M70 0 Q55 100 75 200 Q85 300 60 400 Q50 500 80 600 Q90 700 65 800" stroke="rgba(100,170,130,0.6)" strokeWidth="0.5" fill="none" />
-          <path d="M15 100 Q30 150 50 180 Q70 210 85 280" stroke="rgba(120,180,140,0.4)" strokeWidth="0.4" fill="none" />
-          <path d="M80 400 Q60 450 40 500 Q25 540 10 600" stroke="rgba(130,190,150,0.3)" strokeWidth="0.3" fill="none" />
-          <path d="M50 200 Q65 260 45 340" stroke="rgba(110,175,135,0.35)" strokeWidth="0.4" fill="none" />
+        {/* Marble veins — very subtle */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.05]" preserveAspectRatio="none" viewBox="0 0 100 800">
+          <path d="M30 0 Q45 80 20 160 Q10 240 40 320 Q55 400 25 480 Q15 560 45 640 Q50 720 30 800" stroke="rgba(100,160,120,0.8)" strokeWidth="0.6" fill="none" />
+          <path d="M70 0 Q55 100 75 200 Q85 300 60 400 Q50 500 80 600 Q90 700 65 800" stroke="rgba(80,140,100,0.6)" strokeWidth="0.4" fill="none" />
+          <path d="M15 100 Q30 150 50 180 Q70 210 85 280" stroke="rgba(90,150,110,0.4)" strokeWidth="0.3" fill="none" />
         </svg>
-        {/* Subtle surface sheen */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%, rgba(255,255,255,0.02) 70%, transparent 100%)' }} />
-        {/* Thin dark red border lines */}
-        <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-[#5a0000]" />
-        <div className="absolute top-0 bottom-0 right-0 w-[2px] bg-[#5a0000]" />
-        {/* VC Crest — centered with presence */}
+        {/* Surface sheen */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 40%, rgba(255,255,255,0.01) 70%, transparent 100%)' }} />
+        {/* Border lines — layered dark red with inner glow */}
+        <div className="absolute top-0 bottom-0 left-0 w-[3px]" style={{ background: 'linear-gradient(180deg, #2a0000 0%, #4a0000 30%, #3a0000 50%, #4a0000 70%, #2a0000 100%)', boxShadow: 'inset -1px 0 2px rgba(80,0,0,0.4), 1px 0 4px rgba(60,0,0,0.2)' }} />
+        <div className="absolute top-0 bottom-0 right-0 w-[3px]" style={{ background: 'linear-gradient(180deg, #2a0000 0%, #4a0000 30%, #3a0000 50%, #4a0000 70%, #2a0000 100%)', boxShadow: 'inset 1px 0 2px rgba(80,0,0,0.4), -1px 0 4px rgba(60,0,0,0.2)' }} />
+        {/* VC Crest */}
         <div className="absolute inset-0 flex items-center justify-center" style={{ top: '15%' }}>
-          <img src={viralCartelCrest} alt="" className="w-[55px] md:w-[72px] h-auto opacity-30" style={{ filter: 'brightness(1.8) contrast(0.8)' }} />
+          <img src={viralCartelCrest} alt="" className="w-[55px] md:w-[72px] h-auto opacity-25" style={{ filter: 'brightness(1.6) contrast(0.7)' }} />
         </div>
       </div>
       
