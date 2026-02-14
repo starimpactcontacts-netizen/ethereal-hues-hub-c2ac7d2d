@@ -321,320 +321,203 @@ export default function EnterprisePage() {
 
   // ─── PORTAL (DASHBOARD + LAUNCHER) ───
   const renderPortal = () => (
-    <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }} className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0D0D 40%, #080808 100%)' }}>
+    <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }} className="min-h-screen relative overflow-hidden" style={{ background: '#060606' }}>
       <GrainOverlay />
-      <GatePattern opacity={2} color="#C8A96E" tileSize={160} />
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,transparent_30%,rgba(0,0,0,0.7)_100%)] z-[2]" />
 
-      {/* ─── Luxury Header ─── */}
-      <header className="border-b border-[#C8A96E]/10 sticky top-0 z-50 backdrop-blur-xl" style={{ background: 'rgba(10,10,10,0.9)' }}>
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src={loopgateBrand} alt="LOOPGATE" className="h-5 w-auto opacity-80" />
-            <div className="h-4 w-px bg-[#C8A96E]/15" />
-            <span className="text-[8px] text-[#C8A96E]/50 uppercase tracking-[0.4em]">Client Portal</span>
+      {/* ─── Cinematic Header ─── */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b border-white/[0.04]" style={{ background: 'rgba(6,6,6,0.85)' }}>
+        <div className="max-w-7xl mx-auto px-8 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            <img src={loopgateBrand} alt="LOOPGATE" className="h-4 w-auto opacity-70" />
+            <span className="text-[8px] text-white/20 uppercase tracking-[0.5em]">Client Portal</span>
           </div>
-          
-          <div className="flex items-center gap-4">
-            {/* Online clients indicator */}
-            <div className="flex items-center gap-1.5">
-              <div className="flex -space-x-2">
-                {ONLINE_CLIENTS.slice(0, 4).map((c, i) => (
-                  <div key={i} className="w-6 h-6 rounded-full border border-black/60 flex items-center justify-center text-[7px] font-bold text-white/70" style={{ background: c.color, zIndex: 5 - i }}>
-                    {c.initials}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-1 ml-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#1B4332] animate-pulse" />
-                <span className="text-[8px] text-white/25">{ONLINE_CLIENTS.length} online</span>
-              </div>
-            </div>
-
-            <div className="h-4 w-px bg-white/5" />
-            
-            {/* Client login button */}
-            <button onClick={() => setGateMode('login')} className="flex items-center gap-1.5 text-[9px] text-[#C8A96E]/40 hover:text-[#C8A96E]/70 uppercase tracking-[0.2em] transition-colors">
-              <User className="w-3 h-3" />
-              Account
-            </button>
-
-            <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/20 hover:text-white/40 uppercase tracking-[0.2em] transition-colors">Exit</button>
+          <div className="flex items-center gap-5">
+            <button onClick={() => setGateMode('login')} className="text-[9px] text-white/30 hover:text-white/60 uppercase tracking-[0.2em] transition-colors">Account</button>
+            <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/15 hover:text-white/30 uppercase tracking-[0.2em] transition-colors">Exit</button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
-        {/* VC Crest - top corner */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.15, scale: 1 }}
-          transition={{ delay: 0.1, duration: 1 }}
-          className="absolute right-6 top-6 z-20 pointer-events-none"
-        >
-          <img src={viralCartelCrest} alt="" className="w-16 md:w-20 h-auto" />
-        </motion.div>
-
-        {/* ─── Hero / Welcome ─── */}
-        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="pt-14 pb-16 relative">
-          {/* Luxury animated emblem behind hero */}
-          <div className="absolute right-0 md:right-12 top-0 w-[280px] h-[280px] md:w-[400px] md:h-[400px] pointer-events-none select-none z-0 opacity-[0.12]">
-            {/* Outer rotating ring */}
-            <motion.div
-              className="absolute inset-0"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-            >
-              <svg viewBox="0 0 400 400" className="w-full h-full">
-                <circle cx="200" cy="200" r="190" fill="none" stroke="#C8A96E" strokeWidth="0.5" strokeDasharray="8 12" />
-                <circle cx="200" cy="200" r="170" fill="none" stroke="#C8A96E" strokeWidth="0.3" />
-                {/* 8-point star markers */}
-                {[0,45,90,135,180,225,270,315].map(deg => (
-                  <line key={deg} x1="200" y1="10" x2="200" y2="30" stroke="#C8A96E" strokeWidth="1" transform={`rotate(${deg} 200 200)`} />
-                ))}
-              </svg>
-            </motion.div>
-            {/* Inner counter-rotating ring */}
-            <motion.div
-              className="absolute inset-[15%]"
-              animate={{ rotate: -360 }}
-              transition={{ duration: 45, repeat: Infinity, ease: 'linear' }}
-            >
-              <svg viewBox="0 0 400 400" className="w-full h-full">
-                <polygon points="200,40 230,170 360,170 250,250 290,380 200,290 110,380 150,250 40,170 170,170" fill="none" stroke="#C8A96E" strokeWidth="0.6" />
-                <circle cx="200" cy="200" r="120" fill="none" stroke="#C8A96E" strokeWidth="0.3" strokeDasharray="4 8" />
-              </svg>
-            </motion.div>
-            {/* Center diamond pulse */}
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.8, 0.4] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              <Diamond className="w-8 h-8 text-[#C8A96E]" />
-            </motion.div>
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <Crown className="w-4 h-4 text-[#C8A96E]/40" />
-              <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Private Access</p>
-            </div>
-            <h1 className="text-4xl md:text-6xl text-white leading-[0.95] mb-5" style={bebas}>
-              Control the<br />
-              <motion.span
-                className="text-[#C8A96E] inline-block"
-                animate={{ textShadow: ['0 0 20px rgba(200,169,110,0)', '0 0 40px rgba(200,169,110,0.3)', '0 0 20px rgba(200,169,110,0)'] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                Culture.
-              </motion.span>
-            </h1>
-            <p className="text-white/30 text-sm max-w-lg leading-relaxed">
-              Launch campaigns into the Loopgate arena. Our editors compete, judges rate, and your content spreads — all within minutes of purchase.
-            </p>
-            
-            {/* Decorative divider */}
-            <div className="flex items-center gap-3 mt-8">
-              <div className="h-px w-20 bg-gradient-to-r from-[#C8A96E]/30 to-transparent" />
-              <Diamond className="w-2.5 h-2.5 text-[#C8A96E]/20" />
-            </div>
-          </div>
-
-          {/* ─── Culture Image Strip ─── */}
-          <div className="absolute bottom-0 right-0 md:right-8 flex gap-2 opacity-[0.18] pointer-events-none select-none">
-            {CULTURE_IMAGES.slice(0, 3).map((img, i) => (
+      {/* ─── Hero: Full-Bleed Cinematic ─── */}
+      <section className="relative min-h-[85vh] flex items-end overflow-hidden pt-14">
+        {/* Culture imagery - full bleed background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 flex">
+            {CULTURE_IMAGES.slice(0, 4).map((img, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 + i * 0.15 }}
-                className={`${i === 1 ? 'w-[180px] md:w-[240px]' : 'w-[100px] md:w-[130px]'} h-[140px] md:h-[180px] overflow-hidden relative`}
-                style={{ clipPath: 'polygon(0 8%, 100% 0%, 100% 92%, 0% 100%)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 + i * 0.2, duration: 1.2 }}
+                className="flex-1 relative overflow-hidden"
               >
-                <img src={img.src} alt={img.label} className={`w-full h-full object-cover grayscale ${i === 1 ? 'object-center' : ''}`} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
-                <span className="absolute bottom-2 left-2 text-[7px] text-white/40 uppercase tracking-wider">{img.category}</span>
+                <img src={img.src} alt="" className="w-full h-full object-cover grayscale opacity-20" />
               </motion.div>
             ))}
           </div>
-        </motion.section>
+          {/* Cinematic gradient overlays — Netflix-style bottom fade */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#060606] via-[#060606]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#060606] via-transparent to-[#060606]/50" />
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#060606] to-transparent" />
+        </div>
 
-        {/* ─── Availability Banner ─── */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="mb-10 relative">
-          <div className="border border-[#1B4332]/30 bg-[#1B4332]/[0.06] p-4 flex items-center justify-between">
-            <GoldCorners size={10} />
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#1B4332] animate-pulse shadow-[0_0_8px_rgba(27,67,50,0.5)]" />
-              <span className="text-[10px] text-white/50 uppercase tracking-[0.2em]">Drop pricing active — 3 / 3 available per tier</span>
-            </div>
-            <span className="text-[9px] text-[#1B4332] uppercase tracking-wider font-medium">Open</span>
-          </div>
+        {/* VC Crest watermark */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.06 }}
+          transition={{ delay: 0.8, duration: 2 }}
+          className="absolute right-8 md:right-20 top-24 pointer-events-none"
+        >
+          <img src={viralCartelCrest} alt="" className="w-32 md:w-48 h-auto" />
         </motion.div>
 
-        {/* ─── Campaign Launcher Card ─── */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="mb-10">
-          <div className="border border-[#C8A96E]/10 bg-gradient-to-br from-[#C8A96E]/[0.03] via-transparent to-[#1B4332]/[0.03] p-8 md:p-12 relative overflow-hidden group hover:border-[#C8A96E]/20 transition-all duration-500">
-            <GoldCorners size={24} />
-            
-            {/* Top gold line */}
-            <div className="absolute top-0 left-[24px] right-[24px] h-[1px] bg-gradient-to-r from-transparent via-[#C8A96E]/20 to-transparent" />
-            
-            <div className="flex items-start justify-between mb-8">
-              <div>
-                <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em] mb-3">Featured</p>
-                <h2 className="text-3xl text-white mb-2" style={bebas}>Start a Slot</h2>
-                <p className="text-xs text-white/25 max-w-md">Inject your track or asset into the Loopgate arena. Editors compete, content flows, culture moves.</p>
-              </div>
-              <div className="p-4 border border-[#C8A96E]/15 bg-[#C8A96E]/[0.05]">
-                <Flame className="w-6 h-6 text-[#C8A96E]/50" />
-              </div>
+        {/* Hero content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-8 pb-20 w-full">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
+            <p className="text-[10px] text-[#C8A96E]/50 uppercase tracking-[0.6em] mb-5">Private Access</p>
+            <h1 className="text-5xl md:text-8xl text-white leading-[0.9] mb-6" style={bebas}>
+              Control the<br />
+              <span className="text-[#C8A96E]">Culture.</span>
+            </h1>
+            <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
+              Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads — all within minutes.
+            </p>
+            <div className="flex items-center gap-4">
+              <Button onClick={() => setLaunchOpen(true)} className="bg-white text-black hover:bg-white/90 h-12 px-8 text-[11px] uppercase tracking-[0.3em] rounded-none font-medium transition-all">
+                Launch Campaign <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#1B4332] animate-pulse" />
+                <span className="text-[9px] text-white/20 uppercase tracking-wider">Drops Open</span>
+              </span>
             </div>
+          </motion.div>
+        </div>
+      </section>
 
-            {/* Expected Metrics */}
-            <div className="grid grid-cols-3 gap-4 mb-10">
-              {[
-                { label: 'Edits Generated', value: '20–130+', icon: Play, accent: '#C8A96E' },
-                { label: 'Time to Start', value: '<2 Hours', icon: Clock, accent: '#E00000' },
-                { label: 'Feed Impressions', value: '500K–10M+', icon: Eye, accent: '#1B4332' },
-              ].map(m => (
-                <div key={m.label} className="bg-black/30 border border-white/5 p-4 text-center relative group/metric hover:border-white/10 transition-colors">
-                  <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${m.accent}30, transparent)` }} />
-                  <m.icon className="w-4 h-4 mx-auto mb-2" style={{ color: `${m.accent}60` }} />
-                  <p className="text-lg text-white/80 font-medium" style={bebas}>{m.value}</p>
-                  <p className="text-[8px] text-white/25 uppercase tracking-wider mt-1">{m.label}</p>
-                </div>
-              ))}
+      {/* ─── Metrics Ribbon ─── */}
+      <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="border-y border-white/[0.04] relative" style={{ background: 'rgba(255,255,255,0.01)' }}>
+        <div className="max-w-7xl mx-auto px-8 py-8 grid grid-cols-3 gap-0">
+          {[
+            { label: 'Edits Generated', value: '20–130+', icon: Play },
+            { label: 'Time to Start', value: '<2 Hours', icon: Clock },
+            { label: 'Feed Impressions', value: '500K–10M+', icon: Eye },
+          ].map((m, i) => (
+            <div key={m.label} className={`text-center py-2 ${i < 2 ? 'border-r border-white/[0.04]' : ''}`}>
+              <p className="text-2xl md:text-3xl text-white/80 mb-1" style={bebas}>{m.value}</p>
+              <p className="text-[8px] text-white/20 uppercase tracking-[0.3em]">{m.label}</p>
             </div>
+          ))}
+        </div>
+      </motion.section>
 
-            <Button onClick={() => setLaunchOpen(true)} className="bg-[#8B0000] hover:bg-[#A00000] text-white h-14 px-10 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#8B0000]/40 w-full md:w-auto shadow-[0_0_40px_rgba(139,0,0,0.15)] transition-all hover:shadow-[0_0_60px_rgba(139,0,0,0.25)]">
-              Launch Campaign <ArrowRight className="w-4 h-4 ml-3" />
-            </Button>
-          </div>
-        </motion.div>
+      <div className="max-w-7xl mx-auto px-8 relative z-10">
 
-        {/* ─── Slot Tiers Showcase ─── */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-14">
-          <div className="flex items-center gap-3 mb-6">
-            <Diamond className="w-3 h-3 text-[#C8A96E]/30" />
-            <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Available Tiers</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            {SLOT_TIERS.map((tier, ti) => {
+        {/* ─── Slot Tiers ─── */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="py-20">
+          <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-10">Select Your Tier</p>
+          <div className="grid md:grid-cols-3 gap-[1px] bg-white/[0.04]">
+            {SLOT_TIERS.map((tier) => {
               const avail = SLOT_AVAILABILITY[tier.id];
               return (
-              <motion.div
-                key={tier.id}
-                whileHover={{ y: -4 }}
-                className="border border-white/6 bg-black/30 p-6 relative group cursor-pointer hover:border-[#C8A96E]/20 transition-all duration-300 overflow-hidden"
-                onClick={() => { setSelectedTier(tier); setLaunchOpen(true); }}
-              >
-                <GoldCorners size={12} />
-                {/* Background culture image per tier */}
-                <div className="absolute inset-0 pointer-events-none">
-                  <img src={CULTURE_IMAGES[ti + 3]?.src || CULTURE_IMAGES[0].src} alt="" className="w-full h-full object-cover opacity-[0.06] grayscale" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/60" />
-                </div>
-                {/* Top accent */}
-                <div className="absolute top-0 left-3 right-3 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${tier.color}40, transparent)` }} />
-                
-                <div className="relative z-10">
-                  {tier.tag && (
-                    <span className="absolute top-0 right-0 text-[7px] uppercase tracking-wider px-2 py-0.5 border" style={{ color: `${tier.color}90`, borderColor: `${tier.color}30`, background: `${tier.color}08` }}>{tier.tag}</span>
-                  )}
-                  <p className="text-xs text-white/40 uppercase tracking-wider mb-2" style={bebas}>{tier.name}</p>
-                  <p className="text-3xl text-white mb-3" style={bebas}>{tier.priceLabel}</p>
-                  <div className="h-px bg-white/5 mb-3" />
-                  <p className="text-[10px] text-white/25 leading-relaxed">{tier.desc}</p>
+                <motion.button
+                  key={tier.id}
+                  whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
+                  className="text-left p-8 md:p-10 relative group transition-all duration-500"
+                  style={{ background: '#0A0A0A' }}
+                  onClick={() => { setSelectedTier(tier); setLaunchOpen(true); }}
+                >
+                  {/* Hover accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-transparent group-hover:bg-[#C8A96E]/30 transition-all duration-500" />
                   
-                  {/* Availability */}
-                  <div className="mt-4 flex items-center gap-2">
+                  <div className="flex items-start justify-between mb-6">
+                    <p className="text-[10px] text-white/25 uppercase tracking-[0.3em]" style={bebas}>{tier.name}</p>
+                    {tier.tag && (
+                      <span className="text-[7px] text-[#C8A96E]/60 uppercase tracking-wider border border-[#C8A96E]/15 px-2 py-0.5">{tier.tag}</span>
+                    )}
+                  </div>
+                  
+                  <p className="text-4xl md:text-5xl text-white mb-4" style={bebas}>{tier.priceLabel}</p>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-6">{tier.desc}</p>
+                  
+                  {/* Availability dots */}
+                  <div className="flex items-center gap-2 mb-4">
                     <div className="flex gap-1">
                       {Array.from({ length: avail.total }).map((_, i) => (
-                        <div key={i} className={`w-2 h-2 rounded-full ${i < avail.left ? 'bg-[#1B4332] shadow-[0_0_6px_rgba(27,67,50,0.5)]' : 'bg-white/10'}`} />
+                        <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < avail.left ? 'bg-[#1B4332]' : 'bg-white/8'}`} />
                       ))}
                     </div>
-                    <span className="text-[8px] text-white/20 uppercase tracking-wider">{avail.left}/{avail.total} left</span>
+                    <span className="text-[8px] text-white/15 uppercase tracking-wider">{avail.left}/{avail.total} left</span>
                   </div>
 
-                  <div className="mt-4 flex items-center gap-1.5 text-[9px] text-[#C8A96E]/30 group-hover:text-[#C8A96E]/60 transition-colors uppercase tracking-wider">
+                  <span className="text-[9px] text-white/15 group-hover:text-[#C8A96E]/50 uppercase tracking-[0.2em] transition-colors flex items-center gap-1">
                     Select <ChevronRight className="w-3 h-3" />
-                  </div>
-                </div>
-              </motion.div>
+                  </span>
+                </motion.button>
               );
             })}
           </div>
-        </motion.div>
+        </motion.section>
 
-        {/* ─── How It Works ─── */}
-        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="mb-14">
-          <div className="border-t border-[#C8A96E]/10 pt-12">
-            <div className="flex items-center gap-3 mb-8">
-              <Diamond className="w-3 h-3 text-[#C8A96E]/30" />
-              <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">The Process</p>
-            </div>
-            <div className="grid md:grid-cols-4 gap-6">
+        {/* ─── The Process ─── */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.75 }} className="pb-20">
+          <div className="border-t border-white/[0.04] pt-20">
+            <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-12">How It Works</p>
+            <div className="grid md:grid-cols-4 gap-12 md:gap-8">
               {[
-                { step: '01', title: 'Select Your Slot', desc: 'Choose your campaign tier and upload your asset — song, link, or brief.', color: '#C8A96E' },
-                { step: '02', title: 'We Ignite', desc: 'Your campaign enters the arena within minutes to hours. Editors start competing immediately.', color: '#E00000' },
-                { step: '03', title: 'Content Flows', desc: 'Watch real-time edits, 1v1 battles, and judge reviews on your personal dashboard.', color: '#1B4332' },
-                { step: '04', title: 'Own Everything', desc: 'All generated content is yours. We handle distribution, seeding, and amplification.', color: '#C8A96E' },
+                { step: '01', title: 'Select Your Slot', desc: 'Choose your campaign tier and upload your asset — song, link, or brief.' },
+                { step: '02', title: 'We Ignite', desc: 'Your campaign enters the arena within minutes. Editors start competing immediately.' },
+                { step: '03', title: 'Content Flows', desc: 'Watch real-time edits, 1v1 battles, and judge reviews on your dashboard.' },
+                { step: '04', title: 'Own Everything', desc: 'All generated content is yours. We handle distribution, seeding, and amplification.' },
               ].map(item => (
-                <div key={item.step} className="relative">
-                  <span className="text-[10px] font-mono" style={{ color: `${item.color}50` }}>{item.step}</span>
-                  <h3 className="text-lg text-white/80 mt-1 mb-2" style={bebas}>{item.title}</h3>
-                  <p className="text-[10px] text-white/20 leading-relaxed">{item.desc}</p>
+                <div key={item.step}>
+                  <span className="text-[10px] text-[#C8A96E]/25 font-mono">{item.step}</span>
+                  <h3 className="text-xl text-white/80 mt-2 mb-3" style={bebas}>{item.title}</h3>
+                  <p className="text-[11px] text-white/15 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         </motion.section>
 
-
-        {/* ─── Dashboard ─── */}
-        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mb-14">
-          <div className="border-t border-[#C8A96E]/10 pt-12">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center gap-3">
-                <Diamond className="w-3 h-3 text-[#C8A96E]/30" />
-                <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Your Campaigns</p>
-              </div>
-              <div className="flex gap-1 ml-auto">
-                <button onClick={() => setDashTab('active')} className={`text-[9px] uppercase tracking-wider px-3 py-1.5 transition-colors rounded-none ${dashTab === 'active' ? 'text-[#C8A96E] bg-[#C8A96E]/5 border border-[#C8A96E]/15' : 'text-white/20 hover:text-white/40'}`}>Active</button>
-                <button onClick={() => setDashTab('completed')} className={`text-[9px] uppercase tracking-wider px-3 py-1.5 transition-colors rounded-none ${dashTab === 'completed' ? 'text-[#C8A96E] bg-[#C8A96E]/5 border border-[#C8A96E]/15' : 'text-white/20 hover:text-white/40'}`}>Archived</button>
+        {/* ─── Campaign Dashboard ─── */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="pb-20">
+          <div className="border-t border-white/[0.04] pt-20">
+            <div className="flex items-center justify-between mb-8">
+              <p className="text-[9px] text-white/15 uppercase tracking-[0.5em]">Your Campaigns</p>
+              <div className="flex gap-1">
+                <button onClick={() => setDashTab('active')} className={`text-[9px] uppercase tracking-wider px-4 py-1.5 transition-colors ${dashTab === 'active' ? 'text-white/60 bg-white/[0.04]' : 'text-white/15 hover:text-white/30'}`}>Active</button>
+                <button onClick={() => setDashTab('completed')} className={`text-[9px] uppercase tracking-wider px-4 py-1.5 transition-colors ${dashTab === 'completed' ? 'text-white/60 bg-white/[0.04]' : 'text-white/15 hover:text-white/30'}`}>Archived</button>
               </div>
             </div>
 
             {campaigns.filter(c => dashTab === 'active' ? c.status === 'Live' : c.status === 'Completed').length > 0 ? (
               <div className="space-y-3">
                 {campaigns.filter(c => dashTab === 'active' ? c.status === 'Live' : c.status === 'Completed').map(campaign => (
-                  <div key={campaign.id} className="border border-white/6 bg-black/30 p-6 hover:border-[#C8A96E]/15 transition-colors relative">
-                    <GoldCorners size={10} />
-                    <div className="flex items-start justify-between mb-5">
+                  <div key={campaign.id} className="border border-white/[0.04] p-6 md:p-8 hover:border-white/[0.08] transition-all duration-300" style={{ background: 'rgba(255,255,255,0.01)' }}>
+                    <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{campaign.thumb}</span>
                         <div>
-                          <h3 className="text-lg text-white/90" style={bebas}>{campaign.name}</h3>
-                          <p className="text-[9px] text-white/20 uppercase tracking-wider">{campaign.tier}</p>
+                          <h3 className="text-xl text-white/90" style={bebas}>{campaign.name}</h3>
+                          <p className="text-[9px] text-[#C8A96E]/30 uppercase tracking-wider">{campaign.tier}</p>
                         </div>
                       </div>
-                      <span className={`text-[9px] uppercase tracking-wider px-2.5 py-1 border ${campaign.status === 'Live' ? 'text-[#1B4332] border-[#1B4332]/30 bg-[#1B4332]/10' : 'text-white/25 border-white/8 bg-white/[0.02]'}`}>
+                      <span className={`text-[9px] uppercase tracking-wider px-3 py-1 ${campaign.status === 'Live' ? 'text-[#1B4332] border border-[#1B4332]/20 bg-[#1B4332]/5' : 'text-white/20 border border-white/5'}`}>
                         {campaign.status === 'Live' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1B4332] mr-1.5 animate-pulse" />}
                         {campaign.status}
                       </span>
                     </div>
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-4 gap-[1px] bg-white/[0.03]">
                       {[
-                        { label: 'Edits', value: campaign.edits, icon: Play, color: '#C8A96E' },
-                        { label: '1v1 Battles', value: campaign.battles, icon: Zap, color: '#E00000' },
-                        { label: 'Feed Hits', value: campaign.feedHits >= 1000000 ? `${(campaign.feedHits / 1000000).toFixed(1)}M` : campaign.feedHits >= 1000 ? `${(campaign.feedHits / 1000).toFixed(0)}K` : campaign.feedHits.toString(), icon: TrendingUp, color: '#1B4332' },
-                        { label: 'Judges', value: campaign.judges, icon: Star, color: '#C8A96E' },
+                        { label: 'Edits', value: campaign.edits, icon: Play },
+                        { label: '1v1 Battles', value: campaign.battles, icon: Zap },
+                        { label: 'Feed Hits', value: campaign.feedHits >= 1000000 ? `${(campaign.feedHits / 1000000).toFixed(1)}M` : campaign.feedHits >= 1000 ? `${(campaign.feedHits / 1000).toFixed(0)}K` : campaign.feedHits.toString(), icon: TrendingUp },
+                        { label: 'Judges', value: campaign.judges, icon: Star },
                       ].map(stat => (
-                        <div key={stat.label} className="bg-black/40 border border-white/5 p-3 text-center">
-                          <stat.icon className="w-3 h-3 mx-auto mb-1.5" style={{ color: `${stat.color}50` }} />
-                          <p className="text-base text-white/70 tabular-nums" style={bebas}>{stat.value}</p>
-                          <p className="text-[7px] text-white/15 uppercase tracking-wider">{stat.label}</p>
+                        <div key={stat.label} className="p-4 text-center" style={{ background: '#0A0A0A' }}>
+                          <p className="text-lg text-white/70 tabular-nums" style={bebas}>{stat.value}</p>
+                          <p className="text-[7px] text-white/15 uppercase tracking-[0.2em] mt-1">{stat.label}</p>
                         </div>
                       ))}
                     </div>
@@ -642,115 +525,98 @@ export default function EnterprisePage() {
                 ))}
               </div>
             ) : (
-              <div className="border border-white/5 bg-black/20 p-12 text-center relative">
-                <GoldCorners size={12} />
-                <BarChart3 className="w-6 h-6 text-[#C8A96E]/15 mx-auto mb-3" />
-                <p className="text-[10px] text-white/15 uppercase tracking-wider">No {dashTab} campaigns</p>
+              <div className="border border-white/[0.03] p-16 text-center" style={{ background: 'rgba(255,255,255,0.01)' }}>
+                <p className="text-[10px] text-white/10 uppercase tracking-wider">No {dashTab} campaigns</p>
               </div>
             )}
           </div>
         </motion.section>
 
-        {/* ─── Anonymous Mode + Social Proof ─── */}
-        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }} className="mb-14 grid md:grid-cols-2 gap-4">
-          <div className="border border-[#C8A96E]/10 bg-[#C8A96E]/[0.02] p-6 relative">
-            <GoldCorners size={12} />
-            <div className="flex items-start gap-4">
-              <Shield className="w-5 h-5 text-[#C8A96E]/30 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm text-white/70 mb-1" style={bebas}>Anonymous Mode</h3>
-                <p className="text-[10px] text-white/20 leading-relaxed">
-                  Purchase without an account. Receive a secure dashboard link via email. Full privacy, full control.
-                </p>
-              </div>
-            </div>
+        {/* ─── Bottom Grid: Anonymous + Cartel Circle ─── */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }} className="pb-20 grid md:grid-cols-2 gap-[1px] bg-white/[0.04]">
+          <div className="p-8 md:p-12" style={{ background: '#0A0A0A' }}>
+            <Shield className="w-5 h-5 text-white/10 mb-5" />
+            <h3 className="text-lg text-white/70 mb-2" style={bebas}>Anonymous Mode</h3>
+            <p className="text-[11px] text-white/15 leading-relaxed max-w-xs">
+              Purchase without an account. Receive a secure dashboard link via email. Full privacy, full control.
+            </p>
           </div>
-          <div className="border border-[#1B4332]/20 bg-[#1B4332]/[0.03] p-6 relative">
-            <GoldCorners size={12} />
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-10 h-10 rounded-full border-2 border-[#1B4332]/40 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-[#1B4332]/60" />
-              </div>
-              <div>
-                <h3 className="text-sm text-white/70 mb-1" style={bebas}>Join the Cartel Circle</h3>
-                <p className="text-[10px] text-white/20 leading-relaxed max-w-xs mx-auto">
-                  Get pinged first on new drops, system updates, and exclusive slot releases before anyone else.
-                </p>
-              </div>
-              <form onSubmit={(e) => { e.preventDefault(); toast.success('You\'re in the circle.'); }} className="flex gap-2 w-full max-w-xs mt-1">
-                <Input placeholder="your@email.com" type="email" required className="bg-black/40 border-[#1B4332]/20 text-[10px] placeholder:text-white/15 focus:border-[#1B4332]/40 h-9 rounded-none flex-1" />
-                <Button type="submit" className="bg-[#1B4332] hover:bg-[#1B4332]/80 text-white/80 h-9 px-4 text-[9px] uppercase tracking-widest rounded-none border border-[#1B4332]/50 shrink-0">
-                  Join
-                </Button>
-              </form>
-              <p className="text-[7px] text-white/10 uppercase tracking-wider">No spam · First access · Drop alerts only</p>
-            </div>
+          <div className="p-8 md:p-12 flex flex-col items-center text-center" style={{ background: '#0A0A0A' }}>
+            <h3 className="text-lg text-white/70 mb-2" style={bebas}>Join the Cartel Circle</h3>
+            <p className="text-[11px] text-white/15 leading-relaxed max-w-xs mb-5">
+              Get pinged first on new drops, system updates, and exclusive slot releases.
+            </p>
+            <form onSubmit={(e) => { e.preventDefault(); toast.success("You're in the circle."); }} className="flex gap-2 w-full max-w-xs">
+              <Input placeholder="your@email.com" type="email" required className="bg-white/[0.03] border-white/[0.06] text-[11px] placeholder:text-white/10 focus:border-[#C8A96E]/30 h-10 rounded-none flex-1" />
+              <Button type="submit" className="bg-white/[0.06] hover:bg-white/[0.1] text-white/50 h-10 px-5 text-[9px] uppercase tracking-widest rounded-none border border-white/[0.06] shrink-0">
+                Join
+              </Button>
+            </form>
+            <p className="text-[7px] text-white/8 uppercase tracking-wider mt-3">No spam · First access · Drop alerts only</p>
           </div>
         </motion.section>
 
         {/* ─── Contact ─── */}
-        <section className="border-t border-[#C8A96E]/10 py-14 text-center">
-          <Diamond className="w-3 h-3 text-[#C8A96E]/20 mx-auto mb-4" />
-          <h2 className="text-2xl mb-2 text-white/60" style={bebas}>Custom Packages</h2>
-          <p className="text-[10px] text-white/15 mb-6">We build bespoke campaigns for labels, studios, and agencies.</p>
-          <Button onClick={() => window.location.href = 'mailto:team@loopgate.io'} className="bg-transparent hover:bg-[#C8A96E]/5 border border-[#C8A96E]/15 text-[#C8A96E]/50 hover:text-[#C8A96E]/80 h-11 px-8 text-[10px] uppercase tracking-[0.3em] rounded-none transition-all">
+        <section className="border-t border-white/[0.04] py-24 text-center">
+          <h2 className="text-3xl md:text-4xl mb-3 text-white/50" style={bebas}>Custom Packages</h2>
+          <p className="text-[11px] text-white/12 mb-8">We build bespoke campaigns for labels, studios, and agencies.</p>
+          <Button onClick={() => window.location.href = 'mailto:team@loopgate.io'} className="bg-transparent hover:bg-white/[0.03] border border-white/[0.08] text-white/30 hover:text-white/60 h-12 px-10 text-[10px] uppercase tracking-[0.3em] rounded-none transition-all duration-300">
             <Mail className="w-3.5 h-3.5 mr-2" /> Contact Team
           </Button>
         </section>
 
         {/* ─── Footer ─── */}
-        <footer className="border-t border-[#C8A96E]/10 py-6 flex items-center justify-between">
+        <footer className="border-t border-white/[0.04] py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={viralCartelLogo} alt="VC" className="w-5 h-5 opacity-30" />
-            <span className="text-[8px] text-white/10 uppercase tracking-wider">Viral Cartel × Loopgate</span>
+            <img src={viralCartelLogo} alt="VC" className="w-4 h-4 opacity-20" />
+            <span className="text-[8px] text-white/8 uppercase tracking-wider">Viral Cartel × Loopgate</span>
           </div>
-          <Link to="/" className="text-[9px] text-white/10 hover:text-white/25 transition-colors">Back to Loopgate</Link>
+          <Link to="/" className="text-[9px] text-white/8 hover:text-white/20 transition-colors">Back to Loopgate</Link>
         </footer>
       </div>
 
       {/* ─── Launch Campaign Modal ─── */}
       <Dialog open={launchOpen} onOpenChange={setLaunchOpen}>
-        <DialogContent className="border-[#C8A96E]/10 text-white max-w-lg rounded-none p-0 [&>button]:text-white/40" style={{ background: '#0A0A0A' }}>
-          <div className="p-6 pb-0 border-b border-[#C8A96E]/10">
+        <DialogContent className="border-white/[0.06] text-white max-w-lg rounded-none p-0 [&>button]:text-white/40" style={{ background: '#0A0A0A' }}>
+          <div className="p-6 pb-0 border-b border-white/[0.04]">
             <DialogHeader>
               <DialogTitle className="text-xl tracking-[0.1em]" style={bebas}>Launch Campaign</DialogTitle>
             </DialogHeader>
-            <p className="text-[9px] text-[#C8A96E]/30 uppercase tracking-[0.3em] mt-1 mb-4">Configure your slot details</p>
+            <p className="text-[9px] text-white/15 uppercase tracking-[0.3em] mt-1 mb-4">Configure your slot details</p>
           </div>
 
           <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
             <div>
-              <label className="text-[9px] text-[#C8A96E]/30 uppercase tracking-wider block mb-2">Song File or TikTok Link</label>
-              <Input value={campaignLink} onChange={(e) => setCampaignLink(e.target.value)} placeholder="https://tiktok.com/... or upload a file" className="bg-black/40 border-[#C8A96E]/10 text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 h-11 rounded-none" />
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Song File or TikTok Link</label>
+              <Input value={campaignLink} onChange={(e) => setCampaignLink(e.target.value)} placeholder="https://tiktok.com/... or upload a file" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 h-11 rounded-none" />
             </div>
             <div>
-              <label className="text-[9px] text-[#C8A96E]/30 uppercase tracking-wider block mb-2">Campaign Name</label>
-              <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="e.g. Summer Drop 2026" className="bg-black/40 border-[#C8A96E]/10 text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 h-11 rounded-none" />
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Campaign Name</label>
+              <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="e.g. Summer Drop 2026" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 h-11 rounded-none" />
             </div>
             <div>
-              <label className="text-[9px] text-[#C8A96E]/30 uppercase tracking-wider block mb-2">Notes for Founder (Optional)</label>
-              <Textarea value={campaignNotes} onChange={(e) => setCampaignNotes(e.target.value)} placeholder="Any special instructions..." className="bg-black/40 border-[#C8A96E]/10 text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 rounded-none min-h-[70px] resize-none" />
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Notes for Founder (Optional)</label>
+              <Textarea value={campaignNotes} onChange={(e) => setCampaignNotes(e.target.value)} placeholder="Any special instructions..." className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 rounded-none min-h-[70px] resize-none" />
             </div>
             <div>
-              <label className="text-[9px] text-[#C8A96E]/30 uppercase tracking-wider block mb-3">Select Tier</label>
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-3">Select Tier</label>
               <div className="space-y-2">
                 {SLOT_TIERS.map(tier => (
                   <button
                     key={tier.id}
                     onClick={() => setSelectedTier(tier)}
-                    className={`w-full text-left border p-4 transition-all relative ${selectedTier?.id === tier.id ? 'border-[#C8A96E]/30 bg-[#C8A96E]/[0.04]' : 'border-white/5 bg-black/20 hover:border-white/10'}`}
+                    className={`w-full text-left border p-4 transition-all ${selectedTier?.id === tier.id ? 'border-[#C8A96E]/20 bg-[#C8A96E]/[0.03]' : 'border-white/[0.04] bg-white/[0.01] hover:border-white/[0.08]'}`}
                   >
-                    {selectedTier?.id === tier.id && <GoldCorners size={8} />}
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm text-white/80" style={bebas}>{tier.name}</span>
-                      <span className="text-sm" style={{ ...bebas, color: tier.color }}>{tier.priceLabel}</span>
+                      <span className="text-sm text-[#C8A96E]/60" style={bebas}>{tier.priceLabel}</span>
                     </div>
-                    <p className="text-[10px] text-white/20">{tier.desc}</p>
+                    <p className="text-[10px] text-white/15">{tier.desc}</p>
                   </button>
                 ))}
               </div>
             </div>
-            <Button onClick={handleProceedToPayment} disabled={!campaignName.trim() || !selectedTier} className="w-full bg-[#8B0000] hover:bg-[#A00000] text-white h-12 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#8B0000]/40 shadow-[0_0_30px_rgba(139,0,0,0.15)]">
+            <Button onClick={handleProceedToPayment} disabled={!campaignName.trim() || !selectedTier} className="w-full bg-white text-black hover:bg-white/90 h-12 text-[11px] uppercase tracking-[0.3em] rounded-none font-medium">
               Proceed to Payment <ArrowRight className="w-3.5 h-3.5 ml-2" />
             </Button>
           </div>
