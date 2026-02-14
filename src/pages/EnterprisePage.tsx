@@ -37,7 +37,7 @@ interface SlotTier {
 }
 
 const SLOT_TIERS: SlotTier[] = [
-  { id: 'trial', name: 'Trial Slot', price: 150, priceLabel: '$150', desc: '20–30 edits in 48 hours. Arena + 1v1 distribution.', color: '#C8A96E' },
+  { id: 'trial', name: 'Trial Slot', price: 150, priceLabel: '$150', desc: '20–30 edits in 48 hours. Arena + 1v1 distribution.', color: '#E00000' },
   { id: 'standard', name: 'Standard Slot', price: 400, priceLabel: '$400', desc: 'Full arena cycle. Judges + Loop Feed exposure.', tag: 'Most Chosen', color: '#E00000' },
   { id: 'takeover', name: 'Takeover Slot', price: 1200, priceLabel: '$1,200', desc: 'Pinned event. Guaranteed multi-format distribution.', tag: 'Max Impact', color: '#1B4332' },
 ];
@@ -66,7 +66,7 @@ const MOCK_CAMPAIGNS = [
 // Fake online clients for social proof
 const ONLINE_CLIENTS = [
   { initials: 'RG', color: '#1B4332' },
-  { initials: 'MK', color: '#C8A96E' },
+  { initials: 'MK', color: '#E00000' },
   { initials: 'DP', color: '#8B0000' },
   { initials: 'LV', color: '#2D2D2D' },
   { initials: 'AJ', color: '#1B4332' },
@@ -172,10 +172,10 @@ export default function EnterprisePage() {
   // ─── Gold Corner Accents ───
   const GoldCorners = ({ size = 20 }: { size?: number }) => (
     <>
-      <span className="absolute top-0 left-0 border-t-2 border-l-2 border-[#C8A96E]/40" style={{ width: size, height: size }} />
-      <span className="absolute top-0 right-0 border-t-2 border-r-2 border-[#C8A96E]/40" style={{ width: size, height: size }} />
-      <span className="absolute bottom-0 left-0 border-b-2 border-l-2 border-[#C8A96E]/40" style={{ width: size, height: size }} />
-      <span className="absolute bottom-0 right-0 border-b-2 border-r-2 border-[#C8A96E]/40" style={{ width: size, height: size }} />
+      <span className="absolute top-0 left-0 border-t-2 border-l-2 border-[#E00000]/40" style={{ width: size, height: size }} />
+      <span className="absolute top-0 right-0 border-t-2 border-r-2 border-[#E00000]/40" style={{ width: size, height: size }} />
+      <span className="absolute bottom-0 left-0 border-b-2 border-l-2 border-[#E00000]/40" style={{ width: size, height: size }} />
+      <span className="absolute bottom-0 right-0 border-b-2 border-r-2 border-[#E00000]/40" style={{ width: size, height: size }} />
     </>
   );
 
@@ -193,14 +193,14 @@ export default function EnterprisePage() {
       <GrainOverlay />
       
       {/* GatePattern background */}
-      <GatePattern opacity={3} color="#C8A96E" tileSize={140} />
+      <GatePattern opacity={3} color="#E00000" tileSize={140} />
       
       {/* Radial vignette */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.8)_100%)] z-[2]" />
       
       {/* Ambient luxury glow */}
       <div className="fixed inset-0 pointer-events-none z-[2]">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#C8A96E]/[0.03] rounded-full blur-[120px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#E00000]/[0.03] rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-[#1B4332]/[0.04] rounded-full blur-[100px]" />
       </div>
 
@@ -217,19 +217,19 @@ export default function EnterprisePage() {
 
         {/* Decorative line */}
         <div className="flex items-center gap-3 justify-center mb-6">
-          <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#C8A96E]/30" />
-          <Diamond className="w-3 h-3 text-[#C8A96E]/30" />
-          <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#C8A96E]/30" />
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#E00000]/30" />
+          <Diamond className="w-3 h-3 text-[#E00000]/30" />
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#E00000]/30" />
         </div>
 
         <h1 className="text-5xl tracking-[0.2em] mb-2 text-white/90" style={bebas}>THE GATE</h1>
-        <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em] mb-1">Loopgate Client Portal</p>
+        <p className="text-[9px] text-[#E00000]/40 uppercase tracking-[0.5em] mb-1">Loopgate Client Portal</p>
 
         {/* Decorative line */}
         <div className="flex items-center gap-3 justify-center mt-4 mb-10">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent to-[#C8A96E]/20" />
-          <div className="w-1.5 h-1.5 rotate-45 border border-[#C8A96E]/20" />
-          <div className="h-px w-16 bg-gradient-to-l from-transparent to-[#C8A96E]/20" />
+          <div className="h-px w-16 bg-gradient-to-r from-transparent to-[#E00000]/20" />
+          <div className="w-1.5 h-1.5 rotate-45 border border-[#E00000]/20" />
+          <div className="h-px w-16 bg-gradient-to-l from-transparent to-[#E00000]/20" />
         </div>
 
         <AnimatePresence mode="wait">
@@ -246,7 +246,7 @@ export default function EnterprisePage() {
                       value={password}
                       onChange={(e) => { setPassword(e.target.value); setError(''); }}
                       placeholder="••••••"
-                      className="bg-black/40 border-[#C8A96E]/15 text-center text-lg tracking-[0.5em] placeholder:text-white/10 focus:border-[#C8A96E]/40 h-14 rounded-none"
+                      className="bg-black/40 border-[#E00000]/15 text-center text-lg tracking-[0.5em] placeholder:text-white/10 focus:border-[#E00000]/40 h-14 rounded-none"
                       autoFocus
                     />
                   </div>
@@ -263,7 +263,7 @@ export default function EnterprisePage() {
                 </Button>
               </form>
 
-              <button onClick={() => setGateMode('login')} className="mt-10 text-[9px] text-[#C8A96E]/30 hover:text-[#C8A96E]/60 uppercase tracking-[0.3em] transition-colors flex items-center gap-2 mx-auto">
+              <button onClick={() => setGateMode('login')} className="mt-10 text-[9px] text-[#E00000]/30 hover:text-[#E00000]/60 uppercase tracking-[0.3em] transition-colors flex items-center gap-2 mx-auto">
                 <User className="w-3 h-3" />
                 Client Login
               </button>
@@ -276,13 +276,13 @@ export default function EnterprisePage() {
               <form onSubmit={handleSendOTP} className="space-y-5">
                 <div className="relative">
                   <GoldCorners size={12} />
-                  <Input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="your@company.com" className="bg-black/40 border-[#C8A96E]/15 text-center text-sm placeholder:text-white/15 focus:border-[#C8A96E]/40 h-14 rounded-none" autoFocus required />
+                  <Input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="your@company.com" className="bg-black/40 border-[#E00000]/15 text-center text-sm placeholder:text-white/15 focus:border-[#E00000]/40 h-14 rounded-none" autoFocus required />
                 </div>
                 <Button type="submit" disabled={isSubmitting} className="w-full bg-[#8B0000] hover:bg-[#A00000] text-white h-12 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#8B0000]/50">
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Send Code <KeyRound className="w-3 h-3 ml-2" /></>}
                 </Button>
               </form>
-              <button onClick={() => setGateMode('code')} className="mt-10 text-[9px] text-[#C8A96E]/30 hover:text-[#C8A96E]/60 uppercase tracking-[0.3em] transition-colors">← Access Code</button>
+              <button onClick={() => setGateMode('code')} className="mt-10 text-[9px] text-[#E00000]/30 hover:text-[#E00000]/60 uppercase tracking-[0.3em] transition-colors">← Access Code</button>
             </motion.div>
           )}
 
@@ -290,7 +290,7 @@ export default function EnterprisePage() {
             <motion.div key="otp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <p className="text-[10px] text-white/20 uppercase tracking-[0.4em] mb-8">Code sent to {loginEmail}</p>
               <div className="space-y-5">
-                <div className="flex justify-center [&_input]:!bg-black/40 [&_input]:!border-[#C8A96E]/15 [&_input]:!text-white [&_input]:!rounded-none">
+                <div className="flex justify-center [&_input]:!bg-black/40 [&_input]:!border-[#E00000]/15 [&_input]:!text-white [&_input]:!rounded-none">
                   <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
                     <InputOTPGroup>
                       {[0,1,2,3,4,5].map(i => <InputOTPSlot key={i} index={i} />)}
@@ -301,8 +301,8 @@ export default function EnterprisePage() {
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Verify <ArrowRight className="w-3 h-3 ml-2" /></>}
                 </Button>
                 <div className="flex justify-between mt-4">
-                  <button onClick={() => { setGateMode('login'); setOtpCode(''); }} className="text-[9px] text-[#C8A96E]/30 hover:text-[#C8A96E]/60 transition-colors">← Change email</button>
-                  <button onClick={(e) => handleSendOTP(e as any)} disabled={isSubmitting} className="text-[9px] text-[#C8A96E]/30 hover:text-[#C8A96E]/60 transition-colors">Resend</button>
+                  <button onClick={() => { setGateMode('login'); setOtpCode(''); }} className="text-[9px] text-[#E00000]/30 hover:text-[#E00000]/60 transition-colors">← Change email</button>
+                  <button onClick={(e) => handleSendOTP(e as any)} disabled={isSubmitting} className="text-[9px] text-[#E00000]/30 hover:text-[#E00000]/60 transition-colors">Resend</button>
                 </div>
               </div>
             </motion.div>
@@ -374,10 +374,10 @@ export default function EnterprisePage() {
         {/* Hero content */}
         <div className="relative z-10 max-w-7xl mx-auto px-8 pb-20 w-full">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
-            <p className="text-[10px] text-[#C8A96E]/50 uppercase tracking-[0.6em] mb-5">Private Access</p>
+            <p className="text-[10px] text-[#E00000]/50 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-5xl md:text-8xl text-white leading-[0.9] mb-6" style={bebas}>
               Control the<br />
-              <span className="text-[#C8A96E]">Culture.</span>
+              <span className="text-[#E00000]">Culture.</span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads — all within minutes.
@@ -428,12 +428,12 @@ export default function EnterprisePage() {
                   onClick={() => { setSelectedTier(tier); setLaunchOpen(true); }}
                 >
                   {/* Hover accent line */}
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-transparent group-hover:bg-[#C8A96E]/30 transition-all duration-500" />
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-transparent group-hover:bg-[#E00000]/30 transition-all duration-500" />
                   
                   <div className="flex items-start justify-between mb-6">
                     <p className="text-[10px] text-white/25 uppercase tracking-[0.3em]" style={bebas}>{tier.name}</p>
                     {tier.tag && (
-                      <span className="text-[7px] text-[#C8A96E]/60 uppercase tracking-wider border border-[#C8A96E]/15 px-2 py-0.5">{tier.tag}</span>
+                      <span className="text-[7px] text-[#E00000]/60 uppercase tracking-wider border border-[#E00000]/15 px-2 py-0.5">{tier.tag}</span>
                     )}
                   </div>
                   
@@ -450,7 +450,7 @@ export default function EnterprisePage() {
                     <span className="text-[8px] text-white/15 uppercase tracking-wider">{avail.left}/{avail.total} left</span>
                   </div>
 
-                  <span className="text-[9px] text-white/15 group-hover:text-[#C8A96E]/50 uppercase tracking-[0.2em] transition-colors flex items-center gap-1">
+                  <span className="text-[9px] text-white/15 group-hover:text-[#E00000]/50 uppercase tracking-[0.2em] transition-colors flex items-center gap-1">
                     Select <ChevronRight className="w-3 h-3" />
                   </span>
                 </motion.button>
@@ -471,7 +471,7 @@ export default function EnterprisePage() {
                 { step: '04', title: 'Own Everything', desc: 'All generated content is yours. We handle distribution, seeding, and amplification.' },
               ].map(item => (
                 <div key={item.step}>
-                  <span className="text-[10px] text-[#C8A96E]/25 font-mono">{item.step}</span>
+                  <span className="text-[10px] text-[#E00000]/25 font-mono">{item.step}</span>
                   <h3 className="text-xl text-white/80 mt-2 mb-3" style={bebas}>{item.title}</h3>
                   <p className="text-[11px] text-white/15 leading-relaxed">{item.desc}</p>
                 </div>
@@ -500,7 +500,7 @@ export default function EnterprisePage() {
                         <span className="text-2xl">{campaign.thumb}</span>
                         <div>
                           <h3 className="text-xl text-white/90" style={bebas}>{campaign.name}</h3>
-                          <p className="text-[9px] text-[#C8A96E]/30 uppercase tracking-wider">{campaign.tier}</p>
+                          <p className="text-[9px] text-[#E00000]/30 uppercase tracking-wider">{campaign.tier}</p>
                         </div>
                       </div>
                       <span className={`text-[9px] uppercase tracking-wider px-3 py-1 ${campaign.status === 'Live' ? 'text-[#1B4332] border border-[#1B4332]/20 bg-[#1B4332]/5' : 'text-white/20 border border-white/5'}`}>
@@ -547,7 +547,7 @@ export default function EnterprisePage() {
               Get pinged first on new drops, system updates, and exclusive slot releases.
             </p>
             <form onSubmit={(e) => { e.preventDefault(); toast.success("You're in the circle."); }} className="flex gap-2 w-full max-w-xs">
-              <Input placeholder="your@email.com" type="email" required className="bg-white/[0.03] border-white/[0.06] text-[11px] placeholder:text-white/10 focus:border-[#C8A96E]/30 h-10 rounded-none flex-1" />
+              <Input placeholder="your@email.com" type="email" required className="bg-white/[0.03] border-white/[0.06] text-[11px] placeholder:text-white/10 focus:border-[#E00000]/30 h-10 rounded-none flex-1" />
               <Button type="submit" className="bg-white/[0.06] hover:bg-white/[0.1] text-white/50 h-10 px-5 text-[9px] uppercase tracking-widest rounded-none border border-white/[0.06] shrink-0">
                 Join
               </Button>
@@ -588,15 +588,15 @@ export default function EnterprisePage() {
           <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
             <div>
               <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Song File or TikTok Link</label>
-              <Input value={campaignLink} onChange={(e) => setCampaignLink(e.target.value)} placeholder="https://tiktok.com/... or upload a file" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 h-11 rounded-none" />
+              <Input value={campaignLink} onChange={(e) => setCampaignLink(e.target.value)} placeholder="https://tiktok.com/... or upload a file" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#E00000]/30 h-11 rounded-none" />
             </div>
             <div>
               <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Campaign Name</label>
-              <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="e.g. Summer Drop 2026" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 h-11 rounded-none" />
+              <Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="e.g. Summer Drop 2026" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#E00000]/30 h-11 rounded-none" />
             </div>
             <div>
               <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Notes for Founder (Optional)</label>
-              <Textarea value={campaignNotes} onChange={(e) => setCampaignNotes(e.target.value)} placeholder="Any special instructions..." className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#C8A96E]/30 rounded-none min-h-[70px] resize-none" />
+              <Textarea value={campaignNotes} onChange={(e) => setCampaignNotes(e.target.value)} placeholder="Any special instructions..." className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-[#E00000]/30 rounded-none min-h-[70px] resize-none" />
             </div>
             <div>
               <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-3">Select Tier</label>
@@ -605,11 +605,11 @@ export default function EnterprisePage() {
                   <button
                     key={tier.id}
                     onClick={() => setSelectedTier(tier)}
-                    className={`w-full text-left border p-4 transition-all ${selectedTier?.id === tier.id ? 'border-[#C8A96E]/20 bg-[#C8A96E]/[0.03]' : 'border-white/[0.04] bg-white/[0.01] hover:border-white/[0.08]'}`}
+                    className={`w-full text-left border p-4 transition-all ${selectedTier?.id === tier.id ? 'border-[#E00000]/20 bg-[#E00000]/[0.03]' : 'border-white/[0.04] bg-white/[0.01] hover:border-white/[0.08]'}`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm text-white/80" style={bebas}>{tier.name}</span>
-                      <span className="text-sm text-[#C8A96E]/60" style={bebas}>{tier.priceLabel}</span>
+                      <span className="text-sm text-[#E00000]/60" style={bebas}>{tier.priceLabel}</span>
                     </div>
                     <p className="text-[10px] text-white/15">{tier.desc}</p>
                   </button>
@@ -629,28 +629,28 @@ export default function EnterprisePage() {
   const renderPayment = () => (
     <motion.div key="payment" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0D0D 50%, #080808 100%)' }}>
       <GrainOverlay />
-      <GatePattern opacity={2} color="#C8A96E" tileSize={140} />
+      <GatePattern opacity={2} color="#E00000" tileSize={140} />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.85)_100%)] z-[2]" />
       
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-sm w-full relative z-10">
-        <Diamond className="w-3 h-3 text-[#C8A96E]/30 mx-auto mb-4" />
-        <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em] mb-6 text-center">Order Summary</p>
+        <Diamond className="w-3 h-3 text-[#E00000]/30 mx-auto mb-4" />
+        <p className="text-[9px] text-[#E00000]/40 uppercase tracking-[0.5em] mb-6 text-center">Order Summary</p>
 
-        <div className="border border-[#C8A96E]/10 bg-black/40 p-6 space-y-4 mb-6 relative">
+        <div className="border border-[#E00000]/10 bg-black/40 p-6 space-y-4 mb-6 relative">
           <GoldCorners size={14} />
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-white/25 uppercase tracking-wider">Campaign</span>
             <span className="text-sm text-white/70">{campaignName}</span>
           </div>
-          <div className="h-px bg-[#C8A96E]/5" />
+          <div className="h-px bg-[#E00000]/5" />
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-white/25 uppercase tracking-wider">Slot Tier</span>
             <span className="text-sm text-white/70">{selectedTier?.name}</span>
           </div>
-          <div className="h-px bg-[#C8A96E]/5" />
+          <div className="h-px bg-[#E00000]/5" />
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-white/25 uppercase tracking-wider">Price</span>
-            <span className="text-2xl text-[#C8A96E]" style={bebas}>{selectedTier?.priceLabel}</span>
+            <span className="text-2xl text-[#E00000]" style={bebas}>{selectedTier?.priceLabel}</span>
           </div>
         </div>
 
@@ -664,7 +664,7 @@ export default function EnterprisePage() {
           )}
         </Button>
 
-        <button onClick={() => setView('portal')} className="mt-6 w-full text-[9px] text-[#C8A96E]/25 hover:text-[#C8A96E]/50 uppercase tracking-[0.2em] transition-colors text-center block">← Back to Portal</button>
+        <button onClick={() => setView('portal')} className="mt-6 w-full text-[9px] text-[#E00000]/25 hover:text-[#E00000]/50 uppercase tracking-[0.2em] transition-colors text-center block">← Back to Portal</button>
       </motion.div>
     </motion.div>
   );
@@ -673,7 +673,7 @@ export default function EnterprisePage() {
   const renderReceipt = () => (
     <motion.div key="receipt" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0D0D 50%, #080808 100%)' }}>
       <GrainOverlay />
-      <GatePattern opacity={2} color="#C8A96E" tileSize={140} />
+      <GatePattern opacity={2} color="#E00000" tileSize={140} />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.85)_100%)] z-[2]" />
 
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, type: 'spring', stiffness: 200 }} className="max-w-sm w-full text-center relative z-10">
@@ -687,22 +687,22 @@ export default function EnterprisePage() {
           You will receive updates as distribution begins.
         </p>
 
-        <div className="border border-[#C8A96E]/10 bg-black/40 p-5 text-left space-y-3 mb-8 relative">
+        <div className="border border-[#E00000]/10 bg-black/40 p-5 text-left space-y-3 mb-8 relative">
           <GoldCorners size={12} />
           <div className="flex justify-between">
             <span className="text-[10px] text-white/20 uppercase tracking-wider">Campaign</span>
             <span className="text-xs text-white/60">{receiptData?.name}</span>
           </div>
-          <div className="h-px bg-[#C8A96E]/5" />
+          <div className="h-px bg-[#E00000]/5" />
           <div className="flex justify-between">
             <span className="text-[10px] text-white/20 uppercase tracking-wider">Slot Type</span>
             <span className="text-xs text-white/60">{receiptData?.tier}</span>
           </div>
-          <div className="h-px bg-[#C8A96E]/5" />
+          <div className="h-px bg-[#E00000]/5" />
           <div className="flex justify-between items-center">
             <span className="text-[10px] text-white/20 uppercase tracking-wider">Status</span>
-            <span className="text-[10px] text-[#C8A96E]/70 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-[#C8A96E] rounded-full animate-pulse" />
+            <span className="text-[10px] text-[#E00000]/70 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-[#E00000] rounded-full animate-pulse" />
               Queued for Ignition
             </span>
           </div>
@@ -712,7 +712,7 @@ export default function EnterprisePage() {
           Founder manually primes all campaigns for maximum reach.
         </p>
 
-        <Button onClick={handleGoToDashboard} className="w-full bg-transparent hover:bg-[#C8A96E]/5 border border-[#C8A96E]/15 text-[#C8A96E]/50 hover:text-[#C8A96E]/80 h-12 text-[10px] uppercase tracking-[0.3em] rounded-none transition-all">
+        <Button onClick={handleGoToDashboard} className="w-full bg-transparent hover:bg-[#E00000]/5 border border-[#E00000]/15 text-[#E00000]/50 hover:text-[#E00000]/80 h-12 text-[10px] uppercase tracking-[0.3em] rounded-none transition-all">
           Go to Dashboard <ArrowRight className="w-3 h-3 ml-2" />
         </Button>
       </motion.div>
