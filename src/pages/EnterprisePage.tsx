@@ -62,11 +62,11 @@ export default function EnterprisePage() {
                 <Lock className="w-8 h-8 text-white/40 mx-auto" />
               </motion.div>
 
-              <h1 className="font-display text-2xl tracking-wider mb-2 text-white/90">
+              <h1 className="text-2xl tracking-wider mb-2 text-white/90" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
                 THE GATE
               </h1>
               <p className="text-[11px] text-white/30 uppercase tracking-[0.3em] mb-10">
-                Enter password to proceed
+                Enter access code to proceed
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
