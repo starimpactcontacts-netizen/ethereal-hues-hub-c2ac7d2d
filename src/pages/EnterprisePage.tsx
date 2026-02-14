@@ -194,6 +194,9 @@ export default function EnterprisePage() {
       
       {/* GatePattern background */}
       <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
+
+      {/* Red side stripe — full height */}
+      <div className="fixed top-0 right-0 bottom-0 w-[3px] z-[5] bg-[#E00000]/80" />
       
       {/* Radial vignette */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.8)_100%)] z-[2]" />
@@ -204,6 +207,16 @@ export default function EnterprisePage() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-white/[0.02] rounded-full blur-[100px]" />
       </div>
 
+      {/* VC Crest — side positioned, transparent */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.08 }}
+        transition={{ delay: 0.5, duration: 1.5 }}
+        className="fixed right-8 top-1/2 -translate-y-1/2 pointer-events-none z-[3]"
+      >
+        <img src={viralCartelCrest} alt="" className="w-28 md:w-40 h-auto mix-blend-lighten" />
+      </motion.div>
+
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="relative z-10 max-w-sm w-full text-center">
         {/* Viral Cartel Logo */}
         <motion.div
@@ -212,7 +225,7 @@ export default function EnterprisePage() {
           transition={{ delay: 0.2, duration: 0.8 }}
           className="mb-8"
         >
-          <img src={viralCartelLogo} alt="Viral Cartel" className="w-20 h-20 mx-auto opacity-60" />
+          <img src={viralCartelLogo} alt="Viral Cartel" className="w-20 h-20 mx-auto opacity-60 mix-blend-lighten" />
         </motion.div>
 
         {/* Decorative line */}
