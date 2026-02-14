@@ -491,14 +491,23 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span 
-                className="inline-block text-[#E00000]"
-                style={{ 
-                  transform: 'perspective(400px) rotateX(-6deg) scaleY(1.03)',
-                  textShadow: '0 6px 40px rgba(224,0,0,0.4), 0 0 80px rgba(224,0,0,0.12)',
-                  transformOrigin: 'center top',
-                }}
-              >Culture.</span>
+              <span className="relative inline-block">
+                <span 
+                  className="text-[#E00000] relative z-10"
+                  style={{ 
+                    textShadow: '0 0 60px rgba(224,0,0,0.25)',
+                  }}
+                >Culture.</span>
+                {/* Netflix-style curved arc shadow underneath */}
+                <span 
+                  className="absolute left-1/2 -translate-x-1/2 bottom-[-8px] md:bottom-[-14px] w-[90%] h-[18px] md:h-[28px] z-0 pointer-events-none"
+                  style={{
+                    background: 'radial-gradient(ellipse at center, rgba(224,0,0,0.5) 0%, rgba(224,0,0,0.2) 40%, transparent 70%)',
+                    borderRadius: '50%',
+                    filter: 'blur(6px)',
+                  }}
+                />
+              </span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
