@@ -197,10 +197,10 @@ export default function EnterprisePage() {
 
       {/* 24K-style vertical stripe — right side, inset, with forest pattern + crest */}
       <div className="fixed top-0 bottom-0 right-[40px] md:right-[80px] w-[70px] md:w-[90px] z-[5] overflow-hidden">
-        {/* Dark forest marble background */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #0a1a0f 0%, #1B4332 30%, #0a1a0f 60%, #1B4332 85%, #0a1a0f 100%)' }} />
-        {/* Marble vein texture overlay */}
-        <div className="absolute inset-0 opacity-20" style={{ background: 'repeating-linear-gradient(135deg, transparent, transparent 20px, rgba(255,255,255,0.03) 20px, rgba(255,255,255,0.03) 22px), repeating-linear-gradient(45deg, transparent, transparent 30px, rgba(100,200,120,0.05) 30px, rgba(100,200,120,0.05) 32px)' }} />
+        {/* Deep forest background */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, #081a10 0%, #0d2818 30%, #081a10 60%, #0d2818 85%, #081a10 100%)' }} />
+        {/* Subtle vein texture */}
+        <div className="absolute inset-0 opacity-10" style={{ background: 'repeating-linear-gradient(135deg, transparent, transparent 25px, rgba(255,255,255,0.02) 25px, rgba(255,255,255,0.02) 27px), repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(100,180,100,0.03) 35px, rgba(100,180,100,0.03) 37px)' }} />
         {/* Thin red border lines on each side of the stripe */}
         <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-[#8B0000]" />
         <div className="absolute top-0 bottom-0 right-0 w-[2px] bg-[#8B0000]" />
