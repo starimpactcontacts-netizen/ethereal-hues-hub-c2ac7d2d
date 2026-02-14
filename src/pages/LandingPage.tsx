@@ -34,40 +34,40 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(212,175,55,0.06),transparent)]" />
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 rounded-full bg-foreground/10 animate-pulse"
-              style={{
-                top: `${15 + Math.random() * 70}%`,
-                left: `${5 + Math.random() * 90}%`,
-                animationDelay: `${i * 0.4}s`,
-                animationDuration: `${2 + Math.random() * 3}s`,
-              }}
-            />
-          ))}
+          {[...Array(12)].map((_, i) =>
+          <div
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-foreground/10 animate-pulse"
+            style={{
+              top: `${15 + Math.random() * 70}%`,
+              left: `${5 + Math.random() * 90}%`,
+              animationDelay: `${i * 0.4}s`,
+              animationDuration: `${2 + Math.random() * 3}s`
+            }} />
+
+          )}
 
           <motion.div
             className="relative z-10 text-center max-w-5xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-          >
+            transition={{ duration: 0.8 }}>
+
             <motion.img
               src={loopgateBrand}
               alt="LOOPGATE"
               className="h-28 sm:h-40 md:h-56 lg:h-64 w-auto mx-auto mb-2 drop-shadow-[0_0_80px_rgba(255,255,255,0.25)]"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.7 }}
-            />
+              transition={{ delay: 0.15, duration: 0.7 }} />
+
 
             <motion.h1
               className="font-display text-3xl sm:text-5xl md:text-6xl lg:text-7xl tracking-[0.06em] leading-[0.9] mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
+              transition={{ delay: 0.3, duration: 0.6 }}>
+
               <span className="text-foreground">WHERE EDITORS </span>
               <span className="text-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.3)]">COMPETE</span>
             </motion.h1>
@@ -76,8 +76,8 @@ export default function LandingPage() {
               className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.45, duration: 0.6 }}
-            >
+              transition={{ delay: 0.45, duration: 0.6 }}>
+
               The competitive platform for video editors. Battle head to head, get rated by real judges, and climb the global rankings.
             </motion.p>
 
@@ -85,8 +85,8 @@ export default function LandingPage() {
               className="flex flex-col sm:flex-row gap-3 justify-center items-center px-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-            >
+              transition={{ delay: 0.6, duration: 0.6 }}>
+
               <Link to="/download" className="w-full sm:w-auto">
                 <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-base px-8 py-4 h-auto w-full sm:w-auto gap-2">
                   <Download className="w-5 h-5" />
@@ -106,8 +106,8 @@ export default function LandingPage() {
             className="absolute bottom-6 left-0 right-0 flex justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.9, duration: 0.6 }}
-          >
+            transition={{ delay: 0.9, duration: 0.6 }}>
+
             <div className="flex items-center gap-6 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -133,11 +133,11 @@ export default function LandingPage() {
                 Challenge any editor to a head to head battle. Submit your best work, get judged by certified judges, and watch your rank move. Rapid or standard. You choose the stakes.
               </p>
               <ul className="space-y-2.5">
-                {['Judge decided outcomes', 'Rapid and standard modes', 'XP and index points on the line'].map(f => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
+                {['Judge decided outcomes', 'Rapid and standard modes', 'XP and index points on the line'].map((f) =>
+                <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" /> {f}
                   </li>
-                ))}
+                )}
               </ul>
             </motion.div>
 
@@ -212,11 +212,11 @@ export default function LandingPage() {
                 Submit any edit and receive a detailed QOI score across five pillars. Know exactly where you stand with your official class ranking, from S++ all the way down to F.
               </p>
               <ul className="space-y-2.5">
-                {['Five pillar QOI scoring', 'Certified judge panel', 'S++ to F class tiers'].map(f => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
+                {['Five pillar QOI scoring', 'Certified judge panel', 'S++ to F class tiers'].map((f) =>
+                <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-gold flex-shrink-0" /> {f}
                   </li>
-                ))}
+                )}
               </ul>
             </motion.div>
 
@@ -239,26 +239,26 @@ export default function LandingPage() {
                   {/* 5 Pillars */}
                   <div className="space-y-2.5">
                     {[
-                      { label: 'Quality', score: 88, color: 'bg-emerald-500' },
-                      { label: 'Originality', score: 82, color: 'bg-cyan-500' },
-                      { label: 'Impact', score: 90, color: 'bg-red-500' },
-                      { label: 'Technique', score: 79, color: 'bg-purple-500' },
-                      { label: 'Presentation', score: 81, color: 'bg-gold' },
-                    ].map(p => (
-                      <div key={p.label} className="flex items-center gap-3">
+                    { label: 'Quality', score: 88, color: 'bg-emerald-500' },
+                    { label: 'Originality', score: 82, color: 'bg-cyan-500' },
+                    { label: 'Impact', score: 90, color: 'bg-red-500' },
+                    { label: 'Technique', score: 79, color: 'bg-purple-500' },
+                    { label: 'Presentation', score: 81, color: 'bg-gold' }].
+                    map((p) =>
+                    <div key={p.label} className="flex items-center gap-3">
                         <span className="text-[11px] text-muted-foreground w-24 text-right">{p.label}</span>
                         <div className="flex-1 h-2 bg-surface-2 rounded-full overflow-hidden">
                           <motion.div
-                            className={`h-full ${p.color} rounded-full`}
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${p.score}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: 0.3 }}
-                          />
+                          className={`h-full ${p.color} rounded-full`}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${p.score}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, delay: 0.3 }} />
+
                         </div>
                         <span className="text-xs font-semibold text-foreground w-8">{p.score}</span>
                       </div>
-                    ))}
+                    )}
                   </div>
                   {/* Judge attribution */}
                   <div className="mt-4 flex items-center gap-2 bg-surface-2/50 border border-border rounded-lg px-3 py-2">
@@ -284,11 +284,11 @@ export default function LandingPage() {
                 Create or join a Unit. Your editing team with private channels, role hierarchies, shared assets, announcements, and crew challenges. Represent your squad.
               </p>
               <ul className="space-y-2.5">
-                {['Channel based communication', 'Editor tiers and roles', 'Unit challenges and XP'].map(f => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
+                {['Channel based communication', 'Editor tiers and roles', 'Unit challenges and XP'].map((f) =>
+                <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" /> {f}
                   </li>
-                ))}
+                )}
               </ul>
             </motion.div>
 
@@ -311,35 +311,35 @@ export default function LandingPage() {
                 <div className="p-3">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider px-2 mb-2">Channels</p>
                   {[
-                    { name: '# general', unread: 3, active: true },
-                    { name: '# showcase', unread: 0, active: false },
-                    { name: '# announcements', unread: 1, active: false },
-                    { name: '# battle-talk', unread: 7, active: false },
-                  ].map(ch => (
-                    <div key={ch.name} className={`flex items-center justify-between px-3 py-2 rounded-lg mb-0.5 ${ch.active ? 'bg-cyan-500/10 border border-cyan-500/20' : 'hover:bg-surface-2/50'}`}>
+                  { name: '# general', unread: 3, active: true },
+                  { name: '# showcase', unread: 0, active: false },
+                  { name: '# announcements', unread: 1, active: false },
+                  { name: '# battle-talk', unread: 7, active: false }].
+                  map((ch) =>
+                  <div key={ch.name} className={`flex items-center justify-between px-3 py-2 rounded-lg mb-0.5 ${ch.active ? 'bg-cyan-500/10 border border-cyan-500/20' : 'hover:bg-surface-2/50'}`}>
                       <span className={`text-sm ${ch.active ? 'text-cyan-400 font-semibold' : 'text-muted-foreground'}`}>{ch.name}</span>
-                      {ch.unread > 0 && (
-                        <span className="w-5 h-5 rounded-full bg-red-500 text-[10px] text-background font-bold flex items-center justify-center">{ch.unread}</span>
-                      )}
+                      {ch.unread > 0 &&
+                    <span className="w-5 h-5 rounded-full bg-red-500 text-[10px] text-background font-bold flex items-center justify-center">{ch.unread}</span>
+                    }
                     </div>
-                  ))}
+                  )}
                   {/* Members preview */}
                   <div className="mt-3 px-2">
                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Online — 24</p>
                     <div className="space-y-1.5">
                       {[
-                        { name: 'xMontage', role: 'Leader', color: 'text-gold' },
-                        { name: 'FLUX', role: 'Editor', color: 'text-cyan-400' },
-                        { name: 'novacut', role: 'Editor', color: 'text-cyan-400' },
-                      ].map(m => (
-                        <div key={m.name} className="flex items-center gap-2">
+                      { name: 'xMontage', role: 'Leader', color: 'text-gold' },
+                      { name: 'FLUX', role: 'Editor', color: 'text-cyan-400' },
+                      { name: 'novacut', role: 'Editor', color: 'text-cyan-400' }].
+                      map((m) =>
+                      <div key={m.name} className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center">
                             <span className="text-[10px] font-bold text-muted-foreground">{m.name[0]}</span>
                           </div>
                           <span className="text-xs text-foreground">{m.name}</span>
                           <span className={`text-[9px] ${m.color} font-semibold`}>{m.role}</span>
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
                 </div>
@@ -361,11 +361,11 @@ export default function LandingPage() {
                 Official arena events with multiple rounds. Hosted competitions from external communities. Everything runs through Loopgate. Real stakes, real prizes.
               </p>
               <ul className="space-y-2.5">
-                {['Multi round open arenas', 'Hosted external competitions', 'Live leaderboards and chat'].map(f => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
+                {['Multi round open arenas', 'Hosted external competitions', 'Live leaderboards and chat'].map((f) =>
+                <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" /> {f}
                   </li>
-                ))}
+                )}
               </ul>
             </motion.div>
 
@@ -390,15 +390,15 @@ export default function LandingPage() {
                   <p className="text-xs text-muted-foreground mb-3">Open Arena • Gold League</p>
                   {/* Round indicators */}
                   <div className="flex gap-1.5 mb-3">
-                    {['R1', 'R2', 'R3'].map((r, i) => (
-                      <div key={r} className={`flex-1 text-center py-1.5 text-[9px] uppercase tracking-wider border ${
-                        i === 0 ? 'bg-muted/50 border-border text-muted-foreground' :
-                        i === 1 ? 'bg-gold/20 border-gold/50 text-gold' :
-                        'bg-surface-2 border-border text-muted-foreground/60'
-                      }`}>
+                    {['R1', 'R2', 'R3'].map((r, i) =>
+                    <div key={r} className={`flex-1 text-center py-1.5 text-[9px] uppercase tracking-wider border ${
+                    i === 0 ? 'bg-muted/50 border-border text-muted-foreground' :
+                    i === 1 ? 'bg-gold/20 border-gold/50 text-gold' :
+                    'bg-surface-2 border-border text-muted-foreground/60'}`
+                    }>
                         {r}{i === 1 && <span className="ml-1 inline-block w-1 h-1 rounded-full bg-gold animate-pulse" />}
                       </div>
-                    ))}
+                    )}
                   </div>
                   {/* Countdown placeholder */}
                   <div className="bg-background border border-border p-3 text-center">
@@ -439,11 +439,11 @@ export default function LandingPage() {
                 The Loop Feed surfaces the highest rated edits from across the platform. Track the global index, discover rising talent, and see what S++ really looks like.
               </p>
               <ul className="space-y-2.5">
-                {['Top rated edit discovery', 'Global index rankings', 'Editor profiles and stats'].map(f => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
+                {['Top rated edit discovery', 'Global index rankings', 'Editor profiles and stats'].map((f) =>
+                <li key={f} className="flex items-center gap-3 text-sm text-foreground/80 md:justify-start justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" /> {f}
                   </li>
-                ))}
+                )}
               </ul>
             </motion.div>
 
@@ -457,13 +457,13 @@ export default function LandingPage() {
                 <div className="p-3">
                   {/* Top 5 rankings */}
                   {[
-                    { rank: 1, name: 'xMontage', score: 2847, cls: 'S++', clsColor: 'text-gold' },
-                    { rank: 2, name: 'KXZEN', score: 2691, cls: 'S+', clsColor: 'text-gold' },
-                    { rank: 3, name: 'novacut', score: 2534, cls: 'S', clsColor: 'text-gold/80' },
-                    { rank: 4, name: 'FLUX', score: 2410, cls: 'A', clsColor: 'text-emerald-400' },
-                    { rank: 5, name: 'RXSE', score: 2388, cls: 'A', clsColor: 'text-emerald-400' },
-                  ].map((e, i) => (
-                    <div key={e.rank} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 ${i === 0 ? 'bg-gold/5 border border-gold/20' : ''}`}>
+                  { rank: 1, name: 'xMontage', score: 2847, cls: 'S++', clsColor: 'text-gold' },
+                  { rank: 2, name: 'KXZEN', score: 2691, cls: 'S+', clsColor: 'text-gold' },
+                  { rank: 3, name: 'novacut', score: 2534, cls: 'S', clsColor: 'text-gold/80' },
+                  { rank: 4, name: 'FLUX', score: 2410, cls: 'A', clsColor: 'text-emerald-400' },
+                  { rank: 5, name: 'RXSE', score: 2388, cls: 'A', clsColor: 'text-emerald-400' }].
+                  map((e, i) =>
+                  <div key={e.rank} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 ${i === 0 ? 'bg-gold/5 border border-gold/20' : ''}`}>
                       <span className={`font-display text-lg w-6 text-center ${i === 0 ? 'text-gold' : 'text-muted-foreground'}`}>{e.rank}</span>
                       <div className="w-8 h-8 rounded-full bg-surface-2 border border-border flex items-center justify-center">
                         <span className="text-[10px] font-bold text-muted-foreground">{e.name[0]}</span>
@@ -474,7 +474,7 @@ export default function LandingPage() {
                       <span className={`text-[10px] font-bold ${e.clsColor}`}>{e.cls}</span>
                       <span className="font-display text-sm text-foreground w-12 text-right">{e.score}</span>
                     </div>
-                  ))}
+                  )}
                   {/* Trending indicator */}
                   <div className="mt-2 flex items-center justify-center gap-2 py-2 bg-surface-2/50 rounded-lg">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
@@ -513,9 +513,9 @@ export default function LandingPage() {
                 Not available in your region? Use the web version for the full experience. No download needed. Works on any device.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                {['iOS', 'Web', 'Android (Soon)'].map(p => (
-                  <span key={p} className="px-4 py-2 bg-surface-1 border border-border text-xs text-muted-foreground font-medium uppercase tracking-wider">{p}</span>
-                ))}
+                {['iOS', 'Web', 'Android (Soon)'].map((p) =>
+                <span key={p} className="px-4 py-2 bg-surface-1 border border-border text-xs text-muted-foreground font-medium uppercase tracking-wider">{p}</span>
+                )}
               </div>
             </motion.div>
           </div>
@@ -577,13 +577,13 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 border-t border-border">
               <div className="flex items-center gap-3">
                 <img src={loopgateLogo} alt="Loopgate" className="h-5" />
-                <span className="font-display text-lg tracking-tight">LOOPGATE</span>
+                <span className="font-display text-lg tracking-tight">
+                </span>
               </div>
               <span className="text-xs text-muted-foreground">© {new Date().getFullYear()} Loopgate. All rights reserved.</span>
             </div>
           </div>
         </footer>
       </div>
-    </>
-  );
+    </>);
 }
