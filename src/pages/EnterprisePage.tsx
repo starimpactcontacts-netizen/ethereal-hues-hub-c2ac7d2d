@@ -195,8 +195,8 @@ export default function EnterprisePage() {
       {/* GatePattern background */}
       <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
 
-      {/* Red side stripe — full height */}
-      <div className="fixed top-0 right-0 bottom-0 w-[3px] z-[5] bg-[#E00000]/80" />
+      {/* Red side stripe — full height, bold band */}
+      <div className="fixed top-0 right-0 bottom-0 w-[18px] md:w-[24px] z-[5] bg-[#E00000]" />
       
       {/* Radial vignette */}
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.8)_100%)] z-[2]" />
