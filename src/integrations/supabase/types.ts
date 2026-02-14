@@ -3642,6 +3642,63 @@ export type Database = {
           },
         ]
       }
+      revenue_share_applications: {
+        Row: {
+          admin_notes: string | null
+          applicant_email: string
+          applicant_name: string | null
+          created_at: string
+          current_revenue: string | null
+          id: string
+          pitch: string
+          project_name: string
+          project_type: string
+          project_url: string | null
+          proposed_percentage: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          social_links: string[] | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          applicant_email: string
+          applicant_name?: string | null
+          created_at?: string
+          current_revenue?: string | null
+          id?: string
+          pitch: string
+          project_name: string
+          project_type?: string
+          project_url?: string | null
+          proposed_percentage?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          social_links?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          applicant_email?: string
+          applicant_name?: string | null
+          created_at?: string
+          current_revenue?: string | null
+          id?: string
+          pitch?: string
+          project_name?: string
+          project_type?: string
+          project_url?: string | null
+          proposed_percentage?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          social_links?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       review_requests: {
         Row: {
           avatar_url: string | null

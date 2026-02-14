@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, ArrowRight, Zap, Trophy, Users, Calendar, Mail, KeyRound, Loader2, Check, Clock, BarChart3, Eye, Play, Flame, Upload, X, ChevronRight, Shield, Sparkles, TrendingUp, Star, User, Crown, Diamond } from 'lucide-react';
+import { Lock, ArrowRight, Zap, Trophy, Users, Calendar, Mail, KeyRound, Loader2, Check, Clock, BarChart3, Eye, Play, Flame, Upload, X, ChevronRight, Shield, Sparkles, TrendingUp, Star, User, Crown, Diamond, CreditCard, Wallet, Bitcoin, Handshake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -23,8 +23,9 @@ import cultureSpiderNoir from '@/assets/culture-spider-noir.webp';
 const GATE_PASSWORD = 'cartel';
 const bebas = { fontFamily: "var(--font-display)" };
 
-type PortalView = 'gate' | 'portal' | 'payment' | 'receipt';
+type PortalView = 'gate' | 'portal' | 'payment' | 'receipt' | 'revshare';
 type GateMode = 'code' | 'login' | 'otp';
+type PaymentMethod = 'card' | 'paypal' | 'crypto';
 
 interface SlotTier {
   id: string;
@@ -91,6 +92,28 @@ export default function EnterprisePage() {
   const [receiptData, setReceiptData] = useState<{ name: string; tier: string; price: string } | null>(null);
   const [campaigns] = useState(MOCK_CAMPAIGNS);
   const [dashTab, setDashTab] = useState<'active' | 'completed'>('active');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
+  const [paymentEmail, setPaymentEmail] = useState('');
+  // Rev-share state
+  const [revShareName, setRevShareName] = useState('');
+  const [revShareEmail, setRevShareEmail] = useState('');
+  const [revShareProject, setRevShareProject] = useState('');
+  const [revSharePitch, setRevSharePitch] = useState('');
+  const [revShareUrl, setRevShareUrl] = useState('');
+  const [revShareSubmitting, setRevShareSubmitting] = useState(false);
+  const [revShareSubmitted, setRevShareSubmitted] = useState(false);
+
+  // Check for payment success on URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      const campaign = params.get('campaign') || '';
+      setReceiptData({ name: campaign, tier: selectedTier?.name || 'Slot', price: selectedTier?.priceLabel || '' });
+      setView('receipt');
+      // Clean URL
+      window.history.replaceState({}, '', '/enterprise');
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,13 +169,64 @@ export default function EnterprisePage() {
     setView('payment');
   };
 
-  const handlePay = () => {
-    setPaymentProcessing(true);
-    setTimeout(() => {
-      setPaymentProcessing(false);
-      setReceiptData({ name: campaignName, tier: selectedTier!.name, price: selectedTier!.priceLabel });
-      setView('receipt');
-    }, 2000);
+  const handlePay = async () => {
+    if (paymentMethod === 'card') {
+      // Stripe checkout
+      setPaymentProcessing(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('create-enterprise-payment', {
+          body: {
+            tierId: selectedTier?.id,
+            campaignName,
+            campaignLink,
+            campaignNotes,
+            email: paymentEmail || undefined,
+          },
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.open(data.url, '_blank');
+          toast.success('Stripe checkout opened in new tab');
+          // Show receipt after a moment (they'll complete payment in the tab)
+          setReceiptData({ name: campaignName, tier: selectedTier!.name, price: selectedTier!.priceLabel });
+          setView('receipt');
+        } else {
+          throw new Error('No checkout URL returned');
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Payment failed');
+      } finally {
+        setPaymentProcessing(false);
+      }
+    } else if (paymentMethod === 'paypal') {
+      toast.info('PayPal integration coming soon. Contact team@loopgate.io for PayPal payments.');
+    } else if (paymentMethod === 'crypto') {
+      toast.info('Crypto payments coming soon. Contact team@loopgate.io for Binance Pay.');
+    }
+  };
+
+  const handleRevShareSubmit = async () => {
+    if (!revShareEmail || !revShareProject || !revSharePitch) {
+      toast.error('Fill out all required fields');
+      return;
+    }
+    setRevShareSubmitting(true);
+    try {
+      const { error } = await supabase.from('revenue_share_applications' as any).insert({
+        applicant_email: revShareEmail,
+        applicant_name: revShareName,
+        project_name: revShareProject,
+        project_url: revShareUrl,
+        pitch: revSharePitch,
+      });
+      if (error) throw error;
+      setRevShareSubmitted(true);
+      toast.success('Application submitted. We\'ll review and get back to you.');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit');
+    } finally {
+      setRevShareSubmitting(false);
+    }
   };
 
   const handleGoToDashboard = () => {
@@ -566,6 +640,29 @@ export default function EnterprisePage() {
           </div>
         </motion.section>
 
+        {/* ─── Revenue Share CTA ─── */}
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.82 }} className="pb-10">
+          <button 
+            onClick={() => setView('revshare')}
+            className="w-full border border-[#1B4332]/20 p-8 md:p-10 text-left hover:border-[#1B4332]/40 transition-all duration-500 group"
+            style={{ background: 'linear-gradient(135deg, rgba(27,67,50,0.05) 0%, rgba(10,10,10,1) 100%)' }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Handshake className="w-4 h-4 text-[#1B4332]/50" />
+                  <span className="text-[8px] text-[#1B4332]/50 uppercase tracking-[0.4em]">No Budget? No Problem.</span>
+                </div>
+                <h3 className="text-2xl text-white/70 mb-2" style={bebas}>Revenue Share Program</h3>
+                <p className="text-[11px] text-white/20 leading-relaxed max-w-md">
+                  Got a fire project but no cash? Pitch us. If we believe in it, we run the full Loopgate engine and take a cut of revenue. It ain't free — it's smart.
+                </p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-white/10 group-hover:text-[#1B4332]/50 transition-colors mt-2 shrink-0" />
+            </div>
+          </button>
+        </motion.section>
+
         {/* ─── Bottom Grid: Anonymous + Cartel Circle ─── */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }} className="pb-20 grid md:grid-cols-2 gap-[1px] bg-white/[0.04]">
           <div className="p-8 md:p-12" style={{ background: '#0A0A0A' }}>
@@ -666,7 +763,7 @@ export default function EnterprisePage() {
       <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.85)_100%)] z-[2]" />
       
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-sm w-full relative z-10">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-md w-full relative z-10">
         <Diamond className="w-3 h-3 text-white/15 mx-auto mb-4" />
         <p className="text-[9px] text-white/25 uppercase tracking-[0.5em] mb-6 text-center">Order Summary</p>
 
@@ -688,13 +785,51 @@ export default function EnterprisePage() {
           </div>
         </div>
 
-        <p className="text-[9px] text-white/10 text-center mb-4 uppercase tracking-wider">Payment is handled securely</p>
+        {/* Payment Method Selection */}
+        <div className="mb-5">
+          <p className="text-[9px] text-white/20 uppercase tracking-[0.4em] mb-3">Payment Method</p>
+          <div className="grid grid-cols-3 gap-[1px] bg-white/[0.04]">
+            {([
+              { id: 'card' as PaymentMethod, label: 'Card', icon: CreditCard, sublabel: 'Visa, MC, Amex' },
+              { id: 'paypal' as PaymentMethod, label: 'PayPal', icon: Wallet, sublabel: 'Coming Soon' },
+              { id: 'crypto' as PaymentMethod, label: 'Crypto', icon: Bitcoin, sublabel: 'Coming Soon' },
+            ]).map(method => (
+              <button
+                key={method.id}
+                onClick={() => setPaymentMethod(method.id)}
+                className={`p-4 text-center transition-all ${paymentMethod === method.id ? 'bg-white/[0.06] border-t-2 border-t-[#E00000]' : 'bg-[#0A0A0A] hover:bg-white/[0.02]'} ${method.id !== 'card' ? 'opacity-50' : ''}`}
+              >
+                <method.icon className={`w-4 h-4 mx-auto mb-1.5 ${paymentMethod === method.id ? 'text-white/60' : 'text-white/20'}`} />
+                <p className={`text-[10px] uppercase tracking-wider ${paymentMethod === method.id ? 'text-white/70' : 'text-white/20'}`} style={bebas}>{method.label}</p>
+                <p className="text-[7px] text-white/10 mt-0.5">{method.sublabel}</p>
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <Button onClick={handlePay} disabled={paymentProcessing} className="w-full bg-[#8B0000] hover:bg-[#A00000] text-white h-14 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#8B0000]/40 shadow-[0_0_40px_rgba(139,0,0,0.2)]">
+        {/* Email for receipt (anonymous mode) */}
+        <div className="mb-5">
+          <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Email for Receipt (Optional)</label>
+          <Input 
+            value={paymentEmail} 
+            onChange={(e) => setPaymentEmail(e.target.value)} 
+            placeholder="your@email.com" 
+            type="email"
+            className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" 
+          />
+        </div>
+
+        <p className="text-[9px] text-white/10 text-center mb-4 uppercase tracking-wider">
+          {paymentMethod === 'card' ? 'Secured by Stripe' : paymentMethod === 'paypal' ? 'PayPal Business' : 'Binance Pay'}
+        </p>
+
+        <Button onClick={handlePay} disabled={paymentProcessing || paymentMethod !== 'card'} className="w-full bg-[#8B0000] hover:bg-[#A00000] text-white h-14 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#8B0000]/40 shadow-[0_0_40px_rgba(139,0,0,0.2)]">
           {paymentProcessing ? (
-            <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
+            <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Opening Checkout...</>
+          ) : paymentMethod !== 'card' ? (
+            <>Contact for {paymentMethod === 'paypal' ? 'PayPal' : 'Crypto'}</>
           ) : (
-            <>Pay Now <ArrowRight className="w-3.5 h-3.5 ml-2" /></>
+            <>Pay {selectedTier?.priceLabel} <ArrowRight className="w-3.5 h-3.5 ml-2" /></>
           )}
         </Button>
 
@@ -753,6 +888,66 @@ export default function EnterprisePage() {
     </motion.div>
   );
 
+  // ─── REVENUE SHARE APPLICATION ───
+  const renderRevShare = () => (
+    <motion.div key="revshare" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0D0D 50%, #080808 100%)' }}>
+      <GrainOverlay />
+      <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
+      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(0,0,0,0.85)_100%)] z-[2]" />
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-md w-full relative z-10">
+        <Handshake className="w-5 h-5 text-[#1B4332]/60 mx-auto mb-4" />
+        <h1 className="text-3xl text-white text-center mb-2" style={bebas}>Revenue Share Program</h1>
+        <p className="text-[10px] text-white/20 text-center mb-8 leading-relaxed max-w-xs mx-auto">
+          No budget? No problem. If your project is fire, we'll push it through the Loopgate engine and take a percentage of revenue generated. We decide what's worth it.
+        </p>
+
+        {revShareSubmitted ? (
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+            <div className="w-16 h-16 border border-[#1B4332]/40 bg-[#1B4332]/10 flex items-center justify-center mx-auto mb-6">
+              <Check className="w-7 h-7 text-[#1B4332]" />
+            </div>
+            <h2 className="text-2xl text-white mb-2" style={bebas}>Application Received.</h2>
+            <p className="text-xs text-white/25 mb-8">We review every pitch personally. If it's fire, you'll hear from us within 48 hours.</p>
+            <Button onClick={() => { setView('portal'); setRevShareSubmitted(false); }} className="bg-transparent border border-white/10 text-white/40 hover:text-white/70 h-12 px-8 text-[10px] uppercase tracking-[0.3em] rounded-none">
+              Back to Portal
+            </Button>
+          </motion.div>
+        ) : (
+          <div className="border border-white/10 bg-black/40 p-6 space-y-4 relative">
+            <GoldCorners size={14} />
+            <div>
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Your Name</label>
+              <Input value={revShareName} onChange={(e) => setRevShareName(e.target.value)} placeholder="Artist / Label name" className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+            </div>
+            <div>
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Email *</label>
+              <Input value={revShareEmail} onChange={(e) => setRevShareEmail(e.target.value)} placeholder="your@email.com" type="email" required className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+            </div>
+            <div>
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Project Name *</label>
+              <Input value={revShareProject} onChange={(e) => setRevShareProject(e.target.value)} placeholder="Song title, brand, campaign..." required className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+            </div>
+            <div>
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Link to Project</label>
+              <Input value={revShareUrl} onChange={(e) => setRevShareUrl(e.target.value)} placeholder="https://..." className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 h-11 rounded-none" />
+            </div>
+            <div>
+              <label className="text-[9px] text-white/20 uppercase tracking-wider block mb-2">Why Should We Invest? *</label>
+              <Textarea value={revSharePitch} onChange={(e) => setRevSharePitch(e.target.value)} placeholder="Sell us on it. Why is this going to blow up?" required className="bg-white/[0.02] border-white/[0.06] text-sm placeholder:text-white/10 focus:border-white/20 rounded-none min-h-[100px] resize-none" />
+            </div>
+
+            <Button onClick={handleRevShareSubmit} disabled={revShareSubmitting} className="w-full bg-[#1B4332] hover:bg-[#1B4332]/80 text-white h-14 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#1B4332]/40">
+              {revShareSubmitting ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Submitting...</> : <>Submit Pitch <ArrowRight className="w-3.5 h-3.5 ml-2" /></>}
+            </Button>
+
+            <button onClick={() => setView('portal')} className="w-full text-[9px] text-white/20 hover:text-white/40 uppercase tracking-[0.2em] transition-colors text-center block pt-2">← Back to Portal</button>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen text-white" style={{ background: '#0A0A0A' }}>
       <SEO {...pageSEO.enterprise} />
@@ -761,6 +956,7 @@ export default function EnterprisePage() {
         {view === 'portal' && renderPortal()}
         {view === 'payment' && renderPayment()}
         {view === 'receipt' && renderReceipt()}
+        {view === 'revshare' && renderRevShare()}
       </AnimatePresence>
     </div>
   );
