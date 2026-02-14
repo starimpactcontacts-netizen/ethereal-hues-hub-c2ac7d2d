@@ -656,19 +656,23 @@ export default function EnterprisePage() {
           </div>
           <div className="border border-[#1B4332]/20 bg-[#1B4332]/[0.03] p-6 relative">
             <GoldCorners size={12} />
-            <div className="flex items-start gap-4">
-              <Users className="w-5 h-5 text-[#1B4332]/50 shrink-0 mt-0.5" />
-              <div>
-                <h3 className="text-sm text-white/70 mb-1" style={bebas}>Join the Circle</h3>
-                <p className="text-[10px] text-white/20 leading-relaxed">
-                  {ONLINE_CLIENTS.length} clients currently active. Labels, studios, and independents trust this system.
-                </p>
-                <div className="flex -space-x-1.5 mt-3">
-                  {ONLINE_CLIENTS.map((c, i) => (
-                    <div key={i} className="w-5 h-5 rounded-full border border-black flex items-center justify-center text-[6px] font-bold text-white/60" style={{ background: c.color }}>{c.initials}</div>
-                  ))}
-                </div>
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="w-10 h-10 rounded-full border-2 border-[#1B4332]/40 flex items-center justify-center">
+                <Shield className="w-4 h-4 text-[#1B4332]/60" />
               </div>
+              <div>
+                <h3 className="text-sm text-white/70 mb-1" style={bebas}>Join the Cartel Circle</h3>
+                <p className="text-[10px] text-white/20 leading-relaxed max-w-xs mx-auto">
+                  Get pinged first on new drops, system updates, and exclusive slot releases before anyone else.
+                </p>
+              </div>
+              <form onSubmit={(e) => { e.preventDefault(); toast.success('You\'re in the circle.'); }} className="flex gap-2 w-full max-w-xs mt-1">
+                <Input placeholder="your@email.com" type="email" required className="bg-black/40 border-[#1B4332]/20 text-[10px] placeholder:text-white/15 focus:border-[#1B4332]/40 h-9 rounded-none flex-1" />
+                <Button type="submit" className="bg-[#1B4332] hover:bg-[#1B4332]/80 text-white/80 h-9 px-4 text-[9px] uppercase tracking-widest rounded-none border border-[#1B4332]/50 shrink-0">
+                  Join
+                </Button>
+              </form>
+              <p className="text-[7px] text-white/10 uppercase tracking-wider">No spam · First access · Drop alerts only</p>
             </div>
           </div>
         </motion.section>
