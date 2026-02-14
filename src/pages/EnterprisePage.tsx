@@ -344,23 +344,69 @@ export default function EnterprisePage() {
 
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         {/* ─── Hero / Welcome ─── */}
-        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="pt-14 pb-12">
-          <div className="flex items-center gap-2 mb-4">
-            <Crown className="w-4 h-4 text-[#C8A96E]/40" />
-            <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Private Access</p>
+        <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="pt-14 pb-16 relative">
+          {/* Luxury animated emblem behind hero */}
+          <div className="absolute right-0 md:right-12 top-0 w-[280px] h-[280px] md:w-[400px] md:h-[400px] pointer-events-none select-none z-0 opacity-[0.12]">
+            {/* Outer rotating ring */}
+            <motion.div
+              className="absolute inset-0"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+            >
+              <svg viewBox="0 0 400 400" className="w-full h-full">
+                <circle cx="200" cy="200" r="190" fill="none" stroke="#C8A96E" strokeWidth="0.5" strokeDasharray="8 12" />
+                <circle cx="200" cy="200" r="170" fill="none" stroke="#C8A96E" strokeWidth="0.3" />
+                {/* 8-point star markers */}
+                {[0,45,90,135,180,225,270,315].map(deg => (
+                  <line key={deg} x1="200" y1="10" x2="200" y2="30" stroke="#C8A96E" strokeWidth="1" transform={`rotate(${deg} 200 200)`} />
+                ))}
+              </svg>
+            </motion.div>
+            {/* Inner counter-rotating ring */}
+            <motion.div
+              className="absolute inset-[15%]"
+              animate={{ rotate: -360 }}
+              transition={{ duration: 45, repeat: Infinity, ease: 'linear' }}
+            >
+              <svg viewBox="0 0 400 400" className="w-full h-full">
+                <polygon points="200,40 230,170 360,170 250,250 290,380 200,290 110,380 150,250 40,170 170,170" fill="none" stroke="#C8A96E" strokeWidth="0.6" />
+                <circle cx="200" cy="200" r="120" fill="none" stroke="#C8A96E" strokeWidth="0.3" strokeDasharray="4 8" />
+              </svg>
+            </motion.div>
+            {/* Center diamond pulse */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.4, 0.8, 0.4] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <Diamond className="w-8 h-8 text-[#C8A96E]" />
+            </motion.div>
           </div>
-          <h1 className="text-4xl md:text-6xl text-white leading-[0.95] mb-5" style={bebas}>
-            Control the<br />
-            <span className="text-[#C8A96E]">Culture.</span>
-          </h1>
-          <p className="text-white/30 text-sm max-w-lg leading-relaxed">
-            Launch campaigns into the Loopgate arena. Our editors compete, judges rate, and your content spreads — all within minutes of purchase.
-          </p>
-          
-          {/* Decorative divider */}
-          <div className="flex items-center gap-3 mt-8">
-            <div className="h-px w-20 bg-gradient-to-r from-[#C8A96E]/30 to-transparent" />
-            <Diamond className="w-2.5 h-2.5 text-[#C8A96E]/20" />
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <Crown className="w-4 h-4 text-[#C8A96E]/40" />
+              <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Private Access</p>
+            </div>
+            <h1 className="text-4xl md:text-6xl text-white leading-[0.95] mb-5" style={bebas}>
+              Control the<br />
+              <motion.span
+                className="text-[#C8A96E] inline-block"
+                animate={{ textShadow: ['0 0 20px rgba(200,169,110,0)', '0 0 40px rgba(200,169,110,0.3)', '0 0 20px rgba(200,169,110,0)'] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                Culture.
+              </motion.span>
+            </h1>
+            <p className="text-white/30 text-sm max-w-lg leading-relaxed">
+              Launch campaigns into the Loopgate arena. Our editors compete, judges rate, and your content spreads — all within minutes of purchase.
+            </p>
+            
+            {/* Decorative divider */}
+            <div className="flex items-center gap-3 mt-8">
+              <div className="h-px w-20 bg-gradient-to-r from-[#C8A96E]/30 to-transparent" />
+              <Diamond className="w-2.5 h-2.5 text-[#C8A96E]/20" />
+            </div>
           </div>
         </motion.section>
 
