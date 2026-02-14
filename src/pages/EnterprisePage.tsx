@@ -370,7 +370,7 @@ export default function EnterprisePage() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.15, scale: 1 }}
           transition={{ delay: 0.1, duration: 1 }}
-          className="absolute left-6 top-6 z-20 pointer-events-none"
+          className="absolute right-6 top-6 z-20 pointer-events-none"
         >
           <img src={viralCartelCrest} alt="" className="w-16 md:w-20 h-auto" />
         </motion.div>
