@@ -491,34 +491,14 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span className="relative inline-block">
-                <span className="text-[#E00000] relative z-10" style={{ 
-                  textShadow: '0 0 60px rgba(224,0,0,0.25)',
-                }}>
-                  <svg viewBox="0 0 600 140" className="w-[320px] md:w-[620px] h-auto block" style={{ overflow: 'visible' }}>
-                    <defs>
-                      <path id="culture-arc" d="M 0,20 Q 300,95 600,20" fill="none" />
-                    </defs>
-                    <text
-                      style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '120px', letterSpacing: '0.02em' }}
-                      fill="#E00000"
-                    >
-                      <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">
-                        CULTURE.
-                      </textPath>
-                    </text>
-                  </svg>
-                </span>
-                {/* Netflix-style curved arc shadow underneath */}
-                <span 
-                  className="absolute left-1/2 -translate-x-1/2 bottom-[-8px] md:bottom-[-14px] w-[90%] h-[18px] md:h-[28px] z-0 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at center, rgba(224,0,0,0.5) 0%, rgba(224,0,0,0.2) 40%, transparent 70%)',
-                    borderRadius: '50%',
-                    filter: 'blur(6px)',
-                  }}
-                />
-              </span>
+              <span 
+                className="inline-block text-[#E00000]"
+                style={{ 
+                  transform: 'perspective(800px) rotateY(-4deg) scaleX(1.02)',
+                  textShadow: '3px 0 20px rgba(224,0,0,0.4), -1px 0 10px rgba(224,0,0,0.2)',
+                  transformOrigin: 'left center',
+                }}
+              >Culture.</span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
