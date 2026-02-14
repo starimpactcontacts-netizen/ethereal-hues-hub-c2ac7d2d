@@ -13,7 +13,6 @@ import { Textarea } from '@/components/ui/textarea';
 import GatePattern from '@/components/loopgate/GatePattern';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import viralCartelLogo from '@/assets/viral-cartel-logo.png';
-import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 import culturePhonk from '@/assets/culture-phonk-artist.jpg';
 import cultureMovie from '@/assets/culture-movie-character.webp';
 import cultureArtist from '@/assets/culture-artist.png';
@@ -431,22 +430,22 @@ export default function EnterprisePage() {
             </div>
           </div>
 
-          {/* ─── Viper Squad Cinematic Strip + VC Crest ─── */}
-          <div className="absolute bottom-0 left-0 right-0 opacity-[0.15] pointer-events-none select-none">
-            <div className="relative w-full h-[180px] md:h-[240px] overflow-hidden">
-              <img src={cultureMovie} alt="Viper Squad" className="w-full h-full object-cover object-top grayscale" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black" />
-              {/* VC Crest */}
-              <motion.img 
-                src={viralCartelCrest} 
-                alt="Viral Cartel" 
-                className="absolute bottom-4 right-6 w-10 h-10 md:w-14 md:h-14 opacity-60 invert"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.6 }}
-                transition={{ delay: 0.8 }}
-              />
-            </div>
+          {/* ─── Culture Image Strip ─── */}
+          <div className="absolute bottom-0 right-0 md:right-8 flex gap-2 opacity-[0.18] pointer-events-none select-none">
+            {CULTURE_IMAGES.slice(0, 3).map((img, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + i * 0.15 }}
+                className="w-[100px] md:w-[130px] h-[140px] md:h-[180px] overflow-hidden relative"
+                style={{ clipPath: 'polygon(0 8%, 100% 0%, 100% 92%, 0% 100%)' }}
+              >
+                <img src={img.src} alt={img.label} className="w-full h-full object-cover grayscale" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" />
+                <span className="absolute bottom-2 left-2 text-[7px] text-white/40 uppercase tracking-wider">{img.category}</span>
+              </motion.div>
+            ))}
           </div>
         </motion.section>
 
