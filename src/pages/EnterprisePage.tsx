@@ -507,27 +507,12 @@ export default function EnterprisePage() {
         </div>
       </section>
 
-      {/* ─── Metrics Ribbon ─── */}
-      <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="border-y border-white/[0.04] relative" style={{ background: 'rgba(255,255,255,0.01)' }}>
-        <div className="max-w-7xl mx-auto px-8 py-8 grid grid-cols-3 gap-0">
-          {[
-            { label: 'Edits Generated', value: '20–130+', icon: Play },
-            { label: 'Time to Start', value: '<2 Hours', icon: Clock },
-            { label: 'Feed Impressions', value: '500K–10M+', icon: Eye },
-          ].map((m, i) => (
-            <div key={m.label} className={`text-center py-2 ${i < 2 ? 'border-r border-white/[0.04]' : ''}`}>
-              <p className="text-2xl md:text-3xl text-white/80 mb-1" style={bebas}>{m.value}</p>
-              <p className="text-[8px] text-white/20 uppercase tracking-[0.3em]">{m.label}</p>
-            </div>
-          ))}
-        </div>
-      </motion.section>
 
       <div className="max-w-7xl mx-auto px-8 relative z-10">
 
         {/* ─── Slot Tiers ─── */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="py-20">
-          <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-12">Select Your Tier</p>
+          <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-12">Featured Offers</p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px]">
             {/* TRIAL — Artist/Music bg */}
@@ -638,6 +623,22 @@ export default function EnterprisePage() {
                 </div>
               </div>
             </motion.button>
+          </div>
+
+          {/* ─── Metrics Ribbon ─── */}
+          <div className="border-y border-white/[0.04] mt-12 relative" style={{ background: 'rgba(255,255,255,0.01)' }}>
+            <div className="py-8 grid grid-cols-3 gap-0">
+              {[
+                { label: 'Edits Generated', value: '20–130+' },
+                { label: 'Time to Start', value: '<2 Hours' },
+                { label: 'Feed Impressions', value: '500K–10M+' },
+              ].map((m, i) => (
+                <div key={m.label} className={`text-center py-2 ${i < 2 ? 'border-r border-white/[0.04]' : ''}`}>
+                  <p className="text-2xl md:text-3xl text-white/80 mb-1" style={bebas}>{m.value}</p>
+                  <p className="text-[8px] text-white/20 uppercase tracking-[0.3em]">{m.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </motion.section>
 
