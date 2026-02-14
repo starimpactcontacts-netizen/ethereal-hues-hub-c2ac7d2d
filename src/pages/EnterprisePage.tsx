@@ -580,35 +580,6 @@ export default function EnterprisePage() {
           </div>
         </motion.section>
 
-        {/* ─── Culture Mosaic ─── */}
-        <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.58 }} className="mb-14">
-          <div className="flex items-center gap-3 mb-6">
-            <Diamond className="w-3 h-3 text-[#C8A96E]/30" />
-            <p className="text-[9px] text-[#C8A96E]/40 uppercase tracking-[0.5em]">Who's Using the System</p>
-          </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
-            {CULTURE_IMAGES.map((img, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6 + i * 0.08 }}
-                className="aspect-[3/4] overflow-hidden relative group/img border border-white/5 hover:border-[#C8A96E]/20 transition-all"
-              >
-                <img src={img.src} alt={img.label} className="w-full h-full object-cover grayscale group-hover/img:grayscale-0 transition-all duration-700 scale-105 group-hover/img:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                <div className="absolute bottom-2 left-2 right-2">
-                  <p className="text-[8px] text-white/50 font-bold uppercase tracking-wider">{img.label}</p>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#1B4332]" />
-                    <span className="text-[7px] text-white/25 uppercase tracking-wider">{img.category}</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          <p className="text-[8px] text-white/10 text-center mt-3 uppercase tracking-[0.3em]">Labels · Studios · Artists · Athletes · Film</p>
-        </motion.section>
 
         {/* ─── Dashboard ─── */}
         <motion.section initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mb-14">
