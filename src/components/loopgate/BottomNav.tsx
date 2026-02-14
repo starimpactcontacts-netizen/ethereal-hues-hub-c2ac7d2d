@@ -163,7 +163,7 @@ export default function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
+                  {item.icon && <item.icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />}
                   <span className="text-[10px] font-semibold tracking-wide">
                     {item.label}
                   </span>
