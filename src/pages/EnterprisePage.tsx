@@ -545,7 +545,8 @@ export default function EnterprisePage() {
                 <div>
                   <p className="text-4xl md:text-5xl text-white mb-2" style={bebas}>$150</p>
                   <h3 className="text-2xl md:text-3xl text-white/60 leading-[0.9] mb-4" style={bebas}>TEST THE WATERS.</h3>
-                  <p className="text-[11px] text-white/20 leading-relaxed mb-4">20 to 30 edits in 48 hours. Arena distribution. 1v1 battles.</p>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">20–30 edits · 500K–1M impressions</p>
+                  <p className="text-[10px] text-white/10 leading-relaxed mb-4">48-hour arena cycle. 1v1 battles included.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
@@ -581,7 +582,8 @@ export default function EnterprisePage() {
                     <span className="text-white/80">OWN THE </span>
                     <span className="text-[#E00000]">CYCLE.</span>
                   </h3>
-                  <p className="text-[11px] text-white/20 leading-relaxed mb-4">Full arena cycle. Judges score every submission. Loop Feed exposure.</p>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">40–80 edits · 2M–5M impressions</p>
+                  <p className="text-[10px] text-white/10 leading-relaxed mb-4">Full arena cycle. Judge scoring. Loop Feed exposure.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
@@ -619,7 +621,8 @@ export default function EnterprisePage() {
                     <span className="text-white/80">BECOME </span>
                     <span className="text-[#E00000]">UNDENIABLE.</span>
                   </h3>
-                  <p className="text-[11px] text-white/20 leading-relaxed mb-4">Pinned event. Full ecosystem takeover. Guaranteed multi-format distribution.</p>
+                  <p className="text-[11px] text-white/20 leading-relaxed mb-1">100–130+ edits · 5M–10M+ impressions</p>
+                  <p className="text-[10px] text-white/10 leading-relaxed mb-4">Pinned event. Full ecosystem takeover. Multi-format distribution.</p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="flex gap-1">
