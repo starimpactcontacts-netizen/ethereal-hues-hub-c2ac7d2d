@@ -490,31 +490,16 @@ export default function EnterprisePage() {
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
-              Control the
+              Control the<br />
+              <span 
+                className="inline-block text-[#E00000]"
+                style={{ 
+                  transform: 'perspective(600px) rotateX(8deg)',
+                  textShadow: '0 4px 30px rgba(224,0,0,0.35), 0 0 60px rgba(224,0,0,0.15)',
+                  transformOrigin: 'center bottom',
+                }}
+              >Culture.</span>
             </h1>
-            {/* Netflix-style curved "CULTURE." */}
-            <div className="mb-6 -mt-2 md:-mt-4">
-              <svg viewBox="0 0 900 200" className="w-full max-w-[700px]" style={{ overflow: 'visible' }}>
-                <defs>
-                  <path id="culture-arc" d="M 30,160 Q 450,20 870,160" fill="none" />
-                  <filter id="culture-glow">
-                    <feGaussianBlur stdDeviation="8" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-                {/* Glow layer */}
-                <text fill="#E00000" opacity="0.4" filter="url(#culture-glow)" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '120px', letterSpacing: '0.06em' }}>
-                  <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">CULTURE.</textPath>
-                </text>
-                {/* Main text */}
-                <text fill="#E00000" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '120px', letterSpacing: '0.06em' }}>
-                  <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">CULTURE.</textPath>
-                </text>
-              </svg>
-            </div>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
             </p>
