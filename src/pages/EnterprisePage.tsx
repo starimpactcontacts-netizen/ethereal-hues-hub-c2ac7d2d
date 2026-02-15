@@ -192,11 +192,7 @@ export default function EnterprisePage() {
         });
         if (error) throw error;
         if (data?.url) {
-          window.open(data.url, '_blank');
-          toast.success('Stripe checkout opened in new tab');
-          // Show receipt after a moment (they'll complete payment in the tab)
-          setReceiptData({ name: campaignName, tier: selectedTier!.name, price: selectedTier!.priceLabel });
-          setView('receipt');
+          window.location.href = data.url;
         } else {
           throw new Error('No checkout URL returned');
         }
