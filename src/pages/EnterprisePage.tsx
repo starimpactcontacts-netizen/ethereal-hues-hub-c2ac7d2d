@@ -493,29 +493,21 @@ export default function EnterprisePage() {
               Control the
             </h1>
             {/* Netflix-style "Culture." — text with arc-shaped bottom clip */}
-            <div className="relative mb-6 overflow-hidden" style={{ width: 'fit-content' }}>
+            <div className="relative mb-6" style={{ width: 'fit-content' }}>
               <span
-                className="text-6xl md:text-[120px] text-[#E00000] block"
+                className="text-6xl md:text-[120px] text-[#E00000] block relative z-10"
                 style={{
                   ...luxuryFont,
-                  lineHeight: 0.85,
+                  lineHeight: 1,
                   letterSpacing: '-0.02em',
                   textShadow: '0 4px 30px rgba(224,0,0,0.35), 0 0 80px rgba(224,0,0,0.15)',
-                  paddingBottom: '20px',
+                  paddingBottom: '30px',
+                  clipPath: 'ellipse(55% 48% at 50% 40%)',
+                  WebkitClipPath: 'ellipse(55% 48% at 50% 40%)',
                 }}
               >
                 Culture.
               </span>
-              {/* Arc-shaped clip overlay — curves the bottom edge of the letters like Netflix */}
-              <div 
-                className="absolute bottom-0 left-[-5%] right-[-5%] pointer-events-none"
-                style={{
-                  height: '35%',
-                  background: '#000000',
-                  borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
-                  transform: 'translateY(55%)',
-                }}
-              />
             </div>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
