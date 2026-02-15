@@ -288,6 +288,15 @@ export default function EnterprisePage() {
       className="min-h-screen flex flex-col items-center justify-center px-6 relative overflow-hidden"
       style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #0D0D0D 50%, #080808 100%)' }}
     >
+      {/* Back to Loopgate */}
+      <button
+        onClick={() => navigate('/hub')}
+        className="fixed top-4 left-4 z-50 flex items-center gap-1.5 text-[9px] text-white/20 hover:text-white/50 uppercase tracking-[0.2em] transition-colors"
+        style={headerFont}
+      >
+        <ArrowRight className="w-3 h-3 rotate-180" />
+        Loopgate
+      </button>
       <GrainOverlay />
       
       {/* GatePattern background */}
