@@ -491,21 +491,22 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span className="inline-block relative" style={{ filter: 'drop-shadow(0 0 30px rgba(224, 0, 0, 0.4))' }}>
-                <svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" className="block w-full h-auto" style={{ maxWidth: '520px' }}>
+              <span className="inline-block relative" style={{ filter: 'drop-shadow(0 0 40px rgba(229, 9, 20, 0.5))' }}>
+                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" className="block w-full h-auto" style={{ maxWidth: '520px' }}>
                   <defs>
-                    <path id="culture-curve" d="M 50 60 Q 200 85 350 60" fill="transparent" />
+                    <path id="textarc" d="M 80 90 Q 250 105 420 90" fill="transparent" />
                   </defs>
                   <text
                     style={{
-                      fontSize: '72px',
+                      fontSize: '90px',
                       fontWeight: 900,
+                      fontStyle: 'italic',
                       fontFamily: "'Bebas Neue', sans-serif",
-                      letterSpacing: '-2px',
+                      letterSpacing: '-3px',
                     }}
                     fill="#E00000"
                   >
-                    <textPath href="#culture-curve" startOffset="50%" textAnchor="middle">
+                    <textPath href="#textarc" startOffset="50%" textAnchor="middle">
                       CULTURE.
                     </textPath>
                   </text>
