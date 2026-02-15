@@ -492,13 +492,32 @@ export default function EnterprisePage() {
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
               <span 
-                className="inline-block text-[#E00000]"
+                className="inline-block text-[#E00000] relative"
                 style={{ 
-                  transform: 'perspective(800px) rotateY(-4deg) scaleX(1.02)',
                   textShadow: '3px 0 20px rgba(224,0,0,0.4), -1px 0 10px rgba(224,0,0,0.2)',
-                  transformOrigin: 'left center',
                 }}
-              >Culture.</span>
+              >
+                {/* Netflix-style subtle arc/bow SVG */}
+                <svg
+                  className="absolute left-0 right-0 bottom-0 w-full pointer-events-none"
+                  viewBox="0 0 400 30"
+                  preserveAspectRatio="none"
+                  style={{ height: '100%', top: 0, position: 'absolute', opacity: 1 }}
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <clipPath id="culture-arc">
+                      <ellipse cx="200" cy="-60" rx="240" ry="120" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                <span
+                  className="relative inline-block"
+                  style={{
+                    clipPath: 'ellipse(55% 120% at 50% -15%)',
+                  }}
+                >Culture.</span>
+              </span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
