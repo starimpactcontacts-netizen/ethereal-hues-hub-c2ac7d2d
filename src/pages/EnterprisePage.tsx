@@ -114,6 +114,13 @@ export default function EnterprisePage() {
   const [revShareSubmitting, setRevShareSubmitting] = useState(false);
   const [revShareSubmitted, setRevShareSubmitted] = useState(false);
 
+  // Auto-skip gate if enterprise client is already authenticated
+  useEffect(() => {
+    if (!enterpriseAuth.isLoading && enterpriseAuth.isAuthenticated && view === 'gate') {
+      setView('portal');
+    }
+  }, [enterpriseAuth.isLoading, enterpriseAuth.isAuthenticated]);
+
   // Check for payment success on URL params (only shows after actual Stripe checkout completion)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
