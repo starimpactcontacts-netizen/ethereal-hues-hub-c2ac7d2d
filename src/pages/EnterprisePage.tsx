@@ -441,14 +441,28 @@ export default function EnterprisePage() {
 
       {/* ─── Cinematic Header ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b border-white/[0.04]" style={{ background: 'rgba(6,6,6,0.85)' }}>
-        <div className="max-w-7xl mx-auto px-8 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <img src={loopgateBrand} alt="LOOPGATE" className="h-4 w-auto opacity-70" />
-            <span className="text-[8px] text-white/20 uppercase" style={headerFont}>Client Portal</span>
+        <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-4 md:gap-6">
+            <img src={loopgateBrand} alt="LOOPGATE" className="h-3.5 w-auto opacity-70" />
+            <nav className="flex items-center gap-1">
+              {[
+                { id: 'dashboard', label: 'Dashboard', action: () => document.getElementById('portal-campaigns')?.scrollIntoView({ behavior: 'smooth' }) },
+                { id: 'slots', label: 'Slots', action: () => document.getElementById('portal-slots')?.scrollIntoView({ behavior: 'smooth' }) },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={tab.action}
+                  className="text-[9px] text-white/25 hover:text-white/60 uppercase px-3 py-1.5 transition-colors"
+                  style={headerFont}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
           </div>
-          <div className="flex items-center gap-5">
-            <button onClick={() => setGateMode('login')} className="text-[9px] text-white/30 hover:text-white/60 uppercase transition-colors" style={headerFont}>Account</button>
-            <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/15 hover:text-white/30 uppercase transition-colors" style={headerFont}>Exit</button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setGateMode('login')} className="text-[9px] text-white/25 hover:text-white/60 uppercase px-3 py-1.5 transition-colors" style={headerFont}>Account</button>
+            <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/12 hover:text-white/30 uppercase px-3 py-1.5 transition-colors" style={headerFont}>Exit</button>
           </div>
         </div>
       </header>
@@ -514,7 +528,7 @@ export default function EnterprisePage() {
       <div className="max-w-7xl mx-auto px-8 relative z-10">
 
         {/* ─── Slot Tiers ─── */}
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="py-20">
+        <motion.section id="portal-slots" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="py-20">
           <p className="text-[9px] text-white/15 uppercase tracking-[0.5em] mb-12">Featured Offers</p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-[1px]">
@@ -667,7 +681,7 @@ export default function EnterprisePage() {
         </motion.section>
 
         {/* ─── Campaign Dashboard ─── */}
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="pb-20">
+        <motion.section id="portal-campaigns" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="pb-20">
           <div className="border-t border-white/[0.04] pt-20">
             <div className="flex items-center justify-between mb-8">
               <p className="text-[9px] text-white/15 uppercase tracking-[0.5em]">Your Campaigns</p>
