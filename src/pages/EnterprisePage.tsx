@@ -436,36 +436,36 @@ export default function EnterprisePage() {
 
   // ─── PORTAL (DASHBOARD + LAUNCHER) ───
   const renderPortal = () => (
-    <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }} className="min-h-screen relative overflow-hidden" style={{ background: '#060606' }}>
+    <motion.div key="portal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }} className="min-h-screen relative overflow-hidden pb-16" style={{ background: '#060606' }}>
       <GrainOverlay />
 
-      {/* ─── Cinematic Header ─── */}
+      {/* ─── Minimal Top Bar (logo only) ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b border-white/[0.04]" style={{ background: 'rgba(6,6,6,0.85)' }}>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-4 md:gap-6">
-            <img src={loopgateBrand} alt="LOOPGATE" className="h-3.5 w-auto opacity-70" />
-            <nav className="flex items-center gap-1">
-              {[
-                { id: 'dashboard', label: 'Dashboard', action: () => document.getElementById('portal-campaigns')?.scrollIntoView({ behavior: 'smooth' }) },
-                { id: 'slots', label: 'Slots', action: () => document.getElementById('portal-slots')?.scrollIntoView({ behavior: 'smooth' }) },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={tab.action}
-                  className="text-[9px] text-white/25 hover:text-white/60 uppercase px-3 py-1.5 transition-colors"
-                  style={headerFont}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setGateMode('login')} className="text-[9px] text-white/25 hover:text-white/60 uppercase px-3 py-1.5 transition-colors" style={headerFont}>Account</button>
-            <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/12 hover:text-white/30 uppercase px-3 py-1.5 transition-colors" style={headerFont}>Exit</button>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
+          <img src={loopgateBrand} alt="LOOPGATE" className="h-3.5 w-auto opacity-70" />
+          <button onClick={() => { setView('gate'); setPassword(''); }} className="text-[9px] text-white/12 hover:text-white/30 uppercase px-3 py-1.5 transition-colors" style={headerFont}>Exit</button>
         </div>
       </header>
+
+      {/* ─── Bottom Nav (TikTok-style) ─── */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.06] backdrop-blur-2xl" style={{ background: 'rgba(6,6,6,0.92)' }}>
+        <div className="max-w-lg mx-auto flex items-center justify-around h-14">
+          {[
+            { id: 'dashboard', label: 'Dashboard', icon: BarChart3, action: () => document.getElementById('portal-campaigns')?.scrollIntoView({ behavior: 'smooth' }) },
+            { id: 'slots', label: 'Slots', icon: Flame, action: () => document.getElementById('portal-slots')?.scrollIntoView({ behavior: 'smooth' }) },
+            { id: 'account', label: 'Account', icon: User, action: () => setGateMode('login') },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={tab.action}
+              className="flex flex-col items-center gap-0.5 text-white/30 hover:text-white/70 transition-colors px-4 py-1"
+            >
+              <tab.icon className="w-5 h-5" />
+              <span className="text-[8px] uppercase tracking-[0.15em]" style={headerFont}>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* ─── Hero: Full-Bleed Cinematic ─── */}
       <section className="relative min-h-[60vh] md:min-h-[75vh] flex items-end overflow-hidden pt-14">
@@ -506,7 +506,7 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <img src={cultureArcImg} alt="CULTURE." className="block" style={{ maxWidth: '320px', marginTop: '-10px', marginBottom: '-20px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }} />
+              <img src={cultureArcImg} alt="CULTURE." className="block -mt-2 -mb-3 md:-mt-4 md:-mb-5" style={{ maxWidth: '320px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }} />
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
