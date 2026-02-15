@@ -86,8 +86,10 @@ export default function EnterprisePage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [view, setView] = useState<PortalView>(() => {
-    // Sync check: if token exists, skip gate immediately to prevent flash
-    if (typeof window !== 'undefined' && localStorage.getItem('enterprise_client_token')) return 'portal';
+    if (typeof window === 'undefined') return 'gate';
+    // Sync check: if auth token OR guest gate-pass exists, skip gate immediately
+    if (localStorage.getItem('enterprise_client_token')) return 'portal';
+    if (sessionStorage.getItem('enterprise_gate_passed')) return 'portal';
     return 'gate';
   });
   const [gateMode, setGateMode] = useState<GateMode>('code');
@@ -124,8 +126,10 @@ export default function EnterprisePage() {
     if (enterpriseAuth.isAuthenticated && view === 'gate') {
       setView('portal');
     }
-    // If token was in localStorage but server says invalid, fall back to gate
-    if (!enterpriseAuth.isAuthenticated && view === 'portal' && !localStorage.getItem('enterprise_client_token')) {
+    // Only fall back to gate if BOTH token AND guest pass are gone
+    if (!enterpriseAuth.isAuthenticated && view === 'portal' 
+        && !localStorage.getItem('enterprise_client_token') 
+        && !sessionStorage.getItem('enterprise_gate_passed')) {
       setView('gate');
     }
   }, [enterpriseAuth.isLoading, enterpriseAuth.isAuthenticated]);
@@ -153,6 +157,7 @@ export default function EnterprisePage() {
     e.preventDefault();
     if (password.toLowerCase().trim() === GATE_PASSWORD) {
       setError('');
+      sessionStorage.setItem('enterprise_gate_passed', 'true');
       setView('portal');
     } else {
       setError('Invalid code. Access denied.');
