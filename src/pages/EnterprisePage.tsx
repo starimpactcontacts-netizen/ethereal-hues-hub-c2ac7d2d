@@ -491,23 +491,23 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span className="inline-block relative" style={{ filter: 'drop-shadow(0 0 40px rgba(229, 9, 20, 0.5))' }}>
-                <svg viewBox="0 0 500 200" xmlns="http://www.w3.org/2000/svg" className="block w-full h-auto" style={{ maxWidth: '520px' }}>
+              <span className="inline-block relative" style={{ filter: 'drop-shadow(0 0 30px rgba(229, 9, 20, 0.8))' }}>
+                <svg width="600" height="250" viewBox="0 0 600 250" className="block w-full h-auto" style={{ maxWidth: '600px' }}>
                   <defs>
-                    <path id="textarc" d="M 80 90 Q 250 105 420 90" fill="transparent" />
+                    <path id="culture-arc" d="M 50,120 Q 300,145 550,120" />
                   </defs>
                   <text
                     style={{
-                      fontSize: '90px',
+                      fontFamily: "Impact, 'Arial Black', sans-serif",
+                      fontSize: '85px',
                       fontWeight: 900,
                       fontStyle: 'italic',
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      letterSpacing: '-3px',
+                      letterSpacing: '2px',
                     }}
-                    fill="#E00000"
+                    fill="#E50914"
                   >
-                    <textPath href="#textarc" startOffset="50%" textAnchor="middle">
-                      CULTURE.
+                    <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">
+                      CULTURE
                     </textPath>
                   </text>
                 </svg>
