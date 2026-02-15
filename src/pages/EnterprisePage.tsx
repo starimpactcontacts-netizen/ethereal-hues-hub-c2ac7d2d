@@ -489,31 +489,17 @@ export default function EnterprisePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-8 pb-20 w-full">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
-            <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-2" style={luxuryFont}>
-              Control the
+            <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
+              Control the<br />
+              <span 
+                className="inline-block text-[#E00000]"
+                style={{ 
+                  transform: 'perspective(800px) rotateY(-4deg) scaleX(1.02)',
+                  textShadow: '3px 0 20px rgba(224,0,0,0.4), -1px 0 10px rgba(224,0,0,0.2)',
+                  transformOrigin: 'left center',
+                }}
+              >Culture.</span>
             </h1>
-            {/* Netflix-style "CULTURE." — curved arc text */}
-            <div className="relative mb-6">
-              <svg viewBox="0 0 800 160" className="w-[280px] md:w-[620px] h-auto" style={{ overflow: 'visible', display: 'block' }}>
-                <defs>
-                  {/* Arc curving upward left-to-right, like bottom of a large circle */}
-                  <path id="culture-arc" d="M 0,130 A 800,800 0 0,1 800,30" />
-                </defs>
-                <text
-                  fill="#E00000"
-                  style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: '130px',
-                    fontWeight: 400,
-                    letterSpacing: '0.05em',
-                  }}
-                >
-                  <textPath href="#culture-arc" startOffset="0%" textAnchor="start">
-                    CULTURE.
-                  </textPath>
-                </text>
-              </svg>
-            </div>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
             </p>
