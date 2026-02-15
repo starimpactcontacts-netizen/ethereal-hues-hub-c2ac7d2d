@@ -492,8 +492,8 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span className="inline-block relative" style={{ filter: 'drop-shadow(0 0 30px rgba(229, 9, 20, 0.8))' }}>
-                <img src={cultureArcImg} alt="CULTURE." className="block w-full h-auto" style={{ maxWidth: '600px' }} />
+              <span className="inline-block relative" style={{ filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }}>
+                <img src={cultureArcImg} alt="CULTURE." className="block h-auto" style={{ maxWidth: '340px', width: '100%' }} />
               </span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
