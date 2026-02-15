@@ -22,7 +22,7 @@ import cultureSpiderNoir from '@/assets/culture-spider-noir.webp';
 import tierTrial from '@/assets/tier-trial.png';
 import tierStandard from '@/assets/tier-standard.png';
 import tierTakeover from '@/assets/tier-takeover.png';
-import cultureArcImg from '@/assets/culture-arc.png';
+import cultureArcImg from '@/assets/culture-arc.jpeg';
 
 const GATE_PASSWORD = 'cartel';
 const luxuryFont = { fontFamily: "'Bebas Neue', sans-serif" };
