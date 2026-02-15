@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, ArrowRight, Zap, Trophy, Users, Calendar, Mail, KeyRound, Loader2, Check, Clock, BarChart3, Eye, EyeOff, Play, Flame, Upload, X, ChevronRight, Shield, Sparkles, TrendingUp, Star, User, Crown, Diamond, CreditCard, Wallet, Bitcoin, Handshake } from 'lucide-react';
+import { Lock, ArrowRight, Zap, Trophy, Users, Calendar, Mail, KeyRound, Loader2, Check, Clock, BarChart3, Eye, EyeOff, Play, Flame, Upload, X, ChevronRight, Shield, Sparkles, TrendingUp, Star, User, Crown, Diamond, CreditCard, Wallet, Bitcoin, Handshake, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -536,7 +536,6 @@ export default function EnterprisePage() {
         <div className="max-w-lg mx-auto flex items-center justify-around h-14">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: BarChart3, action: () => navigate('/enterprise/dashboard') },
-            { id: 'slots', label: 'Slots', icon: Flame, action: () => document.getElementById('portal-slots')?.scrollIntoView({ behavior: 'smooth' }) },
             { id: 'account', label: 'Account', icon: User, action: () => navigate('/enterprise/account') },
           ].map(tab => (
             <button
@@ -548,6 +547,16 @@ export default function EnterprisePage() {
               <span className="text-[8px] uppercase tracking-[0.15em]" style={headerFont}>{tab.label}</span>
             </button>
           ))}
+          {/* Striking center shop button */}
+          <button
+            onClick={() => document.getElementById('portal-slots')?.scrollIntoView({ behavior: 'smooth' })}
+            className="relative flex items-center justify-center -mt-5"
+          >
+            <span className="absolute inset-0 w-12 h-12 mx-auto rounded-full bg-[#E00000]/20 blur-xl animate-pulse" />
+            <span className="relative w-12 h-12 rounded-full bg-gradient-to-br from-[#E00000] to-[#8B0000] flex items-center justify-center shadow-[0_0_20px_rgba(224,0,0,0.4)] hover:shadow-[0_0_30px_rgba(224,0,0,0.6)] hover:scale-110 active:scale-95 transition-all duration-200">
+              <ShoppingBag className="w-5 h-5 text-white" />
+            </span>
+          </button>
         </div>
       </nav>
 
