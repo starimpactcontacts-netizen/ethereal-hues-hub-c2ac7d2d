@@ -492,22 +492,23 @@ export default function EnterprisePage() {
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-2" style={luxuryFont}>
               Control the
             </h1>
-            {/* Netflix-style "Culture." — SVG arc text, down-bow */}
+            {/* Netflix-style "CULTURE." — SVG arc text */}
             <div className="relative mb-6">
-              <svg viewBox="0 0 680 140" className="w-[300px] md:w-[680px] h-auto overflow-visible">
+              <svg viewBox="0 0 800 180" className="w-[280px] md:w-[650px] h-auto" style={{ overflow: 'visible', display: 'block' }}>
                 <defs>
-                  <path id="culture-arc" d="M 0,10 Q 340,50 680,10" />
+                  {/* Arc: edges at y=20, center dips to y=55 — Netflix frown */}
+                  <path id="culture-arc" d="M 0,20 Q 400,55 800,20" />
                 </defs>
                 <text
                   fill="#E00000"
                   style={{
-                    fontFamily: luxuryFont.fontFamily,
-                    fontWeight: 800,
-                    fontSize: '115px',
-                    letterSpacing: '-0.01em',
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: '140px',
+                    fontWeight: 400,
+                    letterSpacing: '0.04em',
                   }}
                 >
-                  <textPath href="#culture-arc" startOffset="0%" textAnchor="start">
+                  <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">
                     CULTURE.
                   </textPath>
                 </text>
