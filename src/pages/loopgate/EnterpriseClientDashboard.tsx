@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Flame, User, ArrowLeft, TrendingUp, Eye, Zap, Trophy, ChevronRight, Lock, LayoutDashboard, Target, Activity, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useEnterpriseAuth } from '@/hooks/useEnterpriseAuth';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 
@@ -11,17 +10,7 @@ const headerFont = { fontFamily: "'Jost', 'Futura', sans-serif", fontWeight: 400
 
 export default function EnterpriseClientDashboard() {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session?.user);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setIsAuthenticated(!!session?.user);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const { isAuthenticated, isLoading } = useEnterpriseAuth();
 
   return (
     <div className="min-h-screen relative overflow-hidden pb-20" style={{ background: '#060606' }}>
