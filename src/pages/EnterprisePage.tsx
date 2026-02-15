@@ -497,7 +497,7 @@ export default function EnterprisePage() {
               <svg viewBox="0 0 800 180" className="w-[280px] md:w-[650px] h-auto" style={{ overflow: 'visible', display: 'block' }}>
                 <defs>
                   {/* Arc: edges at y=20, center dips to y=55 — Netflix frown */}
-                  <path id="culture-arc" d="M 0,20 Q 400,55 800,20" />
+                  <path id="culture-arc" d="M 0,80 Q 400,120 800,80" />
                 </defs>
                 <text
                   fill="#E00000"
