@@ -492,28 +492,25 @@ export default function EnterprisePage() {
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-2" style={luxuryFont}>
               Control the
             </h1>
-            {/* Netflix-style "CULTURE." — SVG arc text */}
-            <div className="relative mb-6">
-              <svg viewBox="0 0 800 180" className="w-[280px] md:w-[650px] h-auto" style={{ overflow: 'visible', display: 'block' }}>
-                <defs>
-                  {/* Arc: edges at y=20, center dips to y=55 — Netflix frown */}
-                  <path id="culture-arc" d="M 0,80 Q 400,120 800,80" />
-                </defs>
-                <text
-                  fill="#E00000"
-                  style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: '140px',
-                    fontWeight: 400,
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">
-                    CULTURE.
-                  </textPath>
-                </text>
-              </svg>
-            </div>
+            {/* Netflix-style "CULTURE." — 3D perspective text */}
+            <h2
+              className="text-6xl md:text-[120px] text-[#E00000] mb-6 font-display"
+              style={{
+                lineHeight: 0.9,
+                letterSpacing: '0.04em',
+                perspective: '500px',
+                perspectiveOrigin: '50% 50%',
+              }}
+            >
+              <span style={{
+                display: 'inline-block',
+                transform: 'rotateY(-8deg) rotateX(4deg)',
+                transformOrigin: 'center center',
+                textShadow: '0 4px 20px rgba(224,0,0,0.3)',
+              }}>
+                CULTURE.
+              </span>
+            </h2>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
             </p>
