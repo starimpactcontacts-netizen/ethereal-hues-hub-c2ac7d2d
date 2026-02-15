@@ -491,32 +491,50 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span 
-                className="inline-block text-[#E00000] relative"
-                style={{ 
-                  textShadow: '3px 0 20px rgba(224,0,0,0.4), -1px 0 10px rgba(224,0,0,0.2)',
-                }}
-              >
-                {/* Netflix-style subtle arc/bow SVG */}
+              <span className="inline-block relative" style={{ lineHeight: 1 }}>
+                {/* Netflix-style arc text — subtle downward bow */}
                 <svg
-                  className="absolute left-0 right-0 bottom-0 w-full pointer-events-none"
-                  viewBox="0 0 400 30"
-                  preserveAspectRatio="none"
-                  style={{ height: '100%', top: 0, position: 'absolute', opacity: 1 }}
-                  aria-hidden="true"
+                  viewBox="0 0 600 140"
+                  className="block"
+                  style={{ width: '100%', height: 'auto', maxWidth: '600px' }}
+                  aria-label="Culture."
                 >
                   <defs>
-                    <clipPath id="culture-arc">
-                      <ellipse cx="200" cy="-60" rx="240" ry="120" />
-                    </clipPath>
+                    <path id="culture-arc-path" d="M 0,60 Q 300,130 600,60" />
+                  </defs>
+                  <text
+                    fill="#E00000"
+                    style={{ 
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: '110px',
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    <textPath href="#culture-arc-path" startOffset="0%">
+                      Culture.
+                    </textPath>
+                  </text>
+                  {/* Red ambient glow layer */}
+                  <text
+                    fill="#E00000"
+                    opacity="0.3"
+                    filter="url(#culture-glow)"
+                    style={{ 
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: '110px',
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    <textPath href="#culture-arc-path" startOffset="0%">
+                      Culture.
+                    </textPath>
+                  </text>
+                  <defs>
+                    <filter id="culture-glow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="8" result="blur" />
+                    </filter>
                   </defs>
                 </svg>
-                <span
-                  className="relative inline-block"
-                  style={{
-                    clipPath: 'ellipse(55% 120% at 50% -15%)',
-                  }}
-                >Culture.</span>
               </span>
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
