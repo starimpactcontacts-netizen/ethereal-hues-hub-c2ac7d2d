@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { BarChart3, Flame, User, ArrowLeft, Mail, Shield, Crown, Diamond, ChevronRight, Bell, Lock, LogOut, UserPlus, ShoppingBag, KeyRound, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart3, Flame, User, ArrowLeft, Mail, Shield, Crown, Diamond, ChevronRight, Bell, Lock, LogOut, UserPlus, ShoppingBag, KeyRound, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
@@ -13,16 +13,25 @@ import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 const luxuryFont = { fontFamily: "'Bebas Neue', sans-serif" };
 const headerFont = { fontFamily: "'Jost', 'Futura', sans-serif", fontWeight: 400, letterSpacing: '0.25em' };
 
-type AccountMode = 'loading' | 'anonymous' | 'signup' | 'otp' | 'authenticated';
+type AccountMode = 'loading' | 'anonymous' | 'signup' | 'signup-otp' | 'signin' | 'signin-otp' | 'authenticated';
+type SignupMethod = 'password' | 'email-only';
 
 export default function EnterpriseAccountPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<AccountMode>('loading');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [signupMethod, setSignupMethod] = useState<SignupMethod>('password');
   const [userEmail, setUserEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notificationsOn, setNotificationsOn] = useState(true);
+  // For sign-in flow
+  const [signinEmail, setSigninEmail] = useState('');
+  const [signinPassword, setSigninPassword] = useState('');
+  const [signinMethod, setSigninMethod] = useState<'password' | 'otp'>('password');
+  const [showSigninPassword, setShowSigninPassword] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -47,14 +56,34 @@ export default function EnterpriseAccountPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSendOTP = async () => {
+  // ─── SIGN UP with password ───
+  const handleSignupPassword = async () => {
+    if (!email.trim()) { toast.error('Enter your email'); return; }
+    if (!password || password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.signUp({ email: email.trim(), password });
+      if (error) throw error;
+      toast.success('Account created! Check your email to verify, then sign in.');
+      setMode('signin');
+      setSigninEmail(email);
+      setSigninPassword('');
+    } catch (err: any) {
+      toast.error(err.message || 'Signup failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ─── SIGN UP with email only (OTP) ───
+  const handleSignupOTP = async () => {
     if (!email.trim()) { toast.error('Enter your email'); return; }
     setIsSubmitting(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({ email: email.trim() });
       if (error) throw error;
-      toast.success('Verification code sent');
-      setMode('otp');
+      toast.success('Verification code sent to your email');
+      setMode('signup-otp');
     } catch (err: any) {
       toast.error(err.message || 'Failed to send code');
     } finally {
@@ -62,14 +91,65 @@ export default function EnterpriseAccountPage() {
     }
   };
 
-  const handleVerifyOTP = async () => {
+  // ─── Verify OTP (signup) ───
+  const handleVerifySignupOTP = async () => {
     if (otpCode.length !== 6) { toast.error('Enter the 6-digit code'); return; }
     setIsSubmitting(true);
     try {
       const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'email' });
       if (error) throw error;
       toast.success('Welcome to the Cartel');
-      setMode('authenticated');
+    } catch (err: any) {
+      toast.error(err.message || 'Invalid code');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ─── SIGN IN with password ───
+  const handleSigninPassword = async () => {
+    if (!signinEmail.trim()) { toast.error('Enter your email'); return; }
+    if (!signinPassword) { toast.error('Enter your password'); return; }
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: signinEmail.trim(), password: signinPassword });
+      if (error) throw error;
+      toast.success('Welcome back');
+    } catch (err: any) {
+      toast.error(err.message || 'Sign in failed');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ─── SIGN IN with OTP ───
+  const handleSigninSendOTP = async () => {
+    if (!signinEmail.trim()) { toast.error('Enter your email'); return; }
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email: signinEmail.trim(), options: { shouldCreateUser: false } });
+      if (error) {
+        if (error.message.includes('Signups not allowed')) { toast.error('No account found with this email. Sign up first.'); }
+        else throw error;
+        return;
+      }
+      toast.success('Code sent to your email');
+      setMode('signin-otp');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send code');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ─── Verify OTP (signin) ───
+  const handleVerifySigninOTP = async () => {
+    if (otpCode.length !== 6) { toast.error('Enter the 6-digit code'); return; }
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email: signinEmail, token: otpCode, type: 'email' });
+      if (error) throw error;
+      toast.success('Welcome back');
     } catch (err: any) {
       toast.error(err.message || 'Invalid code');
     } finally {
@@ -80,6 +160,11 @@ export default function EnterpriseAccountPage() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setMode('anonymous');
+    setEmail('');
+    setPassword('');
+    setSigninEmail('');
+    setSigninPassword('');
+    setOtpCode('');
     toast.success('Signed out');
   };
 
@@ -101,7 +186,7 @@ export default function EnterpriseAccountPage() {
     </nav>
   );
 
-  // Top bar (shared)
+  // Top bar
   const TopBar = () => (
     <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b border-white/[0.04]" style={{ background: 'rgba(6,6,6,0.85)' }}>
       <div className="max-w-7xl mx-auto px-6 h-12 flex items-center justify-between">
@@ -124,8 +209,8 @@ export default function EnterpriseAccountPage() {
     );
   }
 
-  // ─── ANONYMOUS / SIGNUP / OTP VIEW ───
-  if (mode === 'anonymous' || mode === 'signup' || mode === 'otp') {
+  // ─── UNAUTHENTICATED VIEWS ───
+  if (mode !== 'authenticated') {
     return (
       <div className="min-h-screen relative overflow-hidden pb-20" style={{ background: '#060606' }}>
         <TopBar />
@@ -137,138 +222,271 @@ export default function EnterpriseAccountPage() {
             <img src={viralCartelCrest} alt="" className="w-20 h-auto" />
           </motion.div>
 
-          {mode === 'anonymous' && (
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-              <div className="flex items-center gap-2 justify-center mb-2">
-                <Diamond className="w-3 h-3 text-white/8" />
-                <p className="text-[7px] text-white/12 uppercase tracking-[0.5em]" style={headerFont}>Client Portal</p>
-                <Diamond className="w-3 h-3 text-white/8" />
-              </div>
-              <h1 className="text-4xl text-white/90 mb-3" style={luxuryFont}>Secure Your Identity</h1>
-              <p className="text-[10px] text-white/20 leading-relaxed mb-10 max-w-xs mx-auto">
-                Create a private client account to track campaigns, manage invoices, and unlock loyalty rewards. Or continue anonymously — purchase a slot to access your receipt anytime.
-              </p>
-
-              {/* Create Account CTA */}
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setMode('signup')}
-                className="w-full border border-white/[0.08] p-5 mb-4 text-left relative overflow-hidden group hover:border-white/[0.15] transition-all"
-                style={{ background: 'linear-gradient(135deg, rgba(224,0,0,0.04) 0%, rgba(10,10,10,1) 100%)' }}
-              >
-                <span className="absolute top-0 left-0 border-t border-l border-[#E00000]/15 w-4 h-4" />
-                <span className="absolute bottom-0 right-0 border-b border-r border-[#E00000]/15 w-4 h-4" />
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border border-[#E00000]/20 flex items-center justify-center bg-[#E00000]/5">
-                    <UserPlus className="w-4 h-4 text-[#E00000]/50" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-lg text-white/80" style={luxuryFont}>Create Account</p>
-                    <p className="text-[8px] text-white/20 uppercase tracking-wider">Email verification · Full access</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-white/10 group-hover:text-white/30 transition-colors" />
+          <AnimatePresence mode="wait">
+            {/* ─── LANDING (anonymous) ─── */}
+            {mode === 'anonymous' && (
+              <motion.div key="anon" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-center">
+                <div className="flex items-center gap-2 justify-center mb-2">
+                  <Diamond className="w-3 h-3 text-white/8" />
+                  <p className="text-[7px] text-white/12 uppercase tracking-[0.5em]" style={headerFont}>Client Portal</p>
+                  <Diamond className="w-3 h-3 text-white/8" />
                 </div>
-              </motion.button>
+                <h1 className="text-4xl text-white/90 mb-3" style={luxuryFont}>Secure Your Identity</h1>
+                <p className="text-[10px] text-white/20 leading-relaxed mb-10 max-w-xs mx-auto">
+                  Create a private client account to track campaigns, manage invoices, and unlock loyalty rewards. Or continue anonymously.
+                </p>
 
-              {/* Anonymous Option */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="border border-white/[0.05] p-5 text-left"
-                style={{ background: 'rgba(255,255,255,0.01)' }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 border border-white/[0.06] flex items-center justify-center bg-white/[0.02]">
-                    <ShoppingBag className="w-4 h-4 text-white/20" />
+                {/* Create Account */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setMode('signup')}
+                  className="w-full border border-white/[0.08] p-5 mb-4 text-left relative overflow-hidden group hover:border-white/[0.15] transition-all"
+                  style={{ background: 'linear-gradient(135deg, rgba(224,0,0,0.04) 0%, rgba(10,10,10,1) 100%)' }}
+                >
+                  <span className="absolute top-0 left-0 border-t border-l border-[#E00000]/15 w-4 h-4" />
+                  <span className="absolute bottom-0 right-0 border-b border-r border-[#E00000]/15 w-4 h-4" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-[#E00000]/20 flex items-center justify-center bg-[#E00000]/5">
+                      <UserPlus className="w-4 h-4 text-[#E00000]/50" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-lg text-white/80" style={luxuryFont}>Create Account</p>
+                      <p className="text-[8px] text-white/20 uppercase tracking-wider">Email + password or email-only</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-white/10 group-hover:text-white/30 transition-colors" />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white/50" style={luxuryFont}>Stay Anonymous</p>
-                    <p className="text-[8px] text-white/15 leading-relaxed mt-0.5">
-                      Purchase any slot — your receipt and campaign are tied to your email at checkout. No account needed.
-                    </p>
+                </motion.button>
+
+                {/* Anonymous */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="border border-white/[0.05] p-5 text-left" style={{ background: 'rgba(255,255,255,0.01)' }}>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 border border-white/[0.06] flex items-center justify-center bg-white/[0.02]">
+                      <ShoppingBag className="w-4 h-4 text-white/20" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-white/50" style={luxuryFont}>Stay Anonymous</p>
+                      <p className="text-[8px] text-white/15 leading-relaxed mt-0.5">
+                        Purchase any slot — your receipt is tied to your email at checkout.
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="mt-4 pt-3 border-t border-white/[0.04]">
+                  <div className="mt-4 pt-3 border-t border-white/[0.04]">
+                    <button onClick={() => navigate('/enterprise')} className="text-[8px] text-[#E00000]/40 hover:text-[#E00000]/70 uppercase tracking-[0.3em] transition-colors flex items-center gap-1.5">
+                      <Flame className="w-3 h-3" /> Browse Available Slots
+                    </button>
+                  </div>
+                </motion.div>
+
+                {/* Sign In link */}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mt-8">
+                  <button onClick={() => setMode('signin')} className="text-[8px] text-white/12 hover:text-white/30 uppercase tracking-[0.3em] transition-colors mx-auto flex items-center gap-1.5">
+                    <KeyRound className="w-3 h-3" /> Already have an account? Sign in
+                  </button>
+                </motion.div>
+              </motion.div>
+            )}
+
+            {/* ─── SIGN UP ─── */}
+            {mode === 'signup' && (
+              <motion.div key="signup" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-center">
+                <h1 className="text-3xl text-white/90 mb-2" style={luxuryFont}>Create Account</h1>
+                <p className="text-[9px] text-white/15 mb-6 uppercase tracking-[0.2em]" style={headerFont}>Choose your signup method</p>
+
+                {/* Method toggle */}
+                <div className="flex border border-white/[0.08] mb-6">
                   <button
-                    onClick={() => navigate('/enterprise')}
-                    className="text-[8px] text-[#E00000]/40 hover:text-[#E00000]/70 uppercase tracking-[0.3em] transition-colors flex items-center gap-1.5"
+                    onClick={() => setSignupMethod('password')}
+                    className={`flex-1 py-2.5 text-[9px] uppercase tracking-[0.2em] transition-colors ${signupMethod === 'password' ? 'bg-white/[0.06] text-white/70' : 'text-white/25 hover:text-white/40'}`}
                   >
-                    <Flame className="w-3 h-3" /> Browse Available Slots
+                    <Lock className="w-3 h-3 inline mr-1.5" />Password
+                  </button>
+                  <button
+                    onClick={() => setSignupMethod('email-only')}
+                    className={`flex-1 py-2.5 text-[9px] uppercase tracking-[0.2em] transition-colors ${signupMethod === 'email-only' ? 'bg-white/[0.06] text-white/70' : 'text-white/25 hover:text-white/40'}`}
+                  >
+                    <Mail className="w-3 h-3 inline mr-1.5" />Email Only
                   </button>
                 </div>
+
+                <div className="space-y-4">
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-white/[0.03] border-white/[0.08] text-sm text-white/80 rounded-none h-12 text-center placeholder:text-white/15"
+                  />
+
+                  {signupMethod === 'password' && (
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Create a password (min 6 chars)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="bg-white/[0.03] border-white/[0.08] text-sm text-white/80 rounded-none h-12 text-center placeholder:text-white/15 pr-10"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSignupPassword()}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={signupMethod === 'password' ? handleSignupPassword : handleSignupOTP}
+                    disabled={isSubmitting || !email.trim() || (signupMethod === 'password' && password.length < 6)}
+                    className="w-full bg-[#E00000]/90 hover:bg-[#E00000] text-white rounded-none h-12 text-[10px] uppercase tracking-[0.3em] disabled:opacity-30"
+                  >
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (signupMethod === 'password' ? 'Create Account' : 'Send Code')}
+                  </Button>
+                </div>
+
+                {signupMethod === 'password' && (
+                  <p className="text-[8px] text-white/10 mt-3">You'll need to verify your email before signing in.</p>
+                )}
+
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  <button onClick={() => { setMode('anonymous'); setEmail(''); setPassword(''); }} className="text-[8px] text-white/10 hover:text-white/25 uppercase tracking-[0.3em] transition-colors">← Back</button>
+                  <span className="text-white/5">|</span>
+                  <button onClick={() => { setMode('signin'); setSigninEmail(email); }} className="text-[8px] text-white/10 hover:text-white/25 uppercase tracking-[0.3em] transition-colors">Sign In →</button>
+                </div>
               </motion.div>
+            )}
 
-              {/* Already have account */}
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="mt-8">
-                <button
-                  onClick={() => setMode('signup')}
-                  className="text-[8px] text-white/12 hover:text-white/30 uppercase tracking-[0.3em] transition-colors mx-auto flex items-center gap-1.5"
-                >
-                  <KeyRound className="w-3 h-3" /> Already have an account? Sign in
-                </button>
-              </motion.div>
-            </motion.div>
-          )}
+            {/* ─── SIGN UP OTP VERIFY ─── */}
+            {mode === 'signup-otp' && (
+              <motion.div key="signup-otp" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-center">
+                <h1 className="text-3xl text-white/90 mb-2" style={luxuryFont}>Verify Code</h1>
+                <p className="text-[9px] text-white/20 mb-1">Sent to</p>
+                <p className="text-[10px] text-white/40 mb-8 font-mono">{email}</p>
 
-          {mode === 'signup' && (
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-              <h1 className="text-3xl text-white/90 mb-2" style={luxuryFont}>Enter Your Email</h1>
-              <p className="text-[9px] text-white/15 mb-8 uppercase tracking-[0.2em]" style={headerFont}>We'll send a 6-digit verification code</p>
+                <div className="flex justify-center mb-6">
+                  <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                    <InputOTPGroup className="gap-2">
+                      {[0,1,2,3,4,5].map(i => (
+                        <InputOTPSlot key={i} index={i} className="bg-white/[0.03] border-white/[0.08] text-white/80 rounded-none w-10 h-12" />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
 
-              <div className="space-y-4">
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-white/[0.03] border-white/[0.08] text-sm text-white/80 rounded-none h-12 text-center placeholder:text-white/15"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendOTP()}
-                />
                 <Button
-                  onClick={handleSendOTP}
-                  disabled={isSubmitting || !email.trim()}
+                  onClick={handleVerifySignupOTP}
+                  disabled={isSubmitting || otpCode.length !== 6}
                   className="w-full bg-[#E00000]/90 hover:bg-[#E00000] text-white rounded-none h-12 text-[10px] uppercase tracking-[0.3em] disabled:opacity-30"
                 >
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Code'}
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Enter'}
                 </Button>
-              </div>
 
-              <button onClick={() => setMode('anonymous')} className="mt-6 text-[8px] text-white/10 hover:text-white/25 uppercase tracking-[0.3em] transition-colors">
-                ← Back
-              </button>
-            </motion.div>
-          )}
+                <button onClick={() => { setMode('signup'); setOtpCode(''); }} className="mt-6 text-[8px] text-white/10 hover:text-white/25 uppercase tracking-[0.3em] transition-colors">← Change email</button>
+              </motion.div>
+            )}
 
-          {mode === 'otp' && (
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-              <h1 className="text-3xl text-white/90 mb-2" style={luxuryFont}>Verify Code</h1>
-              <p className="text-[9px] text-white/20 mb-1">Sent to</p>
-              <p className="text-[10px] text-white/40 mb-8 font-mono">{email}</p>
+            {/* ─── SIGN IN ─── */}
+            {mode === 'signin' && (
+              <motion.div key="signin" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-center">
+                <h1 className="text-3xl text-white/90 mb-2" style={luxuryFont}>Welcome Back</h1>
+                <p className="text-[9px] text-white/15 mb-6 uppercase tracking-[0.2em]" style={headerFont}>Sign in to your account</p>
 
-              <div className="flex justify-center mb-6">
-                <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
-                  <InputOTPGroup className="gap-2">
-                    {[0,1,2,3,4,5].map(i => (
-                      <InputOTPSlot key={i} index={i} className="bg-white/[0.03] border-white/[0.08] text-white/80 rounded-none w-10 h-12" />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
+                {/* Method toggle */}
+                <div className="flex border border-white/[0.08] mb-6">
+                  <button
+                    onClick={() => setSigninMethod('password')}
+                    className={`flex-1 py-2.5 text-[9px] uppercase tracking-[0.2em] transition-colors ${signinMethod === 'password' ? 'bg-white/[0.06] text-white/70' : 'text-white/25 hover:text-white/40'}`}
+                  >
+                    <Lock className="w-3 h-3 inline mr-1.5" />Password
+                  </button>
+                  <button
+                    onClick={() => setSigninMethod('otp')}
+                    className={`flex-1 py-2.5 text-[9px] uppercase tracking-[0.2em] transition-colors ${signinMethod === 'otp' ? 'bg-white/[0.06] text-white/70' : 'text-white/25 hover:text-white/40'}`}
+                  >
+                    <Mail className="w-3 h-3 inline mr-1.5" />Email Code
+                  </button>
+                </div>
 
-              <Button
-                onClick={handleVerifyOTP}
-                disabled={isSubmitting || otpCode.length !== 6}
-                className="w-full bg-[#E00000]/90 hover:bg-[#E00000] text-white rounded-none h-12 text-[10px] uppercase tracking-[0.3em] disabled:opacity-30"
-              >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Enter'}
-              </Button>
+                <div className="space-y-4">
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={signinEmail}
+                    onChange={(e) => setSigninEmail(e.target.value)}
+                    className="bg-white/[0.03] border-white/[0.08] text-sm text-white/80 rounded-none h-12 text-center placeholder:text-white/15"
+                  />
 
-              <button onClick={() => { setMode('signup'); setOtpCode(''); }} className="mt-6 text-[8px] text-white/10 hover:text-white/25 uppercase tracking-[0.3em] transition-colors">
-                ← Change email
-              </button>
-            </motion.div>
-          )}
+                  {signinMethod === 'password' && (
+                    <div className="relative">
+                      <Input
+                        type={showSigninPassword ? 'text' : 'password'}
+                        placeholder="Your password"
+                        value={signinPassword}
+                        onChange={(e) => setSigninPassword(e.target.value)}
+                        className="bg-white/[0.03] border-white/[0.08] text-sm text-white/80 rounded-none h-12 text-center placeholder:text-white/15 pr-10"
+                        onKeyDown={(e) => e.key === 'Enter' && handleSigninPassword()}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowSigninPassword(!showSigninPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/40"
+                      >
+                        {showSigninPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={signinMethod === 'password' ? handleSigninPassword : handleSigninSendOTP}
+                    disabled={isSubmitting || !signinEmail.trim() || (signinMethod === 'password' && !signinPassword)}
+                    className="w-full bg-[#E00000]/90 hover:bg-[#E00000] text-white rounded-none h-12 text-[10px] uppercase tracking-[0.3em] disabled:opacity-30"
+                  >
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (signinMethod === 'password' ? 'Sign In' : 'Send Code')}
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  <button onClick={() => setMode('anonymous')} className="text-[8px] text-white/10 hover:text-white/25 uppercase tracking-[0.3em] transition-colors">← Back</button>
+                  <span className="text-white/5">|</span>
+                  <button onClick={() => { setMode('signup'); setEmail(signinEmail); }} className="text-[8px] text-white/10 hover:text-white/25 uppercase tracking-[0.3em] transition-colors">Create Account →</button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ─── SIGN IN OTP VERIFY ─── */}
+            {mode === 'signin-otp' && (
+              <motion.div key="signin-otp" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-center">
+                <h1 className="text-3xl text-white/90 mb-2" style={luxuryFont}>Verify Code</h1>
+                <p className="text-[9px] text-white/20 mb-1">Sent to</p>
+                <p className="text-[10px] text-white/40 mb-8 font-mono">{signinEmail}</p>
+
+                <div className="flex justify-center mb-6">
+                  <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                    <InputOTPGroup className="gap-2">
+                      {[0,1,2,3,4,5].map(i => (
+                        <InputOTPSlot key={i} index={i} className="bg-white/[0.03] border-white/[0.08] text-white/80 rounded-none w-10 h-12" />
+                      ))}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+
+                <Button
+                  onClick={handleVerifySigninOTP}
+                  disabled={isSubmitting || otpCode.length !== 6}
+                  className="w-full bg-[#E00000]/90 hover:bg-[#E00000] text-white rounded-none h-12 text-[10px] uppercase tracking-[0.3em] disabled:opacity-30"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Enter'}
+                </Button>
+
+                <div className="flex justify-between mt-4">
+                  <button onClick={() => { setMode('signin'); setOtpCode(''); }} className="text-[8px] text-white/10 hover:text-white/25 transition-colors">← Change email</button>
+                  <button onClick={handleSigninSendOTP} disabled={isSubmitting} className="text-[8px] text-white/10 hover:text-white/25 transition-colors">Resend</button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     );
@@ -358,12 +576,12 @@ export default function EnterpriseAccountPage() {
             </div>
           </button>
 
-          <button className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors" onClick={() => toast.info('Secured via email OTP')}>
+          <button className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors" onClick={() => toast.info('Secured via your chosen authentication method')}>
             <div className="flex items-center gap-3">
               <Lock className="w-4 h-4 text-white/15" />
               <div className="text-left">
                 <p className="text-[11px] text-white/60">Security</p>
-                <p className="text-[8px] text-white/15">Email-based OTP authentication</p>
+                <p className="text-[8px] text-white/15">Password or email OTP authentication</p>
               </div>
             </div>
             <Shield className="w-4 h-4 text-[#1B4332]/40" />
