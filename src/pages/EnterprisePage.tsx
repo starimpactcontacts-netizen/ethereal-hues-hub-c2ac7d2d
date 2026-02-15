@@ -244,7 +244,29 @@ export default function EnterprisePage() {
         setPaymentProcessing(false);
       }
     } else if (paymentMethod === 'paypal') {
-      toast.info('PayPal integration coming soon. Contact team@loopgate.io for PayPal payments.');
+      // PayPal checkout
+      setPaymentProcessing(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('create-paypal-payment', {
+          body: {
+            tierId: selectedTier?.id,
+            campaignName,
+            campaignLink,
+            campaignNotes,
+            email: paymentEmail || undefined,
+          },
+        });
+        if (error) throw error;
+        if (data?.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No PayPal checkout URL returned');
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'PayPal payment failed');
+      } finally {
+        setPaymentProcessing(false);
+      }
     } else if (paymentMethod === 'crypto') {
       toast.info('Crypto payments coming soon. Contact team@loopgate.io for Binance Pay.');
     }
@@ -1011,21 +1033,32 @@ export default function EnterprisePage() {
           <p className="text-[9px] text-white/20 uppercase tracking-[0.4em] mb-3">Payment Method</p>
           <div className="grid grid-cols-3 gap-[1px] bg-white/[0.04]">
             {([
-              { id: 'card' as PaymentMethod, label: 'Card', icon: CreditCard, sublabel: 'Visa, MC, Amex' },
-              { id: 'paypal' as PaymentMethod, label: 'PayPal', icon: Wallet, sublabel: 'Coming Soon' },
-              { id: 'crypto' as PaymentMethod, label: 'Crypto', icon: Bitcoin, sublabel: 'Coming Soon' },
+              { id: 'card' as PaymentMethod, label: 'Card', icon: CreditCard, sublabel: 'Visa, MC, Amex', active: true },
+              { id: 'paypal' as PaymentMethod, label: 'PayPal', icon: Wallet, sublabel: 'Instant · No Hold', active: true, recommended: true },
+              { id: 'crypto' as PaymentMethod, label: 'Crypto', icon: Bitcoin, sublabel: 'Coming Soon', active: false },
             ]).map(method => (
               <button
                 key={method.id}
-                onClick={() => setPaymentMethod(method.id)}
-                className={`p-4 text-center transition-all ${paymentMethod === method.id ? 'bg-white/[0.06] border-t-2 border-t-[#E00000]' : 'bg-[#0A0A0A] hover:bg-white/[0.02]'} ${method.id !== 'card' ? 'opacity-50' : ''}`}
+                onClick={() => method.active && setPaymentMethod(method.id)}
+                className={`relative p-4 text-center transition-all ${paymentMethod === method.id ? 'bg-white/[0.06] border-t-2 border-t-[#E00000]' : 'bg-[#0A0A0A] hover:bg-white/[0.02]'} ${!method.active ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
               >
+                {method.recommended && (
+                  <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 -translate-y-full text-[6px] bg-[#1B4332] text-white/90 px-2 py-0.5 uppercase tracking-[0.2em] font-medium" style={{ fontSize: '6px' }}>
+                    ⚡ Fastest
+                  </span>
+                )}
                 <method.icon className={`w-4 h-4 mx-auto mb-1.5 ${paymentMethod === method.id ? 'text-white/60' : 'text-white/20'}`} />
                 <p className={`text-[10px] uppercase tracking-wider ${paymentMethod === method.id ? 'text-white/70' : 'text-white/20'}`} style={luxuryFont}>{method.label}</p>
-                <p className="text-[7px] text-white/10 mt-0.5">{method.sublabel}</p>
+                <p className={`text-[7px] mt-0.5 ${method.recommended && method.id === paymentMethod ? 'text-[#1B4332]' : 'text-white/10'}`}>{method.sublabel}</p>
               </button>
             ))}
           </div>
+          {paymentMethod === 'paypal' && (
+            <div className="mt-2 p-3 border border-[#1B4332]/20 bg-[#1B4332]/5 flex items-center gap-2">
+              <Zap className="w-3 h-3 text-[#1B4332]/60 shrink-0" />
+              <p className="text-[9px] text-[#1B4332]/60 leading-relaxed">PayPal payments process instantly with no hold period. Your campaign enters the arena faster.</p>
+            </div>
+          )}
         </div>
 
         {/* Email for receipt (anonymous mode) */}
@@ -1041,16 +1074,16 @@ export default function EnterprisePage() {
         </div>
 
         <p className="text-[9px] text-white/10 text-center mb-4 uppercase tracking-wider">
-          {paymentMethod === 'card' ? 'Secured by Stripe' : paymentMethod === 'paypal' ? 'PayPal Business' : 'Binance Pay'}
+          {paymentMethod === 'card' ? 'Secured by Stripe' : paymentMethod === 'paypal' ? 'Secured by PayPal · Instant Processing' : 'Binance Pay'}
         </p>
 
-        <Button onClick={handlePay} disabled={paymentProcessing || paymentMethod !== 'card'} className="w-full bg-[#8B0000] hover:bg-[#A00000] text-white h-14 text-[11px] uppercase tracking-[0.4em] rounded-none border border-[#8B0000]/40 shadow-[0_0_40px_rgba(139,0,0,0.2)]">
+        <Button onClick={handlePay} disabled={paymentProcessing || (paymentMethod !== 'card' && paymentMethod !== 'paypal')} className={`w-full text-white h-14 text-[11px] uppercase tracking-[0.4em] rounded-none border ${paymentMethod === 'paypal' ? 'bg-[#003087] hover:bg-[#003087]/90 border-[#003087]/40 shadow-[0_0_40px_rgba(0,48,135,0.2)]' : 'bg-[#8B0000] hover:bg-[#A00000] border-[#8B0000]/40 shadow-[0_0_40px_rgba(139,0,0,0.2)]'}`}>
           {paymentProcessing ? (
             <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Opening Checkout...</>
-          ) : paymentMethod !== 'card' ? (
-            <>Contact for {paymentMethod === 'paypal' ? 'PayPal' : 'Crypto'}</>
+          ) : paymentMethod === 'crypto' ? (
+            <>Contact for Crypto</>
           ) : (
-            <>Pay {selectedTier?.priceLabel} <ArrowRight className="w-3.5 h-3.5 ml-2" /></>
+            <>Pay {selectedTier?.priceLabel} {paymentMethod === 'paypal' ? 'with PayPal' : ''} <ArrowRight className="w-3.5 h-3.5 ml-2" /></>
           )}
         </Button>
 

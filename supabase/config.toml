@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.create-enterprise-payment]
 verify_jwt = false
+
+[functions.create-paypal-payment]
+verify_jwt = false
