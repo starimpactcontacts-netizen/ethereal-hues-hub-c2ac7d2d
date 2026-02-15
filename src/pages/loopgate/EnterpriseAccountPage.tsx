@@ -313,15 +313,15 @@ export default function EnterpriseAccountPage() {
           <div className="h-px bg-white/[0.04] mb-4" />
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-lg text-white/60 tabular-nums" style={luxuryFont}>2</p>
+              <p className="text-lg text-white/60 tabular-nums" style={luxuryFont}>0</p>
               <p className="text-[7px] text-white/12 uppercase tracking-wider">Campaigns</p>
             </div>
             <div>
-              <p className="text-lg text-white/60 tabular-nums" style={luxuryFont}>$550</p>
+              <p className="text-lg text-white/60 tabular-nums" style={luxuryFont}>$0</p>
               <p className="text-[7px] text-white/12 uppercase tracking-wider">Total Spent</p>
             </div>
             <div>
-              <p className="text-lg text-white/60 tabular-nums" style={luxuryFont}>9.3M</p>
+              <p className="text-lg text-white/60 tabular-nums" style={luxuryFont}>—</p>
               <p className="text-[7px] text-white/12 uppercase tracking-wider">Total Reach</p>
             </div>
           </div>
