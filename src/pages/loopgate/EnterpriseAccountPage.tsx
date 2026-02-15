@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { useEnterpriseAuth } from '@/hooks/useEnterpriseAuth';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import viralCartelCrest from '@/assets/viral-cartel-crest.png';
 
@@ -18,6 +18,7 @@ type SignupMethod = 'password' | 'email-only';
 
 export default function EnterpriseAccountPage() {
   const navigate = useNavigate();
+  const enterpriseAuth = useEnterpriseAuth();
   const [mode, setMode] = useState<AccountMode>('loading');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,34 +28,20 @@ export default function EnterpriseAccountPage() {
   const [otpCode, setOtpCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notificationsOn, setNotificationsOn] = useState(true);
-  // For sign-in flow
   const [signinEmail, setSigninEmail] = useState('');
   const [signinPassword, setSigninPassword] = useState('');
   const [signinMethod, setSigninMethod] = useState<'password' | 'otp'>('password');
   const [showSigninPassword, setShowSigninPassword] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUserEmail(session.user.email || '');
-        setMode('authenticated');
-      } else {
-        setMode('anonymous');
-      }
-    };
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setUserEmail(session.user.email || '');
-        setMode('authenticated');
-      } else {
-        setMode('anonymous');
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+    if (enterpriseAuth.isLoading) return;
+    if (enterpriseAuth.isAuthenticated && enterpriseAuth.client) {
+      setUserEmail(enterpriseAuth.client.email);
+      setMode('authenticated');
+    } else {
+      setMode('anonymous');
+    }
+  }, [enterpriseAuth.isLoading, enterpriseAuth.isAuthenticated]);
 
   // ─── SIGN UP with password ───
   const handleSignupPassword = async () => {
@@ -62,12 +49,9 @@ export default function EnterpriseAccountPage() {
     if (!password || password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signUp({ email: email.trim(), password });
-      if (error) throw error;
-      toast.success('Account created! Check your email to verify, then sign in.');
-      setMode('signin');
-      setSigninEmail(email);
-      setSigninPassword('');
+      await enterpriseAuth.signup(email.trim(), password);
+      toast.success('Account created! You are now signed in.');
+      // Auth state will auto-update via the hook
     } catch (err: any) {
       toast.error(err.message || 'Signup failed');
     } finally {
@@ -80,8 +64,7 @@ export default function EnterpriseAccountPage() {
     if (!email.trim()) { toast.error('Enter your email'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email: email.trim() });
-      if (error) throw error;
+      await enterpriseAuth.sendOTP(email.trim());
       toast.success('Verification code sent to your email');
       setMode('signup-otp');
     } catch (err: any) {
@@ -96,8 +79,7 @@ export default function EnterpriseAccountPage() {
     if (otpCode.length !== 6) { toast.error('Enter the 6-digit code'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'email' });
-      if (error) throw error;
+      await enterpriseAuth.verifyOTP(email, otpCode);
       toast.success('Welcome to the Cartel');
     } catch (err: any) {
       toast.error(err.message || 'Invalid code');
@@ -112,8 +94,7 @@ export default function EnterpriseAccountPage() {
     if (!signinPassword) { toast.error('Enter your password'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: signinEmail.trim(), password: signinPassword });
-      if (error) throw error;
+      await enterpriseAuth.signin(signinEmail.trim(), signinPassword);
       toast.success('Welcome back');
     } catch (err: any) {
       toast.error(err.message || 'Sign in failed');
@@ -127,12 +108,7 @@ export default function EnterpriseAccountPage() {
     if (!signinEmail.trim()) { toast.error('Enter your email'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email: signinEmail.trim(), options: { shouldCreateUser: false } });
-      if (error) {
-        if (error.message.includes('Signups not allowed')) { toast.error('No account found with this email. Sign up first.'); }
-        else throw error;
-        return;
-      }
+      await enterpriseAuth.sendOTP(signinEmail.trim());
       toast.success('Code sent to your email');
       setMode('signin-otp');
     } catch (err: any) {
@@ -147,8 +123,7 @@ export default function EnterpriseAccountPage() {
     if (otpCode.length !== 6) { toast.error('Enter the 6-digit code'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: signinEmail, token: otpCode, type: 'email' });
-      if (error) throw error;
+      await enterpriseAuth.verifyOTP(signinEmail, otpCode);
       toast.success('Welcome back');
     } catch (err: any) {
       toast.error(err.message || 'Invalid code');
@@ -158,7 +133,7 @@ export default function EnterpriseAccountPage() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await enterpriseAuth.signout();
     setMode('anonymous');
     setEmail('');
     setPassword('');
