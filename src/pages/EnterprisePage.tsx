@@ -454,7 +454,7 @@ export default function EnterprisePage() {
       </header>
 
       {/* ─── Hero: Full-Bleed Cinematic ─── */}
-      <section className="relative min-h-[85vh] flex items-end overflow-hidden pt-14">
+      <section className="relative min-h-[60vh] md:min-h-[75vh] flex items-end overflow-hidden pt-14">
         {/* Culture imagery - full bleed background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 flex">
@@ -487,7 +487,7 @@ export default function EnterprisePage() {
         </motion.div>
 
         {/* Hero content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-8 pb-20 w-full">
+        <div className="relative z-10 max-w-7xl mx-auto px-8 pb-10 md:pb-20 w-full">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
