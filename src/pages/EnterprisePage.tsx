@@ -601,12 +601,12 @@ export default function EnterprisePage() {
         </motion.div>
 
         {/* Hero content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-8 pb-10 md:pb-20 w-full">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }}>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 pb-10 md:pb-20 w-full flex flex-col items-center text-center md:items-start md:text-left">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.8 }} className="flex flex-col items-center md:items-start">
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <img src={cultureArcImg} alt="CULTURE." className="block" style={{ maxWidth: '360px', marginTop: '-4px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }} />
+              <img src={cultureArcImg} alt="CULTURE." className="block mx-auto md:mx-0" style={{ maxWidth: '360px', marginTop: '-4px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }} />
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
