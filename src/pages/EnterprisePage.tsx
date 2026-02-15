@@ -110,12 +110,19 @@ export default function EnterprisePage() {
   const [revShareSubmitting, setRevShareSubmitting] = useState(false);
   const [revShareSubmitted, setRevShareSubmitted] = useState(false);
 
-  // Check for payment success on URL params
+  // Check for payment success on URL params (only shows after actual Stripe checkout completion)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('payment') === 'success') {
+    if (params.get('payment') === 'success' && params.get('session_id')) {
       const campaign = params.get('campaign') || '';
-      setReceiptData({ name: campaign, tier: selectedTier?.name || 'Slot', price: selectedTier?.priceLabel || '' });
+      const tierId = params.get('tier') || '';
+      const tierMap: Record<string, { name: string; price: string }> = {
+        trial: { name: 'Trial Slot', price: '$25' },
+        standard: { name: 'Standard Slot', price: '$75' },
+        takeover: { name: 'Takeover Slot', price: '$200' },
+      };
+      const tierInfo = tierMap[tierId] || { name: 'Slot', price: '' };
+      setReceiptData({ name: campaign, tier: tierInfo.name, price: tierInfo.price });
       setView('receipt');
       // Clean URL
       window.history.replaceState({}, '', '/enterprise');

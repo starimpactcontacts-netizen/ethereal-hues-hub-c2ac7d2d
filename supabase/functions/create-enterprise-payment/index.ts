@@ -48,8 +48,8 @@ serve(async (req) => {
       customer_email: customerId ? undefined : email || undefined,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
-      success_url: `${origin}/enterprise?payment=success&campaign=${encodeURIComponent(campaignName || '')}`,
-      cancel_url: `${origin}/enterprise?payment=cancelled`,
+      success_url: `${origin}/enterprise?payment=success&campaign=${encodeURIComponent(campaignName || '')}&tier=${encodeURIComponent(tierId)}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/enterprise`,
       metadata: {
         campaign_name: campaignName || '',
         campaign_link: campaignLink || '',
