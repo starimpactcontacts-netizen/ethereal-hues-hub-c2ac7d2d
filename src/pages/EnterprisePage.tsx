@@ -492,22 +492,34 @@ export default function EnterprisePage() {
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-2" style={luxuryFont}>
               Control the
             </h1>
-            {/* Netflix-style "Culture." — text with arc-shaped bottom clip */}
+            {/* Netflix-style "Culture." — SVG arc text */}
             <div className="relative mb-6" style={{ width: 'fit-content' }}>
-              <span
-                className="text-6xl md:text-[120px] text-[#E00000] block relative z-10"
-                style={{
-                  ...luxuryFont,
-                  lineHeight: 1,
-                  letterSpacing: '-0.02em',
-                  textShadow: '0 4px 30px rgba(224,0,0,0.35), 0 0 80px rgba(224,0,0,0.15)',
-                  paddingBottom: '30px',
-                  clipPath: 'ellipse(55% 48% at 50% 40%)',
-                  WebkitClipPath: 'ellipse(55% 48% at 50% 40%)',
-                }}
-              >
-                Culture.
-              </span>
+              <svg viewBox="0 0 720 160" className="w-[320px] md:w-[720px] h-auto overflow-visible">
+                <defs>
+                  <path id="culture-arc" d="M 0,100 Q 360,160 720,100" />
+                  <filter id="culture-glow">
+                    <feGaussianBlur stdDeviation="8" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <text
+                  fill="#E00000"
+                  filter="url(#culture-glow)"
+                  style={{
+                    fontFamily: luxuryFont.fontFamily,
+                    fontWeight: 800,
+                    fontSize: '120px',
+                    letterSpacing: '-0.02em',
+                  }}
+                >
+                  <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">
+                    Culture.
+                  </textPath>
+                </text>
+              </svg>
             </div>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
