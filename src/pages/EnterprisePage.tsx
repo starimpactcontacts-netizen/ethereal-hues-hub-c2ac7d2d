@@ -680,55 +680,23 @@ export default function EnterprisePage() {
           </div>
         </motion.section>
 
-        {/* ─── Campaign Dashboard ─── */}
+        {/* ─── Campaign Dashboard CTA ─── */}
         <motion.section id="portal-campaigns" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="pb-20">
-          <div className="border-t border-white/[0.04] pt-20">
-            <div className="flex items-center justify-between mb-8">
-              <p className="text-[9px] text-white/15 uppercase tracking-[0.5em]">Your Campaigns</p>
-              <div className="flex gap-1">
-                <button onClick={() => setDashTab('active')} className={`text-[9px] uppercase tracking-wider px-4 py-1.5 transition-colors ${dashTab === 'active' ? 'text-white/60 bg-white/[0.04]' : 'text-white/15 hover:text-white/30'}`}>Active</button>
-                <button onClick={() => setDashTab('completed')} className={`text-[9px] uppercase tracking-wider px-4 py-1.5 transition-colors ${dashTab === 'completed' ? 'text-white/60 bg-white/[0.04]' : 'text-white/15 hover:text-white/30'}`}>Archived</button>
+          <div className="border-t border-white/[0.04] pt-16">
+            <button
+              onClick={() => navigate('/enterprise/dashboard')}
+              className="w-full border border-white/[0.06] p-6 text-left hover:border-white/[0.12] transition-all group"
+              style={{ background: 'rgba(255,255,255,0.01)' }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[8px] text-white/15 uppercase tracking-[0.4em] mb-1" style={headerFont}>Your Campaigns</p>
+                  <h3 className="text-xl text-white/60" style={luxuryFont}>Open Command Center</h3>
+                  <p className="text-[10px] text-white/15 mt-1">Track metrics, compare results, and manage everything in one place.</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/10 group-hover:text-white/30 transition-colors" />
               </div>
-            </div>
-
-            {campaigns.filter(c => dashTab === 'active' ? c.status === 'Live' : c.status === 'Completed').length > 0 ? (
-              <div className="space-y-3">
-                {campaigns.filter(c => dashTab === 'active' ? c.status === 'Live' : c.status === 'Completed').map(campaign => (
-                  <div key={campaign.id} className="border border-white/[0.04] p-6 md:p-8 hover:border-white/[0.08] transition-all duration-300" style={{ background: 'rgba(255,255,255,0.01)' }}>
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{campaign.thumb}</span>
-                        <div>
-                          <h3 className="text-xl text-white/90" style={luxuryFont}>{campaign.name}</h3>
-                          <p className="text-[9px] text-white/20 uppercase tracking-wider">{campaign.tier}</p>
-                        </div>
-                      </div>
-                      <span className={`text-[9px] uppercase tracking-wider px-3 py-1 ${campaign.status === 'Live' ? 'text-[#1B4332] border border-[#1B4332]/20 bg-[#1B4332]/5' : 'text-white/20 border border-white/5'}`}>
-                        {campaign.status === 'Live' && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1B4332] mr-1.5 animate-pulse" />}
-                        {campaign.status}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-4 gap-[1px] bg-white/[0.03]">
-                      {[
-                        { label: 'Edits', value: campaign.edits, icon: Play },
-                        { label: '1v1 Battles', value: campaign.battles, icon: Zap },
-                        { label: 'Feed Hits', value: campaign.feedHits >= 1000000 ? `${(campaign.feedHits / 1000000).toFixed(1)}M` : campaign.feedHits >= 1000 ? `${(campaign.feedHits / 1000).toFixed(0)}K` : campaign.feedHits.toString(), icon: TrendingUp },
-                        { label: 'Judges', value: campaign.judges, icon: Star },
-                      ].map(stat => (
-                        <div key={stat.label} className="p-4 text-center" style={{ background: '#0A0A0A' }}>
-                          <p className="text-lg text-white/70 tabular-nums" style={luxuryFont}>{stat.value}</p>
-                          <p className="text-[7px] text-white/15 uppercase tracking-[0.2em] mt-1">{stat.label}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="border border-white/[0.03] p-16 text-center" style={{ background: 'rgba(255,255,255,0.01)' }}>
-                <p className="text-[10px] text-white/10 uppercase tracking-wider">No {dashTab} campaigns</p>
-              </div>
-            )}
+            </button>
           </div>
         </motion.section>
 
