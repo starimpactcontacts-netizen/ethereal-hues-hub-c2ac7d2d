@@ -491,49 +491,24 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <span className="inline-block relative" style={{ lineHeight: 1 }}>
-                {/* Netflix-style arc text — subtle downward bow */}
-                <svg
-                  viewBox="0 0 600 140"
-                  className="block"
-                  style={{ width: '100%', height: 'auto', maxWidth: '600px' }}
-                  aria-label="Culture."
-                >
+              <span className="inline-block relative" style={{ filter: 'drop-shadow(0 0 30px rgba(224, 0, 0, 0.4))' }}>
+                <svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg" className="block w-full h-auto" style={{ maxWidth: '520px' }}>
                   <defs>
-                    <path id="culture-arc-path" d="M 0,60 Q 300,130 600,60" />
+                    <path id="culture-curve" d="M 50 60 Q 200 85 350 60" fill="transparent" />
                   </defs>
                   <text
-                    fill="#E00000"
-                    style={{ 
+                    style={{
+                      fontSize: '72px',
+                      fontWeight: 900,
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '110px',
-                      letterSpacing: '-0.02em',
+                      letterSpacing: '-2px',
                     }}
+                    fill="#E00000"
                   >
-                    <textPath href="#culture-arc-path" startOffset="0%">
-                      Culture.
+                    <textPath href="#culture-curve" startOffset="50%" textAnchor="middle">
+                      CULTURE.
                     </textPath>
                   </text>
-                  {/* Red ambient glow layer */}
-                  <text
-                    fill="#E00000"
-                    opacity="0.3"
-                    filter="url(#culture-glow)"
-                    style={{ 
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: '110px',
-                      letterSpacing: '-0.02em',
-                    }}
-                  >
-                    <textPath href="#culture-arc-path" startOffset="0%">
-                      Culture.
-                    </textPath>
-                  </text>
-                  <defs>
-                    <filter id="culture-glow" x="-20%" y="-20%" width="140%" height="140%">
-                      <feGaussianBlur stdDeviation="8" result="blur" />
-                    </filter>
-                  </defs>
                 </svg>
               </span>
             </h1>
