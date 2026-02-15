@@ -85,7 +85,11 @@ export default function EnterprisePage() {
   const enterpriseAuth = useEnterpriseAuth();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [view, setView] = useState<PortalView>('gate');
+  const [view, setView] = useState<PortalView>(() => {
+    // Sync check: if token exists, skip gate immediately to prevent flash
+    if (typeof window !== 'undefined' && localStorage.getItem('enterprise_client_token')) return 'portal';
+    return 'gate';
+  });
   const [gateMode, setGateMode] = useState<GateMode>('code');
   const [shaking, setShaking] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
@@ -116,8 +120,13 @@ export default function EnterprisePage() {
 
   // Auto-skip gate if enterprise client is already authenticated
   useEffect(() => {
-    if (!enterpriseAuth.isLoading && enterpriseAuth.isAuthenticated && view === 'gate') {
+    if (enterpriseAuth.isLoading) return;
+    if (enterpriseAuth.isAuthenticated && view === 'gate') {
       setView('portal');
+    }
+    // If token was in localStorage but server says invalid, fall back to gate
+    if (!enterpriseAuth.isAuthenticated && view === 'portal' && !localStorage.getItem('enterprise_client_token')) {
+      setView('gate');
     }
   }, [enterpriseAuth.isLoading, enterpriseAuth.isAuthenticated]);
 
