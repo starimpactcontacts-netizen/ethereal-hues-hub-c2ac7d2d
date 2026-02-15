@@ -22,7 +22,7 @@ import cultureSpiderNoir from '@/assets/culture-spider-noir.webp';
 import tierTrial from '@/assets/tier-trial.png';
 import tierStandard from '@/assets/tier-standard.png';
 import tierTakeover from '@/assets/tier-takeover.png';
-import cultureArcImg from '@/assets/culture-arc.jpeg';
+import cultureArcImg from '@/assets/culture-arc.png';
 
 const GATE_PASSWORD = 'cartel';
 const luxuryFont = { fontFamily: "'Bebas Neue', sans-serif" };
@@ -492,7 +492,7 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <img src={cultureArcImg} alt="CULTURE." className="block" style={{ maxWidth: '320px', marginTop: '-10px', marginBottom: '-20px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))', mixBlendMode: 'screen' }} />
+              <img src={cultureArcImg} alt="CULTURE." className="block" style={{ maxWidth: '320px', marginTop: '-10px', marginBottom: '-20px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }} />
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
