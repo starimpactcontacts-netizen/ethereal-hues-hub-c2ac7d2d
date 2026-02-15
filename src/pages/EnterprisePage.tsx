@@ -302,8 +302,8 @@ export default function EnterprisePage() {
       {/* GatePattern background */}
       <GatePattern opacity={2} color="#FFFFFF" tileSize={140} />
 
-      {/* 24K-style vertical stripe — dark marble with depth */}
-      <div className="fixed top-0 bottom-0 right-[40px] md:right-[80px] w-[80px] md:w-[100px] z-[5] overflow-hidden">
+      {/* 24K-style vertical stripe — dark marble with depth (hidden on small mobile) */}
+      <div className="hidden sm:block fixed top-0 bottom-0 right-[80px] w-[100px] z-[5] overflow-hidden">
         {/* Near-black marble base */}
         <div className="absolute inset-0" style={{ 
           background: `
@@ -317,22 +317,15 @@ export default function EnterprisePage() {
         <svg className="absolute inset-0 w-full h-full opacity-[0.06]" preserveAspectRatio="none" viewBox="0 0 100 800">
           <path d="M30 0 Q45 80 20 160 Q10 240 40 320 Q55 400 25 480 Q15 560 45 640 Q50 720 30 800" stroke="rgba(80,130,95,0.9)" strokeWidth="0.7" fill="none" />
           <path d="M70 0 Q55 100 75 200 Q85 300 60 400 Q50 500 80 600 Q90 700 65 800" stroke="rgba(60,110,80,0.7)" strokeWidth="0.5" fill="none" />
-          <path d="M15 100 Q30 150 50 180 Q70 210 85 280" stroke="rgba(70,120,85,0.5)" strokeWidth="0.4" fill="none" />
-          <path d="M80 400 Q60 450 40 500 Q25 540 10 600" stroke="rgba(65,115,80,0.4)" strokeWidth="0.4" fill="none" />
-          <path d="M50 200 Q65 260 45 340 Q30 400 50 480" stroke="rgba(75,125,90,0.45)" strokeWidth="0.4" fill="none" />
-          <path d="M10 0 Q25 60 15 120 Q5 180 20 250 Q35 320 18 400" stroke="rgba(55,100,70,0.5)" strokeWidth="0.35" fill="none" />
-          <path d="M85 200 Q70 280 90 360 Q80 440 65 520 Q75 600 60 700" stroke="rgba(50,95,65,0.4)" strokeWidth="0.3" fill="none" />
-          <path d="M45 500 Q55 560 40 620 Q30 680 50 750" stroke="rgba(60,105,75,0.35)" strokeWidth="0.3" fill="none" />
-          <path d="M60 50 Q40 110 55 170 Q70 230 50 290" stroke="rgba(65,110,78,0.3)" strokeWidth="0.25" fill="none" />
         </svg>
         {/* Surface sheen */}
         <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 40%, rgba(255,255,255,0.01) 70%, transparent 100%)' }} />
-        {/* Border lines — layered dark red with inner glow */}
+        {/* Border lines */}
         <div className="absolute top-0 bottom-0 left-0 w-[6px]" style={{ background: 'linear-gradient(180deg, #3a0000 0%, #6a0000 30%, #500000 50%, #6a0000 70%, #3a0000 100%)', boxShadow: 'inset -1px 0 3px rgba(100,0,0,0.5), 2px 0 8px rgba(80,0,0,0.3)' }} />
         <div className="absolute top-0 bottom-0 right-0 w-[6px]" style={{ background: 'linear-gradient(180deg, #3a0000 0%, #6a0000 30%, #500000 50%, #6a0000 70%, #3a0000 100%)', boxShadow: 'inset 1px 0 3px rgba(100,0,0,0.5), -2px 0 8px rgba(80,0,0,0.3)' }} />
         {/* VC Crest */}
         <div className="absolute inset-0 flex items-center justify-center" style={{ top: '15%' }}>
-          <img src={viralCartelCrest} alt="" className="w-[55px] md:w-[72px] h-auto opacity-25" style={{ filter: 'brightness(1.6) contrast(0.7)' }} />
+          <img src={viralCartelCrest} alt="" className="w-[72px] h-auto opacity-25" style={{ filter: 'brightness(1.6) contrast(0.7)' }} />
         </div>
       </div>
       
