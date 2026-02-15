@@ -496,7 +496,7 @@ export default function EnterprisePage() {
             <div className="relative mb-6">
               <svg viewBox="0 0 680 140" className="w-[300px] md:w-[680px] h-auto overflow-visible">
                 <defs>
-                  <path id="culture-arc" d="M 0,30 Q 340,0 680,30" />
+                  <path id="culture-arc" d="M 0,10 Q 340,50 680,10" />
                 </defs>
                 <text
                   fill="#E00000"
