@@ -7,6 +7,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import SEO, { pageSEO } from '@/components/SEO';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useEnterpriseAuth } from '@/hooks/useEnterpriseAuth';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -81,6 +82,7 @@ const ONLINE_CLIENTS = [
 
 export default function EnterprisePage() {
   const navigate = useNavigate();
+  const enterpriseAuth = useEnterpriseAuth();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [view, setView] = useState<PortalView>('gate');
@@ -148,12 +150,7 @@ export default function EnterprisePage() {
     if (!loginEmail) { toast.error('Enter your email'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email: loginEmail, options: { shouldCreateUser: false } });
-      if (error) {
-        if (error.message.includes('Signups not allowed')) { toast.error('No enterprise account found'); }
-        else { throw error; }
-        return;
-      }
+      await enterpriseAuth.sendOTP(loginEmail);
       toast.success('Code sent to your email');
       setGateMode('otp');
     } catch (err: any) {
@@ -167,8 +164,7 @@ export default function EnterprisePage() {
     if (otpCode.length !== 6) { toast.error('Enter the 6-digit code'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: loginEmail, token: otpCode, type: 'email' });
-      if (error) throw error;
+      await enterpriseAuth.verifyOTP(loginEmail, otpCode);
       toast.success('Welcome back');
       setView('portal');
     } catch (err: any) {
@@ -184,8 +180,7 @@ export default function EnterprisePage() {
     if (!loginPassword) { toast.error('Enter your password'); return; }
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
-      if (error) throw error;
+      await enterpriseAuth.signin(loginEmail, loginPassword);
       toast.success('Welcome back');
       setView('portal');
     } catch (err: any) {

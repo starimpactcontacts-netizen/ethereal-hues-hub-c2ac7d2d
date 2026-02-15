@@ -1517,6 +1517,45 @@ export type Database = {
           },
         ]
       }
+      enterprise_clients: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          id: string
+          otp_code: string | null
+          otp_expires_at: string | null
+          password_hash: string | null
+          session_expires_at: string | null
+          session_token: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          id?: string
+          otp_code?: string | null
+          otp_expires_at?: string | null
+          password_hash?: string | null
+          session_expires_at?: string | null
+          session_token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          otp_code?: string | null
+          otp_expires_at?: string | null
+          password_hash?: string | null
+          session_expires_at?: string | null
+          session_token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_participations: {
         Row: {
           custom_title: string | null
