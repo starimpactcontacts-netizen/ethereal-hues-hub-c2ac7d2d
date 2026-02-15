@@ -494,29 +494,21 @@ export default function EnterprisePage() {
             </h1>
             {/* Netflix-style "Culture." — SVG arc text */}
             <div className="relative mb-6" style={{ width: 'fit-content' }}>
-              <svg viewBox="0 0 720 160" className="w-[320px] md:w-[720px] h-auto overflow-visible">
+              <svg viewBox="0 0 680 130" className="w-[300px] md:w-[680px] h-auto overflow-visible">
                 <defs>
-                  <path id="culture-arc" d="M 0,100 Q 360,160 720,100" />
-                  <filter id="culture-glow">
-                    <feGaussianBlur stdDeviation="8" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
+                  <path id="culture-arc" d="M 0,90 Q 340,130 680,90" />
                 </defs>
                 <text
                   fill="#E00000"
-                  filter="url(#culture-glow)"
                   style={{
                     fontFamily: luxuryFont.fontFamily,
                     fontWeight: 800,
-                    fontSize: '120px',
-                    letterSpacing: '-0.02em',
+                    fontSize: '115px',
+                    letterSpacing: '-0.01em',
                   }}
                 >
                   <textPath href="#culture-arc" startOffset="50%" textAnchor="middle">
-                    Culture.
+                    CULTURE.
                   </textPath>
                 </text>
               </svg>
