@@ -22,7 +22,7 @@ import cultureSpiderNoir from '@/assets/culture-spider-noir.webp';
 import tierTrial from '@/assets/tier-trial.png';
 import tierStandard from '@/assets/tier-standard.png';
 import tierTakeover from '@/assets/tier-takeover.png';
-import cultureArcImg from '@/assets/culture-arc.png';
+import cultureArcImg from '@/assets/culture-text.png';
 
 const GATE_PASSWORD = 'cartel';
 const luxuryFont = { fontFamily: "'Bebas Neue', sans-serif" };
@@ -451,9 +451,9 @@ export default function EnterprisePage() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/[0.06] backdrop-blur-2xl" style={{ background: 'rgba(6,6,6,0.92)' }}>
         <div className="max-w-lg mx-auto flex items-center justify-around h-14">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: BarChart3, action: () => document.getElementById('portal-campaigns')?.scrollIntoView({ behavior: 'smooth' }) },
+            { id: 'dashboard', label: 'Dashboard', icon: BarChart3, action: () => navigate('/enterprise/dashboard') },
             { id: 'slots', label: 'Slots', icon: Flame, action: () => document.getElementById('portal-slots')?.scrollIntoView({ behavior: 'smooth' }) },
-            { id: 'account', label: 'Account', icon: User, action: () => setGateMode('login') },
+            { id: 'account', label: 'Account', icon: User, action: () => navigate('/enterprise/account') },
           ].map(tab => (
             <button
               key={tab.id}
@@ -506,7 +506,7 @@ export default function EnterprisePage() {
             <p className="text-[10px] text-white/25 uppercase tracking-[0.6em] mb-5">Private Access</p>
             <h1 className="text-6xl md:text-[120px] text-white leading-[0.85] tracking-[-0.02em] mb-6" style={luxuryFont}>
               Control the<br />
-              <img src={cultureArcImg} alt="CULTURE." className="block -mt-2 -mb-3 md:-mt-4 md:-mb-5" style={{ maxWidth: '320px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }} />
+              <img src={cultureArcImg} alt="CULTURE." className="block" style={{ maxWidth: '360px', marginTop: '-4px', filter: 'drop-shadow(0 0 20px rgba(229, 9, 20, 0.6))' }} />
             </h1>
             <p className="text-white/25 text-sm md:text-base max-w-md leading-relaxed mb-10">
               Launch campaigns into the Loopgate arena. Editors compete, judges rate, content spreads. All within minutes.
@@ -539,7 +539,7 @@ export default function EnterprisePage() {
               className="relative group overflow-hidden text-left aspect-[3/4]"
               onClick={() => { setSelectedTier(SLOT_TIERS[0]); setLaunchOpen(true); }}
             >
-              <img src={cultureArtist} alt="" className="absolute inset-0 w-full h-full object-cover grayscale opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700" />
+              <img src={cultureArtist} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:opacity-35 group-hover:scale-105 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
               <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8">
                 <div>
@@ -572,7 +572,7 @@ export default function EnterprisePage() {
               className="relative group overflow-hidden text-left aspect-[3/4]"
               onClick={() => { setSelectedTier(SLOT_TIERS[1]); setLaunchOpen(true); }}
             >
-              <img src={culturePhonk} alt="" className="absolute inset-0 w-full h-full object-cover grayscale opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700" />
+              <img src={culturePhonk} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:opacity-35 group-hover:scale-105 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
               <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8">
                 <div className="flex items-center justify-between">
@@ -609,7 +609,7 @@ export default function EnterprisePage() {
               className="relative group overflow-hidden text-left aspect-[3/4]"
               onClick={() => { setSelectedTier(SLOT_TIERS[2]); setLaunchOpen(true); }}
             >
-              <img src={cultureNFL} alt="" className="absolute inset-0 w-full h-full object-cover grayscale opacity-15 group-hover:opacity-25 group-hover:scale-105 transition-all duration-700" />
+              <img src={cultureNFL} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:opacity-35 group-hover:scale-105 transition-all duration-700" />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
               {/* Subtle red ambient */}
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700" style={{ background: 'radial-gradient(ellipse at 50% 80%, rgba(224,0,0,0.06) 0%, transparent 60%)' }} />
