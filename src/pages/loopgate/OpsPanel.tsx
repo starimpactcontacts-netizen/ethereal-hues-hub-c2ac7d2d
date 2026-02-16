@@ -20,6 +20,7 @@ import LeagueApplicationsAdmin from "@/components/loopgate/LeagueApplicationsAdm
 import HostedCompManagement from "@/components/loopgate/HostedCompManagement";
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
+import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 
 interface RealEvent {
   id: string;
@@ -2345,6 +2346,9 @@ export default function OpsPanel() {
 
         {/* 1v1 Battle Admin */}
         <BattleAdminPanel />
+
+        {/* Featured Artists & Drops Admin */}
+        <FeaturedArtistAdmin />
 
         {/* Event Control */}
         <section>

@@ -1774,6 +1774,208 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_artists: {
+        Row: {
+          avatar_url: string | null
+          banner_url: string | null
+          bio: string | null
+          created_at: string | null
+          created_by: string | null
+          genre: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          social_links: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          genre?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          social_links?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          genre?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          social_links?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      featured_drops: {
+        Row: {
+          artist_id: string
+          created_at: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          index_reward: number | null
+          mystery_reward_label: string | null
+          poster_url: string | null
+          random_pick_id: string | null
+          random_pick_username: string | null
+          song_name: string
+          song_preview_url: string | null
+          song_url: string | null
+          starts_at: string | null
+          status: string | null
+          submission_count: number | null
+          title: string
+          top_score: number | null
+          top_scorer_id: string | null
+          top_scorer_username: string | null
+          updated_at: string | null
+          xp_reward: number | null
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          index_reward?: number | null
+          mystery_reward_label?: string | null
+          poster_url?: string | null
+          random_pick_id?: string | null
+          random_pick_username?: string | null
+          song_name: string
+          song_preview_url?: string | null
+          song_url?: string | null
+          starts_at?: string | null
+          status?: string | null
+          submission_count?: number | null
+          title: string
+          top_score?: number | null
+          top_scorer_id?: string | null
+          top_scorer_username?: string | null
+          updated_at?: string | null
+          xp_reward?: number | null
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          index_reward?: number | null
+          mystery_reward_label?: string | null
+          poster_url?: string | null
+          random_pick_id?: string | null
+          random_pick_username?: string | null
+          song_name?: string
+          song_preview_url?: string | null
+          song_url?: string | null
+          starts_at?: string | null
+          status?: string | null
+          submission_count?: number | null
+          title?: string
+          top_score?: number | null
+          top_scorer_id?: string | null
+          top_scorer_username?: string | null
+          updated_at?: string | null
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_drops_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "featured_artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      featured_submissions: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          drop_id: string
+          feedback: string | null
+          id: string
+          impact_score: number | null
+          index_awarded: number | null
+          judge_id: string | null
+          judge_username: string | null
+          judged_at: string | null
+          originality_score: number | null
+          platform: string | null
+          qoi_score: number | null
+          quality_score: number | null
+          status: string | null
+          submission_url: string
+          user_id: string
+          username: string
+          xp_awarded: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          drop_id: string
+          feedback?: string | null
+          id?: string
+          impact_score?: number | null
+          index_awarded?: number | null
+          judge_id?: string | null
+          judge_username?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform?: string | null
+          qoi_score?: number | null
+          quality_score?: number | null
+          status?: string | null
+          submission_url: string
+          user_id: string
+          username: string
+          xp_awarded?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          drop_id?: string
+          feedback?: string | null
+          id?: string
+          impact_score?: number | null
+          index_awarded?: number | null
+          judge_id?: string | null
+          judge_username?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          platform?: string | null
+          qoi_score?: number | null
+          quality_score?: number | null
+          status?: string | null
+          submission_url?: string
+          user_id?: string
+          username?: string
+          xp_awarded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_submissions_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feed_comment_likes: {
         Row: {
           comment_id: string
