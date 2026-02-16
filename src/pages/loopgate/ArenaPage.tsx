@@ -27,6 +27,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import FeaturedDropCard from "@/components/loopgate/FeaturedDropCard";
+import { useFeaturedDrops } from "@/hooks/useFeaturedDrops";
 
 interface Event {
   id: string;
@@ -209,6 +211,7 @@ export default function ArenaPage() {
   const { battles, loading: battlesLoading } = useBattles(["pending", "active", "judging", "completed"]);
   const { competitions: hostedComps, loading: hostedLoading } = useHostedCompetitions();
   const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100);
+  const { liveDrops } = useFeaturedDrops();
 
   useEffect(() => {
     async function fetchEvents() {
@@ -469,6 +472,22 @@ export default function ArenaPage() {
       {!loading && (
         <div className="mt-1.5 space-y-5">
 
+          {/* ═══ FEATURED ARTIST DROPS ═══ */}
+          {liveDrops.length > 0 && (activeFilter === "all" || activeFilter === "official") && (
+            <motion.section key="featured-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <SectionHeader
+                icon={<Flame className="w-4 h-4 text-purple-400" />}
+                title="Featured Artist"
+                badge="New"
+                badgeColor="bg-purple-500/20 border-purple-500/40 text-purple-400"
+              />
+              <div className="px-4 space-y-3">
+                {liveDrops.map(drop => (
+                  <FeaturedDropCard key={drop.id} drop={drop} />
+                ))}
+              </div>
+            </motion.section>
+          )}
           {/* ═══ BROWSE QUICK 1v1s ═══ */}
           {(activeFilter === "all" || activeFilter === "quick") && (
             <motion.section key="quick-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
