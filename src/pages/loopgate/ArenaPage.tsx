@@ -476,12 +476,12 @@ export default function ArenaPage() {
           {liveDrops.length > 0 && (activeFilter === "all" || activeFilter === "official") && (
             <motion.section key="featured-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
-                icon={<Flame className="w-4 h-4 text-purple-400" />}
+                icon={<Flame className="w-4 h-4 text-brand" />}
                 title="Featured Artist"
                 badge="New"
-                badgeColor="bg-purple-500/20 border-purple-500/40 text-purple-400"
+                badgeColor="bg-brand/20 border-brand/40 text-brand"
               />
-              <div className="px-4 space-y-3">
+              <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
                 {liveDrops.map(drop => (
                   <FeaturedDropCard key={drop.id} drop={drop} />
                 ))}
