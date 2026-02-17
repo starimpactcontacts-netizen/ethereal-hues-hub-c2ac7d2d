@@ -1819,6 +1819,47 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_drop_messages: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          drop_id: string
+          id: string
+          is_system: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          drop_id: string
+          id?: string
+          is_system?: boolean | null
+          message_text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          drop_id?: string
+          id?: string
+          is_system?: boolean | null
+          message_text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_drop_messages_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_drops: {
         Row: {
           artist_id: string

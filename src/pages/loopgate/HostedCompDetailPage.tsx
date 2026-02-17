@@ -13,6 +13,7 @@ import HostedCompJoinButton from "@/components/loopgate/HostedCompJoinButton";
 import HostedCompActivitySignals from "@/components/loopgate/HostedCompActivitySignals";
 import HostedCompLeaderboard from "@/components/loopgate/HostedCompLeaderboard";
 import HostedCompHostDashboard from "@/components/loopgate/HostedCompHostDashboard";
+import CompLobbyHeader from "@/components/loopgate/CompLobbyHeader";
 import PosterCarousel from "@/components/loopgate/PosterCarousel";
 import PremiumStepsGuide from "@/components/loopgate/PremiumStepsGuide";
 import { useAuth } from "@/hooks/useAuth";
@@ -222,6 +223,16 @@ export default function HostedCompDetailPage() {
       <div className="p-4 space-y-5">
         {/* Title */}
         <h1 className="font-display text-2xl tracking-wide">{competition.name}</h1>
+
+        {/* Lobby Header — live participant avatars + countdown */}
+        <CompLobbyHeader
+          participantTable="hosted_competition_participants"
+          filterColumn="competition_id"
+          filterId={competition.id}
+          deadline={competition.submission_deadline}
+          totalEntries={participants.length}
+          accentColor="text-cyan-400"
+        />
 
         {/* Description */}
         {competition.description && (

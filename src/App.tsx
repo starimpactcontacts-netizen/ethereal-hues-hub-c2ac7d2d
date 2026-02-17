@@ -67,6 +67,7 @@ import HostedCompsPage from "./pages/loopgate/HostedCompsPage";
 import HostedCompDetailPage from "./pages/loopgate/HostedCompDetailPage";
 import ConnectionsPage from "./pages/loopgate/ConnectionsPage";
 import ArtistProfilePage from "./pages/loopgate/ArtistProfilePage";
+import FeaturedDropDetailPage from "./pages/loopgate/FeaturedDropDetailPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -281,6 +282,7 @@ export default function App() {
               <Route path="/judge/:username" element={<JudgeProfilePage />} />
               <Route path="/judges/divisions/create" element={<CreateJudgeDivisionPage />} />
               <Route path="/artist/:slug" element={<ArtistProfilePage />} />
+              <Route path="/drop/:dropId" element={<FeaturedDropDetailPage />} />
             </Route>
 
             {/* Protected routes - auth required */}

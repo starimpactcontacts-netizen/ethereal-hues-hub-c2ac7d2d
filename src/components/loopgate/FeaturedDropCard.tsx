@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Music, Zap, Trophy, ChevronRight, Flame, Gift, Crown, Star, Clock, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
 import { useAuth } from "@/hooks/useAuth";
 import type { FeaturedDrop } from "@/hooks/useFeaturedDrops";
 import { formatDistanceToNow } from "date-fns";
@@ -40,7 +39,6 @@ function useActivitySignal(drop: FeaturedDrop) {
 export default function FeaturedDropCard({ drop }: Props) {
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const [showSubmit, setShowSubmit] = useState(false);
   const artist = drop.artist;
   const isLive = drop.status === 'live';
   const activity = useActivitySignal(drop);
@@ -128,16 +126,16 @@ export default function FeaturedDropCard({ drop }: Props) {
           {isLive ? (
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+              onClick={() => navigate(`/drop/${drop.id}`)}
               className="w-full py-2 bg-brand text-white font-display text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 rounded-md hover:bg-brand/90 transition-colors"
             >
               <Flame className="w-3 h-3" />
-              Submit Edit
+              Enter Lobby
               <ChevronRight className="w-3 h-3" />
             </motion.button>
           ) : (
             <Link
-              to={`/artist/${artist?.slug || ''}`}
+              to={`/drop/${drop.id}`}
               className="w-full py-2 bg-surface-1 border border-border text-muted-foreground font-display text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 rounded-md"
             >
               View Results
@@ -147,12 +145,6 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
       </motion.div>
 
-      {showSubmit && (
-        <FeaturedSubmitModal
-          drop={drop}
-          onClose={() => setShowSubmit(false)}
-        />
-      )}
     </>
   );
 }
