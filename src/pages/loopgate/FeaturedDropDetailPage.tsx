@@ -154,14 +154,28 @@ export default function FeaturedDropDetailPage() {
               </a>
             )}
           </div>
-          {/* Song Preview Player */}
-          {drop.song_preview_url && (
-            <div className="mt-2 flex items-center gap-2 bg-surface-1 border border-border rounded-lg p-2">
-              <Music className="w-4 h-4 text-purple-400 shrink-0" />
-              <audio src={drop.song_preview_url} controls className="h-8 flex-1 [&::-webkit-media-controls-panel]:bg-transparent" />
-            </div>
-          )}
         </div>
+
+        {/* Song Preview Player — big & proud */}
+        {drop.song_preview_url && (
+          <div className="bg-surface-1 border border-purple-500/30 rounded-xl p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <Music className="w-4 h-4 text-purple-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-foreground truncate">🔊 Song Preview</p>
+                <p className="text-[10px] text-muted-foreground truncate">{drop.song_name}</p>
+              </div>
+            </div>
+            <audio
+              src={drop.song_preview_url}
+              controls
+              className="w-full h-10 rounded-lg"
+              preload="metadata"
+            />
+          </div>
+        )}
 
         {/* Lobby Header — live avatars + countdown */}
         <CompLobbyHeader
