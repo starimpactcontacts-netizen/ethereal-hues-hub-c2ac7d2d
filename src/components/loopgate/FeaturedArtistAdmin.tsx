@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Music, Plus, Pencil, Trash2, Eye, Play, Square, Trophy, Star, Users, Zap, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
+import { Music, Plus, Pencil, Trash2, Eye, Play, Square, Trophy, Star, Users, Zap, ChevronDown, ChevronUp, ExternalLink, Loader2 } from "lucide-react";
+import { trimAudioTo30s } from "@/lib/audioTrimmer";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -141,15 +142,20 @@ export default function FeaturedArtistAdmin() {
   };
 
   const handleUploadPreviewForEdit = async (file: File) => {
-    if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
     setUploadingEditPreview(true);
-    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-    const { data, error } = await supabase.storage.from('song-previews').upload(fileName, file, { contentType: file.type });
-    if (error) { toast.error(error.message); setUploadingEditPreview(false); return; }
-    const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
-    setEditDropForm({ ...editDropForm, song_preview_url: urlData.publicUrl });
+    try {
+      toast.info('Processing audio — trimming to 30s…');
+      const trimmed = await trimAudioTo30s(file);
+      const fileName = `${Date.now()}-${trimmed.name.replace(/\s+/g, '-')}`;
+      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType: trimmed.type });
+      if (error) { toast.error(error.message); setUploadingEditPreview(false); return; }
+      const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
+      setEditDropForm({ ...editDropForm, song_preview_url: urlData.publicUrl });
+      toast.success('Preview uploaded! (auto-trimmed to 30s)');
+    } catch (err: any) {
+      toast.error('Audio processing failed: ' + (err.message || 'Unknown error'));
+    }
     setUploadingEditPreview(false);
-    toast.success('Preview uploaded!');
   };
 
   const handleToggleDropStatus = async (drop: FeaturedDrop) => {
@@ -509,19 +515,24 @@ export default function FeaturedArtistAdmin() {
                     onChange={async (e) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
-                      if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
                       setUploadingPreview(true);
-                      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-                      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, file, { contentType: file.type });
-                      if (error) { toast.error(error.message); setUploadingPreview(false); return; }
-                      const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
-                      setNewDrop({...newDrop, song_preview_url: urlData.publicUrl});
+                      try {
+                        toast.info('Processing audio — trimming to 30s…');
+                        const trimmed = await trimAudioTo30s(file);
+                        const fileName = `${Date.now()}-${trimmed.name.replace(/\s+/g, '-')}`;
+                        const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType: trimmed.type });
+                        if (error) { toast.error(error.message); setUploadingPreview(false); return; }
+                        const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
+                        setNewDrop({...newDrop, song_preview_url: urlData.publicUrl});
+                        toast.success('Preview uploaded! (auto-trimmed to 30s)');
+                      } catch (err: any) {
+                        toast.error('Audio processing failed: ' + (err.message || 'Unknown error'));
+                      }
                       setUploadingPreview(false);
-                      toast.success('Preview uploaded!');
                     }}
                     className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-purple-500/20 file:text-purple-300"
                   />
-                  {uploadingPreview && <p className="text-[10px] text-muted-foreground mt-1">Uploading...</p>}
+                  {uploadingPreview && <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 size={10} className="animate-spin" /> Trimming & uploading…</p>}
                 </div>
               )}
             </div>
