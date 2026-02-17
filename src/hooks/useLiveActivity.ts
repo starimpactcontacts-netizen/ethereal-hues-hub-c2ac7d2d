@@ -10,7 +10,7 @@ export interface LiveActivityItem {
   target: string;
   score?: number | null;
   timestamp: string;
-  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection';
+  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry';
 }
 
 // Randomized action text for variety
@@ -37,6 +37,15 @@ const battleLostVerbs = [
 const judgeVideoVerbs = [
   'posted', 'dropped', 'published', 'released',
 ];
+const featuredSubVerbs = [
+  'submitted an edit for', 'entered the drop by', 'competed for', 'threw down for',
+];
+const crewJoinVerbs = [
+  'joined', 'enlisted in', 'signed up for', 'became a member of',
+];
+const hostedEntryVerbs = [
+  'entered', 'joined the comp', 'submitted to', 'signed up for',
+];
 
 export function useLiveActivity(limit = 8) {
   const [items, setItems] = useState<LiveActivityItem[]>([]);
@@ -45,7 +54,7 @@ export function useLiveActivity(limit = 8) {
   const fetch = useCallback(async () => {
     try {
       // Fetch all activity sources in parallel
-      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes] = await Promise.all([
+      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes, featSubsRes, crewJoinsRes, hostedEntriesRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, user_id, event_id, qoi_score, submitted_at')
@@ -75,6 +84,24 @@ export function useLiveActivity(limit = 8) {
           .select('id, judge_id, title, current_views, submitted_at')
           .order('submitted_at', { ascending: false })
           .limit(limit),
+        // NEW: Featured drop submissions
+        supabase
+          .from('featured_submissions')
+          .select('id, user_id, username, avatar_url, drop_id, qoi_score, created_at')
+          .order('created_at', { ascending: false })
+          .limit(limit),
+        // NEW: Crew joins
+        supabase
+          .from('crew_members')
+          .select('id, user_id, crew_id, joined_at')
+          .order('joined_at', { ascending: false })
+          .limit(limit),
+        // NEW: Hosted comp submissions
+        supabase
+          .from('hosted_competition_submissions')
+          .select('id, user_id, username, avatar_url, competition_id, score, submitted_at')
+          .order('submitted_at', { ascending: false })
+          .limit(limit),
       ]);
 
       // Collect user & event IDs for enrichment
@@ -83,24 +110,37 @@ export function useLiveActivity(limit = 8) {
       const reviewData = reviewsRes.data || [];
       const battleData = battlesRes.data || [];
       const judgeVidData = judgeVidsRes.data || [];
+      const featSubData = featSubsRes.data || [];
+      const crewJoinData = crewJoinsRes.data || [];
+      const hostedEntryData = hostedEntriesRes.data || [];
 
       const userIds = [...new Set([
         ...roundData.map(r => r.user_id),
         ...eventData.map(e => e.user_id),
         ...judgeVidData.map(j => j.judge_id),
+        ...crewJoinData.map(c => c.user_id),
       ])];
       const eventIds = [...new Set([
         ...roundData.map(r => r.event_id),
         ...eventData.map(e => e.event_id),
       ])];
+      const crewIds = [...new Set(crewJoinData.map(c => c.crew_id))];
+      const dropIds = [...new Set(featSubData.map(f => f.drop_id))];
+      const compIds = [...new Set(hostedEntryData.map(h => h.competition_id))];
 
-      const [profilesRes, eventsNamesRes] = await Promise.all([
+      const [profilesRes, eventsNamesRes, crewNamesRes, dropNamesRes, compNamesRes] = await Promise.all([
         userIds.length > 0 ? supabase.from('profiles').select('id, username, avatar_url').in('id', userIds) : { data: [] },
         eventIds.length > 0 ? supabase.from('events').select('id, title').in('id', eventIds) : { data: [] },
+        crewIds.length > 0 ? supabase.from('crews').select('id, name').in('id', crewIds) : { data: [] },
+        dropIds.length > 0 ? supabase.from('featured_drops').select('id, title').in('id', dropIds) : { data: [] },
+        compIds.length > 0 ? supabase.from('hosted_competitions').select('id, name').in('id', compIds) : { data: [] },
       ]);
 
       const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p]));
       const eventMap = new Map((eventsNamesRes.data || []).map(e => [e.id, e.title]));
+      const crewMap = new Map((crewNamesRes.data || []).map(c => [c.id, c.name]));
+      const dropMap = new Map((dropNamesRes.data || []).map(d => [d.id, d.title]));
+      const compMap = new Map((compNamesRes.data || []).map(c => [c.id, c.name]));
 
       const all: LiveActivityItem[] = [];
 
@@ -189,6 +229,52 @@ export function useLiveActivity(limit = 8) {
         });
       });
 
+      // Featured drop submissions
+      featSubData.forEach(f => {
+        all.push({
+          id: `feat-${f.id}`,
+          user_id: f.user_id,
+          username: f.username || 'editor',
+          avatar_url: f.avatar_url || null,
+          action: pick(featuredSubVerbs),
+          target: dropMap.get(f.drop_id) || 'a featured drop',
+          score: f.qoi_score,
+          timestamp: f.created_at || new Date().toISOString(),
+          type: 'featured_sub',
+        });
+      });
+
+      // Crew joins
+      crewJoinData.forEach(c => {
+        const p = profileMap.get(c.user_id);
+        all.push({
+          id: `crew-${c.id}`,
+          user_id: c.user_id,
+          username: p?.username || 'editor',
+          avatar_url: p?.avatar_url || null,
+          action: pick(crewJoinVerbs),
+          target: crewMap.get(c.crew_id) || 'a unit',
+          score: null,
+          timestamp: c.joined_at || new Date().toISOString(),
+          type: 'crew_join',
+        });
+      });
+
+      // Hosted competition entries
+      hostedEntryData.forEach(h => {
+        all.push({
+          id: `hcomp-${h.id}`,
+          user_id: h.user_id,
+          username: h.username || 'editor',
+          avatar_url: h.avatar_url || null,
+          action: pick(hostedEntryVerbs),
+          target: compMap.get(h.competition_id) || 'a competition',
+          score: h.score,
+          timestamp: h.submitted_at || new Date().toISOString(),
+          type: 'hosted_entry',
+        });
+      });
+
       // Sort by timestamp, dedup by user+action combo
       all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       const seen = new Set<string>();
@@ -218,6 +304,9 @@ export function useLiveActivity(limit = 8) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'review_requests' }, () => fetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'battles' }, () => fetch())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'judge_rating_videos' }, () => fetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'featured_submissions' }, () => fetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'crew_members' }, () => fetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hosted_competition_submissions' }, () => fetch())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
