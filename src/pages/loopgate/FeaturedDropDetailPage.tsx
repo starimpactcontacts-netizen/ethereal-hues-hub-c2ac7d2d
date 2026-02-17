@@ -154,6 +154,13 @@ export default function FeaturedDropDetailPage() {
               </a>
             )}
           </div>
+          {/* Song Preview Player */}
+          {drop.song_preview_url && (
+            <div className="mt-2 flex items-center gap-2 bg-surface-1 border border-border rounded-lg p-2">
+              <Music className="w-4 h-4 text-purple-400 shrink-0" />
+              <audio src={drop.song_preview_url} controls className="h-8 flex-1 [&::-webkit-media-controls-panel]:bg-transparent" />
+            </div>
+          )}
         </div>
 
         {/* Lobby Header — live avatars + countdown */}
