@@ -141,20 +141,28 @@ export default function FeaturedArtistAdmin() {
     setSavingDrop(false);
   };
 
-  const handleUploadPreviewForEdit = async (file: File) => {
-    setUploadingEditPreview(true);
+  const uploadAudioFile = async (file: File): Promise<string | null> => {
     try {
       toast.info('Processing audio — trimming to 30s…');
       const trimmed = await trimAudioTo30s(file);
-      const fileName = `${Date.now()}-${trimmed.name.replace(/\s+/g, '-')}`;
-      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType: trimmed.type });
-      if (error) { toast.error(error.message); setUploadingEditPreview(false); return; }
+      const ext = trimmed.name.split('.').pop() || 'wav';
+      const fileName = `${Date.now()}-preview.${ext}`;
+      const contentType = trimmed.type || (ext === 'wav' ? 'audio/wav' : file.type || 'audio/mpeg');
+      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType, upsert: true });
+      if (error) { toast.error('Upload failed: ' + error.message); return null; }
       const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
-      setEditDropForm({ ...editDropForm, song_preview_url: urlData.publicUrl });
-      toast.success('Preview uploaded! (auto-trimmed to 30s)');
+      toast.success('Preview uploaded!');
+      return urlData.publicUrl;
     } catch (err: any) {
       toast.error('Audio processing failed: ' + (err.message || 'Unknown error'));
+      return null;
     }
+  };
+
+  const handleUploadPreviewForEdit = async (file: File) => {
+    setUploadingEditPreview(true);
+    const url = await uploadAudioFile(file);
+    if (url) setEditDropForm({ ...editDropForm, song_preview_url: url });
     setUploadingEditPreview(false);
   };
 
@@ -516,18 +524,8 @@ export default function FeaturedArtistAdmin() {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       setUploadingPreview(true);
-                      try {
-                        toast.info('Processing audio — trimming to 30s…');
-                        const trimmed = await trimAudioTo30s(file);
-                        const fileName = `${Date.now()}-${trimmed.name.replace(/\s+/g, '-')}`;
-                        const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType: trimmed.type });
-                        if (error) { toast.error(error.message); setUploadingPreview(false); return; }
-                        const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
-                        setNewDrop({...newDrop, song_preview_url: urlData.publicUrl});
-                        toast.success('Preview uploaded! (auto-trimmed to 30s)');
-                      } catch (err: any) {
-                        toast.error('Audio processing failed: ' + (err.message || 'Unknown error'));
-                      }
+                      const url = await uploadAudioFile(file);
+                      if (url) setNewDrop({...newDrop, song_preview_url: url});
                       setUploadingPreview(false);
                     }}
                     className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-purple-500/20 file:text-purple-300"

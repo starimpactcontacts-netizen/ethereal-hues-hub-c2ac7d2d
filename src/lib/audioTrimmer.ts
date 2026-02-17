@@ -1,33 +1,48 @@
 /**
  * Trims an audio file to the first 30 seconds and converts to WAV.
  * Uses Web Audio API — fully client-side, no server needed.
+ * Falls back to returning the original file if processing fails.
  */
 export async function trimAudioTo30s(file: File): Promise<File> {
   const MAX_DURATION = 30;
 
-  const arrayBuffer = await file.arrayBuffer();
-  const audioCtx = new AudioContext();
-  const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const audioCtx = new AudioContext();
+    
+    let decoded: AudioBuffer;
+    try {
+      decoded = await audioCtx.decodeAudioData(arrayBuffer);
+    } catch (decodeErr) {
+      console.warn('decodeAudioData failed, returning original file:', decodeErr);
+      await audioCtx.close();
+      // Return original file — browser couldn't decode it (video file, unsupported codec, etc.)
+      return file;
+    }
 
-  const duration = Math.min(decoded.duration, MAX_DURATION);
-  const sampleRate = decoded.sampleRate;
-  const numChannels = Math.min(decoded.numberOfChannels, 2); // stereo max
-  const frameCount = Math.ceil(duration * sampleRate);
+    const duration = Math.min(decoded.duration, MAX_DURATION);
+    const sampleRate = decoded.sampleRate;
+    const numChannels = Math.min(decoded.numberOfChannels, 2); // stereo max
+    const frameCount = Math.ceil(duration * sampleRate);
 
-  // Render trimmed audio
-  const offlineCtx = new OfflineAudioContext(numChannels, frameCount, sampleRate);
-  const source = offlineCtx.createBufferSource();
-  source.buffer = decoded;
-  source.connect(offlineCtx.destination);
-  source.start(0, 0, duration);
-  const rendered = await offlineCtx.startRendering();
+    // Render trimmed audio
+    const offlineCtx = new OfflineAudioContext(numChannels, frameCount, sampleRate);
+    const source = offlineCtx.createBufferSource();
+    source.buffer = decoded;
+    source.connect(offlineCtx.destination);
+    source.start(0, 0, duration);
+    const rendered = await offlineCtx.startRendering();
 
-  // Encode to WAV
-  const wavBlob = encodeWAV(rendered);
-  const trimmedName = file.name.replace(/\.[^.]+$/, '') + '-30s.wav';
+    // Encode to WAV
+    const wavBlob = encodeWAV(rendered);
+    const trimmedName = file.name.replace(/\.[^.]+$/, '') + '-30s.wav';
 
-  await audioCtx.close();
-  return new File([wavBlob], trimmedName, { type: 'audio/wav' });
+    await audioCtx.close();
+    return new File([wavBlob], trimmedName, { type: 'audio/wav' });
+  } catch (err) {
+    console.warn('Audio trimming failed entirely, returning original file:', err);
+    return file;
+  }
 }
 
 function encodeWAV(buffer: AudioBuffer): Blob {
