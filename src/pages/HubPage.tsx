@@ -595,7 +595,7 @@ export default function HubPage() {
               </Link>
             ))}
             
-            {/* Premium Hosted Competitions - After official, before sanctioned */}
+            {/* Premium Hosted Competitions */}
             {premiumComps.map((comp, i) => (
               <Link key={comp.id} to={`/hosted-comp/${comp.slug || comp.id}`} className="shrink-0">
                 <motion.div
@@ -647,12 +647,22 @@ export default function HubPage() {
                         <CountdownTimer endDate={comp.submission_deadline} expiredLabel="Closed" />
                       </div>
                     </div>
+                    {/* Activity signal */}
+                    {(comp.submission_count || 0) > 0 && (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[8px] text-emerald-400">{comp.submission_count} entries</span>
+                        {(comp.participant_count || 0) >= 10 && (
+                          <span className="text-[8px] text-orange-400 ml-auto">🔥 Trending</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </Link>
             ))}
             
-            {/* Sanctioned Tournaments - After official events */}
+            {/* Sanctioned Tournaments */}
             {activeSanctioned.map((tournament, i) => (
               <Link key={tournament.id} to={`/sanctioned/${tournament.id}`} className="shrink-0">
                 <motion.div
@@ -708,12 +718,22 @@ export default function HubPage() {
                       <span className="text-[8px] text-purple-400 uppercase tracking-wider">{tournament.crew_name}</span>
                       <span className="text-[9px] text-muted-foreground">{tournament.format_type?.replace('_', ' ')}</span>
                     </div>
+                    {/* Activity signal */}
+                    {tournament.player_count > 0 && (
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-purple-500 animate-pulse" />
+                        <span className="text-[8px] text-purple-400">{tournament.player_count} fighters ready</span>
+                        {tournament.player_count >= tournament.max_players - 2 && (
+                          <span className="text-[8px] text-red-400 ml-auto">Almost full</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </Link>
             ))}
             
-            {/* 1v1 Battles - After sanctioned tournaments */}
+            {/* 1v1 Battles */}
             {featuredBattles.map((battle, i) => (
               <Link key={battle.id} to={`/battle/${battle.id}`} className="shrink-0">
                 <motion.div
@@ -798,7 +818,7 @@ export default function HubPage() {
                     
                     {/* Prize */}
                     <div className="absolute top-1.5 right-1.5 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-sm">
-                      <span className="text-[8px] font-bold text-gold">+{battle.winner_index_awarded} IDX</span>
+                      <span className="text-[8px] font-bold text-gold">+{battle.winner_index_awarded || 20} IDX</span>
                     </div>
                   </div>
                   
@@ -809,12 +829,27 @@ export default function HubPage() {
                     </p>
                     <div className="flex items-center justify-between mt-1.5">
                       <span className="text-[8px] text-red-400 uppercase tracking-wider">{battle.duration_hours}h Battle</span>
-                      <span className="text-[9px] text-muted-foreground uppercase">{battle.league_tier}</span>
+                      <span className="text-[9px] text-muted-foreground uppercase">{battle.status}</span>
+                    </div>
+                    {/* Activity signal */}
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+                      <span className="text-[8px] text-red-400">
+                        {battle.status === 'pending' ? 'Waiting for opponent' :
+                         battle.status === 'active' ? 'Edits in progress' : 'Awaiting judge verdict'}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
               </Link>
             ))}
+            
+            {/* Empty state */}
+            {totalFeatured === 0 && (
+              <div className="w-full py-6 text-center">
+                <p className="text-xs text-muted-foreground">No active events right now</p>
+              </div>
+            )}
           </div>
         </motion.div>
       )}
