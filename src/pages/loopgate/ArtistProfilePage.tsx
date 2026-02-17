@@ -309,7 +309,7 @@ export default function ArtistProfilePage() {
         <div className="mt-6 mb-4 text-center">
           <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Share this profile</p>
           <p className="text-xs text-foreground font-mono mt-1 select-all bg-surface-1 border border-border rounded-lg px-3 py-2 inline-block">
-            loopgate.app/artist/{artist.slug}
+            loopgate.io/artist/{artist.slug}
           </p>
         </div>
       </div>
