@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, Sparkles, ExternalLink } from "lucide-react";
-import { useRealEvents, useEventRankings, useEventStats, useActiveSession } from "@/hooks/useRealData";
+import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
 import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
 import { useAuth } from "@/hooks/useAuth";
 import StatusBadge from "@/components/loopgate/StatusBadge";
@@ -22,14 +22,18 @@ export default function EventDetailPage() {
 
   // Fetch real data
   const { events, loading: eventsLoading } = useRealEvents();
-  const { rankings, loading: rankingsLoading } = useEventRankings(id || null);
-  const { stats } = useEventStats(id || null);
+  
+  // Find event by slug or UUID
+  const event = events.find((e) => e.slug === id || e.id === id);
+  const eventId = event?.id || null;
+
+  const { rankings, loading: rankingsLoading } = useEventRankings(eventId);
+  const { stats } = useEventStats(eventId);
   
   // Open Arena data
-  const { rounds, loading: roundsLoading } = useEventRounds(id || null);
-  const { statuses: userRoundStatuses } = useUserRoundStatus(id || null);
+  const { rounds, loading: roundsLoading } = useEventRounds(eventId);
+  const { statuses: userRoundStatuses } = useUserRoundStatus(eventId);
 
-  const event = events.find((e) => e.id === id);
   const isOpenArena = (event as any)?.event_mode === 'open_arena';
   const activeRound = rounds.find(r => r.status === 'active');
   const currentUserStatus = userRoundStatuses.find(s => s.round_number === activeRound?.round_number);

@@ -5,7 +5,7 @@ import loopgateLogo from "@/assets/loopgate-logo.png";
 import PosterStrip from "@/components/loopgate/PosterStrip";
 import StatusBadge from "@/components/loopgate/StatusBadge";
 import { Badge } from "@/components/ui/badge";
-import { useRealEvents, useGlobalStats, useActiveSession } from "@/hooks/useRealData";
+import { useRealEvents, useGlobalStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
 import { useAuth } from "@/hooks/useAuth";
 import { useEventRounds } from "@/hooks/useOpenArenaData";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
@@ -19,7 +19,7 @@ function EventCard({ event, isLive }: { event: any; isLive: boolean }) {
   const isOpenArena = event.event_mode === 'open_arena';
 
   return (
-    <Link to={`/event/${event.id}`} className="block">
+    <Link to={`/event/${getEventSlug(event)}`} className="block">
       <div className="bg-surface-1 border border-border hover:border-gold/50 transition-all overflow-hidden group">
         {/* Poster */}
         <div className="relative h-40 overflow-hidden">
@@ -272,7 +272,7 @@ export default function HomePage() {
             {upcomingEvents.map((event) => (
               <Link 
                 key={event.id}
-                to={`/event/${event.id}`}
+                to={`/event/${getEventSlug(event)}`}
                 className="flex items-center justify-between bg-surface-1 border border-border p-4 hover:border-gold/30 transition-all"
               >
                 <div className="flex-1">
@@ -306,7 +306,7 @@ export default function HomePage() {
             {closedEvents.slice(0, 3).map((event) => (
               <Link 
                 key={event.id}
-                to={`/event/${event.id}`}
+                to={`/event/${getEventSlug(event)}`}
                 className="flex items-center justify-between bg-surface-1/50 border border-border/50 p-3 hover:bg-surface-1 transition-all"
               >
                 <div>

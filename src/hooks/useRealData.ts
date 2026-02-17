@@ -5,6 +5,7 @@ import { useAuth } from './useAuth';
 // Types for real data
 export interface RealEvent {
   id: string;
+  slug: string | null;
   title: string;
   subtitle: string | null;
   description: string | null;
@@ -24,6 +25,11 @@ export interface RealEvent {
   total_rounds: number | null;
   max_editors: number | null;
   winner_logic: 'final_qoi' | 'cumulative_qoi' | 'manual' | null;
+}
+
+/** Get the clean URL identifier for an event (slug preferred, fallback to id) */
+export function getEventSlug(event: { slug?: string | null; id: string }) {
+  return event.slug || event.id;
 }
 
 export interface RealEditor {

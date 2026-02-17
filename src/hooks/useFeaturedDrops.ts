@@ -12,6 +12,10 @@ export interface FeaturedArtist {
   social_links: Record<string, string>;
   is_active: boolean;
   created_at: string;
+  monthly_streams: number;
+  achievements: Array<{ label: string; icon?: string }>;
+  website_url: string | null;
+  verified: boolean;
 }
 
 export interface FeaturedDrop {
@@ -151,7 +155,7 @@ export function useFeaturedArtist(slug: string | undefined) {
         .single();
 
       if (artistData) {
-        setArtist(artistData as FeaturedArtist);
+        setArtist(artistData as unknown as FeaturedArtist);
 
         const { data: dropsData } = await supabase
           .from('featured_drops')
@@ -184,7 +188,7 @@ export function useAdminFeatured() {
       supabase.from('featured_submissions').select('*').order('created_at', { ascending: false }).limit(200),
     ]);
 
-    setArtists((a.data as FeaturedArtist[]) || []);
+    setArtists((a.data as unknown as FeaturedArtist[]) || []);
     setDrops((d.data || []).map((item: any) => ({
       ...item,
       artist: item.featured_artists,

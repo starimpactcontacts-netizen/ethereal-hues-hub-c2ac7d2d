@@ -48,7 +48,7 @@ interface Event {
 function EventCard({ event }: { event: Event }) {
   const isLive = event.status === "live";
   return (
-    <Link to={`/event/${event.id}`} className="block shrink-0 w-[260px]">
+    <Link to={`/event/${(event as any).slug || event.id}`} className="block shrink-0 w-[260px]">
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

@@ -550,7 +550,7 @@ export default function HubPage() {
           <div className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-1.5">
             {/* Official Live Events - Priority */}
             {liveEvents.map((event, i) => (
-              <Link key={event.id} to={`/event/${event.id}`} className="shrink-0">
+              <Link key={event.id} to={`/event/${(event as any).slug || event.id}`} className="shrink-0">
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
