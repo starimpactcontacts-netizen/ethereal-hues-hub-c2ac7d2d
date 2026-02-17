@@ -39,10 +39,13 @@ const actionColors: Record<string, string> = {
   battle: 'text-red-400',
   judge_video: 'text-purple-400',
   connection: 'text-blue-400',
+  featured_sub: 'text-brand',
+  crew_join: 'text-emerald-400',
+  hosted_entry: 'text-orange-400',
 };
 
 function HubLiveFeed() {
-  const { items, loading } = useLiveActivity(8);
+  const { items, loading } = useLiveActivity(15);
 
   if (loading) {
     return (
@@ -598,8 +601,8 @@ export default function HubPage() {
               </Link>
             ))}
             
-            {/* Featured Artist Drops - After official events */}
-            {liveDrops.map(drop => (
+            {/* Featured Artist Drops - Shuffled on each mount */}
+            {[...liveDrops].sort(() => Math.random() - 0.5).map(drop => (
               <FeaturedDropCard key={drop.id} drop={drop} />
             ))}
 
