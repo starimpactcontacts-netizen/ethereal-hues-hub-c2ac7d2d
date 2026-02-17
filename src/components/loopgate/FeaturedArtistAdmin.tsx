@@ -21,11 +21,22 @@ export default function FeaturedArtistAdmin() {
   const [newArtist, setNewArtist] = useState({ name: '', slug: '', bio: '', genre: 'phonk', avatar_url: '', banner_url: '' });
   const [creatingArtist, setCreatingArtist] = useState(false);
 
+  // Edit artist state
+  const [editingArtist, setEditingArtist] = useState<FeaturedArtist | null>(null);
+  const [editArtistForm, setEditArtistForm] = useState({ name: '', slug: '', bio: '', genre: '', avatar_url: '', banner_url: '' });
+  const [savingArtist, setSavingArtist] = useState(false);
+
   // Create drop state
   const [showCreateDrop, setShowCreateDrop] = useState(false);
-  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15 });
+  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '' });
   const [uploadingPreview, setUploadingPreview] = useState(false);
   const [creatingDrop, setCreatingDrop] = useState(false);
+
+  // Edit drop state
+  const [editingDrop, setEditingDrop] = useState<FeaturedDrop | null>(null);
+  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '' });
+  const [savingDrop, setSavingDrop] = useState(false);
+  const [uploadingEditPreview, setUploadingEditPreview] = useState(false);
 
   // Scoring state
   const [scoringSub, setScoringSub] = useState<FeaturedSubmission | null>(null);
@@ -53,6 +64,34 @@ export default function FeaturedArtistAdmin() {
     setCreatingArtist(false);
   };
 
+  const openEditArtist = (artist: FeaturedArtist) => {
+    setEditingArtist(artist);
+    setEditArtistForm({
+      name: artist.name,
+      slug: artist.slug,
+      bio: artist.bio || '',
+      genre: artist.genre,
+      avatar_url: artist.avatar_url || '',
+      banner_url: artist.banner_url || '',
+    });
+  };
+
+  const handleSaveArtist = async () => {
+    if (!editingArtist || !editArtistForm.name || !editArtistForm.slug) return;
+    setSavingArtist(true);
+    const { error } = await supabase.from('featured_artists').update({
+      name: editArtistForm.name,
+      slug: editArtistForm.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+      bio: editArtistForm.bio || null,
+      genre: editArtistForm.genre,
+      avatar_url: editArtistForm.avatar_url || null,
+      banner_url: editArtistForm.banner_url || null,
+    }).eq('id', editingArtist.id);
+    if (error) toast.error(error.message);
+    else { toast.success('Artist updated!'); setEditingArtist(null); refresh(); }
+    setSavingArtist(false);
+  };
+
   const handleCreateDrop = async () => {
     if (!newDrop.artist_id || !newDrop.title || !newDrop.song_name) return;
     setCreatingDrop(true);
@@ -61,8 +100,56 @@ export default function FeaturedArtistAdmin() {
       status: 'draft',
     });
     if (error) toast.error(error.message);
-    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15 }); refresh(); }
+    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '' }); refresh(); }
     setCreatingDrop(false);
+  };
+
+  const openEditDrop = (drop: FeaturedDrop) => {
+    setEditingDrop(drop);
+    setEditDropForm({
+      title: drop.title,
+      song_name: drop.song_name,
+      song_url: drop.song_url || '',
+      song_preview_url: drop.song_preview_url || '',
+      poster_url: drop.poster_url || '',
+      description: drop.description || '',
+      xp_reward: drop.xp_reward,
+      index_reward: drop.index_reward,
+      mystery_reward_label: drop.mystery_reward_label || '',
+      artist_id: drop.artist_id,
+    });
+  };
+
+  const handleSaveDrop = async () => {
+    if (!editingDrop) return;
+    setSavingDrop(true);
+    const { error } = await supabase.from('featured_drops').update({
+      title: editDropForm.title,
+      song_name: editDropForm.song_name,
+      song_url: editDropForm.song_url || null,
+      song_preview_url: editDropForm.song_preview_url || null,
+      poster_url: editDropForm.poster_url || null,
+      description: editDropForm.description || null,
+      xp_reward: editDropForm.xp_reward,
+      index_reward: editDropForm.index_reward,
+      mystery_reward_label: editDropForm.mystery_reward_label || '',
+      artist_id: editDropForm.artist_id,
+    }).eq('id', editingDrop.id);
+    if (error) toast.error(error.message);
+    else { toast.success('Drop updated!'); setEditingDrop(null); refresh(); }
+    setSavingDrop(false);
+  };
+
+  const handleUploadPreviewForEdit = async (file: File) => {
+    if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
+    setUploadingEditPreview(true);
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    const { data, error } = await supabase.storage.from('song-previews').upload(fileName, file, { contentType: file.type });
+    if (error) { toast.error(error.message); setUploadingEditPreview(false); return; }
+    const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
+    setEditDropForm({ ...editDropForm, song_preview_url: urlData.publicUrl });
+    setUploadingEditPreview(false);
+    toast.success('Preview uploaded!');
   };
 
   const handleToggleDropStatus = async (drop: FeaturedDrop) => {
@@ -97,7 +184,6 @@ export default function FeaturedArtistAdmin() {
     }).eq('id', scoringSub.id);
 
     if (!error) {
-      // Award XP and index to user
       if (isGood) {
         const drop = drops.find(d => d.id === scoringSub.drop_id);
         await supabase.rpc('award_xp', {
@@ -107,17 +193,6 @@ export default function FeaturedArtistAdmin() {
           p_description: `Featured drop submission scored ${qoi} QOI`,
         });
         if ((drop?.index_reward || 0) > 0) {
-          await supabase.from('profiles').update({
-            spendable_index: supabase.rpc('spend_index', { p_user_id: scoringSub.user_id, p_amount: 0 }) as any,
-          }).eq('id', scoringSub.user_id);
-          // Direct index award
-          await supabase.rpc('award_xp', {
-            p_user_id: scoringSub.user_id,
-            p_amount: 0,
-            p_action: 'featured_index',
-            p_description: `+${drop?.index_reward} INDEX from featured drop`,
-          });
-          // Update spendable + global index
           const { data: profile } = await supabase.from('profiles').select('spendable_index, global_index_score').eq('id', scoringSub.user_id).single();
           if (profile) {
             await supabase.from('profiles').update({
@@ -127,7 +202,6 @@ export default function FeaturedArtistAdmin() {
           }
         }
       } else {
-        // Minimal XP for bad submissions
         await supabase.rpc('award_xp', {
           p_user_id: scoringSub.user_id,
           p_amount: 5,
@@ -208,9 +282,14 @@ export default function FeaturedArtistAdmin() {
                   </div>
                   <Badge className="text-[8px] bg-purple-500/10 text-purple-300">{artist.genre}</Badge>
                 </div>
-                <button onClick={() => setDeleteTarget({ type: 'artist', id: artist.id })} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded">
-                  <Trash2 size={14} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => openEditArtist(artist)} className="p-1.5 text-purple-400 hover:bg-purple-500/10 rounded" title="Edit artist">
+                    <Pencil size={14} />
+                  </button>
+                  <button onClick={() => setDeleteTarget({ type: 'artist', id: artist.id })} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -250,6 +329,10 @@ export default function FeaturedArtistAdmin() {
                     <button onClick={() => handleToggleDropStatus(drop)}
                       className={`p-1.5 rounded ${drop.status === 'live' ? 'bg-emerald-600' : drop.status === 'judging' ? 'bg-amber-500' : 'bg-muted'}`} title="Toggle status">
                       {drop.status === 'live' ? <Square size={14} /> : <Play size={14} />}
+                    </button>
+                    <button onClick={() => openEditDrop(drop)}
+                      className="p-1.5 rounded text-purple-400 hover:bg-purple-500/10" title="Edit drop">
+                      <Pencil size={14} />
                     </button>
                     <button onClick={() => handleRandomPick(drop.id)}
                       className="p-1.5 rounded bg-pink-500/20 text-pink-300" title="Random artist pick">
@@ -344,9 +427,48 @@ export default function FeaturedArtistAdmin() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Artist Dialog */}
+      <Dialog open={!!editingArtist} onOpenChange={(open) => !open && setEditingArtist(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil size={18} className="text-purple-400" /> Edit Artist</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div>
+              <Label className="text-xs">Name *</Label>
+              <Input value={editArtistForm.name} onChange={e => setEditArtistForm({...editArtistForm, name: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Slug *</Label>
+              <Input value={editArtistForm.slug} onChange={e => setEditArtistForm({...editArtistForm, slug: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Genre</Label>
+              <Input value={editArtistForm.genre} onChange={e => setEditArtistForm({...editArtistForm, genre: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Bio</Label>
+              <Textarea value={editArtistForm.bio} onChange={e => setEditArtistForm({...editArtistForm, bio: e.target.value})} className="mt-1" rows={3} />
+            </div>
+            <div>
+              <Label className="text-xs">Avatar URL</Label>
+              <Input value={editArtistForm.avatar_url} onChange={e => setEditArtistForm({...editArtistForm, avatar_url: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Banner URL</Label>
+              <Input value={editArtistForm.banner_url} onChange={e => setEditArtistForm({...editArtistForm, banner_url: e.target.value})} className="mt-1" />
+            </div>
+            <button onClick={handleSaveArtist} disabled={savingArtist || !editArtistForm.name || !editArtistForm.slug}
+              className="w-full py-3 bg-purple-600 text-white font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2">
+              {savingArtist ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Save Changes'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Create Drop Dialog */}
       <Dialog open={showCreateDrop} onOpenChange={setShowCreateDrop}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Zap size={18} className="text-pink-400" /> New Featured Drop</DialogTitle>
           </DialogHeader>
@@ -411,6 +533,10 @@ export default function FeaturedArtistAdmin() {
               <Label className="text-xs">Description</Label>
               <Textarea value={newDrop.description} onChange={e => setNewDrop({...newDrop, description: e.target.value})} placeholder="What editors should create..." className="mt-1" rows={2} />
             </div>
+            <div>
+              <Label className="text-xs">Mystery Reward Label</Label>
+              <Input value={newDrop.mystery_reward_label} onChange={e => setNewDrop({...newDrop, mystery_reward_label: e.target.value})} placeholder="e.g. Artist Shoutout" className="mt-1" />
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label className="text-xs">XP Reward</Label>
@@ -424,6 +550,85 @@ export default function FeaturedArtistAdmin() {
             <button onClick={handleCreateDrop} disabled={creatingDrop || !newDrop.artist_id || !newDrop.title || !newDrop.song_name}
               className="w-full py-3 bg-pink-600 text-white font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2">
               {creatingDrop ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Plus size={16} /> Create Drop</>}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Drop Dialog */}
+      <Dialog open={!!editingDrop} onOpenChange={(open) => !open && setEditingDrop(null)}>
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil size={18} className="text-pink-400" /> Edit Drop</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <div>
+              <Label className="text-xs">Artist</Label>
+              <select value={editDropForm.artist_id} onChange={e => setEditDropForm({...editDropForm, artist_id: e.target.value})}
+                className="w-full mt-1 h-10 rounded-md border border-input bg-background px-3 text-sm">
+                {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label className="text-xs">Drop Title *</Label>
+              <Input value={editDropForm.title} onChange={e => setEditDropForm({...editDropForm, title: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Song Name *</Label>
+              <Input value={editDropForm.song_name} onChange={e => setEditDropForm({...editDropForm, song_name: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Song URL</Label>
+              <Input value={editDropForm.song_url} onChange={e => setEditDropForm({...editDropForm, song_url: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs flex items-center gap-1.5">🔊 Song Preview (30s clip)</Label>
+              {editDropForm.song_preview_url ? (
+                <div className="mt-1 flex items-center gap-2">
+                  <audio src={editDropForm.song_preview_url} controls className="h-8 flex-1" />
+                  <button onClick={() => setEditDropForm({...editDropForm, song_preview_url: ''})} className="text-[10px] text-red-400 hover:underline">Remove</button>
+                </div>
+              ) : (
+                <div className="mt-1">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    disabled={uploadingEditPreview}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleUploadPreviewForEdit(file);
+                    }}
+                    className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-purple-500/20 file:text-purple-300"
+                  />
+                  {uploadingEditPreview && <p className="text-[10px] text-muted-foreground mt-1">Uploading...</p>}
+                </div>
+              )}
+            </div>
+            <div>
+              <Label className="text-xs">Poster URL</Label>
+              <Input value={editDropForm.poster_url} onChange={e => setEditDropForm({...editDropForm, poster_url: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Description</Label>
+              <Textarea value={editDropForm.description} onChange={e => setEditDropForm({...editDropForm, description: e.target.value})} className="mt-1" rows={2} />
+            </div>
+            <div>
+              <Label className="text-xs">Mystery Reward Label</Label>
+              <Input value={editDropForm.mystery_reward_label} onChange={e => setEditDropForm({...editDropForm, mystery_reward_label: e.target.value})} className="mt-1" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-xs">XP Reward</Label>
+                <Input type="number" value={editDropForm.xp_reward} onChange={e => setEditDropForm({...editDropForm, xp_reward: Number(e.target.value)})} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Index Reward</Label>
+                <Input type="number" value={editDropForm.index_reward} onChange={e => setEditDropForm({...editDropForm, index_reward: Number(e.target.value)})} className="mt-1" />
+              </div>
+            </div>
+            <button onClick={handleSaveDrop} disabled={savingDrop || !editDropForm.title || !editDropForm.song_name}
+              className="w-full py-3 bg-pink-600 text-white font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2">
+              {savingDrop ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Save Changes'}
             </button>
           </div>
         </DialogContent>
