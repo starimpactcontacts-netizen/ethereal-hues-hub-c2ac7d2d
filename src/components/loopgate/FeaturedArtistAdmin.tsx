@@ -142,18 +142,25 @@ export default function FeaturedArtistAdmin() {
   };
 
   const uploadAudioFile = async (file: File): Promise<string | null> => {
+    if (!file.type.startsWith('audio/')) {
+      toast.error('Please upload an audio file (mp3, m4a, wav, etc.)');
+      return null;
+    }
     try {
-      toast.info('Processing audio — trimming to 30s…');
+      toast.info('Processing audio…');
       const trimmed = await trimAudioTo30s(file);
-      const ext = trimmed.name.split('.').pop() || 'wav';
-      const fileName = `${Date.now()}-preview.${ext}`;
-      const contentType = trimmed.type || (ext === 'wav' ? 'audio/wav' : file.type || 'audio/mpeg');
-      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType, upsert: true });
-      if (error) { toast.error('Upload failed: ' + error.message); return null; }
+      const fileName = `${Date.now()}-preview.wav`;
+      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType: 'audio/wav', upsert: true });
+      if (error) { 
+        console.error('Storage upload error:', error);
+        toast.error('Upload failed: ' + error.message); 
+        return null; 
+      }
       const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
-      toast.success('Preview uploaded!');
+      toast.success('Audio preview uploaded!');
       return urlData.publicUrl;
     } catch (err: any) {
+      console.error('Audio upload failed:', err);
       toast.error('Audio processing failed: ' + (err.message || 'Unknown error'));
       return null;
     }
