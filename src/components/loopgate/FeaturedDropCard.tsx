@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Music, Zap, Trophy, Users, ChevronRight, Star, Gift, Crown, Flame } from "lucide-react";
+import { Music, Zap, Trophy, Users, ChevronRight, Star, Crown, Flame, Gift } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,129 +23,125 @@ export default function FeaturedDropCard({ drop }: Props) {
   return (
     <>
       <motion.div
-        initial={{ opacity: 0, y: 8 }}
+        initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-gradient-to-br from-purple-950/60 via-surface-1 to-pink-950/40 border border-purple-500/30 rounded-xl shadow-[0_8px_40px_-8px_rgba(168,85,247,0.25),0_0_0_1px_rgba(255,255,255,0.04)_inset]"
+        className="relative overflow-hidden bg-surface-0 border border-border rounded-md"
       >
-        {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/60 to-transparent" />
+        {/* Poster with overlay — full bleed, compact */}
+        <div className="relative w-full h-36 sm:h-44 overflow-hidden">
+          {drop.poster_url ? (
+            <img src={drop.poster_url} alt={drop.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-surface-1 flex items-center justify-center">
+              <Music className="w-8 h-8 text-muted-foreground/20" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-        {/* Header: Artist row */}
-        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-          <Link to={`/artist/${artist?.slug || ''}`} className="flex items-center gap-2.5 min-w-0">
-            <Avatar className="w-10 h-10 border-2 border-purple-500/50 shrink-0">
+          {/* Artist chip — top left */}
+          <Link to={`/artist/${artist?.slug || ''}`} className="absolute top-2.5 left-2.5 flex items-center gap-2 bg-black/60 backdrop-blur-sm border border-white/10 rounded-full pl-1 pr-3 py-1 hover:bg-black/80 transition-colors">
+            <Avatar className="w-6 h-6 border border-white/20">
               <AvatarImage src={artist?.avatar_url || ''} />
-              <AvatarFallback className="bg-purple-500/20 text-purple-300 text-sm font-bold">
+              <AvatarFallback className="bg-surface-1 text-foreground text-[8px] font-bold">
                 {artist?.name?.[0]?.toUpperCase() || '🎵'}
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-foreground truncate">{artist?.name || 'Artist'}</span>
-                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[7px] px-1 py-0">
-                  <Music className="w-2 h-2 mr-0.5" /> FEATURED
-                </Badge>
-              </div>
-              <span className="text-[9px] text-purple-300/70 uppercase tracking-wider">{artist?.genre || 'Phonk'} Artist</span>
-            </div>
+            <span className="text-[10px] font-bold text-white truncate max-w-[120px]">{artist?.name || 'Artist'}</span>
           </Link>
+
+          {/* Status badge — top right */}
           {isLive && (
-            <div className="flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 rounded-full shrink-0">
+            <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[8px] font-bold text-emerald-400 uppercase">Live</span>
+              <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wide">Live</span>
+            </div>
+          )}
+          {isClosed && (
+            <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-muted/60 border border-border px-2 py-0.5 rounded-full">
+              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wide">
+                {drop.status === 'judging' ? 'Judging' : 'Closed'}
+              </span>
+            </div>
+          )}
+
+          {/* Title + song — bottom of poster */}
+          <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
+            <h3 className="font-display text-sm text-white leading-tight tracking-wide uppercase">{drop.title}</h3>
+            <p className="text-[9px] text-white/60 mt-0.5 flex items-center gap-1">
+              <Music className="w-2.5 h-2.5" />
+              {drop.song_name}
+            </p>
+          </div>
+        </div>
+
+        {/* Info bar — single dense row */}
+        <div className="px-3 py-2 flex items-center justify-between border-t border-border/50">
+          <div className="flex items-center gap-3 text-[9px]">
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <Users className="w-3 h-3" />
+              <span className="text-foreground font-bold tabular-nums">{drop.submission_count}</span>
+            </span>
+            <span className="flex items-center gap-1 text-brand">
+              <Zap className="w-3 h-3" />
+              +{drop.xp_reward} XP
+            </span>
+            <span className="flex items-center gap-1 text-brand">
+              <Trophy className="w-3 h-3" />
+              +{drop.index_reward} IDX
+            </span>
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <Gift className="w-3 h-3" />
+              {drop.mystery_reward_label}
+            </span>
+          </div>
+
+          {/* Countdown inline */}
+          {isLive && drop.ends_at && (
+            <div className="text-[9px] text-muted-foreground">
+              <CountdownTimer endDate={drop.ends_at} label="" />
             </div>
           )}
         </div>
 
-        {/* Poster / Song section */}
-        <div className="px-4 pb-3">
-          <div className="relative rounded-lg overflow-hidden bg-surface-2/60">
-            {drop.poster_url ? (
-              <img src={drop.poster_url} alt={drop.title} className="w-full h-32 object-cover" />
-            ) : (
-              <div className="w-full h-32 bg-gradient-to-br from-purple-900/50 to-pink-900/50 flex items-center justify-center">
-                <Music className="w-10 h-10 text-purple-400/30" />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-3">
-              <h3 className="font-display text-base text-white leading-tight">{drop.title}</h3>
-              <p className="text-[10px] text-white/70 mt-0.5 flex items-center gap-1.5">
-                <Music className="w-3 h-3" />
-                {drop.song_name}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats row */}
-        <div className="px-4 pb-3 flex items-center gap-3 text-[9px]">
-          <span className="flex items-center gap-1 text-purple-300">
-            <Users className="w-3 h-3" />
-            <span className="text-foreground font-bold">{drop.submission_count}</span> entries
-          </span>
-          <span className="flex items-center gap-1 text-gold">
-            <Zap className="w-3 h-3" />
-            +{drop.xp_reward} XP
-          </span>
-          <span className="flex items-center gap-1 text-gold">
-            <Trophy className="w-3 h-3" />
-            +{drop.index_reward} IDX
-          </span>
-          <span className="flex items-center gap-1 text-pink-400">
-            <Gift className="w-3 h-3" />
-            {drop.mystery_reward_label}
-          </span>
-        </div>
-
-        {/* Top scorer / Random pick */}
+        {/* Top scorer / Random pick — conditional */}
         {(drop.top_scorer_username || drop.random_pick_username) && (
-          <div className="px-4 pb-3 flex items-center gap-3 text-[9px]">
+          <div className="px-3 pb-2 flex items-center gap-2 text-[9px]">
             {drop.top_scorer_username && (
-              <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/30 px-2 py-1 rounded-full">
-                <Crown className="w-3 h-3 text-gold" />
+              <div className="flex items-center gap-1 bg-gold/10 border border-gold/20 px-2 py-0.5 rounded-full">
+                <Crown className="w-2.5 h-2.5 text-gold" />
                 <span className="text-gold font-bold">@{drop.top_scorer_username}</span>
-                <span className="text-muted-foreground">• {Math.round(drop.top_score)} QOI</span>
+                <span className="text-muted-foreground">{Math.round(drop.top_score)} QOI</span>
               </div>
             )}
             {drop.random_pick_username && (
-              <div className="flex items-center gap-1.5 bg-pink-500/10 border border-pink-500/30 px-2 py-1 rounded-full">
-                <Star className="w-3 h-3 text-pink-400" />
-                <span className="text-pink-400 font-bold">@{drop.random_pick_username}</span>
+              <div className="flex items-center gap-1 bg-brand/10 border border-brand/20 px-2 py-0.5 rounded-full">
+                <Star className="w-2.5 h-2.5 text-brand" />
+                <span className="text-brand font-bold">@{drop.random_pick_username}</span>
                 <span className="text-muted-foreground">Artist Pick</span>
               </div>
             )}
           </div>
         )}
 
-        {/* Countdown */}
-        {isLive && drop.ends_at && (
-          <div className="px-4 pb-3">
-            <div className="bg-background/50 border border-border/50 rounded-lg p-2">
-              <CountdownTimer endDate={drop.ends_at} label="Ends" />
-            </div>
-          </div>
-        )}
-
         {/* CTA */}
-        <div className="px-4 pb-4">
+        <div className="px-3 pb-3">
           {isLive ? (
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
-              className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-display text-sm uppercase tracking-wider flex items-center justify-center gap-2 rounded-lg shadow-[0_4px_20px_-4px_rgba(168,85,247,0.5)]"
+              className="w-full py-2.5 bg-brand text-white font-display text-xs uppercase tracking-widest flex items-center justify-center gap-2 rounded-md hover:bg-brand/90 transition-colors"
             >
-              <Flame className="w-4 h-4" />
+              <Flame className="w-3.5 h-3.5" />
               Submit Your Edit
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </motion.button>
           ) : (
             <Link
               to={`/artist/${artist?.slug || ''}`}
-              className="w-full py-3 bg-surface-2 border border-border text-muted-foreground font-display text-sm uppercase tracking-wider flex items-center justify-center gap-2 rounded-lg"
+              className="w-full py-2.5 bg-surface-1 border border-border text-muted-foreground font-display text-xs uppercase tracking-widest flex items-center justify-center gap-2 rounded-md hover:bg-surface-2 transition-colors"
             >
               View Results
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           )}
         </div>
