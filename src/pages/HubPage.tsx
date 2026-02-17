@@ -45,7 +45,7 @@ const actionColors: Record<string, string> = {
 };
 
 function HubLiveFeed() {
-  const { items, loading } = useLiveActivity(15);
+  const { items, loading } = useLiveActivity(5);
 
   if (loading) {
     return (
