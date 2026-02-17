@@ -177,6 +177,33 @@ export default function FeaturedDropDetailPage() {
           </div>
         )}
 
+        {/* ═══ HOW TO ENTER — dead simple steps ═══ */}
+        {isLive && !userSubmitted && (
+          <div className="bg-surface-1 border border-purple-500/20 rounded-xl p-4 space-y-3">
+            <h2 className="text-[11px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5" /> How To Enter
+            </h2>
+            <div className="space-y-2.5">
+              {[
+                { num: '1', icon: '🎧', label: 'Listen to the song', sub: 'Hit play above & vibe with it' },
+                { num: '2', icon: '🎬', label: 'Make your edit', sub: 'Use the song in your video edit — any app works' },
+                { num: '3', icon: '📱', label: 'Post it', sub: 'Upload to TikTok, Instagram, or YouTube' },
+                { num: '4', icon: '🔗', label: 'Submit the link below', sub: 'Paste your post link & you\'re in!' },
+              ].map((step) => (
+                <div key={step.num} className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-xs font-bold text-purple-400">{step.num}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground">{step.icon} {step.label}</p>
+                    <p className="text-[10px] text-muted-foreground leading-snug">{step.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Lobby Header — live avatars + countdown */}
         <CompLobbyHeader
           participantTable="featured_submissions"
