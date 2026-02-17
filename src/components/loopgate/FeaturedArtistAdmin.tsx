@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Music, Plus, Pencil, Trash2, Eye, Play, Square, Trophy, Star, Users, Zap, ChevronDown, ChevronUp, ExternalLink, Loader2 } from "lucide-react";
-import { trimAudioTo30s } from "@/lib/audioTrimmer";
+// Audio files are uploaded directly — no client-side trimming needed
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -147,10 +147,11 @@ export default function FeaturedArtistAdmin() {
       return null;
     }
     try {
-      toast.info('Processing audio…');
-      const trimmed = await trimAudioTo30s(file);
-      const fileName = `${Date.now()}-preview.wav`;
-      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, trimmed, { contentType: 'audio/wav', upsert: true });
+      toast.info('Uploading audio…');
+      const ext = file.name.split('.').pop() || 'mp3';
+      const contentType = file.type || 'audio/mpeg';
+      const fileName = `${Date.now()}-preview.${ext}`;
+      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, file, { contentType, upsert: true });
       if (error) { 
         console.error('Storage upload error:', error);
         toast.error('Upload failed: ' + error.message); 
@@ -161,7 +162,7 @@ export default function FeaturedArtistAdmin() {
       return urlData.publicUrl;
     } catch (err: any) {
       console.error('Audio upload failed:', err);
-      toast.error('Audio processing failed: ' + (err.message || 'Unknown error'));
+      toast.error('Audio upload failed: ' + (err.message || 'Unknown error'));
       return null;
     }
   };
@@ -169,7 +170,7 @@ export default function FeaturedArtistAdmin() {
   const handleUploadPreviewForEdit = async (file: File) => {
     setUploadingEditPreview(true);
     const url = await uploadAudioFile(file);
-    if (url) setEditDropForm({ ...editDropForm, song_preview_url: url });
+    if (url) setEditDropForm(prev => ({ ...prev, song_preview_url: url }));
     setUploadingEditPreview(false);
   };
 
@@ -532,7 +533,7 @@ export default function FeaturedArtistAdmin() {
                       if (!file) return;
                       setUploadingPreview(true);
                       const url = await uploadAudioFile(file);
-                      if (url) setNewDrop({...newDrop, song_preview_url: url});
+                      if (url) setNewDrop(prev => ({...prev, song_preview_url: url}));
                       setUploadingPreview(false);
                     }}
                     className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-purple-500/20 file:text-purple-300"
