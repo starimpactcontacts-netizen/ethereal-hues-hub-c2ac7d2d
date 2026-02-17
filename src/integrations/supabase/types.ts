@@ -1723,6 +1723,7 @@ export type Database = {
           region_tags: string[] | null
           rules: string[] | null
           show_eliminated: boolean | null
+          slug: string | null
           start_date: string
           status: string
           subtitle: string | null
@@ -1751,6 +1752,7 @@ export type Database = {
           region_tags?: string[] | null
           rules?: string[] | null
           show_eliminated?: boolean | null
+          slug?: string | null
           start_date: string
           status?: string
           subtitle?: string | null
@@ -1779,6 +1781,7 @@ export type Database = {
           region_tags?: string[] | null
           rules?: string[] | null
           show_eliminated?: boolean | null
+          slug?: string | null
           start_date?: string
           status?: string
           subtitle?: string | null
@@ -1792,6 +1795,7 @@ export type Database = {
       }
       featured_artists: {
         Row: {
+          achievements: Json | null
           avatar_url: string | null
           banner_url: string | null
           bio: string | null
@@ -1800,12 +1804,16 @@ export type Database = {
           genre: string | null
           id: string
           is_active: boolean | null
+          monthly_streams: number | null
           name: string
           slug: string
           social_links: Json | null
           updated_at: string | null
+          verified: boolean | null
+          website_url: string | null
         }
         Insert: {
+          achievements?: Json | null
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
@@ -1814,12 +1822,16 @@ export type Database = {
           genre?: string | null
           id?: string
           is_active?: boolean | null
+          monthly_streams?: number | null
           name: string
           slug: string
           social_links?: Json | null
           updated_at?: string | null
+          verified?: boolean | null
+          website_url?: string | null
         }
         Update: {
+          achievements?: Json | null
           avatar_url?: string | null
           banner_url?: string | null
           bio?: string | null
@@ -1828,10 +1840,13 @@ export type Database = {
           genre?: string | null
           id?: string
           is_active?: boolean | null
+          monthly_streams?: number | null
           name?: string
           slug?: string
           social_links?: Json | null
           updated_at?: string | null
+          verified?: boolean | null
+          website_url?: string | null
         }
         Relationships: []
       }

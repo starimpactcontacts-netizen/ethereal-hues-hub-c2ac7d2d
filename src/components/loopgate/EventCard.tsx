@@ -42,7 +42,7 @@ export default function EventCard({ event, featured = false }: EventCardProps) {
 
   return (
     <Link
-      to={`/event/${event.id}`}
+      to={`/event/${(event as any).slug || event.id}`}
       className={`block bg-surface-1 border border-border rounded-lg overflow-hidden ${
         featured ? "border-gold/30" : ""
       }`}
