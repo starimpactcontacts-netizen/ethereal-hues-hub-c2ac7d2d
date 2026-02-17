@@ -23,7 +23,8 @@ export default function FeaturedArtistAdmin() {
 
   // Create drop state
   const [showCreateDrop, setShowCreateDrop] = useState(false);
-  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15 });
+  const [newDrop, setNewDrop] = useState({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15 });
+  const [uploadingPreview, setUploadingPreview] = useState(false);
   const [creatingDrop, setCreatingDrop] = useState(false);
 
   // Scoring state
@@ -60,7 +61,7 @@ export default function FeaturedArtistAdmin() {
       status: 'draft',
     });
     if (error) toast.error(error.message);
-    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15 }); refresh(); }
+    else { toast.success('Drop created! Set it live when ready.'); setShowCreateDrop(false); setNewDrop({ artist_id: '', title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15 }); refresh(); }
     setCreatingDrop(false);
   };
 
@@ -369,6 +370,38 @@ export default function FeaturedArtistAdmin() {
             <div>
               <Label className="text-xs">Song URL</Label>
               <Input value={newDrop.song_url} onChange={e => setNewDrop({...newDrop, song_url: e.target.value})} placeholder="https://..." className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs flex items-center gap-1.5">🔊 Song Preview (30s clip)</Label>
+              {newDrop.song_preview_url ? (
+                <div className="mt-1 flex items-center gap-2">
+                  <audio src={newDrop.song_preview_url} controls className="h-8 flex-1" />
+                  <button onClick={() => setNewDrop({...newDrop, song_preview_url: ''})} className="text-[10px] text-red-400 hover:underline">Remove</button>
+                </div>
+              ) : (
+                <div className="mt-1">
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    disabled={uploadingPreview}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
+                      setUploadingPreview(true);
+                      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+                      const { data, error } = await supabase.storage.from('song-previews').upload(fileName, file, { contentType: file.type });
+                      if (error) { toast.error(error.message); setUploadingPreview(false); return; }
+                      const { data: urlData } = supabase.storage.from('song-previews').getPublicUrl(data.path);
+                      setNewDrop({...newDrop, song_preview_url: urlData.publicUrl});
+                      setUploadingPreview(false);
+                      toast.success('Preview uploaded!');
+                    }}
+                    className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-purple-500/20 file:text-purple-300"
+                  />
+                  {uploadingPreview && <p className="text-[10px] text-muted-foreground mt-1">Uploading...</p>}
+                </div>
+              )}
             </div>
             <div>
               <Label className="text-xs">Poster URL</Label>

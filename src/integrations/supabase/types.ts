@@ -334,6 +334,9 @@ export type Database = {
           starts_at: string | null
           status: string
           submission_mode: string | null
+          theme_drop_id: string | null
+          theme_song_name: string | null
+          theme_song_preview_url: string | null
           updated_at: string
           view_count: number
           winner_id: string | null
@@ -375,6 +378,9 @@ export type Database = {
           starts_at?: string | null
           status?: string
           submission_mode?: string | null
+          theme_drop_id?: string | null
+          theme_song_name?: string | null
+          theme_song_preview_url?: string | null
           updated_at?: string
           view_count?: number
           winner_id?: string | null
@@ -416,6 +422,9 @@ export type Database = {
           starts_at?: string | null
           status?: string
           submission_mode?: string | null
+          theme_drop_id?: string | null
+          theme_song_name?: string | null
+          theme_song_preview_url?: string | null
           updated_at?: string
           view_count?: number
           winner_id?: string | null
@@ -448,6 +457,13 @@ export type Database = {
             columns: ["requested_judge_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "battles_theme_drop_id_fkey"
+            columns: ["theme_drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
             referencedColumns: ["id"]
           },
           {

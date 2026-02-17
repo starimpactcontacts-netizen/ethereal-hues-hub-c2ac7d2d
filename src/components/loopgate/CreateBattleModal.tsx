@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap } from "lucide-react";
+import { X, Swords, Clock, Trophy, Search, User, Gavel, Zap, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,6 +35,32 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
   const [selectedJudge, setSelectedJudge] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
+
+  // Featured song themes
+  const [themeSongs, setThemeSongs] = useState<{ id: string; song_name: string; song_preview_url: string | null; title: string; artist_name: string }[]>([]);
+  const [selectedTheme, setSelectedTheme] = useState<typeof themeSongs[0] | null>(null);
+
+  useEffect(() => {
+    const fetchSongs = async () => {
+      const { data } = await supabase
+        .from('featured_drops')
+        .select('id, song_name, song_preview_url, title, featured_artists(name)')
+        .in('status', ['live', 'closed'])
+        .not('song_preview_url', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (data) {
+        setThemeSongs(data.map((d: any) => ({
+          id: d.id,
+          song_name: d.song_name,
+          song_preview_url: d.song_preview_url,
+          title: d.title,
+          artist_name: d.featured_artists?.name || 'Unknown',
+        })));
+      }
+    };
+    if (isOpen) fetchSongs();
+  }, [isOpen]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -104,8 +130,13 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
     );
 
     if (result.success && result.battleId) {
-      // Always update is_rapid flag
+      // Always update is_rapid flag + theme song
       const updateData: any = { is_rapid: isRapid };
+      if (selectedTheme) {
+        updateData.theme_song_name = `${selectedTheme.artist_name} — ${selectedTheme.song_name}`;
+        updateData.theme_song_preview_url = selectedTheme.song_preview_url;
+        updateData.theme_drop_id = selectedTheme.id;
+      }
 
       if (selectedJudge) {
         // Specific judge selected — send them a request
@@ -325,6 +356,36 @@ export default function CreateBattleModal({ isOpen, onClose, onSuccess }: Create
                 </div>
               )}
             </div>
+
+            {/* Theme Song */}
+            {themeSongs.length > 0 && (
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block flex items-center gap-1.5">
+                  <Music className="w-3 h-3" /> Battle Theme Song
+                  <span className="text-[8px] text-muted-foreground/60 ml-1">(optional)</span>
+                </label>
+                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {themeSongs.map((song) => (
+                    <button
+                      key={song.id}
+                      onClick={() => setSelectedTheme(selectedTheme?.id === song.id ? null : song)}
+                      className={`w-full flex items-center gap-2 p-2 border rounded-lg text-left transition-all ${
+                        selectedTheme?.id === song.id ? 'border-purple-500 bg-purple-500/10' : 'border-border hover:border-purple-500/50'
+                      }`}
+                    >
+                      <Music className={`w-4 h-4 shrink-0 ${selectedTheme?.id === song.id ? 'text-purple-400' : 'text-muted-foreground'}`} />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs font-bold text-foreground truncate block">{song.song_name}</span>
+                        <span className="text-[9px] text-muted-foreground">{song.artist_name} • {song.title}</span>
+                      </div>
+                      {song.song_preview_url && selectedTheme?.id === song.id && (
+                        <audio src={song.song_preview_url} controls className="h-6 w-24 shrink-0" onClick={(e) => e.stopPropagation()} />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Duration */}
             <div>

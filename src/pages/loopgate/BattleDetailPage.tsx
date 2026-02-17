@@ -300,7 +300,17 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Assigned Judge Card */}
+        {/* Theme Song */}
+        {(battle as any).theme_song_name && (
+          <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 rounded-lg p-2">
+            <span className="text-[10px] font-bold text-purple-400 uppercase shrink-0">🎵 Theme</span>
+            <span className="text-xs text-foreground truncate flex-1">{(battle as any).theme_song_name}</span>
+            {(battle as any).theme_song_preview_url && (
+              <audio src={(battle as any).theme_song_preview_url} controls className="h-7 w-28 shrink-0" />
+            )}
+          </div>
+        )}
+
         {(battle.requested_judge_username || battle.judge_id) && (
           <div className="bg-surface-1 border border-purple-500/30 p-4">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
