@@ -1,14 +1,40 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Music, Zap, Trophy, Users, ChevronRight, Flame, Gift, Crown, Star, MessageSquare } from "lucide-react";
+import { Music, Zap, Trophy, ChevronRight, Flame, Gift, Crown, Star, Clock, TrendingUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
 import { useAuth } from "@/hooks/useAuth";
 import type { FeaturedDrop } from "@/hooks/useFeaturedDrops";
+import { formatDistanceToNow } from "date-fns";
 
 interface Props {
   drop: FeaturedDrop;
+}
+
+/** Build a contextual activity label that never looks dead */
+function useActivitySignal(drop: FeaturedDrop) {
+  return useMemo(() => {
+    const count = drop.submission_count || 0;
+
+    // High activity — show real numbers proudly
+    if (count >= 10) return { text: `${count} edits submitted`, icon: TrendingUp, color: 'text-emerald-400' };
+    if (count >= 5) return { text: `${count} editors competing`, icon: TrendingUp, color: 'text-emerald-400' };
+
+    // Low activity — reframe around rewards & urgency instead of exposing low count
+    if (drop.ends_at) {
+      const endsAt = new Date(drop.ends_at);
+      const hoursLeft = (endsAt.getTime() - Date.now()) / (1000 * 60 * 60);
+      if (hoursLeft > 0 && hoursLeft <= 24) return { text: `Closing soon — ${Math.ceil(hoursLeft)}h left`, icon: Clock, color: 'text-orange-400' };
+      if (hoursLeft > 0 && hoursLeft <= 72) return { text: `${Math.ceil(hoursLeft / 24)}d left to enter`, icon: Clock, color: 'text-muted-foreground' };
+    }
+
+    // Fallback — lead with value, not emptiness
+    if (drop.xp_reward >= 100) return { text: `+${drop.xp_reward} XP up for grabs`, icon: Zap, color: 'text-brand' };
+    if (drop.mystery_reward_label) return { text: `Mystery reward: ${drop.mystery_reward_label}`, icon: Gift, color: 'text-gold' };
+
+    return { text: 'Open for submissions', icon: Flame, color: 'text-brand' };
+  }, [drop]);
 }
 
 export default function FeaturedDropCard({ drop }: Props) {
@@ -17,6 +43,8 @@ export default function FeaturedDropCard({ drop }: Props) {
   const [showSubmit, setShowSubmit] = useState(false);
   const artist = drop.artist;
   const isLive = drop.status === 'live';
+  const activity = useActivitySignal(drop);
+  const ActivityIcon = activity.icon;
 
   return (
     <>
@@ -63,21 +91,18 @@ export default function FeaturedDropCard({ drop }: Props) {
           </div>
         </div>
 
-        {/* Stats row */}
-        <div className="px-2.5 py-1.5 flex items-center gap-2 text-[8px] border-t border-border/40">
-          <span className="flex items-center gap-0.5 text-muted-foreground">
-            <Users className="w-2.5 h-2.5" />
-            <span className="text-foreground font-bold tabular-nums">{drop.submission_count}</span>
-          </span>
-          <span className="flex items-center gap-0.5 text-brand">
-            <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
-          </span>
-          <span className="flex items-center gap-0.5 text-brand">
-            <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
-          </span>
-          <span className="flex items-center gap-0.5 text-muted-foreground">
-            <Gift className="w-2.5 h-2.5" />{drop.mystery_reward_label}
-          </span>
+        {/* Activity signal — contextual, never dead */}
+        <div className="px-2.5 py-1.5 flex items-center gap-1.5 text-[8px] border-t border-border/40">
+          <ActivityIcon className={`w-2.5 h-2.5 shrink-0 ${activity.color}`} />
+          <span className={`${activity.color} font-medium`}>{activity.text}</span>
+          <div className="ml-auto flex items-center gap-1.5 text-muted-foreground">
+            <span className="flex items-center gap-0.5 text-brand">
+              <Zap className="w-2.5 h-2.5" />+{drop.xp_reward}
+            </span>
+            <span className="flex items-center gap-0.5 text-brand">
+              <Trophy className="w-2.5 h-2.5" />+{drop.index_reward}
+            </span>
+          </div>
         </div>
 
         {/* Winner / Pick chips */}
