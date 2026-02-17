@@ -17,6 +17,8 @@ import { useSanctionedTournaments } from '@/hooks/useSanctionedTournaments';
 import { useBattles } from '@/hooks/useBattles';
 import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
+import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
+import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
@@ -110,6 +112,7 @@ export default function HubPage() {
   const { competitions: hostedComps } = useHostedCompetitions();
   const activityStats = useUserActivityStats(user?.id);
   const { activeBattles } = useActiveBattles();
+  const { liveDrops } = useFeaturedDrops();
   const navigate = useNavigate();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
@@ -174,7 +177,7 @@ export default function HubPage() {
   );
   
   // Total featured count for header
-  const totalFeatured = liveEvents.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
+  const totalFeatured = liveEvents.length + liveDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
 
   return (
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
@@ -595,6 +598,11 @@ export default function HubPage() {
               </Link>
             ))}
             
+            {/* Featured Artist Drops - After official events */}
+            {liveDrops.map(drop => (
+              <FeaturedDropCard key={drop.id} drop={drop} />
+            ))}
+
             {/* Premium Hosted Competitions */}
             {premiumComps.map((comp, i) => (
               <Link key={comp.id} to={`/hosted-comp/${comp.slug || comp.id}`} className="shrink-0">
