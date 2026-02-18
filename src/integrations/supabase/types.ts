@@ -1486,6 +1486,86 @@ export type Database = {
           },
         ]
       }
+      editorium_articles: {
+        Row: {
+          author_name: string
+          body: string
+          cover_image_url: string | null
+          created_at: string
+          excerpt: string | null
+          featured: boolean | null
+          header_image_url: string | null
+          id: string
+          published_at: string | null
+          read_time_minutes: number | null
+          seo_description: string | null
+          seo_keywords: string[] | null
+          seo_title: string | null
+          slug: string
+          status: string
+          subtitle: string | null
+          tags: string[] | null
+          title: string
+          unit_id: string | null
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          author_name?: string
+          body: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          header_image_url?: string | null
+          id?: string
+          published_at?: string | null
+          read_time_minutes?: number | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          slug: string
+          status?: string
+          subtitle?: string | null
+          tags?: string[] | null
+          title: string
+          unit_id?: string | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          author_name?: string
+          body?: string
+          cover_image_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          header_image_url?: string | null
+          id?: string
+          published_at?: string | null
+          read_time_minutes?: number | null
+          seo_description?: string | null
+          seo_keywords?: string[] | null
+          seo_title?: string | null
+          slug?: string
+          status?: string
+          subtitle?: string | null
+          tags?: string[] | null
+          title?: string
+          unit_id?: string | null
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "editorium_articles_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_campaigns: {
         Row: {
           asset_urls: string[] | null
@@ -5001,6 +5081,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_editorium_views: {
+        Args: { article_id: string }
+        Returns: undefined
       }
       increment_hosted_comp_views: {
         Args: { comp_id: string }

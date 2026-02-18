@@ -68,6 +68,8 @@ import HostedCompDetailPage from "./pages/loopgate/HostedCompDetailPage";
 import ConnectionsPage from "./pages/loopgate/ConnectionsPage";
 import ArtistProfilePage from "./pages/loopgate/ArtistProfilePage";
 import FeaturedDropDetailPage from "./pages/loopgate/FeaturedDropDetailPage";
+import EditoriumPage from "./pages/loopgate/EditoriumPage";
+import EditoriumArticlePage from "./pages/loopgate/EditoriumArticlePage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -283,6 +285,8 @@ export default function App() {
               <Route path="/judges/divisions/create" element={<CreateJudgeDivisionPage />} />
               <Route path="/artist/:slug" element={<ArtistProfilePage />} />
               <Route path="/drop/:dropId" element={<FeaturedDropDetailPage />} />
+              <Route path="/editorium" element={<EditoriumPage />} />
+              <Route path="/editorium/:slug" element={<EditoriumArticlePage />} />
             </Route>
 
             {/* Protected routes - auth required */}

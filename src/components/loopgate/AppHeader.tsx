@@ -21,6 +21,7 @@ const menuItems = [
   { to: '/class', icon: Shield, label: 'Class' },
   { to: '/index', icon: Search, label: 'Index' },
   { to: '/shop', icon: ShoppingBag, label: 'Shop', highlight: true },
+  { to: '/editorium', icon: BookOpen, label: 'Editorium' },
   { to: '/profile', icon: User, label: 'Profile' },
   { divider: true },
   { to: '/support', icon: HelpCircle, label: 'Support' },
