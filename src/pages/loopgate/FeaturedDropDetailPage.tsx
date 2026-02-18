@@ -144,17 +144,25 @@ export default function FeaturedDropDetailPage() {
         {/* Title & Song */}
         <div>
           <h1 className="font-display text-xl text-foreground tracking-wide">{drop.title}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <Music className="w-3.5 h-3.5 text-purple-400" />
-            <span className="text-xs text-muted-foreground">{drop.song_name}</span>
-            {drop.song_url && (
-              <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
-                className="text-purple-400 text-[10px] flex items-center gap-0.5 hover:underline">
-                <ExternalLink className="w-3 h-3" /> Listen
-              </a>
-            )}
-          </div>
         </div>
+
+        {/* ═══ SOUND LINK — big & clear ═══ */}
+        {drop.song_url && (
+          <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
+            className="block bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 hover:bg-purple-500/15 transition-colors group">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0">
+                <Music className="w-5 h-5 text-purple-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground truncate">{drop.song_name}</p>
+                <p className="text-[10px] text-purple-400 font-medium uppercase tracking-wider mt-0.5">⚡ Post using this sound</p>
+              </div>
+              <ExternalLink className="w-5 h-5 text-purple-400 shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </div>
+            <p className="text-[9px] text-muted-foreground mt-2 leading-snug">Use this exact sound so all edits link to the same track — helps the artist & boosts your reach.</p>
+          </a>
+        )}
 
         {/* Song Preview Player — big & proud */}
         {drop.song_preview_url && (
