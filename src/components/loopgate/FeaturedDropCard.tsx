@@ -122,17 +122,27 @@ export default function FeaturedDropCard({ drop }: Props) {
         )}
 
         {/* CTA */}
-        <div className="px-2.5 pb-2.5">
+        <div className="px-2.5 pb-2.5 space-y-1.5">
           {isLive ? (
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(`/drop/${drop.id}`)}
-              className="w-full py-2 bg-brand text-white font-display text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 rounded-md hover:bg-brand/90 transition-colors"
-            >
-              <Flame className="w-3 h-3" />
-              Enter Lobby
-              <ChevronRight className="w-3 h-3" />
-            </motion.button>
+            <>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => {
+                  if (profile) navigate(`/drop/${drop.id}`);
+                  else navigate('/start');
+                }}
+                className="w-full py-2.5 bg-emerald-500 text-white font-display text-[11px] uppercase tracking-widest flex items-center justify-center gap-1.5 rounded-md hover:bg-emerald-400 transition-colors shadow-md shadow-emerald-500/20"
+              >
+                JOIN
+              </motion.button>
+              <button
+                onClick={() => navigate(`/drop/${drop.id}`)}
+                className="w-full py-1.5 bg-surface-1 border border-border text-muted-foreground font-display text-[9px] uppercase tracking-widest flex items-center justify-center gap-1 rounded-md hover:bg-surface-2 transition-colors"
+              >
+                Enter Lobby
+                <ChevronRight className="w-2.5 h-2.5" />
+              </button>
+            </>
           ) : (
             <Link
               to={`/drop/${drop.id}`}
