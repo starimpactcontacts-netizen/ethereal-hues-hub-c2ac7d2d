@@ -64,6 +64,8 @@ export interface FeaturedSubmission {
   index_awarded: number;
   judged_at: string | null;
   created_at: string;
+  upvotes: number;
+  downvotes: number;
 }
 
 // Fetch active/live featured drops with artist info

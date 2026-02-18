@@ -5,6 +5,7 @@ import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
   Zap, Gift, Send, ChevronRight, Users, Clock, Eye, Share2, Check, Copy
 } from "lucide-react";
+import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -268,7 +269,7 @@ export default function FeaturedDropDetailPage() {
         )}
 
         {/* ═══ LEADERBOARD ═══ */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
             <Trophy className="w-4 h-4 text-gold" />
             {scored.length > 0 ? 'Leaderboard' : 'Submissions'}
@@ -277,90 +278,29 @@ export default function FeaturedDropDetailPage() {
 
           {subsLoading ? (
             <div className="space-y-2">
-              {[1,2,3].map(i => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}
+              {[1,2,3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
             </div>
           ) : submissions.length === 0 ? (
-            <div className="bg-surface-1 border border-border rounded-lg p-6 text-center">
-              <Flame className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">No submissions yet. Be the first!</p>
+            <div className="bg-surface-1 border border-border rounded-xl p-8 text-center">
+              <Flame className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+              <p className="text-sm font-medium text-muted-foreground">No submissions yet</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">Be the first to enter & set the bar 🔥</p>
             </div>
           ) : (
-            <div className="space-y-1.5">
-              {/* Scored entries */}
+            <div className="space-y-2.5">
               {scored.map((sub, idx) => (
-                <motion.div
+                <DropSubmissionCard
                   key={sub.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                    idx === 0
-                      ? 'bg-gold/10 border-gold/40 shadow-[0_0_20px_-4px_rgba(255,215,0,0.15)]'
-                      : idx === 1
-                      ? 'bg-surface-1 border-border/60'
-                      : 'bg-surface-0 border-border/40'
-                  }`}
-                >
-                  <span className={`text-sm font-bold tabular-nums w-6 text-center shrink-0 ${
-                    idx === 0 ? 'text-gold' : idx === 1 ? 'text-foreground' : 'text-muted-foreground'
-                  }`}>
-                    #{idx + 1}
-                  </span>
-                  <Link to={`/editor/${sub.user_id}`} className="flex items-center gap-2 flex-1 min-w-0">
-                    <Avatar className="w-8 h-8 border border-border">
-                      <AvatarImage src={sub.avatar_url || ''} />
-                      <AvatarFallback className="text-[9px] bg-surface-2 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-foreground truncate block">@{sub.username}</span>
-                      <span className="text-[9px] text-muted-foreground capitalize">{sub.platform}</span>
-                    </div>
-                  </Link>
-                  <div className="text-right shrink-0 flex items-center gap-2">
-                    <div>
-                      <span className={`text-sm font-bold tabular-nums ${
-                        (sub.qoi_score || 0) >= 70 ? 'text-gold' : (sub.qoi_score || 0) >= 40 ? 'text-foreground' : 'text-red-400'
-                      }`}>
-                        {Math.round(sub.qoi_score || 0)}
-                      </span>
-                      <span className="text-[8px] text-muted-foreground ml-0.5">QOI</span>
-                    </div>
-                    {idx === 0 && <Crown className="w-4 h-4 text-gold" />}
-                  </div>
-                  {sub.submission_url && (
-                    <a href={sub.submission_url} target="_blank" rel="noopener noreferrer"
-                      className="shrink-0 p-1.5 rounded-md bg-surface-2 border border-border hover:bg-surface-1 transition-colors">
-                      <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                    </a>
-                  )}
-                </motion.div>
+                  submission={sub}
+                  rank={idx + 1}
+                  isTopScorer={idx === 0}
+                />
               ))}
-
-              {/* Pending entries */}
               {pending.map((sub) => (
-                <div key={sub.id} className="flex items-center gap-3 p-3 rounded-lg bg-surface-0 border border-border/30">
-                  <span className="text-sm font-bold tabular-nums w-6 text-center text-muted-foreground/40 shrink-0">—</span>
-                  <Link to={`/editor/${sub.user_id}`} className="flex items-center gap-2 flex-1 min-w-0">
-                    <Avatar className="w-8 h-8 border border-border opacity-70">
-                      <AvatarImage src={sub.avatar_url || ''} />
-                      <AvatarFallback className="text-[9px] bg-surface-2 font-bold">{sub.username?.[0]?.toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <span className="text-xs font-bold text-foreground/70 truncate block">@{sub.username}</span>
-                      <span className="text-[9px] text-muted-foreground">Awaiting score</span>
-                    </div>
-                  </Link>
-                  <div className="flex items-center gap-1 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-full">
-                    <Clock className="w-2.5 h-2.5 text-purple-400" />
-                    <span className="text-[8px] font-bold text-purple-400 uppercase">Pending</span>
-                  </div>
-                  {sub.submission_url && (
-                    <a href={sub.submission_url} target="_blank" rel="noopener noreferrer"
-                      className="shrink-0 p-1.5 rounded-md bg-surface-2 border border-border hover:bg-surface-1 transition-colors">
-                      <ExternalLink className="w-3 h-3 text-muted-foreground" />
-                    </a>
-                  )}
-                </div>
+                <DropSubmissionCard
+                  key={sub.id}
+                  submission={sub}
+                />
               ))}
             </div>
           )}
