@@ -3,17 +3,19 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
-  Zap, Gift, Send, ChevronRight, Users, Clock, Eye, Share2, Check, Copy
+  Zap, Gift, Send, ChevronRight, Users, Clock, Eye, Share2, Check, Copy,
+  TrendingUp, ChevronDown
 } from "lucide-react";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
 import DropSubmissionCarousel from "@/components/loopgate/DropSubmissionCarousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDropSubmissions } from "@/hooks/useFeaturedDrops";
-import type { FeaturedDrop, FeaturedArtist } from "@/hooks/useFeaturedDrops";
+import type { FeaturedDrop, FeaturedArtist, FeaturedSubmission } from "@/hooks/useFeaturedDrops";
 import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
 import CompLobbyHeader from "@/components/loopgate/CompLobbyHeader";
 import DropLobbyChat from "@/components/loopgate/DropLobbyChat";
@@ -76,7 +78,15 @@ export default function FeaturedDropDetailPage() {
   const isClosed = drop.status === 'closed';
   const scored = submissions.filter(s => s.status === 'scored').sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
   const pending = submissions.filter(s => s.status === 'pending');
-  const userSubmitted = user ? submissions.some(s => s.user_id === user.id) : false;
+  const userSubmissions = user ? submissions.filter(s => s.user_id === user.id) : [];
+  const userSubmissionCount = userSubmissions.length;
+
+  // Fire indicators: count how many users each person beat
+  const getFireIndicator = (sub: FeaturedSubmission, rank: number) => {
+    if (rank === 1 && scored.length >= 3) return { label: '🔥 TAKING OVER', color: 'text-orange-400' };
+    if (rank <= 3 && scored.length >= 5) return { label: '⚡ ON FIRE', color: 'text-amber-400' };
+    return null;
+  };
 
   const handleShare = async () => {
     const url = `${window.location.origin}/drop/${dropId}`;
@@ -188,7 +198,7 @@ export default function FeaturedDropDetailPage() {
         )}
 
         {/* ═══ HOW TO ENTER — dead simple steps ═══ */}
-        {isLive && !userSubmitted && (
+        {isLive && userSubmissionCount === 0 && (
           <div className="bg-surface-1 border border-purple-500/20 rounded-xl p-4 space-y-3">
             <h2 className="text-[11px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5" /> How To Enter
@@ -248,31 +258,35 @@ export default function FeaturedDropDetailPage() {
           <p className="text-xs text-muted-foreground leading-relaxed">{drop.description}</p>
         )}
 
-        {/* CTA */}
-        {isLive && !userSubmitted && (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
-            className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-purple-500/20"
-          >
-            <Flame className="w-4 h-4" />
-            Submit Your Edit
-            <ChevronRight className="w-4 h-4" />
-          </motion.button>
-        )}
-        {userSubmitted && (
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-center">
-            <p className="text-sm text-emerald-400 font-medium flex items-center justify-center gap-1.5">
-              <Check className="w-4 h-4" /> Your edit is submitted!
-            </p>
-            <p className="text-[10px] text-muted-foreground mt-1">Waiting for QOI score from a judge.</p>
+        {/* CTA — always show if live (multiple submissions allowed) */}
+        {isLive && (
+          <div className="space-y-2">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-purple-500/20"
+            >
+              <Flame className="w-4 h-4" />
+              {userSubmissionCount > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
+              <ChevronRight className="w-4 h-4" />
+            </motion.button>
+            {userSubmissionCount > 0 && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-center">
+                <p className="text-sm text-emerald-400 font-medium flex items-center justify-center gap-1.5">
+                  <Check className="w-4 h-4" /> {userSubmissionCount} edit{userSubmissionCount > 1 ? 's' : ''} submitted
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Submit as many as you want — keep climbing the leaderboard 🔥
+                </p>
+              </div>
+            )}
           </div>
         )}
 
         {/* ═══ EDITS SHOWCASE CAROUSEL ═══ */}
         <DropSubmissionCarousel submissions={submissions} loading={subsLoading} />
 
-        {/* ═══ LEADERBOARD ═══ */}
+        {/* ═══ LEADERBOARD — Top 3 only ═══ */}
         <div className="space-y-3">
           <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
             <Trophy className="w-4 h-4 text-gold" />
@@ -292,21 +306,75 @@ export default function FeaturedDropDetailPage() {
             </div>
           ) : (
             <div className="space-y-2.5">
-              {scored.map((sub, idx) => (
-                <DropSubmissionCard
-                  key={sub.id}
-                  submission={sub}
-                  rank={idx + 1}
-                  isTopScorer={idx === 0}
-                />
+              {/* Show top 3 scored + pending (max 3 pending if no scored) */}
+              {scored.slice(0, 3).map((sub, idx) => (
+                <div key={sub.id} className="relative">
+                  {getFireIndicator(sub, idx + 1) && (
+                    <div className={`flex items-center gap-1 mb-1 ${getFireIndicator(sub, idx + 1)!.color}`}>
+                      <TrendingUp className="w-3 h-3" />
+                      <span className="text-[9px] font-bold uppercase tracking-wider">
+                        {getFireIndicator(sub, idx + 1)!.label}
+                      </span>
+                    </div>
+                  )}
+                  <DropSubmissionCard
+                    submission={sub}
+                    rank={idx + 1}
+                    isTopScorer={idx === 0}
+                  />
+                </div>
               ))}
-              {pending.map((sub) => (
-                <DropSubmissionCard
-                  key={sub.id}
-                  submission={sub}
-                />
+              {scored.length < 3 && pending.slice(0, 3 - scored.length).map((sub) => (
+                <DropSubmissionCard key={sub.id} submission={sub} />
               ))}
             </div>
+          )}
+
+          {/* View Full Leaderboard button */}
+          {submissions.length > 3 && (
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className="w-full py-3 bg-surface-1 border border-border rounded-xl text-xs font-bold text-foreground flex items-center justify-center gap-2 hover:bg-surface-2 transition-colors">
+                  <Trophy className="w-3.5 h-3.5 text-gold" />
+                  View Full Leaderboard
+                  <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[9px] px-1.5 py-0">
+                    {submissions.length}
+                  </Badge>
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="max-h-[85vh] bg-background border-border overflow-hidden flex flex-col">
+                <SheetHeader className="shrink-0">
+                  <SheetTitle className="flex items-center gap-2 text-base">
+                    <Trophy className="w-5 h-5 text-gold" />
+                    Full Leaderboard
+                    <span className="text-xs text-muted-foreground font-normal">({submissions.length} entries)</span>
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="overflow-y-auto flex-1 space-y-2.5 pb-8 mt-4">
+                  {scored.map((sub, idx) => (
+                    <div key={sub.id} className="relative">
+                      {getFireIndicator(sub, idx + 1) && (
+                        <div className={`flex items-center gap-1 mb-1 ${getFireIndicator(sub, idx + 1)!.color}`}>
+                          <TrendingUp className="w-3 h-3" />
+                          <span className="text-[9px] font-bold uppercase tracking-wider">
+                            {getFireIndicator(sub, idx + 1)!.label}
+                          </span>
+                        </div>
+                      )}
+                      <DropSubmissionCard
+                        submission={sub}
+                        rank={idx + 1}
+                        isTopScorer={idx === 0}
+                      />
+                    </div>
+                  ))}
+                  {pending.map((sub) => (
+                    <DropSubmissionCard key={sub.id} submission={sub} />
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
           )}
         </div>
 

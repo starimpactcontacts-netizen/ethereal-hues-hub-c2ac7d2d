@@ -41,11 +41,7 @@ export default function FeaturedSubmitModal({ drop, onClose }: Props) {
       });
 
       if (error) {
-        if (error.code === '23505') {
-          toast.error('You already submitted to this drop');
-        } else {
-          toast.error(error.message);
-        }
+        toast.error(error.message);
       } else {
         toast.success('Edit submitted! 🔥 Wait for your score.');
         onClose();
