@@ -1974,10 +1974,43 @@ export type Database = {
           },
         ]
       }
+      featured_submission_votes: {
+        Row: {
+          created_at: string
+          id: string
+          submission_id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          submission_id: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          submission_id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_submission_votes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "featured_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_submissions: {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          downvotes: number
           drop_id: string
           feedback: string | null
           id: string
@@ -1992,6 +2025,7 @@ export type Database = {
           quality_score: number | null
           status: string | null
           submission_url: string
+          upvotes: number
           user_id: string
           username: string
           xp_awarded: number | null
@@ -1999,6 +2033,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          downvotes?: number
           drop_id: string
           feedback?: string | null
           id?: string
@@ -2013,6 +2048,7 @@ export type Database = {
           quality_score?: number | null
           status?: string | null
           submission_url: string
+          upvotes?: number
           user_id: string
           username: string
           xp_awarded?: number | null
@@ -2020,6 +2056,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          downvotes?: number
           drop_id?: string
           feedback?: string | null
           id?: string
@@ -2034,6 +2071,7 @@ export type Database = {
           quality_score?: number | null
           status?: string | null
           submission_url?: string
+          upvotes?: number
           user_id?: string
           username?: string
           xp_awarded?: number | null

@@ -31,7 +31,7 @@
    isOpen: boolean;
    onClose: () => void;
    submissionId: string;
-   submissionType: 'arena' | 'review' | 'battle' | 'judge_video' | 'quick_fight';
+   submissionType: 'arena' | 'review' | 'battle' | 'judge_video' | 'quick_fight' | 'featured_submission';
    username: string;
  }
  
