@@ -6,6 +6,7 @@ import {
   Zap, Gift, Send, ChevronRight, Users, Clock, Eye, Share2, Check, Copy
 } from "lucide-react";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
+import DropSubmissionCarousel from "@/components/loopgate/DropSubmissionCarousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -267,6 +268,9 @@ export default function FeaturedDropDetailPage() {
             <p className="text-[10px] text-muted-foreground mt-1">Waiting for QOI score from a judge.</p>
           </div>
         )}
+
+        {/* ═══ EDITS SHOWCASE CAROUSEL ═══ */}
+        <DropSubmissionCarousel submissions={submissions} loading={subsLoading} />
 
         {/* ═══ LEADERBOARD ═══ */}
         <div className="space-y-3">
