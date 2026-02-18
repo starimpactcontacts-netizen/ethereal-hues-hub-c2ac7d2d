@@ -31,6 +31,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import GatePattern from '@/components/loopgate/GatePattern';
+import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -962,6 +963,11 @@ export default function HubPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          📰 EDITORIUM — Forbes-style feature carousel
+      ═══════════════════════════════════════════════════════════════════ */}
+      <EditoriumCarousel />
 
       {/* ═══════════════════════════════════════════════════════════════════
           GLOBAL PULSE - Stats Strip (minimal)

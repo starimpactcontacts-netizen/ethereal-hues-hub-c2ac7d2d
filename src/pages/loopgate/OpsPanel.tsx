@@ -21,6 +21,7 @@ import HostedCompManagement from "@/components/loopgate/HostedCompManagement";
 import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
 import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
+import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
 
 interface RealEvent {
   id: string;
@@ -2349,6 +2350,11 @@ export default function OpsPanel() {
 
         {/* Featured Artists & Drops Admin */}
         <FeaturedArtistAdmin />
+
+        {/* Editorium Admin */}
+        <div className="mb-6 p-4 bg-surface-0 border border-border rounded-lg">
+          <EditoriumAdmin />
+        </div>
 
         {/* Event Control */}
         <section>
