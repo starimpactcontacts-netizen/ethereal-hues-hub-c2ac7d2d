@@ -31,6 +31,8 @@ export default function FeaturedDropDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showSubmit, setShowSubmit] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [showDesc, setShowDesc] = useState(false);
   const { submissions, loading: subsLoading } = useDropSubmissions(dropId || null);
 
   useEffect(() => {
@@ -158,6 +160,66 @@ export default function FeaturedDropDetailPage() {
           <h1 className="font-display text-xl text-foreground tracking-wide">{drop.title}</h1>
         </div>
 
+        {/* ═══ GREEN SUBMIT CTA — top, unmissable ═══ */}
+        {isLive && (
+          <div className="space-y-2">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+              className="w-full py-4 bg-emerald-500 text-white font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 rounded-xl shadow-lg shadow-emerald-500/25 hover:bg-emerald-400 transition-colors"
+            >
+              <Flame className="w-5 h-5" />
+              {userSubmissionCount > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
+              <ChevronRight className="w-5 h-5" />
+            </motion.button>
+            {userSubmissionCount > 0 && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-center">
+                <p className="text-sm text-emerald-400 font-medium flex items-center justify-center gap-1.5">
+                  <Check className="w-4 h-4" /> {userSubmissionCount} edit{userSubmissionCount > 1 ? 's' : ''} submitted
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Submit as many as you want — keep climbing 🔥
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ═══ HOW DO I JOIN? — collapsible, beginner-friendly ═══ */}
+        {isLive && (
+          <div>
+            <button
+              onClick={() => setShowGuide(!showGuide)}
+              className="w-full py-2.5 bg-purple-500/10 border border-purple-500/30 rounded-xl text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-purple-500/15 transition-colors"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              How Do I Join?
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showGuide ? 'rotate-180' : ''}`} />
+            </button>
+            {showGuide && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-2 bg-surface-1 border border-purple-500/20 rounded-xl p-4 space-y-2.5"
+              >
+                {[
+                  { num: '1', text: '🎧 Listen to the song above & vibe with it' },
+                  { num: '2', text: '🎬 Make a fire edit using the song — any app works' },
+                  { num: '3', text: '📱 Post it on TikTok, IG, or YouTube' },
+                  { num: '4', text: '🔗 Come back & paste the link — done!' },
+                ].map((step) => (
+                  <div key={step.num} className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
+                      <span className="text-[10px] font-bold text-purple-400">{step.num}</span>
+                    </div>
+                    <p className="text-[11px] font-medium text-foreground">{step.text}</p>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+        )}
+
         {/* ═══ SOUND LINK — big & clear ═══ */}
         {drop.song_url && (
           <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
@@ -172,11 +234,10 @@ export default function FeaturedDropDetailPage() {
               </div>
               <ExternalLink className="w-5 h-5 text-purple-400 shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </div>
-            <p className="text-[9px] text-muted-foreground mt-2 leading-snug">Use this exact sound so all edits link to the same track — helps the artist & boosts your reach.</p>
           </a>
         )}
 
-        {/* Song Preview Player — big & proud */}
+        {/* Song Preview Player */}
         {drop.song_preview_url && (
           <div className="bg-surface-1 border border-purple-500/30 rounded-xl p-4 space-y-2">
             <div className="flex items-center gap-2">
@@ -194,33 +255,6 @@ export default function FeaturedDropDetailPage() {
               className="w-full h-10 rounded-lg"
               preload="metadata"
             />
-          </div>
-        )}
-
-        {/* ═══ HOW TO ENTER — dead simple steps ═══ */}
-        {isLive && userSubmissionCount === 0 && (
-          <div className="bg-surface-1 border border-purple-500/20 rounded-xl p-4 space-y-3">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-purple-400 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5" /> How To Enter
-            </h2>
-            <div className="space-y-2.5">
-              {[
-                { num: '1', icon: '🎧', label: 'Listen to the song', sub: 'Hit play above & vibe with it' },
-                { num: '2', icon: '🎬', label: 'Make your edit', sub: 'Use the song in your video edit — any app works' },
-                { num: '3', icon: '📱', label: 'Post it', sub: 'Upload to TikTok, Instagram, or YouTube' },
-                { num: '4', icon: '🔗', label: 'Submit the link below', sub: 'Paste your post link & you\'re in!' },
-              ].map((step) => (
-                <div key={step.num} className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-xs font-bold text-purple-400">{step.num}</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-foreground">{step.icon} {step.label}</p>
-                    <p className="text-[10px] text-muted-foreground leading-snug">{step.sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
@@ -253,32 +287,24 @@ export default function FeaturedDropDetailPage() {
           </div>
         </div>
 
-        {/* Description */}
+        {/* Description — collapsible */}
         {drop.description && (
-          <p className="text-xs text-muted-foreground leading-relaxed">{drop.description}</p>
-        )}
-
-        {/* CTA — always show if live (multiple submissions allowed) */}
-        {isLive && (
-          <div className="space-y-2">
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 rounded-lg shadow-lg shadow-purple-500/20"
+          <div>
+            <button
+              onClick={() => setShowDesc(!showDesc)}
+              className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors"
             >
-              <Flame className="w-4 h-4" />
-              {userSubmissionCount > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
-              <ChevronRight className="w-4 h-4" />
-            </motion.button>
-            {userSubmissionCount > 0 && (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-center">
-                <p className="text-sm text-emerald-400 font-medium flex items-center justify-center gap-1.5">
-                  <Check className="w-4 h-4" /> {userSubmissionCount} edit{userSubmissionCount > 1 ? 's' : ''} submitted
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Submit as many as you want — keep climbing the leaderboard 🔥
-                </p>
-              </div>
+              About This Drop
+              <ChevronDown className={`w-3 h-3 transition-transform ${showDesc ? 'rotate-180' : ''}`} />
+            </button>
+            {showDesc && (
+              <motion.p
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="text-xs text-muted-foreground leading-relaxed mt-2"
+              >
+                {drop.description}
+              </motion.p>
             )}
           </div>
         )}
@@ -286,7 +312,7 @@ export default function FeaturedDropDetailPage() {
         {/* ═══ EDITS SHOWCASE CAROUSEL ═══ */}
         <DropSubmissionCarousel submissions={submissions} loading={subsLoading} />
 
-        {/* ═══ LEADERBOARD — Top 3 only ═══ */}
+        {/* ═══ LEADERBOARD — Top 3 + always-visible full leaderboard button ═══ */}
         <div className="space-y-3">
           <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
             <Trophy className="w-4 h-4 text-gold" />
@@ -306,7 +332,6 @@ export default function FeaturedDropDetailPage() {
             </div>
           ) : (
             <div className="space-y-2.5">
-              {/* Show top 3 scored + pending (max 3 pending if no scored) */}
               {scored.slice(0, 3).map((sub, idx) => (
                 <div key={sub.id} className="relative">
                   {getFireIndicator(sub, idx + 1) && (
@@ -330,52 +355,50 @@ export default function FeaturedDropDetailPage() {
             </div>
           )}
 
-          {/* View Full Leaderboard button */}
-          {submissions.length > 3 && (
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className="w-full py-3 bg-surface-1 border border-border rounded-xl text-xs font-bold text-foreground flex items-center justify-center gap-2 hover:bg-surface-2 transition-colors">
-                  <Trophy className="w-3.5 h-3.5 text-gold" />
-                  View Full Leaderboard
-                  <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[9px] px-1.5 py-0">
-                    {submissions.length}
-                  </Badge>
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="max-h-[85vh] bg-background border-border overflow-hidden flex flex-col">
-                <SheetHeader className="shrink-0">
-                  <SheetTitle className="flex items-center gap-2 text-base">
-                    <Trophy className="w-5 h-5 text-gold" />
-                    Full Leaderboard
-                    <span className="text-xs text-muted-foreground font-normal">({submissions.length} entries)</span>
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="overflow-y-auto flex-1 space-y-2.5 pb-8 mt-4">
-                  {scored.map((sub, idx) => (
-                    <div key={sub.id} className="relative">
-                      {getFireIndicator(sub, idx + 1) && (
-                        <div className={`flex items-center gap-1 mb-1 ${getFireIndicator(sub, idx + 1)!.color}`}>
-                          <TrendingUp className="w-3 h-3" />
-                          <span className="text-[9px] font-bold uppercase tracking-wider">
-                            {getFireIndicator(sub, idx + 1)!.label}
-                          </span>
-                        </div>
-                      )}
-                      <DropSubmissionCard
-                        submission={sub}
-                        rank={idx + 1}
-                        isTopScorer={idx === 0}
-                      />
-                    </div>
-                  ))}
-                  {pending.map((sub) => (
-                    <DropSubmissionCard key={sub.id} submission={sub} />
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
-          )}
+          {/* View Full Leaderboard — always visible */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="w-full py-3 bg-surface-1 border border-border rounded-xl text-xs font-bold text-foreground flex items-center justify-center gap-2 hover:bg-surface-2 transition-colors">
+                <Trophy className="w-3.5 h-3.5 text-gold" />
+                View Full Leaderboard
+                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[9px] px-1.5 py-0">
+                  {submissions.length}
+                </Badge>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="max-h-[85vh] bg-background border-border overflow-hidden flex flex-col">
+              <SheetHeader className="shrink-0">
+                <SheetTitle className="flex items-center gap-2 text-base">
+                  <Trophy className="w-5 h-5 text-gold" />
+                  Full Leaderboard
+                  <span className="text-xs text-muted-foreground font-normal">({submissions.length} entries)</span>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="overflow-y-auto flex-1 space-y-2.5 pb-8 mt-4">
+                {scored.map((sub, idx) => (
+                  <div key={sub.id} className="relative">
+                    {getFireIndicator(sub, idx + 1) && (
+                      <div className={`flex items-center gap-1 mb-1 ${getFireIndicator(sub, idx + 1)!.color}`}>
+                        <TrendingUp className="w-3 h-3" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider">
+                          {getFireIndicator(sub, idx + 1)!.label}
+                        </span>
+                      </div>
+                    )}
+                    <DropSubmissionCard
+                      submission={sub}
+                      rank={idx + 1}
+                      isTopScorer={idx === 0}
+                    />
+                  </div>
+                ))}
+                {pending.map((sub) => (
+                  <DropSubmissionCard key={sub.id} submission={sub} />
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* ═══ LIVE CHAT ═══ */}
