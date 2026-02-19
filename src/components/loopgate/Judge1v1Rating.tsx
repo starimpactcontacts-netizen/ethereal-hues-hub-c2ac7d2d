@@ -19,6 +19,7 @@ const BG_PRESETS = [
 ];
 
 type WinnerSide = 'A' | 'B' | null;
+type CardMode = 'faceoff' | 'results';
 
 export default function Judge1v1Rating() {
   const { profile } = useAuth();
@@ -30,12 +31,13 @@ export default function Judge1v1Rating() {
   const [bgPreset, setBgPreset] = useState('dark');
   const [showBgPicker, setShowBgPicker] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [cardMode, setCardMode] = useState<CardMode>('faceoff');
   const resultRef = useRef<HTMLDivElement>(null);
   const fileInputARef = useRef<HTMLInputElement>(null);
   const fileInputBRef = useRef<HTMLInputElement>(null);
 
   const bg = BG_PRESETS.find(b => b.id === bgPreset) || BG_PRESETS[0];
-  const isDark = bgPreset !== 'white';
+  const isFaceoff = cardMode === 'faceoff';
 
   const handleImageUpload = (side: 'A' | 'B', file: File) => {
     const reader = new FileReader();
@@ -52,7 +54,7 @@ export default function Judge1v1Rating() {
       toast.error('Enter both editor usernames');
       return;
     }
-    if (!winner) {
+    if (!isFaceoff && !winner) {
       toast.error('Pick a winner first');
       return;
     }
@@ -67,29 +69,95 @@ export default function Judge1v1Rating() {
         backgroundColor: null, scale: 3, useCORS: true
       });
       const link = document.createElement('a');
-      link.download = `loopgate-1v1-${editA.username}-vs-${editB.username}.png`;
+      const suffix = isFaceoff ? 'faceoff' : 'result';
+      link.download = `loopgate-1v1-${editA.username}-vs-${editB.username}-${suffix}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      toast.success('VS card downloaded!');
+      toast.success(`${isFaceoff ? 'Face Off' : 'Result'} card downloaded!`);
     } catch {
       toast.error('Failed to export');
     }
+  };
+
+  // Shared editor thumbnail component for the result card
+  const renderEditorThumb = (side: 'A' | 'B') => {
+    const edit = side === 'A' ? editA : editB;
+    const isWinner = !isFaceoff && winner === side;
+    const fallbackBg = side === 'A' ? 'rgba(220,38,38,0.1)' : 'rgba(59,130,246,0.1)';
+
+    return (
+      <div style={{ flex: 1, textAlign: 'center' }}>
+        <div style={{
+          width: '100%', aspectRatio: '1', borderRadius: 12, overflow: 'hidden',
+          border: isWinner ? `3px solid ${bg.accent}` : '2px solid rgba(128,128,128,0.3)',
+          boxShadow: isWinner ? `0 0 20px ${bg.accent}40` : 'none',
+          position: 'relative'
+        }}>
+          {edit.thumbnail ? (
+            <img src={edit.thumbnail} alt={side} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ width: '100%', height: '100%', background: fallbackBg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: 28, fontWeight: 900, opacity: 0.2 }}>{side}</span>
+            </div>
+          )}
+          {isWinner && (
+            <div style={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)', background: bg.accent, padding: '2px 8px', borderRadius: '0 0 6px 6px' }}>
+              <span style={{ fontSize: 8, fontWeight: 900, color: 'white', letterSpacing: '0.1em' }}>WINNER</span>
+            </div>
+          )}
+        </div>
+        <p style={{ fontSize: 12, fontWeight: 800, marginTop: 8 }}>@{edit.username}</p>
+        {!isFaceoff && (
+          <p style={{ fontSize: 32, fontWeight: 900, fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1, color: isWinner ? bg.accent : 'inherit' }}>
+            {side === 'A' ? scoreA : scoreB}
+          </p>
+        )}
+      </div>
+    );
   };
 
   return (
     <div className="space-y-4 pb-20">
       {!showResult ? (
         <div className="space-y-4">
-          {/* VS Header */}
-          <div className="text-center py-3">
-            <div className="flex items-center justify-center gap-3">
-              <Swords className="w-5 h-5 text-red-500" />
-              <h2 className="font-display text-lg font-bold text-white tracking-wide">1V1 EDIT RATING</h2>
+          {/* Card Mode Toggle */}
+          <div className="px-1">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-900 rounded-xl">
+              <button
+                onClick={() => setCardMode('faceoff')}
+                className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  isFaceoff ? 'bg-orange-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <Swords className="w-3.5 h-3.5" />
+                FACE OFF
+              </button>
+              <button
+                onClick={() => setCardMode('results')}
+                className={`py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  !isFaceoff ? 'bg-red-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                <Crown className="w-3.5 h-3.5" />
+                RESULTS
+              </button>
             </div>
-            <p className="text-[11px] text-zinc-500 mt-1">Compare two edits, pick a winner, export for TikTok</p>
           </div>
 
-          {/* Two Edit Cards — SQUARE screenshots */}
+          {/* Header */}
+          <div className="text-center py-2">
+            <div className="flex items-center justify-center gap-3">
+              {isFaceoff ? <Swords className="w-5 h-5 text-orange-500" /> : <Crown className="w-5 h-5 text-red-500" />}
+              <h2 className="font-display text-lg font-bold text-white tracking-wide">
+                {isFaceoff ? '1V1 FACE OFF' : '1V1 RESULTS'}
+              </h2>
+            </div>
+            <p className="text-[11px] text-zinc-500 mt-1">
+              {isFaceoff ? 'Hype the matchup before the battle drops' : 'Reveal the winner with scores'}
+            </p>
+          </div>
+
+          {/* Two Edit Cards */}
           <div className="grid grid-cols-2 gap-3 px-1">
             {/* Edit A */}
             <div className="space-y-2">
@@ -164,51 +232,55 @@ export default function Judge1v1Rating() {
             </div>
           </div>
 
-          {/* Winner Pick */}
-          <div className="px-1 space-y-2">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider text-center font-mono">Pick Winner</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => setWinner('A')}
-                className={`py-3 rounded-xl text-sm font-bold transition-all border ${
-                  winner === 'A'
-                    ? 'bg-red-600 border-red-500 text-white'
-                    : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-red-500/50'
-                }`}
-              >
-                <Trophy className={`w-4 h-4 mx-auto mb-1 ${winner === 'A' ? 'text-yellow-300' : ''}`} />
-                {editA.username || 'Edit A'}
-              </button>
-              <button
-                onClick={() => setWinner('B')}
-                className={`py-3 rounded-xl text-sm font-bold transition-all border ${
-                  winner === 'B'
-                    ? 'bg-blue-600 border-blue-500 text-white'
-                    : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-blue-500/50'
-                }`}
-              >
-                <Trophy className={`w-4 h-4 mx-auto mb-1 ${winner === 'B' ? 'text-yellow-300' : ''}`} />
-                {editB.username || 'Edit B'}
-              </button>
+          {/* Winner Pick — only for Results mode */}
+          {!isFaceoff && (
+            <div className="px-1 space-y-2">
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider text-center font-mono">Pick Winner</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setWinner('A')}
+                  className={`py-3 rounded-xl text-sm font-bold transition-all border ${
+                    winner === 'A'
+                      ? 'bg-red-600 border-red-500 text-white'
+                      : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-red-500/50'
+                  }`}
+                >
+                  <Trophy className={`w-4 h-4 mx-auto mb-1 ${winner === 'A' ? 'text-yellow-300' : ''}`} />
+                  {editA.username || 'Edit A'}
+                </button>
+                <button
+                  onClick={() => setWinner('B')}
+                  className={`py-3 rounded-xl text-sm font-bold transition-all border ${
+                    winner === 'B'
+                      ? 'bg-blue-600 border-blue-500 text-white'
+                      : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-blue-500/50'
+                  }`}
+                >
+                  <Trophy className={`w-4 h-4 mx-auto mb-1 ${winner === 'B' ? 'text-yellow-300' : ''}`} />
+                  {editB.username || 'Edit B'}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Scores */}
-          <div className="px-1 space-y-3">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider text-center font-mono">Scores</p>
-            <div className="space-y-2">
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-red-400 w-16 text-right font-mono">{editA.username || 'A'}</span>
-                <Slider value={[scoreA]} max={100} step={1} onValueChange={([v]) => setScoreA(v)} className="flex-1" />
-                <span className="text-xs font-bold text-white w-8">{scoreA}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-blue-400 w-16 text-right font-mono">{editB.username || 'B'}</span>
-                <Slider value={[scoreB]} max={100} step={1} onValueChange={([v]) => setScoreB(v)} className="flex-1" />
-                <span className="text-xs font-bold text-white w-8">{scoreB}</span>
+          {/* Scores — only for Results mode */}
+          {!isFaceoff && (
+            <div className="px-1 space-y-3">
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider text-center font-mono">Scores</p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-red-400 w-16 text-right font-mono">{editA.username || 'A'}</span>
+                  <Slider value={[scoreA]} max={100} step={1} onValueChange={([v]) => setScoreA(v)} className="flex-1" />
+                  <span className="text-xs font-bold text-white w-8">{scoreA}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-blue-400 w-16 text-right font-mono">{editB.username || 'B'}</span>
+                  <Slider value={[scoreB]} max={100} step={1} onValueChange={([v]) => setScoreB(v)} className="flex-1" />
+                  <span className="text-xs font-bold text-white w-8">{scoreB}</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Background Picker */}
           <div className="px-1">
@@ -235,15 +307,18 @@ export default function Judge1v1Rating() {
 
           {/* Generate */}
           <div className="px-1">
-            <Button onClick={handleGenerate} disabled={!editA.username || !editB.username || !winner}
-              className="w-full bg-red-600 hover:bg-red-500 text-white font-bold">
+            <Button
+              onClick={handleGenerate}
+              disabled={!editA.username || !editB.username || (!isFaceoff && !winner)}
+              className={`w-full font-bold text-white ${isFaceoff ? 'bg-orange-600 hover:bg-orange-500' : 'bg-red-600 hover:bg-red-500'}`}
+            >
               <Sparkles className="w-4 h-4 mr-2" />
-              Generate VS Card
+              {isFaceoff ? 'Generate Face Off Card' : 'Generate Result Card'}
             </Button>
           </div>
         </div>
       ) : (
-        /* ===== RESULT CARD — SQUARE FORMAT ===== */
+        /* ===== GENERATED CARD ===== */
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <button onClick={() => setShowResult(false)} className="text-xs text-zinc-400 hover:text-white flex items-center gap-1">
@@ -274,46 +349,31 @@ export default function Judge1v1Rating() {
               {/* Top Bar */}
               <div className="relative z-10 flex items-center justify-between px-5 pt-4">
                 <div>
-                  <p style={{ fontSize: 8, letterSpacing: '0.25em', opacity: 0.4, fontFamily: 'monospace', textTransform: 'uppercase' }}>Judged on</p>
+                  <p style={{ fontSize: 8, letterSpacing: '0.25em', opacity: 0.4, fontFamily: 'monospace', textTransform: 'uppercase' }}>
+                    {isFaceoff ? 'Coming soon on' : 'Judged on'}
+                  </p>
                   <p style={{ fontSize: 16, fontWeight: 900, letterSpacing: '0.15em', fontFamily: "'Bebas Neue', sans-serif" }}>LOOPGATE</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: 8, letterSpacing: '0.2em', opacity: 0.4, fontFamily: 'monospace', textTransform: 'uppercase' }}>Judge</p>
-                  <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.7 }}>@{profile?.username || 'judge'}</p>
+                  <p style={{ fontSize: 8, letterSpacing: '0.2em', opacity: 0.4, fontFamily: 'monospace', textTransform: 'uppercase' }}>
+                    {isFaceoff ? 'Matchup' : 'Judge'}
+                  </p>
+                  <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.7 }}>
+                    {isFaceoff ? '1v1 Battle' : `@${profile?.username || 'judge'}`}
+                  </p>
                 </div>
               </div>
 
               {/* VS Title */}
               <div className="relative z-10 text-center" style={{ marginTop: 8 }}>
-                <p style={{ fontSize: 10, letterSpacing: '0.3em', opacity: 0.5, fontFamily: 'monospace', textTransform: 'uppercase' }}>1v1 Edit Battle</p>
+                <p style={{ fontSize: 10, letterSpacing: '0.3em', opacity: 0.5, fontFamily: 'monospace', textTransform: 'uppercase' }}>
+                  {isFaceoff ? 'Who will win?' : '1v1 Edit Battle'}
+                </p>
               </div>
 
               {/* Main VS Content */}
               <div className="relative z-10 flex-1 flex items-center px-5" style={{ gap: 12 }}>
-                {/* Editor A */}
-                <div style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{
-                    width: '100%', aspectRatio: '1', borderRadius: 12, overflow: 'hidden',
-                    border: winner === 'A' ? `3px solid ${bg.accent}` : '2px solid rgba(128,128,128,0.3)',
-                    boxShadow: winner === 'A' ? `0 0 20px ${bg.accent}40` : 'none',
-                    position: 'relative'
-                  }}>
-                    {editA.thumbnail ? (
-                      <img src={editA.thumbnail} alt="A" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', background: 'rgba(220,38,38,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 28, fontWeight: 900, opacity: 0.2 }}>A</span>
-                      </div>
-                    )}
-                    {winner === 'A' && (
-                      <div style={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)', background: bg.accent, padding: '2px 8px', borderRadius: '0 0 6px 6px', display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <span style={{ fontSize: 8, fontWeight: 900, color: 'white', letterSpacing: '0.1em' }}>WINNER</span>
-                      </div>
-                    )}
-                  </div>
-                  <p style={{ fontSize: 12, fontWeight: 800, marginTop: 8 }}>@{editA.username}</p>
-                  <p style={{ fontSize: 32, fontWeight: 900, fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1, color: winner === 'A' ? bg.accent : 'inherit' }}>{scoreA}</p>
-                </div>
+                {renderEditorThumb('A')}
 
                 {/* VS Divider */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
@@ -327,44 +387,23 @@ export default function Judge1v1Rating() {
                   <div style={{ width: 1, height: 30, background: 'currentColor', opacity: 0.15 }} />
                 </div>
 
-                {/* Editor B */}
-                <div style={{ flex: 1, textAlign: 'center' }}>
-                  <div style={{
-                    width: '100%', aspectRatio: '1', borderRadius: 12, overflow: 'hidden',
-                    border: winner === 'B' ? `3px solid ${bg.accent}` : '2px solid rgba(128,128,128,0.3)',
-                    boxShadow: winner === 'B' ? `0 0 20px ${bg.accent}40` : 'none',
-                    position: 'relative'
-                  }}>
-                    {editB.thumbnail ? (
-                      <img src={editB.thumbnail} alt="B" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontSize: 28, fontWeight: 900, opacity: 0.2 }}>B</span>
-                      </div>
-                    )}
-                    {winner === 'B' && (
-                      <div style={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)', background: bg.accent, padding: '2px 8px', borderRadius: '0 0 6px 6px' }}>
-                        <span style={{ fontSize: 8, fontWeight: 900, color: 'white', letterSpacing: '0.1em' }}>WINNER</span>
-                      </div>
-                    )}
-                  </div>
-                  <p style={{ fontSize: 12, fontWeight: 800, marginTop: 8 }}>@{editB.username}</p>
-                  <p style={{ fontSize: 32, fontWeight: 900, fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1, color: winner === 'B' ? bg.accent : 'inherit' }}>{scoreB}</p>
-                </div>
+                {renderEditorThumb('B')}
               </div>
 
               {/* Bottom */}
               <div className="relative z-10 px-5 pb-4 flex items-end justify-between">
                 <p style={{ fontSize: 7, letterSpacing: '0.2em', opacity: 0.25, fontFamily: 'monospace', textTransform: 'uppercase' }}>loopgate.io</p>
                 <p style={{ fontSize: 7, letterSpacing: '0.2em', opacity: 0.25, fontFamily: 'monospace', textTransform: 'uppercase' }}>
-                  {scoreA} – {scoreB}
+                  {isFaceoff ? 'FACE OFF' : `${scoreA} – ${scoreB}`}
                 </p>
               </div>
             </div>
           </div>
 
           <p className="text-center text-[10px] text-zinc-600 px-4">
-            Square format — perfect for Instagram, Twitter, and TikTok overlays
+            {isFaceoff
+              ? 'Post this before the battle — hype the matchup, then post the result after'
+              : 'Square format — perfect for Instagram, Twitter, and TikTok overlays'}
           </p>
         </div>
       )}
