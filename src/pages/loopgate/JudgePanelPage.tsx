@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, Disc3 } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, Disc3, Award } from 'lucide-react';
 import JudgeOnboardingCard, { useJudgeOnboarding } from '@/components/loopgate/JudgeOnboardingCard';
 import JudgeFormatInfo from '@/components/loopgate/JudgeFormatInfo';
 import { Link } from 'react-router-dom';
@@ -18,8 +18,9 @@ import JudgeMissionsPanel from '@/components/loopgate/JudgeMissionsPanel';
 import JudgeDivisionBadge from '@/components/loopgate/JudgeDivisionBadge';
 import Judge1v1Rating from '@/components/loopgate/Judge1v1Rating';
 import JudgeQuickFightsTab from '@/components/loopgate/JudgeQuickFightsTab';
+import JudgeQOIResultCard from '@/components/loopgate/JudgeQOIResultCard';
 
-type JudgeFormat = 'solo' | '1v1' | 'quick' | 'flywheel';
+type JudgeFormat = 'solo' | '1v1' | 'qoi' | 'quick' | 'flywheel';
 
 const SOLO_INFO = {
   title: 'Solo Edit Rating',
@@ -193,6 +194,19 @@ export default function JudgePanelPage() {
             </div>
           </button>
 
+          {/* QOI Card */}
+          <button
+            onClick={() => setActiveFormat('qoi')}
+            className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl text-[10px] font-bold transition-all border relative ${
+              activeFormat === 'qoi'
+                ? 'bg-yellow-500 text-black border-yellow-500'
+                : 'bg-zinc-900 text-zinc-400 border-zinc-700 hover:border-zinc-500'
+            }`}
+          >
+            <Award className="w-3.5 h-3.5" />
+            QOI
+          </button>
+
           {/* Quick 1v1 */}
           <button
             onClick={() => setActiveFormat('quick')}
@@ -277,6 +291,13 @@ export default function JudgePanelPage() {
       {activeFormat === '1v1' && (
         <div className="px-3 pt-3">
           <Judge1v1Rating />
+        </div>
+      )}
+
+      {/* QOI FORMAT */}
+      {activeFormat === 'qoi' && (
+        <div className="px-3 pt-3">
+          <JudgeQOIResultCard />
         </div>
       )}
 
