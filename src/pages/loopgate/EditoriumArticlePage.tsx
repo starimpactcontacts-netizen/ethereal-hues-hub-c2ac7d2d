@@ -240,7 +240,7 @@ export default function EditoriumArticlePage() {
                 if (winner.type === 'url') {
                   const url = winner.match[1];
                   parts.push(
-                    <a key={key++} href={url} target="_blank" rel="noopener noreferrer" className="text-destructive underline underline-offset-2 hover:text-foreground transition-colors break-all">
+                    <a key={key++} href={url} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline underline-offset-2 hover:text-blue-300 transition-colors break-all cursor-pointer">
                       {url}
                     </a>
                   );

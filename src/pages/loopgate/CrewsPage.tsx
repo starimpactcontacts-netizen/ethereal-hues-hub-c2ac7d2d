@@ -811,7 +811,7 @@ export default function CrewsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-semibold flex items-center gap-2">
                       <Users className="w-4 h-4 text-purple-400" />
-                      {activeCategory === "all" ? "All Units" : activeCategory === "top" ? "Top Units" : "Featured"}
+                      {activeCategory === "all" ? "All Units" : activeCategory === "top" ? "Top Units" : "All Units"}
                     </h2>
                     <span className="text-[10px] text-muted-foreground">
                       {getCategoryCrews().length} units
