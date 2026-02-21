@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Eye, Calendar, Newspaper, Share2, Users2 } from 'lucide-react';
+import { ArrowLeft, Clock, Eye, Calendar, Share2, Users2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import SEO from '@/components/SEO';
@@ -58,11 +58,8 @@ export default function EditoriumArticlePage() {
     }
 
     setArticle(data as Article);
-
-    // Increment views
     supabase.rpc('increment_editorium_views', { article_id: data.id });
 
-    // Fetch unit info
     if (data.unit_id) {
       const { data: unitData } = await supabase
         .from('crews')
@@ -86,16 +83,18 @@ export default function EditoriumArticlePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-muted-foreground/30 border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!article) return null;
 
+  const heroImg = article.header_image_url || article.cover_image_url;
+
   return (
-    <div className="min-h-screen bg-white text-gray-900 pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-20">
       <SEO
         title={article.seo_title || article.title}
         description={article.seo_description || article.subtitle || `Read about ${article.title} on LOOPGATE Editorium`}
@@ -103,17 +102,13 @@ export default function EditoriumArticlePage() {
       />
 
       {/* Hero Image */}
-      {(article.header_image_url || article.cover_image_url) && (
+      {heroImg && (
         <div className="relative aspect-[16/8] max-h-[450px] overflow-hidden">
-          <img
-            src={article.header_image_url || article.cover_image_url!}
-            alt={article.title}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          
+          <img src={heroImg} alt={article.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+
           {/* Back button */}
-          <Link to="/editorium" className="absolute top-4 left-4 z-10 flex items-center gap-2 text-white/90 hover:text-white transition-colors bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-sm">
+          <Link to="/editorium" className="absolute top-4 left-4 z-10 flex items-center gap-2 text-foreground/80 hover:text-foreground transition-colors bg-background/50 backdrop-blur-sm px-3 py-1.5 rounded-sm">
             <ArrowLeft className="w-4 h-4" />
             <span className="text-xs font-semibold">Editorium</span>
           </Link>
@@ -127,23 +122,21 @@ export default function EditoriumArticlePage() {
         className="max-w-2xl mx-auto px-4"
       >
         {/* Header */}
-        <div className={`${article.header_image_url || article.cover_image_url ? '-mt-20 relative z-10' : 'pt-6'}`}>
+        <div className={heroImg ? '-mt-20 relative z-10' : 'pt-6'}>
           {/* Section label */}
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-[10px] text-red-600 uppercase tracking-[0.2em] font-bold">Editorium</span>
+            <span className="text-[10px] text-destructive uppercase tracking-[0.2em] font-bold">Editorium</span>
           </div>
 
-          <h1 className="font-display text-3xl md:text-4xl text-gray-900 leading-tight"
-            style={{ textShadow: (article.header_image_url || article.cover_image_url) ? '0 1px 3px rgba(0,0,0,0.3)' : 'none' }}
-          >{article.title}</h1>
-          
+          <h1 className="font-display text-3xl md:text-4xl text-foreground leading-tight">{article.title}</h1>
+
           {article.subtitle && (
-            <p className="text-lg text-gray-600 mt-2">{article.subtitle}</p>
+            <p className="text-base text-muted-foreground mt-2">{article.subtitle}</p>
           )}
 
           {/* Meta */}
-          <div className="flex items-center flex-wrap gap-3 mt-4 text-xs text-gray-500 border-b border-gray-200 pb-4">
-            <span className="font-semibold text-gray-900">{article.author_name}</span>
+          <div className="flex items-center flex-wrap gap-3 mt-4 text-xs text-muted-foreground border-b border-border/40 pb-4">
+            <span className="font-semibold text-foreground">{article.author_name}</span>
             {article.published_at && (
               <span className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
@@ -152,7 +145,7 @@ export default function EditoriumArticlePage() {
             )}
             <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.read_time_minutes || 5} min read</span>
             <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{(article.view_count || 0).toLocaleString()} views</span>
-            <button onClick={handleShare} className="flex items-center gap-1 hover:text-red-600 transition-colors ml-auto">
+            <button onClick={handleShare} className="flex items-center gap-1 hover:text-destructive transition-colors ml-auto">
               <Share2 className="w-3 h-3" />
               Share
             </button>
@@ -162,7 +155,7 @@ export default function EditoriumArticlePage() {
           {article.tags && article.tags.length > 0 && (
             <div className="flex items-center gap-1.5 mt-3 flex-wrap">
               {article.tags.map(tag => (
-                <span key={tag} className="text-[9px] bg-gray-100 border border-gray-200 px-2 py-0.5 text-gray-600 uppercase tracking-wider rounded-sm">{tag}</span>
+                <span key={tag} className="text-[9px] bg-surface-1 border border-border/40 px-2 py-0.5 text-muted-foreground uppercase tracking-wider rounded-sm">{tag}</span>
               ))}
             </div>
           )}
@@ -173,41 +166,41 @@ export default function EditoriumArticlePage() {
           {article.body.split('\n').map((paragraph, i) => {
             const trimmed = paragraph.trim();
             if (!trimmed) return <div key={i} className="h-4" />;
-            if (trimmed.startsWith('# ')) return <h2 key={i} className="font-display text-2xl text-gray-900 mt-10 mb-3">{trimmed.slice(2)}</h2>;
-            if (trimmed.startsWith('## ')) return <h3 key={i} className="font-display text-xl text-gray-900 mt-8 mb-2">{trimmed.slice(3)}</h3>;
+            if (trimmed.startsWith('# ')) return <h2 key={i} className="font-display text-2xl text-foreground mt-10 mb-3">{trimmed.slice(2)}</h2>;
+            if (trimmed.startsWith('## ')) return <h3 key={i} className="font-display text-xl text-foreground mt-8 mb-2">{trimmed.slice(3)}</h3>;
             if (trimmed.startsWith('> ')) return (
-              <blockquote key={i} className="border-l-3 border-red-600 pl-4 my-5 text-gray-600 italic text-base">{trimmed.slice(2)}</blockquote>
+              <blockquote key={i} className="border-l-2 border-destructive pl-4 my-5 text-muted-foreground italic text-base">{trimmed.slice(2)}</blockquote>
             );
             if (trimmed.startsWith('![')) {
               const match = trimmed.match(/!\[([^\]]*)\]\(([^)]+)\)/);
               if (match) return <img key={i} src={match[2]} alt={match[1]} className="w-full rounded-sm my-6" />;
             }
-            return <p key={i} className="text-[15px] text-gray-700 leading-[1.8] mb-5">{trimmed}</p>;
+            return <p key={i} className="text-[15px] text-muted-foreground leading-[1.8] mb-5">{trimmed}</p>;
           })}
         </div>
 
         {/* Featured Unit Card */}
         {unit && (
           <Link to={`/units/${unit.id}`} className="block mt-12 mb-6">
-            <div className="border border-gray-200 bg-gray-50 p-5 hover:border-gray-400 transition-colors rounded-sm">
+            <div className="border border-border/40 bg-surface-1/50 p-5 hover:border-border transition-colors rounded-md">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[9px] text-red-600 uppercase tracking-widest font-bold">Featured Unit</span>
+                <span className="text-[9px] text-destructive uppercase tracking-widest font-bold">Featured Unit</span>
               </div>
               <div className="flex items-center gap-3 mt-2">
                 {unit.avatar_url ? (
                   <img src={unit.avatar_url} className="w-12 h-12 rounded-full" alt="" />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                    <Users2 className="w-5 h-5 text-gray-400" />
+                  <div className="w-12 h-12 rounded-full bg-surface-2 flex items-center justify-center">
+                    <Users2 className="w-5 h-5 text-muted-foreground/40" />
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-display text-lg text-gray-900">{unit.name}</h3>
-                  <p className="text-xs text-gray-500">{unit.member_count} members</p>
+                  <h3 className="font-display text-lg text-foreground">{unit.name}</h3>
+                  <p className="text-xs text-muted-foreground">{unit.member_count} members</p>
                 </div>
               </div>
               {unit.description && (
-                <p className="text-xs text-gray-500 mt-2 line-clamp-2">{unit.description}</p>
+                <p className="text-xs text-muted-foreground/70 mt-2 line-clamp-2">{unit.description}</p>
               )}
             </div>
           </Link>
