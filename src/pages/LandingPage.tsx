@@ -12,6 +12,7 @@ import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
+import atlasStatue from '@/assets/atlas-statue.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -142,26 +143,37 @@ export default function LandingPage() {
           </motion.div>
         </section>
 
-        {/* ═══════════════ AUTHORITY STRIP — SOCIAL PROOF ═══════════════ */}
-        <section className="border-b border-border bg-surface-0">
-          <div className="max-w-6xl mx-auto px-6 py-10 sm:py-14">
-            <motion.div
-              className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-center"
-              initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }}
+        {/* ═══════════════ ATLAS — EVERY LEGEND STARTED AT F ═══════════════ */}
+        <section className="relative border-b border-border bg-background overflow-hidden py-20 sm:py-28">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_60%,rgba(212,175,55,0.04),transparent)]" />
+          <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
+            <motion.img
+              src={atlasStatue}
+              alt="Atlas statue"
+              className="w-48 sm:w-64 md:w-72 h-auto mb-10 opacity-90"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 0.9, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <motion.h2
+              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85] mb-4"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
             >
-              {[
-                { value: '10K+', label: 'Editors Registered', icon: Users },
-                { value: '50K+', label: 'Battles Completed', icon: Swords },
-                { value: '200+', label: 'Certified Judges', icon: Gavel },
-                { value: '25+', label: 'Countries Active', icon: Globe },
-              ].map((stat, i) => (
-                <motion.div key={stat.label} variants={fadeUp} custom={i}>
-                  <stat.icon className="w-4 h-4 text-gold mx-auto mb-2" />
-                  <p className="font-display text-3xl sm:text-4xl text-foreground mb-1">{stat.value}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-[0.15em]">{stat.label}</p>
-                </motion.div>
-              ))}
-            </motion.div>
+              EVERY LEGEND STARTED<br />AT <span className="text-gold">F CLASS</span>
+            </motion.h2>
+            <motion.p
+              className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.35 }}
+            >
+              No shortcuts. No bought followers. Just your skill against the world. Start from the bottom and prove you belong at the top.
+            </motion.p>
           </div>
         </section>
 
