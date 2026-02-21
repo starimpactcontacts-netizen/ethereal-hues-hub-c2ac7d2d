@@ -12,7 +12,7 @@ import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
-import atlasStatue from '@/assets/atlas-statue.png';
+import statueAesthetic from '@/assets/statue-aesthetic.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -143,37 +143,28 @@ export default function LandingPage() {
           </motion.div>
         </section>
 
-        {/* ═══════════════ ATLAS — EVERY LEGEND STARTED AT F ═══════════════ */}
+        {/* ═══════════════ STATUE — EVERY LEGEND STARTED AT F ═══════════════ */}
         <section className="relative border-b border-border bg-background overflow-hidden py-20 sm:py-28">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_60%,rgba(212,175,55,0.04),transparent)]" />
           <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
             <motion.img
-              src={atlasStatue}
-              alt="Atlas statue"
-              className="w-48 sm:w-64 md:w-72 h-auto mb-10 opacity-90"
+              src={statueAesthetic}
+              alt="Classical statue"
+              className="w-40 sm:w-52 md:w-60 h-auto mb-10 drop-shadow-[0_0_40px_rgba(212,175,55,0.15)]"
               initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 0.9, scale: 1 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             />
             <motion.h2
-              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85] mb-4"
+              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85]"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >
-              EVERY LEGEND STARTED<br />AT <span className="text-gold">F CLASS</span>
+              EVERY LEGEND STARTED AT <span className="text-gold">F CLASS</span>
             </motion.h2>
-            <motion.p
-              className="text-sm sm:text-base text-muted-foreground max-w-md leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.35 }}
-            >
-              No shortcuts. No bought followers. Just your skill against the world. Start from the bottom and prove you belong at the top.
-            </motion.p>
           </div>
         </section>
 
