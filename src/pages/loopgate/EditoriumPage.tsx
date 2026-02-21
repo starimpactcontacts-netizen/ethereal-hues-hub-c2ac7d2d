@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Clock, Eye, ArrowRight, Newspaper, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
-import SEO from '@/components/SEO';
+import SEO, { pageSEO } from '@/components/SEO';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 
 interface Article {
@@ -67,10 +67,7 @@ export default function EditoriumPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 pb-20">
-      <SEO
-        title="Editorium"
-        description="Featured stories on the world's top editing communities and units. The definitive source for competitive editing culture."
-      />
+      <SEO {...pageSEO.editorium} />
 
       {/* Forbes-style Masthead */}
       <div className="border-b border-gray-200">

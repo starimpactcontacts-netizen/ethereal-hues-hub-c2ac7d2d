@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, UserPlus, Video, Award, TrendingUp, Star, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '@/components/SEO';
+import SEO, { pageSEO } from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 
 const steps = [
@@ -66,11 +66,7 @@ const features = [
 export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO 
-        title="How It Works"
-        description="Learn how Loopgate works. Create your profile, enter live editing competitions, get scored by judges, and climb the global rankings."
-        canonical="https://loopgate.io/how-it-works"
-      />
+      <SEO {...pageSEO.howItWorks} />
       
       <div className="px-4 pt-6 pb-8 max-w-4xl mx-auto">
         <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">

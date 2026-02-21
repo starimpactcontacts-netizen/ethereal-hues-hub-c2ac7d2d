@@ -1,15 +1,11 @@
 import { ArrowLeft, Trophy, Users, Zap, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '@/components/SEO';
+import SEO, { pageSEO } from '@/components/SEO';
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO 
-        title="About"
-        description="Loopgate is the global competitive infrastructure for video editors. Learn about our mission to turn editing into a competitive league."
-        canonical="https://loopgate.io/about"
-      />
+      <SEO {...pageSEO.about} />
       
       <div className="px-4 pt-6 pb-8 max-w-4xl mx-auto">
         <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
