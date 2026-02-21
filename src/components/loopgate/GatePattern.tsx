@@ -1,56 +1,57 @@
 /**
- * GatePattern — Islamic 8-pointed star geometric lattice.
- * Two overlapping squares (one rotated 45°) with interlocking bands.
- * Dark-on-dark aesthetic matching traditional Moroccan/Arabic mashrabiya screens.
+ * GatePattern — Authentic Islamic 8-pointed star geometric lattice.
+ * Thick interlocking bands with negative space, matching traditional
+ * Moroccan/Arabic mashrabiya screens. Dark-on-dark aesthetic.
+ * 
+ * The geometry: Two overlapping squares (one rotated 45°) create an
+ * 8-pointed star. The bands have real WIDTH (not just strokes) creating
+ * the carved/3D look from the reference images.
  */
 
 import { cn } from '@/lib/utils';
 
 interface GatePatternProps {
   className?: string;
-  /** Opacity 0-100, default 5 */
+  /** Opacity 0-100, default 6 */
   opacity?: number;
-  /** Pattern stroke color */
+  /** Pattern color */
   color?: string;
-  /** Tile size in px, default 80 */
+  /** Tile size in px, default 120 */
   tileSize?: number;
 }
 
 export default function GatePattern({
   className,
-  opacity = 5,
+  opacity = 6,
   color = 'white',
-  tileSize = 80,
+  tileSize = 120,
 }: GatePatternProps) {
-  const patternId = `gate-islamic-${tileSize}`;
+  const patternId = `gate-lattice-${tileSize}`;
   const s = tileSize;
   const h = s / 2;
-  
-  // For an 8-pointed star: key ratio from tan(22.5°) ≈ 0.4142
-  // p = inset from edge where the star arms begin
-  const p = s / (2 + Math.SQRT2); // ≈ 0.2929 * s
-  const q = s - p; // opposite side
 
-  // The 8 vertices of the star (tips of the 8 points)
-  // Top, Top-Right, Right, Bottom-Right, Bottom, Bottom-Left, Left, Top-Left
-  const tips = [
-    [h, 0],      // top
-    [s, 0],      // top-right corner (of tile, for band connections)  
-    [s, h],      // right
-    [s, s],      // bottom-right corner
-    [h, s],      // bottom
-    [0, s],      // bottom-left corner
-    [0, h],      // left
-    [0, 0],      // top-left corner
-  ];
+  // Islamic geometry ratio: tan(22.5°) ≈ 0.4142
+  // This creates the perfect 8-pointed star proportion
+  const t = s / (2 + Math.SQRT2); // ≈ 0.2929 * s — inset from edge
+  const u = s - t; // opposite edge
 
-  // Inner square vertices (axis-aligned)
-  const sq1 = `${p},${p} ${q},${p} ${q},${q} ${p},${q}`;
-  
-  // Diamond (45° rotated square)
-  const sq2 = `${h},${0} ${s},${h} ${h},${s} ${0},${h}`;
+  // Band width — this is what makes it look THICK and carved, not wispy
+  const bw = s * 0.04;
 
-  const sw = s * 0.015; // stroke width
+  // The pattern is constructed from filled polygons (bands) not thin strokes.
+  // Each band is a thick parallelogram connecting the star points.
+
+  // 8 outer points of the star (on tile edges)
+  // and 8 inner vertices where bands cross
+
+  // Key coordinates for the interlocking pattern:
+  // Outer square vertices: (t,t), (u,t), (u,u), (t,u)
+  // Diamond vertices: (h,0), (s,h), (h,s), (0,h)
+
+  // Build the path for one complete tile's lattice
+  // Using filled shapes for the "band" look
+
+  const sw = s * 0.012; // thin accent stroke for inner detail
 
   return (
     <div
@@ -69,60 +70,98 @@ export default function GatePattern({
             width={s} height={s}
             patternUnits="userSpaceOnUse"
           >
-            <g fill="none" stroke={color} strokeWidth={sw} strokeLinejoin="round">
-              {/* Axis-aligned square */}
-              <polygon points={sq1} />
+            {/* === THICK BAND APPROACH === */}
+            {/* Each geometric element drawn as a filled polygon with width */}
+            <g fill="none" stroke={color} strokeLinejoin="round" strokeLinecap="round">
               
-              {/* 45° rotated diamond */}
-              <polygon points={sq2} />
+              {/* ── Main 8-pointed star bands ── */}
+              {/* Outer axis-aligned square band */}
+              <rect 
+                x={t} y={t} 
+                width={u - t} height={u - t} 
+                strokeWidth={bw} 
+                rx={0}
+              />
+              
+              {/* 45° rotated diamond band */}
+              <polygon 
+                points={`${h},${bw * 0.3} ${s - bw * 0.3},${h} ${h},${s - bw * 0.3} ${bw * 0.3},${h}`} 
+                strokeWidth={bw} 
+              />
 
-              {/* Band connections — top-left corner */}
-              <line x1={0} y1={p} x2={p} y2={0} />
-              <line x1={0} y1={p} x2={p} y2={p} />
-              <line x1={p} y1={0} x2={p} y2={p} />
+              {/* ── Corner X-bands connecting tiles ── */}
+              {/* These create the interlocking lattice between adjacent stars */}
+              
+              {/* Top-left corner bands */}
+              <line x1={0} y1={0} x2={t} y2={t} strokeWidth={bw * 0.8} />
+              <line x1={0} y1={t} x2={t} y2={0} strokeWidth={bw * 0.8} />
 
-              {/* Band connections — top-right corner */}
-              <line x1={q} y1={0} x2={s} y2={p} />
-              <line x1={q} y1={0} x2={q} y2={p} />
-              <line x1={s} y1={p} x2={q} y2={p} />
+              {/* Top-right corner bands */}
+              <line x1={s} y1={0} x2={u} y2={t} strokeWidth={bw * 0.8} />
+              <line x1={u} y1={0} x2={s} y2={t} strokeWidth={bw * 0.8} />
 
-              {/* Band connections — bottom-right corner */}
-              <line x1={s} y1={q} x2={q} y2={s} />
-              <line x1={s} y1={q} x2={q} y2={q} />
-              <line x1={q} y1={s} x2={q} y2={q} />
+              {/* Bottom-right corner bands */}
+              <line x1={s} y1={s} x2={u} y2={u} strokeWidth={bw * 0.8} />
+              <line x1={s} y1={u} x2={u} y2={s} strokeWidth={bw * 0.8} />
 
-              {/* Band connections — bottom-left corner */}
-              <line x1={p} y1={s} x2={0} y2={q} />
-              <line x1={p} y1={s} x2={p} y2={q} />
-              <line x1={0} y1={q} x2={p} y2={q} />
+              {/* Bottom-left corner bands */}
+              <line x1={0} y1={s} x2={t} y2={u} strokeWidth={bw * 0.8} />
+              <line x1={t} y1={s} x2={0} y2={u} strokeWidth={bw * 0.8} />
 
-              {/* Corner diagonal fills */}
-              <line x1={0} y1={0} x2={p} y2={p} />
-              <line x1={s} y1={0} x2={q} y2={p} />
-              <line x1={s} y1={s} x2={q} y2={q} />
-              <line x1={0} y1={s} x2={p} y2={q} />
+              {/* ── Star arm bands — diamond tips to square corners ── */}
+              {/* These are the 8 "arms" radiating from center */}
+              
+              {/* Top arm */}
+              <line x1={t} y1={t} x2={h} y2={bw * 0.3} strokeWidth={bw * 0.7} />
+              <line x1={u} y1={t} x2={h} y2={bw * 0.3} strokeWidth={bw * 0.7} />
 
-              {/* Diamond tip to inner square connections */}
-              <line x1={h} y1={0} x2={p} y2={p} />
-              <line x1={h} y1={0} x2={q} y2={p} />
-              <line x1={s} y1={h} x2={q} y2={p} />
-              <line x1={s} y1={h} x2={q} y2={q} />
-              <line x1={h} y1={s} x2={q} y2={q} />
-              <line x1={h} y1={s} x2={p} y2={q} />
-              <line x1={0} y1={h} x2={p} y2={q} />
-              <line x1={0} y1={h} x2={p} y2={p} />
+              {/* Right arm */}
+              <line x1={u} y1={t} x2={s - bw * 0.3} y2={h} strokeWidth={bw * 0.7} />
+              <line x1={u} y1={u} x2={s - bw * 0.3} y2={h} strokeWidth={bw * 0.7} />
 
-              {/* Inner 8-pointed star void — small rotated square inside */}
+              {/* Bottom arm */}
+              <line x1={u} y1={u} x2={h} y2={s - bw * 0.3} strokeWidth={bw * 0.7} />
+              <line x1={t} y1={u} x2={h} y2={s - bw * 0.3} strokeWidth={bw * 0.7} />
+
+              {/* Left arm */}
+              <line x1={t} y1={u} x2={bw * 0.3} y2={h} strokeWidth={bw * 0.7} />
+              <line x1={t} y1={t} x2={bw * 0.3} y2={h} strokeWidth={bw * 0.7} />
+
+              {/* ── Edge midpoint connecting bands ── */}
+              {/* Horizontal & vertical bands connecting to adjacent tiles */}
+              <line x1={t} y1={0} x2={t} y2={t} strokeWidth={bw * 0.7} />
+              <line x1={u} y1={0} x2={u} y2={t} strokeWidth={bw * 0.7} />
+              <line x1={s} y1={t} x2={u} y2={t} strokeWidth={bw * 0.7} />
+              <line x1={s} y1={u} x2={u} y2={u} strokeWidth={bw * 0.7} />
+              <line x1={u} y1={s} x2={u} y2={u} strokeWidth={bw * 0.7} />
+              <line x1={t} y1={s} x2={t} y2={u} strokeWidth={bw * 0.7} />
+              <line x1={0} y1={u} x2={t} y2={u} strokeWidth={bw * 0.7} />
+              <line x1={0} y1={t} x2={t} y2={t} strokeWidth={bw * 0.7} />
+
+              {/* ── Inner octagon detail ── */}
+              {/* Small octagon at center for the star void detail */}
               {(() => {
-                const i = s * 0.15;
-                const a = h - i;
-                const b = h + i;
-                return (
-                  <>
-                    <polygon points={`${a},${a} ${b},${a} ${b},${b} ${a},${b}`} />
-                    <polygon points={`${h},${a - i * 0.42} ${b + i * 0.42},${h} ${h},${b + i * 0.42} ${a - i * 0.42},${h}`} />
-                  </>
-                );
+                const r = s * 0.1; // inner octagon radius
+                const pts = Array.from({ length: 8 }, (_, i) => {
+                  const angle = (Math.PI / 8) + (i * Math.PI / 4);
+                  return `${h + r * Math.cos(angle)},${h + r * Math.sin(angle)}`;
+                }).join(' ');
+                return <polygon points={pts} strokeWidth={bw * 0.5} />;
+              })()}
+
+              {/* ── Small 4-pointed stars in the negative spaces ── */}
+              {/* These sit in the gaps between the main stars at (0,0), (s,0), etc */}
+              {(() => {
+                const starSize = s * 0.06;
+                const positions = [
+                  [0, 0], [s, 0], [0, s], [s, s],
+                ];
+                return positions.map(([cx, cy], i) => (
+                  <g key={i}>
+                    <line x1={cx - starSize} y1={cy} x2={cx + starSize} y2={cy} strokeWidth={bw * 0.4} />
+                    <line x1={cx} y1={cy - starSize} x2={cx} y2={cy + starSize} strokeWidth={bw * 0.4} />
+                  </g>
+                ));
               })()}
             </g>
           </pattern>
