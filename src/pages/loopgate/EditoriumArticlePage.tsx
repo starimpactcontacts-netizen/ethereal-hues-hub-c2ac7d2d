@@ -161,21 +161,97 @@ export default function EditoriumArticlePage() {
           )}
         </div>
 
-        {/* Body */}
+        {/* Body - with auto-formatting */}
         <div className="mt-8">
           {article.body.split('\n').map((paragraph, i) => {
             const trimmed = paragraph.trim();
             if (!trimmed) return <div key={i} className="h-4" />;
+            
+            // Explicit markdown headings
             if (trimmed.startsWith('# ')) return <h2 key={i} className="font-display text-2xl text-foreground mt-10 mb-3">{trimmed.slice(2)}</h2>;
             if (trimmed.startsWith('## ')) return <h3 key={i} className="font-display text-xl text-foreground mt-8 mb-2">{trimmed.slice(3)}</h3>;
+            
+            // Explicit blockquotes
             if (trimmed.startsWith('> ')) return (
               <blockquote key={i} className="border-l-2 border-destructive pl-4 my-5 text-muted-foreground italic text-base">{trimmed.slice(2)}</blockquote>
             );
+            
+            // Images
             if (trimmed.startsWith('![')) {
               const match = trimmed.match(/!\[([^\]]*)\]\(([^)]+)\)/);
               if (match) return <img key={i} src={match[2]} alt={match[1]} className="w-full rounded-sm my-6" />;
             }
-            return <p key={i} className="text-[15px] text-muted-foreground leading-[1.8] mb-5">{trimmed}</p>;
+
+            // --- AUTO-FORMATTING: Smart detection for plain text ---
+            
+            // Auto-detect headings: short lines (≤60 chars) that don't end with punctuation
+            // and aren't followed by another short line (checked via context)
+            const isLikelyHeading = trimmed.length <= 60 && 
+              !trimmed.endsWith('.') && !trimmed.endsWith(',') && !trimmed.endsWith('!') && !trimmed.endsWith('?') &&
+              !trimmed.endsWith(':') && !trimmed.endsWith(';') &&
+              !trimmed.startsWith('"') && !trimmed.startsWith("'") &&
+              !trimmed.startsWith('—') && !trimmed.startsWith('-') &&
+              trimmed.split(' ').length >= 2 && trimmed.split(' ').length <= 10;
+
+            if (isLikelyHeading) {
+              return <h3 key={i} className="font-display text-xl text-foreground mt-8 mb-2">{trimmed}</h3>;
+            }
+
+            // Auto-detect pull quotes: lines wrapped in quotes
+            if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || 
+                (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+                (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+              return (
+                <blockquote key={i} className="border-l-2 border-destructive pl-4 my-5 text-muted-foreground italic text-base">
+                  {trimmed}
+                </blockquote>
+              );
+            }
+
+            // Render inline bold (**text** or __text__) and italic (*text* or _text_)
+            const renderInlineFormatting = (text: string) => {
+              const parts: React.ReactNode[] = [];
+              let remaining = text;
+              let key = 0;
+              
+              while (remaining.length > 0) {
+                // Bold: **text** or __text__
+                const boldMatch = remaining.match(/(\*\*|__)(.+?)\1/);
+                if (boldMatch && boldMatch.index !== undefined) {
+                  if (boldMatch.index > 0) {
+                    parts.push(<span key={key++}>{remaining.slice(0, boldMatch.index)}</span>);
+                  }
+                  parts.push(<strong key={key++} className="text-foreground font-semibold">{boldMatch[2]}</strong>);
+                  remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
+                  continue;
+                }
+                
+                // Italic: *text* or _text_ (but not ** or __)
+                const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/);
+                if (italicMatch && italicMatch.index !== undefined) {
+                  if (italicMatch.index > 0) {
+                    parts.push(<span key={key++}>{remaining.slice(0, italicMatch.index)}</span>);
+                  }
+                  parts.push(<em key={key++} className="italic">{italicMatch[1] || italicMatch[2]}</em>);
+                  remaining = remaining.slice(italicMatch.index + italicMatch[0].length);
+                  continue;
+                }
+                
+                parts.push(<span key={key++}>{remaining}</span>);
+                break;
+              }
+              
+              return parts.length === 1 ? text : <>{parts}</>;
+            };
+
+            // Auto-detect em-dash pull quotes: starts with — 
+            if (trimmed.startsWith('—')) {
+              return (
+                <p key={i} className="text-sm text-muted-foreground/70 italic mt-1 mb-5 pl-4">{trimmed}</p>
+              );
+            }
+
+            return <p key={i} className="text-[15px] text-muted-foreground leading-[1.8] mb-5">{renderInlineFormatting(trimmed)}</p>;
           })}
         </div>
 
