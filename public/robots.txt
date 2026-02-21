@@ -15,5 +15,16 @@ Allow: /
 User-agent: *
 Allow: /
 
+# Block authenticated-only routes from indexing
+Disallow: /hub
+Disallow: /profile
+Disallow: /settings
+Disallow: /messages
+Disallow: /direct-message
+Disallow: /crew-chat
+Disallow: /judge-panel
+Disallow: /judge-queue
+Disallow: /ops
+
 # Sitemap
 Sitemap: https://loopgate.io/sitemap.xml

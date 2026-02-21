@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '@/components/SEO';
+import SEO, { pageSEO } from '@/components/SEO';
 import {
   Accordion,
   AccordionContent,
@@ -123,11 +123,7 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO 
-        title="FAQ"
-        description="Frequently asked questions about Loopgate. Learn about competitions, rankings, prizes, and how to get started with competitive editing."
-        canonical="https://loopgate.io/faq"
-      />
+      <SEO {...pageSEO.faq} />
       
       {/* FAQ Schema */}
       <script 

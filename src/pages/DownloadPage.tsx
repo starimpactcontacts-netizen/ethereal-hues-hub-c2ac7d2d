@@ -1,16 +1,12 @@
 import { ArrowLeft, Smartphone, Monitor, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '@/components/SEO';
+import SEO, { pageSEO } from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 
 export default function DownloadPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
-      <SEO 
-        title="Download"
-        description="Download the Loopgate app for iOS. Compete in editing events, track your rankings, and connect with editors worldwide."
-        canonical="https://loopgate.io/download"
-      />
+      <SEO {...pageSEO.download} />
       
       <div className="px-4 pt-6 pb-8 max-w-4xl mx-auto">
         <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
