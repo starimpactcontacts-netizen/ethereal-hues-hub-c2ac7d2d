@@ -311,7 +311,7 @@ export default function CrewsPage() {
   const getCategoryCrews = () => {
     switch (activeCategory) {
       case "featured":
-        return filteredCrews.filter(c => c.is_featured);
+        return filteredCrews.filter(c => c.is_featured || editoriumUnitIds.has(c.id));
       case "top":
         return [...filteredCrews].sort((a, b) => (b.total_xp || 0) - (a.total_xp || 0)).slice(0, 12);
       default:
@@ -778,6 +778,33 @@ export default function CrewsPage() {
                 )}
 
 
+                {/* Featured Units (immortal — any unit ever featured or with editorium coverage) */}
+                {(activeCategory === "all" || activeCategory === "featured") && featuredCrews.length > 0 && (
+                  <section>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-sm font-semibold flex items-center gap-2">
+                        <Award className="w-4 h-4 text-gold" />
+                        <span className="text-gold">Featured</span>
+                      </h2>
+                      <span className="text-[10px] text-muted-foreground">{featuredCrews.length} units</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {featuredCrews.map((crew, i) => (
+                        <UnitCard
+                          key={crew.id}
+                          crew={crew}
+                          index={i}
+                          onClick={() => navigate(`/units/${crew.id}`)}
+                          showActions={!!user && !myCrewIds.includes(crew.id)}
+                          onJoinPrimary={() => handleJoinCrew(crew, true)}
+                          onJoinSecondary={() => handleJoinCrew(crew, false)}
+                          canJoinPrimary={!primaryCrew}
+                          canJoinSecondary={canJoinSecondary}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )}
 
                 {/* All Units */}
                 <section>
