@@ -1,7 +1,7 @@
 /**
- * GatePattern — Islamic geometric lattice overlay.
- * Authentic 8-pointed star + octagon + connecting lattice.
- * Based on traditional Moroccan/Dubai zellige patterns.
+ * GatePattern — Luxury monogram-style repeating pattern.
+ * Crown icons + 4-point stars + dotted diamond lattice.
+ * Inspired by high-fashion house motifs (LV, Goyard, etc.)
  */
 
 import { cn } from '@/lib/utils';
@@ -22,13 +22,9 @@ export default function GatePattern({
   color = 'white',
   tileSize = 120,
 }: GatePatternProps) {
-  const patternId = `gate-lattice-${tileSize}`;
+  const patternId = `gate-luxury-${tileSize}`;
   const s = tileSize;
   const h = s / 2;
-
-  // Key ratio for Islamic 8-point star geometry
-  const a = s * 0.2071; // (1 - 1/√2) / 2 ≈ 0.2071 — the classic octagonal cut
-  const b = s - a;
 
   return (
     <div
@@ -49,137 +45,60 @@ export default function GatePattern({
             height={s}
             patternUnits="userSpaceOnUse"
           >
-            <g
-              fill="none"
-              stroke={color}
-              strokeWidth="0.8"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            >
-              {/* === Central 8-pointed star === */}
-              {/* Outer star points */}
-              <polygon points={`
-                ${h},${0}
-                ${h + a * 0.5},${a}
-                ${b},${a}
-                ${b - a * 0.5},${h}
-                ${b},${b}
-                ${h + a * 0.5},${b}
-                ${h},${s}
-                ${h - a * 0.5},${b}
-                ${a},${b}
-                ${a + a * 0.5},${h}
-                ${a},${a}
-                ${h - a * 0.5},${a}
-              `} />
+            <g fill={color} stroke="none">
+              {/* === Crown at center === */}
+              <g transform={`translate(${h}, ${h * 0.45}) scale(${s / 200})`}>
+                {/* Crown base */}
+                <rect x="-12" y="8" width="24" height="3" rx="1" />
+                {/* Crown body */}
+                <path d="M-14,8 L-12,-2 L-7,5 L-3,-6 L0,3 L3,-6 L7,5 L12,-2 L14,8 Z" />
+                {/* Crown jewels (dots on tips) */}
+                <circle cx="-3" cy="-8" r="1.5" />
+                <circle cx="0" cy="-1" r="1.2" />
+                <circle cx="3" cy="-8" r="1.5" />
+                <circle cx="-7" cy="3" r="1.2" />
+                <circle cx="7" cy="3" r="1.2" />
+              </g>
 
-              {/* Inner octagon */}
-              <polygon points={`
-                ${h},${a * 1.4}
-                ${b - a * 0.9},${a * 1.4}
-                ${b - a * 0.4},${h}
-                ${b - a * 0.9},${b - a * 0.4}
-                ${h},${b - a * 0.4}
-                ${a * 1.4},${b - a * 0.4}
-                ${a + a * 0.4},${h}
-                ${a * 1.4},${a * 1.4}
-              `} />
+              {/* === 4-point star accents === */}
+              {/* Star top-left quadrant */}
+              <g transform={`translate(${s * 0.18}, ${s * 0.18})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+              {/* Star top-right */}
+              <g transform={`translate(${s * 0.82}, ${s * 0.18})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+              {/* Star bottom-left */}
+              <g transform={`translate(${s * 0.18}, ${s * 0.82})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+              {/* Star bottom-right */}
+              <g transform={`translate(${s * 0.82}, ${s * 0.82})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+              {/* Star center-left */}
+              <g transform={`translate(${s * 0.0}, ${s * 0.5})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+              {/* Star center-right */}
+              <g transform={`translate(${s * 1.0}, ${s * 0.5})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+              {/* Star center-top */}
+              <g transform={`translate(${h}, ${0})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+              {/* Star center-bottom */}
+              <g transform={`translate(${h}, ${s})`}>
+                <path d={`M0,-${s*0.025} L${s*0.008},0 L0,${s*0.025} L-${s*0.008},0 Z`} />
+              </g>
+            </g>
 
-              {/* === Corner rosettes (quarter patterns at each corner) === */}
-              {/* Top-left corner star fragment */}
-              <polygon points={`
-                ${0},${0}
-                ${a},${0}
-                ${a},${a}
-                ${0},${a}
-              `} />
-              <line x1={0} y1={a} x2={a} y2={a} />
-              <line x1={a} y1={0} x2={a} y2={a} />
-
-              {/* Top-right corner */}
-              <polygon points={`
-                ${s},${0}
-                ${b},${0}
-                ${b},${a}
-                ${s},${a}
-              `} />
-              <line x1={s} y1={a} x2={b} y2={a} />
-              <line x1={b} y1={0} x2={b} y2={a} />
-
-              {/* Bottom-left corner */}
-              <polygon points={`
-                ${0},${s}
-                ${a},${s}
-                ${a},${b}
-                ${0},${b}
-              `} />
-              <line x1={0} y1={b} x2={a} y2={b} />
-              <line x1={a} y1={s} x2={a} y2={b} />
-
-              {/* Bottom-right corner */}
-              <polygon points={`
-                ${s},${s}
-                ${b},${s}
-                ${b},${b}
-                ${s},${b}
-              `} />
-              <line x1={s} y1={b} x2={b} y2={b} />
-              <line x1={b} y1={s} x2={b} y2={b} />
-
-              {/* === Diagonal connecting lines (star arms to corners) === */}
-              <line x1={a} y1={a} x2={h - a * 0.5} y2={a} />
-              <line x1={h + a * 0.5} y1={a} x2={b} y2={a} />
-              <line x1={a} y1={b} x2={h - a * 0.5} y2={b} />
-              <line x1={h + a * 0.5} y1={b} x2={b} y2={b} />
-
-              <line x1={a} y1={a} x2={a} y2={h - a * 0.5} />
-              <line x1={a} y1={h + a * 0.5} x2={a} y2={b} />
-              <line x1={b} y1={a} x2={b} y2={h - a * 0.5} />
-              <line x1={b} y1={h + a * 0.5} x2={b} y2={b} />
-
-              {/* Cross-diagonal lattice connectors */}
-              <line x1={0} y1={a} x2={a} y2={0} />
-              <line x1={s} y1={a} x2={b} y2={0} />
-              <line x1={0} y1={b} x2={a} y2={s} />
-              <line x1={s} y1={b} x2={b} y2={s} />
-
-              {/* Mid-edge star points connecting to border */}
-              <line x1={h} y1={0} x2={h - a * 0.5} y2={a} />
-              <line x1={h} y1={0} x2={h + a * 0.5} y2={a} />
-              <line x1={h} y1={s} x2={h - a * 0.5} y2={b} />
-              <line x1={h} y1={s} x2={h + a * 0.5} y2={b} />
-
-              <line x1={0} y1={h} x2={a + a * 0.5} y2={h} />
-              <line x1={s} y1={h} x2={b - a * 0.5} y2={h} />
-
-              {/* Side midpoint connections */}
-              <line x1={0} y1={h} x2={a} y2={a} />
-              <line x1={0} y1={h} x2={a} y2={b} />
-              <line x1={s} y1={h} x2={b} y2={a} />
-              <line x1={s} y1={h} x2={b} y2={b} />
-
-              {/* === Small decorative shapes === */}
-              {/* Small hexagonal accents between stars */}
-              <polygon points={`
-                ${a * 0.5},${h}
-                ${a},${h - a * 0.5}
-                ${a},${h + a * 0.5}
-              `} />
-              <polygon points={`
-                ${s - a * 0.5},${h}
-                ${b},${h - a * 0.5}
-                ${b},${h + a * 0.5}
-              `} />
-              <polygon points={`
-                ${h},${a * 0.5}
-                ${h - a * 0.5},${a}
-                ${h + a * 0.5},${a}
-              `} />
-              <polygon points={`
-                ${h},${s - a * 0.5}
-                ${h - a * 0.5},${b}
-                ${h + a * 0.5},${b}
-              `} />
+            {/* === Dotted diamond lattice === */}
+            <g fill="none" stroke={color} strokeWidth="0.5" strokeDasharray={`${s * 0.015} ${s * 0.03}`}>
+              {/* Diamond from center-top to center-right to center-bottom to center-left */}
+              <polygon points={`${h},${0} ${s},${h} ${h},${s} ${0},${h}`} />
             </g>
           </pattern>
         </defs>
