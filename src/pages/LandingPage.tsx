@@ -55,46 +55,34 @@ export default function LandingPage() {
           <GlitchEdge side="right" className="absolute right-0 top-0 bottom-0 w-[3px] z-[3]" />
 
           <motion.div
-            className="relative z-10 text-center px-4 max-w-6xl mx-auto"
+            className="relative z-10 text-center px-4 max-w-5xl mx-auto"
             style={{ y: heroParallax }}
           >
-            {/* Overline */}
-            <motion.div
-              className="mb-10 flex items-center gap-4"
-              variants={fadeUp} custom={0} initial="hidden" animate="visible"
-            >
-              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-              <span className="text-[10px] sm:text-xs font-bold tracking-[0.35em] uppercase text-muted-foreground">
-                The Competitive Platform for Video Editors
-              </span>
-              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-            </motion.div>
-
             {/* Logo — massive, dominant */}
             <motion.img
               src={loopgateBrand}
               alt="LOOPGATE"
-              className="h-28 sm:h-44 md:h-60 lg:h-72 w-auto mx-auto mb-3 sm:mb-4"
-              variants={fadeUp} custom={1} initial="hidden" animate="visible"
+              className="h-24 sm:h-40 md:h-56 lg:h-64 w-auto mx-auto"
+              variants={fadeUp} custom={0} initial="hidden" animate="visible"
             />
 
-            {/* Tagline — PNG asset */}
+            {/* Tagline — PNG asset, tight to logo */}
             <motion.div
-              className="mb-6"
-              variants={fadeUp} custom={2} initial="hidden" animate="visible"
+              className="mt-4 sm:mt-6 mb-8 sm:mb-10"
+              variants={fadeUp} custom={1} initial="hidden" animate="visible"
             >
               <img
                 src={whereEditorsCompete}
                 alt="WHERE EDITORS COMPETE"
-                className="h-20 sm:h-28 md:h-36 lg:h-40 w-auto mx-auto"
+                className="h-12 sm:h-16 md:h-20 w-auto mx-auto"
               />
               <h1 className="sr-only">Where Editors Compete</h1>
             </motion.div>
 
             {/* Sub — restrained, confident */}
             <motion.p
-              className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-12 leading-relaxed"
-              variants={fadeUp} custom={3} initial="hidden" animate="visible"
+              className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto mb-12 leading-relaxed tracking-wide"
+              variants={fadeUp} custom={2} initial="hidden" animate="visible"
             >
               Battle head to head. Get rated by real judges.<br className="hidden sm:block" /> Climb the global rankings.
             </motion.p>
@@ -102,7 +90,7 @@ export default function LandingPage() {
             {/* CTAs */}
             <motion.div
               className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-16"
-              variants={fadeUp} custom={4} initial="hidden" animate="visible"
+              variants={fadeUp} custom={3} initial="hidden" animate="visible"
             >
               <Link to="/download">
                 <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-base px-10 py-5 h-auto gap-2.5 tracking-wider">
