@@ -134,7 +134,7 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
     <motion.button
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left rounded-lg shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_4px_20px_-2px_rgba(239,68,68,0.15),0_0_0_1px_rgba(239,68,68,0.1)]"
+      className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_4px_20px_-2px_rgba(239,68,68,0.15),0_0_0_1px_rgba(239,68,68,0.1)]"
     >
       {/* P1 avatar */}
       <Avatar className="w-9 h-9 border border-red-500/40 shrink-0">
@@ -367,9 +367,9 @@ export default function ArenaPage() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-              className="relative overflow-hidden py-3.5 bg-gradient-to-br from-red-600 to-red-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation rounded-xl shadow-[0_6px_24px_-4px_rgba(239,68,68,0.5),0_0_0_1px_rgba(255,255,255,0.08)_inset]"
+              className="relative overflow-hidden py-3.5 bg-gradient-to-br from-red-600 to-red-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation shadow-[0_6px_24px_-4px_rgba(239,68,68,0.5),0_0_0_1px_rgba(255,255,255,0.08)_inset]"
             >
-              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.1)_50%,transparent_70%)] rounded-xl" />
+              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.1)_50%,transparent_70%)]" />
               <Zap className="w-4.5 h-4.5 text-white" />
               <span className="font-display text-[10px] text-white uppercase tracking-wider">Quick Edit 1v1</span>
               <span className="text-[8px] text-white/70 font-bold">+20 IDX • 3hr</span>
@@ -379,7 +379,7 @@ export default function ArenaPage() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-              className="py-3.5 bg-surface-1 border border-border hover:border-red-500/40 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset]"
+              className="py-3.5 bg-surface-1 border border-border hover:border-red-500/40 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset]"
             >
               <Swords className="w-4.5 h-4.5 text-foreground" />
               <span className="font-display text-[10px] text-foreground uppercase tracking-wider">Edit Battle</span>
@@ -394,10 +394,10 @@ export default function ArenaPage() {
               animate={{ opacity: 1, y: 0 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (featuredFight.type === 'quick') navigate(`/quick-fight?id=${featuredFight.data.id}`);
+                if (featuredFight.type === 'quick') navigate(`/fight/${featuredFight.data.id}`);
                 else navigate(`/battle/${featuredFight.data.id}`);
               }}
-              className="w-full mb-3 bg-gradient-to-r from-red-950/50 via-surface-1 to-blue-950/50 border border-red-500/30 rounded-xl p-3 flex items-center gap-3 touch-manipulation shadow-[0_4px_24px_-4px_rgba(239,68,68,0.2),0_0_0_1px_rgba(255,255,255,0.03)]"
+              className="w-full mb-3 bg-gradient-to-r from-red-950/50 via-surface-1 to-blue-950/50 border border-red-500/30 p-3 flex items-center gap-3 touch-manipulation shadow-[0_4px_24px_-4px_rgba(239,68,68,0.2),0_0_0_1px_rgba(255,255,255,0.03)]"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Avatar className="w-9 h-9 border-2 border-red-500/50 shrink-0">
@@ -537,7 +537,7 @@ export default function ArenaPage() {
                 ) : filteredQuickFights.length > 0 ? (
                   <>
                     {filteredQuickFights.slice(0, activeFilter === "quick" ? 50 : 5).map(fight => (
-                      <Quick1v1Row key={fight.id} fight={fight} onClick={() => navigate(`/quick-fight?id=${fight.id}`)} />
+                      <Quick1v1Row key={fight.id} fight={fight} onClick={() => navigate(`/fight/${fight.id}`)} />
                     ))}
                     {activeFilter !== "quick" && filteredQuickFights.length > 5 && (
                       <button
