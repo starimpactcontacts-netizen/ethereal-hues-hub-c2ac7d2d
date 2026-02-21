@@ -13,6 +13,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
+import whereEditorsCompete from '@/assets/where-editors-compete.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -75,17 +76,17 @@ export default function LandingPage() {
               variants={fadeUp} custom={1} initial="hidden" animate="visible"
             />
 
-            {/* Tagline — clearly secondary */}
+            {/* Tagline — PNG asset */}
             <motion.div
               className="mb-6"
               variants={fadeUp} custom={2} initial="hidden" animate="visible"
             >
-              <h1 className="font-display text-xl sm:text-3xl md:text-4xl tracking-[0.06em] leading-[0.85]">
-                WHERE EDITORS
-              </h1>
-              <h1 className="font-display text-xl sm:text-3xl md:text-4xl tracking-[0.06em] leading-[0.85] text-gold">
-                COMPETE
-              </h1>
+              <img
+                src={whereEditorsCompete}
+                alt="WHERE EDITORS COMPETE"
+                className="h-10 sm:h-14 md:h-18 lg:h-20 w-auto mx-auto"
+              />
+              <h1 className="sr-only">Where Editors Compete</h1>
             </motion.div>
 
             {/* Sub — restrained, confident */}
