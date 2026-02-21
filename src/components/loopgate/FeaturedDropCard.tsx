@@ -49,7 +49,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative w-[260px] shrink-0 snap-start overflow-hidden bg-surface-0 border border-border rounded-lg"
+        className="relative w-[260px] shrink-0 snap-start overflow-hidden bg-surface-0 border border-border"
       >
         {/* Poster — compact */}
         <div className="relative w-full h-28 overflow-hidden">
