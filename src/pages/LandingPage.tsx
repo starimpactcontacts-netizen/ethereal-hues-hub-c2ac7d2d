@@ -72,7 +72,7 @@ export default function LandingPage() {
             <motion.img
               src={loopgateBrand}
               alt="LOOPGATE"
-              className="h-28 sm:h-44 md:h-60 lg:h-72 w-auto mx-auto mb-8"
+              className="h-28 sm:h-44 md:h-60 lg:h-72 w-auto mx-auto mb-3 sm:mb-4"
               variants={fadeUp} custom={1} initial="hidden" animate="visible"
             />
 
@@ -84,7 +84,7 @@ export default function LandingPage() {
               <img
                 src={whereEditorsCompete}
                 alt="WHERE EDITORS COMPETE"
-                className="h-10 sm:h-14 md:h-18 lg:h-20 w-auto mx-auto"
+                className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto mx-auto"
               />
               <h1 className="sr-only">Where Editors Compete</h1>
             </motion.div>
