@@ -62,26 +62,26 @@ export default function LandingPage() {
             <motion.img
               src={loopgateBrand}
               alt="LOOPGATE"
-              className="h-24 sm:h-40 md:h-56 lg:h-64 w-auto mx-auto"
+              className="h-32 sm:h-48 md:h-64 lg:h-72 w-auto mx-auto"
               variants={fadeUp} custom={0} initial="hidden" animate="visible"
             />
 
             {/* Tagline — PNG asset, tight to logo */}
             <motion.div
-              className="-mt-4 sm:-mt-6 mb-0"
+              className="-mt-6 sm:-mt-8 md:-mt-10"
               variants={fadeUp} custom={1} initial="hidden" animate="visible"
             >
               <img
                 src={whereEditorsCompete}
                 alt="WHERE EDITORS COMPETE"
-                className="h-16 sm:h-20 md:h-24 w-auto mx-auto"
+                className="h-14 sm:h-18 md:h-22 w-auto mx-auto"
               />
               <h1 className="sr-only">Where Editors Compete</h1>
             </motion.div>
 
             {/* Sub — restrained, confident */}
             <motion.p
-              className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto mt-3 mb-8 leading-relaxed tracking-wide"
+              className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto mt-2 mb-6 leading-relaxed tracking-wide"
               variants={fadeUp} custom={2} initial="hidden" animate="visible"
             >
               Battle head to head. Get rated by real judges.<br className="hidden sm:block" /> Climb the global rankings.
@@ -89,18 +89,18 @@ export default function LandingPage() {
 
             {/* CTAs */}
             <motion.div
-              className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-16"
+              className="flex flex-col sm:flex-row gap-2.5 justify-center items-center mb-16"
               variants={fadeUp} custom={3} initial="hidden" animate="visible"
             >
               <Link to="/download">
-                <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-base px-10 py-5 h-auto gap-2.5 tracking-wider">
-                  <Download className="w-5 h-5" />
+                <Button size="default" className="bg-foreground hover:bg-foreground/90 text-background font-display text-sm px-7 py-2.5 h-auto gap-2 tracking-wider">
+                  <Download className="w-4 h-4" />
                   Download for iOS
                 </Button>
               </Link>
               <Link to="/start">
-                <Button size="lg" variant="outline" className="border-border/60 bg-transparent hover:bg-surface-1 text-foreground font-display text-base px-10 py-5 h-auto gap-2.5 tracking-wider">
-                  <Globe className="w-5 h-5" />
+                <Button size="default" variant="outline" className="border-border/60 bg-transparent hover:bg-surface-1 text-foreground font-display text-sm px-7 py-2.5 h-auto gap-2 tracking-wider">
+                  <Globe className="w-4 h-4" />
                   Open in Browser
                 </Button>
               </Link>
