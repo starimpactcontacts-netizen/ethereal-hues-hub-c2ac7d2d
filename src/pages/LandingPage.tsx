@@ -149,7 +149,7 @@ export default function LandingPage() {
               transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             />
             <motion.p
-              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85]"
+              className="font-display text-2xl sm:text-4xl md:text-5xl leading-[0.9]"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
