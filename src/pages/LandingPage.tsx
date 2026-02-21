@@ -14,6 +14,7 @@ import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
 import whereEditorsCompete from '@/assets/where-editors-compete.png';
+import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -131,6 +132,58 @@ export default function LandingPage() {
               </span>
               <ChevronDown className="w-4 h-4 text-muted-foreground animate-bounce sm:hidden" />
             </div>
+          </motion.div>
+        </section>
+
+        {/* ═══════════════ STATUE — EVERY LEGEND STARTED AT F ═══════════════ */}
+        <section className="relative border-y border-border bg-background overflow-hidden py-24 sm:py-32">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_60%,rgba(212,175,55,0.04),transparent)]" />
+          <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
+            <motion.img
+              src={atlasStatue}
+              alt="Atlas statue"
+              className="w-40 sm:w-52 md:w-60 h-auto mb-10 invert drop-shadow-[0_0_40px_rgba(212,175,55,0.15)]"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <motion.p
+              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85]"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              &ldquo;EVERY LEGEND STARTED AT <span className="text-gold">F CLASS</span>.&rdquo;
+            </motion.p>
+          </div>
+
+          {/* Clio Award badge — bottom right corner */}
+          <motion.div
+            className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-20"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <img
+              src={clioShortlistBadge}
+              alt="Clio Awards 2025 Shortlist"
+              className="h-12 sm:h-16 w-auto opacity-70 hover:opacity-100 transition-opacity"
+            />
+          </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.div
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.8 }}
+          >
+            <span className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Scroll</span>
+            <ChevronDown className="w-4 h-4 text-muted-foreground animate-bounce" />
           </motion.div>
         </section>
 
@@ -322,173 +375,131 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════ FEATURE 3+4: SIDE BY SIDE GRID ═══════════════ */}
-        <section className="border-t border-border bg-surface-0 py-24 sm:py-32 overflow-hidden">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
-              {/* UNITS */}
-              <motion.div
-                className="border border-border bg-background p-8 sm:p-10 relative overflow-hidden group"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7 }}
-              >
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500/60 to-transparent" />
-                <span className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-cyan-400 mb-4">
-                  👥 Units
-                </span>
-                <h3 className="font-display text-3xl sm:text-4xl leading-[0.9] mb-4">BUILD YOUR CREW</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-                  Create or join a Unit. Private channels, role hierarchies, shared assets, announcements. Represent your squad in the rankings.
-                </p>
-                {/* Mini channel mockup */}
-                <div className="border border-border/50 bg-surface-0">
-                  <div className="px-4 py-2.5 flex items-center gap-2.5 border-b border-border/50">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-700 flex items-center justify-center text-[9px] font-bold text-background">VC</div>
-                    <div>
-                      <p className="text-xs font-bold text-foreground">Viral Cartel</p>
-                      <p className="text-[9px] text-cyan-400">128 members</p>
-                    </div>
-                  </div>
-                  <div className="p-3 space-y-0.5">
-                    {['# general', '# showcase', '# battle-talk'].map((ch, i) => (
-                      <div key={ch} className={`flex items-center justify-between px-3 py-1.5 text-xs ${i === 0 ? 'text-cyan-400 bg-cyan-500/5 border border-cyan-500/10' : 'text-muted-foreground'}`}>
-                        <span>{ch}</span>
-                        {i === 2 && <span className="w-4 h-4 rounded-full bg-red-500 text-[9px] text-background font-bold flex items-center justify-center">7</span>}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <ul className="mt-6 space-y-1.5">
-                  {['Channel based communication', 'Editor tiers and roles', 'Unit challenges and XP'].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <div className="w-1 h-1 rounded-full bg-cyan-400" /> {f}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
 
-              {/* ARENA */}
-              <motion.div
-                className="border border-border bg-background p-8 sm:p-10 relative overflow-hidden group"
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.1 }}
-              >
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/60 to-transparent" />
-                <span className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-emerald-400 mb-4">
-                  🏟 Arena
-                </span>
-                <h3 className="font-display text-3xl sm:text-4xl leading-[0.9] mb-4">COMPETE IN LIVE EVENTS</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-                  Official arena events with multiple rounds. Hosted competitions from external communities. Real stakes, real prizes.
-                </p>
-                {/* Mini event mockup */}
-                <div className="border border-border/50 bg-surface-0 overflow-hidden">
-                  <div className="relative h-24 bg-gradient-to-br from-emerald-900/30 via-surface-1 to-gold/5 flex items-center justify-center">
-                    <Trophy className="w-8 h-8 text-gold/20" />
-                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500 px-2 py-0.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-background animate-pulse" />
-                      <span className="text-[8px] font-bold uppercase tracking-wider text-background">Live</span>
+        {/* ═══════════════ FEATURE 3: UNITS & CREWS — CARD STRIP ═══════════════ */}
+        <section className="relative py-24 sm:py-32 overflow-hidden border-y border-border/50">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-cyan-950/[0.02] to-background" />
+          <div className="max-w-6xl mx-auto px-6 relative z-10">
+            <motion.div
+              className="text-center mb-16"
+              initial="hidden" whileInView="visible" viewport={{ once: true }}
+            >
+              <motion.span variants={fadeUp} custom={0} className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-cyan-400 mb-4">
+                🛡 Units
+              </motion.span>
+              <motion.h2 variants={fadeUp} custom={1} className="font-display text-5xl sm:text-6xl md:text-7xl leading-[0.85] mb-5">
+                BUILD YOUR<br />EMPIRE
+              </motion.h2>
+              <motion.p variants={fadeUp} custom={2} className="text-muted-foreground text-base sm:text-lg max-w-lg mx-auto leading-relaxed">
+                Form a unit. Recruit editors. Compete as one. Manage tiers, channels, and a full editor roster.
+              </motion.p>
+            </motion.div>
+
+            {/* Unit cards strip */}
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              {[
+                { name: 'PHANTOM CUTS', members: 34, tag: 'Elite', color: 'border-cyan-500/20' },
+                { name: 'VIRAL CARTEL', members: 128, tag: 'Legendary', color: 'border-gold/20' },
+                { name: 'NOVA EDITS', members: 21, tag: 'Rising', color: 'border-red-500/20' },
+              ].map(unit => (
+                <div key={unit.name} className={`bg-surface-0 border ${unit.color} p-5 sm:p-6`}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center">
+                      <Shield className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <div className="absolute top-2 right-2 bg-background/80 border border-gold/40 px-2 py-0.5">
-                      <span className="font-display text-sm text-gold">$500</span>
+                    <div>
+                      <p className="font-display text-base text-foreground">{unit.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{unit.members} members</p>
                     </div>
                   </div>
-                  <div className="p-3">
-                    <p className="font-display text-sm text-foreground mb-0.5">EDIT WAR: SEASON 3</p>
-                    <p className="text-[10px] text-muted-foreground mb-2">Open Arena • Gold League</p>
-                    <div className="flex gap-1">
-                      {['R1', 'R2', 'R3'].map((r, i) => (
-                        <div key={r} className={`flex-1 text-center py-1 text-[8px] uppercase tracking-wider border ${
-                          i === 1 ? 'bg-gold/15 border-gold/30 text-gold' : 'bg-surface-1 border-border text-muted-foreground/50'
-                        }`}>
-                          {r}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <span className="text-[9px] bg-surface-1 border border-border px-2 py-0.5 text-muted-foreground uppercase tracking-wider font-bold">{unit.tag}</span>
                 </div>
-                <ul className="mt-6 space-y-1.5">
-                  {['Multi round open arenas', 'Hosted external competitions', 'Live leaderboards and chat'].map(f => (
-                    <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <div className="w-1 h-1 rounded-full bg-emerald-400" /> {f}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            </div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              className="mt-12 flex flex-wrap justify-center gap-6 sm:gap-10"
+              initial="hidden" whileInView="visible" viewport={{ once: true }}
+            >
+              {['Full channel system', 'Editor tier management', 'Unit vs unit rivalries'].map((f, i) => (
+                <motion.span key={f} variants={fadeUp} custom={i + 3} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="w-1 h-1 rounded-full bg-cyan-400" /> {f}
+                </motion.span>
+              ))}
+            </motion.div>
           </div>
         </section>
 
-        {/* ═══════════════ FEATURE 5: GLOBAL INDEX — FULL WIDTH ═══════════════ */}
+
+        {/* ═══════════════ FEATURE 4: RANKINGS — LEADERBOARD PREVIEW ═══════════════ */}
         <section className="relative py-24 sm:py-32 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-purple-950/[0.03] to-background" />
-          <GatePattern className="z-[1]" opacity={2} tileSize={80} />
           <div className="max-w-6xl mx-auto px-6 relative z-10">
             <div className="grid md:grid-cols-5 gap-10 md:gap-16 items-center">
-              {/* Rankings — takes 3 cols */}
+              {/* Leaderboard mockup — 3 cols */}
               <motion.div
-                className="md:col-span-3 md:order-2"
-                initial={{ opacity: 0, x: 60 }}
+                className="md:col-span-3 order-2 md:order-1"
+                initial={{ opacity: 0, x: -60 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
                 <div className="border border-border bg-surface-0 overflow-hidden">
-                  <div className="h-[2px] bg-gradient-to-r from-transparent via-purple-500/60 to-transparent" />
+                  <div className="h-[2px] bg-gradient-to-r from-transparent via-foreground/20 to-transparent" />
                   <div className="px-5 py-3.5 flex items-center justify-between border-b border-border/50">
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-foreground">🔥 Global Index</span>
-                    <span className="text-[10px] text-muted-foreground">Updated live</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-foreground">Global Rankings</span>
+                    <span className="text-[10px] text-muted-foreground">Live</span>
                   </div>
-                  <div className="p-4">
+                  <div className="divide-y divide-border/30">
                     {[
-                      { rank: 1, name: 'xMontage', score: 2847, cls: 'S++', clsColor: 'text-gold' },
-                      { rank: 2, name: 'KXZEN', score: 2691, cls: 'S+', clsColor: 'text-gold' },
-                      { rank: 3, name: 'novacut', score: 2534, cls: 'S', clsColor: 'text-gold/80' },
-                      { rank: 4, name: 'FLUX', score: 2410, cls: 'A', clsColor: 'text-emerald-400' },
-                      { rank: 5, name: 'RXSE', score: 2388, cls: 'A', clsColor: 'text-emerald-400' },
-                    ].map((e, i) => (
-                      <div key={e.rank} className={`flex items-center gap-3 px-4 py-3 mb-1 ${i === 0 ? 'bg-gold/5 border border-gold/15' : 'border border-transparent'}`}>
-                        <span className={`font-display text-lg w-6 text-center ${i === 0 ? 'text-gold' : 'text-muted-foreground'}`}>{e.rank}</span>
-                        <div className="w-8 h-8 rounded-full bg-surface-2 border border-border flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-muted-foreground">{e.name[0]}</span>
+                      { rank: 1, name: 'PRXSTIGE', cls: 'S++', index: 2847, change: '+12' },
+                      { rank: 2, name: 'KXZEN', cls: 'S+', index: 2691, change: '+8' },
+                      { rank: 3, name: 'AETHRVL', cls: 'S', index: 2534, change: '-3' },
+                      { rank: 4, name: 'RXSE', cls: 'S', index: 2488, change: '+15' },
+                      { rank: 5, name: 'DVRK', cls: 'A', index: 2301, change: '+4' },
+                    ].map(r => (
+                      <div key={r.rank} className="px-5 py-3 flex items-center gap-4">
+                        <span className={`font-display text-lg w-8 ${r.rank <= 3 ? 'text-gold' : 'text-muted-foreground'}`}>#{r.rank}</span>
+                        <div className="w-8 h-8 rounded-full bg-surface-2 flex items-center justify-center">
+                          <span className="text-xs font-bold text-foreground">{r.name[0]}</span>
                         </div>
                         <div className="flex-1">
-                          <p className={`text-sm font-semibold ${i === 0 ? 'text-gold' : 'text-foreground'}`}>{e.name}</p>
+                          <p className="text-sm font-semibold text-foreground">{r.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{r.cls} Class</p>
                         </div>
-                        <span className={`text-[10px] font-bold ${e.clsColor}`}>{e.cls}</span>
-                        <span className="font-display text-sm text-foreground w-12 text-right">{e.score}</span>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-foreground">{r.index.toLocaleString()}</p>
+                          <p className={`text-[10px] ${r.change.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>{r.change}</p>
+                        </div>
                       </div>
                     ))}
-                    <div className="mt-3 flex items-center justify-center gap-2 py-2.5 bg-surface-1 border border-border/50">
-                      <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-[11px] text-muted-foreground"><span className="text-emerald-400 font-semibold">+23</span> new editors this week</span>
-                    </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Text — takes 2 cols */}
+              {/* Text — 2 cols */}
               <motion.div
-                className="md:col-span-2 md:order-1 text-center md:text-left"
+                className="md:col-span-2 text-center md:text-left order-1 md:order-2"
                 initial="hidden" whileInView="visible" viewport={{ once: true }}
               >
-                <motion.span variants={fadeUp} custom={0} className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-purple-400 mb-4">
-                  🔥 Loop Feed & Index
+                <motion.span variants={fadeUp} custom={0} className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase text-foreground/60 mb-4">
+                  📊 Global Index
                 </motion.span>
                 <motion.h2 variants={fadeUp} custom={1} className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.85] mb-5">
-                  WATCH.<br />LEARN.<br />RISE.
+                  CLIMB THE<br />GLOBAL INDEX
                 </motion.h2>
                 <motion.p variants={fadeUp} custom={2} className="text-muted-foreground text-base leading-relaxed mb-6">
-                  The Loop Feed surfaces the highest rated edits. Track the global index, discover rising talent, and see what S++ really looks like.
+                  Every battle, every review, every win moves you up. A living ranking system that rewards consistency.
                 </motion.p>
                 <motion.ul variants={fadeUp} custom={3} className="space-y-2">
-                  {['Top rated edit discovery', 'Global index rankings', 'Editor profiles and stats'].map(f => (
+                  {['Elo-based global index', 'Class tiers from F to S++', 'Weekly and all-time boards'].map(f => (
                     <li key={f} className="flex items-center gap-2.5 text-sm text-foreground/70 md:justify-start justify-center">
-                      <div className="w-1 h-1 rounded-full bg-purple-400" /> {f}
+                      <div className="w-1 h-1 rounded-full bg-foreground/40" /> {f}
                     </li>
                   ))}
                 </motion.ul>
@@ -496,6 +507,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
 
         {/* ═══════════════ DOWNLOAD STRIP ═══════════════ */}
         <section className="border-y border-border bg-surface-0 py-16 sm:py-20 px-6">
@@ -524,31 +536,6 @@ export default function LandingPage() {
                 ))}
               </div>
             </motion.div>
-          </div>
-        </section>
-
-        {/* ═══════════════ STATUE — EVERY LEGEND STARTED AT F ═══════════════ */}
-        <section className="relative border-y border-border bg-background overflow-hidden py-24 sm:py-32">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_60%,rgba(212,175,55,0.04),transparent)]" />
-          <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
-            <motion.img
-              src={atlasStatue}
-              alt="Atlas statue"
-              className="w-40 sm:w-52 md:w-60 h-auto mb-10 invert drop-shadow-[0_0_40px_rgba(212,175,55,0.15)]"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            />
-            <motion.p
-              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85]"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
-              &ldquo;EVERY LEGEND STARTED AT <span className="text-gold">F CLASS</span>.&rdquo;
-            </motion.p>
           </div>
         </section>
 
