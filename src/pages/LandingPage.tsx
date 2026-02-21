@@ -68,13 +68,13 @@ export default function LandingPage() {
 
             {/* Tagline — PNG asset, tight to logo */}
             <motion.div
-              className="mt-4 sm:mt-6 mb-8 sm:mb-10"
+              className="-mt-2 sm:-mt-4 mb-6"
               variants={fadeUp} custom={1} initial="hidden" animate="visible"
             >
               <img
                 src={whereEditorsCompete}
                 alt="WHERE EDITORS COMPETE"
-                className="h-12 sm:h-16 md:h-20 w-auto mx-auto"
+                className="h-16 sm:h-20 md:h-24 w-auto mx-auto"
               />
               <h1 className="sr-only">Where Editors Compete</h1>
             </motion.div>
