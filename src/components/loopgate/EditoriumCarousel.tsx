@@ -74,8 +74,8 @@ export default function EditoriumCarousel() {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
-                <div className="absolute top-1.5 left-1.5 bg-gold/90 px-1.5 py-0.5 rounded-sm">
-                  <span className="text-[7px] font-bold text-background uppercase tracking-wider">Feature</span>
+                <div className="absolute top-1.5 left-1.5 bg-destructive px-1.5 py-0.5 rounded-sm">
+                  <span className="text-[7px] font-bold text-white uppercase tracking-wider">Feature</span>
                 </div>
               </div>
 
