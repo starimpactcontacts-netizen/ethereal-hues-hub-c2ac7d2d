@@ -719,10 +719,11 @@ export default function CrewsPage() {
                   <section>
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-sm font-semibold flex items-center gap-2">
-                        <Newspaper className="w-4 h-4 text-destructive" />
-                        <span>Featured In Editorium</span>
+                        <Award className="w-4 h-4 text-gold" />
+                        <span className="text-gold">Featured</span>
+                        <span className="px-1.5 py-0.5 rounded bg-destructive/20 text-[7px] text-destructive font-bold uppercase tracking-widest">Editorium</span>
                       </h2>
-                      <Link to="/editorium" className="text-[10px] text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1">
+                      <Link to="/editorium" className="text-[10px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
                         VIEW ALL <ArrowRight size={10} />
                       </Link>
                     </div>
@@ -776,46 +777,8 @@ export default function CrewsPage() {
                   </section>
                 )}
 
-                {/* Featured */}
-                {(activeCategory === "all" || activeCategory === "featured") && featuredCrews.length > 0 && (
-                  <section>
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-sm font-semibold flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-gold" />
-                        Featured
-                      </h2>
-                      <span className="text-[10px] text-muted-foreground">{featuredCrews.length} units</span>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {featuredCrews.map((crew, i) => {
-                        const edArticle = editoriumUnits.find(eu => eu.unit_id === crew.id);
-                        return (
-                          <div key={crew.id} className="relative">
-                            <UnitCard
-                              crew={crew}
-                              index={i}
-                              onClick={() => navigate(`/units/${crew.id}`)}
-                              showActions={!!user && !myCrewIds.includes(crew.id)}
-                              onJoinPrimary={() => handleJoinCrew(crew, true)}
-                              onJoinSecondary={() => handleJoinCrew(crew, false)}
-                              canJoinPrimary={!primaryCrew}
-                              canJoinSecondary={canJoinSecondary}
-                            />
-                            {edArticle && (
-                              <Link
-                                to={`/editorium/${edArticle.article_slug}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="block mt-1 px-2 py-1.5 bg-destructive/10 border border-destructive/20 rounded-b-lg text-[9px] text-destructive hover:text-white transition-colors truncate"
-                              >
-                                📰 {edArticle.article_title}
-                              </Link>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                )}
+
+
                 {/* All Units */}
                 <section>
                   <div className="flex items-center justify-between mb-4">
