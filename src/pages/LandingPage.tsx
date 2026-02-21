@@ -12,7 +12,7 @@ import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
-import statueAesthetic from '@/assets/statue-aesthetic.png';
+import atlasStatue from '@/assets/atlas-statue.png';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -148,23 +148,23 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_60%,rgba(212,175,55,0.04),transparent)]" />
           <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
             <motion.img
-              src={statueAesthetic}
-              alt="Classical statue"
+              src={atlasStatue}
+              alt="Atlas statue"
               className="w-40 sm:w-52 md:w-60 h-auto mb-10 drop-shadow-[0_0_40px_rgba(212,175,55,0.15)]"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
             />
-            <motion.h2
+            <motion.p
               className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85]"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >
-              EVERY LEGEND STARTED AT <span className="text-gold">F CLASS</span>
-            </motion.h2>
+              &ldquo;EVERY LEGEND STARTED AT <span className="text-gold">F CLASS</span>.&rdquo;
+            </motion.p>
           </div>
         </section>
 
@@ -266,17 +266,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ═══════════════ EDITORIAL PULL QUOTE ═══════════════ */}
-        <section className="border-y border-border bg-surface-0 overflow-hidden">
-          <div className="max-w-4xl mx-auto px-6 py-16 sm:py-20 text-center">
-            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1 }}>
-              <p className="font-display text-2xl sm:text-3xl md:text-4xl leading-[1.15] text-foreground mb-4">
-                "WE DIDN'T BUILD A SOCIAL NETWORK.<br className="hidden sm:block" /> WE BUILT A <span className="text-gold">PROVING GROUND</span>."
-              </p>
-              <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">— The Loopgate Standard</span>
-            </motion.div>
-          </div>
-        </section>
 
         {/* ═══════════════ FEATURE 2: JUDGE SYSTEM — ASYMMETRIC GRID ═══════════════ */}
         <section className="relative py-24 sm:py-32 overflow-hidden">
