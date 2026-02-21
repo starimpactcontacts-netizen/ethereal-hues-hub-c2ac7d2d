@@ -1,39 +1,36 @@
 /**
- * GatePattern — Luxury monogram diamond lattice.
- * Kingdom Hearts / playing card style: diagonal grid with alternating
- * crowns and 4-pointed stars. Dark-on-dark prestige aesthetic.
+ * GatePattern — Minimal crosshair dot grid.
+ * Subtle, barely-visible geometric texture. Sits behind content.
  */
 
 import { cn } from '@/lib/utils';
 
 interface GatePatternProps {
   className?: string;
-  /** Opacity 0-100, default 5 */
+  /** Opacity 0-100, default 3 */
   opacity?: number;
   /** Pattern color */
   color?: string;
-  /** Tile size in px, default 60 */
+  /** Tile size in px, default 48 */
   tileSize?: number;
 }
 
 export default function GatePattern({
   className,
-  opacity = 5,
+  opacity = 3,
   color = 'white',
-  tileSize = 60,
+  tileSize = 48,
 }: GatePatternProps) {
-  const patternId = `gate-monogram-${tileSize}`;
+  const patternId = `gate-crosshair-${tileSize}`;
   const s = tileSize;
   const h = s / 2;
-
-  // Diamond grid line width
-  const gridW = s * 0.008;
-  // Icon sizes
-  const iconS = s * 0.18;
+  const arm = s * 0.08; // short crosshair arm
+  const dotR = s * 0.015; // tiny dot
+  const strokeW = s * 0.012;
 
   return (
     <div
-      className={cn('absolute inset-0 pointer-events-none', className)}
+      className={cn('absolute inset-0 pointer-events-none -z-10', className)}
       style={{ opacity: opacity / 100 }}
     >
       <svg
@@ -48,46 +45,15 @@ export default function GatePattern({
             width={s} height={s}
             patternUnits="userSpaceOnUse"
           >
-            {/* Diamond grid lines */}
-            <g stroke={color} strokeWidth={gridW} fill="none">
-              {/* Diagonal lines forming diamond grid */}
-              <line x1={0} y1={0} x2={s} y2={s} />
-              <line x1={s} y1={0} x2={0} y2={s} />
-              <line x1={h} y1={0} x2={s} y2={h} />
-              <line x1={s} y1={h} x2={h} y2={s} />
-              <line x1={h} y1={0} x2={0} y2={h} />
-              <line x1={0} y1={h} x2={h} y2={s} />
+            {/* Center crosshair */}
+            <g stroke={color} strokeWidth={strokeW} strokeLinecap="round">
+              <line x1={h - arm} y1={h} x2={h + arm} y2={h} />
+              <line x1={h} y1={h - arm} x2={h} y2={h + arm} />
             </g>
 
-            {/* Crown icon at center of tile */}
-            <g transform={`translate(${h}, ${h})`} fill={color} stroke="none">
-              {/* Simple 3-point crown */}
-              {(() => {
-                const cw = iconS * 0.9;
-                const ch = iconS * 0.7;
-                return (
-                  <path d={`M${-cw / 2},${ch * 0.2} L${-cw / 2},${-ch * 0.1} L${-cw * 0.25},${ch * 0.05} L${0},${-ch * 0.4} L${cw * 0.25},${ch * 0.05} L${cw / 2},${-ch * 0.1} L${cw / 2},${ch * 0.2} Z`} />
-                );
-              })()}
-            </g>
-
-            {/* 4-pointed star at corners (where tiles meet) */}
-            {[[0, 0], [s, 0], [0, s], [s, s]].map(([cx, cy], i) => {
-              const r = iconS * 0.45;
-              const ri = r * 0.25;
-              return (
-                <polygon
-                  key={i}
-                  points={`${cx},${cy - r} ${cx + ri},${cy - ri} ${cx + r},${cy} ${cx + ri},${cy + ri} ${cx},${cy + r} ${cx - ri},${cy + ri} ${cx - r},${cy} ${cx - ri},${cy - ri}`}
-                  fill={color}
-                  stroke="none"
-                />
-              );
-            })}
-
-            {/* Small dot accents at diamond midpoints */}
-            {[[h, 0], [s, h], [h, s], [0, h]].map(([cx, cy], i) => (
-              <circle key={`d${i}`} cx={cx} cy={cy} r={s * 0.012} fill={color} />
+            {/* Corner dots */}
+            {[[0, 0], [s, 0], [0, s], [s, s]].map(([cx, cy], i) => (
+              <circle key={i} cx={cx} cy={cy} r={dotR} fill={color} />
             ))}
           </pattern>
         </defs>
