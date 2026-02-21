@@ -208,40 +208,53 @@ export default function EditoriumArticlePage() {
               );
             }
 
-            // Render inline bold (**text** or __text__) and italic (*text* or _text_)
+            // Render inline formatting: URLs, bold, italic
             const renderInlineFormatting = (text: string) => {
               const parts: React.ReactNode[] = [];
               let remaining = text;
               let key = 0;
               
               while (remaining.length > 0) {
-                // Bold: **text** or __text__
+                // Find the earliest match among URL, bold, italic
+                const urlMatch = remaining.match(/(https?:\/\/[^\s<>"']+)/);
                 const boldMatch = remaining.match(/(\*\*|__)(.+?)\1/);
-                if (boldMatch && boldMatch.index !== undefined) {
-                  if (boldMatch.index > 0) {
-                    parts.push(<span key={key++}>{remaining.slice(0, boldMatch.index)}</span>);
-                  }
-                  parts.push(<strong key={key++} className="text-foreground font-semibold">{boldMatch[2]}</strong>);
-                  remaining = remaining.slice(boldMatch.index + boldMatch[0].length);
-                  continue;
-                }
-                
-                // Italic: *text* or _text_ (but not ** or __)
                 const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)|(?<!_)_(?!_)(.+?)(?<!_)_(?!_)/);
-                if (italicMatch && italicMatch.index !== undefined) {
-                  if (italicMatch.index > 0) {
-                    parts.push(<span key={key++}>{remaining.slice(0, italicMatch.index)}</span>);
-                  }
-                  parts.push(<em key={key++} className="italic">{italicMatch[1] || italicMatch[2]}</em>);
-                  remaining = remaining.slice(italicMatch.index + italicMatch[0].length);
-                  continue;
+                
+                // Pick earliest
+                const candidates = [
+                  urlMatch && urlMatch.index !== undefined ? { type: 'url', match: urlMatch, idx: urlMatch.index } : null,
+                  boldMatch && boldMatch.index !== undefined ? { type: 'bold', match: boldMatch, idx: boldMatch.index } : null,
+                  italicMatch && italicMatch.index !== undefined ? { type: 'italic', match: italicMatch, idx: italicMatch.index } : null,
+                ].filter(Boolean).sort((a, b) => a!.idx - b!.idx);
+                
+                if (candidates.length === 0) {
+                  parts.push(<span key={key++}>{remaining}</span>);
+                  break;
                 }
                 
-                parts.push(<span key={key++}>{remaining}</span>);
-                break;
+                const winner = candidates[0]!;
+                if (winner.idx > 0) {
+                  parts.push(<span key={key++}>{remaining.slice(0, winner.idx)}</span>);
+                }
+                
+                if (winner.type === 'url') {
+                  const url = winner.match[1];
+                  parts.push(
+                    <a key={key++} href={url} target="_blank" rel="noopener noreferrer" className="text-destructive underline underline-offset-2 hover:text-foreground transition-colors break-all">
+                      {url}
+                    </a>
+                  );
+                  remaining = remaining.slice(winner.idx + winner.match[0].length);
+                } else if (winner.type === 'bold') {
+                  parts.push(<strong key={key++} className="text-foreground font-semibold">{winner.match[2]}</strong>);
+                  remaining = remaining.slice(winner.idx + winner.match[0].length);
+                } else {
+                  parts.push(<em key={key++} className="italic">{winner.match[1] || winner.match[2]}</em>);
+                  remaining = remaining.slice(winner.idx + winner.match[0].length);
+                }
               }
               
-              return parts.length === 1 ? text : <>{parts}</>;
+              return parts.length === 1 && typeof parts[0] === 'string' ? text : <>{parts}</>;
             };
 
             // Auto-detect em-dash pull quotes: starts with — 
