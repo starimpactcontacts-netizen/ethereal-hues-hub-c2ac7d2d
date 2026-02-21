@@ -377,7 +377,9 @@ export default function CrewsPage() {
     }
   };
 
-  const featuredCrews = crews.filter(c => c.is_featured);
+  // Auto-include editorium units in featured
+  const editoriumUnitIds = new Set(editoriumUnits.map(eu => eu.unit_id));
+  const featuredCrews = crews.filter(c => c.is_featured || editoriumUnitIds.has(c.id));
   const getPrimaryCrewDetails = () => crews.find(c => c.id === primaryCrew?.crew_id);
   const getSecondaryCrewDetails = () => secondaryCrews.map(s => crews.find(c => c.id === s.crew_id)).filter(Boolean) as Crew[];
 
@@ -777,28 +779,43 @@ export default function CrewsPage() {
                 {/* Featured */}
                 {(activeCategory === "all" || activeCategory === "featured") && featuredCrews.length > 0 && (
                   <section>
-                    <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-gold" />
-                      Featured
-                    </h2>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-sm font-semibold flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-gold" />
+                        Featured
+                      </h2>
+                      <span className="text-[10px] text-muted-foreground">{featuredCrews.length} units</span>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {featuredCrews.slice(0, 4).map((crew, i) => (
-                        <UnitCard
-                          key={crew.id}
-                          crew={crew}
-                          index={i}
-                          onClick={() => navigate(`/units/${crew.id}`)}
-                          showActions={!!user && !myCrewIds.includes(crew.id)}
-                          onJoinPrimary={() => handleJoinCrew(crew, true)}
-                          onJoinSecondary={() => handleJoinCrew(crew, false)}
-                          canJoinPrimary={!primaryCrew}
-                          canJoinSecondary={canJoinSecondary}
-                        />
-                      ))}
+                      {featuredCrews.map((crew, i) => {
+                        const edArticle = editoriumUnits.find(eu => eu.unit_id === crew.id);
+                        return (
+                          <div key={crew.id} className="relative">
+                            <UnitCard
+                              crew={crew}
+                              index={i}
+                              onClick={() => navigate(`/units/${crew.id}`)}
+                              showActions={!!user && !myCrewIds.includes(crew.id)}
+                              onJoinPrimary={() => handleJoinCrew(crew, true)}
+                              onJoinSecondary={() => handleJoinCrew(crew, false)}
+                              canJoinPrimary={!primaryCrew}
+                              canJoinSecondary={canJoinSecondary}
+                            />
+                            {edArticle && (
+                              <Link
+                                to={`/editorium/${edArticle.article_slug}`}
+                                onClick={(e) => e.stopPropagation()}
+                                className="block mt-1 px-2 py-1.5 bg-destructive/10 border border-destructive/20 rounded-b-lg text-[9px] text-destructive hover:text-white transition-colors truncate"
+                              >
+                                📰 {edArticle.article_title}
+                              </Link>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </section>
                 )}
-
                 {/* All Units */}
                 <section>
                   <div className="flex items-center justify-between mb-4">
