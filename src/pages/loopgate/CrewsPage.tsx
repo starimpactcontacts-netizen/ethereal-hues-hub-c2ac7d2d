@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Target, Flag, Layers, Sparkles, Circle, LogOut, ArrowRight, Clock, AlertCircle, Settings } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Target, Flag, Layers, Sparkles, Circle, LogOut, ArrowRight, Clock, AlertCircle, Settings, Newspaper } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -230,6 +230,7 @@ export default function CrewsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"discover" | "my-units">("discover");
   const [activeCategory, setActiveCategory] = useState<"all" | "featured" | "top">("all");
+  const [editoriumUnits, setEditoriumUnits] = useState<{ unit_id: string; article_title: string; article_slug: string; cover_image_url: string | null }[]>([]);
 
   useEffect(() => {
     if (primaryCrew || secondaryCrews.length > 0) {
@@ -239,7 +240,27 @@ export default function CrewsPage() {
 
   useEffect(() => {
     fetchCrews();
+    fetchEditoriumUnits();
   }, [profile?.crew_id]);
+
+  const fetchEditoriumUnits = async () => {
+    const { data } = await supabase
+      .from('editorium_articles')
+      .select('unit_id, title, slug, cover_image_url')
+      .eq('status', 'published')
+      .not('unit_id', 'is', null)
+      .order('published_at', { ascending: false });
+    if (data) {
+      // Deduplicate by unit_id, keep most recent article
+      const seen = new Set<string>();
+      const unique = data.filter(a => {
+        if (seen.has(a.unit_id!)) return false;
+        seen.add(a.unit_id!);
+        return true;
+      }).map(a => ({ unit_id: a.unit_id!, article_title: a.title, article_slug: a.slug, cover_image_url: a.cover_image_url }));
+      setEditoriumUnits(unique);
+    }
+  };
 
   const fetchCrews = async () => {
     setLoading(true);
@@ -691,6 +712,68 @@ export default function CrewsPage() {
           {activeTab === "discover" && (
             <AnimatePresence mode="wait">
               <motion.div key="discover" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                {/* Editorium Featured Units */}
+                {editoriumUnits.length > 0 && (activeCategory === "all" || activeCategory === "featured") && (
+                  <section>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-sm font-semibold flex items-center gap-2">
+                        <Newspaper className="w-4 h-4 text-destructive" />
+                        <span>Featured In Editorium</span>
+                      </h2>
+                      <Link to="/editorium" className="text-[10px] text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1">
+                        VIEW ALL <ArrowRight size={10} />
+                      </Link>
+                    </div>
+                    <div className="space-y-2">
+                      {editoriumUnits.map((eu) => {
+                        const crew = crews.find(c => c.id === eu.unit_id);
+                        if (!crew) return null;
+                        return (
+                          <motion.div
+                            key={eu.unit_id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="rounded-lg border border-destructive/20 bg-surface-1/60 overflow-hidden group cursor-pointer"
+                            onClick={() => navigate(`/units/${crew.id}`)}
+                          >
+                            <div className="flex items-center gap-3 p-3">
+                              {/* Unit avatar */}
+                              <div className="w-11 h-11 rounded-lg overflow-hidden bg-surface-0 border border-border/40 flex items-center justify-center shrink-0">
+                                {crew.avatar_url ? (
+                                  <img src={crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="text-muted-foreground scale-75">
+                                    {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="text-sm font-semibold truncate group-hover:text-white transition-colors">{crew.name}</h3>
+                                  <span className="shrink-0 px-1.5 py-0.5 rounded bg-destructive/20 text-[8px] text-destructive font-bold uppercase tracking-wider">Editorium</span>
+                                </div>
+                                <Link
+                                  to={`/editorium/${eu.article_slug}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="text-[11px] text-muted-foreground hover:text-destructive transition-colors line-clamp-1 mt-0.5 block"
+                                >
+                                  📰 {eu.article_title}
+                                </Link>
+                              </div>
+                              {eu.cover_image_url && (
+                                <div className="w-16 h-11 rounded overflow-hidden shrink-0">
+                                  <img src={eu.cover_image_url} alt="" className="w-full h-full object-cover" />
+                                </div>
+                              )}
+                              <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" />
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </section>
+                )}
+
                 {/* Featured */}
                 {(activeCategory === "all" || activeCategory === "featured") && featuredCrews.length > 0 && (
                   <section>
