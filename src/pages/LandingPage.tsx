@@ -68,7 +68,7 @@ export default function LandingPage() {
 
             {/* Tagline — PNG asset, tight to logo */}
             <motion.div
-              className="-mt-4 sm:-mt-6 mb-2"
+              className="-mt-4 sm:-mt-6 mb-0"
               variants={fadeUp} custom={1} initial="hidden" animate="visible"
             >
               <img
@@ -81,7 +81,7 @@ export default function LandingPage() {
 
             {/* Sub — restrained, confident */}
             <motion.p
-              className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto mb-8 leading-relaxed tracking-wide"
+              className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto mt-3 mb-8 leading-relaxed tracking-wide"
               variants={fadeUp} custom={2} initial="hidden" animate="visible"
             >
               Battle head to head. Get rated by real judges.<br className="hidden sm:block" /> Climb the global rankings.
