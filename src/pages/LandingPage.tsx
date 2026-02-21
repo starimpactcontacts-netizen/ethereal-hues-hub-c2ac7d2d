@@ -68,7 +68,7 @@ export default function LandingPage() {
 
             {/* Tagline — PNG asset, tight to logo */}
             <motion.div
-              className="-mt-2 sm:-mt-4 mb-6"
+              className="-mt-4 sm:-mt-6 mb-4"
               variants={fadeUp} custom={1} initial="hidden" animate="visible"
             >
               <img
