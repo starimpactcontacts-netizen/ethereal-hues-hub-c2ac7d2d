@@ -67,23 +67,23 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
-            {/* Logo — massive, dramatic */}
+            {/* Logo — massive, dominant */}
             <motion.img
               src={loopgateBrand}
               alt="LOOPGATE"
-              className="h-20 sm:h-32 md:h-44 lg:h-56 w-auto mx-auto mb-6"
+              className="h-28 sm:h-44 md:h-60 lg:h-72 w-auto mx-auto mb-8"
               variants={fadeUp} custom={1} initial="hidden" animate="visible"
             />
 
-            {/* Tagline — editorial split */}
+            {/* Tagline — clearly secondary */}
             <motion.div
               className="mb-6"
               variants={fadeUp} custom={2} initial="hidden" animate="visible"
             >
-              <h1 className="font-display text-[2.5rem] sm:text-6xl md:text-7xl lg:text-8xl tracking-[0.06em] leading-[0.85]">
+              <h1 className="font-display text-xl sm:text-3xl md:text-4xl tracking-[0.06em] leading-[0.85]">
                 WHERE EDITORS
               </h1>
-              <h1 className="font-display text-[2.5rem] sm:text-6xl md:text-7xl lg:text-8xl tracking-[0.06em] leading-[0.85] text-gold">
+              <h1 className="font-display text-xl sm:text-3xl md:text-4xl tracking-[0.06em] leading-[0.85] text-gold">
                 COMPETE
               </h1>
             </motion.div>
