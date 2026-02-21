@@ -60,12 +60,14 @@ export default function LandingPage() {
           >
             {/* Overline */}
             <motion.div
-              className="mb-8"
+              className="mb-10 flex items-center gap-4"
               variants={fadeUp} custom={0} initial="hidden" animate="visible"
             >
-              <span className="inline-block text-[10px] sm:text-xs font-bold tracking-[0.35em] uppercase text-muted-foreground border-b border-border pb-2">
+              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+              <span className="text-[10px] sm:text-xs font-bold tracking-[0.35em] uppercase text-muted-foreground">
                 The Competitive Platform for Video Editors
               </span>
+              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
             </motion.div>
 
             {/* Logo — massive, dominant */}
@@ -84,7 +86,7 @@ export default function LandingPage() {
               <img
                 src={whereEditorsCompete}
                 alt="WHERE EDITORS COMPETE"
-                className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto mx-auto"
+                className="h-20 sm:h-28 md:h-36 lg:h-40 w-auto mx-auto"
               />
               <h1 className="sr-only">Where Editors Compete</h1>
             </motion.div>
