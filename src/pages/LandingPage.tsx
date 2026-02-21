@@ -74,7 +74,7 @@ export default function LandingPage() {
               <img
                 src={whereEditorsCompete}
                 alt="WHERE EDITORS COMPETE"
-                className="h-14 sm:h-18 md:h-22 w-auto mx-auto"
+                className="h-20 sm:h-26 md:h-32 w-auto mx-auto"
               />
               <h1 className="sr-only">Where Editors Compete</h1>
             </motion.div>
