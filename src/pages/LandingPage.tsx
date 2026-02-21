@@ -143,30 +143,6 @@ export default function LandingPage() {
           </motion.div>
         </section>
 
-        {/* ═══════════════ STATUE — EVERY LEGEND STARTED AT F ═══════════════ */}
-        <section className="relative border-b border-border bg-background overflow-hidden py-20 sm:py-28">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_60%,rgba(212,175,55,0.04),transparent)]" />
-          <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
-            <motion.img
-              src={atlasStatue}
-              alt="Atlas statue"
-              className="w-40 sm:w-52 md:w-60 h-auto mb-10 drop-shadow-[0_0_40px_rgba(212,175,55,0.15)]"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            />
-            <motion.p
-              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85]"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
-              &ldquo;EVERY LEGEND STARTED AT <span className="text-gold">F CLASS</span>.&rdquo;
-            </motion.p>
-          </div>
-        </section>
 
         {/* ═══════════════ FEATURE 1: 1v1 — FULL WIDTH CINEMATIC ═══════════════ */}
         <section className="relative py-24 sm:py-32 overflow-hidden">
@@ -557,6 +533,31 @@ export default function LandingPage() {
                 ))}
               </div>
             </motion.div>
+          </div>
+        </section>
+
+        {/* ═══════════════ STATUE — EVERY LEGEND STARTED AT F ═══════════════ */}
+        <section className="relative border-y border-border bg-background overflow-hidden py-24 sm:py-32">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_70%_at_50%_60%,rgba(212,175,55,0.04),transparent)]" />
+          <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col items-center text-center">
+            <motion.img
+              src={atlasStatue}
+              alt="Atlas statue"
+              className="w-40 sm:w-52 md:w-60 h-auto mb-10 invert drop-shadow-[0_0_40px_rgba(212,175,55,0.15)]"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <motion.p
+              className="font-display text-3xl sm:text-5xl md:text-6xl leading-[0.85]"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              &ldquo;EVERY LEGEND STARTED AT <span className="text-gold">F CLASS</span>.&rdquo;
+            </motion.p>
           </div>
         </section>
 
