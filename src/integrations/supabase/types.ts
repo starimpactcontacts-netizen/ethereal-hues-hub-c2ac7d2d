@@ -3522,11 +3522,17 @@ export type Database = {
           player_1_score: number | null
           player_1_submission_url: string | null
           player_1_submitted_at: string | null
+          player_1_theme_drop_id: string | null
+          player_1_theme_song_name: string | null
+          player_1_theme_song_preview_url: string | null
           player_2_id: string | null
           player_2_platform: string | null
           player_2_score: number | null
           player_2_submission_url: string | null
           player_2_submitted_at: string | null
+          player_2_theme_drop_id: string | null
+          player_2_theme_song_name: string | null
+          player_2_theme_song_preview_url: string | null
           starts_at: string | null
           status: string
           updated_at: string
@@ -3552,11 +3558,17 @@ export type Database = {
           player_1_score?: number | null
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
+          player_1_theme_drop_id?: string | null
+          player_1_theme_song_name?: string | null
+          player_1_theme_song_preview_url?: string | null
           player_2_id?: string | null
           player_2_platform?: string | null
           player_2_score?: number | null
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
+          player_2_theme_drop_id?: string | null
+          player_2_theme_song_name?: string | null
+          player_2_theme_song_preview_url?: string | null
           starts_at?: string | null
           status?: string
           updated_at?: string
@@ -3582,11 +3594,17 @@ export type Database = {
           player_1_score?: number | null
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
+          player_1_theme_drop_id?: string | null
+          player_1_theme_song_name?: string | null
+          player_1_theme_song_preview_url?: string | null
           player_2_id?: string | null
           player_2_platform?: string | null
           player_2_score?: number | null
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
+          player_2_theme_drop_id?: string | null
+          player_2_theme_song_name?: string | null
+          player_2_theme_song_preview_url?: string | null
           starts_at?: string | null
           status?: string
           updated_at?: string
@@ -3609,10 +3627,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "practice_matches_player_1_theme_drop_id_fkey"
+            columns: ["player_1_theme_drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "practice_matches_player_2_id_fkey"
             columns: ["player_2_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_matches_player_2_theme_drop_id_fkey"
+            columns: ["player_2_theme_drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
             referencedColumns: ["id"]
           },
           {
@@ -5105,6 +5137,16 @@ export type Database = {
       mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: undefined
+      }
+      pick_practice_song: {
+        Args: {
+          p_drop_id: string
+          p_match_id: string
+          p_song_name: string
+          p_song_preview_url: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       post_hosted_comp_system_message: {
         Args: {

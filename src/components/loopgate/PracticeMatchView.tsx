@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   ArrowLeft, Clock, User, Zap, CheckCircle2, 
-  AlertCircle, Loader2, Send, Trophy, Scale
+  AlertCircle, Loader2, Send, Trophy, Scale, Music
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { usePracticeMatch, PracticeMatch } from "@/hooks/usePracticeMatch";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow, differenceInSeconds } from "date-fns";
+import { toast } from "sonner";
+import SongPicker from "./SongPicker";
 
 interface PracticeMatchViewProps {
   matchId: string;
@@ -27,6 +30,7 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
   const [submissionUrl, setSubmissionUrl] = useState("");
   const [platform, setPlatform] = useState<string>("");
   const [timeLeft, setTimeLeft] = useState<string>("");
+  const [pickingLoading, setPickingLoading] = useState(false);
 
   // Find the match
   const match = activeMatch?.id === matchId 
@@ -42,6 +46,12 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
     : match?.player_1_submitted_at;
   const opponent = isPlayer1 ? match?.player_2 : match?.player_1;
   const me = isPlayer1 ? match?.player_1 : match?.player_2;
+
+  // Song pick status
+  const myThemeDropId = isPlayer1 ? match?.player_1_theme_drop_id : match?.player_2_theme_drop_id;
+  const mySongName = isPlayer1 ? match?.player_1_theme_song_name : match?.player_2_theme_song_name;
+  const opponentThemeDropId = isPlayer1 ? match?.player_2_theme_drop_id : match?.player_1_theme_drop_id;
+  const isSongPickPhase = match?.status === "matched";
 
   // Timer countdown
   useEffect(() => {
@@ -78,6 +88,42 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
   useEffect(() => {
     checkStatus();
   }, [checkStatus]);
+
+  const handleSongPick = async (drop: { id: string; song_name: string; song_preview_url: string | null }) => {
+    if (!user?.id || !match) return;
+
+    setPickingLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("pick_practice_song", {
+        p_match_id: match.id,
+        p_user_id: user.id,
+        p_drop_id: drop.id,
+        p_song_name: drop.song_name,
+        p_song_preview_url: drop.song_preview_url || "",
+      });
+
+      if (error) throw error;
+
+      const result = data as unknown as { success: boolean; started?: boolean; error?: string };
+
+      if (!result.success) {
+        toast.error(result.error || "Failed to pick song");
+        return;
+      }
+
+      toast.success(`🎵 ${drop.song_name}`, {
+        description: result.started
+          ? "Both songs picked — match started!"
+          : "Waiting for opponent to pick...",
+      });
+
+      await checkStatus();
+    } catch (err: any) {
+      toast.error("Failed to pick song", { description: err.message });
+    } finally {
+      setPickingLoading(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!submissionUrl || !platform) return;
@@ -116,14 +162,16 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-xl text-foreground tracking-wide">
-                1v1 MATCH
+                {isSongPickPhase ? "PICK YOUR SONG" : "1v1 MATCH"}
               </h1>
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                {match.match_type === "quick_spar" ? "Quick Spar" : "Extended"} • {match.duration_minutes} min
+                {isSongPickPhase
+                  ? "Choose a featured track to edit to"
+                  : `${match.match_type === "quick_spar" ? "Quick Spar" : "Extended"} • ${match.duration_minutes} min`}
               </p>
             </div>
 
-            {!isCompleted && !isJudging && (
+            {!isCompleted && !isJudging && !isSongPickPhase && (
               <div className="flex items-center gap-2 bg-surface-1 border border-border px-3 py-2">
                 <Clock className="w-4 h-4 text-amber-400" />
                 <span className="font-mono text-sm text-foreground">{timeLeft}</span>
@@ -134,81 +182,184 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
       </div>
 
       <div className="px-4 mt-4 space-y-4">
-        {/* VS Display */}
-        <div className="bg-surface-1 border border-border p-4">
-          <div className="flex items-center justify-between">
-            {/* Me */}
-            <div className="text-center flex-1">
-              <div className={`
-                w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-2
-                ${mySubmission 
-                  ? "bg-emerald-500/20 border-2 border-emerald-500/50" 
-                  : "bg-surface-2 border-2 border-border"
-                }
-              `}>
-                {me?.avatar_url ? (
-                  <img src={me.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <User className="w-6 h-6 text-muted-foreground" />
-                )}
+        {/* Song Pick Phase */}
+        {isSongPickPhase && (
+          <>
+            {/* VS display during song pick */}
+            <div className="bg-surface-1 border border-border p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-center flex-1">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-surface-2 border-2 border-border flex items-center justify-center mb-1.5 overflow-hidden">
+                    {me?.avatar_url ? (
+                      <img src={me.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-5 h-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <p className="text-xs font-medium text-foreground">{me?.username || "You"}</p>
+                  {myThemeDropId ? (
+                    <div className="flex items-center justify-center gap-1 mt-1">
+                      <Music className="w-3 h-3 text-emerald-400" />
+                      <span className="text-[10px] text-emerald-400 truncate max-w-[80px]">{mySongName}</span>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">Picking...</span>
+                  )}
+                </div>
+                <div className="px-3">
+                  <div className="w-9 h-9 rounded-full bg-surface-2 border border-border flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-muted-foreground">VS</span>
+                  </div>
+                </div>
+                <div className="text-center flex-1">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-surface-2 border-2 border-border flex items-center justify-center mb-1.5 overflow-hidden">
+                    {opponent?.avatar_url ? (
+                      <img src={opponent.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-5 h-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <p className="text-xs font-medium text-foreground">{opponent?.username || "Opponent"}</p>
+                  {opponentThemeDropId ? (
+                    <div className="flex items-center justify-center gap-1 mt-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span className="text-[10px] text-emerald-400">Ready</span>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">Picking...</span>
+                  )}
+                </div>
               </div>
-              <p className="text-xs font-medium text-foreground">{me?.username || "You"}</p>
-              <p className="text-[10px] text-muted-foreground">Lv. {me?.level || 1}</p>
-              {mySubmission && (
-                <div className="flex items-center justify-center gap-1 mt-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] text-emerald-400">Submitted</span>
-                </div>
-              )}
-              {isCompleted && (
-                <div className={`mt-2 text-lg font-display ${
-                  didIWin ? "text-gold" : "text-muted-foreground"
-                }`}>
-                  {isPlayer1 ? match.player_1_score : match.player_2_score}
-                </div>
-              )}
             </div>
 
-            {/* VS */}
-            <div className="px-4">
-              <div className="w-10 h-10 rounded-full bg-surface-2 border border-border flex items-center justify-center">
-                <span className="text-xs font-bold text-muted-foreground">VS</span>
+            {/* Song Picker */}
+            {!myThemeDropId ? (
+              <div className="bg-surface-1 border border-border p-4 rounded-lg">
+                <SongPicker
+                  onPick={handleSongPick}
+                  loading={pickingLoading}
+                  selectedDropId={myThemeDropId}
+                  opponentPicked={!!opponentThemeDropId}
+                />
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-emerald-500/10 border border-emerald-500/30 p-5 text-center"
+              >
+                <Music className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
+                <h3 className="text-sm font-medium text-foreground mb-1">
+                  You picked: {mySongName}
+                </h3>
+                <p className="text-[10px] text-muted-foreground">
+                  {opponentThemeDropId
+                    ? "Both picked! Starting match..."
+                    : "Waiting for opponent to pick their song..."}
+                </p>
+                {!opponentThemeDropId && (
+                  <Loader2 className="w-4 h-4 text-emerald-400 animate-spin mx-auto mt-3" />
+                )}
+              </motion.div>
+            )}
+          </>
+        )}
+
+        {/* VS Display — only when NOT in song pick phase */}
+        {!isSongPickPhase && (
+          <div className="bg-surface-1 border border-border p-4">
+            <div className="flex items-center justify-between">
+              {/* Me */}
+              <div className="text-center flex-1">
+                <div className={`
+                  w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-2
+                  ${mySubmission 
+                    ? "bg-emerald-500/20 border-2 border-emerald-500/50" 
+                    : "bg-surface-2 border-2 border-border"
+                  }
+                `}>
+                  {me?.avatar_url ? (
+                    <img src={me.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-muted-foreground" />
+                  )}
+                </div>
+                <p className="text-xs font-medium text-foreground">{me?.username || "You"}</p>
+                <p className="text-[10px] text-muted-foreground">Lv. {me?.level || 1}</p>
+                {mySubmission && (
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[10px] text-emerald-400">Submitted</span>
+                  </div>
+                )}
+                {isCompleted && (
+                  <div className={`mt-2 text-lg font-display ${
+                    didIWin ? "text-gold" : "text-muted-foreground"
+                  }`}>
+                    {isPlayer1 ? match.player_1_score : match.player_2_score}
+                  </div>
+                )}
+              </div>
+
+              {/* VS */}
+              <div className="px-4">
+                <div className="w-10 h-10 rounded-full bg-surface-2 border border-border flex items-center justify-center">
+                  <span className="text-xs font-bold text-muted-foreground">VS</span>
+                </div>
+              </div>
+
+              {/* Opponent */}
+              <div className="text-center flex-1">
+                <div className={`
+                  w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-2
+                  ${opponentSubmission 
+                    ? "bg-emerald-500/20 border-2 border-emerald-500/50" 
+                    : "bg-surface-2 border-2 border-border"
+                  }
+                `}>
+                  {opponent?.avatar_url ? (
+                    <img src={opponent.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-muted-foreground" />
+                  )}
+                </div>
+                <p className="text-xs font-medium text-foreground">{opponent?.username || "Opponent"}</p>
+                <p className="text-[10px] text-muted-foreground">Lv. {opponent?.level || 1}</p>
+                {opponentSubmission && (
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[10px] text-emerald-400">Submitted</span>
+                  </div>
+                )}
+                {isCompleted && (
+                  <div className={`mt-2 text-lg font-display ${
+                    !didIWin && match.winner_id ? "text-gold" : "text-muted-foreground"
+                  }`}>
+                    {isPlayer1 ? match.player_2_score : match.player_1_score}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Opponent */}
-            <div className="text-center flex-1">
-              <div className={`
-                w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-2
-                ${opponentSubmission 
-                  ? "bg-emerald-500/20 border-2 border-emerald-500/50" 
-                  : "bg-surface-2 border-2 border-border"
-                }
-              `}>
-                {opponent?.avatar_url ? (
-                  <img src={opponent.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <User className="w-6 h-6 text-muted-foreground" />
-                )}
+            {/* Song badges — show picked songs during match */}
+            {(match.player_1_theme_song_name || match.player_2_theme_song_name) && (
+              <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+                <div className="flex items-center gap-1.5 max-w-[45%]">
+                  <Music className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    {isPlayer1 ? match.player_1_theme_song_name : match.player_2_theme_song_name}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 max-w-[45%] justify-end">
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    {isPlayer1 ? match.player_2_theme_song_name : match.player_1_theme_song_name}
+                  </span>
+                  <Music className="w-3 h-3 text-emerald-400 shrink-0" />
+                </div>
               </div>
-              <p className="text-xs font-medium text-foreground">{opponent?.username || "Opponent"}</p>
-              <p className="text-[10px] text-muted-foreground">Lv. {opponent?.level || 1}</p>
-              {opponentSubmission && (
-                <div className="flex items-center justify-center gap-1 mt-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] text-emerald-400">Submitted</span>
-                </div>
-              )}
-              {isCompleted && (
-                <div className={`mt-2 text-lg font-display ${
-                  !didIWin && match.winner_id ? "text-gold" : "text-muted-foreground"
-                }`}>
-                  {isPlayer1 ? match.player_2_score : match.player_1_score}
-                </div>
-              )}
-            </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Status Cards */}
         {isCompleted && (
@@ -250,7 +401,7 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
         )}
 
         {/* Submission Form */}
-        {!mySubmission && !isCompleted && !isJudging && (
+        {!isSongPickPhase && !mySubmission && !isCompleted && !isJudging && (
           <div className="bg-surface-1 border border-border p-4">
             <h3 className="text-sm font-medium text-foreground mb-3">Submit Your Edit</h3>
             
@@ -301,7 +452,7 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
         )}
 
         {/* Already Submitted */}
-        {mySubmission && !isCompleted && !isJudging && (
+        {!isSongPickPhase && mySubmission && !isCompleted && !isJudging && (
           <div className="bg-emerald-500/10 border border-emerald-500/30 p-4 text-center">
             <CheckCircle2 className="w-6 h-6 mx-auto mb-2 text-emerald-400" />
             <h3 className="text-sm font-medium text-foreground mb-1">Submission Received</h3>
@@ -314,27 +465,29 @@ export default function PracticeMatchView({ matchId, onBack }: PracticeMatchView
         )}
 
         {/* Match Info */}
-        <div className="bg-surface-1/50 border border-border p-4">
-          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
-            Match Details
-          </h4>
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="text-muted-foreground">Started:</div>
-            <div className="text-foreground">
-              {match.starts_at 
-                ? formatDistanceToNow(new Date(match.starts_at), { addSuffix: true })
-                : "—"}
+        {!isSongPickPhase && (
+          <div className="bg-surface-1/50 border border-border p-4">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              Match Details
+            </h4>
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="text-muted-foreground">Started:</div>
+              <div className="text-foreground">
+                {match.starts_at 
+                  ? formatDistanceToNow(new Date(match.starts_at), { addSuffix: true })
+                  : "—"}
+              </div>
+              <div className="text-muted-foreground">Ends:</div>
+              <div className="text-foreground">
+                {match.ends_at 
+                  ? formatDistanceToNow(new Date(match.ends_at), { addSuffix: true })
+                  : "—"}
+              </div>
+              <div className="text-muted-foreground">Status:</div>
+              <div className="text-foreground capitalize">{match.status.replace("_", " ")}</div>
             </div>
-            <div className="text-muted-foreground">Ends:</div>
-            <div className="text-foreground">
-              {match.ends_at 
-                ? formatDistanceToNow(new Date(match.ends_at), { addSuffix: true })
-                : "—"}
-            </div>
-            <div className="text-muted-foreground">Status:</div>
-            <div className="text-foreground capitalize">{match.status.replace("_", " ")}</div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

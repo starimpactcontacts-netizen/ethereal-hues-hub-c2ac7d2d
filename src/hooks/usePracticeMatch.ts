@@ -34,6 +34,13 @@ export interface PracticeMatch {
   judged_at: string | null;
   created_at: string;
   updated_at: string;
+  // Song theme fields
+  player_1_theme_drop_id: string | null;
+  player_1_theme_song_name: string | null;
+  player_1_theme_song_preview_url: string | null;
+  player_2_theme_drop_id: string | null;
+  player_2_theme_song_name: string | null;
+  player_2_theme_song_preview_url: string | null;
   // Joined data
   player_1?: { username: string; avatar_url: string | null; level: number };
   player_2?: { username: string; avatar_url: string | null; level: number };
