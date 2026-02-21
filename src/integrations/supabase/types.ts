@@ -3977,6 +3977,7 @@ export type Database = {
           judge_id: string | null
           judge_notes: string | null
           judge_username: string | null
+          judge_video_url: string | null
           judged_at: string | null
           loser_score: number | null
           matched_at: string | null
@@ -4005,6 +4006,7 @@ export type Database = {
           judge_id?: string | null
           judge_notes?: string | null
           judge_username?: string | null
+          judge_video_url?: string | null
           judged_at?: string | null
           loser_score?: number | null
           matched_at?: string | null
@@ -4033,6 +4035,7 @@ export type Database = {
           judge_id?: string | null
           judge_notes?: string | null
           judge_username?: string | null
+          judge_video_url?: string | null
           judged_at?: string | null
           loser_score?: number | null
           matched_at?: string | null
