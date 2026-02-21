@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Target } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 
 const navLinks = [
@@ -48,15 +49,25 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           {/* QOI Score Button - Gold themed */}
-          <button
+          <motion.button
             onClick={scrollToQOI}
-            className="group relative flex items-center gap-2 px-4 py-2 bg-gold/10 border border-gold/50 hover:border-gold hover:bg-gold/20 transition-all duration-300"
+            className="group relative px-5 py-2 overflow-hidden rounded-full"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Target className="relative w-4 h-4 text-gold" />
-            <span className="relative text-sm font-bold tracking-wider text-gold">
+            {/* Animated gradient border */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{ background: 'linear-gradient(135deg, #ef4444, #f59e0b, #06b6d4, #a855f7, #ef4444)' , backgroundSize: '300% 300%' }}
+              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+            />
+            {/* Inner bg */}
+            <div className="absolute inset-[1.5px] rounded-full bg-background" />
+            <span className="relative text-sm font-bold tracking-[0.2em] text-foreground">
               QOI
             </span>
-          </button>
+          </motion.button>
           
           {navLinks.map((link) => (
             <Link
@@ -72,15 +83,22 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
         {/* Mobile Hamburger */}
         <div className="md:hidden flex items-center gap-3">
           {/* Mobile QOI Button - Gold */}
-          <button
+          <motion.button
             onClick={scrollToQOI}
-            className="relative flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 border border-gold/50"
+            className="relative px-4 py-1.5 overflow-hidden rounded-full"
+            whileTap={{ scale: 0.95 }}
           >
-            <Target className="w-3.5 h-3.5 text-gold" />
-            <span className="text-xs font-bold tracking-wider text-gold">
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              style={{ background: 'linear-gradient(135deg, #ef4444, #f59e0b, #06b6d4, #a855f7, #ef4444)', backgroundSize: '300% 300%' }}
+              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+            />
+            <div className="absolute inset-[1.5px] rounded-full bg-background" />
+            <span className="relative text-xs font-bold tracking-[0.2em] text-foreground">
               QOI
             </span>
-          </button>
+          </motion.button>
           
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -106,10 +124,9 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
                   <SheetClose asChild>
                     <button
                       onClick={scrollToQOI}
-                      className="w-full flex items-center gap-3 px-6 py-4 text-lg font-medium text-gold hover:bg-gold/10 transition-colors"
+                      className="w-full flex items-center gap-3 px-6 py-4 text-lg font-medium text-foreground hover:bg-accent transition-colors"
                     >
-                      <Target className="w-5 h-5" />
-                      <span className="font-bold">QOI Score Test</span>
+                      <span className="font-bold tracking-wider">QOI Score Test</span>
                     </button>
                   </SheetClose>
                   
