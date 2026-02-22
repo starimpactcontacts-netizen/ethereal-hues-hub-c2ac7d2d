@@ -336,20 +336,23 @@ export default function JudgeProfilePage() {
         </>
       )}
 
-      {/* ═══ SUBMIT CTA — RIGHT AT TOP, institutional ═══ */}
+      {/* ═══ SUBMIT CTA — GET YOUR EDIT RATED ═══ */}
       <div className="px-4 py-4">
         <div className="border border-red-800/50 bg-red-950/20">
           <div className="h-0.5 bg-red-700" />
           <div className="p-4">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-1">
               <Send size={14} className="text-red-400" />
-              <h2 className="font-display text-sm uppercase tracking-[0.15em] text-white">Submit for Official Review</h2>
+              <h2 className="font-display text-sm uppercase tracking-[0.15em] text-white">Get Your Edit Rated</h2>
             </div>
+            <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
+              Paste your edit link below — @{judge.username} will watch it, score it, and give you real feedback.
+            </p>
 
             {user ? (
               <div className="space-y-3">
                 <Input
-                  placeholder="Paste TikTok, Instagram, or YouTube URL..."
+                  placeholder="Paste your edit link (TikTok, IG, YouTube)..."
                   value={submissionUrl}
                   onChange={(e) => handleUrlChange(e.target.value)}
                   className="h-10 bg-black border-zinc-800 text-sm placeholder:text-zinc-700 focus:border-red-800"
@@ -365,17 +368,17 @@ export default function JudgeProfilePage() {
                   className="w-full py-3 bg-red-700 hover:bg-red-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-sm font-display uppercase tracking-[0.15em] transition-colors flex items-center justify-center gap-2"
                 >
                   <Send size={14} />
-                  {submitting ? 'Filing...' : 'File Review Request'}
+                  {submitting ? 'Submitting...' : 'Submit Edit for Rating'}
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
-                  Submit your edit and @{judge.username} will score, grade, and give feedback. You earn +15 XP.
+                <p className="text-[11px] text-zinc-400 mb-3 leading-relaxed">
+                  Drop your edit link and @{judge.username} will rate it with a full QOI score, grade, and feedback. You earn +15 XP.
                 </p>
                 <Link to={`/login?returnTo=/judge/${username}`}>
                   <button className="w-full py-3 bg-red-700 hover:bg-red-600 text-white text-sm font-display uppercase tracking-[0.15em] transition-colors">
-                    Login & Submit Your Edit
+                    Login & Get Your Edit Rated
                   </button>
                 </Link>
                 <Link to={`/start?returnTo=/judge/${username}`}>
