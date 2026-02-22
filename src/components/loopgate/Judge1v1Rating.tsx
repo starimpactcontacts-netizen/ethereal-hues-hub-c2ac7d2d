@@ -390,9 +390,43 @@ export default function Judge1v1Rating() {
                 {renderEditorThumb('B')}
               </div>
 
+              {/* CTA Banner */}
+              <div className="relative z-10" style={{ padding: '0 16px', marginBottom: 4 }}>
+                <div style={{
+                  background: `linear-gradient(90deg, ${bg.accent}, ${bg.accent}cc)`,
+                  padding: '8px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: 9, fontWeight: 900, color: 'white', letterSpacing: '0.15em', textTransform: 'uppercase', lineHeight: 1.2 }}>
+                      {isFaceoff ? 'WANT TO JUDGE THIS?' : 'GET YOUR EDIT RATED'}
+                    </span>
+                    <span style={{ fontSize: 7, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.05em', lineHeight: 1.4 }}>
+                      {isFaceoff ? 'Become a certified judge on Loopgate' : '1v1 battles • certified judges • real scores'}
+                    </span>
+                  </div>
+                  <div style={{
+                    background: 'white',
+                    color: '#000',
+                    padding: '4px 10px',
+                    fontSize: 8,
+                    fontWeight: 900,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}>
+                    LOOPGATE.IO
+                  </div>
+                </div>
+              </div>
+
               {/* Bottom */}
-              <div className="relative z-10 px-5 pb-4 flex items-end justify-between">
-                <p style={{ fontSize: 7, letterSpacing: '0.2em', opacity: 0.25, fontFamily: 'monospace', textTransform: 'uppercase' }}>loopgate.io</p>
+              <div className="relative z-10 px-5 pb-3 flex items-end justify-between">
+                <p style={{ fontSize: 7, letterSpacing: '0.2em', opacity: 0.25, fontFamily: 'monospace', textTransform: 'uppercase' }}>where editors compete</p>
                 <p style={{ fontSize: 7, letterSpacing: '0.2em', opacity: 0.25, fontFamily: 'monospace', textTransform: 'uppercase' }}>
                   {isFaceoff ? 'FACE OFF' : `${scoreA} – ${scoreB}`}
                 </p>
