@@ -43,6 +43,9 @@ const actionColors: Record<string, string> = {
   featured_sub: 'text-brand',
   crew_join: 'text-emerald-400',
   hosted_entry: 'text-orange-400',
+  quick_fight: 'text-red-400',
+  gqt: 'text-amber-400',
+  tournament_join: 'text-cyan-400',
 };
 
 function HubLiveFeed() {

@@ -10,7 +10,7 @@ export interface LiveActivityItem {
   target: string;
   score?: number | null;
   timestamp: string;
-  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry';
+  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry' | 'quick_fight' | 'gqt' | 'tournament_join';
 }
 
 // Randomized action text for variety
@@ -46,6 +46,27 @@ const crewJoinVerbs = [
 const hostedEntryVerbs = [
   'entered', 'joined the comp', 'submitted to', 'signed up for',
 ];
+const quickFightVerbs = [
+  'is quick fighting', 'entered the ring vs', 'is clashing with', 'challenged',
+];
+const quickFightJudgingVerbs = [
+  'awaiting verdict vs', 'pending judgement against',
+];
+const quickFightWonVerbs = [
+  'defeated', 'outclassed', 'took down', 'beat',
+];
+const gqtVerbs = [
+  'took the GQT', 'completed the Gatekeeper Test', 'faced the Gatekeeper', 'tested their skill',
+];
+const gqtScoredVerbs = [
+  'scored on the GQT', 'was rated by the Gatekeeper', 'got classified',
+];
+const connectionVerbs = [
+  'connected with', 'linked up with', 'is now connected to',
+];
+const tournamentJoinVerbs = [
+  'registered for', 'signed up for', 'entered', 'joined the tournament',
+];
 
 export function useLiveActivity(limit = 8) {
   const [items, setItems] = useState<LiveActivityItem[]>([]);
@@ -54,7 +75,7 @@ export function useLiveActivity(limit = 8) {
   const fetch = useCallback(async () => {
     try {
       // Fetch all activity sources in parallel
-      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes, featSubsRes, crewJoinsRes, hostedEntriesRes] = await Promise.all([
+      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes, featSubsRes, crewJoinsRes, hostedEntriesRes, quickFightsRes, gqtRes, connectionsRes, tournamentJoinsRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, user_id, event_id, qoi_score, submitted_at')
@@ -84,23 +105,46 @@ export function useLiveActivity(limit = 8) {
           .select('id, judge_id, title, current_views, submitted_at')
           .order('submitted_at', { ascending: false })
           .limit(limit),
-        // NEW: Featured drop submissions
         supabase
           .from('featured_submissions')
           .select('id, user_id, username, avatar_url, drop_id, qoi_score, created_at')
           .order('created_at', { ascending: false })
           .limit(limit),
-        // NEW: Crew joins
         supabase
           .from('crew_members')
           .select('id, user_id, crew_id, joined_at')
           .order('joined_at', { ascending: false })
           .limit(limit),
-        // NEW: Hosted comp submissions
         supabase
           .from('hosted_competition_submissions')
           .select('id, user_id, username, avatar_url, competition_id, score, submitted_at')
           .order('submitted_at', { ascending: false })
+          .limit(limit),
+        // Quick fights
+        supabase
+          .from('quick_fights')
+          .select('id, player_1_id, player_1_username, player_1_avatar_url, player_2_id, player_2_username, player_2_avatar_url, status, winner_id, winner_score, updated_at')
+          .in('status', ['matched', 'active', 'judging', 'completed'])
+          .order('updated_at', { ascending: false })
+          .limit(limit),
+        // GQT / Gatekeeper submissions
+        supabase
+          .from('gatekeeper_submissions')
+          .select('id, user_id, qoi_score, gqt_rank, status, created_at')
+          .order('created_at', { ascending: false })
+          .limit(limit),
+        // Connections (accepted)
+        supabase
+          .from('connections')
+          .select('id, sender_id, receiver_id, status, responded_at')
+          .eq('status', 'accepted')
+          .order('responded_at', { ascending: false, nullsFirst: false })
+          .limit(limit),
+        // Sanctioned tournament joins
+        supabase
+          .from('sanctioned_tournament_participants')
+          .select('id, user_id, tournament_id, joined_at')
+          .order('joined_at', { ascending: false })
           .limit(limit),
       ]);
 
@@ -113,12 +157,19 @@ export function useLiveActivity(limit = 8) {
       const featSubData = featSubsRes.data || [];
       const crewJoinData = crewJoinsRes.data || [];
       const hostedEntryData = hostedEntriesRes.data || [];
+      const quickFightData = quickFightsRes.data || [];
+      const gqtData = gqtRes.data || [];
+      const connectionData = connectionsRes.data || [];
+      const tournamentJoinData = tournamentJoinsRes.data || [];
 
       const userIds = [...new Set([
         ...roundData.map(r => r.user_id),
         ...eventData.map(e => e.user_id),
         ...judgeVidData.map(j => j.judge_id),
         ...crewJoinData.map(c => c.user_id),
+        ...gqtData.map(g => g.user_id),
+        ...connectionData.flatMap(c => [c.sender_id, c.receiver_id]),
+        ...tournamentJoinData.map(t => t.user_id),
       ])];
       const eventIds = [...new Set([
         ...roundData.map(r => r.event_id),
@@ -127,13 +178,15 @@ export function useLiveActivity(limit = 8) {
       const crewIds = [...new Set(crewJoinData.map(c => c.crew_id))];
       const dropIds = [...new Set(featSubData.map(f => f.drop_id))];
       const compIds = [...new Set(hostedEntryData.map(h => h.competition_id))];
+      const tournamentIds = [...new Set(tournamentJoinData.map(t => t.tournament_id))];
 
-      const [profilesRes, eventsNamesRes, crewNamesRes, dropNamesRes, compNamesRes] = await Promise.all([
+      const [profilesRes, eventsNamesRes, crewNamesRes, dropNamesRes, compNamesRes, tournamentNamesRes] = await Promise.all([
         userIds.length > 0 ? supabase.from('profiles').select('id, username, avatar_url').in('id', userIds) : { data: [] },
         eventIds.length > 0 ? supabase.from('events').select('id, title').in('id', eventIds) : { data: [] },
         crewIds.length > 0 ? supabase.from('crews').select('id, name').in('id', crewIds) : { data: [] },
         dropIds.length > 0 ? supabase.from('featured_drops').select('id, title').in('id', dropIds) : { data: [] },
         compIds.length > 0 ? supabase.from('hosted_competitions').select('id, name').in('id', compIds) : { data: [] },
+        tournamentIds.length > 0 ? supabase.from('sanctioned_tournaments').select('id, name').in('id', tournamentIds) : { data: [] },
       ]);
 
       const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p]));
@@ -141,6 +194,7 @@ export function useLiveActivity(limit = 8) {
       const crewMap = new Map((crewNamesRes.data || []).map(c => [c.id, c.name]));
       const dropMap = new Map((dropNamesRes.data || []).map(d => [d.id, d.title]));
       const compMap = new Map((compNamesRes.data || []).map(c => [c.id, c.name]));
+      const tournamentMap = new Map((tournamentNamesRes.data || []).map(t => [t.id, t.name]));
 
       const all: LiveActivityItem[] = [];
 
@@ -275,6 +329,78 @@ export function useLiveActivity(limit = 8) {
         });
       });
 
+      // Quick fights
+      quickFightData.forEach(qf => {
+        const action = qf.status === 'completed'
+          ? (qf.winner_id === qf.player_1_id ? pick(quickFightWonVerbs) : pick(quickFightWonVerbs))
+          : qf.status === 'judging'
+            ? pick(quickFightJudgingVerbs)
+            : pick(quickFightVerbs);
+        all.push({
+          id: `qf-${qf.id}`,
+          user_id: qf.player_1_id,
+          username: qf.player_1_username || 'editor',
+          avatar_url: qf.player_1_avatar_url || null,
+          action,
+          target: qf.player_2_username || '???',
+          score: qf.winner_id === qf.player_1_id ? qf.winner_score : null,
+          timestamp: qf.updated_at || new Date().toISOString(),
+          type: 'quick_fight',
+        });
+      });
+
+      // GQT submissions
+      gqtData.forEach(g => {
+        const p = profileMap.get(g.user_id);
+        const isScored = g.status === 'scored' && g.qoi_score != null;
+        all.push({
+          id: `gqt-${g.id}`,
+          user_id: g.user_id,
+          username: p?.username || 'editor',
+          avatar_url: p?.avatar_url || null,
+          action: isScored ? pick(gqtScoredVerbs) : pick(gqtVerbs),
+          target: isScored ? `${g.gqt_rank || ''} Class` : 'the Gatekeeper',
+          score: g.qoi_score,
+          timestamp: g.created_at || new Date().toISOString(),
+          type: 'gqt',
+        });
+      });
+
+      // Connections
+      connectionData.forEach(c => {
+        const sender = profileMap.get(c.sender_id);
+        const receiver = profileMap.get(c.receiver_id);
+        if (sender && receiver) {
+          all.push({
+            id: `conn-${c.id}`,
+            user_id: c.sender_id,
+            username: sender.username || 'editor',
+            avatar_url: sender.avatar_url || null,
+            action: pick(connectionVerbs),
+            target: receiver.username || 'someone',
+            score: null,
+            timestamp: c.responded_at || new Date().toISOString(),
+            type: 'connection',
+          });
+        }
+      });
+
+      // Sanctioned tournament joins
+      tournamentJoinData.forEach(t => {
+        const p = profileMap.get(t.user_id);
+        all.push({
+          id: `tourney-${t.id}`,
+          user_id: t.user_id,
+          username: p?.username || 'editor',
+          avatar_url: p?.avatar_url || null,
+          action: pick(tournamentJoinVerbs),
+          target: tournamentMap.get(t.tournament_id) || 'a tournament',
+          score: null,
+          timestamp: t.joined_at || new Date().toISOString(),
+          type: 'tournament_join',
+        });
+      });
+
       // Sort by timestamp, dedup by user+action combo
       all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       const seen = new Set<string>();
@@ -307,6 +433,10 @@ export function useLiveActivity(limit = 8) {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'featured_submissions' }, () => fetch())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'crew_members' }, () => fetch())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hosted_competition_submissions' }, () => fetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'quick_fights' }, () => fetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gatekeeper_submissions' }, () => fetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'connections' }, () => fetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sanctioned_tournament_participants' }, () => fetch())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
