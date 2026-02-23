@@ -29,13 +29,13 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
       onClick={onClick}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="shrink-0 w-[280px] bg-gradient-to-br from-purple-900/40 via-surface-1 to-surface-1 border-2 border-purple-500/40 hover:border-purple-500/70 transition-all text-left overflow-hidden group relative"
+      className="shrink-0 w-[280px] bg-gradient-to-br from-purple-900/40 via-surface-1 to-surface-1 border border-purple-500/40 hover:border-purple-500/70 transition-all text-left overflow-hidden group relative"
     >
       {/* Premium Crown Badge */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500" />
       
       {/* Premium indicator */}
-      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1 rounded-full shadow-lg shadow-purple-500/30 z-10">
+      <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-gradient-to-r from-purple-500 to-pink-500 px-2 py-1 z-10">
         <Crown className="w-3 h-3 text-white" />
         <span className="text-[9px] font-bold uppercase tracking-wider text-white">Premium</span>
       </div>
@@ -52,13 +52,13 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
         {/* Status badge */}
         <div className="absolute top-3 right-3 z-10">
           {isLive && (
-            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/90 text-background text-[9px] font-bold uppercase tracking-wider rounded-full">
+            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/90 text-background text-[9px] font-bold uppercase tracking-wider">
               <span className="w-1.5 h-1.5 rounded-full bg-background animate-pulse" />
               Live
             </span>
           )}
           {isJudging && (
-            <span className="px-2 py-0.5 bg-amber-500/90 text-background text-[9px] font-bold uppercase tracking-wider rounded-full animate-pulse">
+            <span className="px-2 py-0.5 bg-amber-500/90 text-background text-[9px] font-bold uppercase tracking-wider animate-pulse">
               Judging
             </span>
           )}
@@ -68,7 +68,7 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
       <div className="p-4 -mt-6 relative">
         {/* Host */}
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border-2 border-purple-500/50 flex items-center justify-center overflow-hidden shadow-lg shadow-purple-500/20">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 border border-purple-500/50 flex items-center justify-center overflow-hidden">
             {comp.host_avatar_url ? (
               <img src={comp.host_avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (

@@ -48,13 +48,13 @@ interface Event {
 function EventCard({ event }: { event: Event }) {
   const isLive = event.status === "live";
   return (
-    <Link to={`/event/${(event as any).slug || event.id}`} className="block shrink-0 w-[260px]">
+    <Link to={`/event/${(event as any).slug || event.id}`} className="block shrink-0 w-[240px]">
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="bg-surface-1 border border-border hover:border-gold/50 transition-all overflow-hidden group touch-manipulation rounded-lg shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.06)]"
+        className="bg-surface-1 border border-border hover:border-gold/50 transition-all overflow-hidden group touch-manipulation"
       >
-        <div className="relative h-28 overflow-hidden rounded-t-lg">
+        <div className="relative h-28 overflow-hidden">
           {event.poster_url ? (
             <img src={event.poster_url} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
@@ -64,17 +64,17 @@ function EventCard({ event }: { event: Event }) {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-surface-1/40 to-transparent" />
           {isLive && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500 px-2 py-0.5 rounded-sm">
+            <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500 px-2 py-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-background animate-pulse" />
               <span className="text-[8px] font-bold uppercase text-background">Live</span>
             </div>
           )}
           {event.prize_pool && (
-            <div className="absolute top-2 right-2 bg-background/90 border border-gold/50 px-2 py-0.5 rounded-sm">
+            <div className="absolute top-2 right-2 bg-background/90 border border-gold/50 px-2 py-0.5">
               <span className="text-[10px] font-display text-gold">{event.prize_pool}</span>
             </div>
           )}
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-gold/90 px-1.5 py-0.5 rounded-sm">
+          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-gold/90 px-1.5 py-0.5">
             <InfinityIcon className="w-2.5 h-2.5 text-background" />
             <span className="text-[7px] font-bold uppercase text-background">Official</span>
           </div>
@@ -99,7 +99,7 @@ function EventCard({ event }: { event: Event }) {
 }
 
 // ─── Ghost Placeholder Slot (shows empty carousel space) ───────
-function GhostSlot({ icon, label, width = "w-[200px]", height = "h-44", accentColor = "border-border/40" }: {
+function GhostSlot({ icon, label, width = "w-[240px]", height = "h-44", accentColor = "border-border/40" }: {
   icon: React.ReactNode;
   label: string;
   width?: string;
@@ -107,7 +107,7 @@ function GhostSlot({ icon, label, width = "w-[200px]", height = "h-44", accentCo
   accentColor?: string;
 }) {
   return (
-    <div className={`shrink-0 ${width} ${height} rounded-lg border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2 shadow-[inset_0_2px_12px_-4px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.01)]`}>
+    <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2`}>
       <div className="w-8 h-8 rounded-full bg-surface-2/60 flex items-center justify-center">
         {icon}
       </div>
@@ -134,7 +134,7 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
     <motion.button
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_4px_20px_-2px_rgba(239,68,68,0.15),0_0_0_1px_rgba(239,68,68,0.1)]"
+      className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left"
     >
       {/* P1 avatar */}
       <Avatar className="w-9 h-9 border border-red-500/40 shrink-0">
@@ -185,7 +185,7 @@ function SectionHeader({ icon, title, badge, badgeColor = "bg-emerald-500/20 bor
         {icon}
         <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{title}</span>
         {badge && (
-          <span className={`flex items-center gap-1 border px-1.5 py-0.5 text-[8px] font-bold uppercase rounded-full ${badgeColor}`}>
+          <span className={`flex items-center gap-1 border px-1.5 py-0.5 text-[8px] font-bold uppercase ${badgeColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {badge}
           </span>
@@ -318,7 +318,7 @@ export default function ArenaPage() {
               </div>
             </div>
             {totalLive > 0 && (
-              <div className="flex items-center gap-1.5 bg-red-500/15 border border-red-500/30 px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-1.5 bg-red-500/15 border border-red-500/30 px-2 py-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-[9px] font-bold text-red-400">{totalLive} Live</span>
               </div>
@@ -327,7 +327,7 @@ export default function ArenaPage() {
 
           {/* ═══ YOUR STATS BANNER ═══ */}
           {profile && userStats && (
-            <div className="mb-3 bg-surface-1/80 border border-border/60 rounded-lg p-2.5 flex items-center justify-between shadow-[0_2px_12px_-4px_rgba(0,0,0,0.4)]">
+            <div className="mb-3 bg-surface-1/80 border border-border/60 p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <Avatar className="w-8 h-8 border border-border/60">
                   <AvatarImage src={profile.avatar_url || ''} />
@@ -367,7 +367,7 @@ export default function ArenaPage() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-              className="relative overflow-hidden py-3.5 bg-gradient-to-br from-red-600 to-red-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation shadow-[0_6px_24px_-4px_rgba(239,68,68,0.5),0_0_0_1px_rgba(255,255,255,0.08)_inset]"
+              className="relative overflow-hidden py-3.5 bg-gradient-to-br from-red-600 to-red-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation"
             >
               <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.1)_50%,transparent_70%)]" />
               <Zap className="w-4.5 h-4.5 text-white" />
@@ -379,7 +379,7 @@ export default function ArenaPage() {
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-              className="py-3.5 bg-surface-1 border border-border hover:border-red-500/40 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset]"
+              className="py-3.5 bg-surface-1 border border-border hover:border-red-500/40 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors"
             >
               <Swords className="w-4.5 h-4.5 text-foreground" />
               <span className="font-display text-[10px] text-foreground uppercase tracking-wider">Edit Battle</span>
@@ -397,7 +397,7 @@ export default function ArenaPage() {
                 if (featuredFight.type === 'quick') navigate(`/fight/${featuredFight.data.id}`);
                 else navigate(`/battle/${featuredFight.data.id}`);
               }}
-              className="w-full mb-3 bg-gradient-to-r from-red-950/50 via-surface-1 to-blue-950/50 border border-red-500/30 p-3 flex items-center gap-3 touch-manipulation shadow-[0_4px_24px_-4px_rgba(239,68,68,0.2),0_0_0_1px_rgba(255,255,255,0.03)]"
+              className="w-full mb-3 bg-gradient-to-r from-red-950/50 via-surface-1 to-blue-950/50 border border-red-500/30 p-3 flex items-center gap-3 touch-manipulation"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Avatar className="w-9 h-9 border-2 border-red-500/50 shrink-0">
@@ -439,7 +439,7 @@ export default function ArenaPage() {
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`px-2.5 py-1 text-[8px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1 shrink-0 rounded-full ${
+                  className={`px-2.5 py-1 text-[8px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1 shrink-0 ${
                     active
                       ? isRed ? "bg-red-500 text-white border-red-500"
                       : isGold ? "bg-gold text-background border-gold"
@@ -516,7 +516,7 @@ export default function ArenaPage() {
                     placeholder="Search fights..."
                     value={quickSearch}
                     onChange={(e) => setQuickSearch(e.target.value)}
-                    className="h-9 pl-9 pr-8 bg-surface-1 border-border text-xs placeholder:text-muted-foreground/50 rounded-lg shadow-[0_2px_10px_-2px_rgba(0,0,0,0.3),0_0_0_1px_rgba(255,255,255,0.03)] focus:shadow-[0_4px_16px_-2px_rgba(239,68,68,0.15),0_0_0_1px_rgba(239,68,68,0.2)]"
+                    className="h-9 pl-9 pr-8 bg-surface-1 border-border text-xs placeholder:text-muted-foreground/50"
                   />
                   {quickSearch && (
                     <button onClick={() => setQuickSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -550,8 +550,8 @@ export default function ArenaPage() {
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-8 bg-surface-1/60 rounded-xl border border-border/50 shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
-                    <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(239,68,68,0.15)]">
+                  <div className="text-center py-8 bg-surface-1/60 border border-border/50">
+                    <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2">
                       <Zap className="w-5 h-5 text-red-400/40" />
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">{quickSearch ? "No matches found" : "No Quick 1v1s Yet"}</p>
@@ -559,7 +559,7 @@ export default function ArenaPage() {
                     <Button
                       size="sm"
                       onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-                      className="bg-red-500 hover:bg-red-600 text-white text-[10px] rounded-lg shadow-[0_4px_16px_-4px_rgba(239,68,68,0.4)]"
+                       className="bg-red-500 hover:bg-red-600 text-white text-[10px]"
                     >
                       <Zap className="w-3 h-3 mr-1" /> Start Quick 1v1
                     </Button>
@@ -597,15 +597,15 @@ export default function ArenaPage() {
                 </div>
               ) : (
                 <div className="px-4">
-                  <div className="bg-surface-1/60 border border-red-500/15 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
-                    <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(239,68,68,0.1)]">
+                  <div className="bg-surface-1/60 border border-red-500/15 border-dashed p-6 text-center">
+                    <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2">
                       <Swords className="w-5 h-5 text-red-400/30" />
                     </div>
                     <p className="text-xs text-muted-foreground mb-3">No active edit battles</p>
                     <Button
                       size="sm"
                       onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-                      className="bg-red-500 hover:bg-red-600 text-white text-[10px] rounded-lg shadow-[0_4px_16px_-4px_rgba(239,68,68,0.4)]"
+                      className="bg-red-500 hover:bg-red-600 text-white text-[10px]"
                     >
                       <Swords className="w-3 h-3 mr-1" /> Start Editing
                     </Button>
@@ -633,13 +633,13 @@ export default function ArenaPage() {
                   {allActiveEvents.map(event => <EventCard key={event.id} event={event} />)}
                   {/* Ghost slots */}
                   {allActiveEvents.length < 3 && Array.from({ length: Math.max(0, 3 - allActiveEvents.length) }).map((_, i) => (
-                    <GhostSlot key={`ghost-event-${i}`} width="w-[260px]" icon={<Trophy className="w-4 h-4 text-gold/20" />} label="Upcoming" accentColor="border-gold/15" />
+                    <GhostSlot key={`ghost-event-${i}`} width="w-[240px]" icon={<Trophy className="w-4 h-4 text-gold/20" />} label="Upcoming" accentColor="border-gold/15" />
                   ))}
                 </div>
               ) : (
                 <div className="px-4">
-                  <div className="bg-surface-1/60 border border-border/50 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
-                    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(202,138,4,0.1)]">
+                  <div className="bg-surface-1/60 border border-border/50 border-dashed p-6 text-center">
+                    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-2">
                       <InfinityIcon className="w-5 h-5 text-gold/30" />
                     </div>
                     <p className="text-xs text-muted-foreground">No active events</p>
@@ -672,8 +672,8 @@ export default function ArenaPage() {
                   }
                 </div>
               ) : (
-                <div className="bg-surface-1/60 border border-purple-500/15 border-dashed p-6 text-center rounded-xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.02)]">
-                  <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-2 shadow-[0_0_20px_-4px_rgba(168,85,247,0.1)]">
+                <div className="bg-surface-1/60 border border-purple-500/15 border-dashed p-6 text-center">
+                  <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-2">
                     <Crown className="w-5 h-5 text-purple-400/30" />
                   </div>
                   <p className="text-xs text-muted-foreground">No premium comps right now</p>
@@ -703,9 +703,9 @@ export default function ArenaPage() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate('/units')}
-                className="w-full bg-surface-1 border border-border hover:border-gold/40 rounded-xl p-4 flex items-center gap-4 text-left transition-all mb-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_6px_28px_-4px_rgba(202,138,4,0.15),0_0_0_1px_rgba(202,138,4,0.1)]"
+                className="w-full bg-surface-1 border border-border hover:border-gold/40 p-4 flex items-center gap-4 text-left transition-all mb-3"
               >
-                <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0 shadow-[0_0_20px_-4px_rgba(202,138,4,0.15)]">
+                <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
                   <Shield className="w-6 h-6 text-gold" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -718,8 +718,8 @@ export default function ArenaPage() {
               {/* Carousel */}
               {sanctionedLoading ? (
                 <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                  <Skeleton className="h-48 w-[200px] shrink-0 rounded-lg" />
-                  <Skeleton className="h-48 w-[200px] shrink-0 rounded-lg" />
+                   <Skeleton className="h-48 w-[240px] shrink-0" />
+                  <Skeleton className="h-48 w-[240px] shrink-0" />
                 </div>
               ) : sanctionedTournaments.length > 0 ? (
                 <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
@@ -753,9 +753,9 @@ export default function ArenaPage() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate('/hosted-comps')}
-                className="w-full bg-surface-1 border border-border hover:border-cyan-500/40 rounded-xl p-4 flex items-center gap-4 text-left transition-all shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_6px_28px_-4px_rgba(6,182,212,0.15),0_0_0_1px_rgba(6,182,212,0.1)]"
+                className="w-full bg-surface-1 border border-border hover:border-cyan-500/40 p-4 flex items-center gap-4 text-left transition-all"
               >
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 shadow-[0_0_20px_-4px_rgba(6,182,212,0.15)]">
+                <div className="w-12 h-12 bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
                   <Globe className="w-6 h-6 text-cyan-400" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -799,9 +799,9 @@ export default function ArenaPage() {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowPracticeMode(true)}
-                className="w-full bg-surface-1 border border-border hover:border-emerald-500/40 rounded-xl p-4 flex items-center gap-4 text-left transition-all shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.03)] hover:shadow-[0_6px_28px_-4px_rgba(16,185,129,0.15),0_0_0_1px_rgba(16,185,129,0.1)]"
+                className="w-full bg-surface-1 border border-border hover:border-emerald-500/40 p-4 flex items-center gap-4 text-left transition-all"
               >
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 shadow-[0_0_20px_-4px_rgba(16,185,129,0.15)]">
+                <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
                   <Target className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="flex-1 min-w-0">

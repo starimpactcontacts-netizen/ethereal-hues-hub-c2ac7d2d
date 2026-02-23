@@ -49,7 +49,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative w-[260px] shrink-0 snap-start overflow-hidden bg-surface-0 border border-border"
+        className="relative w-[240px] shrink-0 snap-start overflow-hidden bg-surface-0 border border-border"
       >
         {/* Poster — compact */}
         <div className="relative w-full h-28 overflow-hidden">
@@ -63,7 +63,7 @@ export default function FeaturedDropCard({ drop }: Props) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
           {/* Artist — overlay top-left */}
-          <Link to={`/artist/${artist?.slug || ''}`} className="absolute top-1.5 left-1.5 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm rounded-full pl-0.5 pr-2 py-0.5">
+          <Link to={`/artist/${artist?.slug || ''}`} className="absolute top-1.5 left-1.5 flex items-center gap-1.5 bg-black/50 backdrop-blur-sm pl-0.5 pr-2 py-0.5">
             <Avatar className="w-5 h-5 border border-white/20">
               <AvatarImage src={artist?.avatar_url || ''} />
               <AvatarFallback className="bg-surface-1 text-[7px] font-bold">{artist?.name?.[0]?.toUpperCase() || '🎵'}</AvatarFallback>
@@ -73,7 +73,7 @@ export default function FeaturedDropCard({ drop }: Props) {
 
           {/* Status */}
           {isLive && (
-            <div className="absolute top-1.5 right-1.5 flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-full">
+            <div className="absolute top-1.5 right-1.5 flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5">
               <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[7px] font-bold text-emerald-400 uppercase">Live</span>
             </div>
@@ -107,13 +107,13 @@ export default function FeaturedDropCard({ drop }: Props) {
         {(drop.top_scorer_username || drop.random_pick_username) && (
           <div className="px-2.5 pb-1.5 flex items-center gap-1.5 text-[8px] overflow-hidden">
             {drop.top_scorer_username && (
-              <div className="flex items-center gap-1 bg-gold/10 border border-gold/20 px-1.5 py-0.5 rounded-full truncate">
+              <div className="flex items-center gap-1 bg-gold/10 border border-gold/20 px-1.5 py-0.5 truncate">
                 <Crown className="w-2 h-2 text-gold shrink-0" />
                 <span className="text-gold font-bold truncate">@{drop.top_scorer_username}</span>
               </div>
             )}
             {drop.random_pick_username && (
-              <div className="flex items-center gap-1 bg-brand/10 border border-brand/20 px-1.5 py-0.5 rounded-full truncate">
+              <div className="flex items-center gap-1 bg-brand/10 border border-brand/20 px-1.5 py-0.5 truncate">
                 <Star className="w-2 h-2 text-brand shrink-0" />
                 <span className="text-brand font-bold truncate">@{drop.random_pick_username}</span>
               </div>
@@ -131,13 +131,13 @@ export default function FeaturedDropCard({ drop }: Props) {
                   if (profile) navigate(`/drop/${drop.id}`);
                   else navigate('/start');
                 }}
-                className="w-full py-2.5 bg-emerald-500 text-white font-display text-[11px] uppercase tracking-widest flex items-center justify-center gap-1.5 rounded-md hover:bg-emerald-400 transition-colors shadow-md shadow-emerald-500/20"
+                className="w-full py-2.5 bg-emerald-500 text-white font-display text-[11px] uppercase tracking-widest flex items-center justify-center gap-1.5 hover:bg-emerald-400 transition-colors"
               >
                 JOIN
               </motion.button>
               <button
                 onClick={() => navigate(`/drop/${drop.id}`)}
-                className="w-full py-1.5 bg-surface-1 border border-border text-muted-foreground font-display text-[9px] uppercase tracking-widest flex items-center justify-center gap-1 rounded-md hover:bg-surface-2 transition-colors"
+                className="w-full py-1.5 bg-surface-1 border border-border text-muted-foreground font-display text-[9px] uppercase tracking-widest flex items-center justify-center gap-1 hover:bg-surface-2 transition-colors"
               >
                 Enter Lobby
                 <ChevronRight className="w-2.5 h-2.5" />
@@ -146,7 +146,7 @@ export default function FeaturedDropCard({ drop }: Props) {
           ) : (
             <Link
               to={`/drop/${drop.id}`}
-              className="w-full py-2 bg-surface-1 border border-border text-muted-foreground font-display text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 rounded-md"
+              className="w-full py-2 bg-surface-1 border border-border text-muted-foreground font-display text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5"
             >
               View Results
               <ChevronRight className="w-3 h-3" />

@@ -71,7 +71,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className={`w-[200px] shrink-0 bg-surface-1 border transition-all cursor-pointer group overflow-hidden ${
+      className={`w-[240px] shrink-0 bg-surface-1 border transition-all cursor-pointer group overflow-hidden ${
         isCrewVsCrew 
           ? "border-red-500/30 hover:border-red-500/60" 
           : "border-gold/30 hover:border-gold/60"

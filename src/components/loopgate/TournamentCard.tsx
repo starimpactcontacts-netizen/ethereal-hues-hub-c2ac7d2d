@@ -77,7 +77,7 @@ export default function TournamentCard({ tournament, onClick }: TournamentCardPr
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-[200px] shrink-0 bg-surface-1 border border-border hover:border-gold/40 transition-all cursor-pointer group overflow-hidden"
+      className="w-[240px] shrink-0 bg-surface-1 border border-border hover:border-gold/40 transition-all cursor-pointer group overflow-hidden"
     >
       {/* Poster / Header */}
       <div className="relative h-24 bg-gradient-to-br from-surface-2 to-surface-1 overflow-hidden">
