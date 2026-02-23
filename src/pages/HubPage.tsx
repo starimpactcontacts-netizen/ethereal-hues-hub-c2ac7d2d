@@ -184,7 +184,7 @@ export default function HubPage() {
   );
   
   // Total featured count for header
-  const totalFeatured = liveEvents.length + liveDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
+  const totalFeatured = liveDrops.length + premiumComps.length + activeSanctioned.length + featuredBattles.length;
 
   return (
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
@@ -550,60 +550,8 @@ export default function HubPage() {
             </Link>
           </div>
           
-          {/* Horizontal Carousel - Official events FIRST, then Sanctioned */}
+          {/* Horizontal Carousel - Featured drops, Premium comps, Sanctioned, Battles */}
           <div className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-1.5">
-            {/* Official Live Events - Priority */}
-            {liveEvents.map((event, i) => (
-              <Link key={event.id} to={`/event/${(event as any).slug || event.id}`} className="shrink-0">
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + i * 0.05 }}
-                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-emerald-500/50 transition-colors overflow-hidden group"
-                >
-                  {/* Event Poster */}
-                  {event.poster_url && (
-                    <div className="h-24 overflow-hidden relative">
-                      <img 
-                        src={event.poster_url} 
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
-                      
-                      {/* Live badge */}
-                      <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-emerald-500/90 px-1.5 py-0.5 rounded-sm">
-                        <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
-                        <span className="text-[7px] font-bold text-white uppercase tracking-wider">Live</span>
-                      </div>
-                      
-                      {/* Official badge */}
-                      <div className="absolute bottom-1.5 left-1.5 bg-gold/90 px-1.5 py-0.5 rounded-sm">
-                        <span className="text-[7px] font-bold text-background uppercase tracking-wider">Official</span>
-                      </div>
-                      
-                      {/* Prize pool */}
-                      {event.prize_pool && (
-                        <div className="absolute top-1.5 right-1.5 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-sm">
-                          <span className="text-[8px] font-bold text-gold">{event.prize_pool}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Event Info */}
-                  <div className="p-2.5">
-                    <p className="font-display text-xs text-foreground truncate">{event.title}</p>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-[8px] text-gold uppercase tracking-wider">{event.league} League</span>
-                      <div className="text-[9px] text-muted-foreground">
-                        <CountdownTimer endDate={event.end_date} expiredLabel="Awaiting..." />
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
-            ))}
             
             {/* Featured Artist Drops - Shuffled on each mount */}
             {[...liveDrops].sort(() => Math.random() - 0.5).map(drop => (
@@ -617,7 +565,7 @@ export default function HubPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + (liveEvents.length + i) * 0.05 }}
-                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-amber-500/50 transition-colors overflow-hidden group"
+                  className="w-[240px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-amber-500/50 transition-colors overflow-hidden group"
                 >
                   {/* Competition Poster */}
                   <div className="h-24 overflow-hidden relative bg-gradient-to-br from-amber-900/50 to-surface-1">
@@ -684,7 +632,7 @@ export default function HubPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + i) * 0.05 }}
-                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-purple-500/50 transition-colors overflow-hidden group"
+                  className="w-[240px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-purple-500/50 transition-colors overflow-hidden group"
                 >
                   {/* Tournament Poster or Gradient */}
                   <div className="h-24 overflow-hidden relative bg-gradient-to-br from-purple-900/50 to-surface-1">
@@ -755,7 +703,7 @@ export default function HubPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + activeSanctioned.length + i) * 0.05 }}
-                  className="w-[220px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/50 transition-colors overflow-hidden group"
+                  className="w-[240px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/50 transition-colors overflow-hidden group"
                 >
                   {/* VS Display Header */}
                   <div className="h-24 overflow-hidden relative bg-gradient-to-br from-red-900/50 via-surface-2 to-surface-1">
