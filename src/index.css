@@ -315,6 +315,24 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Editorium Forbes-style white theme override */
+  .editorium-white {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+  }
+}
+
+/* Editorium active — force white on ALL ancestors when editorium pages are mounted */
+html.editorium-active,
+html.editorium-active body,
+html.editorium-active body.bg-background,
+html.editorium-active #root,
+html.editorium-active #root > *,
+html.editorium-active #root > * > *,
+html.editorium-active #root > * > * > * {
+  background-color: #ffffff !important;
+  --background: 0 0% 100% !important;
 }
 
 /* Performance optimizations */
