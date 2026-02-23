@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users } from "lucide-react";
+import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -307,7 +307,7 @@ export default function ProfilePage() {
 
       {/* ═══ QUICK NAV BUTTONS ═══ */}
       <div className="px-4 mb-2">
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-4 gap-1.5">
           <Link to="/profile/stats">
             <motion.div 
               whileTap={{ scale: 0.98 }}
@@ -318,6 +318,20 @@ export default function ProfilePage() {
               </div>
               <div className="flex-1 min-w-0 hidden sm:block">
                 <p className="text-[10px] font-medium">Stats</p>
+              </div>
+            </motion.div>
+          </Link>
+          
+          <Link to="/upscaler">
+            <motion.div 
+              whileTap={{ scale: 0.98 }}
+              className="bg-surface-1 border border-gold/30 rounded-md p-2 flex items-center gap-1.5 hover:border-gold/50 transition-colors"
+            >
+              <div className="w-6 h-6 rounded-full bg-gold/15 flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-gold" />
+              </div>
+              <div className="flex-1 min-w-0 hidden sm:block">
+                <p className="text-[10px] font-medium text-gold">4K</p>
               </div>
             </motion.div>
           </Link>
