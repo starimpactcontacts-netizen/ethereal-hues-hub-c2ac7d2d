@@ -139,8 +139,7 @@ export default function RequestJudgeReviewModal({
           submission_url: url.trim(),
           platform,
           status: 'pending',
-          // Store target judge and notes in the request
-          // Note: Would need to add these columns to the table
+          judge_id: selectedJudgeId || null,
         });
 
       if (error) throw error;
