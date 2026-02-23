@@ -130,7 +130,6 @@ export default function EditoriumArticlePage() {
       {heroImg && (
         <div className="relative aspect-[16/8] max-h-[500px] overflow-hidden">
           <img src={heroImg} alt={article.title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)' }} />
         </div>
       )}
 
@@ -140,14 +139,14 @@ export default function EditoriumArticlePage() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-3xl mx-auto px-4"
       >
-        <div className={heroImg ? '-mt-16 relative z-10' : 'pt-8'}>
+        <div className="pt-6">
           {/* Section label */}
           <div className="flex items-center gap-2 mb-3">
             <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700 }}>Editorium</span>
             {article.tags && article.tags.length > 0 && (
               <>
-                <span style={{ color: heroImg ? 'rgba(255,255,255,0.3)' : '#ccc' }}>·</span>
-                <span style={{ fontSize: '10px', color: heroImg ? 'rgba(255,255,255,0.6)' : '#999', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+                <span style={{ color: '#ccc' }}>·</span>
+                <span style={{ fontSize: '10px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.15em' }}>
                   {article.tags[0]}
                 </span>
               </>
@@ -156,7 +155,7 @@ export default function EditoriumArticlePage() {
 
           <h1 
             className="font-display text-4xl md:text-5xl leading-tight"
-            style={{ color: heroImg ? '#fff' : '#111' }}
+            style={{ color: '#111' }}
           >
             {article.title}
           </h1>
