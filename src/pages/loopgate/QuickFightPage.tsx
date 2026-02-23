@@ -154,7 +154,7 @@ export default function QuickFightPage() {
   const navigate = useNavigate();
   const { profile, user } = useAuth();
   const { fight, loading } = useQuickFight(fightId);
-  const { isJudge } = useUserRoles(user?.id);
+  const { isJudge, isAnyJudge, isAdmin, isDev } = useUserRoles(user?.id);
   const { fights: recentFights, loading: recentLoading } = useRecentQuickFights(50);
   const [submissionUrl, setSubmissionUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -195,7 +195,7 @@ export default function QuickFightPage() {
   const canSubmit = fight.status === 'active' && isParticipant && (
     (isP1 && !fight.player_1_submitted_at) || (isP2 && !fight.player_2_submitted_at)
   );
-  const canJudge = fight.status === 'judging' && isJudge && !fight.judge_id;
+  const canJudge = fight.status === 'judging' && (isJudge || isAnyJudge || isAdmin || isDev) && !fight.judge_id;
 
   const handleSubmit = async () => {
     if (!submissionUrl.trim() || !user) return;
