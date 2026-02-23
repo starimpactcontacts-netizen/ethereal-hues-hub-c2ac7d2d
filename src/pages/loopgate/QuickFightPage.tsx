@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video } from 'lucide-react';
+import { ArrowLeft, Swords, Clock, Send, Trophy, ExternalLink, Gavel, Share2, Search, Play, Video, Music, ThumbsUp } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,8 +13,8 @@ import { toast } from 'sonner';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import QuickFightChat from '@/components/loopgate/QuickFightChat';
 import QuickFightResultCard from '@/components/loopgate/QuickFightResultCard';
-import ThumbnailImage from '@/components/loopgate/ThumbnailImage';
-import { useThumbnail } from '@/hooks/useThumbnail';
+import BattleSongPicker from '@/components/loopgate/BattleSongPicker';
+import BattleSubmissionCard from '@/components/loopgate/BattleSubmissionCard';
 
 /** Detect platform from URL */
 function detectPlatform(url: string): string {
@@ -24,129 +24,6 @@ function detectPlatform(url: string): string {
   if (url.includes('instagram.com')) return 'instagram';
   if (url.includes('capcut.com')) return 'capcut';
   return 'unknown';
-}
-
-/** Submission preview card with thumbnail */
-function SubmissionPreview({ url, username, color, avatarUrl, score, isWinner }: {
-  url: string;
-  username: string;
-  color: 'red' | 'blue';
-  avatarUrl?: string | null;
-  score?: number | null;
-  isWinner?: boolean;
-}) {
-  const platform = detectPlatform(url);
-  const { thumbnail, loading: thumbLoading } = useThumbnail(url, platform);
-  const platformLabel = platform === 'tiktok' ? 'TIKTOK' : platform === 'youtube' ? 'YOUTUBE' : platform === 'instagram' ? 'INSTAGRAM' : platform.toUpperCase();
-  const borderColor = color === 'red' ? 'border-red-500/40' : 'border-blue-500/40';
-  const hoverBorder = color === 'red' ? 'hover:border-red-500/70' : 'hover:border-blue-500/70';
-  const accentBg = color === 'red' ? 'bg-red-500/20' : 'bg-blue-500/20';
-  const accentText = color === 'red' ? 'text-red-400' : 'text-blue-400';
-
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`block bg-surface-1 border ${borderColor} ${hoverBorder} transition-all overflow-hidden group ${isWinner ? 'ring-2 ring-gold/50' : ''}`}
-    >
-      {/* Thumbnail */}
-      <div className="relative aspect-[16/9] bg-surface-2 overflow-hidden">
-        {thumbnail ? (
-          <img src={thumbnail} alt={`${username}'s edit`} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-center">
-              <Play className="w-6 h-6 text-muted-foreground/30 mx-auto mb-1" />
-              <span className="text-[8px] text-muted-foreground/50 uppercase">
-                {thumbLoading ? 'Loading...' : 'Preview unavailable'}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Play overlay */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-          <div className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-            <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
-          </div>
-        </div>
-
-        {/* Platform badge */}
-        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-0.5">
-          <span className="text-[8px] font-bold text-white uppercase tracking-wider">{platformLabel}</span>
-        </div>
-
-        {/* Score badge */}
-        {score != null && (
-          <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur-sm px-2.5 py-1">
-            <span className="text-sm font-bold text-gold">{score}</span>
-            <span className="text-[8px] text-gold/70 ml-0.5 uppercase">QOI</span>
-          </div>
-        )}
-
-        {/* Winner crown */}
-        {isWinner && (
-          <div className="absolute top-2 left-2 bg-gold px-2 py-0.5 flex items-center gap-1">
-            <Trophy className="w-3 h-3 text-black" />
-            <span className="text-[8px] font-bold text-black uppercase">Winner</span>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="px-3 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Avatar className="w-6 h-6 border border-border">
-            <AvatarImage src={avatarUrl || ''} />
-            <AvatarFallback className={`${accentBg} ${accentText} text-[8px] font-bold`}>
-              {username?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-xs font-medium text-foreground">@{username}</span>
-        </div>
-        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
-      </div>
-    </a>
-  );
-}
-
-/** Judge video preview card */
-function JudgeVideoPreview({ url, judgeUsername }: { url: string; judgeUsername?: string | null }) {
-  const platform = detectPlatform(url);
-  const { thumbnail } = useThumbnail(url, platform);
-
-  return (
-    <>
-      <div className="relative aspect-video bg-surface-2 overflow-hidden">
-        {thumbnail ? (
-          <img src={thumbnail} alt="Judge review" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-950/40 to-surface-2">
-            <Video className="w-8 h-8 text-purple-400/40" />
-          </div>
-        )}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-          <div className="w-12 h-12 rounded-full bg-purple-500/80 backdrop-blur-sm flex items-center justify-center">
-            <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
-          </div>
-        </div>
-        <div className="absolute top-2 left-2 bg-purple-500/80 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1">
-          <Gavel className="w-3 h-3 text-white" />
-          <span className="text-[8px] font-bold text-white uppercase tracking-wider">Judge Review</span>
-        </div>
-      </div>
-      <div className="px-3 py-2 flex items-center gap-2">
-        <div className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center">
-          <Gavel className="w-3 h-3 text-purple-400" />
-        </div>
-        <span className="text-xs font-medium text-foreground">
-          {judgeUsername ? `@${judgeUsername}` : 'Judge'} — Video Review
-        </span>
-        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground ml-auto" />
-      </div>
-    </>
-  );
 }
 
 export default function QuickFightPage() {
@@ -165,11 +42,54 @@ export default function QuickFightPage() {
   const [judgeNotes, setJudgeNotes] = useState('');
   const [judging, setJudging] = useState(false);
   const [judgeVideoUrl, setJudgeVideoUrl] = useState('');
-
+  const [myVote, setMyVote] = useState<string | null>(null);
+  const [voting, setVoting] = useState(false);
   // Auto-resolve expired fights on page load
   useEffect(() => {
     supabase.rpc('resolve_expired_quick_fights').then(() => {});
   }, [fightId]);
+
+  // Fetch my vote
+  useEffect(() => {
+    if (!fightId || !user?.id) return;
+    supabase
+      .from('quick_fight_votes')
+      .select('voted_for')
+      .eq('fight_id', fightId)
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setMyVote(data.voted_for); });
+  }, [fightId, user?.id]);
+
+  const hasSongPicked = !!(fight as any)?.theme_song_name;
+
+  const handleSongPick = async (drop: any) => {
+    if (!fight) return;
+    await supabase
+      .from('quick_fights')
+      .update({
+        theme_drop_id: drop.id,
+        theme_song_name: drop.song_name,
+        theme_song_preview_url: drop.song_preview_url,
+      })
+      .eq('id', fight.id);
+    toast.success('🎵 Song picked!');
+  };
+
+  const handleVote = async (votedFor: string) => {
+    if (!user?.id || !fight || voting) return;
+    setVoting(true);
+    const { error } = await supabase.from('quick_fight_votes').insert({
+      fight_id: fight.id,
+      user_id: user.id,
+      voted_for: votedFor,
+    });
+    if (!error) {
+      setMyVote(votedFor);
+      toast.success('Vote recorded!');
+    }
+    setVoting(false);
+  };
 
   if (loading) {
     return (
@@ -449,12 +369,35 @@ export default function QuickFightPage() {
 
       {/* Content */}
       <div className="px-4 space-y-4 mt-2">
-        {/* Submission Form */}
-        {canSubmit && (
+        {/* Song Picker — mandatory before submit */}
+        {isParticipant && fight.status === 'active' && (
+          <BattleSongPicker
+            onSongPicked={handleSongPick}
+            selectedSongName={(fight as any).theme_song_name}
+            opponentPicked={false}
+          />
+        )}
+
+        {/* Show picked song for non-participants */}
+        {!isParticipant && (fight as any).theme_song_name && (
+          <div className="bg-surface-1 border border-border p-3 flex items-center gap-3">
+            <Music className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Theme Song</p>
+              <p className="text-sm text-foreground font-medium truncate">{(fight as any).theme_song_name}</p>
+            </div>
+            {(fight as any).theme_song_preview_url && (
+              <audio src={(fight as any).theme_song_preview_url} controls className="h-7 w-28 shrink-0" />
+            )}
+          </div>
+        )}
+
+        {/* Submission Form — only visible after song is picked */}
+        {canSubmit && hasSongPicked && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-surface-1 border border-gold/30 p-4 rounded-lg"
+            className="bg-surface-1 border border-gold/30 p-4"
           >
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
               <Send className="w-4 h-4 text-gold" />
@@ -479,7 +422,7 @@ export default function QuickFightPage() {
           </motion.div>
         )}
 
-        {/* Submissions Display — Visual Previews */}
+        {/* Submissions Display — Visual Previews with Voting */}
         {(fight.player_1_submission_url || fight.player_2_submission_url) && (
           <div className="space-y-3">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
@@ -488,23 +431,33 @@ export default function QuickFightPage() {
             </h3>
             <div className="grid grid-cols-2 gap-2">
               {fight.player_1_submission_url && (
-                <SubmissionPreview
+                <BattleSubmissionCard
                   url={fight.player_1_submission_url}
                   username={fight.player_1_username}
                   color="red"
                   avatarUrl={fight.player_1_avatar_url}
-                  score={fight.status === 'completed' ? fight.winner_score && fight.winner_id === fight.player_1_id ? fight.winner_score : fight.loser_score : undefined}
+                  customThumbnailUrl={(fight as any).player_1_thumbnail_url}
+                  score={fight.status === 'completed' ? fight.winner_id === fight.player_1_id ? fight.winner_score : fight.loser_score : undefined}
                   isWinner={fight.winner_id === fight.player_1_id}
+                  votes={(fight as any).player_1_votes || 0}
+                  canVote={!isParticipant && !!user && !myVote}
+                  hasVoted={myVote === fight.player_1_id}
+                  onVote={() => handleVote(fight.player_1_id)}
                 />
               )}
               {fight.player_2_submission_url && (
-                <SubmissionPreview
+                <BattleSubmissionCard
                   url={fight.player_2_submission_url}
                   username={fight.player_2_username || '???'}
                   color="blue"
                   avatarUrl={fight.player_2_avatar_url}
-                  score={fight.status === 'completed' ? fight.winner_score && fight.winner_id === fight.player_2_id ? fight.winner_score : fight.loser_score : undefined}
+                  customThumbnailUrl={(fight as any).player_2_thumbnail_url}
+                  score={fight.status === 'completed' ? fight.winner_id === fight.player_2_id ? fight.winner_score : fight.loser_score : undefined}
                   isWinner={fight.winner_id === fight.player_2_id}
+                  votes={(fight as any).player_2_votes || 0}
+                  canVote={!isParticipant && !!user && !myVote}
+                  hasVoted={myVote === fight.player_2_id}
+                  onVote={() => fight.player_2_id && handleVote(fight.player_2_id)}
                 />
               )}
             </div>
@@ -513,11 +466,7 @@ export default function QuickFightPage() {
 
         {/* Judge Video Review */}
         {fight.status === 'completed' && (fight as any).judge_video_url && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-2"
-          >
+          <div className="space-y-2">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
               <Video className="w-3.5 h-3.5 text-purple-400" />
               Judge Review
@@ -526,11 +475,19 @@ export default function QuickFightPage() {
               href={(fight as any).judge_video_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block bg-gradient-to-br from-purple-950/40 via-surface-1 to-surface-1 border border-purple-500/30 hover:border-purple-500/50 transition-all overflow-hidden group"
+              className="block bg-surface-1 border border-purple-500/30 hover:border-purple-500/50 transition-all overflow-hidden p-3 flex items-center gap-3"
             >
-              <JudgeVideoPreview url={(fight as any).judge_video_url} judgeUsername={fight.judge_username} />
+              <div className="w-8 h-8 bg-purple-500/20 flex items-center justify-center shrink-0">
+                <Gavel className="w-4 h-4 text-purple-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-foreground font-medium">
+                  {fight.judge_username ? `@${fight.judge_username}` : 'Judge'} — Video Review
+                </p>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             </a>
-          </motion.div>
+          </div>
         )}
 
         {/* Judge Panel (simplified) */}
