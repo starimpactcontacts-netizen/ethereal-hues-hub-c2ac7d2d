@@ -47,7 +47,7 @@ export default function BattleDetailPage() {
 
   // Fetch my vote
   useEffect(() => {
-    if (battleId && user?.id && battle?.status === 'judging') {
+    if (battleId && user?.id && (battle?.status === 'judging' || battle?.status === 'active')) {
       getMyVote(battleId, user.id).then(setMyVote);
     }
   }, [battleId, user?.id, battle?.status]);
@@ -87,7 +87,7 @@ export default function BattleDetailPage() {
     (isChallenger && !battle.challenger_submitted_at) ||
     (isOpponent && !battle.opponent_submitted_at)
   );
-  const canVote = battle.status === 'judging' && user?.id && !isParticipant;
+  const canVote = (battle.status === 'judging' || battle.status === 'active') && user?.id && !isParticipant && !myVote;
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
   const hasSongPicked = !!(battle as any).theme_song_name;
 
@@ -169,7 +169,7 @@ export default function BattleDetailPage() {
           </button>
           <div className="flex items-center gap-3">
             {/* Live spectator count */}
-            <div className="flex items-center gap-1.5 bg-surface-1 border border-border px-2 py-1 rounded">
+            <div className="flex items-center gap-1.5 bg-surface-1 border border-border px-2 py-1">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               <Eye className="w-3 h-3 text-muted-foreground" />
               <span className="text-[10px] text-foreground font-semibold">{formatViews(battle.view_count)}</span>
@@ -529,7 +529,7 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Submissions Display — Visual Previews */}
+        {/* Submissions Display — Visual Previews with Community Voting */}
         {(battle.challenger_submission_url || battle.opponent_submission_url) && (
           <div className="space-y-3">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
@@ -546,6 +546,10 @@ export default function BattleDetailPage() {
                   customThumbnailUrl={(battle as any).challenger_thumbnail_url}
                   score={battle.status === 'completed' ? battle.challenger_score : undefined}
                   isWinner={battle.winner_id === battle.challenger_id}
+                  votes={battle.challenger_votes}
+                  canVote={canVote && !myVote}
+                  hasVoted={myVote === battle.challenger_id}
+                  onVote={() => handleVote(battle.challenger_id)}
                 />
               )}
               {battle.opponent_submission_url && (
@@ -557,33 +561,23 @@ export default function BattleDetailPage() {
                   customThumbnailUrl={(battle as any).opponent_thumbnail_url}
                   score={battle.status === 'completed' ? battle.opponent_score : undefined}
                   isWinner={battle.winner_id === battle.opponent_id}
+                  votes={battle.opponent_votes}
+                  canVote={canVote && !myVote}
+                  hasVoted={myVote === battle.opponent_id}
+                  onVote={() => handleVote(battle.opponent_id!)}
                 />
               )}
             </div>
-          </div>
-        )}
 
-        {/* Judge Scoring Panel (for judges/admins) */}
-        {battle.status === 'judging' && (
-          <BattleJudgingPanel battle={battle} />
-        )}
-
-        {/* Community Voting (for judging phase) */}
-        {battle.status === 'judging' && (
-          <div className="bg-surface-1 border border-purple-500/30 p-4">
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-              <ThumbsUp className="w-4 h-4 text-purple-400" />
-              Community Vote
-            </h3>
-            
             {/* Vote Bar */}
             {totalVotes > 0 && (
-              <div className="mb-4">
+              <div className="bg-surface-1 border border-border p-3">
                 <div className="flex items-center justify-between text-[10px] mb-1">
-                  <span className="text-foreground font-medium">{battle.challenger_username}</span>
-                  <span className="text-foreground font-medium">{battle.opponent_username}</span>
+                  <span className="text-red-400 font-bold">{battle.challenger_username}</span>
+                  <span className="text-[9px] text-muted-foreground">{totalVotes} votes</span>
+                  <span className="text-sky-400 font-bold">{battle.opponent_username}</span>
                 </div>
-                <div className="h-3 bg-surface-2 overflow-hidden flex rounded-full">
+                <div className="h-2 bg-surface-2 overflow-hidden flex">
                   <div 
                     className="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all"
                     style={{ width: `${(battle.challenger_votes / totalVotes) * 100}%` }}
@@ -593,41 +587,21 @@ export default function BattleDetailPage() {
                     style={{ width: `${(battle.opponent_votes / totalVotes) * 100}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-[9px] text-muted-foreground mt-1">
-                  <span>{battle.challenger_votes} votes</span>
-                  <span>{battle.opponent_votes} votes</span>
-                </div>
               </div>
-            )}
-
-            {/* Vote Buttons */}
-            {canVote && (
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={() => handleVote(battle.challenger_id)}
-                  disabled={voting}
-                  variant={myVote === battle.challenger_id ? "default" : "outline"}
-                  className={myVote === battle.challenger_id ? "bg-red-500 hover:bg-red-600" : ""}
-                >
-                  {battle.challenger_username}
-                </Button>
-                <Button
-                  onClick={() => handleVote(battle.opponent_id!)}
-                  disabled={voting || !battle.opponent_id}
-                  variant={myVote === battle.opponent_id ? "default" : "outline"}
-                  className={myVote === battle.opponent_id ? "bg-sky-500 hover:bg-sky-600" : ""}
-                >
-                  {battle.opponent_username}
-                </Button>
-              </div>
-            )}
-
-            {isParticipant && (
-              <p className="text-[10px] text-muted-foreground text-center mt-2">
-                Participants cannot vote
-              </p>
             )}
           </div>
+        )}
+
+        {/* Judge Scoring Panel (for judges/admins) */}
+        {battle.status === 'judging' && (
+          <BattleJudgingPanel battle={battle} />
+        )}
+
+        {/* Community Vote Notice */}
+        {battle.status === 'judging' && isParticipant && (
+          <p className="text-[10px] text-muted-foreground text-center py-1">
+            Community voting is live — spectators can upvote edits above
+          </p>
         )}
 
         {/* Battle Chat — UFC Showdown */}

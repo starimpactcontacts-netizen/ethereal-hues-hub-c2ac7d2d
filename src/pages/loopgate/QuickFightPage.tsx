@@ -223,7 +223,7 @@ export default function QuickFightPage() {
                     navigate(`/fight/${f.id}`);
                   }
                 }}
-                className={`w-full flex items-center gap-3 p-2.5 rounded-lg transition-colors text-left border ${
+                className={`w-full flex items-center gap-3 p-2.5 transition-colors text-left border ${
                   f.id === fightId ? 'bg-destructive/10 border-destructive/40' : 'bg-muted/50 border-border hover:bg-muted'
                 }`}
               >
@@ -359,7 +359,7 @@ export default function QuickFightPage() {
           {/* Timer */}
           {fight.status === 'active' && fight.ends_at && (
             <div className="flex justify-center mt-4">
-              <div className="bg-surface-1 border border-red-500/30 px-6 py-2 rounded-lg">
+              <div className="bg-surface-1 border border-red-500/30 px-6 py-2">
                 <CountdownTimer endDate={fight.ends_at} label="Time Left" />
               </div>
             </div>
@@ -492,7 +492,7 @@ export default function QuickFightPage() {
 
         {/* Judge Panel (simplified) */}
         {canJudge && (
-          <div className="bg-surface-1 border border-purple-500/30 p-4 rounded-lg">
+          <div className="bg-surface-1 border border-purple-500/30 p-4">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
               <Gavel className="w-4 h-4 text-purple-400" />
               Judge This Fight
@@ -557,7 +557,7 @@ export default function QuickFightPage() {
 
         {/* Cancelled Banner */}
         {fight.status === 'cancelled' && (
-          <div className="bg-muted border border-border rounded-lg p-4 text-center">
+          <div className="bg-muted border border-border p-4 text-center">
             <p className="text-sm font-display text-muted-foreground uppercase tracking-wider">🚫 Fight Cancelled</p>
             <p className="text-[10px] text-muted-foreground mt-1">Neither player submitted before the deadline. No index awarded.</p>
           </div>
@@ -565,7 +565,7 @@ export default function QuickFightPage() {
 
         {/* Forfeit Result */}
         {fight.status === 'completed' && fight.judge_notes?.includes('forfeit') && (
-          <div className="bg-muted border border-destructive/30 rounded-lg p-4 text-center">
+          <div className="bg-muted border border-destructive/30 p-4 text-center">
             <p className="text-sm font-display text-foreground uppercase tracking-wider">🏳️ Won by Forfeit</p>
             <p className="text-[10px] text-muted-foreground mt-1">
               Opponent did not submit. Winner receives <span className="text-gold font-bold">+20 IDX</span>, forfeiter penalized <span className="text-destructive font-bold">-10 IDX</span>
