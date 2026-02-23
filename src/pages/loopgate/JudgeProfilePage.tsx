@@ -158,15 +158,46 @@ export default function JudgeProfilePage() {
 
   const handleUrlChange = (value: string) => {
     setSubmissionUrl(value);
-    const detected = detectPlatform(value);
-    if (detected) setPlatform(detected);
+    // Use substring detection for maximum compatibility with short/mobile links
+    const lower = value.toLowerCase();
+    if (lower.includes('tiktok.com') || lower.includes('vm.tiktok') || lower.includes('vt.tiktok')) {
+      setPlatform('tiktok');
+    } else if (lower.includes('instagram.com') || lower.includes('instagr.am')) {
+      setPlatform('instagram');
+    } else if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
+      setPlatform('youtube');
+    } else {
+      const detected = detectPlatform(value);
+      if (detected) setPlatform(detected);
+    }
   };
 
   const handleSubmitRequest = async () => {
-    if (!user || !userProfile || !submissionUrl.trim() || !platform || !judge) {
-      toast.error('Please enter a valid TikTok, Instagram, or YouTube URL');
+    if (!user || !userProfile || !judge) {
+      toast.error('You must be logged in to submit');
       return;
     }
+    
+    const trimmedUrl = submissionUrl.trim();
+    if (!trimmedUrl) {
+      toast.error('Please paste your edit link');
+      return;
+    }
+
+    // Auto-detect platform if not already set
+    let detectedPlatform = platform;
+    if (!detectedPlatform) {
+      const lower = trimmedUrl.toLowerCase();
+      if (lower.includes('tiktok') || lower.includes('vm.tiktok') || lower.includes('vt.tiktok')) detectedPlatform = 'tiktok';
+      else if (lower.includes('instagram') || lower.includes('instagr.am')) detectedPlatform = 'instagram';
+      else if (lower.includes('youtube') || lower.includes('youtu.be')) detectedPlatform = 'youtube';
+    }
+
+    if (!detectedPlatform) {
+      toast.error('Could not detect platform — use a TikTok, Instagram, or YouTube link');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const { error } = await supabase
@@ -175,18 +206,27 @@ export default function JudgeProfilePage() {
           user_id: user.id,
           username: userProfile.username,
           avatar_url: userProfile.avatar_url || null,
-          submission_url: submissionUrl.trim(),
-          platform,
+          submission_url: trimmedUrl,
+          platform: detectedPlatform,
           status: 'pending',
           judge_id: judge.id,
         });
       if (error) throw error;
-      toast.success(`Review requested from @${judge.username}!`);
+      
+      // Award XP
+      await supabase.rpc('award_xp', {
+        p_user_id: user.id,
+        p_amount: 10,
+        p_action: 'review_request',
+        p_description: `Requested review from @${judge.username}`,
+      });
+      
+      toast.success(`Submitted! @${judge.username} will rate your edit.`);
       setSubmissionUrl('');
       setPlatform(null);
     } catch (error: any) {
       console.error('Error requesting review:', error);
-      toast.error(error.message || 'Failed to request review');
+      toast.error(error.message || 'Failed to submit — try again');
     } finally {
       setSubmitting(false);
     }
@@ -365,7 +405,7 @@ export default function JudgeProfilePage() {
                 )}
                 <button
                   onClick={handleSubmitRequest}
-                  disabled={!submissionUrl.trim() || !platform || submitting}
+                  disabled={!submissionUrl.trim() || submitting}
                   className="w-full py-3 bg-red-700 hover:bg-red-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-sm font-display uppercase tracking-[0.15em] transition-colors flex items-center justify-center gap-2"
                 >
                   <Send size={14} />

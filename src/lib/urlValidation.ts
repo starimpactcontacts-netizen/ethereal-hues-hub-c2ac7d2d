@@ -85,17 +85,23 @@ export function getPlatformUrlPlaceholder(platform: PlatformType): string {
 }
 
 export function detectPlatform(url: string): PlatformType | null {
+  // Normalize: add protocol if missing so URL parsing works
+  let normalizedUrl = url.trim();
+  if (normalizedUrl && !normalizedUrl.match(/^https?:\/\//i)) {
+    normalizedUrl = 'https://' + normalizedUrl;
+  }
+
+  // Also do a simple substring check for short/mobile links that may not parse cleanly
+  const lower = url.toLowerCase();
+  if (lower.includes('tiktok.com') || lower.includes('vm.tiktok') || lower.includes('vt.tiktok')) return 'tiktok';
+  if (lower.includes('instagram.com') || lower.includes('instagr.am')) return 'instagram';
+  if (lower.includes('youtube.com') || lower.includes('youtu.be')) return 'youtube';
+
   try {
-    const parsed = new URL(url);
-    if (parsed.hostname.includes('tiktok.com') || parsed.hostname.includes('vm.tiktok.com')) {
-      return 'tiktok';
-    }
-    if (parsed.hostname.includes('instagram.com')) {
-      return 'instagram';
-    }
-    if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be')) {
-      return 'youtube';
-    }
+    const parsed = new URL(normalizedUrl);
+    if (parsed.hostname.includes('tiktok.com')) return 'tiktok';
+    if (parsed.hostname.includes('instagram.com')) return 'instagram';
+    if (parsed.hostname.includes('youtube.com') || parsed.hostname.includes('youtu.be')) return 'youtube';
   } catch {
     return null;
   }

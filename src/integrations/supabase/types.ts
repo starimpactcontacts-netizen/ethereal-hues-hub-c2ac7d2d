@@ -4191,9 +4191,11 @@ export type Database = {
           judge_comment: string | null
           judge_id: string | null
           judge_username: string | null
+          notes: string | null
           platform: string
           rating_mode: string | null
           requested_at: string
+          review_tag: string | null
           reviewed_at: string | null
           selected_tier: string | null
           status: string
@@ -4217,9 +4219,11 @@ export type Database = {
           judge_comment?: string | null
           judge_id?: string | null
           judge_username?: string | null
+          notes?: string | null
           platform: string
           rating_mode?: string | null
           requested_at?: string
+          review_tag?: string | null
           reviewed_at?: string | null
           selected_tier?: string | null
           status?: string
@@ -4243,9 +4247,11 @@ export type Database = {
           judge_comment?: string | null
           judge_id?: string | null
           judge_username?: string | null
+          notes?: string | null
           platform?: string
           rating_mode?: string | null
           requested_at?: string
+          review_tag?: string | null
           reviewed_at?: string | null
           selected_tier?: string | null
           status?: string

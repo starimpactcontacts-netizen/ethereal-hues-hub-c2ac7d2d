@@ -21,7 +21,7 @@ const PLATFORMS = [
 
 function detectPlatform(url: string): string | null {
   const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes('tiktok.com') || lowerUrl.includes('vm.tiktok')) return 'tiktok';
+  if (lowerUrl.includes('tiktok.com') || lowerUrl.includes('vm.tiktok') || lowerUrl.includes('vt.tiktok')) return 'tiktok';
   if (lowerUrl.includes('instagram.com') || lowerUrl.includes('instagr.am')) return 'instagram';
   if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) return 'youtube';
   return null;
