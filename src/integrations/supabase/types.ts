@@ -1490,12 +1490,16 @@ export type Database = {
         Row: {
           author_name: string
           body: string
+          category: string
           cover_image_url: string | null
           created_at: string
           excerpt: string | null
           featured: boolean | null
           header_image_url: string | null
           id: string
+          is_breaking: boolean
+          is_daily_cover: boolean
+          priority: number
           published_at: string | null
           read_time_minutes: number | null
           seo_description: string | null
@@ -1513,12 +1517,16 @@ export type Database = {
         Insert: {
           author_name?: string
           body: string
+          category?: string
           cover_image_url?: string | null
           created_at?: string
           excerpt?: string | null
           featured?: boolean | null
           header_image_url?: string | null
           id?: string
+          is_breaking?: boolean
+          is_daily_cover?: boolean
+          priority?: number
           published_at?: string | null
           read_time_minutes?: number | null
           seo_description?: string | null
@@ -1536,12 +1544,16 @@ export type Database = {
         Update: {
           author_name?: string
           body?: string
+          category?: string
           cover_image_url?: string | null
           created_at?: string
           excerpt?: string | null
           featured?: boolean | null
           header_image_url?: string | null
           id?: string
+          is_breaking?: boolean
+          is_daily_cover?: boolean
+          priority?: number
           published_at?: string | null
           read_time_minutes?: number | null
           seo_description?: string | null
