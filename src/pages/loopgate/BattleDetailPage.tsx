@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { 
   Swords, Clock, Eye, Trophy, ArrowLeft, Flame, 
   CheckCircle, XCircle, ExternalLink, ThumbsUp, 
-  Send, Share2, Users, Gavel, Zap
+  Send, Share2, Users, Gavel, Zap, Play, Music
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import BattleInviteModal from "@/components/loopgate/BattleInviteModal";
 import BattleJudgingPanel from "@/components/loopgate/BattleJudgingPanel";
 import BattleChat from "@/components/loopgate/BattleChat";
+import BattleSongPicker from "@/components/loopgate/BattleSongPicker";
+import BattleSubmissionCard from "@/components/loopgate/BattleSubmissionCard";
 
 function formatViews(count: number): string {
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
@@ -87,6 +89,19 @@ export default function BattleDetailPage() {
   );
   const canVote = battle.status === 'judging' && user?.id && !isParticipant;
   const totalVotes = battle.challenger_votes + battle.opponent_votes;
+  const hasSongPicked = !!(battle as any).theme_song_name;
+
+  const handleSongPick = async (drop: any) => {
+    await supabase
+      .from('battles')
+      .update({
+        theme_drop_id: drop.id,
+        theme_song_name: drop.song_name,
+        theme_song_preview_url: drop.song_preview_url,
+      })
+      .eq('id', battle.id);
+    toast.success('🎵 Song picked!');
+  };
 
   const handleAccept = async () => {
     if (!profile) return;
@@ -300,11 +315,22 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Theme Song */}
-        {(battle as any).theme_song_name && (
-          <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/30 rounded-lg p-2">
-            <span className="text-[10px] font-bold text-purple-400 uppercase shrink-0">🎵 Theme</span>
-            <span className="text-xs text-foreground truncate flex-1">{(battle as any).theme_song_name}</span>
+        {/* Song Picker — mandatory for participants before submit */}
+        {isParticipant && battle.status === 'active' && (
+          <BattleSongPicker
+            onSongPicked={handleSongPick}
+            selectedSongName={(battle as any).theme_song_name}
+          />
+        )}
+
+        {/* Show picked song for non-participants */}
+        {!isParticipant && (battle as any).theme_song_name && (
+          <div className="bg-surface-1 border border-border p-3 flex items-center gap-3">
+            <Music className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Theme Song</p>
+              <p className="text-sm text-foreground font-medium truncate">{(battle as any).theme_song_name}</p>
+            </div>
             {(battle as any).theme_song_preview_url && (
               <audio src={(battle as any).theme_song_preview_url} controls className="h-7 w-28 shrink-0" />
             )}
@@ -350,7 +376,6 @@ export default function BattleDetailPage() {
                       .eq('id', battle.id);
                     if (!error) {
                       toast.success("You're officiating this battle!");
-                      // Notify both fighters
                       const notifications = [battle.challenger_id, battle.opponent_id].filter(Boolean).map(uid => ({
                         user_id: uid!,
                         type: 'battle_judge_accepted',
@@ -375,7 +400,6 @@ export default function BattleDetailPage() {
                       .eq('id', battle.id);
                     if (!error) {
                       toast.info("Declined — battle is now open for other judges");
-                      // Broadcast to all judges since requested declined
                       const { data: judgeRoles } = await supabase.from('user_roles').select('user_id').eq('role', 'judge');
                       if (judgeRoles && judgeRoles.length > 0) {
                         const notifications = judgeRoles
@@ -426,12 +450,9 @@ export default function BattleDetailPage() {
           </div>
         </div>
 
-        {/* Invite Challengers Button (for battle creator with open pending battles) */}
+        {/* Invite Challengers Button */}
         {isChallenger && battle.status === 'pending' && !battle.opponent_id && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <Button
               onClick={() => setInviteModalOpen(true)}
               variant="outline"
@@ -443,13 +464,9 @@ export default function BattleDetailPage() {
           </motion.div>
         )}
 
-        {/* Accept Challenge (for open battles OR direct opponent) */}
+        {/* Accept Challenge */}
         {canAccept && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-2"
-          >
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
             <Button
               onClick={handleAccept}
               disabled={accepting}
@@ -478,7 +495,7 @@ export default function BattleDetailPage() {
           </motion.div>
         )}
 
-        {/* Waiting for opponent to accept (challenger's view of direct challenge) */}
+        {/* Waiting for opponent */}
         {isChallenger && battle.status === 'pending' && battle.opponent_id && (
           <div className="bg-surface-1 border border-amber-500/30 p-4 text-center">
             <Clock className="w-5 h-5 text-amber-400 mx-auto mb-2" />
@@ -487,8 +504,8 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Submission Form (for active battles) */}
-        {canSubmit && (
+        {/* Submission Form — only after song pick */}
+        {canSubmit && hasSongPicked && (
           <div className="bg-surface-1 border border-gold/30 p-4">
             <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
               <Send className="w-4 h-4 text-gold" />
@@ -512,56 +529,37 @@ export default function BattleDetailPage() {
           </div>
         )}
 
-        {/* Submissions Display */}
+        {/* Submissions Display — Visual Previews */}
         {(battle.challenger_submission_url || battle.opponent_submission_url) && (
           <div className="space-y-3">
-            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Submissions</h3>
-            
-            {battle.challenger_submission_url && (
-              <a 
-                href={battle.challenger_submission_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-3 bg-surface-1 border border-border hover:border-red-500/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-8 h-8 border border-red-500/30">
-                    <AvatarImage src={battle.challenger_avatar_url || ''} />
-                    <AvatarFallback className="bg-red-500/20 text-red-400 text-xs">
-                      {battle.challenger_username.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <span className="text-sm text-foreground">{battle.challenger_username}</span>
-                    <span className="text-[10px] text-muted-foreground block uppercase">{battle.challenger_submission_platform}</span>
-                  </div>
-                </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
-              </a>
-            )}
-            
-            {battle.opponent_submission_url && (
-              <a 
-                href={battle.opponent_submission_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-3 bg-surface-1 border border-border hover:border-red-500/50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-8 h-8 border border-red-500/30">
-                    <AvatarImage src={battle.opponent_avatar_url || ''} />
-                    <AvatarFallback className="bg-red-500/20 text-red-400 text-xs">
-                      {battle.opponent_username?.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <span className="text-sm text-foreground">{battle.opponent_username}</span>
-                    <span className="text-[10px] text-muted-foreground block uppercase">{battle.opponent_submission_platform}</span>
-                  </div>
-                </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
-              </a>
-            )}
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+              <Play className="w-3.5 h-3.5 text-muted-foreground" />
+              Edits ({[battle.challenger_submission_url, battle.opponent_submission_url].filter(Boolean).length})
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {battle.challenger_submission_url && (
+                <BattleSubmissionCard
+                  url={battle.challenger_submission_url}
+                  username={battle.challenger_username}
+                  color="red"
+                  avatarUrl={battle.challenger_avatar_url}
+                  customThumbnailUrl={(battle as any).challenger_thumbnail_url}
+                  score={battle.status === 'completed' ? battle.challenger_score : undefined}
+                  isWinner={battle.winner_id === battle.challenger_id}
+                />
+              )}
+              {battle.opponent_submission_url && (
+                <BattleSubmissionCard
+                  url={battle.opponent_submission_url}
+                  username={battle.opponent_username || '???'}
+                  color="blue"
+                  avatarUrl={battle.opponent_avatar_url}
+                  customThumbnailUrl={(battle as any).opponent_thumbnail_url}
+                  score={battle.status === 'completed' ? battle.opponent_score : undefined}
+                  isWinner={battle.winner_id === battle.opponent_id}
+                />
+              )}
+            </div>
           </div>
         )}
 

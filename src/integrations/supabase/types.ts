@@ -307,6 +307,7 @@ export type Database = {
           challenger_submission_platform: string | null
           challenger_submission_url: string | null
           challenger_submitted_at: string | null
+          challenger_thumbnail_url: string | null
           challenger_username: string
           challenger_votes: number
           created_at: string
@@ -327,6 +328,7 @@ export type Database = {
           opponent_submission_platform: string | null
           opponent_submission_url: string | null
           opponent_submitted_at: string | null
+          opponent_thumbnail_url: string | null
           opponent_username: string | null
           opponent_votes: number
           requested_judge_id: string | null
@@ -351,6 +353,7 @@ export type Database = {
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
           challenger_submitted_at?: string | null
+          challenger_thumbnail_url?: string | null
           challenger_username: string
           challenger_votes?: number
           created_at?: string
@@ -371,6 +374,7 @@ export type Database = {
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
           opponent_submitted_at?: string | null
+          opponent_thumbnail_url?: string | null
           opponent_username?: string | null
           opponent_votes?: number
           requested_judge_id?: string | null
@@ -395,6 +399,7 @@ export type Database = {
           challenger_submission_platform?: string | null
           challenger_submission_url?: string | null
           challenger_submitted_at?: string | null
+          challenger_thumbnail_url?: string | null
           challenger_username?: string
           challenger_votes?: number
           created_at?: string
@@ -415,6 +420,7 @@ export type Database = {
           opponent_submission_platform?: string | null
           opponent_submission_url?: string | null
           opponent_submitted_at?: string | null
+          opponent_thumbnail_url?: string | null
           opponent_username?: string | null
           opponent_votes?: number
           requested_judge_id?: string | null
@@ -3997,14 +4003,21 @@ export type Database = {
           player_1_id: string
           player_1_submission_url: string | null
           player_1_submitted_at: string | null
+          player_1_thumbnail_url: string | null
           player_1_username: string
+          player_1_votes: number
           player_2_avatar_url: string | null
           player_2_id: string | null
           player_2_submission_url: string | null
           player_2_submitted_at: string | null
+          player_2_thumbnail_url: string | null
           player_2_username: string | null
+          player_2_votes: number
           starts_at: string | null
           status: string
+          theme_drop_id: string | null
+          theme_song_name: string | null
+          theme_song_preview_url: string | null
           updated_at: string
           view_count: number | null
           winner_id: string | null
@@ -4026,14 +4039,21 @@ export type Database = {
           player_1_id: string
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
+          player_1_thumbnail_url?: string | null
           player_1_username: string
+          player_1_votes?: number
           player_2_avatar_url?: string | null
           player_2_id?: string | null
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
+          player_2_thumbnail_url?: string | null
           player_2_username?: string | null
+          player_2_votes?: number
           starts_at?: string | null
           status?: string
+          theme_drop_id?: string | null
+          theme_song_name?: string | null
+          theme_song_preview_url?: string | null
           updated_at?: string
           view_count?: number | null
           winner_id?: string | null
@@ -4055,20 +4075,35 @@ export type Database = {
           player_1_id?: string
           player_1_submission_url?: string | null
           player_1_submitted_at?: string | null
+          player_1_thumbnail_url?: string | null
           player_1_username?: string
+          player_1_votes?: number
           player_2_avatar_url?: string | null
           player_2_id?: string | null
           player_2_submission_url?: string | null
           player_2_submitted_at?: string | null
+          player_2_thumbnail_url?: string | null
           player_2_username?: string | null
+          player_2_votes?: number
           starts_at?: string | null
           status?: string
+          theme_drop_id?: string | null
+          theme_song_name?: string | null
+          theme_song_preview_url?: string | null
           updated_at?: string
           view_count?: number | null
           winner_id?: string | null
           winner_score?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "quick_fights_theme_drop_id_fkey"
+            columns: ["theme_drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       redemptions: {
         Row: {
