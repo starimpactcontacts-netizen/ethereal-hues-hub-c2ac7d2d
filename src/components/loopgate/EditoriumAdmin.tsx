@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Save, Image as ImageIcon, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Sparkles, Film, Music, Gamepad2, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Article {
   id: string;
@@ -25,15 +26,33 @@ interface Article {
   view_count: number | null;
   featured: boolean;
   published_at: string | null;
+  created_at: string;
   seo_title: string | null;
   seo_description: string | null;
   seo_keywords: string[] | null;
+  category: string;
+  priority: number;
+  is_breaking: boolean;
+  is_daily_cover: boolean;
 }
 
 interface UnitOption {
   id: string;
   name: string;
 }
+
+const ARTICLE_CATEGORIES = [
+  { value: 'feature', label: 'Feature', icon: Sparkles, color: '#cc0000' },
+  { value: 'daily_cover', label: 'Daily Cover', icon: Crown, color: '#d4a020' },
+  { value: 'press_release', label: 'Press Release', icon: Megaphone, color: '#2563eb' },
+  { value: 'breaking', label: 'Breaking News', icon: Flame, color: '#ef4444' },
+  { value: 'artist_spotlight', label: 'Artist Spotlight', icon: Star, color: '#a855f7' },
+  { value: 'unit_showcase', label: 'Unit Showcase', icon: Users2, color: '#10b981' },
+  { value: 'film_review', label: 'Film & Cinema', icon: Film, color: '#f59e0b' },
+  { value: 'music', label: 'Music Scene', icon: Music, color: '#ec4899' },
+  { value: 'gaming', label: 'Game Culture', icon: Gamepad2, color: '#6366f1' },
+  { value: 'opinion', label: 'Opinion / Editorial', icon: Newspaper, color: '#64748b' },
+];
 
 const emptyForm = {
   title: '',
@@ -50,6 +69,10 @@ const emptyForm = {
   seo_title: '',
   seo_description: '',
   seo_keywords: '',
+  category: 'feature',
+  priority: 0,
+  is_breaking: false,
+  is_daily_cover: false,
 };
 
 export default function EditoriumAdmin() {
@@ -60,6 +83,9 @@ export default function EditoriumAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [showSeo, setShowSeo] = useState(false);
 
   useEffect(() => {
     fetchArticles();
@@ -80,9 +106,9 @@ export default function EditoriumAdmin() {
     if (data) setUnits(data);
   }
 
-  function openCreate() {
+  function openCreate(preset?: string) {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, category: preset || 'feature' });
     setShowEditor(true);
   }
 
@@ -103,6 +129,10 @@ export default function EditoriumAdmin() {
       seo_title: article.seo_title || '',
       seo_description: article.seo_description || '',
       seo_keywords: (article.seo_keywords || []).join(', '),
+      category: article.category || 'feature',
+      priority: article.priority || 0,
+      is_breaking: article.is_breaking || false,
+      is_daily_cover: article.is_daily_cover || false,
     });
     setShowEditor(true);
   }
@@ -130,15 +160,22 @@ export default function EditoriumAdmin() {
       seo_description: form.seo_description.trim() || null,
       seo_keywords: form.seo_keywords.split(',').map(t => t.trim()).filter(Boolean),
       status: publishNow ? 'published' : 'draft',
+      category: form.category,
+      priority: form.priority,
+      is_breaking: form.is_breaking,
+      is_daily_cover: form.is_daily_cover,
     };
+
+    if (publishNow && !editingId) {
+      payload.published_at = new Date().toISOString();
+    }
 
     if (editingId) {
       const { error } = await supabase.from('editorium_articles').update(payload).eq('id', editingId);
       if (error) toast.error('Failed to update');
       else toast.success(publishNow ? 'Published!' : 'Draft saved');
     } else {
-      // Need slug placeholder - trigger will generate it
-      payload.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 80);
+      payload.slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80);
       const { error } = await supabase.from('editorium_articles').insert(payload);
       if (error) toast.error('Failed to create: ' + error.message);
       else toast.success(publishNow ? 'Published!' : 'Draft saved');
@@ -151,18 +188,34 @@ export default function EditoriumAdmin() {
 
   async function toggleStatus(article: Article) {
     const newStatus = article.status === 'published' ? 'draft' : 'published';
-    await supabase.from('editorium_articles').update({ status: newStatus }).eq('id', article.id);
+    const update: any = { status: newStatus };
+    if (newStatus === 'published' && !article.published_at) update.published_at = new Date().toISOString();
+    await supabase.from('editorium_articles').update(update).eq('id', article.id);
     toast.success(newStatus === 'published' ? 'Published' : 'Unpublished');
     fetchArticles();
   }
 
   async function toggleFeatured(article: Article) {
-    // Unfeature all others first
     if (!article.featured) {
       await supabase.from('editorium_articles').update({ featured: false }).eq('featured', true);
     }
     await supabase.from('editorium_articles').update({ featured: !article.featured }).eq('id', article.id);
     toast.success(article.featured ? 'Unfeatured' : 'Set as featured');
+    fetchArticles();
+  }
+
+  async function toggleBreaking(article: Article) {
+    await supabase.from('editorium_articles').update({ is_breaking: !article.is_breaking }).eq('id', article.id);
+    toast.success(article.is_breaking ? 'Removed from breaking' : 'Added to breaking ticker');
+    fetchArticles();
+  }
+
+  async function toggleDailyCover(article: Article) {
+    if (!article.is_daily_cover) {
+      await supabase.from('editorium_articles').update({ is_daily_cover: false }).eq('is_daily_cover', true);
+    }
+    await supabase.from('editorium_articles').update({ is_daily_cover: !article.is_daily_cover }).eq('id', article.id);
+    toast.success(article.is_daily_cover ? 'Removed daily cover' : 'Set as daily cover');
     fetchArticles();
   }
 
@@ -173,63 +226,166 @@ export default function EditoriumAdmin() {
     fetchArticles();
   }
 
+  const getCategoryInfo = (cat: string) => ARTICLE_CATEGORIES.find(c => c.value === cat) || ARTICLE_CATEGORIES[0];
+
+  const filtered = articles.filter(a => {
+    if (filterCategory !== 'all' && a.category !== filterCategory) return false;
+    if (filterStatus !== 'all' && a.status !== filterStatus) return false;
+    return true;
+  });
+
+  const stats = {
+    total: articles.length,
+    published: articles.filter(a => a.status === 'published').length,
+    drafts: articles.filter(a => a.status === 'draft').length,
+    breaking: articles.filter(a => a.is_breaking).length,
+    dailyCover: articles.find(a => a.is_daily_cover),
+  };
+
   return (
     <div className="space-y-4">
+      {/* ═══ HEADER ═══ */}
       <div className="flex items-center justify-between">
-        <h3 className="font-display text-lg">Editorium Articles</h3>
-        <button onClick={openCreate} className="flex items-center gap-1.5 px-3 py-1.5 bg-gold text-background text-xs font-bold rounded-sm">
+        <div>
+          <h3 className="font-display text-lg">Editorium</h3>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            {stats.total} articles · {stats.published} published · {stats.drafts} drafts · {stats.breaking} breaking
+          </p>
+        </div>
+        <button onClick={() => openCreate()} className="flex items-center gap-1.5 px-3 py-1.5 bg-destructive text-white text-xs font-bold">
           <Plus className="w-3.5 h-3.5" /> New Article
         </button>
       </div>
 
+      {/* ═══ QUICK CREATE BY TYPE ═══ */}
+      <div className="grid grid-cols-5 gap-1.5">
+        {ARTICLE_CATEGORIES.slice(0, 5).map(cat => (
+          <button
+            key={cat.value}
+            onClick={() => openCreate(cat.value)}
+            className="flex flex-col items-center gap-1 py-2.5 px-1 bg-surface-1 border border-border/30 hover:border-border transition-colors group"
+          >
+            <cat.icon className="w-4 h-4 transition-colors" style={{ color: cat.color }} />
+            <span className="text-[9px] text-muted-foreground group-hover:text-foreground font-medium text-center leading-tight">{cat.label}</span>
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-5 gap-1.5">
+        {ARTICLE_CATEGORIES.slice(5).map(cat => (
+          <button
+            key={cat.value}
+            onClick={() => openCreate(cat.value)}
+            className="flex flex-col items-center gap-1 py-2.5 px-1 bg-surface-1 border border-border/30 hover:border-border transition-colors group"
+          >
+            <cat.icon className="w-4 h-4 transition-colors" style={{ color: cat.color }} />
+            <span className="text-[9px] text-muted-foreground group-hover:text-foreground font-medium text-center leading-tight">{cat.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* ═══ DAILY COVER STATUS ═══ */}
+      <div className="p-3 bg-surface-1 border border-gold/20">
+        <div className="flex items-center gap-2">
+          <Crown className="w-4 h-4 text-gold" />
+          <span className="text-xs font-bold text-gold">Daily Cover</span>
+        </div>
+        {stats.dailyCover ? (
+          <p className="text-xs text-foreground mt-1 truncate">{stats.dailyCover.title}</p>
+        ) : (
+          <p className="text-[10px] text-muted-foreground mt-1">No daily cover set — assign one from the list below</p>
+        )}
+      </div>
+
+      {/* ═══ FILTERS ═══ */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <select
+          value={filterCategory}
+          onChange={e => setFilterCategory(e.target.value)}
+          className="h-7 px-2 text-[10px] bg-surface-1 border border-border rounded-sm text-foreground"
+        >
+          <option value="all">All Categories</option>
+          {ARTICLE_CATEGORIES.map(cat => (
+            <option key={cat.value} value={cat.value}>{cat.label}</option>
+          ))}
+        </select>
+        <select
+          value={filterStatus}
+          onChange={e => setFilterStatus(e.target.value)}
+          className="h-7 px-2 text-[10px] bg-surface-1 border border-border rounded-sm text-foreground"
+        >
+          <option value="all">All Status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+        <span className="text-[10px] text-muted-foreground ml-auto">{filtered.length} results</span>
+      </div>
+
+      {/* ═══ ARTICLE LIST ═══ */}
       {loading ? (
         <p className="text-xs text-muted-foreground">Loading...</p>
-      ) : articles.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No articles yet. Create your first feature.</p>
+      ) : filtered.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-4 text-center">No articles match filters.</p>
       ) : (
-        <div className="space-y-2">
-          {articles.map(article => (
-            <div key={article.id} className="flex items-center gap-3 p-3 bg-surface-1 border border-border/50">
-              {article.cover_image_url ? (
-                <img src={article.cover_image_url} alt="" className="w-14 h-10 object-cover rounded-sm shrink-0" />
-              ) : (
-                <div className="w-14 h-10 bg-surface-2 rounded-sm shrink-0 flex items-center justify-center">
-                  <ImageIcon className="w-4 h-4 text-muted-foreground/30" />
+        <div className="space-y-1.5">
+          {filtered.map(article => {
+            const catInfo = getCategoryInfo(article.category);
+            return (
+              <div key={article.id} className="flex items-center gap-3 p-2.5 bg-surface-1 border border-border/50 hover:border-border/80 transition-colors">
+                {article.cover_image_url ? (
+                  <img src={article.cover_image_url} alt="" className="w-16 h-11 object-cover shrink-0" />
+                ) : (
+                  <div className="w-16 h-11 bg-surface-2 shrink-0 flex items-center justify-center">
+                    <ImageIcon className="w-4 h-4 text-muted-foreground/30" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <catInfo.icon className="w-3 h-3 shrink-0" style={{ color: catInfo.color }} />
+                    <p className="text-xs font-semibold text-foreground truncate">{article.title}</p>
+                    {article.featured && <Star className="w-3 h-3 text-gold fill-gold shrink-0" />}
+                    {article.is_daily_cover && <Crown className="w-3 h-3 text-gold shrink-0" />}
+                    {article.is_breaking && <Flame className="w-3 h-3 text-red-400 shrink-0" />}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                    <Badge variant={article.status === 'published' ? 'default' : 'secondary'} className="text-[8px] h-4">
+                      {article.status}
+                    </Badge>
+                    <span className="text-[8px] px-1.5 py-0.5 rounded-sm" style={{ backgroundColor: catInfo.color + '18', color: catInfo.color, fontWeight: 600 }}>
+                      {catInfo.label}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground">{article.view_count || 0} views</span>
+                    {article.published_at && (
+                      <span className="text-[9px] text-muted-foreground">{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
+                    )}
+                  </div>
                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground truncate">{article.title}</p>
-                  {article.featured && <Star className="w-3 h-3 text-gold fill-gold shrink-0" />}
-                </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant={article.status === 'published' ? 'default' : 'secondary'} className="text-[9px]">
-                    {article.status}
-                  </Badge>
-                  <span className="text-[9px] text-muted-foreground">/editorium/{article.slug}</span>
-                  <span className="text-[9px] text-muted-foreground">{article.view_count || 0} views</span>
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <button onClick={() => toggleDailyCover(article)} className={`p-1.5 rounded-sm transition-colors ${article.is_daily_cover ? 'bg-gold/20' : 'hover:bg-surface-2'}`} title="Daily cover">
+                    <Crown className={`w-3 h-3 ${article.is_daily_cover ? 'text-gold' : 'text-muted-foreground/50'}`} />
+                  </button>
+                  <button onClick={() => toggleBreaking(article)} className={`p-1.5 rounded-sm transition-colors ${article.is_breaking ? 'bg-red-500/20' : 'hover:bg-surface-2'}`} title="Breaking news">
+                    <Flame className={`w-3 h-3 ${article.is_breaking ? 'text-red-400' : 'text-muted-foreground/50'}`} />
+                  </button>
+                  <button onClick={() => toggleFeatured(article)} className={`p-1.5 rounded-sm transition-colors ${article.featured ? 'bg-gold/20' : 'hover:bg-surface-2'}`} title="Hero featured">
+                    <Star className={`w-3 h-3 ${article.featured ? 'text-gold fill-gold' : 'text-muted-foreground/50'}`} />
+                  </button>
+                  <button onClick={() => toggleStatus(article)} className="p-1.5 hover:bg-surface-2 rounded-sm transition-colors" title="Toggle publish">
+                    {article.status === 'published' ? <EyeOff className="w-3 h-3 text-muted-foreground" /> : <Eye className="w-3 h-3 text-emerald-400" />}
+                  </button>
+                  <button onClick={() => openEdit(article)} className="p-1.5 hover:bg-surface-2 rounded-sm transition-colors">
+                    <Pencil className="w-3 h-3 text-muted-foreground" />
+                  </button>
+                  <button onClick={() => deleteArticle(article.id)} className="p-1.5 hover:bg-red-500/10 rounded-sm transition-colors">
+                    <Trash2 className="w-3 h-3 text-red-400" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => toggleFeatured(article)} className="p-1.5 hover:bg-gold/10 rounded-sm transition-colors" title="Toggle featured">
-                  <Star className={`w-3.5 h-3.5 ${article.featured ? 'text-gold fill-gold' : 'text-muted-foreground'}`} />
-                </button>
-                <button onClick={() => toggleStatus(article)} className="p-1.5 hover:bg-surface-2 rounded-sm transition-colors" title="Toggle publish">
-                  {article.status === 'published' ? <EyeOff className="w-3.5 h-3.5 text-muted-foreground" /> : <Eye className="w-3.5 h-3.5 text-emerald-400" />}
-                </button>
-                <button onClick={() => openEdit(article)} className="p-1.5 hover:bg-surface-2 rounded-sm transition-colors">
-                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
-                <button onClick={() => deleteArticle(article.id)} className="p-1.5 hover:bg-red-500/10 rounded-sm transition-colors">
-                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Editor Modal */}
+      {/* ═══ EDITOR MODAL ═══ */}
       <Dialog open={showEditor} onOpenChange={setShowEditor}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-surface-0 border-border">
           <DialogHeader>
@@ -237,6 +393,47 @@ export default function EditoriumAdmin() {
           </DialogHeader>
 
           <div className="space-y-4 mt-2">
+            {/* Category selector */}
+            <div>
+              <Label className="text-xs mb-1.5 block">Article Type</Label>
+              <div className="grid grid-cols-5 gap-1">
+                {ARTICLE_CATEGORIES.map(cat => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, category: cat.value }))}
+                    className={`flex flex-col items-center gap-0.5 py-2 px-1 border transition-colors ${form.category === cat.value ? 'border-foreground bg-surface-2' : 'border-border/30 bg-surface-1 hover:border-border'}`}
+                  >
+                    <cat.icon className="w-3.5 h-3.5" style={{ color: cat.color }} />
+                    <span className="text-[8px] font-medium text-center leading-tight">{cat.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Flags row */}
+            <div className="flex items-center gap-4 p-2.5 bg-surface-1 border border-border/30">
+              <label className="flex items-center gap-1.5 text-[10px] cursor-pointer">
+                <input type="checkbox" checked={form.is_daily_cover} onChange={e => setForm(f => ({ ...f, is_daily_cover: e.target.checked }))} className="rounded" />
+                <Crown className="w-3 h-3 text-gold" />
+                Daily Cover
+              </label>
+              <label className="flex items-center gap-1.5 text-[10px] cursor-pointer">
+                <input type="checkbox" checked={form.is_breaking} onChange={e => setForm(f => ({ ...f, is_breaking: e.target.checked }))} className="rounded" />
+                <Flame className="w-3 h-3 text-red-400" />
+                Breaking News
+              </label>
+              <label className="flex items-center gap-1.5 text-[10px] cursor-pointer">
+                <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} className="rounded" />
+                <Star className="w-3 h-3 text-gold" />
+                Hero Featured
+              </label>
+              <div className="ml-auto flex items-center gap-1">
+                <Label className="text-[9px] text-muted-foreground">Priority</Label>
+                <Input type="number" value={form.priority} onChange={e => setForm(f => ({ ...f, priority: parseInt(e.target.value) || 0 }))} className="w-14 h-6 text-[10px] bg-surface-0 border-border" />
+              </div>
+            </div>
+
             <div>
               <Label className="text-xs">Title *</Label>
               <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="The Rise of Elite Editing Units" className="bg-surface-1 border-border" />
@@ -250,27 +447,25 @@ export default function EditoriumAdmin() {
               <Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={2} placeholder="A brief summary shown in article listings..." className="bg-surface-1 border-border" />
             </div>
             <div>
-              <Label className="text-xs">{'Body * (supports # headings, > quotes, ![alt](url) images)'}</Label>
+              <Label className="text-xs">{'Body * (# headings, > quotes, **bold**, *italic*, ![alt](url) images)'}</Label>
               <Textarea value={form.body} onChange={e => setForm(f => ({ ...f, body: e.target.value }))} rows={12} placeholder="Write your article here..." className="bg-surface-1 border-border font-mono text-xs" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Cover Image URL</Label>
                 <Input value={form.cover_image_url} onChange={e => setForm(f => ({ ...f, cover_image_url: e.target.value }))} placeholder="https://..." className="bg-surface-1 border-border" />
+                {form.cover_image_url && <img src={form.cover_image_url} alt="" className="mt-1 w-full h-20 object-cover" />}
               </div>
               <div>
                 <Label className="text-xs">Header/Hero Image URL</Label>
                 <Input value={form.header_image_url} onChange={e => setForm(f => ({ ...f, header_image_url: e.target.value }))} placeholder="https://..." className="bg-surface-1 border-border" />
+                {form.header_image_url && <img src={form.header_image_url} alt="" className="mt-1 w-full h-20 object-cover" />}
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Featured Unit</Label>
-                <select
-                  value={form.unit_id}
-                  onChange={e => setForm(f => ({ ...f, unit_id: e.target.value }))}
-                  className="w-full h-9 px-3 text-xs bg-surface-1 border border-border rounded-sm text-foreground"
-                >
+                <select value={form.unit_id} onChange={e => setForm(f => ({ ...f, unit_id: e.target.value }))} className="w-full h-9 px-3 text-xs bg-surface-1 border border-border rounded-sm text-foreground">
                   <option value="">None</option>
                   {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                 </select>
@@ -291,28 +486,24 @@ export default function EditoriumAdmin() {
               </div>
             </div>
 
-            {/* SEO */}
-            <div className="border-t border-border/30 pt-3">
-              <p className="text-[10px] text-gold uppercase tracking-widest font-bold mb-2">SEO</p>
+            {/* SEO Collapsible */}
+            <button type="button" onClick={() => setShowSeo(!showSeo)} className="flex items-center gap-2 w-full border-t border-border/30 pt-3">
+              <p className="text-[10px] text-gold uppercase tracking-widest font-bold">SEO Settings</p>
+              {showSeo ? <ChevronUp className="w-3 h-3 text-gold" /> : <ChevronDown className="w-3 h-3 text-gold" />}
+            </button>
+            {showSeo && (
               <div className="space-y-2">
                 <Input value={form.seo_title} onChange={e => setForm(f => ({ ...f, seo_title: e.target.value }))} placeholder="SEO Title (max 60 chars)" maxLength={60} className="bg-surface-1 border-border text-xs" />
                 <Textarea value={form.seo_description} onChange={e => setForm(f => ({ ...f, seo_description: e.target.value }))} placeholder="SEO Description (max 160 chars)" maxLength={160} rows={2} className="bg-surface-1 border-border text-xs" />
                 <Input value={form.seo_keywords} onChange={e => setForm(f => ({ ...f, seo_keywords: e.target.value }))} placeholder="SEO Keywords (comma separated)" className="bg-surface-1 border-border text-xs" />
               </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={form.featured} onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} className="rounded" />
-                Mark as hero featured
-              </label>
-            </div>
+            )}
 
             <div className="flex gap-2 pt-2">
-              <button onClick={() => handleSave(false)} disabled={saving} className="flex-1 py-2 bg-surface-2 border border-border text-foreground text-xs font-bold rounded-sm hover:bg-surface-1 transition-colors">
+              <button onClick={() => handleSave(false)} disabled={saving} className="flex-1 py-2.5 bg-surface-2 border border-border text-foreground text-xs font-bold hover:bg-surface-1 transition-colors">
                 {saving ? 'Saving...' : 'Save Draft'}
               </button>
-              <button onClick={() => handleSave(true)} disabled={saving} className="flex-1 py-2 bg-gold text-background text-xs font-bold rounded-sm hover:bg-gold/90 transition-colors">
+              <button onClick={() => handleSave(true)} disabled={saving} className="flex-1 py-2.5 bg-destructive text-white text-xs font-bold hover:bg-destructive/90 transition-colors">
                 {saving ? 'Publishing...' : 'Publish Now'}
               </button>
             </div>
