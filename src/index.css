@@ -336,11 +336,16 @@ html.editorium-active main {
 /* Keep header and bottom nav dark on editorium pages */
 html.editorium-active header,
 html.editorium-active header *,
-html.editorium-active nav[class*="fixed bottom"],
-html.editorium-active nav[class*="fixed bottom"] * {
+html.editorium-active nav.fixed.bottom-0,
+html.editorium-active nav.fixed.bottom-0 > div {
   --background: 0 0% 2% !important;
   --foreground: 0 0% 95% !important;
+  background-color: hsl(0 0% 2%) !important;
   color: inherit;
+}
+html.editorium-active nav.fixed.bottom-0 a,
+html.editorium-active nav.fixed.bottom-0 a * {
+  background-color: transparent !important;
 }
 
 /* Performance optimizations */

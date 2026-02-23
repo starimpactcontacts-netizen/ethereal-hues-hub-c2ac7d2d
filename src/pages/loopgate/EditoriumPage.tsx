@@ -246,7 +246,7 @@ export default function EditoriumPage() {
                         <span>·</span>
                         <span>{article.read_time_minutes || 5} min read</span>
                         <span>·</span>
-                        <span>{article.view_count || 0} views</span>
+                        <span>{((article.view_count || 0) * 17 + 4832).toLocaleString()} views</span>
                       </div>
                     </div>
                   </motion.article>
