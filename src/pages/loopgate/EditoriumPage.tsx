@@ -304,29 +304,69 @@ export default function EditoriumPage() {
               </div>
             )}
 
-            {/* ═══ EDITOR'S PICKS / COMING SOON SECTIONS ═══ */}
-            <div className="mb-10">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {PLACEHOLDER_SLOTS.map((slot, i) => (
-                  <motion.div
-                    key={slot.label}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + i * 0.04 }}
-                    className="group cursor-default"
-                    style={{ border: '1px solid #e5e5e5', padding: '16px 14px', backgroundColor: '#fafafa' }}
-                  >
-                    <slot.icon className="w-5 h-5 mb-2" style={{ color: '#cc0000' }} />
-                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#111' }}>{slot.label}</p>
-                    <p style={{ fontSize: '10px', color: '#999', marginTop: '2px' }}>{slot.desc}</p>
-                    <div className="mt-3 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#ddd' }} />
-                      <span style={{ fontSize: '9px', color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Awaiting</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+            {/* ═══ UNIT COVERAGE ═══ */}
+            {(() => {
+              const unitArticles = filtered.filter(a => a.unit_name);
+              return unitArticles.length > 0 ? (
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
+                    <Users2 className="w-4 h-4" style={{ color: '#cc0000' }} />
+                    <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Unit Coverage</h3>
+                    <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{unitArticles.length} stories</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {unitArticles.slice(0, 6).map((article, i) => (
+                      <Link key={article.id} to={`/editorium/${article.slug}`} className="group">
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                          <div className="aspect-[16/10] overflow-hidden relative" style={{ backgroundColor: '#f0f0f0' }}>
+                            {article.cover_image_url ? (
+                              <img src={article.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <img src={editoriumLogo} alt="" className="w-16 opacity-[0.06]" style={{ filter: 'invert(1)' }} />
+                              </div>
+                            )}
+                          </div>
+                          <div className="pt-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              {article.unit_avatar && <img src={article.unit_avatar} className="w-4 h-4 rounded-full" alt="" />}
+                              <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>{article.unit_name}</span>
+                            </div>
+                            <h4 className="font-display text-base leading-snug line-clamp-2 group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
+                              {article.title}
+                            </h4>
+                            {article.excerpt && (
+                              <p className="line-clamp-2 mt-1" style={{ fontSize: '12px', color: '#666', lineHeight: 1.4 }}>{article.excerpt}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-1.5" style={{ fontSize: '10px', color: '#999' }}>
+                              <span>{article.author_name}</span>
+                              <span>·</span>
+                              <span>{inflateViews(article.view_count)} views</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
+                    <Users2 className="w-4 h-4" style={{ color: '#cc0000' }} />
+                    <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Unit Coverage</h3>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[{ label: 'Artist Spotlight', icon: Sparkles, desc: 'Next feature dropping soon' }, { label: 'Unit Showcase', icon: Users2, desc: 'Community coverage incoming' }, { label: 'Game Culture', icon: Gamepad2, desc: 'Submissions open' }].map((slot, i) => (
+                      <div key={slot.label} className="p-4" style={{ border: '1px solid #e5e5e5', backgroundColor: '#fafafa' }}>
+                        <slot.icon className="w-5 h-5 mb-2" style={{ color: '#cc0000' }} />
+                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#111' }}>{slot.label}</p>
+                        <p style={{ fontSize: '10px', color: '#999', marginTop: '2px' }}>{slot.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ═══ LATEST ARTICLES ═══ */}
             {rest.length > 0 && (
