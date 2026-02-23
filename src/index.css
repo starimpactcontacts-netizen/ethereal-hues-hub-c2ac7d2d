@@ -323,16 +323,24 @@
   }
 }
 
-/* Editorium active — force white on ALL ancestors when editorium pages are mounted */
-html.editorium-active,
-html.editorium-active body,
-html.editorium-active body.bg-background,
-html.editorium-active #root,
-html.editorium-active #root > *,
-html.editorium-active #root > * > *,
-html.editorium-active #root > * > * > * {
+/* Editorium active — force white on main content only, keep nav dark */
+html.editorium-active main,
+html.editorium-active main * {
+  --background: 0 0% 100%;
+}
+
+html.editorium-active main {
   background-color: #ffffff !important;
-  --background: 0 0% 100% !important;
+}
+
+/* Keep header and bottom nav dark on editorium pages */
+html.editorium-active header,
+html.editorium-active header *,
+html.editorium-active nav[class*="fixed bottom"],
+html.editorium-active nav[class*="fixed bottom"] * {
+  --background: 0 0% 2% !important;
+  --foreground: 0 0% 95% !important;
+  color: inherit;
 }
 
 /* Performance optimizations */
