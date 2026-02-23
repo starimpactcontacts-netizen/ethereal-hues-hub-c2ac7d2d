@@ -324,13 +324,11 @@
 }
 
 /* Editorium active — force white on main content only, keep nav dark */
-html.editorium-active main,
-html.editorium-active main * {
-  --background: 0 0% 100%;
-}
-
 html.editorium-active main {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 7%;
   background-color: #ffffff !important;
+  color: #111111 !important;
 }
 
 /* Keep header and bottom nav dark on editorium pages */
