@@ -44,7 +44,7 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
       onClick={onClick}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="shrink-0 w-[200px] bg-surface-1 border border-cyan-500/30 hover:border-cyan-500/60 transition-all text-left overflow-hidden group"
+      className="shrink-0 w-[240px] bg-surface-1 border border-cyan-500/30 hover:border-cyan-500/60 transition-all text-left overflow-hidden group"
     >
       {/* Top accent */}
       <div className="h-0.5 bg-gradient-to-r from-cyan-500 to-sky-500" />

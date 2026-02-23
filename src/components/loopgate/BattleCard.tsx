@@ -57,7 +57,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-[220px] shrink-0 bg-surface-1 border border-red-500/30 hover:border-red-500/60 transition-all cursor-pointer group overflow-hidden"
+      className="w-[240px] shrink-0 bg-surface-1 border border-red-500/30 hover:border-red-500/60 transition-all cursor-pointer group overflow-hidden"
     >
       {/* Header - UFC Style VS Display */}
       <div className="relative h-20 bg-gradient-to-br from-red-500/20 via-surface-2 to-surface-1 overflow-hidden">
@@ -136,6 +136,12 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-background/80 px-1.5 py-0.5 rounded">
           <Eye className="w-3 h-3 text-muted-foreground" />
           <span className="text-[9px] text-foreground font-medium">{formatViews(battle.view_count)}</span>
+        </div>
+        
+        {/* IDX reward */}
+        <div className="absolute bottom-2 right-2 flex items-center gap-1">
+          <Trophy className="w-3 h-3 text-gold" />
+          <span className="text-[10px] font-bold text-gold">+20 IDX</span>
         </div>
       </div>
       
