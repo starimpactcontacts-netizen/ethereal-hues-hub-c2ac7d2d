@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music } from 'lucide-react';
+import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import SEO, { pageSEO } from '@/components/SEO';
@@ -23,17 +23,13 @@ interface Article {
   unit_id: string | null;
   unit_name?: string;
   unit_avatar?: string;
+  category: string;
+  is_breaking: boolean;
+  is_daily_cover: boolean;
+  priority: number;
 }
 
 const CATEGORIES = ['All', 'Culture', 'Artists', 'Community', 'Games', 'Film', 'Music', 'Breaking'];
-
-const PLACEHOLDER_SLOTS = [
-  { label: 'Artist Spotlight', icon: Sparkles, desc: 'Next feature dropping soon' },
-  { label: 'Unit Showcase', icon: Users2, desc: 'Community coverage incoming' },
-  { label: 'Game Culture', icon: Gamepad2, desc: 'Submissions open' },
-  { label: 'Film & Cinema', icon: Film, desc: 'Reviews coming soon' },
-  { label: 'Music Scene', icon: Music, desc: 'Artist profiles loading' },
-];
 
 export default function EditoriumPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -57,8 +53,9 @@ export default function EditoriumPage() {
   async function fetchArticles() {
     const { data } = await supabase
       .from('editorium_articles')
-      .select('id, title, slug, subtitle, excerpt, cover_image_url, author_name, published_at, read_time_minutes, view_count, tags, featured, unit_id')
+      .select('id, title, slug, subtitle, excerpt, cover_image_url, author_name, published_at, read_time_minutes, view_count, tags, featured, unit_id, category, is_breaking, is_daily_cover, priority')
       .eq('status', 'published')
+      .order('priority', { ascending: false })
       .order('published_at', { ascending: false });
 
     if (data) {
@@ -88,11 +85,116 @@ export default function EditoriumPage() {
     return matchSearch && matchCat;
   });
 
-  const featured = filtered.find(a => a.featured) || filtered[0];
-  const trending = filtered.filter(a => a.id !== featured?.id).slice(0, 6);
-  const rest = filtered.filter(a => a.id !== featured?.id && !trending.find(b => b.id === a.id));
+  // Smart section splits using DB fields
+  const dailyCover = filtered.find(a => a.is_daily_cover) || filtered.find(a => a.featured) || filtered[0];
+  const breakingNews = filtered.filter(a => a.is_breaking && a.id !== dailyCover?.id);
+  const unitCoverage = filtered.filter(a => a.unit_name && a.id !== dailyCover?.id);
+  const pressReleases = filtered.filter(a => a.category === 'press_release' && a.id !== dailyCover?.id);
+  const cultureStories = filtered.filter(a => ['culture', 'artist_spotlight', 'community_highlight'].includes(a.category) && a.id !== dailyCover?.id);
+  
+  // Everything else for trending / latest
+  const usedIds = new Set([
+    dailyCover?.id,
+    ...breakingNews.map(a => a.id),
+  ].filter(Boolean));
+  const trending = filtered.filter(a => !usedIds.has(a.id)).slice(0, 6);
+  const allUsedIds = new Set([...usedIds, ...trending.map(a => a.id)]);
+  const latest = filtered.filter(a => !allUsedIds.has(a.id));
 
   const inflateViews = (v: number | null) => ((v || 0) * 3 + 127).toLocaleString();
+
+  const ArticleRow = ({ article, i }: { article: Article; i: number }) => (
+    <Link to={`/editorium/${article.slug}`} className="block group">
+      <motion.article
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: i * 0.04 }}
+        className="flex gap-5 py-5"
+        style={{ borderBottom: '1px solid #e5e5e5' }}
+      >
+        {article.cover_image_url ? (
+          <div className="w-36 h-24 sm:w-44 sm:h-28 shrink-0 overflow-hidden">
+            <img src={article.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+          </div>
+        ) : (
+          <div className="w-36 h-24 sm:w-44 sm:h-28 shrink-0 flex items-center justify-center" style={{ backgroundColor: '#f5f5f5' }}>
+            <img src={editoriumLogo} alt="" className="w-16 opacity-10" style={{ filter: 'invert(1)' }} />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            {article.unit_name && (
+              <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>{article.unit_name}</span>
+            )}
+            {article.tags?.[0] && !article.unit_name && (
+              <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>{article.tags[0]}</span>
+            )}
+          </div>
+          <h3 className="font-display text-lg sm:text-xl leading-snug line-clamp-2 mt-0.5 group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
+            {article.title}
+          </h3>
+          {article.excerpt && (
+            <p className="line-clamp-2 mt-1 hidden sm:block" style={{ fontSize: '13px', color: '#666', lineHeight: 1.5 }}>{article.excerpt}</p>
+          )}
+          <div className="flex items-center gap-2 mt-2" style={{ fontSize: '11px', color: '#999' }}>
+            <span style={{ color: '#444', fontWeight: 600 }}>{article.author_name}</span>
+            <span>·</span>
+            <span>{article.read_time_minutes || 5} min</span>
+            <span>·</span>
+            <span>{inflateViews(article.view_count)} views</span>
+          </div>
+        </div>
+      </motion.article>
+    </Link>
+  );
+
+  const CardSmall = ({ article, i }: { article: Article; i: number }) => (
+    <Link to={`/editorium/${article.slug}`} className="shrink-0 w-[220px] group">
+      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
+        <div className="h-32 overflow-hidden relative" style={{ backgroundColor: '#f0f0f0' }}>
+          {article.cover_image_url ? (
+            <img src={article.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <img src={editoriumLogo} alt="" className="w-16 opacity-[0.06]" style={{ filter: 'invert(1)' }} />
+            </div>
+          )}
+        </div>
+        <div className="pt-2.5 pb-1">
+          {article.tags?.[0] && (
+            <span style={{ fontSize: '9px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>{article.tags[0]}</span>
+          )}
+          <h4 className="font-display text-sm leading-snug line-clamp-2 mt-0.5 group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
+            {article.title}
+          </h4>
+          <div className="flex items-center gap-2 mt-1.5" style={{ fontSize: '10px', color: '#999' }}>
+            <span>{article.author_name}</span>
+            <span>·</span>
+            <span>{inflateViews(article.view_count)} views</span>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
+  );
+
+  const EmptySlot = ({ label }: { label: string }) => (
+    <div className="shrink-0 w-[220px]">
+      <div className="h-32 flex items-center justify-center" style={{ backgroundColor: '#f5f5f5', border: '1px dashed #ddd' }}>
+        <Newspaper className="w-5 h-5" style={{ color: '#ccc' }} />
+      </div>
+      <div className="pt-2.5">
+        <span style={{ fontSize: '9px', color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>{label}</span>
+        <div className="mt-1 h-3 rounded-sm" style={{ backgroundColor: '#f0f0f0', width: '80%' }} />
+        <div className="mt-1 h-3 rounded-sm" style={{ backgroundColor: '#f0f0f0', width: '55%' }} />
+      </div>
+    </div>
+  );
+
+  const SectionBar = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
+      {children}
+    </div>
+  );
 
   return (
     <div className="editorium-white min-h-screen pb-20">
@@ -177,12 +279,39 @@ export default function EditoriumPage() {
       ) : (
         <>
           {/* ═══ BREAKING NEWS TICKER ═══ */}
-          {trending.length > 0 && (
+          {breakingNews.length > 0 && (
             <div style={{ borderBottom: '1px solid #e5e5e5' }}>
               <div className="max-w-5xl mx-auto px-4 py-3">
                 <div className="flex items-start gap-4">
                   <span className="shrink-0 px-2.5 py-1 font-bold" style={{ backgroundColor: '#cc0000', color: '#fff', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                     Breaking
+                  </span>
+                  <div className="flex-1 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-6">
+                      {breakingNews.slice(0, 4).map(article => (
+                        <Link key={article.id} to={`/editorium/${article.slug}`} className="shrink-0 max-w-[260px] group">
+                          <p style={{ fontSize: '11px', color: '#999', fontWeight: 500 }}>
+                            {article.published_at ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true }) : ''}
+                          </p>
+                          <p className="line-clamp-2 group-hover:underline" style={{ fontSize: '14px', fontWeight: 700, color: '#111', lineHeight: 1.3, marginTop: '2px' }}>
+                            {article.title}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Fallback ticker from trending if no breaking articles */}
+          {breakingNews.length === 0 && trending.length > 1 && (
+            <div style={{ borderBottom: '1px solid #e5e5e5' }}>
+              <div className="max-w-5xl mx-auto px-4 py-3">
+                <div className="flex items-start gap-4">
+                  <span className="shrink-0 px-2.5 py-1 font-bold" style={{ backgroundColor: '#cc0000', color: '#fff', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                    Now
                   </span>
                   <div className="flex-1 overflow-x-auto scrollbar-hide">
                     <div className="flex gap-6">
@@ -204,61 +333,82 @@ export default function EditoriumPage() {
           )}
 
           <div className="max-w-5xl mx-auto px-4 pt-8">
-            {/* ═══ HERO FEATURE ═══ */}
-            {featured && (
-              <Link to={`/editorium/${featured.slug}`} className="block group mb-10">
+
+            {/* ═══ DAILY COVER / HERO ═══ */}
+            {dailyCover && (
+              <Link to={`/editorium/${dailyCover.slug}`} className="block group mb-10">
                 <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden">
-                  {featured.cover_image_url ? (
-                    <div className="aspect-[16/9] sm:aspect-[2/1] overflow-hidden relative">
-                      <img src={featured.cover_image_url} alt={featured.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700" />
-                      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 40%, transparent 70%)' }} />
-                      <div className="absolute top-3 left-3">
-                        <span className="px-2 py-1 text-white font-bold" style={{ backgroundColor: '#cc0000', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-                          Daily Cover
-                        </span>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8">
-                        {featured.unit_name && (
-                          <div className="flex items-center gap-2 mb-2">
-                            {featured.unit_avatar && <img src={featured.unit_avatar} className="w-5 h-5 rounded-full border border-white/20" alt="" />}
-                            <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>{featured.unit_name}</span>
-                          </div>
-                        )}
-                        <h2 className="font-display text-3xl sm:text-5xl leading-tight" style={{ color: '#fff' }}>{featured.title}</h2>
-                        {featured.subtitle && (
-                          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', marginTop: '6px', maxWidth: '600px' }}>{featured.subtitle}</p>
-                        )}
-                        <div className="flex items-center gap-3 mt-3" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
-                          <span style={{ fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>{featured.author_name}</span>
-                          {featured.published_at && <span>{formatDistanceToNow(new Date(featured.published_at), { addSuffix: true })}</span>}
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{featured.read_time_minutes || 5} min</span>
-                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{inflateViews(featured.view_count)}</span>
+                  {dailyCover.cover_image_url ? (
+                    <>
+                      <div className="aspect-[16/9] sm:aspect-[2/1] overflow-hidden relative">
+                        <img src={dailyCover.cover_image_url} alt={dailyCover.title} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700" />
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2 py-1 text-white font-bold" style={{ backgroundColor: '#cc0000', fontSize: '9px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                            {dailyCover.is_daily_cover ? 'Daily Cover' : dailyCover.category === 'press_release' ? 'Press Release' : 'Featured'}
+                          </span>
                         </div>
                       </div>
-                    </div>
+                      <div className="pt-4">
+                        {dailyCover.unit_name && (
+                          <div className="flex items-center gap-2 mb-1">
+                            {dailyCover.unit_avatar && <img src={dailyCover.unit_avatar} className="w-4 h-4 rounded-full" alt="" />}
+                            <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>{dailyCover.unit_name}</span>
+                          </div>
+                        )}
+                        <h2 className="font-display text-3xl sm:text-5xl leading-tight group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>{dailyCover.title}</h2>
+                        {dailyCover.subtitle && (
+                          <p style={{ color: '#555', fontSize: '15px', marginTop: '6px', maxWidth: '700px' }}>{dailyCover.subtitle}</p>
+                        )}
+                        <div className="flex items-center gap-3 mt-3" style={{ fontSize: '11px', color: '#999' }}>
+                          <span style={{ fontWeight: 600, color: '#333' }}>{dailyCover.author_name}</span>
+                          {dailyCover.published_at && <span>{formatDistanceToNow(new Date(dailyCover.published_at), { addSuffix: true })}</span>}
+                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{dailyCover.read_time_minutes || 5} min</span>
+                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{inflateViews(dailyCover.view_count)}</span>
+                        </div>
+                      </div>
+                    </>
                   ) : (
-                    <div className="p-6" style={{ borderBottom: '2px solid #111' }}>
-                      <h2 className="font-display text-4xl group-hover:underline" style={{ color: '#111' }}>{featured.title}</h2>
-                      {featured.subtitle && <p style={{ fontSize: '15px', color: '#666', marginTop: '6px' }}>{featured.subtitle}</p>}
+                    <div className="py-6" style={{ borderBottom: '2px solid #111' }}>
+                      <h2 className="font-display text-4xl group-hover:underline" style={{ color: '#111' }}>{dailyCover.title}</h2>
+                      {dailyCover.subtitle && <p style={{ fontSize: '15px', color: '#666', marginTop: '6px' }}>{dailyCover.subtitle}</p>}
                     </div>
                   )}
                 </motion.article>
               </Link>
             )}
 
-            {/* ═══ TRENDING CAROUSEL ═══ */}
+            {/* ═══ TRENDING ═══ */}
             {trending.length > 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
+                <SectionBar>
                   <Flame className="w-4 h-4" style={{ color: '#cc0000' }} />
                   <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Trending Now</h3>
                   <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{trending.length} stories</span>
-                </div>
+                </SectionBar>
                 <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
                   {trending.map((article, i) => (
-                    <Link key={article.id} to={`/editorium/${article.slug}`} className="shrink-0 w-[220px] group">
-                      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
-                        <div className="h-32 overflow-hidden relative" style={{ backgroundColor: '#f0f0f0' }}>
+                    <CardSmall key={article.id} article={article} i={i} />
+                  ))}
+                  {trending.length < 4 && ['Coming Soon', 'Awaiting Story', 'Next Drop'].slice(0, 4 - trending.length).map(label => (
+                    <EmptySlot key={label} label={label} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ═══ UNIT COVERAGE ═══ */}
+            {unitCoverage.length > 0 && (
+              <div className="mb-10">
+                <SectionBar>
+                  <Users2 className="w-4 h-4" style={{ color: '#cc0000' }} />
+                  <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Unit Coverage</h3>
+                  <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{unitCoverage.length} stories</span>
+                </SectionBar>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {unitCoverage.slice(0, 6).map((article, i) => (
+                    <Link key={article.id} to={`/editorium/${article.slug}`} className="group">
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                        <div className="aspect-[16/10] overflow-hidden relative" style={{ backgroundColor: '#f0f0f0' }}>
                           {article.cover_image_url ? (
                             <img src={article.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
@@ -266,17 +416,18 @@ export default function EditoriumPage() {
                               <img src={editoriumLogo} alt="" className="w-16 opacity-[0.06]" style={{ filter: 'invert(1)' }} />
                             </div>
                           )}
-                          <div className="absolute top-2 right-2 px-1.5 py-0.5" style={{ backgroundColor: '#111', fontSize: '8px', color: '#fff', fontWeight: 700, letterSpacing: '0.1em' }}>
-                            #{i + 1}
-                          </div>
                         </div>
-                        <div className="pt-2.5 pb-1">
-                          {article.tags?.[0] && (
-                            <span style={{ fontSize: '9px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>{article.tags[0]}</span>
-                          )}
-                          <h4 className="font-display text-sm leading-snug line-clamp-2 mt-0.5 group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
+                        <div className="pt-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            {article.unit_avatar && <img src={article.unit_avatar} className="w-4 h-4 rounded-full" alt="" />}
+                            <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>{article.unit_name}</span>
+                          </div>
+                          <h4 className="font-display text-base leading-snug line-clamp-2 group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
                             {article.title}
                           </h4>
+                          {article.excerpt && (
+                            <p className="line-clamp-2 mt-1" style={{ fontSize: '12px', color: '#666', lineHeight: 1.4 }}>{article.excerpt}</p>
+                          )}
                           <div className="flex items-center gap-2 mt-1.5" style={{ fontSize: '10px', color: '#999' }}>
                             <span>{article.author_name}</span>
                             <span>·</span>
@@ -286,148 +437,68 @@ export default function EditoriumPage() {
                       </motion.div>
                     </Link>
                   ))}
+                </div>
+              </div>
+            )}
 
-                  {/* Empty slots to fill carousel */}
-                  {trending.length < 6 && Array.from({ length: 6 - trending.length }).map((_, i) => (
-                    <div key={`empty-${i}`} className="shrink-0 w-[220px]">
-                      <div className="h-32 flex items-center justify-center" style={{ backgroundColor: '#f5f5f5', border: '1px dashed #ddd' }}>
-                        <Newspaper className="w-5 h-5" style={{ color: '#ccc' }} />
-                      </div>
-                      <div className="pt-2.5">
-                        <span style={{ fontSize: '9px', color: '#ccc', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>Coming Soon</span>
-                        <div className="mt-1 h-3 rounded-sm" style={{ backgroundColor: '#f0f0f0', width: '80%' }} />
-                        <div className="mt-1 h-3 rounded-sm" style={{ backgroundColor: '#f0f0f0', width: '55%' }} />
-                      </div>
-                    </div>
+            {/* ═══ PRESS RELEASES ═══ */}
+            {pressReleases.length > 0 && (
+              <div className="mb-10">
+                <SectionBar>
+                  <Megaphone className="w-4 h-4" style={{ color: '#cc0000' }} />
+                  <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Press Releases</h3>
+                </SectionBar>
+                <div className="space-y-0">
+                  {pressReleases.slice(0, 5).map((article, i) => (
+                    <ArticleRow key={article.id} article={article} i={i} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* ═══ UNIT COVERAGE ═══ */}
-            {(() => {
-              const unitArticles = filtered.filter(a => a.unit_name);
-              return unitArticles.length > 0 ? (
-                <div className="mb-10">
-                  <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
-                    <Users2 className="w-4 h-4" style={{ color: '#cc0000' }} />
-                    <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Unit Coverage</h3>
-                    <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{unitArticles.length} stories</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {unitArticles.slice(0, 6).map((article, i) => (
-                      <Link key={article.id} to={`/editorium/${article.slug}`} className="group">
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                          <div className="aspect-[16/10] overflow-hidden relative" style={{ backgroundColor: '#f0f0f0' }}>
-                            {article.cover_image_url ? (
-                              <img src={article.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <img src={editoriumLogo} alt="" className="w-16 opacity-[0.06]" style={{ filter: 'invert(1)' }} />
-                              </div>
-                            )}
-                          </div>
-                          <div className="pt-3">
-                            <div className="flex items-center gap-2 mb-1">
-                              {article.unit_avatar && <img src={article.unit_avatar} className="w-4 h-4 rounded-full" alt="" />}
-                              <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700 }}>{article.unit_name}</span>
-                            </div>
-                            <h4 className="font-display text-base leading-snug line-clamp-2 group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
-                              {article.title}
-                            </h4>
-                            {article.excerpt && (
-                              <p className="line-clamp-2 mt-1" style={{ fontSize: '12px', color: '#666', lineHeight: 1.4 }}>{article.excerpt}</p>
-                            )}
-                            <div className="flex items-center gap-2 mt-1.5" style={{ fontSize: '10px', color: '#999' }}>
-                              <span>{article.author_name}</span>
-                              <span>·</span>
-                              <span>{inflateViews(article.view_count)} views</span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="mb-10">
-                  <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
-                    <Users2 className="w-4 h-4" style={{ color: '#cc0000' }} />
-                    <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Unit Coverage</h3>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {[{ label: 'Artist Spotlight', icon: Sparkles, desc: 'Next feature dropping soon' }, { label: 'Unit Showcase', icon: Users2, desc: 'Community coverage incoming' }, { label: 'Game Culture', icon: Gamepad2, desc: 'Submissions open' }].map((slot, i) => (
-                      <div key={slot.label} className="p-4" style={{ border: '1px solid #e5e5e5', backgroundColor: '#fafafa' }}>
-                        <slot.icon className="w-5 h-5 mb-2" style={{ color: '#cc0000' }} />
-                        <p style={{ fontSize: '12px', fontWeight: 700, color: '#111' }}>{slot.label}</p>
-                        <p style={{ fontSize: '10px', color: '#999', marginTop: '2px' }}>{slot.desc}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* ═══ LATEST ARTICLES ═══ */}
-            {rest.length > 0 && (
+            {/* ═══ CULTURE & ARTISTS ═══ */}
+            {cultureStories.length > 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
+                <SectionBar>
+                  <Sparkles className="w-4 h-4" style={{ color: '#cc0000' }} />
+                  <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Culture & Artists</h3>
+                  <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{cultureStories.length} features</span>
+                </SectionBar>
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+                  {cultureStories.slice(0, 6).map((article, i) => (
+                    <CardSmall key={article.id} article={article} i={i} />
+                  ))}
+                  {cultureStories.length < 3 && ['Artist Spotlight', 'Culture Feature'].slice(0, 3 - cultureStories.length).map(label => (
+                    <EmptySlot key={label} label={label} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ═══ LATEST ═══ */}
+            {latest.length > 0 && (
+              <div className="mb-10">
+                <SectionBar>
                   <TrendingUp className="w-4 h-4" style={{ color: '#cc0000' }} />
                   <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Latest</h3>
-                </div>
+                </SectionBar>
                 <div className="space-y-0">
-                  {rest.map((article, i) => (
-                    <Link key={article.id} to={`/editorium/${article.slug}`} className="block group">
-                      <motion.article
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        className="flex gap-5 py-5"
-                        style={{ borderBottom: '1px solid #e5e5e5' }}
-                      >
-                        {article.cover_image_url ? (
-                          <div className="w-36 h-24 sm:w-44 sm:h-28 shrink-0 overflow-hidden">
-                            <img src={article.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                          </div>
-                        ) : (
-                          <div className="w-36 h-24 sm:w-44 sm:h-28 shrink-0 flex items-center justify-center" style={{ backgroundColor: '#f5f5f5' }}>
-                            <img src={editoriumLogo} alt="" className="w-16 opacity-10" style={{ filter: 'invert(1)' }} />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          {article.unit_name && (
-                            <span style={{ fontSize: '10px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>{article.unit_name}</span>
-                          )}
-                          <h3 className="font-display text-lg sm:text-xl leading-snug line-clamp-2 mt-0.5 group-hover:underline" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
-                            {article.title}
-                          </h3>
-                          {article.excerpt && (
-                            <p className="line-clamp-2 mt-1" style={{ fontSize: '13px', color: '#666', lineHeight: 1.5 }}>{article.excerpt}</p>
-                          )}
-                          <div className="flex items-center gap-2 mt-2" style={{ fontSize: '11px', color: '#999' }}>
-                            <span style={{ color: '#444', fontWeight: 600 }}>{article.author_name}</span>
-                            <span>·</span>
-                            <span>{article.read_time_minutes || 5} min read</span>
-                            <span>·</span>
-                            <span>{inflateViews(article.view_count)} views</span>
-                          </div>
-                        </div>
-                      </motion.article>
-                    </Link>
+                  {latest.map((article, i) => (
+                    <ArticleRow key={article.id} article={article} i={i} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* ═══ EMPTY STATE — when no articles at all ═══ */}
+            {/* ═══ EMPTY STATE ═══ */}
             {articles.length === 0 && (
               <div className="mb-10">
-                <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
+                <SectionBar>
                   <Newspaper className="w-4 h-4" style={{ color: '#cc0000' }} />
                   <h3 className="font-display text-lg" style={{ color: '#111' }}>Featured Stories</h3>
-                </div>
+                </SectionBar>
                 <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {['Press Release', 'Artist Feature', 'Unit Spotlight', 'Breaking News', 'Culture Report'].map((label, i) => (
                     <div key={i} className="shrink-0 w-[220px]">
                       <div className="h-32 flex items-center justify-center relative" style={{ backgroundColor: '#f5f5f5', border: '1px dashed #ddd' }}>
                         <Newspaper className="w-6 h-6" style={{ color: '#ddd' }} />
@@ -438,9 +509,7 @@ export default function EditoriumPage() {
                         )}
                       </div>
                       <div className="pt-2.5">
-                        <span style={{ fontSize: '9px', color: '#ccc', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>
-                          {['Press Release', 'Artist Feature', 'Unit Spotlight', 'Breaking News', 'Culture Report'][i]}
-                        </span>
+                        <span style={{ fontSize: '9px', color: '#bbb', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>{label}</span>
                         <div className="mt-1.5 h-3 rounded-sm" style={{ backgroundColor: '#f0f0f0', width: `${80 - i * 8}%` }} />
                         <div className="mt-1 h-3 rounded-sm" style={{ backgroundColor: '#f0f0f0', width: `${55 - i * 5}%` }} />
                       </div>
