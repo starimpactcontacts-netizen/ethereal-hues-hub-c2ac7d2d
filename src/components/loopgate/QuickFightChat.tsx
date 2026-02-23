@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Swords } from 'lucide-react';
+import { Send, Swords, Image as ImageIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuickFightMessages, type QuickFightMessage } from '@/hooks/useQuickFight';
 import { toast } from 'sonner';
+import GifPicker from './GifPicker';
 
 // Auto-text chips — the CORE viral mechanic
 const AUTO_TEXTS = {
@@ -42,6 +43,10 @@ const AUTO_TEXTS = {
   ],
 };
 
+function isGifUrl(text: string): boolean {
+  return /\.(gif|gifv)(\?|$)/i.test(text) || text.includes("tenor.com") || text.includes("giphy.com");
+}
+
 interface QuickFightChatProps {
   fightId: string;
   player1Id: string;
@@ -56,6 +61,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [autoTextTab, setAutoTextTab] = useState<'trash' | 'theme' | 'judge'>('trash');
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,9 +84,14 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
     setSending(false);
   };
 
+  const handleGifSelect = (gifUrl: string) => {
+    setShowGifPicker(false);
+    sendMessage(gifUrl);
+  };
+
   const getColor = (userId: string) => {
-    if (userId === player1Id) return 'text-red-400'; // RED
-    if (userId === player2Id) return 'text-blue-400'; // BLUE
+    if (userId === player1Id) return 'text-red-400';
+    if (userId === player2Id) return 'text-blue-400';
     return 'text-muted-foreground';
   };
 
@@ -93,7 +104,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
   const isMe = (userId: string) => userId === user?.id;
 
   return (
-    <div className="bg-surface-1 border border-border overflow-hidden rounded-lg">
+    <div className="bg-surface-1 border border-border overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-surface-1/80">
         <div className="flex items-center gap-2">
@@ -122,13 +133,17 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
               className={`flex gap-2 ${msg.is_system ? 'justify-center' : isMe(msg.user_id) ? 'justify-end' : ''}`}
             >
               {msg.is_system ? (
-                <span className="text-[10px] text-muted-foreground italic bg-surface-2 px-3 py-1 rounded-full">
+                <span className="text-[10px] text-muted-foreground italic bg-surface-2 px-3 py-1">
                   {msg.message_text}
                 </span>
               ) : isMe(msg.user_id) ? (
                 <div className="max-w-[75%]">
-                  <div className={`${user?.id === player1Id ? 'bg-red-500/20 border-red-500/30' : 'bg-blue-500/20 border-blue-500/30'} border rounded-lg px-3 py-1.5`}>
-                    <p className="text-xs text-foreground">{msg.message_text}</p>
+                  <div className={`${user?.id === player1Id ? 'bg-red-500/20 border-red-500/30' : 'bg-blue-500/20 border-blue-500/30'} border px-3 py-1.5`}>
+                    {isGifUrl(msg.message_text) ? (
+                      <img src={msg.message_text} alt="GIF" className="max-w-[200px]" loading="lazy" />
+                    ) : (
+                      <p className="text-xs text-foreground">{msg.message_text}</p>
+                    )}
                   </div>
                   <span className="text-[8px] text-muted-foreground block text-right mt-0.5">
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -144,8 +159,12 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
                   </Avatar>
                   <div>
                     <span className={`text-[10px] font-bold ${getColor(msg.user_id)}`}>{msg.username}</span>
-                    <div className={`${msg.user_id === player1Id ? 'bg-red-500/10 border-red-500/20' : 'bg-blue-500/10 border-blue-500/20'} border rounded-lg px-3 py-1.5 mt-0.5`}>
-                      <p className="text-xs text-foreground">{msg.message_text}</p>
+                    <div className={`${msg.user_id === player1Id ? 'bg-red-500/10 border-red-500/20' : 'bg-blue-500/10 border-blue-500/20'} border px-3 py-1.5 mt-0.5`}>
+                      {isGifUrl(msg.message_text) ? (
+                        <img src={msg.message_text} alt="GIF" className="max-w-[200px]" loading="lazy" />
+                      ) : (
+                        <p className="text-xs text-foreground">{msg.message_text}</p>
+                      )}
                     </div>
                     <span className="text-[8px] text-muted-foreground block mt-0.5">
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -157,6 +176,13 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
           ))}
         </AnimatePresence>
       </div>
+
+      {/* GIF Picker */}
+      {showGifPicker && (
+        <div className="border-t border-border">
+          <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+        </div>
+      )}
 
       {/* Auto-Text Chips — THE KEY FEATURE */}
       {user && (
@@ -184,7 +210,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
               <button
                 key={text}
                 onClick={() => sendMessage(text, true)}
-                className="text-[11px] px-2.5 py-1 bg-surface-2 border border-border hover:border-red-500/50 hover:bg-red-500/10 rounded-full text-foreground/80 hover:text-foreground transition-all active:scale-95"
+                className="text-[11px] px-2.5 py-1 bg-surface-2 border border-border hover:border-red-500/50 hover:bg-red-500/10 text-foreground/80 hover:text-foreground transition-all active:scale-95"
               >
                 {text}
               </button>
@@ -193,6 +219,14 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
 
           {/* Input */}
           <div className="px-3 pb-2 flex gap-2">
+            <button
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              className={`h-8 w-8 flex items-center justify-center shrink-0 border transition-colors ${
+                showGifPicker ? "bg-red-500/20 border-red-500/40 text-red-400" : "bg-surface-2 border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+            </button>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -203,7 +237,7 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
             <button
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || sending}
-              className="h-8 w-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded disabled:opacity-50 transition-colors"
+              className="h-8 w-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white disabled:opacity-50 transition-colors"
             >
               <Send className="w-3.5 h-3.5" />
             </button>
@@ -213,4 +247,3 @@ export default function QuickFightChat({ fightId, player1Id, player2Id, player1U
     </div>
   );
 }
-

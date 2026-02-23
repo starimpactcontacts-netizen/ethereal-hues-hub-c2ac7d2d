@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, Users, Lock } from "lucide-react";
+import { Send, MessageSquare, Users, Lock, Image as ImageIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import GifPicker from "./GifPicker";
 
 interface BattleMessage {
   id: string;
@@ -27,12 +28,17 @@ interface BattleChatProps {
   judgeId: string | null;
 }
 
+function isGifUrl(text: string): boolean {
+  return /\.(gif|gifv)(\?|$)/i.test(text) || text.includes("tenor.com") || text.includes("giphy.com");
+}
+
 export default function BattleChat({ battleId, challengerId, opponentId, judgeId }: BattleChatProps) {
   const { profile, user } = useAuth();
   const [messages, setMessages] = useState<BattleMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [tab, setTab] = useState<"public" | "private">("public");
+  const [showGifPicker, setShowGifPicker] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isParticipant = user?.id === challengerId || user?.id === opponentId || user?.id === judgeId;
@@ -59,7 +65,6 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
 
     fetchMessages();
 
-    // Realtime subscription
     const channel = supabase
       .channel(`battle-chat-${battleId}-${tab}`)
       .on(
@@ -89,8 +94,9 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || !profile || sending) return;
+  const handleSend = async (text?: string) => {
+    const msgText = text || input.trim();
+    if (!msgText || !profile || sending) return;
 
     setSending(true);
     const { error } = await supabase.from("battle_messages").insert({
@@ -98,20 +104,39 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
       user_id: profile.id,
       username: profile.username,
       avatar_url: profile.avatar_url,
-      message_text: input.trim(),
+      message_text: msgText,
       is_public: tab === "public",
     });
 
     if (error) {
       toast.error("Failed to send message");
     } else {
-      setInput("");
+      if (!text) setInput("");
     }
     setSending(false);
   };
 
+  const handleGifSelect = (gifUrl: string) => {
+    setShowGifPicker(false);
+    handleSend(gifUrl);
+  };
+
   const formatTime = (date: string) => {
     return new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const getRoleBadge = (userId: string) => {
+    if (userId === judgeId) return <span className="text-[8px] bg-purple-500/20 text-purple-400 px-1">JUDGE</span>;
+    if (userId === challengerId) return <span className="text-[8px] bg-red-500/20 text-red-400 px-1">RED</span>;
+    if (userId === opponentId) return <span className="text-[8px] bg-blue-500/20 text-blue-400 px-1">BLUE</span>;
+    return null;
+  };
+
+  const getNameColor = (userId: string) => {
+    if (userId === challengerId) return "text-red-400";
+    if (userId === opponentId) return "text-sky-400";
+    if (userId === judgeId) return "text-purple-400";
+    return "text-foreground";
   };
 
   return (
@@ -164,7 +189,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
               className={`flex gap-2 ${msg.is_system ? "justify-center" : ""}`}
             >
               {msg.is_system ? (
-                <span className="text-[10px] text-muted-foreground italic bg-surface-2 px-3 py-1 rounded-full">
+                <span className="text-[10px] text-muted-foreground italic bg-surface-2 px-3 py-1">
                   {msg.message_text}
                 </span>
               ) : (
@@ -175,25 +200,24 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
                       {msg.username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className={`text-[10px] font-bold ${
-                        msg.user_id === challengerId ? "text-red-400" :
-                        msg.user_id === opponentId ? "text-sky-400" :
-                        msg.user_id === judgeId ? "text-purple-400" :
-                        "text-foreground"
-                      }`}>
+                      <span className={`text-[10px] font-bold ${getNameColor(msg.user_id)}`}>
                         {msg.username}
                       </span>
-                      {msg.user_id === judgeId && (
-                        <span className="text-[8px] bg-purple-500/20 text-purple-400 px-1 rounded">JUDGE</span>
-                      )}
-                      {(msg.user_id === challengerId || msg.user_id === opponentId) && (
-                        <span className="text-[8px] bg-red-500/20 text-red-400 px-1 rounded">FIGHTER</span>
-                      )}
+                      {getRoleBadge(msg.user_id)}
                       <span className="text-[8px] text-muted-foreground">{formatTime(msg.created_at)}</span>
                     </div>
-                    <p className="text-xs text-foreground/90 break-words">{msg.message_text}</p>
+                    {isGifUrl(msg.message_text) ? (
+                      <img
+                        src={msg.message_text}
+                        alt="GIF"
+                        className="max-w-[200px] mt-1 border border-border"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <p className="text-xs text-foreground/90 break-words">{msg.message_text}</p>
+                    )}
                   </div>
                 </>
               )}
@@ -202,9 +226,24 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
         </AnimatePresence>
       </div>
 
+      {/* GIF Picker */}
+      {showGifPicker && (
+        <div className="border-t border-border">
+          <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+        </div>
+      )}
+
       {/* Input */}
       {user && (tab === "public" || isParticipant) && (
         <div className="border-t border-border p-2 flex gap-2">
+          <button
+            onClick={() => setShowGifPicker(!showGifPicker)}
+            className={`h-8 w-8 flex items-center justify-center shrink-0 border transition-colors ${
+              showGifPicker ? "bg-red-500/20 border-red-500/40 text-red-400" : "bg-surface-2 border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+          </button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -214,7 +253,7 @@ export default function BattleChat({ battleId, challengerId, opponentId, judgeId
           />
           <Button
             size="sm"
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!input.trim() || sending}
             className={`h-8 px-3 ${tab === "public" ? "bg-red-500 hover:bg-red-600" : "bg-purple-500 hover:bg-purple-600"} text-white`}
           >

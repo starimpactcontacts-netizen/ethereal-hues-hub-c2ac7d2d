@@ -66,7 +66,7 @@ export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-xl shadow-xl overflow-hidden z-[100] max-h-[60vh]">
+    <div className="bg-card border border-border shadow-xl overflow-hidden z-[100] max-h-[60vh]">
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-border">
         <span className="text-sm font-medium">GIFs</span>
@@ -126,7 +126,7 @@ export default function GifPicker({ onSelect, onClose }: GifPickerProps) {
               <button
                 key={gif.id}
                 onClick={() => onSelect(gif.media_formats.tinygif?.url || gif.media_formats.gif?.url)}
-                className="aspect-square overflow-hidden rounded-lg hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary"
+                className="aspect-square overflow-hidden hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <img
                   src={gif.media_formats.nanogif?.url || gif.media_formats.tinygif?.url}
