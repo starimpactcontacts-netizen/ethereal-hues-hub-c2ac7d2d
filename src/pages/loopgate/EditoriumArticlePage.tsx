@@ -164,7 +164,7 @@ export default function EditoriumArticlePage() {
           {article.subtitle && (
             <p style={{ 
               fontSize: '17px', 
-              color: heroImg ? 'rgba(255,255,255,0.7)' : '#555', 
+              color: '#555', 
               marginTop: '10px',
               lineHeight: 1.5 
             }}>
@@ -186,7 +186,7 @@ export default function EditoriumArticlePage() {
             </span>
           )}
           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{article.read_time_minutes || 5} min read</span>
-          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{((article.view_count || 0) * 17 + 4832).toLocaleString()} views</span>
+          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{((article.view_count || 0) * 3 + 127).toLocaleString()} views</span>
         </div>
 
         {/* ═══ TAGS ═══ */}
