@@ -306,10 +306,6 @@ export default function EditoriumPage() {
 
             {/* ═══ EDITOR'S PICKS / COMING SOON SECTIONS ═══ */}
             <div className="mb-10">
-              <div className="flex items-center gap-2 mb-4" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
-                <Sparkles className="w-4 h-4" style={{ color: '#cc0000' }} />
-                <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Sections</h3>
-              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                 {PLACEHOLDER_SLOTS.map((slot, i) => (
                   <motion.div
@@ -416,11 +412,11 @@ export default function EditoriumPage() {
 
             {/* ═══ FOOTER ═══ */}
             <div className="text-center py-8" style={{ borderTop: '2px solid #111' }}>
-              <img src={editoriumLogo} alt="" className="h-6 mx-auto opacity-20" style={{ filter: 'invert(1)' }} />
-              <p style={{ fontSize: '10px', color: '#bbb', marginTop: '8px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+              <img src={editoriumLogo} alt="" className="h-6 mx-auto" style={{ filter: 'invert(1)', opacity: 0.4 }} />
+              <p style={{ fontSize: '10px', color: '#888', marginTop: '8px', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                 Press · Culture · Community · Artists · Film · Games
               </p>
-              <p style={{ fontSize: '9px', color: '#ccc', marginTop: '4px' }}>© 2026 Loopgate Editorium. All rights reserved.</p>
+              <p style={{ fontSize: '9px', color: '#999', marginTop: '4px' }}>© 2026 Loopgate Editorium. All rights reserved.</p>
             </div>
           </div>
         </>
