@@ -178,6 +178,7 @@ export default function JudgeProfilePage() {
           submission_url: submissionUrl.trim(),
           platform,
           status: 'pending',
+          judge_id: judge.id,
         });
       if (error) throw error;
       toast.success(`Review requested from @${judge.username}!`);
