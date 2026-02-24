@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Sparkles, Film, Music, Gamepad2, ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Sparkles, Film, Music, Gamepad2, ChevronDown, ChevronUp, Upload, Wand2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -75,6 +75,15 @@ const emptyForm = {
   is_daily_cover: false,
 };
 
+async function uploadImage(file: File, prefix: string): Promise<string | null> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${prefix}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from('editorium-images').upload(path, file, { cacheControl: '3600', upsert: false });
+  if (error) { toast.error('Upload failed: ' + error.message); return null; }
+  const { data } = supabase.storage.from('editorium-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 export default function EditoriumAdmin() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [units, setUnits] = useState<UnitOption[]>([]);
@@ -86,6 +95,16 @@ export default function EditoriumAdmin() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showSeo, setShowSeo] = useState(false);
+  const [polishing, setPolishing] = useState<string | null>(null);
+
+  // File upload state
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [headerFile, setHeaderFile] = useState<File | null>(null);
+  const [headerPreview, setHeaderPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const headerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchArticles();
@@ -109,6 +128,8 @@ export default function EditoriumAdmin() {
   function openCreate(preset?: string) {
     setEditingId(null);
     setForm({ ...emptyForm, category: preset || 'feature' });
+    setCoverFile(null); setCoverPreview(null);
+    setHeaderFile(null); setHeaderPreview(null);
     setShowEditor(true);
   }
 
@@ -134,7 +155,15 @@ export default function EditoriumAdmin() {
       is_breaking: article.is_breaking || false,
       is_daily_cover: article.is_daily_cover || false,
     });
+    setCoverFile(null); setCoverPreview(article.cover_image_url || null);
+    setHeaderFile(null); setHeaderPreview(article.header_image_url || null);
     setShowEditor(true);
+  }
+
+  function handleFileSelect(file: File, type: 'cover' | 'header') {
+    const url = URL.createObjectURL(file);
+    if (type === 'cover') { setCoverFile(file); setCoverPreview(url); }
+    else { setHeaderFile(file); setHeaderPreview(url); }
   }
 
   async function handleSave(publishNow: boolean) {
@@ -144,13 +173,30 @@ export default function EditoriumAdmin() {
     }
     setSaving(true);
 
+    // Upload images if new files selected
+    let coverUrl = form.cover_image_url;
+    let headerUrl = form.header_image_url;
+
+    if (coverFile) {
+      setUploading(true);
+      const url = await uploadImage(coverFile, 'covers');
+      if (url) coverUrl = url;
+      setUploading(false);
+    }
+    if (headerFile) {
+      setUploading(true);
+      const url = await uploadImage(headerFile, 'headers');
+      if (url) headerUrl = url;
+      setUploading(false);
+    }
+
     const payload: any = {
       title: form.title.trim(),
       subtitle: form.subtitle.trim() || null,
       excerpt: form.excerpt.trim() || null,
       body: form.body,
-      cover_image_url: form.cover_image_url.trim() || null,
-      header_image_url: form.header_image_url.trim() || null,
+      cover_image_url: coverUrl?.trim() || null,
+      header_image_url: headerUrl?.trim() || null,
       unit_id: form.unit_id || null,
       author_name: form.author_name.trim() || 'LOOPGATE Editorial',
       tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
@@ -224,6 +270,54 @@ export default function EditoriumAdmin() {
     await supabase.from('editorium_articles').delete().eq('id', id);
     toast.success('Deleted');
     fetchArticles();
+  }
+
+  // ═══ AUTO POLISH ═══
+  async function autoPolish(article: Article) {
+    setPolishing(article.id);
+    try {
+      const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_LOVABLE_API_KEY || ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [{
+            role: 'user',
+            content: `You are an editorial formatting assistant for a premium editorial platform. Polish this article body text. Rules:
+- Add "# " before section headings (short, bold lines that introduce a new topic)
+- Add "> " before any notable quotes or powerful statements
+- Use **bold** for key phrases or names that deserve emphasis
+- Use *italic* for film/song/show titles
+- Keep the original content intact — do NOT rewrite, add, or remove sentences
+- Fix any obvious typos or grammar issues
+- Ensure proper paragraph spacing (one blank line between paragraphs)
+- Return ONLY the polished body text, nothing else
+
+Article title: ${article.title}
+Article body:
+${article.body}`
+          }],
+        }),
+      });
+      const data = await res.json();
+      const polished = data.choices?.[0]?.message?.content;
+      if (!polished) { toast.error('Polish failed — no response'); return; }
+
+      // Calculate read time from word count
+      const wordCount = polished.split(/\s+/).length;
+      const readTime = Math.max(1, Math.ceil(wordCount / 250));
+
+      await supabase.from('editorium_articles').update({ body: polished, read_time_minutes: readTime }).eq('id', article.id);
+      toast.success('Article polished ✨');
+      fetchArticles();
+    } catch (e: any) {
+      toast.error('Polish failed: ' + e.message);
+    } finally {
+      setPolishing(null);
+    }
   }
 
   const getCategoryInfo = (cat: string) => ARTICLE_CATEGORIES.find(c => c.value === cat) || ARTICLE_CATEGORIES[0];
@@ -360,6 +454,21 @@ export default function EditoriumAdmin() {
                   </div>
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
+                  {/* Auto Polish button */}
+                  {article.status === 'published' && (
+                    <button
+                      onClick={() => autoPolish(article)}
+                      disabled={polishing === article.id}
+                      className="p-1.5 rounded-sm transition-colors hover:bg-purple-500/10"
+                      title="Auto Polish"
+                    >
+                      {polishing === article.id ? (
+                        <Loader2 className="w-3 h-3 text-purple-400 animate-spin" />
+                      ) : (
+                        <Wand2 className="w-3 h-3 text-purple-400" />
+                      )}
+                    </button>
+                  )}
                   <button onClick={() => toggleDailyCover(article)} className={`p-1.5 rounded-sm transition-colors ${article.is_daily_cover ? 'bg-gold/20' : 'hover:bg-surface-2'}`} title="Daily cover">
                     <Crown className={`w-3 h-3 ${article.is_daily_cover ? 'text-gold' : 'text-muted-foreground/50'}`} />
                   </button>
@@ -450,18 +559,76 @@ export default function EditoriumAdmin() {
               <Label className="text-xs">{'Body * (# headings, > quotes, **bold**, *italic*, ![alt](url) images)'}</Label>
               <Textarea value={form.body} onChange={e => setForm(f => ({ ...f, body: e.target.value }))} rows={12} placeholder="Write your article here..." className="bg-surface-1 border-border font-mono text-xs" />
             </div>
+
+            {/* ═══ IMAGE UPLOAD SECTION ═══ */}
             <div className="grid grid-cols-2 gap-3">
+              {/* Cover Image */}
               <div>
-                <Label className="text-xs">Cover Image URL</Label>
-                <Input value={form.cover_image_url} onChange={e => setForm(f => ({ ...f, cover_image_url: e.target.value }))} placeholder="https://..." className="bg-surface-1 border-border" />
-                {form.cover_image_url && <img src={form.cover_image_url} alt="" className="mt-1 w-full h-20 object-cover" />}
+                <Label className="text-xs mb-1.5 block">Cover Image</Label>
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f, 'cover'); }}
+                />
+                {coverPreview || form.cover_image_url ? (
+                  <div className="relative group">
+                    <img src={coverPreview || form.cover_image_url} alt="" className="w-full h-24 object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button onClick={() => coverInputRef.current?.click()} className="px-2 py-1 bg-white/20 text-white text-[10px] font-bold backdrop-blur-sm">
+                        Replace
+                      </button>
+                      <button onClick={() => { setCoverFile(null); setCoverPreview(null); setForm(f => ({ ...f, cover_image_url: '' })); }} className="px-2 py-1 bg-red-500/40 text-white text-[10px] font-bold backdrop-blur-sm">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => coverInputRef.current?.click()}
+                    className="w-full h-24 border-2 border-dashed border-border/50 hover:border-border bg-surface-1 flex flex-col items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Upload className="w-5 h-5 text-muted-foreground/50" />
+                    <span className="text-[10px] text-muted-foreground">Drop or click to upload</span>
+                  </button>
+                )}
               </div>
+
+              {/* Header/Hero Image */}
               <div>
-                <Label className="text-xs">Header/Hero Image URL</Label>
-                <Input value={form.header_image_url} onChange={e => setForm(f => ({ ...f, header_image_url: e.target.value }))} placeholder="https://..." className="bg-surface-1 border-border" />
-                {form.header_image_url && <img src={form.header_image_url} alt="" className="mt-1 w-full h-20 object-cover" />}
+                <Label className="text-xs mb-1.5 block">Header / Hero Image</Label>
+                <input
+                  ref={headerInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f, 'header'); }}
+                />
+                {headerPreview || form.header_image_url ? (
+                  <div className="relative group">
+                    <img src={headerPreview || form.header_image_url} alt="" className="w-full h-24 object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <button onClick={() => headerInputRef.current?.click()} className="px-2 py-1 bg-white/20 text-white text-[10px] font-bold backdrop-blur-sm">
+                        Replace
+                      </button>
+                      <button onClick={() => { setHeaderFile(null); setHeaderPreview(null); setForm(f => ({ ...f, header_image_url: '' })); }} className="px-2 py-1 bg-red-500/40 text-white text-[10px] font-bold backdrop-blur-sm">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => headerInputRef.current?.click()}
+                    className="w-full h-24 border-2 border-dashed border-border/50 hover:border-border bg-surface-1 flex flex-col items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Upload className="w-5 h-5 text-muted-foreground/50" />
+                    <span className="text-[10px] text-muted-foreground">Drop or click to upload</span>
+                  </button>
+                )}
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Featured Unit</Label>
@@ -500,11 +667,11 @@ export default function EditoriumAdmin() {
             )}
 
             <div className="flex gap-2 pt-2">
-              <button onClick={() => handleSave(false)} disabled={saving} className="flex-1 py-2.5 bg-surface-2 border border-border text-foreground text-xs font-bold hover:bg-surface-1 transition-colors">
-                {saving ? 'Saving...' : 'Save Draft'}
+              <button onClick={() => handleSave(false)} disabled={saving || uploading} className="flex-1 py-2.5 bg-surface-2 border border-border text-foreground text-xs font-bold hover:bg-surface-1 transition-colors">
+                {uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save Draft'}
               </button>
-              <button onClick={() => handleSave(true)} disabled={saving} className="flex-1 py-2.5 bg-destructive text-white text-xs font-bold hover:bg-destructive/90 transition-colors">
-                {saving ? 'Publishing...' : 'Publish Now'}
+              <button onClick={() => handleSave(true)} disabled={saving || uploading} className="flex-1 py-2.5 bg-destructive text-white text-xs font-bold hover:bg-destructive/90 transition-colors">
+                {uploading ? 'Uploading...' : saving ? 'Publishing...' : 'Publish Now'}
               </button>
             </div>
           </div>
