@@ -276,34 +276,11 @@ export default function EditoriumAdmin() {
   async function autoPolish(article: Article) {
     setPolishing(article.id);
     try {
-      const res = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_LOVABLE_API_KEY || ''}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [{
-            role: 'user',
-            content: `You are an editorial formatting assistant for a premium editorial platform. Polish this article body text. Rules:
-- Add "# " before section headings (short, bold lines that introduce a new topic)
-- Add "> " before any notable quotes or powerful statements
-- Use **bold** for key phrases or names that deserve emphasis
-- Use *italic* for film/song/show titles
-- Keep the original content intact — do NOT rewrite, add, or remove sentences
-- Fix any obvious typos or grammar issues
-- Ensure proper paragraph spacing (one blank line between paragraphs)
-- Return ONLY the polished body text, nothing else
-
-Article title: ${article.title}
-Article body:
-${article.body}`
-          }],
-        }),
+      const { data, error } = await supabase.functions.invoke('polish-article', {
+        body: { title: article.title, body: article.body },
       });
-      const data = await res.json();
-      const polished = data.choices?.[0]?.message?.content;
+      if (error) throw error;
+      const polished = data?.polished;
       if (!polished) { toast.error('Polish failed — no response'); return; }
 
       // Calculate read time from word count
