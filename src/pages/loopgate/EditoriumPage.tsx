@@ -101,7 +101,7 @@ export default function EditoriumPage() {
   const allUsedIds = new Set([...usedIds, ...trending.map(a => a.id)]);
   const latest = filtered.filter(a => !allUsedIds.has(a.id));
 
-  const inflateViews = (v: number | null) => ((v || 0) * 3 + 127).toLocaleString();
+  const displayViews = (v: number | null) => (v || 0).toLocaleString();
 
   const ArticleRow = ({ article, i }: { article: Article; i: number }) => (
     <Link to={`/editorium/${article.slug}`} className="block group">
@@ -141,7 +141,7 @@ export default function EditoriumPage() {
             <span>·</span>
             <span>{article.read_time_minutes || 5} min</span>
             <span>·</span>
-            <span>{inflateViews(article.view_count)} views</span>
+            <span>{displayViews(article.view_count)} views</span>
           </div>
         </div>
       </motion.article>
@@ -170,7 +170,7 @@ export default function EditoriumPage() {
           <div className="flex items-center gap-2 mt-1.5" style={{ fontSize: '10px', color: '#999' }}>
             <span>{article.author_name}</span>
             <span>·</span>
-            <span>{inflateViews(article.view_count)} views</span>
+            <span>{displayViews(article.view_count)} views</span>
           </div>
         </div>
       </motion.div>
@@ -363,7 +363,7 @@ export default function EditoriumPage() {
                           <span style={{ fontWeight: 600, color: '#333' }}>{dailyCover.author_name}</span>
                           {dailyCover.published_at && <span>{formatDistanceToNow(new Date(dailyCover.published_at), { addSuffix: true })}</span>}
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{dailyCover.read_time_minutes || 5} min</span>
-                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{inflateViews(dailyCover.view_count)}</span>
+                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{displayViews(dailyCover.view_count)}</span>
                         </div>
                       </div>
                     </>
@@ -431,7 +431,7 @@ export default function EditoriumPage() {
                           <div className="flex items-center gap-2 mt-1.5" style={{ fontSize: '10px', color: '#999' }}>
                             <span>{article.author_name}</span>
                             <span>·</span>
-                            <span>{inflateViews(article.view_count)} views</span>
+                            <span>{displayViews(article.view_count)} views</span>
                           </div>
                         </div>
                       </motion.div>

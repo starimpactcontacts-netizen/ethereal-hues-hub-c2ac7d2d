@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Sparkles, Film, Music, Gamepad2, ChevronDown, ChevronUp, Upload, Wand2, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Sparkles, Film, Music, Gamepad2, ChevronDown, ChevronUp, Upload, Wand2, Loader2, TrendingUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -96,7 +96,8 @@ export default function EditoriumAdmin() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [showSeo, setShowSeo] = useState(false);
   const [polishing, setPolishing] = useState<string | null>(null);
-
+  const [boostingId, setBoostingId] = useState<string | null>(null);
+  const [boostAmount, setBoostAmount] = useState('');
   // File upload state
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -297,6 +298,18 @@ export default function EditoriumAdmin() {
     }
   }
 
+  async function boostViews(articleId: string) {
+    const amount = parseInt(boostAmount);
+    if (!amount || amount < 1) { toast.error('Enter a valid number'); return; }
+    const article = articles.find(a => a.id === articleId);
+    const newCount = (article?.view_count || 0) + amount;
+    await supabase.from('editorium_articles').update({ view_count: newCount }).eq('id', articleId);
+    toast.success(`+${amount} views added`);
+    setBoostingId(null);
+    setBoostAmount('');
+    fetchArticles();
+  }
+
   const getCategoryInfo = (cat: string) => ARTICLE_CATEGORIES.find(c => c.value === cat) || ARTICLE_CATEGORIES[0];
 
   const filtered = articles.filter(a => {
@@ -424,11 +437,35 @@ export default function EditoriumAdmin() {
                     <span className="text-[8px] px-1.5 py-0.5 rounded-sm" style={{ backgroundColor: catInfo.color + '18', color: catInfo.color, fontWeight: 600 }}>
                       {catInfo.label}
                     </span>
-                    <span className="text-[9px] text-muted-foreground">{article.view_count || 0} views</span>
+                    <button 
+                      onClick={() => { setBoostingId(boostingId === article.id ? null : article.id); setBoostAmount(''); }}
+                      className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-0.5"
+                      title="Boost views"
+                    >
+                      <TrendingUp className="w-2.5 h-2.5" />
+                      {(article.view_count || 0).toLocaleString()} views
+                    </button>
                     {article.published_at && (
                       <span className="text-[9px] text-muted-foreground">{formatDistanceToNow(new Date(article.published_at), { addSuffix: true })}</span>
                     )}
                   </div>
+                  {boostingId === article.id && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <input
+                        type="number"
+                        value={boostAmount}
+                        onChange={e => setBoostAmount(e.target.value)}
+                        placeholder="+ views"
+                        className="w-20 h-5 px-1.5 text-[9px] bg-surface-2 border border-border text-foreground"
+                        min="1"
+                        autoFocus
+                      />
+                      <button onClick={() => boostViews(article.id)} className="h-5 px-2 text-[8px] font-bold bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors">
+                        ADD
+                      </button>
+                      <button onClick={() => setBoostingId(null)} className="h-5 px-1.5 text-[8px] text-muted-foreground hover:text-foreground">✕</button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
                   {/* Auto Polish button */}
