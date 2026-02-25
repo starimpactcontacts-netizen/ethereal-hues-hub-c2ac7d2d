@@ -79,6 +79,11 @@ export default function EditoriumPage() {
     setLoading(false);
   }
 
+  function handleArticleClick(article: Article) {
+    // Optimistically increment local view count (DB increment happens on article page load)
+    setArticles(prev => prev.map(a => a.id === article.id ? { ...a, view_count: (a.view_count || 0) + 1 } : a));
+  }
+
   const filtered = articles.filter(a => {
     const matchSearch = !search || a.title.toLowerCase().includes(search.toLowerCase()) || a.author_name.toLowerCase().includes(search.toLowerCase());
     const matchCat = activeCategory === 'All' || (a.tags && a.tags.some(t => t.toLowerCase() === activeCategory.toLowerCase()));
@@ -104,7 +109,7 @@ export default function EditoriumPage() {
   const displayViews = (v: number | null) => (v || 0).toLocaleString();
 
   const ArticleRow = ({ article, i }: { article: Article; i: number }) => (
-    <Link to={`/editorium/${article.slug}`} className="block group">
+    <Link to={`/editorium/${article.slug}`} className="block group" onClick={() => handleArticleClick(article)}>
       <motion.article
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -149,7 +154,7 @@ export default function EditoriumPage() {
   );
 
   const CardSmall = ({ article, i }: { article: Article; i: number }) => (
-    <Link to={`/editorium/${article.slug}`} className="shrink-0 w-[220px] group">
+    <Link to={`/editorium/${article.slug}`} className="shrink-0 w-[220px] group" onClick={() => handleArticleClick(article)}>
       <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
         <div className="h-32 overflow-hidden relative" style={{ backgroundColor: '#f0f0f0' }}>
           {article.cover_image_url ? (
@@ -289,7 +294,7 @@ export default function EditoriumPage() {
                   <div className="flex-1 overflow-x-auto scrollbar-hide">
                     <div className="flex gap-6">
                       {breakingNews.slice(0, 4).map(article => (
-                        <Link key={article.id} to={`/editorium/${article.slug}`} className="shrink-0 max-w-[260px] group">
+                        <Link key={article.id} to={`/editorium/${article.slug}`} className="shrink-0 max-w-[260px] group" onClick={() => handleArticleClick(article)}>
                           <p style={{ fontSize: '11px', color: '#999', fontWeight: 500 }}>
                             {article.published_at ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true }) : ''}
                           </p>
@@ -316,7 +321,7 @@ export default function EditoriumPage() {
                   <div className="flex-1 overflow-x-auto scrollbar-hide">
                     <div className="flex gap-6">
                       {trending.slice(0, 4).map(article => (
-                        <Link key={article.id} to={`/editorium/${article.slug}`} className="shrink-0 max-w-[260px] group">
+                        <Link key={article.id} to={`/editorium/${article.slug}`} className="shrink-0 max-w-[260px] group" onClick={() => handleArticleClick(article)}>
                           <p style={{ fontSize: '11px', color: '#999', fontWeight: 500 }}>
                             {article.published_at ? formatDistanceToNow(new Date(article.published_at), { addSuffix: true }) : ''}
                           </p>
@@ -336,7 +341,7 @@ export default function EditoriumPage() {
 
             {/* ═══ DAILY COVER / HERO ═══ */}
             {dailyCover && (
-              <Link to={`/editorium/${dailyCover.slug}`} className="block group mb-10">
+              <Link to={`/editorium/${dailyCover.slug}`} className="block group mb-10" onClick={() => handleArticleClick(dailyCover)}>
                 <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden">
                   {dailyCover.cover_image_url ? (
                     <>
@@ -406,7 +411,7 @@ export default function EditoriumPage() {
                 </SectionBar>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {unitCoverage.slice(0, 6).map((article, i) => (
-                    <Link key={article.id} to={`/editorium/${article.slug}`} className="group">
+                    <Link key={article.id} to={`/editorium/${article.slug}`} className="group" onClick={() => handleArticleClick(article)}>
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                         <div className="aspect-[16/10] overflow-hidden relative" style={{ backgroundColor: '#f0f0f0' }}>
                           {article.cover_image_url ? (
