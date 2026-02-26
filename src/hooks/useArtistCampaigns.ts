@@ -19,8 +19,11 @@ interface Campaign {
   start_date: string | null;
   end_date: string | null;
   cover_image_url: string | null;
+  slug: string | null;
+  featured_artist_id: string | null;
   created_at: string;
   enterprise_clients?: { email: string; display_name: string | null };
+  featured_artists?: { name: string; avatar_url: string | null } | null;
 }
 
 interface CampaignEdit {
