@@ -1,5 +1,6 @@
-import { ArrowLeft, Clapperboard, Zap, ArrowRight } from "lucide-react";
+import { ArrowLeft, Clapperboard, Zap, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
 import QuickClipEditor from "@/components/loopgate/QuickClipEditor";
 import SoftwareLauncherGrid from "@/components/loopgate/SoftwareLauncherGrid";
 import SoloModeBanner from "@/components/loopgate/SoloModeBanner";
@@ -9,6 +10,8 @@ export default function StudioPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const soloId = searchParams.get("solo");
+  const [showSoftware, setShowSoftware] = useState(false);
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <SEO
@@ -32,66 +35,34 @@ export default function StudioPage() {
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-6">
+      <div className="px-4 pt-4 space-y-4">
         {/* Solo Mode Banner */}
         {soloId && <SoloModeBanner soloId={soloId} />}
-        {/* Submit Shortcut */}
+
+        {/* Quick Clip Editor — THE HERO */}
+        <QuickClipEditor />
+
+        {/* Submit Shortcut — compact */}
         <button
           onClick={() => navigate("/events")}
-          className="w-full bg-gold/10 border border-gold/30 p-3 flex items-center gap-3 hover:bg-gold/15 transition-all group card-hover"
+          className="w-full bg-gold/10 border border-gold/30 p-2.5 flex items-center gap-3 hover:bg-gold/15 transition-all group"
         >
-          <div className="w-10 h-10 bg-gold/20 flex items-center justify-center flex-shrink-0">
-            <Zap className="w-5 h-5 text-gold" />
-          </div>
+          <Zap className="w-4 h-4 text-gold flex-shrink-0" />
           <div className="flex-1 text-left">
-            <p className="text-sm font-semibold text-gold">Ready to Submit?</p>
-            <p className="text-[10px] text-muted-foreground">View active competitions & battles</p>
+            <p className="text-[11px] font-semibold text-gold">Submit to Competition</p>
           </div>
-          <ArrowRight className="w-4 h-4 text-gold opacity-50 group-hover:opacity-100 transition-opacity" />
+          <ArrowRight className="w-3.5 h-3.5 text-gold opacity-50 group-hover:opacity-100" />
         </button>
 
-        {/* Quick Clip Editor */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <h2 className="font-display text-base text-foreground">Quick Editor</h2>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-gold/15 text-gold">Browser</span>
-          </div>
-          <p className="text-[11px] text-muted-foreground mb-3">
-            Trim, add filters, text overlays & music — then export and submit. No downloads needed.
-          </p>
-          <QuickClipEditor />
-        </section>
-
-        {/* Software Launcher */}
-        <section>
-          <div className="flex items-center gap-2 mb-3">
-            <h2 className="font-display text-base text-foreground">Editing Software</h2>
-          </div>
-          <p className="text-[11px] text-muted-foreground mb-3">
-            Need something more powerful? Launch your favorite editor directly.
-          </p>
-          <SoftwareLauncherGrid />
-        </section>
-
-        {/* How it works */}
-        <div className="bg-surface-1 border border-border p-3 space-y-2">
-          <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Studio Flow</h3>
-          <ul className="space-y-1.5">
-            {[
-              "Upload or record a clip",
-              "Trim, apply filters & add text",
-              "Export as WebM — 100% in-browser",
-              "Submit directly to a competition",
-            ].map((step, i) => (
-              <li key={i} className="flex items-start gap-2 text-[11px] text-muted-foreground">
-                <span className="w-4 h-4 bg-gold/10 text-gold flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-0.5">
-                  {i + 1}
-                </span>
-                {step}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {/* Software Launcher — collapsible */}
+        <button
+          onClick={() => setShowSoftware(!showSoftware)}
+          className="w-full flex items-center justify-between py-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <span className="text-[11px] font-semibold uppercase tracking-wider">Need a desktop editor?</span>
+          {showSoftware ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+        {showSoftware && <SoftwareLauncherGrid />}
       </div>
     </div>
   );
