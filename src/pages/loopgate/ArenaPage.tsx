@@ -5,7 +5,8 @@ import {
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
-  Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound
+  Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
+  Sparkles, Music, Mail, ArrowRight, History, Play
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,6 +32,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FeaturedDropCard from "@/components/loopgate/FeaturedDropCard";
 import { useFeaturedDrops } from "@/hooks/useFeaturedDrops";
+import { useSoloMode } from "@/hooks/useSoloMode";
+import { useMyQuickFights } from "@/hooks/useQuickFight";
+import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 
 interface Event {
   id: string;
@@ -209,6 +214,11 @@ export default function ArenaPage() {
   const { competitions: hostedComps, loading: hostedLoading } = useHostedCompetitions();
   const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100);
   const { liveDrops } = useFeaturedDrops();
+  const { activeSolo, loading: soloLoading } = useSoloMode();
+  const { fights: myQuickFights } = useMyQuickFights();
+  const [arenaView, setArenaView] = useState<'arena' | 'my'>(() => searchParams.get('tab') === 'my' ? 'my' : 'arena');
+  const [emailInput, setEmailInput] = useState("");
+  const [savingEmail, setSavingEmail] = useState(false);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -273,6 +283,26 @@ export default function ArenaPage() {
     );
   }, [quickSearch, quickFights]);
 
+  // My Arena computed values
+  const myBattles = useMemo(() => battles.filter(b => 
+    user && (b.challenger_id === user.id || b.opponent_id === user.id)
+  ), [battles, user]);
+  const myActiveQuickFights = useMemo(() => myQuickFights.filter(f => 
+    f.status === 'active' || f.status === 'judging' || f.status === 'submitted'
+  ), [myQuickFights]);
+  const myCompletedQuickFights = useMemo(() => myQuickFights.filter(f => 
+    f.status === 'completed'
+  ), [myQuickFights]);
+
+  const handleSaveEmail = async () => {
+    if (!emailInput.trim() || !user) return;
+    setSavingEmail(true);
+    await supabase.auth.updateUser({ email: emailInput.trim() });
+    toast.success("Email saved! You'll get notified about battles & drops.");
+    setSavingEmail(false);
+    setEmailInput("");
+  };
+
   if (showPracticeMode) {
     return <PracticeModeView onBack={() => setShowPracticeMode(false)} />;
   }
@@ -310,7 +340,7 @@ export default function ArenaPage() {
 
         <div className="relative px-4 pt-5 pb-5">
           {/* Title row */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 bg-foreground flex items-center justify-center">
                 <InfinityIcon className="w-5.5 h-5.5 text-background" strokeWidth={2.5} />
@@ -327,6 +357,228 @@ export default function ArenaPage() {
               </div>
             )}
           </div>
+
+          {/* ═══ ARENA / MY ARENA TAB TOGGLE ═══ */}
+          <div className="flex gap-0 mb-5 bg-surface-1 border border-border overflow-hidden">
+            <button
+              onClick={() => setArenaView('arena')}
+              className={`flex-1 py-3 text-[13px] font-bold transition-all relative ${
+                arenaView === 'arena' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {arenaView === 'arena' && <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500" />}
+              <div className="flex items-center justify-center gap-2">
+                <InfinityIcon className="w-4 h-4" />
+                Arena
+              </div>
+            </button>
+            <button
+              onClick={() => setArenaView('my')}
+              className={`flex-1 py-3 text-[13px] font-bold transition-all relative border-l border-border ${
+                arenaView === 'my' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {arenaView === 'my' && <div className="absolute top-0 left-0 right-0 h-[3px] bg-gold" />}
+              <div className="flex items-center justify-center gap-2">
+                <UserRound className="w-4 h-4" />
+                My Arena
+                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0) && (
+                  <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                )}
+              </div>
+            </button>
+          </div>
+
+          {arenaView === 'my' ? (
+            /* ═══════════════════════════════════════════════════
+               MY ARENA — Personal dashboard
+            ═══════════════════════════════════════════════════ */
+            <div className="space-y-4 pb-4">
+              {/* Active Solo Session */}
+              {activeSolo && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="bg-gradient-to-r from-gold/10 via-surface-1 to-gold/5 border border-gold/40 p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-gold/20 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-5 h-5 text-gold" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-gold font-bold uppercase tracking-wider">Active Solo Session</p>
+                        <p className="text-sm text-foreground font-bold truncate">{activeSolo.theme}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider ${
+                          activeSolo.status === 'submitted' || activeSolo.status === 'judging' ? 'text-emerald-400' : 'text-gold'
+                        }`}>
+                          {activeSolo.status === 'submitted' ? '✅ Submitted' : activeSolo.status === 'judging' ? '⚖️ Judging' : '✏️ Editing'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 bg-surface-1 border border-border px-3 py-2 mb-3">
+                      <Music className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-[12px] text-foreground font-medium truncate">{activeSolo.song_name}</span>
+                      {activeSolo.artist_name && (
+                        <span className="text-[11px] text-muted-foreground">— {activeSolo.artist_name}</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => navigate(`/studio?solo=${activeSolo.id}`)}
+                      className="w-full bg-gold hover:bg-gold/90 transition-colors py-3 flex items-center justify-center gap-2"
+                    >
+                      <Play className="w-4 h-4 text-background" />
+                      <span className="text-[14px] font-black text-background tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        {activeSolo.status === 'editing' ? 'CONTINUE EDITING' : 'VIEW SUBMISSION'}
+                      </span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {!activeSolo && profile && (
+                <div className="bg-surface-1 border border-border p-4 text-center">
+                  <Sparkles className="w-5 h-5 text-muted-foreground/30 mx-auto mb-2" />
+                  <p className="text-[12px] text-muted-foreground mb-3">No active solo — start one from the Arena tab</p>
+                  <button onClick={() => { setArenaView('arena'); setShowSoloMode(true); }}
+                    className="text-[12px] text-gold font-bold hover:underline">Start Solo Edit →</button>
+                </div>
+              )}
+
+              {/* Active Quick Fights */}
+              {myActiveQuickFights.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="w-4 h-4 text-red-400" />
+                    <span className="text-[13px] font-bold text-foreground">Active Quick Fights</span>
+                    <span className="text-[11px] text-red-400 font-semibold">{myActiveQuickFights.length}</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {myActiveQuickFights.map(fight => (
+                      <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
+                        className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-red-500/30 hover:border-red-500/50 transition-all text-left">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+                          <span className="text-[12px] font-bold text-foreground truncate">
+                            {fight.player_1_username} vs {fight.player_2_username || '???'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-red-400 uppercase">{fight.status}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Active 1v1 Battles */}
+              {myBattles.filter(b => b.status !== 'completed').length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Swords className="w-4 h-4 text-red-400" />
+                    <span className="text-[13px] font-bold text-foreground">Active 1v1 Battles</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {myBattles.filter(b => b.status !== 'completed').map(battle => (
+                      <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
+                        className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all text-left">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[12px] font-bold text-foreground truncate block">
+                            {battle.challenger_username} vs {battle.opponent_username || '???'}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">{(battle as any).theme_song_name || 'No song'}</span>
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase ${
+                          battle.status === 'active' ? 'text-red-400' : battle.status === 'judging' ? 'text-purple-400' : 'text-amber-400'
+                        }`}>{battle.status}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Battle History */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <History className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-[13px] font-bold text-foreground">Battle History</span>
+                </div>
+                {(myCompletedQuickFights.length + myBattles.filter(b => b.status === 'completed').length) > 0 ? (
+                  <div className="space-y-1">
+                    {myBattles.filter(b => b.status === 'completed').slice(0, 10).map(battle => (
+                      <button key={battle.id} onClick={() => navigate(`/battle/${battle.id}`)}
+                        className="w-full flex items-center gap-3 p-2.5 bg-surface-1 border border-border hover:border-border/80 transition-all text-left">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[12px] text-foreground truncate block">
+                            {battle.challenger_username} vs {battle.opponent_username}
+                          </span>
+                        </div>
+                        {battle.winner_id === user?.id ? (
+                          <span className="text-[10px] font-bold text-emerald-400">WON</span>
+                        ) : battle.winner_id ? (
+                          <span className="text-[10px] font-bold text-red-400">LOST</span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-muted-foreground">DRAW</span>
+                        )}
+                      </button>
+                    ))}
+                    {myCompletedQuickFights.slice(0, 10).map(fight => (
+                      <button key={fight.id} onClick={() => navigate(`/fight/${fight.id}`)}
+                        className="w-full flex items-center gap-3 p-2.5 bg-surface-1 border border-border hover:border-border/80 transition-all text-left">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[12px] text-foreground truncate block">
+                            {fight.player_1_username} vs {fight.player_2_username}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">Quick 1v1</span>
+                        </div>
+                        {fight.winner_id === user?.id ? (
+                          <span className="text-[10px] font-bold text-emerald-400">WON</span>
+                        ) : fight.winner_id ? (
+                          <span className="text-[10px] font-bold text-red-400">LOST</span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-muted-foreground">—</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-surface-1 border border-border p-6 text-center">
+                    <p className="text-[12px] text-muted-foreground">No completed battles yet</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Email for notifications */}
+              {user && !user.email && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  className="bg-surface-1 border border-amber-500/30 p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Mail className="w-4 h-4 text-amber-400" />
+                    <span className="text-[12px] font-bold text-foreground">Get Notified</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mb-3">
+                    Add your email to get notified when you're matched, when battles start, and during big drops.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      placeholder="your@email.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      className="flex-1 h-9 px-3 bg-background border border-border text-[12px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-amber-500/50"
+                    />
+                    <button
+                      onClick={handleSaveEmail}
+                      disabled={savingEmail || !emailInput.trim()}
+                      className="px-4 h-9 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-background text-[11px] font-bold transition-colors"
+                    >
+                      {savingEmail ? '...' : 'Save'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          ) : (
+          <>
 
           {/* ═══ GLOBAL SEARCH — top of Arena ═══ */}
           <div className="relative mb-5">
@@ -553,11 +805,13 @@ export default function ArenaPage() {
               );
             })}
           </div>
+          </>
+          )}
         </div>
       </div>
 
       {/* Loading */}
-      {loading && (
+      {arenaView === 'arena' && loading && (
         <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
@@ -568,7 +822,7 @@ export default function ArenaPage() {
       )}
 
       {/* ═══ MAIN CONTENT ═══ */}
-      {!loading && (
+      {arenaView === 'arena' && !loading && (
         <div className="mt-2 space-y-6">
 
           {/* ═══ SOLO MODE SHOWCASE — dominant section ═══ */}
