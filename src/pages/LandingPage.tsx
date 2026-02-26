@@ -76,8 +76,8 @@ export default function LandingPage() {
             >
               <Link to="/start">
                 <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-xl sm:text-2xl px-12 sm:px-16 py-5 sm:py-6 h-auto gap-3 tracking-[0.08em] rounded-none uppercase font-bold">
-                  <Play className="w-5 h-5 sm:w-6 sm:h-6" />
-                  Play Now
+                  <Swords className="w-5 h-5 sm:w-6 sm:h-6" />
+                  Compete Now
                 </Button>
               </Link>
               <button
