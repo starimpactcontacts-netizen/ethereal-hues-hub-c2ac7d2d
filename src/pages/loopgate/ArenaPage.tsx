@@ -64,9 +64,9 @@ function EventCard({ event }: { event: Event }) {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-surface-1/40 to-transparent" />
           {isLive && (
-            <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-emerald-500/90 px-2.5 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              <span className="text-[11px] font-bold text-white tracking-wide">LIVE</span>
+            <div className="absolute top-2 left-2 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] font-bold text-emerald-400 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">LIVE</span>
             </div>
           )}
           {event.prize_pool && (
@@ -159,20 +159,24 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
 }
 
 // ─── Section Header ────────────────────────────────────────────
-function SectionHeader({ icon, title, badge, badgeColor = "bg-emerald-500/20 border-emerald-500/40 text-emerald-400", action }: {
+function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", action }: {
   icon: React.ReactNode;
   title: string;
   badge?: string;
   badgeColor?: string;
   action?: React.ReactNode;
 }) {
+  // Extract just the text color from badgeColor prop
+  const textColor = badgeColor.includes('text-') 
+    ? badgeColor.split(' ').find(c => c.startsWith('text-')) || 'text-emerald-400'
+    : 'text-emerald-400';
   return (
     <div className="flex items-center justify-between px-4 mb-3">
       <div className="flex items-center gap-2">
         {icon}
         <span className="text-[15px] font-extrabold text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
         {badge && (
-          <span className={`flex items-center gap-1.5 border px-2 py-0.5 text-[11px] font-bold ${badgeColor}`}>
+          <span className={`flex items-center gap-1.5 text-[11px] font-semibold ${textColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {badge}
           </span>
@@ -306,7 +310,7 @@ export default function ArenaPage() {
               </div>
             </div>
             {totalLive > 0 && (
-              <div className="flex items-center gap-2 border border-red-500/30 px-3 py-2">
+              <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-[13px] font-bold text-red-400 tabular-nums">{totalLive} Live</span>
               </div>
@@ -443,32 +447,43 @@ export default function ArenaPage() {
                 <span className="text-[12px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
               </div>
 
-              {/* Live pill */}
-              <div className="shrink-0 flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1">
+              {/* Live indicator — seamless */}
+              <div className="shrink-0 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[12px] font-bold text-emerald-400">LIVE</span>
               </div>
             </motion.button>
           )}
 
-          {/* ═══ FILTER PILLS ═══ */}
+          {/* ═══ GLOBAL SEARCH ═══ */}
+          <div className="relative mb-4">
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search battles, events, players..."
+              value={quickSearch}
+              onChange={(e) => setQuickSearch(e.target.value)}
+              className="w-full h-11 pl-10 pr-9 bg-surface-1 border border-border rounded-full text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
+            />
+            {quickSearch && (
+              <button onClick={() => setQuickSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+
+          {/* ═══ FILTER PILLS — small rounded ═══ */}
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
             {filters.map(f => {
               const active = activeFilter === f.key;
-              const isRed = f.accent === "red";
-              const isGold = f.accent === "gold";
-              const isCyan = f.accent === "cyan";
               return (
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`px-3.5 py-2 text-[12px] font-semibold border transition-all flex items-center gap-1.5 shrink-0 touch-manipulation ${
+                  className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all flex items-center gap-1 shrink-0 touch-manipulation ${
                     active
-                      ? isRed ? "bg-red-500 text-white border-red-500"
-                      : isGold ? "bg-gold text-background border-gold"
-                      : isCyan ? "bg-cyan-500 text-white border-cyan-500"
-                      : "bg-foreground text-background border-foreground"
-                      : "bg-transparent text-muted-foreground border-border hover:border-foreground/30"
+                      ? "bg-foreground text-background"
+                      : "bg-surface-1 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {f.icon}
@@ -531,24 +546,8 @@ export default function ArenaPage() {
               />
               <p className="text-[12px] text-muted-foreground px-4 mb-3">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
 
-              {/* Search */}
-              <div className="px-4 mb-2.5">
-                <div className="relative">
-                  <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                  <Input
-                    type="text"
-                    placeholder="Search fights..."
-                    value={quickSearch}
-                    onChange={(e) => setQuickSearch(e.target.value)}
-                    className="h-10 pl-10 pr-8 bg-surface-1 border-border text-[13px] placeholder:text-muted-foreground/50"
-                  />
-                  {quickSearch && (
-                    <button onClick={() => setQuickSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <X className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                  )}
-                </div>
-              </div>
+
+
 
               {/* Fight List */}
               <div className="px-4 space-y-1.5">
