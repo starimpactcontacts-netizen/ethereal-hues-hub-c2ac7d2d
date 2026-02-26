@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Music, Sparkles, ArrowLeft, Zap, Trophy, Loader2 } from "lucide-react";
 import SongPicker from "./SongPicker";
 import { Button } from "@/components/ui/button";
-import { useSoloMode } from "@/hooks/useSoloMode";
-import { getRandomTheme } from "@/hooks/useSoloMode";
+import { useSoloMode, getRandomTheme } from "@/hooks/useSoloMode";
+import { toast } from "sonner";
 
 interface FeaturedDrop {
   id: string;
@@ -18,7 +18,7 @@ interface FeaturedDrop {
 
 export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
   const navigate = useNavigate();
-  const { startSolo, activeSolo, loading: soloLoading } = useSoloMode();
+  const { startSolo, activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
   const [phase, setPhase] = useState<"pick" | "reveal" | "go">("pick");
   const [saving, setSaving] = useState(false);
   const [pickedDrop, setPickedDrop] = useState<FeaturedDrop | null>(null);
@@ -58,6 +58,21 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
               </span>
             </div>
           </motion.button>
+          {activeSolo.status === 'editing' && (
+            <button
+              onClick={async () => {
+                const result = await cancelSolo(activeSolo.id);
+                if (result?.penalized) {
+                  toast.error(`Solo cancelled — lost 2 Index (cancel #${result.cancelCount})`);
+                } else {
+                  toast("Solo cancelled — first one's free!");
+                }
+              }}
+              className="w-full py-2.5 text-[12px] text-muted-foreground hover:text-destructive font-semibold uppercase tracking-wider transition-colors"
+            >
+              Cancel Solo Session
+            </button>
+          )}
         </div>
       </div>
     );

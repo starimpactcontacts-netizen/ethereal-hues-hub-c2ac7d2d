@@ -216,7 +216,7 @@ export default function ArenaPage() {
   const { competitions: hostedComps, loading: hostedLoading } = useHostedCompetitions();
   const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100);
   const { liveDrops } = useFeaturedDrops();
-  const { activeSolo, loading: soloLoading } = useSoloMode();
+  const { activeSolo, loading: soloLoading, cancelSolo } = useSoloMode();
   const { fights: myQuickFights, inQueue: qfInQueue } = useMyQuickFights();
   const [arenaView, setArenaView] = useState<'arena' | 'my'>(() => searchParams.get('tab') === 'my' ? 'my' : 'arena');
   const [emailInput, setEmailInput] = useState("");
@@ -500,12 +500,28 @@ export default function ArenaPage() {
                         <p className="text-[10px] text-gold font-bold uppercase tracking-wider">Active Solo Session</p>
                         <p className="text-sm text-foreground font-bold truncate">{activeSolo.theme}</p>
                       </div>
-                      <div className="text-right shrink-0">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className={`text-[10px] font-bold uppercase tracking-wider ${
                           activeSolo.status === 'submitted' || activeSolo.status === 'judging' ? 'text-emerald-400' : 'text-gold'
                         }`}>
                           {activeSolo.status === 'submitted' ? '✅ Submitted' : activeSolo.status === 'judging' ? '⚖️ Judging' : '✏️ Editing'}
                         </span>
+                        {activeSolo.status === 'editing' && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const result = await cancelSolo(activeSolo.id);
+                              if (result?.penalized) {
+                                toast.error(`Solo cancelled — lost 2 Index (cancel #${result.cancelCount})`);
+                              } else {
+                                toast("Solo cancelled — first one's free!");
+                              }
+                            }}
+                            className="p-1.5 hover:bg-destructive/10 transition-colors"
+                          >
+                            <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                          </button>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 bg-surface-1 border border-border px-3 py-2 mb-3">
