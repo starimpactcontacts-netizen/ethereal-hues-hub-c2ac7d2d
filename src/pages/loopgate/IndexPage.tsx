@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play } from "lucide-react";
+import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -459,44 +459,48 @@ export default function IndexPage() {
     );
   }
 
+  // Top 3 editors for spotlight
+  const topThreeEditors = useMemo(() => {
+    return [...rankings]
+      .sort((a, b) => (a.rank || 999) - (b.rank || 999))
+      .slice(0, 3);
+  }, [rankings]);
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <SEO {...pageSEO.index} />
       
-      {/* Cinematic Hero Header - AAA Polish */}
+      {/* ═══ CINEMATIC HERO ═══ */}
       <div className="relative overflow-hidden">
-        {/* Multi-layer gradient background - neutral depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/8 via-white/3 to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(255,255,255,0.12),transparent_55%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-white/5 blur-[100px] rounded-full" />
+        {/* Layered background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-red-950/20 via-background to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(220,38,38,0.12),transparent_60%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-500/5 blur-[120px]" />
         
-        {/* Dubai Mall gate pattern — boosted for mobile visibility */}
-        <GatePattern opacity={5} tileSize={80} />
-        {/* Shadow vignette over pattern for depth silhouette */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.6)_100%)]" />
+        {/* Gate pattern */}
+        <GatePattern opacity={4} tileSize={80} />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.7)_100%)]" />
         
-        {/* Decorative lines - neutral */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
         
-        {/* Corner accents */}
-        <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-gold/40" />
-        <div className="absolute top-0 right-0 w-24 h-24 border-r-2 border-t-2 border-gold/40" />
+        {/* Corner accents — red authority */}
+        <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-red-500/30" />
+        <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-red-500/30" />
         
-        <header className="relative z-10 px-4 pt-6 pb-8">
-          <div className="flex items-center justify-between mb-6">
+        <header className="relative z-10 px-4 pt-6 pb-4">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-white/5 border border-white/20 flex items-center justify-center">
-                <Search className="w-4 h-4 text-white/70" />
+              <div className="w-8 h-8 bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                <Search className="w-4 h-4 text-red-400" />
               </div>
-              <span className="text-[10px] text-white/70 uppercase tracking-[0.4em] font-semibold">Discover</span>
+              <span className="text-[10px] text-red-400/80 uppercase tracking-[0.4em] font-semibold">Discover</span>
             </div>
             
-            {/* Refresh/Shuffle Button */}
             {viewMode === "editors" && (
               <button
                 onClick={() => setShuffleKey(k => k + 1)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all text-white/70 hover:text-white group"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 hover:border-foreground/20 transition-all text-foreground/70 hover:text-foreground group"
               >
                 <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
                 <span className="text-[10px] uppercase tracking-wider font-medium">Shuffle</span>
@@ -504,20 +508,31 @@ export default function IndexPage() {
             )}
           </div>
           
-          {/* Hero Title - Bolder */}
-          <div className="text-center">
-            <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-white mb-2">
-              EDITOR INDEX
+          {/* Hero Title */}
+          <div className="text-center mb-2">
+            <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-foreground mb-1">
+              THE INDEX
             </h1>
             <p className="text-[11px] text-muted-foreground uppercase tracking-[0.25em]">
-              Scout • Search • Connect
+              Where Editors Become Legends
             </p>
+          </div>
+
+          {/* Live counter pulse */}
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <div className="relative">
+              <div className="w-2 h-2 bg-red-500" />
+              <div className="absolute inset-0 w-2 h-2 bg-red-500 animate-ping" />
+            </div>
+            <span className="text-[10px] text-red-400 uppercase tracking-[0.3em] font-bold">
+              {rankings.length} Editors Live
+            </span>
           </div>
         </header>
 
-        {/* Tab Navigation - Glass Morphism AAA */}
+        {/* Tab Navigation */}
         <div className="relative z-10 px-4 pb-5">
-          <div className="flex gap-1 bg-black/40 backdrop-blur-xl border border-white/10 p-1.5 shadow-[0_0_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]">
+          <div className="flex gap-1 bg-black/40 backdrop-blur-xl border border-foreground/10 p-1.5 shadow-[0_0_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]">
             {tabs.map((tab) => {
               const isActive = viewMode === tab.id;
               const Icon = tab.icon;
@@ -533,8 +548,8 @@ export default function IndexPage() {
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 ${
                     isActive && !tab.navigateTo
-                      ? "bg-white text-background shadow-[0_0_20px_rgba(255,255,255,0.15),inset_0_1px_0_rgba(255,255,255,0.2)]"
-                      : "text-muted-foreground hover:text-white hover:bg-white/5"
+                      ? "bg-foreground text-background shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                      : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -547,7 +562,7 @@ export default function IndexPage() {
       </div>
 
       <AnimatePresence mode="wait">
-        {/* Editors View */}
+        {/* ═══ EDITORS VIEW ═══ */}
         {viewMode === "editors" && (
           <motion.div
             key="editors"
@@ -555,28 +570,96 @@ export default function IndexPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            {/* Search - Enhanced */}
-            <div className="px-4 py-4">
+            {/* ─── TOP 3 SPOTLIGHT ─── */}
+            {!hasActiveFilters && topThreeEditors.length >= 3 && (
+              <div className="px-4 pt-4 pb-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <Flame className="w-4 h-4 text-red-500" />
+                  <span className="text-[10px] text-red-400 uppercase tracking-[0.3em] font-bold">Top Ranked</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {topThreeEditors.map((editor, i) => {
+                    const rank = i + 1;
+                    const accentClass = rank === 1 ? "border-gold/50 shadow-[0_0_20px_rgba(212,175,55,0.15)]" : rank === 2 ? "border-foreground/20" : "border-foreground/10";
+                    return (
+                      <motion.button
+                        key={editor.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        onClick={() => navigate(`/editor/${editor.id}`)}
+                        className={`relative bg-surface-1/60 border ${accentClass} p-3 flex flex-col items-center gap-2 card-hover overflow-hidden`}
+                      >
+                        {rank === 1 && (
+                          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent" />
+                        )}
+                        <div className="relative">
+                          <Avatar className={`w-14 h-14 border-2 ${rank === 1 ? 'border-gold/60' : 'border-border/40'}`}>
+                            <AvatarImage src={editor.avatar_url || undefined} />
+                            <AvatarFallback className="bg-surface-2 text-sm font-bold">
+                              {editor.username[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={`absolute -bottom-1 -right-1 w-5 h-5 flex items-center justify-center text-[9px] font-black ${rank === 1 ? 'bg-gold text-background' : 'bg-surface-2 text-foreground border border-border'}`}>
+                            {rank}
+                          </div>
+                        </div>
+                        <div className="text-center min-w-0 w-full">
+                          <p className="font-semibold text-xs text-foreground truncate">{editor.username}</p>
+                          <p className="text-[10px] text-gold tabular-nums font-bold">{(editor.global_index_score || 0).toFixed(1)}</p>
+                        </div>
+                        {editor.verification_status && (
+                          <div className="absolute top-2 right-2">
+                            <VerifiedBadge size="sm" />
+                          </div>
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ─── EDITORIUM CTA — Aspiration driver ─── */}
+            {!hasActiveFilters && (
+              <div className="px-4 py-3">
+                <button
+                  onClick={() => navigate('/editorium')}
+                  className="w-full bg-gradient-to-r from-surface-1 to-surface-2 border border-border/50 hover:border-red-500/30 p-3 flex items-center gap-3 transition-all group card-hover"
+                >
+                  <div className="w-10 h-10 bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                    <Newspaper className="w-5 h-5 text-red-400" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-xs font-bold text-foreground uppercase tracking-wider">Get Featured in Editorium</p>
+                    <p className="text-[10px] text-muted-foreground">Top editors get press coverage & immortalized visibility</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:text-red-400 transition-all" />
+                </button>
+              </div>
+            )}
+
+            {/* Search */}
+            <div className="px-4 py-3">
               <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-white/5 via-transparent to-white/5 opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-white transition-colors" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors" />
                 <input
                   type="text"
                   placeholder="Search editors..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-surface-0/60 backdrop-blur-sm border border-border/60 pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:border-white/30 focus:bg-surface-0/80 transition-all placeholder:text-muted-foreground/60"
+                  className="w-full bg-surface-0/60 backdrop-blur-sm border border-border/60 pl-12 pr-4 py-3 text-sm focus:outline-none focus:border-foreground/30 focus:bg-surface-0/80 transition-all placeholder:text-muted-foreground/60"
                 />
               </div>
             </div>
 
-            {/* Filters - Premium Pill Style */}
-            <div className="px-4 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+            {/* Filters */}
+            <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
               <div className="relative">
                 <select
                   value={leagueFilter}
                   onChange={(e) => setLeagueFilter(e.target.value as LeagueFilter)}
-                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-white/30 hover:border-white/20 transition-colors"
+                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-foreground/30 hover:border-foreground/20 transition-colors"
                 >
                   <option value="all">All Leagues</option>
                   <option value="elite">Elite</option>
@@ -608,19 +691,22 @@ export default function IndexPage() {
                   {filteredEditors.length} <span className="text-muted-foreground text-sm">Editors</span>
                 </span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
-                Global Index
-              </span>
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3 text-gold" />
+                <span className="text-[9px] text-gold uppercase tracking-[0.2em] font-bold">
+                  Global Index
+                </span>
+              </div>
             </div>
 
             {/* Loading State */}
             {loading && (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <div className="relative">
-                  <Loader2 className="w-8 h-8 animate-spin text-gold" />
-                  <div className="absolute inset-0 w-8 h-8 rounded-full bg-gold/20 blur-lg animate-pulse" />
+                  <Loader2 className="w-8 h-8 animate-spin text-red-400" />
+                  <div className="absolute inset-0 w-8 h-8 bg-red-400/20 blur-lg animate-pulse" />
                 </div>
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading rankings...</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading the index...</span>
               </div>
             )}
 
@@ -649,50 +735,68 @@ export default function IndexPage() {
               </div>
             )}
 
-            {/* Editor Feed — Prestige Full-Width Cards */}
+            {/* ─── EDITOR FEED — Redesigned Prestige Cards ─── */}
             {!loading && !error && filteredEditors.length > 0 && (
-              <div className="py-2">
+              <div className="py-1">
                 {filteredEditors.map((editor, index) => {
                   const rank = editor.rank || 999;
                   const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
                   const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
                   const classColorStyle = getClassColors(classLetter, hasTakenGQT);
                   const authorityRole = getAuthorityRole(editor.roles);
-                  const isTopThree = rank <= 3;
+                  const isTopTen = rank <= 10;
+                  const isNumberOne = rank === 1;
                   
                   return (
                     <motion.div
                       key={editor.id}
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.015, duration: 0.3 }}
-                      className={`relative border-b border-border/30 ${isTopThree ? 'bg-surface-1/30' : 'bg-surface-0/40'} shadow-[inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-1px_0_rgba(0,0,0,0.3),0_2px_8px_rgba(0,0,0,0.4)]`}
+                      transition={{ delay: Math.min(index * 0.012, 0.5), duration: 0.25 }}
+                      className={`relative border-b border-border/20 ${
+                        isNumberOne ? 'bg-gold/5' : isTopTen ? 'bg-surface-0/60' : ''
+                      }`}
                     >
-                      {/* Top accent for #1 */}
-                      {rank === 1 && (
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+                      {/* Gold top bar for #1 */}
+                      {isNumberOne && (
+                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
                       )}
                       
-                      <div className="px-4 py-4">
-                        {/* Row 1: Avatar + Identity + Class Badge */}
-                        <div className="flex items-start gap-3.5 mb-3">
+                      <div className="px-4 py-3.5">
+                        {/* Main row: Rank + Avatar + Info + Index Score */}
+                        <div className="flex items-center gap-3">
+                          {/* Rank number */}
+                          <div className="w-8 flex-shrink-0 text-center">
+                            {isNumberOne ? (
+                              <Crown className="w-5 h-5 text-gold mx-auto" />
+                            ) : rank <= 3 ? (
+                              <Medal className="w-4 h-4 text-muted-foreground mx-auto" />
+                            ) : (
+                              <span className={`font-display text-base tabular-nums ${isTopTen ? 'text-foreground/70' : 'text-muted-foreground/50'}`}>
+                                {rank}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Avatar */}
                           <button 
                             onClick={() => navigate(`/editor/${editor.id}`)} 
                             className="flex-shrink-0"
                           >
-                            <Avatar className={`w-14 h-14 border-2 ${rank === 1 ? 'border-gold/50' : isTopThree ? 'border-foreground/30' : 'border-border/60'}`}>
+                            <Avatar className={`w-12 h-12 border ${isNumberOne ? 'border-gold/50' : 'border-border/40'}`}>
                               <AvatarImage src={editor.avatar_url || undefined} />
-                              <AvatarFallback className="bg-surface-1 text-base font-bold">
+                              <AvatarFallback className="bg-surface-1 text-sm font-bold">
                                 {editor.username[0]?.toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                           </button>
                           
+                          {/* Identity */}
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="flex items-center gap-1.5">
                               <button
                                 onClick={() => navigate(`/editor/${editor.id}`)}
-                                className="font-semibold text-[15px] text-foreground hover:underline truncate"
+                                className="font-semibold text-sm text-foreground hover:underline truncate"
                               >
                                 {editor.display_name || editor.username}
                               </button>
@@ -700,47 +804,35 @@ export default function IndexPage() {
                               {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
                               {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
                             </div>
-                            <p className="text-[12px] text-muted-foreground mt-0.5">@{editor.username}</p>
+                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                              <span>Lv {editor.level || 1}</span>
+                              <span className="text-border/50">•</span>
+                              <span className="flex items-center gap-0.5">
+                                <Users className="w-2.5 h-2.5" /> {editor.connection_count || 0}
+                              </span>
+                              {editor.crew && (
+                                <>
+                                  <span className="text-border/50">•</span>
+                                  <CrewBadge crew={editor.crew} size="sm" />
+                                </>
+                              )}
+                            </div>
                           </div>
                           
-                          {/* Class Badge — right aligned */}
-                          <span className={`text-[9px] font-bold uppercase tracking-wider border px-2 py-1 flex-shrink-0 ${classColorStyle}`}>
-                            {classLetter} Class
-                          </span>
+                          {/* Right side: Index Score + Class */}
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <span className={`font-display text-xl tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
+                              {(editor.global_index_score || 0).toFixed(1)}
+                            </span>
+                            <span className={`text-[8px] font-bold uppercase tracking-wider border px-1.5 py-0.5 ${classColorStyle}`}>
+                              {classLetter}
+                            </span>
+                          </div>
                         </div>
                         
-                        {/* Row 2: Stats strip — rank, index, level, connections */}
-                        <div className="flex items-center gap-4 mb-3 text-[11px]">
-                          <span className="text-muted-foreground">
-                            Rank <span className={`font-bold ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>#{rank}</span>
-                          </span>
-                          <span className="text-border">•</span>
-                          <span className="text-muted-foreground">
-                            Index <span className={`font-bold ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>{(editor.global_index_score || 0).toFixed(1)}</span>
-                          </span>
-                          <span className="text-border">•</span>
-                          <span className="text-muted-foreground">
-                            Level <span className="font-bold text-foreground">{editor.level || 1}</span>
-                          </span>
-                        </div>
-                        
-                        {/* Row 3: Unit + Connections */}
-                        <div className="flex items-center gap-3 mb-3 text-[11px] text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            <span className="text-foreground/70 font-medium">{editor.connection_count || 0}</span> connections
-                          </span>
-                          {editor.crew && (
-                            <>
-                              <span className="text-border">•</span>
-                              <CrewBadge crew={editor.crew} size="sm" />
-                            </>
-                          )}
-                        </div>
-                        
-                        {/* Row 3.5: Pinned Edits */}
+                        {/* Pinned Edits row */}
                         {pinnedEditsByUser[editor.id]?.length > 0 && (
-                          <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-hide">
+                          <div className="flex gap-2 mt-3 ml-11 overflow-x-auto scrollbar-hide">
                             {pinnedEditsByUser[editor.id].map((edit) => (
                               <a
                                 key={edit.id}
@@ -748,33 +840,28 @@ export default function IndexPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="relative flex-shrink-0 w-24 h-14 rounded-md overflow-hidden bg-surface-0 border border-border/30 hover:border-foreground/30 transition-colors group"
+                                className="relative flex-shrink-0 w-20 h-12 overflow-hidden bg-surface-0 border border-border/30 hover:border-foreground/30 transition-colors group"
                               >
                                 {edit.thumbnail_url ? (
                                   <ThumbnailImage src={edit.thumbnail_url} alt={edit.title || "Edit"} className="w-full h-full object-cover" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center">
-                                    <Play className="w-4 h-4 text-muted-foreground" />
+                                    <Play className="w-3 h-3 text-muted-foreground" />
                                   </div>
                                 )}
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                  <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                  <Play className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
-                                {edit.title && (
-                                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-0.5">
-                                    <p className="text-[8px] text-white truncate">{edit.title}</p>
-                                  </div>
-                                )}
                               </a>
                             ))}
                           </div>
                         )}
                         
-                        {/* Row 4: Action buttons */}
-                        <div className="flex items-center gap-2">
+                        {/* Action row */}
+                        <div className="flex items-center gap-2 mt-3 ml-11">
                           <button
                             onClick={() => navigate(`/editor/${editor.id}`)}
-                            className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors rounded-md"
+                            className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider border border-foreground/15 text-foreground/80 hover:bg-foreground hover:text-background transition-colors"
                           >
                             View Profile
                           </button>
