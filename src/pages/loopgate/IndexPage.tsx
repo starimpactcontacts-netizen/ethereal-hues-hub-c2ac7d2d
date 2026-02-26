@@ -99,8 +99,9 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
   const rank = editor.rank || 999;
   const firstEdit = pinnedEdits?.[0];
   
-  const widthClass = size === "lg" ? "w-[200px]" : size === "md" ? "w-[160px]" : "w-[140px]";
-  const thumbH = size === "lg" ? "h-[120px]" : size === "md" ? "h-[100px]" : "h-[88px]";
+  const widthClass = size === "lg" ? "w-[220px]" : size === "md" ? "w-[180px]" : "w-[160px]";
+  const thumbH = size === "lg" ? "h-[130px]" : size === "md" ? "h-[110px]" : "h-[95px]";
+  const editCount = pinnedEdits?.length || 0;
 
   return (
     <button
@@ -108,7 +109,7 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
       className={`${widthClass} flex-shrink-0 text-left group`}
     >
       {/* Thumbnail / Visual */}
-      <div className={`relative ${thumbH} w-full bg-surface-1 border border-border/30 overflow-hidden mb-2`}>
+      <div className={`relative ${thumbH} w-full bg-surface-1 border border-border/30 overflow-hidden`}>
         {firstEdit?.thumbnail_url ? (
           <ThumbnailImage src={firstEdit.thumbnail_url} alt={editor.username} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : editor.avatar_url ? (
@@ -120,12 +121,12 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
         )}
         
         {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         
         {/* Rank badge */}
-        {showRank && rank <= 10 && (
+        {showRank && rank <= 50 && (
           <div className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-black ${
-            rank === 1 ? 'bg-gold text-background' : 'bg-background/80 text-foreground'
+            rank === 1 ? 'bg-gold text-background' : rank <= 3 ? 'bg-foreground/90 text-background' : 'bg-background/80 text-foreground'
           }`}>
             #{rank}
           </div>
@@ -136,30 +137,44 @@ function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = fal
           {classLetter}
         </div>
         
-        {/* Verified + Authority in corner */}
-        <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
-          {editor.verification_status && <VerifiedBadge size="sm" />}
-          {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+        {/* Bottom overlay info */}
+        <div className="absolute bottom-0 left-0 right-0 px-2 pb-1.5 pt-4">
+          <div className="flex items-center gap-1 mb-0.5">
+            {editor.verification_status && <VerifiedBadge size="sm" />}
+            {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+            {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
+          </div>
+          <p className="font-semibold text-[13px] text-white truncate leading-tight drop-shadow-lg">
+            {editor.display_name || editor.username}
+          </p>
         </div>
         
         {/* Play indicator if has edit */}
         {firstEdit?.thumbnail_url && (
-          <div className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-white/90 flex items-center justify-center">
+          <div className="absolute bottom-1.5 right-1.5 w-5 h-5 bg-white/90 flex items-center justify-center">
             <Play className="w-2.5 h-2.5 text-black fill-black" />
           </div>
         )}
       </div>
       
-      {/* Info */}
-      <div className="px-0.5">
-        <p className="font-semibold text-[13px] text-foreground truncate leading-tight">
-          {editor.display_name || editor.username}
-        </p>
-        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground">
-          {(editor.global_index_score || 0) > 0 && (
-            <span className="text-gold font-bold">{(editor.global_index_score || 0).toFixed(1)}</span>
+      {/* Stats bar below thumbnail */}
+      <div className="bg-surface-1/80 border-x border-b border-border/30 px-2 py-1.5">
+        <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span className="text-gold font-bold text-[11px]">{(editor.global_index_score || 0).toFixed(1)}</span>
+            <span className="text-border/40">|</span>
+            <span>{editor.win_rate?.toFixed(0) || 0}% W</span>
+            <span className="text-border/40">|</span>
+            <span>Lv {editor.level || 1}</span>
+          </div>
+          {editCount > 0 && (
+            <span className="flex items-center gap-0.5"><Play className="w-2 h-2" />{editCount}</span>
           )}
+        </div>
+        <div className="flex items-center gap-2 mt-0.5 text-[9px] text-muted-foreground/70">
           <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />{editor.connection_count || 0}</span>
+          <span>{editor.total_events || 0} events</span>
+          {editor.crew && <CrewBadge crew={editor.crew} size="sm" />}
         </div>
       </div>
     </button>
@@ -475,13 +490,15 @@ export default function IndexPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 relative">
       <SEO {...pageSEO.index} />
+      
+      {/* ═══ FULL PAGE PATTERN ═══ */}
+      <GatePattern opacity={4} tileSize={56} className="fixed inset-0 z-0" />
       
       {/* ═══ COMPACT HERO ═══ */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-2/80 via-background to-background" />
-        <GatePattern opacity={5} tileSize={64} />
+        <div className="absolute inset-0 bg-gradient-to-b from-surface-2/80 via-background/95 to-background/90" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
         
         <header className="relative z-10 px-4 pt-5 pb-3">
@@ -904,27 +921,28 @@ function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
         const classStyle = getClassColors(classLetter, hasTakenGQT);
         const authorityRole = getAuthorityRole(editor.roles);
         const isNumberOne = rank === 1;
+        const isTop3 = rank <= 3;
         const edits = pinnedEditsByUser[editor.id] || [];
 
         return (
           <button key={editor.id} onClick={() => navigate(`/editor/${editor.id}`)}
-            className={`w-full text-left border-b border-border/15 px-4 py-3 flex items-center gap-3 active:bg-surface-1/30 transition-colors ${isNumberOne ? 'bg-gold/5' : ''}`}>
+            className={`w-full text-left border-b border-border/15 px-4 py-3.5 flex items-center gap-3 active:bg-surface-1/30 transition-colors ${isNumberOne ? 'bg-gold/5 border-l-2 border-l-gold' : ''}`}>
             
             {/* Rank */}
             <div className="w-7 flex-shrink-0 text-center">
               {isNumberOne ? <Crown className="w-4 h-4 text-gold mx-auto" /> : (
-                <span className="font-display text-sm text-muted-foreground/50 tabular-nums">{rank}</span>
+                <span className={`font-display text-sm tabular-nums ${isTop3 ? 'text-foreground/70' : 'text-muted-foreground/50'}`}>{rank}</span>
               )}
             </div>
 
             {/* Avatar with thumbnail overlay */}
             <div className="relative flex-shrink-0">
-              <Avatar className={`w-10 h-10 border ${isNumberOne ? 'border-gold/50' : 'border-border/30'}`}>
+              <Avatar className={`w-11 h-11 border ${isNumberOne ? 'border-gold/50' : 'border-border/30'}`}>
                 <AvatarImage src={editor.avatar_url || undefined} />
                 <AvatarFallback className="bg-surface-1 text-xs font-bold">{editor.username[0]?.toUpperCase()}</AvatarFallback>
               </Avatar>
               {edits[0]?.thumbnail_url && (
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 border border-border/40 overflow-hidden bg-surface-0">
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 border border-border/40 overflow-hidden bg-surface-0">
                   <ThumbnailImage src={edits[0].thumbnail_url} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
@@ -932,27 +950,38 @@ function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
             
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-wrap">
                 <span className="font-semibold text-[13px] text-foreground truncate">{editor.display_name || editor.username}</span>
+                {editor.level && editor.level > 1 && <LevelBadge level={editor.level} size="xs" />}
                 {editor.verification_status && <VerifiedBadge size="sm" />}
                 {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+                {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
+                <span className={`text-[7px] border px-1 py-px ${classStyle}`}>{classLetter}</span>
               </div>
-              <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
-                <span>Lv {editor.level || 1}</span>
-                <span className="text-border/50">•</span>
+              {editor.display_name && (
+                <p className="text-[10px] text-muted-foreground/60 mt-0.5">@{editor.username}</p>
+              )}
+              <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground flex-wrap">
+                <span>{editor.win_rate?.toFixed(0) || 0}% Win</span>
+                <span className="text-border/40">•</span>
+                <span>{editor.total_events || 0} Events</span>
+                <span className="text-border/40">•</span>
                 <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />{editor.connection_count || 0}</span>
+                {edits.length > 0 && (
+                  <><span className="text-border/40">•</span><span className="flex items-center gap-0.5"><Play className="w-2.5 h-2.5" />{edits.length} edits</span></>
+                )}
                 {editor.crew && (
-                  <><span className="text-border/50">•</span><CrewBadge crew={editor.crew} size="sm" /></>
+                  <><span className="text-border/40">•</span><CrewBadge crew={editor.crew} size="sm" /></>
                 )}
               </div>
             </div>
             
-            {/* Score + Class */}
+            {/* Score */}
             <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
-              <span className={`font-display text-lg tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
+              <span className={`font-display text-xl tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
                 {(editor.global_index_score || 0).toFixed(1)}
               </span>
-              <span className={`text-[7px] border px-1 py-px ${classStyle}`}>{classLetter}</span>
+              <p className="text-[7px] text-muted-foreground/50 uppercase tracking-wider">Index</p>
             </div>
           </button>
         );

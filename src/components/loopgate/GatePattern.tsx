@@ -30,7 +30,7 @@ export default function GatePattern({
 
   return (
     <div
-      className={cn('absolute inset-0 pointer-events-none -z-10', className)}
+      className={cn('pointer-events-none -z-10', className?.includes('fixed') ? '' : 'absolute inset-0', className)}
       style={{ opacity: opacity / 100 }}
     >
       <svg
