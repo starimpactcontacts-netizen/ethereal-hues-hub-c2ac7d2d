@@ -71,6 +71,7 @@ import FeaturedDropDetailPage from "./pages/loopgate/FeaturedDropDetailPage";
 import EditoriumPage from "./pages/loopgate/EditoriumPage";
 import EditoriumArticlePage from "./pages/loopgate/EditoriumArticlePage";
 import UpscalerPage from "./pages/loopgate/UpscalerPage";
+import StudioPage from "./pages/loopgate/StudioPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -312,6 +313,7 @@ export default function App() {
               <Route path="/units/:crewId/settings" element={<CrewSettingsPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/upscaler" element={<UpscalerPage />} />
+              <Route path="/studio" element={<StudioPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>
             
