@@ -9,8 +9,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import LoopFeedCard, { type LoopFeedItem } from "@/components/loopgate/LoopFeedCard";
 import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
 import FeedComposeSheet from "@/components/loopgate/FeedComposeSheet";
+import FeedPostComposer from "@/components/loopgate/FeedPostComposer";
 import FeedPostCard from "@/components/loopgate/FeedPostCard";
 import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
+import { useIsMobile } from "@/hooks/use-mobile";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 const BATCH_SIZE = 20;
@@ -20,6 +22,7 @@ type FeedTab = 'foryou' | 'posts' | 'connections';
 export default function FeedPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [feedItems, setFeedItems] = useState<LoopFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -341,6 +344,11 @@ export default function FeedPage() {
 
       {/* ─── Feed Content ─── */}
       <div className="max-w-xl mx-auto">
+        {/* Desktop inline composer */}
+        {!isMobile && user && (
+          <FeedPostComposer userProfile={userProfile} onPost={createPost} />
+        )}
+
         {activeTab === 'posts' ? (
           feedPosts.length === 0 ? (
             <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No posts yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
@@ -386,8 +394,8 @@ export default function FeedPage() {
         )}
       </div>
 
-      {/* ─── Compose FAB (X-style floating button) ─── */}
-      {user && (
+      {/* ─── Compose FAB (mobile only, X-style floating button) ─── */}
+      {user && isMobile && (
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setShowCompose(true)}
