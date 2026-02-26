@@ -129,13 +129,13 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
           animate={isSearching ? {
             boxShadow: ['0 4px 20px rgba(56,189,248,0.3)', '0 4px 40px rgba(56,189,248,0.5)', '0 4px 20px rgba(56,189,248,0.3)']
           } : {
-            boxShadow: ['0 4px 15px rgba(250,204,21,0.2)', '0 4px 25px rgba(250,204,21,0.35)', '0 4px 15px rgba(250,204,21,0.2)']
+            boxShadow: ['0 4px 15px rgba(239,68,68,0.25)', '0 4px 30px rgba(239,68,68,0.45)', '0 4px 15px rgba(239,68,68,0.25)']
           }}
           transition={{ duration: 1.8, repeat: Infinity }}
           className={`${isSmall ? 'px-4 py-3' : 'px-6 py-4'} ${
             isSearching 
-              ? 'bg-gradient-to-b from-sky-400 via-sky-500 to-sky-600' 
-              : 'bg-gradient-to-b from-yellow-300 via-yellow-400 to-amber-500 hover:from-yellow-200 hover:via-yellow-300 hover:to-amber-400'
+              ? 'bg-gradient-to-b from-red-400 via-red-500 to-red-700' 
+              : 'bg-gradient-to-b from-red-500 via-red-600 to-red-700 hover:from-red-400 hover:via-red-500 hover:to-red-600'
           } flex items-center justify-center gap-2.5 active:brightness-90 transition-all`}
         >
           {/* Roblox-style inner shine */}
@@ -154,15 +154,15 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
             </>
           ) : activeFight ? (
             <>
-              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-black relative z-10`} />
-              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-black uppercase tracking-wider drop-shadow-[0_1px_0_rgba(255,255,255,0.4)] relative z-10`}>
+              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white relative z-10`} />
+              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.4)] relative z-10`}>
                 Return to Fight
               </span>
             </>
           ) : (
             <>
-              <Zap className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-black relative z-10`} />
-              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-black uppercase tracking-wider drop-shadow-[0_1px_0_rgba(255,255,255,0.4)] relative z-10`}>
+              <Zap className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white relative z-10`} />
+              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.4)] relative z-10`}>
                 Quick Edit Battle
               </span>
             </>

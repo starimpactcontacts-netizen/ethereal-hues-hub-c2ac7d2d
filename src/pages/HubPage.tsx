@@ -467,7 +467,7 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden border-[3px] border-black/15 bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:via-emerald-400 group-hover:to-emerald-300 transition-all">
+          <div className="relative overflow-hidden border-[3px] border-black/15 bg-gradient-to-r from-red-600 via-red-500 to-red-600 group-hover:from-red-500 group-hover:via-red-400 group-hover:to-red-500 transition-all">
             {/* Roblox inner shine */}
             <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
             <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/15 pointer-events-none" />
@@ -478,18 +478,18 @@ export default function HubPage() {
                 <div className="flex items-center gap-4">
                   <div className="relative flex items-center justify-center shrink-0">
                     <div className="relative w-12 h-10 bg-white/90 flex items-center justify-center group-active:scale-95 transition-transform border-2 border-black/10">
-                      <InfinityIcon className="w-5 h-5 text-emerald-600" strokeWidth={2.5} />
+                      <InfinityIcon className="w-5 h-5 text-red-600" strokeWidth={2.5} />
                     </div>
                   </div>
                   
                   <div>
-                    <h2 className="font-display text-2xl tracking-wide text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.2)] group-hover:drop-shadow-[0_2px_0_rgba(0,0,0,0.3)] transition-all">ARENA</h2>
+                    <h2 className="font-display text-2xl tracking-wide text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.3)]">ARENA</h2>
                     <p className="text-[11px] text-white/80 font-semibold">Enter editing battles</p>
                   </div>
                 </div>
                 
-                {/* Right side — Roblox PLAY style */}
-                <div className="flex items-center gap-2 font-display text-lg tracking-wider text-white whitespace-nowrap drop-shadow-[0_2px_0_rgba(0,0,0,0.25)]">
+                {/* Right side */}
+                <div className="flex items-center gap-2 font-display text-lg tracking-wider text-white whitespace-nowrap drop-shadow-[0_2px_0_rgba(0,0,0,0.3)]">
                   <span>PLAY ▶</span>
                 </div>
             </div>
