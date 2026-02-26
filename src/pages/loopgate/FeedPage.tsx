@@ -1,21 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Play, Loader2, Search, TrendingUp, Shield, Clapperboard, X, PenSquare } from "lucide-react";
+import { Play, Loader2, Search, X, PenSquare, Feather } from "lucide-react";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import LoopFeedCard, { type LoopFeedItem } from "@/components/loopgate/LoopFeedCard";
 import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
-import FeedPostComposer from "@/components/loopgate/FeedPostComposer";
+import FeedComposeSheet from "@/components/loopgate/FeedComposeSheet";
 import FeedPostCard from "@/components/loopgate/FeedPostCard";
 import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 const BATCH_SIZE = 20;
 
-type FeedTab = 'foryou' | 'connections' | 'posts';
+type FeedTab = 'foryou' | 'posts' | 'connections';
 
 export default function FeedPage() {
   const navigate = useNavigate();
@@ -32,15 +32,15 @@ export default function FeedPage() {
   const [activeTab, setActiveTab] = useState<FeedTab>('foryou');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [showCompose, setShowCompose] = useState(false);
   const [connectionIds, setConnectionIds] = useState<string[]>([]);
   const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null; is_verified: boolean }>>([]);
   const [trendingUnits, setTrendingUnits] = useState<Array<{ id: string; name: string; avatar_url: string | null; emblem: string }>>([]);
   const [userProfile, setUserProfile] = useState<{ username: string; avatar_url: string | null; league?: string; level?: number } | null>(null);
 
-  // Feed posts hook
   const { posts: feedPosts, likedPostIds, bookmarkedPostIds, createPost, toggleLike, toggleBookmark, deletePost, loading: postsLoading } = useFeedPosts();
 
-  // Fetch user profile for composer
+  // Fetch user profile
   useEffect(() => {
     if (!user) return;
     supabase.from('profiles').select('username, avatar_url, league, level').eq('id', user.id).single().then(({ data }) => {
@@ -48,7 +48,7 @@ export default function FeedPage() {
     });
   }, [user]);
 
-  // Fetch connections for the connections tab
+  // Fetch connections
   useEffect(() => {
     if (!user) return;
     const fetchConnections = async () => {
@@ -57,16 +57,13 @@ export default function FeedPage() {
         .select('sender_id, receiver_id')
         .eq('status', 'accepted')
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`);
-
-      const ids = (data || []).map(c =>
-        c.sender_id === user.id ? c.receiver_id : c.sender_id
-      );
+      const ids = (data || []).map(c => c.sender_id === user.id ? c.receiver_id : c.sender_id);
       setConnectionIds(ids);
     };
     fetchConnections();
   }, [user]);
 
-  // Fetch trending editors & units
+  // Fetch trending
   useEffect(() => {
     const fetchTrending = async () => {
       const [editorsRes, unitsRes] = await Promise.all([
@@ -84,121 +81,56 @@ export default function FeedPage() {
 
       const scored = (editorsRes.data || []).map(p => {
         let score = 0;
-        const isVerified = !!p.verification_status;
-        if (isVerified) score += 10;
+        if (!!p.verification_status) score += 10;
         const conn = p.connection_count || 0;
-        if (conn >= 20) score += 6;
-        else if (conn >= 5) score += 4;
-        else if (conn >= 1) score += 2;
+        if (conn >= 20) score += 6; else if (conn >= 5) score += 4; else if (conn >= 1) score += 2;
         const idx = p.global_index_score || 0;
-        if (idx >= 80) score += 6;
-        else if (idx >= 50) score += 4;
-        else if (idx > 0) score += 2;
+        if (idx >= 80) score += 6; else if (idx >= 50) score += 4; else if (idx > 0) score += 2;
         const lvl = p.level || 1;
-        if (lvl >= 5) score += 3;
-        else if (lvl >= 2) score += 1;
-        return { id: p.id, username: p.username, avatar_url: p.avatar_url, is_verified: isVerified, _score: score };
+        if (lvl >= 5) score += 3; else if (lvl >= 2) score += 1;
+        return { id: p.id, username: p.username, avatar_url: p.avatar_url, is_verified: !!p.verification_status, _score: score };
       });
       scored.sort((a, b) => b._score - a._score);
-
       setTrendingEditors(scored.slice(0, 12).map(({ _score, ...rest }) => rest));
       setTrendingUnits(unitsRes.data || []);
     };
     fetchTrending();
   }, []);
 
+  // Fetch activity feed
   const fetchFeed = useCallback(async (isLoadMore = false) => {
     if (isLoadMore && (loadingMore || !hasMore)) return;
-
-    if (isLoadMore) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      seenUrls.current.clear();
-      offsetRef.current = { arena: 0, review: 0 };
-    }
+    if (isLoadMore) setLoadingMore(true);
+    else { setLoading(true); seenUrls.current.clear(); offsetRef.current = { arena: 0, review: 0 }; }
 
     try {
       const arenaOffset = offsetRef.current.arena;
       const reviewOffset = offsetRef.current.review;
 
       const [roundRes, eventRes, sanctionedRes, reviewRes, battlesRes, judgeVideosRes, quickFightsRes] = await Promise.all([
-        supabase
-          .from('round_participations')
-          .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at, thumbnail_url, custom_title')
-          .not('qoi_score', 'is', null)
-          .not('submission_url', 'is', null)
-          .order('created_at', { ascending: false })
-          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
-        supabase
-          .from('event_participations')
-          .select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, final_rank, thumbnail_url, custom_title, submitted_at')
-          .not('qoi_score', 'is', null)
-          .not('submission_url', 'is', null)
-          .order('qoi_score', { ascending: false })
-          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
-        supabase
-          .from('sanctioned_tournament_participants')
-          .select('id, submission_url, submission_platform, qoi_score, user_id, tournament_id, submitted_at, final_rank, thumbnail_url, custom_title')
-          .not('qoi_score', 'is', null)
-          .not('submission_url', 'is', null)
-          .order('submitted_at', { ascending: false })
-          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
-        supabase
-          .from('review_requests')
-          .select('*')
-          .eq('status', 'reviewed')
-          .not('total_score', 'is', null)
-          .order('reviewed_at', { ascending: false })
-          .range(reviewOffset, reviewOffset + BATCH_SIZE - 1),
-        supabase
-          .from('battles')
-          .select('*')
-          .in('status', ['pending', 'active', 'judging', 'completed'])
-          .order('updated_at', { ascending: false })
-          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
-        supabase
-          .from('judge_rating_videos')
-          .select('id, video_url, platform, title, thumbnail_url, current_views, judge_id, submitted_at')
-          .order('submitted_at', { ascending: false })
-          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
-        supabase
-          .from('quick_fights')
-          .select('*')
-          .in('status', ['active', 'judging', 'completed', 'waiting'])
-          .order('created_at', { ascending: false })
-          .range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('round_participations').select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, created_at, thumbnail_url, custom_title').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('created_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('event_participations').select('id, submission_url, platform, qoi_score, quality_score, originality_score, impact_score, user_id, event_id, final_rank, thumbnail_url, custom_title, submitted_at').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('qoi_score', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('sanctioned_tournament_participants').select('id, submission_url, submission_platform, qoi_score, user_id, tournament_id, submitted_at, final_rank, thumbnail_url, custom_title').not('qoi_score', 'is', null).not('submission_url', 'is', null).order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('review_requests').select('*').eq('status', 'reviewed').not('total_score', 'is', null).order('reviewed_at', { ascending: false }).range(reviewOffset, reviewOffset + BATCH_SIZE - 1),
+        supabase.from('battles').select('*').in('status', ['pending', 'active', 'judging', 'completed']).order('updated_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('judge_rating_videos').select('id, video_url, platform, title, thumbnail_url, current_views, judge_id, submitted_at').order('submitted_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
+        supabase.from('quick_fights').select('*').in('status', ['active', 'judging', 'completed', 'waiting']).order('created_at', { ascending: false }).range(arenaOffset, arenaOffset + BATCH_SIZE - 1),
       ]);
 
-      const roundData = roundRes.data || [];
-      const eventData = eventRes.data || [];
-      const sanctionedData = sanctionedRes.data || [];
-      const reviewData = reviewRes.data || [];
-      const battlesData = battlesRes.data || [];
-      const judgeVideosData = judgeVideosRes.data || [];
-      const quickFightsData = quickFightsRes.data || [];
+      const roundData = roundRes.data || []; const eventData = eventRes.data || []; const sanctionedData = sanctionedRes.data || [];
+      const reviewData = reviewRes.data || []; const battlesData = battlesRes.data || [];
+      const judgeVideosData = judgeVideosRes.data || []; const quickFightsData = quickFightsRes.data || [];
 
       offsetRef.current.arena += Math.max(roundData.length, eventData.length, sanctionedData.length, battlesData.length, judgeVideosData.length, quickFightsData.length);
       offsetRef.current.review += reviewData.length;
 
       const fetchedCount = roundData.length + eventData.length + sanctionedData.length + reviewData.length + battlesData.length + judgeVideosData.length + quickFightsData.length;
-      if (fetchedCount === 0) {
-        setHasMore(false);
-        if (isLoadMore) { setLoadingMore(false); return; }
-      }
+      if (fetchedCount === 0) { setHasMore(false); if (isLoadMore) { setLoadingMore(false); return; } }
 
-      const allUserIds = [
-        ...roundData.map(s => s.user_id),
-        ...eventData.map(s => s.user_id),
-        ...sanctionedData.map(s => s.user_id),
-        ...reviewData.map(r => r.user_id),
-        ...judgeVideosData.map(j => j.judge_id),
-      ];
+      const allUserIds = [...roundData.map(s => s.user_id), ...eventData.map(s => s.user_id), ...sanctionedData.map(s => s.user_id), ...reviewData.map(r => r.user_id), ...judgeVideosData.map(j => j.judge_id)];
       const userIds = [...new Set(allUserIds)];
       const eventIds = [...new Set([...roundData.map(s => s.event_id), ...eventData.map(s => s.event_id)])];
       const tournamentIds = [...new Set(sanctionedData.map(s => s.tournament_id))];
-
-      const getThumb = (dbThumb: string | null) => dbThumb || null;
 
       const [profilesRes, eventsRes, tournamentsRes] = await Promise.all([
         supabase.from('profiles').select('id, username, avatar_url').in('id', userIds.length > 0 ? userIds : ['']),
@@ -210,105 +142,15 @@ export default function FeedPage() {
       const eventMap = new Map(eventsRes.data?.map(e => [e.id, e]) || []);
       const tournamentMap = new Map(tournamentsRes.data?.map(t => [t.id, { title: t.name }]) || []);
 
-      const roundItems: LoopFeedItem[] = roundData.map(s => ({
-        id: `arena-${s.id}`, rawId: s.id, type: 'arena' as const,
-        submission_url: s.submission_url!, platform: s.platform || 'tiktok',
-        user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor',
-        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
-        created_at: s.created_at || new Date().toISOString(),
-        thumbnail_url: getThumb((s as any).thumbnail_url), custom_title: (s as any).custom_title || null,
-        qoi_score: s.qoi_score, quality_score: s.quality_score || null,
-        originality_score: s.originality_score || null, impact_score: s.impact_score || null,
-        event_title: eventMap.get(s.event_id)?.title || 'Open Arena', final_rank: null,
-      }));
+      const getThumb = (dbThumb: string | null) => dbThumb || null;
 
-      const eventItems: LoopFeedItem[] = eventData.map(s => ({
-        id: `arena-event-${s.id}`, rawId: s.id, type: 'arena' as const,
-        submission_url: s.submission_url!, platform: s.platform || 'tiktok',
-        user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor',
-        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
-        created_at: (s as any).submitted_at || new Date().toISOString(),
-        thumbnail_url: getThumb(s.thumbnail_url), custom_title: (s as any).custom_title || null,
-        qoi_score: s.qoi_score, quality_score: s.quality_score || null,
-        originality_score: s.originality_score || null, impact_score: s.impact_score || null,
-        event_title: eventMap.get(s.event_id)?.title || 'Event', final_rank: s.final_rank || null,
-      }));
-
-      const sanctionedItems: LoopFeedItem[] = sanctionedData.map(s => ({
-        id: `arena-sanctioned-${s.id}`, rawId: s.id, type: 'arena' as const,
-        submission_url: s.submission_url!, platform: s.submission_platform || 'tiktok',
-        user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor',
-        avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
-        created_at: s.submitted_at || new Date().toISOString(),
-        thumbnail_url: getThumb((s as any).thumbnail_url), custom_title: (s as any).custom_title || null,
-        qoi_score: s.qoi_score,
-        event_title: tournamentMap.get(s.tournament_id)?.title || 'Tournament', final_rank: s.final_rank || null,
-      }));
-
-      const reviewItems: LoopFeedItem[] = reviewData.map(r => ({
-        id: `review-${r.id}`, rawId: r.id, type: 'review' as const,
-        submission_url: r.submission_url, platform: r.platform || 'tiktok',
-        user_id: r.user_id, username: r.username || 'editor', avatar_url: r.avatar_url,
-        created_at: r.reviewed_at || r.requested_at,
-        thumbnail_url: null, custom_title: null,
-        total_score: r.total_score || 0, judge_comment: r.judge_comment,
-        judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url,
-      }));
-
-      const battleItems: LoopFeedItem[] = battlesData
-        .map(b => ({
-          id: `battle-${b.id}`, rawId: b.id, type: 'battle' as const,
-          submission_url: b.challenger_submission_url || b.opponent_submission_url || '',
-          platform: b.challenger_submission_platform || b.opponent_submission_platform || 'tiktok',
-          user_id: b.challenger_id,
-          username: b.challenger_username,
-          avatar_url: b.challenger_avatar_url,
-          created_at: b.updated_at || b.created_at,
-          thumbnail_url: null, custom_title: null,
-          battle_id: b.id,
-          challenger_username: b.challenger_username,
-          challenger_avatar_url: b.challenger_avatar_url,
-          opponent_username: b.opponent_username,
-          opponent_avatar_url: b.opponent_avatar_url,
-          challenger_score: b.challenger_score,
-          opponent_score: b.opponent_score,
-          winner_id: b.winner_id,
-          battle_status: b.status,
-        }));
-
-      const judgeVideoItems: LoopFeedItem[] = judgeVideosData.map(j => ({
-        id: `judge-video-${j.id}`, rawId: j.id, type: 'judge_video' as const,
-        submission_url: j.video_url, platform: j.platform || 'tiktok',
-        user_id: j.judge_id, username: profileMap.get(j.judge_id)?.username || 'judge',
-        avatar_url: profileMap.get(j.judge_id)?.avatar_url || null,
-        created_at: j.submitted_at || new Date().toISOString(),
-        thumbnail_url: j.thumbnail_url || null, custom_title: null,
-        video_title: j.title || 'Judge Rating Video',
-        current_views: j.current_views,
-        is_verified: true,
-      }));
-
-      const quickFightItems: LoopFeedItem[] = quickFightsData.map((f: any) => ({
-        id: `qf-${f.id}`, rawId: f.id, type: 'quick_fight' as const,
-        submission_url: f.player_1_submission_url || f.player_2_submission_url || '',
-        platform: 'tiktok',
-        user_id: f.player_1_id,
-        username: f.player_1_username,
-        avatar_url: f.player_1_avatar_url,
-        created_at: f.created_at,
-        thumbnail_url: null, custom_title: null,
-        fight_id: f.id,
-        fight_status: f.status,
-        player_1_username: f.player_1_username,
-        player_1_avatar_url: f.player_1_avatar_url,
-        player_2_username: f.player_2_username,
-        player_2_avatar_url: f.player_2_avatar_url,
-        winner_id: f.winner_id,
-        winner_score: f.winner_score,
-        loser_score: f.loser_score,
-        duration_minutes: f.duration_minutes,
-        ends_at: f.ends_at,
-      }));
+      const roundItems: LoopFeedItem[] = roundData.map(s => ({ id: `arena-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: s.created_at || new Date().toISOString(), thumbnail_url: getThumb((s as any).thumbnail_url), custom_title: (s as any).custom_title || null, qoi_score: s.qoi_score, quality_score: s.quality_score || null, originality_score: s.originality_score || null, impact_score: s.impact_score || null, event_title: eventMap.get(s.event_id)?.title || 'Open Arena', final_rank: null }));
+      const eventItems: LoopFeedItem[] = eventData.map(s => ({ id: `arena-event-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: (s as any).submitted_at || new Date().toISOString(), thumbnail_url: getThumb(s.thumbnail_url), custom_title: (s as any).custom_title || null, qoi_score: s.qoi_score, quality_score: s.quality_score || null, originality_score: s.originality_score || null, impact_score: s.impact_score || null, event_title: eventMap.get(s.event_id)?.title || 'Event', final_rank: s.final_rank || null }));
+      const sanctionedItems: LoopFeedItem[] = sanctionedData.map(s => ({ id: `arena-sanctioned-${s.id}`, rawId: s.id, type: 'arena' as const, submission_url: s.submission_url!, platform: s.submission_platform || 'tiktok', user_id: s.user_id, username: profileMap.get(s.user_id)?.username || 'editor', avatar_url: profileMap.get(s.user_id)?.avatar_url || null, created_at: s.submitted_at || new Date().toISOString(), thumbnail_url: getThumb((s as any).thumbnail_url), custom_title: (s as any).custom_title || null, qoi_score: s.qoi_score, event_title: tournamentMap.get(s.tournament_id)?.title || 'Tournament', final_rank: s.final_rank || null }));
+      const reviewItems: LoopFeedItem[] = reviewData.map(r => ({ id: `review-${r.id}`, rawId: r.id, type: 'review' as const, submission_url: r.submission_url, platform: r.platform || 'tiktok', user_id: r.user_id, username: r.username || 'editor', avatar_url: r.avatar_url, created_at: r.reviewed_at || r.requested_at, thumbnail_url: null, custom_title: null, total_score: r.total_score || 0, judge_comment: r.judge_comment, judge_username: r.judge_username, judge_avatar_url: r.judge_avatar_url }));
+      const battleItems: LoopFeedItem[] = battlesData.map(b => ({ id: `battle-${b.id}`, rawId: b.id, type: 'battle' as const, submission_url: b.challenger_submission_url || b.opponent_submission_url || '', platform: b.challenger_submission_platform || b.opponent_submission_platform || 'tiktok', user_id: b.challenger_id, username: b.challenger_username, avatar_url: b.challenger_avatar_url, created_at: b.updated_at || b.created_at, thumbnail_url: null, custom_title: null, battle_id: b.id, challenger_username: b.challenger_username, challenger_avatar_url: b.challenger_avatar_url, opponent_username: b.opponent_username, opponent_avatar_url: b.opponent_avatar_url, challenger_score: b.challenger_score, opponent_score: b.opponent_score, winner_id: b.winner_id, battle_status: b.status }));
+      const judgeVideoItems: LoopFeedItem[] = judgeVideosData.map(j => ({ id: `judge-video-${j.id}`, rawId: j.id, type: 'judge_video' as const, submission_url: j.video_url, platform: j.platform || 'tiktok', user_id: j.judge_id, username: profileMap.get(j.judge_id)?.username || 'judge', avatar_url: profileMap.get(j.judge_id)?.avatar_url || null, created_at: j.submitted_at || new Date().toISOString(), thumbnail_url: j.thumbnail_url || null, custom_title: null, video_title: j.title || 'Judge Rating Video', current_views: j.current_views, is_verified: true }));
+      const quickFightItems: LoopFeedItem[] = quickFightsData.map((f: any) => ({ id: `qf-${f.id}`, rawId: f.id, type: 'quick_fight' as const, submission_url: f.player_1_submission_url || f.player_2_submission_url || '', platform: 'tiktok', user_id: f.player_1_id, username: f.player_1_username, avatar_url: f.player_1_avatar_url, created_at: f.created_at, thumbnail_url: null, custom_title: null, fight_id: f.id, fight_status: f.status, player_1_username: f.player_1_username, player_1_avatar_url: f.player_1_avatar_url, player_2_username: f.player_2_username, player_2_avatar_url: f.player_2_avatar_url, winner_id: f.winner_id, winner_score: f.winner_score, loser_score: f.loser_score, duration_minutes: f.duration_minutes, ends_at: f.ends_at }));
 
       const getBoost = (item: LoopFeedItem) => {
         if (item.id.startsWith('qf-') && (item.fight_status === 'active' || item.fight_status === 'waiting')) return 3.5;
@@ -322,38 +164,21 @@ export default function FeedPage() {
       };
 
       const allItems = [...roundItems, ...eventItems, ...sanctionedItems, ...reviewItems, ...battleItems, ...judgeVideoItems, ...quickFightItems]
-        .sort((a, b) => {
-          const boostDiff = getBoost(b) - getBoost(a);
-          if (boostDiff !== 0) return boostDiff;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
+        .sort((a, b) => { const d = getBoost(b) - getBoost(a); return d !== 0 ? d : new Date(b.created_at).getTime() - new Date(a.created_at).getTime(); });
 
-      const newItems = allItems.filter(item => {
-        if (seenUrls.current.has(item.submission_url)) return false;
-        seenUrls.current.add(item.submission_url);
-        return true;
-      });
+      const newItems = allItems.filter(item => { if (seenUrls.current.has(item.submission_url)) return false; seenUrls.current.add(item.submission_url); return true; });
 
-      if (isLoadMore) {
-        setFeedItems(prev => [...prev, ...newItems]);
-      } else {
-        setFeedItems(newItems);
-      }
-    } catch (error) {
-      console.error('Error fetching feed:', error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
+      if (isLoadMore) setFeedItems(prev => [...prev, ...newItems]);
+      else setFeedItems(newItems);
+    } catch (error) { console.error('Error fetching feed:', error); }
+    finally { setLoading(false); setLoadingMore(false); }
   }, [loadingMore, hasMore]);
 
   useEffect(() => { fetchFeed(false); }, []);
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
-    if (target.scrollHeight - target.scrollTop - target.clientHeight < 400 && hasMore && !loadingMore) {
-      fetchFeed(true);
-    }
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 400 && hasMore && !loadingMore) fetchFeed(true);
   }, [fetchFeed, hasMore, loadingMore]);
 
   const filteredItems = feedItems.filter(item => {
@@ -367,28 +192,18 @@ export default function FeedPage() {
     return true;
   });
 
-  // For "For You" tab, interleave text posts with activity items
+  // Interleave posts + activity for "For You"
   const interleavedFeed = activeTab === 'foryou' ? (() => {
     const combined: Array<{ kind: 'activity'; item: LoopFeedItem } | { kind: 'post'; item: FeedPostItem }> = [];
-    
-    // Merge by created_at
     let ai = 0, pi = 0;
     const activityItems = filteredItems;
     const postItems = feedPosts;
-    
     while (ai < activityItems.length || pi < postItems.length) {
       const aTime = ai < activityItems.length ? new Date(activityItems[ai].created_at).getTime() : -Infinity;
       const pTime = pi < postItems.length ? new Date(postItems[pi].created_at).getTime() : -Infinity;
-      
-      if (pTime >= aTime && pi < postItems.length) {
-        combined.push({ kind: 'post', item: postItems[pi] });
-        pi++;
-      } else if (ai < activityItems.length) {
-        combined.push({ kind: 'activity', item: activityItems[ai] });
-        ai++;
-      } else {
-        break;
-      }
+      if (pTime >= aTime && pi < postItems.length) { combined.push({ kind: 'post', item: postItems[pi] }); pi++; }
+      else if (ai < activityItems.length) { combined.push({ kind: 'activity', item: activityItems[ai] }); ai++; }
+      else break;
     }
     return combined;
   })() : null;
@@ -404,64 +219,69 @@ export default function FeedPage() {
     );
   }
 
+  const TABS: { key: FeedTab; label: string }[] = [
+    { key: 'foryou', label: 'For You' },
+    { key: 'posts', label: 'Posts' },
+    { key: 'connections', label: 'Following' },
+  ];
+
   return (
-    <div
-      className="min-h-screen bg-background pb-16 overflow-y-auto"
-      onScroll={handleScroll}
-    >
-      {/* ─── X-style Header ─── */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl">
-        <div className="max-w-2xl mx-auto">
-          {/* Top bar: logo + search toggle */}
-           <div className="flex items-center justify-between px-3 h-10">
-            <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-80" />
+    <div className="min-h-screen bg-background pb-16 overflow-y-auto" onScroll={handleScroll}>
+
+      {/* ─── Sticky Header ─── */}
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/20">
+        <div className="max-w-xl mx-auto">
+          {/* Top bar */}
+          <div className="flex items-center justify-between px-4 h-11">
+            <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-70" />
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors"
             >
               {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
             </button>
           </div>
 
-          {/* Search bar — expandable */}
+          {/* Search */}
           <AnimatePresence>
             {showSearch && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.12 }}
                 className="overflow-hidden px-4"
               >
                 <div className="relative pb-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
                   <input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search editors, events, edits..."
+                    placeholder="Search editors, events..."
                     autoFocus
-                    className="w-full bg-muted/40 border border-border/40 rounded-full pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-muted/60 transition-all"
+                    className="w-full bg-muted/30 border border-border/20 rounded-full pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                   />
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Tabs */}
-          <div className="flex border-b border-border/40">
-            {(['foryou', 'posts', 'connections'] as FeedTab[]).map(tab => (
+          {/* Tabs — X-style with underline indicator */}
+          <div className="flex">
+            {TABS.map(tab => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 text-center py-3 text-sm font-bold transition-colors relative ${
-                  activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/60 hover:bg-muted/10'
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 text-center py-3 text-[13px] font-bold transition-colors relative ${
+                  activeTab === tab.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/60 hover:bg-muted/5'
                 }`}
               >
-                {tab === 'foryou' ? 'For You' : tab === 'posts' ? 'Posts' : 'Connections'}
-                {activeTab === tab && (
+                {tab.label}
+                {activeTab === tab.key && (
                   <motion.div
-                    layoutId="feedTabIndicator"
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-[3px] bg-primary rounded-full"
+                    layoutId="loopTab"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] bg-primary rounded-full"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
               </button>
@@ -470,176 +290,122 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* ─── Trending Strip (Stories-style) ─── */}
+      {/* ─── Trending Strip ─── */}
       {activeTab !== 'posts' && (trendingEditors.length > 0 || trendingUnits.length > 0) && (
-        <div className="max-w-2xl mx-auto border-b border-border/30">
-          <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-3 py-2.5">
-            {/* Units first */}
+        <div className="max-w-xl mx-auto border-b border-border/15">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
             {trendingUnits.map(unit => (
               <motion.button
                 key={`u-${unit.id}`}
-                whileTap={{ scale: 0.92 }}
+                whileTap={{ scale: 0.93 }}
                 onClick={() => navigate(`/units/${unit.id}`)}
                 className="flex flex-col items-center gap-1 shrink-0"
               >
-                <div className="w-[46px] h-[46px] rounded-full p-[2px] bg-gradient-to-br from-primary/60 to-gold/40">
-                  <div className="w-full h-full rounded-full bg-background p-[1.5px]">
+                <div className="w-[50px] h-[50px] rounded-full p-[2px] bg-gradient-to-br from-primary/50 to-gold/30">
+                  <div className="w-full h-full rounded-full bg-background p-[2px]">
                     <Avatar className="w-full h-full rounded-full">
                       <AvatarImage src={unit.avatar_url || undefined} className="object-cover" />
-                      <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
-                        {unit.emblem}
-                      </AvatarFallback>
+                      <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">{unit.emblem}</AvatarFallback>
                     </Avatar>
                   </div>
                 </div>
-                <span className="text-[9px] text-muted-foreground truncate max-w-[46px] leading-none">{unit.name}</span>
+                <span className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none">{unit.name}</span>
               </motion.button>
             ))}
-
-            {/* Editors */}
             {trendingEditors.map(editor => (
               <motion.button
                 key={`e-${editor.id}`}
-                whileTap={{ scale: 0.92 }}
+                whileTap={{ scale: 0.93 }}
                 onClick={() => navigate(`/editor/${editor.id}`)}
                 className="flex flex-col items-center gap-1 shrink-0"
               >
                 <div className="relative">
-                  <div className="w-[46px] h-[46px] rounded-full p-[2px] bg-gradient-to-br from-red-500/50 to-primary/40">
-                    <div className="w-full h-full rounded-full bg-background p-[1.5px]">
+                  <div className="w-[50px] h-[50px] rounded-full p-[2px] bg-gradient-to-br from-red-500/40 to-primary/30">
+                    <div className="w-full h-full rounded-full bg-background p-[2px]">
                       <Avatar className="w-full h-full rounded-full">
                         <AvatarImage src={editor.avatar_url || undefined} className="object-cover" />
-                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">
-                          {editor.username[0]?.toUpperCase()}
-                        </AvatarFallback>
+                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">{editor.username[0]?.toUpperCase()}</AvatarFallback>
                       </Avatar>
                     </div>
                   </div>
                   {editor.is_verified && (
-                    <div className="absolute -bottom-0.5 -right-0.5 z-10">
-                      <VerifiedBadge size="sm" />
-                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 z-10"><VerifiedBadge size="sm" /></div>
                   )}
                 </div>
-                <span className="text-[9px] text-muted-foreground truncate max-w-[46px] leading-none">@{editor.username}</span>
+                <span className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none">@{editor.username}</span>
               </motion.button>
             ))}
           </div>
         </div>
       )}
 
-      {/* ─── Post Composer ─── */}
-      <div className="max-w-2xl mx-auto">
-        {user && (activeTab === 'foryou' || activeTab === 'posts') && (
-          <FeedPostComposer
-            userProfile={userProfile}
-            onPost={createPost}
-          />
-        )}
-      </div>
-
-      {/* ─── Feed ─── */}
-      <div className="max-w-2xl mx-auto">
+      {/* ─── Feed Content ─── */}
+      <div className="max-w-xl mx-auto">
         {activeTab === 'posts' ? (
-          // Posts-only tab
           feedPosts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6">
-              <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
-                <PenSquare className="w-6 h-6 text-muted-foreground/40" />
-              </div>
-              <p className="text-sm font-semibold text-foreground/60 mb-1">No posts yet</p>
-              <p className="text-xs text-muted-foreground text-center max-w-[240px]">
-                Be the first to post — share a flex, an edit, or just say what's on your mind.
-              </p>
-            </div>
+            <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No posts yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
           ) : (
             feedPosts.map(post => (
-              <FeedPostCard
-                key={post.id}
-                post={post}
-                isLiked={likedPostIds.has(post.id)}
-                isBookmarked={bookmarkedPostIds.has(post.id)}
-                onLike={toggleLike}
-                onBookmark={toggleBookmark}
-                onDelete={deletePost}
-              />
+              <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
             ))
           )
         ) : activeTab === 'foryou' && interleavedFeed ? (
-          // Interleaved For You tab
           interleavedFeed.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6">
-              <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
-                <Play className="w-6 h-6 text-muted-foreground/40" />
-              </div>
-              <p className="text-sm font-semibold text-foreground/60 mb-1">The Loop is quiet</p>
-              <p className="text-xs text-muted-foreground text-center max-w-[240px]">
-                Post something or submit an edit to get things moving
-              </p>
-            </div>
+            <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Post something or submit an edit to get things moving" />
           ) : (
             interleavedFeed.map(entry => (
               entry.kind === 'post' ? (
-                <FeedPostCard
-                  key={`post-${entry.item.id}`}
-                  post={entry.item}
-                  isLiked={likedPostIds.has(entry.item.id)}
-                  isBookmarked={bookmarkedPostIds.has(entry.item.id)}
-                  onLike={toggleLike}
-                  onBookmark={toggleBookmark}
-                  onDelete={deletePost}
-                />
+                <FeedPostCard key={`post-${entry.item.id}`} post={entry.item} isLiked={likedPostIds.has(entry.item.id)} isBookmarked={bookmarkedPostIds.has(entry.item.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
               ) : (
-                <LoopFeedCard
-                  key={entry.item.id}
-                  item={entry.item}
-                  isExpanded={expandedId === entry.item.id}
-                  onToggleExpand={() => setExpandedId(prev => prev === entry.item.id ? null : entry.item.id)}
-                  onOpenPlayer={() => setPlayerItem(entry.item)}
-                />
+                <LoopFeedCard key={entry.item.id} item={entry.item} isExpanded={expandedId === entry.item.id} onToggleExpand={() => setExpandedId(prev => prev === entry.item.id ? null : entry.item.id)} onOpenPlayer={() => setPlayerItem(entry.item)} />
               )
             ))
           )
         ) : (
-          // Connections tab
           filteredItems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6">
-              <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
-                <Play className="w-6 h-6 text-muted-foreground/40" />
-              </div>
-              <p className="text-sm font-semibold text-foreground/60 mb-1">
-                {searchQuery ? "No results" : "Nothing from connections yet"}
-              </p>
-              <p className="text-xs text-muted-foreground text-center max-w-[240px]">
-                {searchQuery ? "Try a different search" : "Connect with editors to see their edits here"}
-              </p>
-            </div>
+            <EmptyState
+              icon={<Play className="w-6 h-6 text-muted-foreground/30" />}
+              title={searchQuery ? "No results" : "Nothing from connections yet"}
+              subtitle={searchQuery ? "Try a different search" : "Connect with editors to see their edits here"}
+            />
           ) : (
             filteredItems.map(item => (
-              <LoopFeedCard
-                key={item.id}
-                item={item}
-                isExpanded={expandedId === item.id}
-                onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)}
-                onOpenPlayer={() => setPlayerItem(item)}
-              />
+              <LoopFeedCard key={item.id} item={item} isExpanded={expandedId === item.id} onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)} onOpenPlayer={() => setPlayerItem(item)} />
             ))
           )
         )}
 
         {loadingMore && (
-          <div className="flex items-center justify-center py-4">
+          <div className="flex items-center justify-center py-6">
             <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
           </div>
         )}
 
         {!hasMore && filteredItems.length > 0 && activeTab !== 'posts' && (
-          <p className="text-center text-xs text-muted-foreground py-6">You've reached the end 🔥</p>
+          <p className="text-center text-xs text-muted-foreground/50 py-8">You've reached the end 🔥</p>
         )}
       </div>
 
+      {/* ─── Compose FAB (X-style floating button) ─── */}
+      {user && (
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowCompose(true)}
+          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] right-4 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 flex items-center justify-center active:shadow-md transition-shadow"
+        >
+          <Feather className="w-5 h-5" />
+        </motion.button>
+      )}
 
-      {/* Video Player */}
+      {/* ─── Compose Sheet ─── */}
+      <FeedComposeSheet
+        open={showCompose}
+        onClose={() => setShowCompose(false)}
+        userProfile={userProfile}
+        onPost={createPost}
+      />
+
+      {/* ─── Video Player ─── */}
       {playerItem && (
         <FeedVideoPlayer
           isOpen={true}
@@ -651,6 +417,18 @@ export default function FeedPage() {
           username={playerItem.username}
         />
       )}
+    </div>
+  );
+}
+
+function EmptyState({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 px-6">
+      <div className="w-14 h-14 rounded-full bg-muted/20 flex items-center justify-center mb-3">
+        {icon}
+      </div>
+      <p className="text-sm font-semibold text-foreground/50 mb-1">{title}</p>
+      <p className="text-xs text-muted-foreground/60 text-center max-w-[240px]">{subtitle}</p>
     </div>
   );
 }
