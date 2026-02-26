@@ -93,16 +93,16 @@ export default function LandingPage() {
               className="flex flex-col sm:flex-row gap-2.5 justify-center items-center mb-16"
               variants={fadeUp} custom={3} initial="hidden" animate="visible"
             >
-              <Link to="/download">
-                <Button size="default" className="bg-foreground hover:bg-foreground/90 text-background font-display text-sm px-7 py-2.5 h-auto gap-2 tracking-wider">
-                  <Download className="w-4 h-4" />
-                  Download for iOS
+              <Link to="/start">
+                <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-base sm:text-lg px-10 py-4 h-auto gap-2.5 tracking-wider">
+                  <Play className="w-5 h-5" />
+                  Enter Loopgate
                 </Button>
               </Link>
-              <Link to="/start">
-                <Button size="default" variant="outline" className="border-border/60 bg-transparent hover:bg-surface-1 text-foreground font-display text-sm px-7 py-2.5 h-auto gap-2 tracking-wider">
-                  <Globe className="w-4 h-4" />
-                  Open in Browser
+              <Link to="/download" className="hidden sm:inline-flex">
+                <Button size="default" variant="ghost" className="text-muted-foreground hover:text-foreground font-display text-xs px-5 py-2 h-auto gap-2 tracking-wider">
+                  <Smartphone className="w-3.5 h-3.5" />
+                  iOS App Available
                 </Button>
               </Link>
             </motion.div>
@@ -519,14 +519,14 @@ export default function LandingPage() {
                 Not available in your region? Use the web version for the full experience. No download needed.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-8">
-                <Link to="/download">
-                  <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-base px-8 py-4 h-auto gap-2">
-                    <Smartphone className="w-5 h-5" /> Download for iOS
+              <Link to="/start">
+                  <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-base px-10 py-4 h-auto gap-2.5">
+                    <Play className="w-5 h-5" /> Open in Browser
                   </Button>
                 </Link>
-                <Link to="/start">
-                  <Button size="lg" variant="outline" className="border-border/60 bg-transparent hover:bg-surface-1 text-foreground font-display text-base px-8 py-4 h-auto gap-2">
-                    <Globe className="w-5 h-5" /> Continue in Browser
+                <Link to="/download">
+                  <Button size="lg" variant="outline" className="border-border/60 bg-transparent hover:bg-surface-1 text-muted-foreground font-display text-sm px-6 py-3 h-auto gap-2">
+                    <Smartphone className="w-4 h-4" /> iOS App
                   </Button>
                 </Link>
               </div>
