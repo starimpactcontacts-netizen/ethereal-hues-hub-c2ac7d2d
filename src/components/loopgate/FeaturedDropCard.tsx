@@ -41,6 +41,7 @@ export default function FeaturedDropCard({ drop }: Props) {
   const navigate = useNavigate();
   const artist = drop.artist;
   const isLive = drop.status === 'live';
+  const isPromoted = !!(drop as any).is_promoted;
   const activity = useActivitySignal(drop);
   const ActivityIcon = activity.icon;
 
@@ -49,7 +50,9 @@ export default function FeaturedDropCard({ drop }: Props) {
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative w-[240px] shrink-0 snap-start overflow-hidden bg-surface-0 border border-border"
+        className={`relative w-[240px] shrink-0 snap-start overflow-hidden bg-surface-0 border ${
+          isPromoted ? 'border-gold/60 shadow-[0_0_12px_rgba(255,215,0,0.15)]' : 'border-border'
+        }`}
       >
         {/* Poster — compact */}
         <div className="relative w-full h-28 overflow-hidden">
@@ -70,6 +73,14 @@ export default function FeaturedDropCard({ drop }: Props) {
             </Avatar>
             <span className="text-[9px] font-bold text-white truncate max-w-[80px]">{artist?.name || 'Artist'}</span>
           </Link>
+
+          {/* Promoted badge */}
+          {isPromoted && (
+            <div className="absolute top-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-0.5 border border-gold/40 z-10">
+              <Crown className="w-2.5 h-2.5 text-gold" />
+              <span className="text-[7px] font-bold text-gold uppercase tracking-wider">Campaign</span>
+            </div>
+          )}
 
           {/* Status */}
           {isLive && (

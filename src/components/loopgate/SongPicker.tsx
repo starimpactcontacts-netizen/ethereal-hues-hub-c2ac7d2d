@@ -40,7 +40,10 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
         .limit(20);
 
       if (data) {
-        setDrops(data as unknown as FeaturedDrop[]);
+        // Sort promoted drops first
+        const sorted = (data as unknown as (FeaturedDrop & { is_promoted?: boolean })[])
+          .sort((a, b) => ((b as any).is_promoted ? 1 : 0) - ((a as any).is_promoted ? 1 : 0));
+        setDrops(sorted);
       }
       setFetchingDrops(false);
     };
@@ -131,6 +134,7 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
           const isSelected = selectedDropId === drop.id;
           const hasPreview = !!drop.song_preview_url;
           const artistName = drop.artist?.name || "Unknown Artist";
+          const isPromoted = !!(drop as any).is_promoted;
 
           return (
             <motion.div
@@ -142,7 +146,9 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
                 group flex items-center gap-3 p-2.5 rounded-lg transition-all cursor-pointer
                 ${isSelected
                   ? "bg-emerald-500/15 border border-emerald-500/40"
-                  : "hover:bg-white/[0.04] border border-transparent"
+                  : isPromoted
+                    ? "bg-gold/[0.04] border border-gold/30 hover:border-gold/50"
+                    : "hover:bg-white/[0.04] border border-transparent"
                 }
               `}
               onClick={() => !isSelected && !loading && handlePick(drop)}
@@ -193,9 +199,16 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
 
               {/* Song Info */}
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium truncate ${isSelected ? "text-emerald-400" : "text-foreground"}`}>
-                  {drop.song_name}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-sm font-medium truncate ${isSelected ? "text-emerald-400" : isPromoted ? "text-gold" : "text-foreground"}`}>
+                    {drop.song_name}
+                  </p>
+                  {isPromoted && !isSelected && (
+                    <span className="text-[7px] font-bold text-gold bg-gold/10 border border-gold/20 px-1.5 py-0.5 rounded-full shrink-0 uppercase tracking-wider">
+                      Featured
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-1.5">
                   <p className="text-[11px] text-muted-foreground truncate">
                     {artistName}
