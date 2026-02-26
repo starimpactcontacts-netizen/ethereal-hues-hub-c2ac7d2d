@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Trash2, AlertTriangle, ChevronRight, Send, Crown, Shield, Mail, KeyRound, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Pencil, Plus, Save, Clock, Check, X, Trash2, AlertTriangle, ChevronRight, Send, Crown, Shield, Mail, KeyRound, Eye, EyeOff, Loader2, ExternalLink } from "lucide-react";
+import { AuthorityGavel } from "@/components/loopgate/LoopgateIcons";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCrewMembership } from "@/hooks/useCrewMembership";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { motion } from "framer-motion";
 import VerificationModal from "@/components/loopgate/VerificationModal";
 import EditPlatformModal from "@/components/loopgate/EditPlatformModal";
@@ -49,6 +51,7 @@ export default function ProfileSettingsPage() {
   const navigate = useNavigate();
   const { user, profile, platforms, refreshProfile, signOut, needsPasswordSetup, updatePassword, loading: authLoading } = useAuth();
   const { primaryCrew } = useCrewMembership(profile?.id);
+  const { isAnyJudge } = useUserRoles(profile?.id);
   
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<EditingPlatform | null>(null);
@@ -69,6 +72,10 @@ export default function ProfileSettingsPage() {
   const [showArchetypeSelector, setShowArchetypeSelector] = useState(false);
   const [showSoftwareSelector, setShowSoftwareSelector] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [judgeBio, setJudgeBio] = useState("");
+  const [judgeSpecialty, setJudgeSpecialty] = useState("");
+  const [judgeEdited, setJudgeEdited] = useState(false);
+  const [isSavingJudge, setIsSavingJudge] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -77,7 +84,10 @@ export default function ProfileSettingsPage() {
       setPortfolioUrl((profile as any).portfolio_url || "");
       setDisplayName((profile as any).display_name || "");
       setUsername(profile.username || "");
+      setJudgeBio((profile as any).judge_bio || "");
+      setJudgeSpecialty((profile as any).judge_specialty || "");
       setContactEdited(false);
+      setJudgeEdited(false);
     }
   }, [profile]);
 
@@ -124,6 +134,28 @@ export default function ProfileSettingsPage() {
       toast.error("Failed to save");
     } finally {
       setIsSavingContact(false);
+    }
+  };
+
+  const handleSaveJudge = async () => {
+    if (!profile?.id) return;
+    setIsSavingJudge(true);
+    try {
+      await supabase
+        .from("profiles")
+        .update({
+          judge_bio: judgeBio.trim() || null,
+          judge_specialty: judgeSpecialty.trim() || null,
+        })
+        .eq("id", profile.id);
+      setJudgeEdited(false);
+      refreshProfile();
+      toast.success("Judge profile saved");
+    } catch (error) {
+      console.error("Failed to save judge profile:", error);
+      toast.error("Failed to save");
+    } finally {
+      setIsSavingJudge(false);
     }
   };
 
@@ -240,7 +272,74 @@ export default function ProfileSettingsPage() {
           </button>
         </section>
 
-        {/* ─── Unit ─── */}
+        {/* ─── Judge Profile (only for judges) ─── */}
+        {isAnyJudge && (
+          <section className="space-y-3">
+            <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Judge Profile</h3>
+            <div className="bg-surface-1 border border-border rounded-xl p-4 space-y-4">
+              {/* Link to judge page */}
+              <Link to={`/judge/${profile.username}`} className="flex items-center justify-between py-2 hover:opacity-80 transition-opacity">
+                <div className="flex items-center gap-3">
+                  <AuthorityGavel size={18} className="text-red-400" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Your Judge Page</p>
+                    <p className="text-xs text-muted-foreground">loopgate.io/judge/{profile.username}</p>
+                  </div>
+                </div>
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+              </Link>
+
+              <div className="h-px bg-border" />
+
+              {/* Judge Bio */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Judge Bio</label>
+                  <span className="text-[10px] text-muted-foreground">{judgeBio.length}/200</span>
+                </div>
+                <textarea
+                  value={judgeBio}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 200) {
+                      setJudgeBio(e.target.value);
+                      setJudgeEdited(true);
+                    }
+                  }}
+                  placeholder="What editors can expect from your ratings..."
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm resize-none outline-none focus:border-red-600 transition-colors"
+                  rows={3}
+                />
+              </div>
+
+              {/* Judge Specialty */}
+              <div>
+                <label className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 block">Focus / Specialty</label>
+                <input
+                  type="text"
+                  value={judgeSpecialty}
+                  onChange={(e) => {
+                    setJudgeSpecialty(e.target.value);
+                    setJudgeEdited(true);
+                  }}
+                  placeholder="e.g. Film / Cinematic, AMV, Phonk"
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2.5 text-sm outline-none focus:border-red-600 transition-colors"
+                />
+              </div>
+
+              {judgeEdited && (
+                <button
+                  onClick={handleSaveJudge}
+                  disabled={isSavingJudge}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-red-600 text-white text-sm font-semibold rounded-lg disabled:opacity-50"
+                >
+                  <Save size={16} />
+                  {isSavingJudge ? "Saving..." : "Save Judge Profile"}
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
         <section className="space-y-3">
           <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Unit</h3>
           {primaryCrew?.crew ? (
