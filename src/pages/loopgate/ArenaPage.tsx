@@ -49,12 +49,13 @@ interface Event {
 // ─── Compact Event Card ────────────────────────────────────────
 function EventCard({ event }: { event: Event }) {
   const isLive = event.status === "live";
+  const isClosed = event.status === "closed";
   return (
     <Link to={`/event/${(event as any).slug || event.id}`} className="block shrink-0 w-[240px]">
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="bg-surface-1 border border-border hover:border-gold/50 transition-all overflow-hidden group touch-manipulation"
+        className={`bg-surface-1 border transition-all overflow-hidden group touch-manipulation ${isClosed ? 'border-border/30 opacity-50 grayscale' : 'border-border hover:border-gold/50'}`}
       >
         <div className="relative h-28 overflow-hidden">
           {event.poster_url ? (
@@ -245,7 +246,8 @@ export default function ArenaPage() {
 
   const liveEvents = events.filter(e => e.status === "live");
   const upcomingEvents = events.filter(e => e.status === "upcoming" || e.status === "pending");
-  const allActiveEvents = [...liveEvents, ...upcomingEvents];
+  const closedEvents = events.filter(e => e.status === "closed");
+  const allActiveEvents = [...liveEvents, ...upcomingEvents, ...closedEvents];
 
   const liveBattles = battles.filter(b => b.status === "active" || b.status === "judging").length;
   const liveTournaments = sanctionedTournaments.filter(t => t.status === "live" || t.status === "bracket" || t.status === "ready_up").length;
