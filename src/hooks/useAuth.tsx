@@ -206,11 +206,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         console.error('[Auth] Error getting session:', error);
         
-        // Check if this is a refresh token error - don't log out immediately
-        // The user might have a stale session that needs refreshing
+      // Check if this is a refresh token error - try to recover gracefully
         if (error.message?.includes('refresh_token') || error.message?.includes('Refresh Token')) {
-          console.log('[Auth] Refresh token issue detected, clearing stale session');
-          // Clear the broken session to allow fresh login
+          console.log('[Auth] Refresh token issue detected, attempting recovery...');
+          // Try refreshing the session one more time before giving up
+          const { data: retryData } = await supabase.auth.refreshSession();
+          if (retryData?.session) {
+            console.log('[Auth] Session recovered successfully');
+            setSession(retryData.session);
+            setUser(retryData.session.user);
+            fetchProfile(retryData.session.user.id);
+            setLoading(false);
+            return;
+          }
+          // Only clear if recovery truly fails
+          console.log('[Auth] Recovery failed, clearing stale session');
           await supabase.auth.signOut({ scope: 'local' });
         }
         
