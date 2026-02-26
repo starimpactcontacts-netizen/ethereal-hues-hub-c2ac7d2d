@@ -444,6 +444,50 @@ export default function ArenaPage() {
                MY ARENA — Personal dashboard
             ═══════════════════════════════════════════════════ */
             <div className="space-y-4 pb-4">
+              {/* Profile Card */}
+              {profile && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
+                  <Link to="/profile" className="block">
+                    <div className="bg-surface-1 border border-border p-4 flex items-center gap-4 hover:border-foreground/20 transition-all">
+                      <Avatar className="w-14 h-14 border-2 border-gold/40 shrink-0">
+                        <AvatarImage src={profile.avatar_url || ''} />
+                        <AvatarFallback className="bg-gold/10 text-gold text-lg font-bold">
+                          {profile.username?.charAt(0).toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[15px] font-black text-foreground truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                          {profile.display_name || profile.username}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          {userStats && (
+                            <>
+                              <span className="text-[11px] font-bold text-emerald-400">{userStats.wins}W</span>
+                              <span className="text-[11px] font-bold text-red-400">{userStats.losses}L</span>
+                              {userStats.streak > 0 && (
+                                <span className="text-[11px] font-bold text-gold flex items-center gap-0.5">
+                                  <Flame className="w-3 h-3" />{userStats.streak}
+                                </span>
+                              )}
+                              <span className="text-[11px] text-muted-foreground">{userStats.events} events</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="shrink-0 flex flex-col items-end gap-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-gold">
+                          {(profile as any).league || 'Open'}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-semibold tabular-nums">
+                          Lv.{(profile as any).level || 1}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              )}
+
               {/* Active Solo Session */}
               {activeSolo && (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}>
