@@ -361,32 +361,35 @@ export default function ArenaPage() {
             </div>
           )}
 
-          {/* Quick Action Row — Fortnite Ready-Up Style */}
+          {/* Quick Action Row — Fortnite × Roblox Ready-Up Style */}
           <div className="grid grid-cols-2 gap-2 mb-3">
-            {/* Quick 1v1 CTA — Primary Yellow */}
+            {/* Quick 1v1 CTA — Primary Yellow (Fortnite Ready) */}
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-              className="relative overflow-hidden py-4 bg-gradient-to-b from-yellow-300 via-yellow-400 to-yellow-500 hover:from-yellow-200 hover:via-yellow-300 hover:to-yellow-400 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
+              className="relative overflow-hidden py-4 bg-gradient-to-b from-yellow-300 via-yellow-400 to-amber-500 hover:from-yellow-200 hover:via-yellow-300 hover:to-amber-400 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
             >
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-yellow-200/60" />
-              <div className="absolute right-0 top-0 bottom-0 w-1 bg-yellow-600/40" />
-              <Zap className="w-5 h-5 text-black" />
-              <span className="font-display text-xs text-black uppercase tracking-wider drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]">Quick 1v1</span>
-              <span className="text-[8px] text-black/60 font-bold">+20 IDX • 3hr</span>
+              {/* Roblox chunky border + inner shine */}
+              <div className="absolute inset-0 border-[3px] border-black/15 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/15 pointer-events-none" />
+              <Zap className="w-5 h-5 text-black relative z-10" />
+              <span className="font-display text-xs text-black uppercase tracking-wider drop-shadow-[0_1px_0_rgba(255,255,255,0.3)] relative z-10">Quick 1v1</span>
+              <span className="text-[8px] text-black/50 font-bold relative z-10">+20 IDX • 3hr</span>
             </motion.button>
 
-            {/* Create Battle CTA — Secondary Blue */}
+            {/* Create Battle CTA — Secondary Green (Roblox Play) */}
             <motion.button
               whileTap={{ scale: 0.96 }}
               onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-              className="relative overflow-hidden py-4 bg-gradient-to-b from-sky-400 via-sky-500 to-sky-600 hover:from-sky-300 hover:via-sky-400 hover:to-sky-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
+              className="relative overflow-hidden py-4 bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-600 hover:from-emerald-300 hover:via-emerald-400 hover:to-emerald-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
             >
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-sky-300/60" />
-              <div className="absolute right-0 top-0 bottom-0 w-1 bg-sky-700/40" />
-              <Swords className="w-5 h-5 text-white" />
-              <span className="font-display text-xs text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.2)]">Edit Battle</span>
-              <span className="text-[8px] text-white/70 font-bold">+20 IDX</span>
+              <div className="absolute inset-0 border-[3px] border-black/15 pointer-events-none" />
+              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/15 pointer-events-none" />
+              <Swords className="w-5 h-5 text-white relative z-10" />
+              <span className="font-display text-xs text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.25)] relative z-10">Edit Battle</span>
+              <span className="text-[8px] text-white/70 font-bold relative z-10">+20 IDX</span>
             </motion.button>
           </div>
 
