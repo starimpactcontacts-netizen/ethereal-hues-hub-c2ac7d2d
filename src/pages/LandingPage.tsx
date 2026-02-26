@@ -13,7 +13,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
-import loopgateUiDesktop from '@/assets/loopgate-ui-desktop.png';
+import LandingAppMockup from '@/components/loopgate/LandingAppMockup';
 
 
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
@@ -121,14 +121,10 @@ export default function LandingPage() {
                   <div className="w-12" />
                 </div>
 
-                <img
-                  src={loopgateUiDesktop}
-                  alt="Loopgate competitive editing platform interface"
-                  className="w-full h-auto object-cover object-top"
-                  loading="eager"
-                />
+                <LandingAppMockup />
               </div>
 
+              {/* Mobile mini preview */}
               <motion.div
                 className="absolute -right-2 sm:right-5 -bottom-8 sm:-bottom-6 w-[120px] sm:w-[170px] md:w-[190px] border border-border/50 bg-surface-0 shadow-2xl shadow-black/50 overflow-hidden"
                 initial={{ opacity: 0, y: 30 }}
@@ -138,12 +134,9 @@ export default function LandingPage() {
                 <div className="h-5 bg-surface-1 border-b border-border/30 flex items-center justify-center">
                   <div className="w-14 h-1.5 bg-surface-2/80 rounded-full" />
                 </div>
-                <img
-                  src={loopgateUiDesktop}
-                  alt="Loopgate mobile view"
-                  className="w-full aspect-[9/19] object-cover object-top"
-                  loading="lazy"
-                />
+                <div className="w-full aspect-[9/19] overflow-hidden">
+                  <LandingAppMockup />
+                </div>
               </motion.div>
             </motion.div>
           </div>
