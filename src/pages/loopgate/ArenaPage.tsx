@@ -14,6 +14,7 @@ import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
 import PracticeModeView from "@/components/loopgate/PracticeModeView";
 import SoloModeFlow from "@/components/loopgate/SoloModeFlow";
+import SoloShowcase from "@/components/loopgate/SoloShowcase";
 import HostedCompCard from "@/components/loopgate/HostedCompCard";
 import FeaturedHostedCompCard from "@/components/loopgate/FeaturedHostedCompCard";
 import PremiumCompCard from "@/components/loopgate/PremiumCompCard";
@@ -522,6 +523,11 @@ export default function ArenaPage() {
       {/* ═══ MAIN CONTENT ═══ */}
       {!loading && (
         <div className="mt-2 space-y-6">
+
+          {/* ═══ SOLO MODE SHOWCASE — dominant section ═══ */}
+          {(activeFilter === "all") && (
+            <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
+          )}
 
           {/* Featured Drops */}
           {liveDrops.length > 0 && (activeFilter === "all" || activeFilter === "official") && (
