@@ -100,9 +100,40 @@ export function useSoloMode() {
   }, [fetchActive]);
 
   const cancelSolo = useCallback(async (soloId: string) => {
+    if (!user) return;
+    
+    // Get current cancel count
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('solo_cancel_count')
+      .eq('id', user.id)
+      .single();
+    
+    const cancelCount = (profileData as any)?.solo_cancel_count || 0;
+    
+    // Delete the solo submission
     await supabase.from('solo_submissions').delete().eq('id', soloId);
+    
+    // Increment cancel count
+    await supabase
+      .from('profiles')
+      .update({ solo_cancel_count: cancelCount + 1 } as any)
+      .eq('id', user.id);
+    
+    // If not their first cancel, penalize 2 index points
+    if (cancelCount >= 1) {
+      await supabase
+        .from('profiles')
+        .update({
+          global_index_score: Math.max(-999, ((profileData as any)?.global_index_score || 0) - 2),
+          spendable_index: Math.max(-999, ((profileData as any)?.spendable_index || 0) - 2),
+        } as any)
+        .eq('id', user.id);
+    }
+    
     setActiveSolo(null);
-  }, []);
+    return { penalized: cancelCount >= 1, cancelCount: cancelCount + 1 };
+  }, [user]);
 
   return { activeSolo, loading, startSolo, submitEdit, cancelSolo, refetch: fetchActive };
 }
