@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Save, BarChart3, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, KeyRound, Bell, Check, Link2, Target, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Save, BarChart3, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, KeyRound, Bell, Check, Link2, Target, RefreshCw, Lock, Music } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useArtistCampaigns, useEnterpriseClients, useUpdateRequests } from '@/hooks/useArtistCampaigns';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -11,6 +12,15 @@ function formatNumber(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
   return n.toLocaleString();
+}
+
+interface FeaturedArtistOption {
+  id: string;
+  name: string;
+  slug: string;
+  avatar_url: string | null;
+  genre: string | null;
+  verified: boolean | null;
 }
 
 export default function CampaignAdminPage() {
@@ -25,9 +35,25 @@ export default function CampaignAdminPage() {
   const [passwordModal, setPasswordModal] = useState<{ clientId: string; email: string } | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'campaigns' | 'clients' | 'requests'>('campaigns');
+  const [artists, setArtists] = useState<FeaturedArtistOption[]>([]);
+
+  // Fetch featured artists for dropdown
+  useEffect(() => {
+    async function fetchArtists() {
+      try {
+        const { data } = await supabase.functions.invoke('manage-campaigns', {
+          body: { action: 'get-featured-artists' }
+        });
+        setArtists(data?.artists || []);
+      } catch (err) {
+        console.error('Failed to fetch artists:', err);
+      }
+    }
+    fetchArtists();
+  }, []);
 
   // Create campaign form
-  const [newCampaign, setNewCampaign] = useState({ client_id: '', name: '', description: '', goal_views: 0, goal_label: '' });
+  const [newCampaign, setNewCampaign] = useState({ client_id: '', name: '', description: '', goal_views: 0, goal_label: '', featured_artist_id: '', password: '' });
   // Add edit form
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
   // Edit stats form
@@ -39,9 +65,12 @@ export default function CampaignAdminPage() {
       return;
     }
     try {
-      await createCampaign(newCampaign);
+      const params: Record<string, unknown> = { ...newCampaign };
+      if (!params.featured_artist_id) delete params.featured_artist_id;
+      if (!params.password) delete params.password;
+      await createCampaign(params);
       toast.success('Campaign created');
-      setNewCampaign({ client_id: '', name: '', description: '', goal_views: 0, goal_label: '' });
+      setNewCampaign({ client_id: '', name: '', description: '', goal_views: 0, goal_label: '', featured_artist_id: '', password: '' });
       setShowCreateForm(false);
     } catch (err: any) {
       toast.error(err.message);
@@ -115,6 +144,13 @@ export default function CampaignAdminPage() {
     } catch (err: any) {
       toast.error(err.message);
     }
+  };
+
+  const copyCampaignLink = (slug: string | null) => {
+    if (!slug) return;
+    const url = `${window.location.origin}/campaign/${slug}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Campaign link copied!');
   };
 
   const copyDashboardLink = (clientEmail: string) => {
@@ -288,6 +324,37 @@ export default function CampaignAdminPage() {
                 onChange={e => setNewCampaign(p => ({ ...p, description: e.target.value }))}
                 className="bg-surface-0"
               />
+              
+              {/* Featured Artist Selector */}
+              <div>
+                <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Featured Artist</label>
+                <select
+                  value={newCampaign.featured_artist_id}
+                  onChange={e => setNewCampaign(p => ({ ...p, featured_artist_id: e.target.value }))}
+                  className="w-full bg-surface-0 border border-border text-sm p-2 text-foreground"
+                >
+                  <option value="">None (no artist profile)</option>
+                  {artists.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}{a.genre ? ` (${a.genre})` : ''}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Campaign Password */}
+              <div>
+                <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">
+                  <Lock className="w-3 h-3 inline mr-1" />
+                  Campaign Password (client uses this to access)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g. artist2025"
+                  value={newCampaign.password}
+                  onChange={e => setNewCampaign(p => ({ ...p, password: e.target.value }))}
+                  className="bg-surface-0"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Goal Views</label>
@@ -330,6 +397,7 @@ export default function CampaignAdminPage() {
                 const campaignEdits = getEditsForCampaign(campaign.id);
                 const isExpanded = expandedCampaign === campaign.id;
                 const clientInfo = (campaign as any).enterprise_clients;
+                const artistInfo = (campaign as any).featured_artists;
                 const goalProgress = campaign.goal_views > 0 ? Math.min(100, (campaign.total_views / campaign.goal_views) * 100) : 0;
 
                 return (
@@ -341,11 +409,20 @@ export default function CampaignAdminPage() {
                         className="flex-1 flex items-center gap-3 text-left"
                       >
                         <div className="w-8 h-8 bg-surface-0 border border-border flex items-center justify-center flex-shrink-0">
-                          <BarChart3 className="w-3.5 h-3.5 text-muted-foreground" />
+                          {artistInfo?.avatar_url ? (
+                            <img src={artistInfo.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <BarChart3 className="w-3.5 h-3.5 text-muted-foreground" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-display text-sm truncate">{campaign.name}</span>
+                            {artistInfo && (
+                              <span className="text-[8px] px-1.5 py-0.5 bg-surface-0 border border-border text-muted-foreground truncate max-w-[80px]">
+                                <Music className="w-2.5 h-2.5 inline mr-0.5" />{artistInfo.name}
+                              </span>
+                            )}
                             <span className={`text-[8px] px-1.5 py-0.5 uppercase tracking-wider border ${
                               campaign.status === 'active' ? 'border-green-500/30 text-green-400' :
                               campaign.status === 'completed' ? 'border-border text-muted-foreground' :
@@ -359,6 +436,17 @@ export default function CampaignAdminPage() {
                         </div>
                         {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                       </button>
+                      {/* Campaign Link Button */}
+                      {campaign.slug && (
+                        <Button 
+                          onClick={() => copyCampaignLink(campaign.slug)} 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-7 text-[9px] gap-1 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                        >
+                          <Link2 className="w-3 h-3" /> Copy Link
+                        </Button>
+                      )}
                       <Button onClick={() => handleDeleteCampaign(campaign.id)} size="sm" variant="ghost" className="text-destructive hover:text-destructive">
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
@@ -379,6 +467,22 @@ export default function CampaignAdminPage() {
                     {/* Expanded */}
                     {isExpanded && (
                       <div className="border-t border-border">
+                        {/* Campaign Link Info */}
+                        {campaign.slug && (
+                          <div className="px-4 py-2 border-b border-border bg-surface-0/50 flex items-center gap-2">
+                            <Lock className="w-3 h-3 text-muted-foreground" />
+                            <code className="text-[10px] text-cyan-400 flex-1 truncate">/campaign/{campaign.slug}</code>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => copyCampaignLink(campaign.slug)}
+                              className="h-6 text-[9px] gap-1"
+                            >
+                              <Copy className="w-3 h-3" /> Copy
+                            </Button>
+                          </div>
+                        )}
+
                         {/* Stats Editor */}
                         <div className="p-4 border-b border-border">
                           <div className="flex items-center justify-between mb-3">

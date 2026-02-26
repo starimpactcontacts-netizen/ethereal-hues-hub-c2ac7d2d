@@ -51,6 +51,7 @@ import JudgeQueuePage from "./pages/loopgate/JudgeQueuePage";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
 import ArtistDashboardPage from "./pages/loopgate/ArtistDashboardPage";
 import CampaignAdminPage from "./pages/loopgate/CampaignAdminPage";
+import CampaignPortalPage from "./pages/loopgate/CampaignPortalPage";
 import EnterpriseClientDashboard from "./pages/loopgate/EnterpriseClientDashboard";
 import EnterpriseAccountPage from "./pages/loopgate/EnterpriseAccountPage";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -344,6 +345,9 @@ export default function App() {
                 <CampaignAdminPage />
               </ProtectedRoute>
             } />
+            
+            {/* Public campaign portal - password protected */}
+            <Route path="/campaign/:slug" element={<CampaignPortalPage />} />
             
             {/* Legacy /crews redirects → /units */}
             <Route path="/crews" element={<Navigate to="/units" replace />} />
