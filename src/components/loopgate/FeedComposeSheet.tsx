@@ -125,7 +125,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
 
           {/* Compose body — scrollable, fills remaining space */}
           <div className="flex-1 overflow-y-auto">
-            <div className="flex gap-3 px-4 pt-4">
+            <div className="flex gap-3 px-4 pt-4 pb-24">
               <Avatar className="w-10 h-10 border border-border/40 shrink-0">
                 <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
                 <AvatarFallback className="bg-muted text-foreground text-xs font-bold">
@@ -157,6 +157,26 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
                   />
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* Bottom action bar — persistent CTA */}
+          <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-2 safe-bottom shrink-0">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-[11px] text-muted-foreground/70">{postType === 'edit_share' ? 'Add your edit link, then post' : 'Write your post and publish'}</p>
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className={`px-5 py-2 rounded-full text-[13px] font-bold transition-all ${
+                  canSubmit
+                    ? "bg-primary text-primary-foreground shadow-sm active:scale-95"
+                    : "bg-primary/30 text-primary-foreground/40 cursor-not-allowed"
+                }`}
+              >
+                {submitting ? (
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : "Post"}
+              </button>
             </div>
           </div>
         </motion.div>

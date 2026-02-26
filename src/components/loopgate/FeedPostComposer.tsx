@@ -79,6 +79,33 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
             maxLength={300}
           />
 
+          {(isFocused || content.length > 0) && (
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-[11px] font-mono ${
+                isOverLimit ? 'text-destructive' :
+                charsLeft <= 20 ? 'text-gold' :
+                'text-muted-foreground/50'
+              }`}>
+                {charsLeft}
+              </span>
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                className={`px-4 py-1.5 rounded-full text-[12px] font-bold transition-all ${
+                  canSubmit
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                    : "bg-muted/30 text-muted-foreground/40 cursor-not-allowed"
+                }`}
+              >
+                {submitting ? (
+                  <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Post"
+                )}
+              </button>
+            </div>
+          )}
+
           <AnimatePresence>
             {isFocused && (
               <motion.div
@@ -115,46 +142,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
                     className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/30 mb-2"
                   />
                 )}
-
-                {/* Bottom bar */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[11px] font-mono ${
-                      isOverLimit ? 'text-red-400' :
-                      charsLeft <= 20 ? 'text-gold' :
-                      'text-muted-foreground/40'
-                    }`}>
-                      {charsLeft}
-                    </span>
-                    {charsLeft <= 20 && charsLeft >= 0 && (
-                      <svg width="18" height="18" viewBox="0 0 18 18" className="shrink-0">
-                        <circle cx="9" cy="9" r="7" fill="none" strokeWidth="2" className="stroke-muted/30" />
-                        <circle
-                          cx="9" cy="9" r="7" fill="none" strokeWidth="2"
-                          className={charsLeft <= 0 ? 'stroke-red-400' : 'stroke-gold'}
-                          strokeDasharray={`${((MAX_CHARS - charsLeft) / MAX_CHARS) * 44} 44`}
-                          strokeLinecap="round"
-                          transform="rotate(-90 9 9)"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={!canSubmit}
-                    className={`px-4 py-1.5 rounded-full text-[12px] font-bold transition-all ${
-                      canSubmit
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
-                        : "bg-muted/30 text-muted-foreground/30 cursor-not-allowed"
-                    }`}
-                  >
-                    {submitting ? (
-                      <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      "Post"
-                    )}
-                  </button>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>
