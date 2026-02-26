@@ -466,7 +466,14 @@ export default function HubPage() {
         <div className="flex gap-0 border border-red-500/30 overflow-hidden">
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => navigate(quickAction === 'solo' ? '/arena?mode=solo' : '/arena?mode=quick')}
+            onClick={() => {
+              if (!profile) { navigate('/start'); return; }
+              if (quickAction === 'solo') {
+                navigate('/arena?mode=solo&auto=1');
+              } else {
+                navigate('/quick-fight');
+              }
+            }}
             className="flex-1 relative overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3.5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
           >
             <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
