@@ -13,7 +13,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
-import loopgateLiveUiPreview from '@/assets/loopgate-live-ui-preview.png';
+import loopgateUiDesktop from '@/assets/loopgate-ui-desktop.png';
 
 
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
@@ -122,8 +122,8 @@ export default function LandingPage() {
                 </div>
 
                 <img
-                  src={loopgateLiveUiPreview}
-                  alt="Real Loopgate interface preview showing the in-app competitive lobby"
+                  src={loopgateUiDesktop}
+                  alt="Loopgate competitive editing platform interface"
                   className="w-full h-auto object-cover object-top"
                   loading="eager"
                 />
@@ -139,8 +139,8 @@ export default function LandingPage() {
                   <div className="w-14 h-1.5 bg-surface-2/80 rounded-full" />
                 </div>
                 <img
-                  src={loopgateLiveUiPreview}
-                  alt="Loopgate mobile in-app view"
+                  src={loopgateUiDesktop}
+                  alt="Loopgate mobile view"
                   className="w-full aspect-[9/19] object-cover object-top"
                   loading="lazy"
                 />
