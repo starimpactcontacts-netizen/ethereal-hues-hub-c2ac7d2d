@@ -5,7 +5,7 @@ import {
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
-  Clock, Award, UserPlus, Eye, Globe, Crown, Zap
+  Clock, Award, UserPlus, Eye, Globe, Crown, Zap, Sparkles
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ import LoopMonster from "@/components/loopgate/LoopMonster";
 import CountdownTimer from "@/components/loopgate/CountdownTimer";
 import PracticeModeCard from "@/components/loopgate/PracticeModeCard";
 import PracticeModeView from "@/components/loopgate/PracticeModeView";
+import SoloModeFlow from "@/components/loopgate/SoloModeFlow";
 import HostedCompCard from "@/components/loopgate/HostedCompCard";
 import FeaturedHostedCompCard from "@/components/loopgate/FeaturedHostedCompCard";
 import PremiumCompCard from "@/components/loopgate/PremiumCompCard";
@@ -194,6 +195,7 @@ export default function ArenaPage() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | "official" | "sanctioned" | "battles" | "quick" | "hosted" | "practice">("all");
   const [showPracticeMode, setShowPracticeMode] = useState(false);
+  const [showSoloMode, setShowSoloMode] = useState(false);
   const [showCreateBattle, setShowCreateBattle] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
   const [userStats, setUserStats] = useState<{ wins: number; losses: number; streak: number; events: number } | null>(null);
@@ -270,6 +272,10 @@ export default function ArenaPage() {
     return <PracticeModeView onBack={() => setShowPracticeMode(false)} />;
   }
 
+  if (showSoloMode) {
+    return <SoloModeFlow onBack={() => setShowSoloMode(false)} />;
+  }
+
   const filters: { key: typeof activeFilter; label: string; icon?: React.ReactNode; accent?: string }[] = [
     { key: "all", label: "All" },
     { key: "quick", label: "Quick 1v1", icon: <Zap className="w-3.5 h-3.5" />, accent: "red" },
@@ -281,10 +287,11 @@ export default function ArenaPage() {
   ];
 
   // Selected mode for the game lobby
-  const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'practice'>('quick');
+  const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice'>('quick');
   const modeActions: Record<string, () => void> = {
     quick: () => profile ? navigate('/quick-fight') : navigate('/start'),
     battle: () => profile ? setShowCreateBattle(true) : navigate('/start'),
+    solo: () => profile ? setShowSoloMode(true) : navigate('/start'),
     practice: () => setShowPracticeMode(true),
   };
 
@@ -373,6 +380,7 @@ export default function ArenaPage() {
               {[
                 { key: 'quick' as const, icon: <Zap className="w-4 h-4" />, label: 'Quick 1v1', desc: 'Auto-match · 3hr' },
                 { key: 'battle' as const, icon: <Swords className="w-4 h-4" />, label: '1v1 Battle', desc: 'Invite opponent' },
+                { key: 'solo' as const, icon: <Sparkles className="w-4 h-4" />, label: 'Solo', desc: 'Pick · Edit · Score' },
                 { key: 'practice' as const, icon: <Target className="w-4 h-4" />, label: 'Practice', desc: 'No stakes' },
               ].map((mode, i) => {
                 const active = selectedMode === mode.key;
@@ -412,15 +420,18 @@ export default function ArenaPage() {
 
                 {selectedMode === 'quick' && <Zap className="w-5 h-5 text-white relative z-10" />}
                 {selectedMode === 'battle' && <Swords className="w-5 h-5 text-white relative z-10" />}
+                {selectedMode === 'solo' && <Sparkles className="w-5 h-5 text-white relative z-10" />}
                 {selectedMode === 'practice' && <Target className="w-5 h-5 text-white relative z-10" />}
 
                 <span className="text-[22px] font-black text-white relative z-10 tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  {selectedMode === 'practice' ? 'Start' : 'Play'}
+                  {selectedMode === 'practice' ? 'Start' : selectedMode === 'solo' ? 'Solo Edit' : 'Play'}
                 </span>
 
-                {selectedMode !== 'practice' && (
+                {selectedMode === 'solo' ? (
+                  <span className="text-[12px] text-white/40 font-bold relative z-10 ml-1">UP TO 100+ IDX</span>
+                ) : selectedMode !== 'practice' ? (
                   <span className="text-[12px] text-white/40 font-bold relative z-10 ml-1">+20 IDX</span>
-                )}
+                ) : null}
               </div>
             </motion.button>
           </div>
