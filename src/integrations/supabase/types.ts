@@ -183,6 +183,8 @@ export type Database = {
           created_at: string
           description: string | null
           end_date: string | null
+          goal_label: string | null
+          goal_views: number
           id: string
           name: string
           roi_percentage: number | null
@@ -202,6 +204,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date?: string | null
+          goal_label?: string | null
+          goal_views?: number
           id?: string
           name: string
           roi_percentage?: number | null
@@ -221,6 +225,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date?: string | null
+          goal_label?: string | null
+          goal_views?: number
           id?: string
           name?: string
           roi_percentage?: number | null
@@ -1598,6 +1604,54 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dashboard_update_requests: {
+        Row: {
+          campaign_id: string | null
+          client_id: string
+          created_at: string
+          id: string
+          message: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Update: {
+          campaign_id?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_update_requests_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "artist_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dashboard_update_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_clients"
             referencedColumns: ["id"]
           },
         ]
