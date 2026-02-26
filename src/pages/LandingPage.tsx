@@ -75,14 +75,14 @@ export default function LandingPage() {
               transition={{ delay: 0.25, duration: 0.6 }}
             >
               <Link to="/start">
-                <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-base sm:text-lg px-10 sm:px-14 py-4 sm:py-5 h-auto gap-2.5 tracking-[0.06em] rounded-none">
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-xl sm:text-2xl px-12 sm:px-16 py-5 sm:py-6 h-auto gap-3 tracking-[0.08em] rounded-none uppercase font-bold">
+                  <Play className="w-5 h-5 sm:w-6 sm:h-6" />
                   Play Now
                 </Button>
               </Link>
               <button
                 onClick={handleGuestExplore}
-                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors font-semibold tracking-[0.08em] px-4 py-3 uppercase"
+                className="font-display text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors font-bold tracking-[0.12em] px-4 py-3 uppercase"
               >
                 Explore as Guest →
               </button>
