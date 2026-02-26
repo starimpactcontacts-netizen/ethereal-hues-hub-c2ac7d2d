@@ -24,7 +24,7 @@ export default function FeaturedArtistAdmin() {
 
   // Edit artist state
   const [editingArtist, setEditingArtist] = useState<FeaturedArtist | null>(null);
-  const [editArtistForm, setEditArtistForm] = useState({ name: '', slug: '', bio: '', genre: '', avatar_url: '', banner_url: '' });
+  const [editArtistForm, setEditArtistForm] = useState({ name: '', slug: '', bio: '', genre: '', avatar_url: '', banner_url: '', monthly_streams: 0 });
   const [savingArtist, setSavingArtist] = useState(false);
 
   // Create drop state
@@ -74,6 +74,7 @@ export default function FeaturedArtistAdmin() {
       genre: artist.genre,
       avatar_url: artist.avatar_url || '',
       banner_url: artist.banner_url || '',
+      monthly_streams: artist.monthly_streams || 0,
     });
   };
 
@@ -87,6 +88,7 @@ export default function FeaturedArtistAdmin() {
       genre: editArtistForm.genre,
       avatar_url: editArtistForm.avatar_url || null,
       banner_url: editArtistForm.banner_url || null,
+      monthly_streams: editArtistForm.monthly_streams || 0,
     }).eq('id', editingArtist.id);
     if (error) toast.error(error.message);
     else { toast.success('Artist updated!'); setEditingArtist(null); refresh(); }
@@ -301,6 +303,9 @@ export default function FeaturedArtistAdmin() {
                   <div>
                     <span className="text-sm font-bold">{artist.name}</span>
                     <span className="text-[10px] text-muted-foreground ml-2">/{artist.slug}</span>
+                    {artist.monthly_streams > 0 && (
+                      <span className="text-[9px] text-emerald-400 ml-2 tabular-nums">{artist.monthly_streams >= 1_000_000 ? `${(artist.monthly_streams / 1_000_000).toFixed(1)}M` : artist.monthly_streams >= 1_000 ? `${(artist.monthly_streams / 1_000).toFixed(0)}K` : artist.monthly_streams} listeners</span>
+                    )}
                   </div>
                   <Badge className="text-[8px] bg-purple-500/10 text-purple-300">{artist.genre}</Badge>
                 </div>
@@ -479,6 +484,11 @@ export default function FeaturedArtistAdmin() {
             <div>
               <Label className="text-xs">Banner URL</Label>
               <Input value={editArtistForm.banner_url} onChange={e => setEditArtistForm({...editArtistForm, banner_url: e.target.value})} className="mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Monthly Streams (Spotify)</Label>
+              <Input type="number" value={editArtistForm.monthly_streams} onChange={e => setEditArtistForm({...editArtistForm, monthly_streams: Number(e.target.value)})} placeholder="e.g. 1831539" className="mt-1" />
+              <p className="text-[9px] text-muted-foreground mt-0.5">Check Spotify artist page for current monthly listeners</p>
             </div>
             <button onClick={handleSaveArtist} disabled={savingArtist || !editArtistForm.name || !editArtistForm.slug}
               className="w-full py-3 bg-purple-600 text-white font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2">
