@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
-  ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2
+  ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
+  Zap, UserRound
 } from 'lucide-react';
 import { useActiveBattles } from '@/hooks/useActiveBattles';
 import { useAuth } from '@/hooks/useAuth';
@@ -455,9 +456,40 @@ export default function HubPage() {
         </div>
       )}
 
-      {/* ⚔️ QUICK FIGHT — Primary CTA */}
+      {/* ⚔️ DUAL CTA — Quick Edit Battle / Solo Edit */}
       <div className="px-4 mt-3">
-        <QuickFightButton size="lg" className="w-full" />
+        <div className="flex gap-0 border border-red-500/30 overflow-hidden">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate('/arena?mode=quick')}
+            className="flex-1 relative overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none group"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+            <Zap className="w-5 h-5 text-white relative z-10" />
+            <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+              Quick Edit Battle
+            </span>
+            <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
+          </motion.button>
+
+          <div className="w-[1px] bg-red-900/60" />
+
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate('/arena?mode=solo')}
+            className="relative overflow-hidden flex items-center justify-center gap-2.5 px-5 py-3 bg-surface-1 hover:bg-surface-2 transition-colors touch-manipulation select-none border-l-0"
+          >
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-gold flex items-center justify-center shadow-lg shadow-red-500/20">
+              <UserRound className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-[15px] font-bold text-foreground uppercase tracking-tight leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
+                Solo Edit
+              </span>
+              <span className="text-[9px] text-gold font-bold tracking-wider uppercase leading-none">100+ IDX</span>
+            </div>
+          </motion.button>
+        </div>
       </div>
 
       <motion.div
