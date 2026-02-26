@@ -5,7 +5,7 @@ import {
   Infinity as InfinityIcon, ChevronRight, Users, Trophy, 
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
-  Clock, Award, UserPlus, Eye, Globe, Crown, Zap, Sparkles
+  Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -381,7 +381,7 @@ export default function ArenaPage() {
               {[
                 { key: 'quick' as const, icon: <Zap className="w-4 h-4" />, label: 'Quick 1v1', desc: 'Auto-match · 3hr' },
                 { key: 'battle' as const, icon: <Swords className="w-4 h-4" />, label: '1v1 Battle', desc: 'Invite opponent' },
-                { key: 'solo' as const, icon: <Sparkles className="w-4 h-4" />, label: 'Solo', desc: 'Pick · Edit · Score' },
+                { key: 'solo' as const, icon: <UserRound className="w-4 h-4" />, label: 'Solo', desc: 'Pick · Edit · Score' },
                 { key: 'practice' as const, icon: <Target className="w-4 h-4" />, label: 'Practice', desc: 'No stakes' },
               ].map((mode, i) => {
                 const active = selectedMode === mode.key;
@@ -407,34 +407,78 @@ export default function ArenaPage() {
               })}
             </div>
 
-            {/* PLAY button */}
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={modeActions[selectedMode]}
-              className="w-full relative overflow-hidden touch-manipulation group"
-            >
-              <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-5 flex items-center justify-center gap-3">
-                {/* Inner glass highlight */}
-                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-                {/* Bottom edge shadow */}
-                <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-900/50 pointer-events-none" />
+            {/* PLAY button — dual CTA for quick/solo, standard for others */}
+            {(selectedMode === 'quick' || selectedMode === 'solo') ? (
+              <div className="flex gap-0 overflow-hidden border border-red-500/30">
+                {/* Quick Edit Battle */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => { setSelectedMode('quick'); modeActions.quick(); }}
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-5 flex items-center justify-center gap-2 transition-all ${
+                    selectedMode === 'quick' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
+                  }`}
+                >
+                  {selectedMode === 'quick' && (
+                    <>
+                      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-900/50 pointer-events-none" />
+                    </>
+                  )}
+                  <Zap className={`w-5 h-5 relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-muted-foreground'}`} />
+                  <div className="relative z-10 flex flex-col items-start">
+                    <span className={`text-[16px] font-black tracking-tight uppercase ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      Quick Edit Battle
+                    </span>
+                  </div>
+                  <span className={`text-[11px] font-bold relative z-10 ml-1 ${selectedMode === 'quick' ? 'text-white/40' : 'text-gold'}`}>+20 IDX</span>
+                </motion.button>
 
-                {selectedMode === 'quick' && <Zap className="w-5 h-5 text-white relative z-10" />}
-                {selectedMode === 'battle' && <Swords className="w-5 h-5 text-white relative z-10" />}
-                {selectedMode === 'solo' && <Sparkles className="w-5 h-5 text-white relative z-10" />}
-                {selectedMode === 'practice' && <Target className="w-5 h-5 text-white relative z-10" />}
+                {/* Divider */}
+                <div className="w-[1px] bg-border shrink-0" />
 
-                <span className="text-[22px] font-black text-white relative z-10 tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                  {selectedMode === 'practice' ? 'Start' : selectedMode === 'solo' ? 'Solo Edit' : 'Play'}
-                </span>
-
-                {selectedMode === 'solo' ? (
-                  <span className="text-[12px] text-white/40 font-bold relative z-10 ml-1">UP TO 100+ IDX</span>
-                ) : selectedMode !== 'practice' ? (
-                  <span className="text-[12px] text-white/40 font-bold relative z-10 ml-1">+20 IDX</span>
-                ) : null}
+                {/* Solo Edit */}
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => { setSelectedMode('solo'); modeActions.solo(); }}
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-5 flex items-center justify-center gap-2 transition-all ${
+                    selectedMode === 'solo' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
+                  }`}
+                >
+                  {selectedMode === 'solo' && (
+                    <>
+                      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-900/50 pointer-events-none" />
+                    </>
+                  )}
+                  <UserRound className={`w-5 h-5 relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-muted-foreground'}`} />
+                  <div className="relative z-10 flex flex-col items-start">
+                    <span className={`text-[16px] font-black tracking-tight uppercase ${selectedMode === 'solo' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      Solo Edit
+                    </span>
+                  </div>
+                  <span className={`text-[11px] font-bold relative z-10 ml-1 ${selectedMode === 'solo' ? 'text-white/40' : 'text-gold'}`}>100+ IDX</span>
+                </motion.button>
               </div>
-            </motion.button>
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={modeActions[selectedMode]}
+                className="w-full relative overflow-hidden touch-manipulation group"
+              >
+                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-5 flex items-center justify-center gap-3">
+                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-900/50 pointer-events-none" />
+                  {selectedMode === 'battle' && <Swords className="w-5 h-5 text-white relative z-10" />}
+                  {selectedMode === 'practice' && <Target className="w-5 h-5 text-white relative z-10" />}
+                  <span className="text-[22px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    {selectedMode === 'practice' ? 'Start Practice' : 'Play'}
+                  </span>
+                  {selectedMode === 'battle' && (
+                    <span className="text-[12px] text-white/40 font-bold relative z-10 ml-1">+20 IDX</span>
+                  )}
+                </div>
+              </motion.button>
+            )}
           </div>
 
           {/* ═══ FEATURED MATCH ═══ */}
