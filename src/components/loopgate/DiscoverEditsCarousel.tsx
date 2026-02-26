@@ -120,7 +120,7 @@ function EditShowcaseCard({
     entry.platform;
 
   return (
-    <div className="w-[300px] shrink-0 snap-start group">
+    <div className="w-[360px] shrink-0 snap-start group">
       {/* Thumbnail */}
       <button
         onClick={() => onPlay(entry)}
@@ -140,8 +140,8 @@ function EditShowcaseCard({
 
         {/* Play overlay */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <div className="w-14 h-14 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/10">
-            <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
+          <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/10">
+            <Play className="w-7 h-7 text-white ml-0.5" fill="white" />
           </div>
         </div>
 
@@ -149,43 +149,43 @@ function EditShowcaseCard({
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
 
         {/* Platform badge */}
-        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[8px] font-bold uppercase px-2 py-0.5 flex items-center gap-1">
+        <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-2.5 py-1 flex items-center gap-1">
           {platformLabel}
         </div>
 
         {/* Source badge */}
-        <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white/80 text-[8px] font-bold uppercase px-2 py-0.5 flex items-center gap-1">
+        <div className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-sm text-white/80 text-[9px] font-bold uppercase px-2.5 py-1 flex items-center gap-1">
           <SourceIcon source={entry.source} />
           {entry.source_label}
         </div>
 
         {/* QOI score */}
         {entry.qoi_score != null && entry.qoi_score > 0 && (
-          <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur-sm px-2.5 py-1 flex items-center gap-1">
+          <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1.5 flex items-center gap-1.5">
             <span
-              className={`text-base font-bold tabular-nums ${
+              className={`text-lg font-bold tabular-nums ${
                 entry.qoi_score >= 70 ? "text-gold" : entry.qoi_score >= 40 ? "text-white" : "text-red-400"
               }`}
             >
               {Math.round(entry.qoi_score)}
             </span>
-            <span className="text-[7px] text-white/60 uppercase">QOI</span>
+            <span className="text-[8px] text-white/60 uppercase">QOI</span>
           </div>
         )}
 
         {/* User info overlay at bottom */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-2">
-          <Avatar className="w-6 h-6 border border-white/20">
+        <div className="absolute bottom-3 left-3 flex items-center gap-2.5">
+          <Avatar className="w-7 h-7 border border-white/20">
             <AvatarImage src={entry.avatar_url || ""} />
-            <AvatarFallback className="text-[8px] bg-black/40 text-white font-bold">
+            <AvatarFallback className="text-[9px] bg-black/40 text-white font-bold">
               {entry.username?.[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <span className="text-[11px] font-bold text-white truncate block drop-shadow-lg">
+            <span className="text-xs font-bold text-white truncate block drop-shadow-lg">
               @{entry.username}
             </span>
-            <span className="text-[8px] text-white/60">
+            <span className="text-[9px] text-white/60">
               {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
             </span>
           </div>
@@ -509,7 +509,7 @@ export default function DiscoverEditsCarousel() {
 
   const scroll = useCallback((dir: "left" | "right") => {
     if (!scrollRef.current) return;
-    const amount = 320;
+    const amount = 380;
     scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
   }, []);
 
@@ -517,12 +517,12 @@ export default function DiscoverEditsCarousel() {
     return (
       <div className="pt-5 pb-2">
         <div className="flex items-center gap-2 px-4 mb-3">
-          <Eye className="w-4 h-4 text-foreground/50" />
-          <h2 className="font-display text-xl tracking-wide text-foreground">LATEST EDITS</h2>
+          <Eye className="w-5 h-5 text-foreground/50" />
+          <h2 className="font-display text-2xl tracking-wide text-foreground">LATEST EDITS</h2>
         </div>
         <div className="flex gap-3 overflow-hidden px-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="w-[300px] shrink-0">
+            <div key={i} className="w-[360px] shrink-0">
               <div className="aspect-[16/9] bg-surface-2 animate-pulse" />
             </div>
           ))}
@@ -538,8 +538,8 @@ export default function DiscoverEditsCarousel() {
       <div className="pt-5 pb-2">
         <div className="flex items-center justify-between px-4 mb-3">
           <div className="flex items-center gap-2">
-            <Eye className="w-4 h-4 text-foreground/50" />
-            <h2 className="font-display text-xl tracking-wide text-foreground">LATEST EDITS</h2>
+            <Eye className="w-5 h-5 text-foreground/50" />
+            <h2 className="font-display text-2xl tracking-wide text-foreground">LATEST EDITS</h2>
             <span className="text-[10px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">{entries.length}</span>
           </div>
           <div className="flex items-center gap-1">
