@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Play, Loader2, Search, TrendingUp, Shield, Pen, X } from "lucide-react";
+import { Play, Loader2, Search, TrendingUp, Shield, Clapperboard, X } from "lucide-react";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -535,10 +535,10 @@ export default function FeedPage() {
       {/* ─── Compose FAB ─── */}
       <motion.button
         whileTap={{ scale: 0.9 }}
-        onClick={() => navigate('/arena')}
-        className="fixed bottom-[72px] right-3 z-30 w-11 h-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
+        onClick={() => navigate('/studio')}
+        className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+84px)] right-4 z-30 w-12 h-12 rounded-full bg-gold text-primary-foreground shadow-[0_4px_20px_rgba(212,175,55,0.4)] flex items-center justify-center"
       >
-        <Pen className="w-4 h-4" />
+        <Clapperboard className="w-5 h-5" />
       </motion.button>
 
       {/* Video Player */}
