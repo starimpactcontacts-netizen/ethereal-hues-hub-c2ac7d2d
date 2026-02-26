@@ -142,130 +142,278 @@ export default function LandingPage() {
               >
                 <div className="relative" style={{ perspective: '1200px' }}>
                   {/* Glow behind mockup */}
-                  <div className="absolute -inset-8 bg-gradient-to-br from-gold/[0.06] via-red-500/[0.04] to-transparent blur-2xl" />
+                  <div className="absolute -inset-10 bg-gradient-to-br from-gold/[0.08] via-red-500/[0.05] to-cyan-500/[0.03] blur-3xl" />
                   
-                  {/* Desktop mockup frame */}
-                  <div className="relative border border-border/60 bg-surface-0 shadow-2xl shadow-black/40 overflow-hidden">
-                    {/* Browser chrome */}
-                    <div className="h-8 bg-surface-1 border-b border-border/50 flex items-center px-3 gap-2">
+                  {/* Desktop mockup frame — full fidelity app preview */}
+                  <div className="relative border border-border/50 bg-background shadow-2xl shadow-black/60 overflow-hidden">
+                    {/* Browser chrome bar */}
+                    <div className="h-7 bg-surface-1 border-b border-border/40 flex items-center px-3 gap-2">
                       <div className="flex gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                        <div className="w-2 h-2 rounded-full bg-red-500/50" />
+                        <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
+                        <div className="w-2 h-2 rounded-full bg-green-500/50" />
                       </div>
-                      <div className="flex-1 mx-8">
-                        <div className="bg-surface-2 border border-border/30 h-4 flex items-center px-2">
-                          <span className="text-[8px] text-muted-foreground">loopgate.io/hub</span>
+                      <div className="flex-1 mx-6">
+                        <div className="bg-surface-2/60 border border-border/20 h-3.5 flex items-center px-2 gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500/40" />
+                          <span className="text-[7px] text-muted-foreground">loopgate.io</span>
                         </div>
                       </div>
                     </div>
                     
-                    {/* App content mockup */}
-                    <div className="p-4 space-y-3 bg-background min-h-[380px]">
-                      {/* Header mockup */}
-                      <div className="flex items-center justify-between">
-                        <img src={loopgateLogo} alt="" className="h-5 opacity-70" />
-                        <div className="flex gap-2">
-                          {['Hub', 'Arena', 'Rankings'].map(t => (
-                            <span key={t} className={`text-[9px] px-2 py-1 ${t === 'Hub' ? 'bg-gold/15 text-gold' : 'text-muted-foreground'} font-bold tracking-wider uppercase`}>{t}</span>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Live battle card */}
-                      <div className="border border-red-500/20 bg-red-500/[0.03] p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" /></span>
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-red-400">Live Battle</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="text-center">
-                            <div className="w-8 h-8 bg-gradient-to-br from-red-500/20 to-red-900/20 border border-red-500/30 flex items-center justify-center mb-1"><span className="text-[10px] font-bold text-red-400">K</span></div>
-                            <p className="text-[8px] font-bold text-foreground">KXZEN</p>
-                          </div>
-                          <span className="font-display text-base text-red-400/70">VS</span>
-                          <div className="text-center">
-                            <div className="w-8 h-8 bg-gradient-to-br from-cyan-500/20 to-cyan-900/20 border border-cyan-500/30 flex items-center justify-center mb-1"><span className="text-[10px] font-bold text-cyan-400">R</span></div>
-                            <p className="text-[8px] font-bold text-foreground">RXSE</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Rankings preview */}
-                      <div className="border border-border/40 bg-surface-0 p-2.5">
-                        <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground mb-2 block">Rankings</span>
+                    {/* App layout — sidebar + main content */}
+                    <div className="flex min-h-[440px]">
+                      {/* Sidebar nav */}
+                      <div className="w-12 bg-surface-0 border-r border-border/30 flex flex-col items-center py-3 gap-3">
+                        <img src={loopgateLogo} alt="" className="w-6 h-6 opacity-80" />
+                        <div className="w-6 h-px bg-border/30" />
                         {[
-                          { r: 1, n: 'PRXSTIGE', c: 'S++' },
-                          { r: 2, n: 'KXZEN', c: 'S+' },
-                          { r: 3, n: 'AETHRVL', c: 'S' },
-                        ].map(row => (
-                          <div key={row.r} className="flex items-center gap-2 py-1">
-                            <span className={`text-[9px] font-bold w-4 ${row.r <= 2 ? 'text-gold' : 'text-muted-foreground'}`}>#{row.r}</span>
-                            <div className="w-4 h-4 bg-surface-2 flex items-center justify-center"><span className="text-[7px] font-bold">{row.n[0]}</span></div>
-                            <span className="text-[9px] font-semibold text-foreground flex-1">{row.n}</span>
-                            <span className="text-[7px] text-gold font-bold">{row.c}</span>
+                          { icon: '🏠', active: true },
+                          { icon: '⚔️', active: false },
+                          { icon: '🏆', active: false },
+                          { icon: '👥', active: false },
+                          { icon: '📰', active: false },
+                        ].map((item, i) => (
+                          <div key={i} className={`w-8 h-8 flex items-center justify-center text-[11px] ${item.active ? 'bg-gold/15 border border-gold/20' : 'hover:bg-surface-1'} transition-colors cursor-default`}>
+                            {item.icon}
                           </div>
                         ))}
+                        <div className="flex-1" />
+                        <div className="w-7 h-7 bg-gradient-to-br from-cyan-500/30 to-cyan-900/30 border border-cyan-500/20 flex items-center justify-center">
+                          <span className="text-[8px] font-bold text-cyan-400">Y</span>
+                        </div>
                       </div>
 
-                      {/* Judge review card */}
-                      <div className="border border-gold/15 bg-gold/[0.02] p-2.5">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <Gavel className="w-3 h-3 text-gold" />
-                          <span className="text-[8px] font-bold uppercase tracking-widest text-gold">QOI Score</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full border border-gold/30 bg-gold/5 flex items-center justify-center">
-                            <span className="font-display text-sm text-gold">84</span>
+                      {/* Main content area */}
+                      <div className="flex-1 overflow-hidden">
+                        {/* App header bar */}
+                        <div className="h-10 border-b border-border/30 bg-surface-0/50 flex items-center justify-between px-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">Hub</span>
+                            <div className="w-px h-4 bg-border/30" />
+                            <span className="text-[9px] text-muted-foreground">Welcome back</span>
                           </div>
-                          <div className="flex-1 space-y-1">
-                            {['Emotion', 'Sync', 'Execution'].map((p, i) => (
-                              <div key={p} className="flex items-center gap-1.5">
-                                <span className="text-[7px] text-muted-foreground w-12">{p}</span>
-                                <div className="flex-1 h-1 bg-surface-2 overflow-hidden">
-                                  <div className="h-full bg-gold" style={{ width: `${[88, 90, 81][i]}%` }} />
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 bg-surface-1 border border-border/20 px-2 py-0.5">
+                              <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
+                              <span className="text-[8px] text-emerald-400 font-bold">247 online</span>
+                            </div>
+                            <div className="w-5 h-5 bg-surface-2 flex items-center justify-center">
+                              <span className="text-[8px]">🔔</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content grid */}
+                        <div className="p-3 space-y-3">
+                          {/* Featured battle — hero card */}
+                          <div className="border border-red-500/25 bg-gradient-to-r from-red-500/[0.06] to-transparent overflow-hidden">
+                            <div className="h-[1.5px] bg-gradient-to-r from-red-500 via-red-400 to-transparent" />
+                            <div className="p-3">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" /></span>
+                                  <span className="text-[8px] font-bold uppercase tracking-widest text-red-400">Featured Battle</span>
                                 </div>
+                                <div className="flex items-center gap-1">
+                                  <Eye className="w-2.5 h-2.5 text-muted-foreground" />
+                                  <span className="text-[7px] text-muted-foreground">342 watching</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                {/* Player 1 */}
+                                <div className="flex items-center gap-2 flex-1">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-red-500/30 to-red-900/30 border border-red-500/30 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-red-400">K</span>
+                                  </div>
+                                  <div>
+                                    <p className="text-[10px] font-bold text-foreground">KXZEN</p>
+                                    <p className="text-[7px] text-gold font-bold">S+ Class</p>
+                                    <p className="text-[7px] text-muted-foreground">Index: 2,691</p>
+                                  </div>
+                                </div>
+                                {/* VS */}
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <span className="font-display text-lg text-red-400/80">VS</span>
+                                  <span className="text-[6px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">18H LEFT</span>
+                                </div>
+                                {/* Player 2 */}
+                                <div className="flex items-center gap-2 flex-1 justify-end">
+                                  <div className="text-right">
+                                    <p className="text-[10px] font-bold text-foreground">RXSE</p>
+                                    <p className="text-[7px] text-gold font-bold">S Class</p>
+                                    <p className="text-[7px] text-muted-foreground">Index: 2,534</p>
+                                  </div>
+                                  <div className="w-10 h-10 bg-gradient-to-br from-cyan-500/30 to-cyan-900/30 border border-cyan-500/30 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-cyan-400">R</span>
+                                  </div>
+                                </div>
+                              </div>
+                              {/* Judge bar */}
+                              <div className="mt-2.5 flex items-center gap-2 bg-surface-0 border border-border/30 px-2.5 py-1.5">
+                                <Gavel className="w-2.5 h-2.5 text-gold" />
+                                <span className="text-[7px] text-muted-foreground">Judge: <span className="text-gold font-semibold">MVRKO</span></span>
+                                <span className="w-px h-2.5 bg-border/30 mx-0.5" />
+                                <span className="text-[7px] text-muted-foreground">Awaiting submissions</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Two column grid — Rankings + Activity */}
+                          <div className="grid grid-cols-2 gap-2.5">
+                            {/* Rankings snippet */}
+                            <div className="border border-border/30 bg-surface-0/50">
+                              <div className="px-2.5 py-1.5 border-b border-border/20 flex items-center justify-between">
+                                <span className="text-[8px] font-bold uppercase tracking-widest text-foreground">Global Index</span>
+                                <span className="text-[7px] text-gold font-bold">Live</span>
+                              </div>
+                              <div className="divide-y divide-border/15">
+                                {[
+                                  { r: 1, n: 'PRXSTIGE', c: 'S++', idx: '2,847', ch: '+12' },
+                                  { r: 2, n: 'KXZEN', c: 'S+', idx: '2,691', ch: '+8' },
+                                  { r: 3, n: 'AETHRVL', c: 'S', idx: '2,534', ch: '-3' },
+                                  { r: 4, n: 'RXSE', c: 'S', idx: '2,488', ch: '+15' },
+                                  { r: 5, n: 'DVRK', c: 'A', idx: '2,301', ch: '+4' },
+                                ].map(row => (
+                                  <div key={row.r} className="flex items-center gap-1.5 px-2.5 py-1.5">
+                                    <span className={`text-[8px] font-bold w-3 ${row.r <= 3 ? 'text-gold' : 'text-muted-foreground'}`}>#{row.r}</span>
+                                    <div className="w-4 h-4 bg-surface-2 border border-border/20 flex items-center justify-center"><span className="text-[6px] font-bold">{row.n[0]}</span></div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[8px] font-bold text-foreground truncate">{row.n}</p>
+                                    </div>
+                                    <span className="text-[6px] text-gold font-bold">{row.c}</span>
+                                    <span className={`text-[6px] font-bold ${row.ch.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>{row.ch}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Live activity feed */}
+                            <div className="border border-border/30 bg-surface-0/50">
+                              <div className="px-2.5 py-1.5 border-b border-border/20">
+                                <span className="text-[8px] font-bold uppercase tracking-widest text-foreground">Activity</span>
+                              </div>
+                              <div className="p-2 space-y-2">
+                                {[
+                                  { user: 'NVDIA', action: 'won a battle vs FLUX', time: '2m', color: 'text-emerald-400' },
+                                  { user: 'ZEPH', action: 'joined Unit NOVA', time: '5m', color: 'text-cyan-400' },
+                                  { user: 'PRXSTIGE', action: 'rated A Class by Judge VAL', time: '12m', color: 'text-gold' },
+                                  { user: 'KXZEN', action: 'challenged DVRK to 1v1', time: '18m', color: 'text-red-400' },
+                                  { user: 'MVRKO', action: 'completed 3 judge reviews', time: '24m', color: 'text-purple-400' },
+                                ].map((a, i) => (
+                                  <div key={i} className="flex items-start gap-1.5">
+                                    <div className="w-3.5 h-3.5 bg-surface-2 border border-border/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                      <span className="text-[5px] font-bold">{a.user[0]}</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[7px] leading-tight"><span className={`font-bold ${a.color}`}>{a.user}</span> <span className="text-muted-foreground">{a.action}</span></p>
+                                    </div>
+                                    <span className="text-[6px] text-muted-foreground/60 flex-shrink-0">{a.time}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* QOI Score card */}
+                          <div className="border border-gold/20 bg-gradient-to-r from-gold/[0.04] to-transparent">
+                            <div className="h-[1.5px] bg-gradient-to-r from-gold via-gold/50 to-transparent" />
+                            <div className="p-2.5 flex items-center gap-3">
+                              <div className="w-11 h-11 rounded-full border-2 border-gold/30 bg-gold/5 flex items-center justify-center flex-shrink-0">
+                                <span className="font-display text-base text-gold">84</span>
+                              </div>
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[8px] font-bold text-gold uppercase tracking-widest">Your QOI Score</span>
+                                  <span className="text-[7px] text-gold font-bold">A CLASS</span>
+                                </div>
+                                {[
+                                  { l: 'Emotion', v: 88, c: 'bg-emerald-500' },
+                                  { l: 'Creativity', v: 82, c: 'bg-cyan-500' },
+                                  { l: 'Sync', v: 90, c: 'bg-red-500' },
+                                  { l: 'Identity', v: 79, c: 'bg-purple-500' },
+                                  { l: 'Execution', v: 81, c: 'bg-gold' },
+                                ].map(p => (
+                                  <div key={p.l} className="flex items-center gap-1.5">
+                                    <span className="text-[6px] text-muted-foreground w-11 text-right">{p.l}</span>
+                                    <div className="flex-1 h-[3px] bg-surface-2 overflow-hidden"><div className={`h-full ${p.c}`} style={{ width: `${p.v}%` }} /></div>
+                                    <span className="text-[6px] font-bold text-foreground w-4 text-right">{p.v}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Bottom nav bar */}
+                    <div className="h-8 bg-surface-0 border-t border-border/30 flex items-center justify-around px-4">
+                      {['Hub', 'Arena', 'Feed', 'Rankings', 'Profile'].map((t, i) => (
+                        <span key={t} className={`text-[7px] font-bold uppercase tracking-wider ${i === 0 ? 'text-gold' : 'text-muted-foreground/60'}`}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Phone mockup — floating beside, showing profile */}
+                  <motion.div
+                    className="absolute -right-16 -bottom-6 w-[155px]"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 1 }}
+                  >
+                    <div className="border border-border/50 bg-background shadow-xl shadow-black/40 overflow-hidden" style={{ borderRadius: '14px' }}>
+                      {/* Phone notch */}
+                      <div className="h-5 bg-surface-0 border-b border-border/20 flex items-center justify-center relative">
+                        <div className="w-14 h-2 bg-surface-2/60" style={{ borderRadius: '4px' }} />
+                      </div>
+                      {/* Phone content — arena view */}
+                      <div className="p-2.5 space-y-2 min-h-[240px]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[8px] font-bold text-foreground uppercase tracking-widest">Arena</span>
+                          <span className="text-[6px] text-red-400 font-bold bg-red-500/10 px-1.5 py-0.5">3 LIVE</span>
+                        </div>
+                        {/* Mini battle cards */}
+                        {[
+                          { p1: 'NVDIA', p2: 'FLUX', status: 'Judging', statusColor: 'text-gold' },
+                          { p1: 'ZEPH', p2: 'PRXS', status: 'Live', statusColor: 'text-red-400' },
+                        ].map((b, i) => (
+                          <div key={i} className="border border-border/30 bg-surface-0 p-2">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <div className="w-5 h-5 bg-red-500/15 border border-red-500/20 flex items-center justify-center"><span className="text-[6px] font-bold text-red-400">{b.p1[0]}</span></div>
+                                <span className="text-[7px] font-bold text-foreground">{b.p1}</span>
+                              </div>
+                              <span className="text-[7px] text-muted-foreground/60">vs</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[7px] font-bold text-foreground">{b.p2}</span>
+                                <div className="w-5 h-5 bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center"><span className="text-[6px] font-bold text-cyan-400">{b.p2[0]}</span></div>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-center gap-1">
+                              {b.status === 'Live' && <span className="relative flex h-1 w-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1 w-1 bg-red-500" /></span>}
+                              <span className={`text-[6px] font-bold uppercase tracking-wider ${b.statusColor}`}>{b.status}</span>
+                            </div>
+                          </div>
+                        ))}
+                        {/* Quick stats */}
+                        <div className="border border-gold/15 bg-gold/[0.03] p-2">
+                          <span className="text-[7px] text-gold font-bold block mb-1">Your Stats</span>
+                          <div className="grid grid-cols-3 gap-1">
+                            {[{ l: 'W/L', v: '12/3' }, { l: 'Rank', v: '#47' }, { l: 'Class', v: 'A' }].map(s => (
+                              <div key={s.l} className="text-center">
+                                <p className="text-[9px] font-bold text-foreground">{s.v}</p>
+                                <p className="text-[5px] text-muted-foreground uppercase">{s.l}</p>
                               </div>
                             ))}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Phone mockup — floating beside */}
-                  <motion.div
-                    className="absolute -right-12 -bottom-8 w-[140px]"
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 1 }}
-                  >
-                    <div className="border border-border/60 bg-surface-0 shadow-xl shadow-black/30 overflow-hidden" style={{ borderRadius: '12px' }}>
-                      <div className="h-4 bg-surface-1 border-b border-border/30 flex items-center justify-center">
-                        <div className="w-10 h-1.5 bg-surface-2" style={{ borderRadius: '4px' }} />
-                      </div>
-                      <div className="p-2 bg-background space-y-1.5 min-h-[200px]">
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <img src={loopgateLogo} alt="" className="h-3 opacity-60" />
-                          <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-wider">Loopgate</span>
-                        </div>
-                        <div className="border border-border/30 bg-surface-0 p-1.5">
-                          <span className="text-[6px] text-gold font-bold uppercase tracking-wider">Your Profile</span>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <div className="w-5 h-5 bg-surface-2 flex items-center justify-center"><span className="text-[6px] font-bold">Y</span></div>
-                            <div>
-                              <p className="text-[7px] font-bold text-foreground">YOU</p>
-                              <p className="text-[5px] text-gold">A Class</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-3 gap-1">
-                          {['Battles', 'Units', 'Feed'].map(t => (
-                            <div key={t} className="bg-surface-1 border border-border/20 p-1 text-center">
-                              <span className="text-[5px] text-muted-foreground uppercase font-bold">{t}</span>
-                            </div>
-                          ))}
-                        </div>
+                      {/* Phone bottom nav */}
+                      <div className="h-6 bg-surface-0 border-t border-border/20 flex items-center justify-around px-3">
+                        {['🏠', '⚔️', '📊', '👤'].map((e, i) => (
+                          <span key={i} className={`text-[9px] ${i === 1 ? 'opacity-100' : 'opacity-40'}`}>{e}</span>
+                        ))}
                       </div>
                     </div>
                   </motion.div>
