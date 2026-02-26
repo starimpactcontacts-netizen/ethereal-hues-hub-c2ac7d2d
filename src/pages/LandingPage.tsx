@@ -8,6 +8,7 @@ import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
 import GatePattern from '@/components/loopgate/GatePattern';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
 import { useGlobalStats } from '@/hooks/useRealData';
+import whereEditorsCompete from '@/assets/where-editors-compete-2.png';
 import SEO, { pageSEO } from '@/components/SEO';
 import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
@@ -62,11 +63,7 @@ export default function LandingPage() {
               className="mb-5"
             >
               <img src={loopgateBrand} alt="LOOPGATE" className="h-8 sm:h-10 w-auto mx-auto mb-5 opacity-80" />
-              <h1 className="font-display text-[2.8rem] sm:text-[4rem] md:text-[5rem] leading-[0.88] tracking-[0.02em] mb-0">
-                WHERE EDITORS
-                <br />
-                <span className="text-gold">COMPETE</span>
-              </h1>
+              <img src={whereEditorsCompete} alt="WHERE EDITORS COMPETE" className="w-full max-w-[600px] sm:max-w-[700px] md:max-w-[800px] mx-auto" />
             </motion.div>
             <motion.p
               className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-7 leading-relaxed font-medium"
