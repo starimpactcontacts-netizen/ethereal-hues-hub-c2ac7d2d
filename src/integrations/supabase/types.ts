@@ -1702,6 +1702,7 @@ export type Database = {
           submitted_at: string | null
           thumbnail_url: string | null
           user_id: string
+          view_count: number | null
           xp_awarded: number | null
         }
         Insert: {
@@ -1723,6 +1724,7 @@ export type Database = {
           submitted_at?: string | null
           thumbnail_url?: string | null
           user_id: string
+          view_count?: number | null
           xp_awarded?: number | null
         }
         Update: {
@@ -1744,6 +1746,7 @@ export type Database = {
           submitted_at?: string | null
           thumbnail_url?: string | null
           user_id?: string
+          view_count?: number | null
           xp_awarded?: number | null
         }
         Relationships: []
@@ -2148,6 +2151,7 @@ export type Database = {
           user_id: string
           username: string
           video_title: string | null
+          view_count: number | null
           xp_awarded: number | null
         }
         Insert: {
@@ -2175,6 +2179,7 @@ export type Database = {
           user_id: string
           username: string
           video_title?: string | null
+          view_count?: number | null
           xp_awarded?: number | null
         }
         Update: {
@@ -2202,6 +2207,7 @@ export type Database = {
           user_id?: string
           username?: string
           video_title?: string | null
+          view_count?: number | null
           xp_awarded?: number | null
         }
         Relationships: [
@@ -3277,6 +3283,7 @@ export type Database = {
           title: string | null
           updated_at: string
           video_url: string
+          view_count: number | null
           views_at_submission: number | null
           viral_bonus_awarded: boolean | null
         }
@@ -3293,6 +3300,7 @@ export type Database = {
           title?: string | null
           updated_at?: string
           video_url: string
+          view_count?: number | null
           views_at_submission?: number | null
           viral_bonus_awarded?: boolean | null
         }
@@ -3309,6 +3317,7 @@ export type Database = {
           title?: string | null
           updated_at?: string
           video_url?: string
+          view_count?: number | null
           views_at_submission?: number | null
           viral_bonus_awarded?: boolean | null
         }
@@ -4379,6 +4388,7 @@ export type Database = {
           thumbnail_url: string | null
           updated_at: string | null
           user_id: string
+          view_count: number | null
           xp_awarded: number | null
         }
         Insert: {
@@ -4403,6 +4413,7 @@ export type Database = {
           thumbnail_url?: string | null
           updated_at?: string | null
           user_id: string
+          view_count?: number | null
           xp_awarded?: number | null
         }
         Update: {
@@ -4427,6 +4438,7 @@ export type Database = {
           thumbnail_url?: string | null
           updated_at?: string | null
           user_id?: string
+          view_count?: number | null
           xp_awarded?: number | null
         }
         Relationships: [
