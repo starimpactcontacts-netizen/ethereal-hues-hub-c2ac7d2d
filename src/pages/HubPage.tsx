@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
-  Zap, UserRound, ChevronDown, Check
+  Zap, UserRound, ChevronDown, Check, Clock, X, Info
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -26,6 +26,8 @@ import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
 import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
+import { findQuickFight, useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
+import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
 import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
@@ -33,6 +35,7 @@ import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import XPProgressBar from '@/components/loopgate/XPProgressBar';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import GatePattern from '@/components/loopgate/GatePattern';
@@ -130,6 +133,76 @@ export default function HubPage() {
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
   const [quickAction, setQuickAction] = useState<'solo' | 'quick'>('solo');
+  const [qfSearching, setQfSearching] = useState(false);
+  const [qfElapsed, setQfElapsed] = useState(0);
+  const [qfTipIdx, setQfTipIdx] = useState(0);
+  const qfTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { inQueue: qfInQueue, fights: qfFights } = useMyQuickFights();
+  const { open: openAccountPrompt } = useAccountPrompt();
+  const qfActiveFight = qfFights.find(f => f.status === 'active' || f.status === 'judging');
+  const qfIsSearching = qfSearching || qfInQueue;
+
+  const QF_TIPS = [
+    "💡 Queues can take time — check back regularly!",
+    "⚡ Want faster matches? Create a 1v1 Edit Battle and invite someone!",
+    "🔔 You'll be notified when matched — browse other sections.",
+    "👥 More players = faster queues. Share Loopgate!",
+  ];
+
+  useEffect(() => {
+    if (qfIsSearching) {
+      setQfElapsed(0);
+      qfTimerRef.current = setInterval(() => setQfElapsed(p => p + 1), 1000);
+    } else {
+      if (qfTimerRef.current) clearInterval(qfTimerRef.current);
+      setQfElapsed(0);
+    }
+    return () => { if (qfTimerRef.current) clearInterval(qfTimerRef.current); };
+  }, [qfIsSearching]);
+
+  useEffect(() => {
+    if (!qfIsSearching) return;
+    const iv = setInterval(() => setQfTipIdx(p => (p + 1) % QF_TIPS.length), 6000);
+    return () => clearInterval(iv);
+  }, [qfIsSearching]);
+
+  useEffect(() => {
+    if (!qfIsSearching) return;
+    const matched = qfFights.find(f => f.status === 'active');
+    if (matched) {
+      toast.success('⚔️ Match found!');
+      navigate(`/fight/${matched.id}`);
+      setQfSearching(false);
+      supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: matched.id } }).catch(() => {});
+    }
+  }, [qfFights, qfIsSearching]);
+
+  const handleQuickFight = async () => {
+    if (!user || !profile) { openAccountPrompt('send_message', () => {}); return; }
+    if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
+    setQfSearching(true);
+    try {
+      const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
+      if (fightId) {
+        toast.success('⚔️ Match found!');
+        navigate(`/fight/${fightId}`);
+        supabase.functions.invoke('notify-quick-fight-match', { body: { fight_id: fightId } }).catch(() => {});
+        setQfSearching(false);
+      } else {
+        toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });
+      }
+    } catch {
+      toast.error('Matchmaking failed');
+      setQfSearching(false);
+    }
+  };
+
+  const handleCancelQueue = async () => {
+    if (!user) return;
+    await leaveQueue(user.id);
+    setQfSearching(false);
+    toast('Search cancelled', { duration: 2000 });
+  };
   
   useActiveSession();
   
@@ -463,75 +536,131 @@ export default function HubPage() {
 
       {/* ⚔️ QUICK ACTION CTA — Dropdown to switch between Solo Edit / Quick Edit Battle */}
       <div className="px-4 mt-3">
-        <div className="flex gap-0 border border-red-500/30 overflow-hidden">
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => {
-              if (!profile) { navigate('/start'); return; }
-              if (quickAction === 'solo') {
-                navigate('/arena?mode=solo&auto=1');
-              } else {
-                navigate('/quick-fight');
-              }
-            }}
-            className="flex-1 relative overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3.5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
-          >
-            <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-            {quickAction === 'solo' ? (
-              <>
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
-                  <UserRound className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  Solo Edit
-                </span>
-                <span className="text-[9px] text-white/50 font-bold relative z-10">100+ IDX</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5 text-white relative z-10" />
-                <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                  Quick Edit Battle
-                </span>
-                <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
-              </>
-            )}
-          </motion.button>
+        <div className="flex flex-col gap-0">
+          <div className="flex gap-0 border border-red-500/30 overflow-hidden">
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              disabled={quickAction === 'quick' && qfIsSearching}
+              onClick={() => {
+                if (!profile) { navigate('/start'); return; }
+                if (quickAction === 'solo') {
+                  navigate('/arena?mode=solo&auto=1');
+                } else {
+                  if (qfActiveFight) {
+                    navigate(`/fight/${qfActiveFight.id}`);
+                  } else {
+                    handleQuickFight();
+                  }
+                }
+              }}
+              className="flex-1 relative overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3.5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
+            >
+              <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+              {quickAction === 'solo' ? (
+                <>
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
+                    <UserRound className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    Solo Edit
+                  </span>
+                  <span className="text-[9px] text-white/50 font-bold relative z-10">100+ IDX</span>
+                </>
+              ) : qfIsSearching ? (
+                <>
+                  <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
+                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    Searching...
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-white/70 font-mono relative z-10">
+                    <Clock className="w-3 h-3" />
+                    {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
+                  </span>
+                </>
+              ) : qfActiveFight ? (
+                <>
+                  <Swords className="w-5 h-5 text-white relative z-10" />
+                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    Return to Fight
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Zap className="w-5 h-5 text-white relative z-10" />
+                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                    Quick Edit Battle
+                  </span>
+                  <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
+                </>
+              )}
+            </motion.button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="relative overflow-hidden flex items-center justify-center px-3 py-3.5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/60">
-                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-                <ChevronDown className="w-4 h-4 text-white/70 relative z-10" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
-              <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => setQuickAction('solo')}
-                className="flex items-center gap-2 cursor-pointer"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="relative overflow-hidden flex items-center justify-center px-3 py-3.5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/60">
+                  <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                  <ChevronDown className="w-4 h-4 text-white/70 relative z-10" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
+                <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setQuickAction('solo')} className="flex items-center gap-2 cursor-pointer">
+                  <UserRound className="w-4 h-4 text-gold" />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold">Solo Edit</span>
+                    <span className="text-[10px] text-gold ml-1.5">100+ IDX</span>
+                  </div>
+                  {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setQuickAction('quick')} className="flex items-center gap-2 cursor-pointer">
+                  <Zap className="w-4 h-4 text-red-400" />
+                  <div className="flex-1">
+                    <span className="text-sm font-semibold">Quick Edit Battle</span>
+                    <span className="text-[10px] text-red-400 ml-1.5">+20 IDX</span>
+                  </div>
+                  {quickAction === 'quick' && <Check className="w-3.5 h-3.5 text-red-400" />}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Queue status bar — when searching for Quick Edit Battle */}
+          <AnimatePresence>
+            {quickAction === 'quick' && qfIsSearching && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex flex-col gap-1.5 mt-1.5"
               >
-                <UserRound className="w-4 h-4 text-gold" />
-                <div className="flex-1">
-                  <span className="text-sm font-semibold">Solo Edit</span>
-                  <span className="text-[10px] text-gold ml-1.5">100+ IDX</span>
+                <div className="bg-surface-1 border border-border px-3 py-2">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={qfTipIdx}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.25 }}
+                        className="text-[11px] text-muted-foreground leading-snug"
+                      >
+                        {QF_TIPS[qfTipIdx]}
+                      </motion.p>
+                    </AnimatePresence>
+                  </div>
                 </div>
-                {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setQuickAction('quick')}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <Zap className="w-4 h-4 text-red-400" />
-                <div className="flex-1">
-                  <span className="text-sm font-semibold">Quick Edit Battle</span>
-                  <span className="text-[10px] text-red-400 ml-1.5">+20 IDX</span>
-                </div>
-                {quickAction === 'quick' && <Check className="w-3.5 h-3.5 text-red-400" />}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <button
+                  onClick={handleCancelQueue}
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs border border-border bg-surface-1 text-muted-foreground font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation select-none"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Cancel
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
