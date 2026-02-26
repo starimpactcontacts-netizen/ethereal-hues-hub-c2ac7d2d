@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { enrichSubmission } from '@/lib/enrichSubmission';
 import { useAuth } from './useAuth';
 
 export interface Battle {
@@ -272,6 +273,15 @@ export async function submitToBattle(
       .eq('id', battleId);
 
     if (error) throw error;
+
+    // Fire-and-forget: enrich with oEmbed metadata
+    enrichSubmission({
+      url: submissionUrl,
+      platform,
+      table: 'battles',
+      row_id: battleId,
+      side: isChallenger ? 'challenger' : 'opponent',
+    });
 
     // Check if both have submitted
     const { data: battle } = await supabase

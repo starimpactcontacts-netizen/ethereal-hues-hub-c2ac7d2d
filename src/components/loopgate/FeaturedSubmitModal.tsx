@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { enrichSubmission } from "@/lib/enrichSubmission";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import type { FeaturedDrop } from "@/hooks/useFeaturedDrops";
@@ -31,18 +32,22 @@ export default function FeaturedSubmitModal({ drop, onClose }: Props) {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('featured_submissions').insert({
+      const { data: inserted, error } = await supabase.from('featured_submissions').insert({
         drop_id: drop.id,
         user_id: user.id,
         username: profile.username || 'unknown',
         avatar_url: profile.avatar_url,
         submission_url: url.trim(),
         platform,
-      });
+      }).select('id').single();
 
       if (error) {
         toast.error(error.message);
       } else {
+        // Fire-and-forget: enrich with oEmbed metadata
+        if (inserted?.id) {
+          enrichSubmission({ url: url.trim(), platform, table: 'featured_submissions', row_id: inserted.id });
+        }
         toast.success('Edit submitted! 🔥 Wait for your score.');
         onClose();
       }

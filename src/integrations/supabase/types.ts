@@ -301,6 +301,7 @@ export type Database = {
         Row: {
           accepted_at: string | null
           challenge_type: string
+          challenger_author_username: string | null
           challenger_avatar_url: string | null
           challenger_id: string
           challenger_score: number | null
@@ -309,6 +310,7 @@ export type Database = {
           challenger_submitted_at: string | null
           challenger_thumbnail_url: string | null
           challenger_username: string
+          challenger_video_title: string | null
           challenger_votes: number
           created_at: string
           duration_hours: number
@@ -322,6 +324,7 @@ export type Database = {
           judged_at: string | null
           league_tier: string
           loser_index_penalty: number | null
+          opponent_author_username: string | null
           opponent_avatar_url: string | null
           opponent_id: string | null
           opponent_score: number | null
@@ -330,6 +333,7 @@ export type Database = {
           opponent_submitted_at: string | null
           opponent_thumbnail_url: string | null
           opponent_username: string | null
+          opponent_video_title: string | null
           opponent_votes: number
           requested_judge_id: string | null
           requested_judge_username: string | null
@@ -347,6 +351,7 @@ export type Database = {
         Insert: {
           accepted_at?: string | null
           challenge_type?: string
+          challenger_author_username?: string | null
           challenger_avatar_url?: string | null
           challenger_id: string
           challenger_score?: number | null
@@ -355,6 +360,7 @@ export type Database = {
           challenger_submitted_at?: string | null
           challenger_thumbnail_url?: string | null
           challenger_username: string
+          challenger_video_title?: string | null
           challenger_votes?: number
           created_at?: string
           duration_hours?: number
@@ -368,6 +374,7 @@ export type Database = {
           judged_at?: string | null
           league_tier?: string
           loser_index_penalty?: number | null
+          opponent_author_username?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
           opponent_score?: number | null
@@ -376,6 +383,7 @@ export type Database = {
           opponent_submitted_at?: string | null
           opponent_thumbnail_url?: string | null
           opponent_username?: string | null
+          opponent_video_title?: string | null
           opponent_votes?: number
           requested_judge_id?: string | null
           requested_judge_username?: string | null
@@ -393,6 +401,7 @@ export type Database = {
         Update: {
           accepted_at?: string | null
           challenge_type?: string
+          challenger_author_username?: string | null
           challenger_avatar_url?: string | null
           challenger_id?: string
           challenger_score?: number | null
@@ -401,6 +410,7 @@ export type Database = {
           challenger_submitted_at?: string | null
           challenger_thumbnail_url?: string | null
           challenger_username?: string
+          challenger_video_title?: string | null
           challenger_votes?: number
           created_at?: string
           duration_hours?: number
@@ -414,6 +424,7 @@ export type Database = {
           judged_at?: string | null
           league_tier?: string
           loser_index_penalty?: number | null
+          opponent_author_username?: string | null
           opponent_avatar_url?: string | null
           opponent_id?: string | null
           opponent_score?: number | null
@@ -422,6 +433,7 @@ export type Database = {
           opponent_submitted_at?: string | null
           opponent_thumbnail_url?: string | null
           opponent_username?: string | null
+          opponent_video_title?: string | null
           opponent_votes?: number
           requested_judge_id?: string | null
           requested_judge_username?: string | null
@@ -1672,7 +1684,9 @@ export type Database = {
       }
       event_participations: {
         Row: {
+          author_username: string | null
           custom_title: string | null
+          embed_html: string | null
           event_id: string
           final_rank: number | null
           id: string
@@ -1691,7 +1705,9 @@ export type Database = {
           xp_awarded: number | null
         }
         Insert: {
+          author_username?: string | null
           custom_title?: string | null
+          embed_html?: string | null
           event_id: string
           final_rank?: number | null
           id?: string
@@ -1710,7 +1726,9 @@ export type Database = {
           xp_awarded?: number | null
         }
         Update: {
+          author_username?: string | null
           custom_title?: string | null
+          embed_html?: string | null
           event_id?: string
           final_rank?: number | null
           id?: string
@@ -2106,10 +2124,12 @@ export type Database = {
       }
       featured_submissions: {
         Row: {
+          author_username: string | null
           avatar_url: string | null
           created_at: string | null
           downvotes: number
           drop_id: string
+          embed_html: string | null
           feedback: string | null
           id: string
           impact_score: number | null
@@ -2123,16 +2143,20 @@ export type Database = {
           quality_score: number | null
           status: string | null
           submission_url: string
+          thumbnail_url: string | null
           upvotes: number
           user_id: string
           username: string
+          video_title: string | null
           xp_awarded: number | null
         }
         Insert: {
+          author_username?: string | null
           avatar_url?: string | null
           created_at?: string | null
           downvotes?: number
           drop_id: string
+          embed_html?: string | null
           feedback?: string | null
           id?: string
           impact_score?: number | null
@@ -2146,16 +2170,20 @@ export type Database = {
           quality_score?: number | null
           status?: string | null
           submission_url: string
+          thumbnail_url?: string | null
           upvotes?: number
           user_id: string
           username: string
+          video_title?: string | null
           xp_awarded?: number | null
         }
         Update: {
+          author_username?: string | null
           avatar_url?: string | null
           created_at?: string | null
           downvotes?: number
           drop_id?: string
+          embed_html?: string | null
           feedback?: string | null
           id?: string
           impact_score?: number | null
@@ -2169,9 +2197,11 @@ export type Database = {
           quality_score?: number | null
           status?: string | null
           submission_url?: string
+          thumbnail_url?: string | null
           upvotes?: number
           user_id?: string
           username?: string
+          video_title?: string | null
           xp_awarded?: number | null
         }
         Relationships: [
@@ -3235,8 +3265,10 @@ export type Database = {
       }
       judge_rating_videos: {
         Row: {
+          author_username: string | null
           bonus_xp_awarded: number | null
           current_views: number | null
+          embed_html: string | null
           id: string
           judge_id: string
           platform: string
@@ -3249,8 +3281,10 @@ export type Database = {
           viral_bonus_awarded: boolean | null
         }
         Insert: {
+          author_username?: string | null
           bonus_xp_awarded?: number | null
           current_views?: number | null
+          embed_html?: string | null
           id?: string
           judge_id: string
           platform: string
@@ -3263,8 +3297,10 @@ export type Database = {
           viral_bonus_awarded?: boolean | null
         }
         Update: {
+          author_username?: string | null
           bonus_xp_awarded?: number | null
           current_views?: number | null
+          embed_html?: string | null
           id?: string
           judge_id?: string
           platform?: string
@@ -4322,9 +4358,11 @@ export type Database = {
       }
       round_participations: {
         Row: {
+          author_username: string | null
           created_at: string | null
           cumulative_qoi: number | null
           custom_title: string | null
+          embed_html: string | null
           event_id: string
           id: string
           impact_score: number | null
@@ -4344,9 +4382,11 @@ export type Database = {
           xp_awarded: number | null
         }
         Insert: {
+          author_username?: string | null
           created_at?: string | null
           cumulative_qoi?: number | null
           custom_title?: string | null
+          embed_html?: string | null
           event_id: string
           id?: string
           impact_score?: number | null
@@ -4366,9 +4406,11 @@ export type Database = {
           xp_awarded?: number | null
         }
         Update: {
+          author_username?: string | null
           created_at?: string | null
           cumulative_qoi?: number | null
           custom_title?: string | null
+          embed_html?: string | null
           event_id?: string
           id?: string
           impact_score?: number | null
