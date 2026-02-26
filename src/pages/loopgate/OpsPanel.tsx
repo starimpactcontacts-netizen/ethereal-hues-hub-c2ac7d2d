@@ -2307,13 +2307,20 @@ export default function OpsPanel() {
               {inviteAnalytics.total_invites} invites • {inviteAnalytics.conversion_rate}% conv
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <button 
               onClick={() => setShowCreateEvent(true)}
               className="flex items-center justify-center gap-2 bg-gold text-black font-semibold py-3 rounded-lg text-sm"
             >
               <Calendar size={16} />
               New Event
+            </button>
+            <button 
+              onClick={() => navigate('/ops-panel/a7c92ff31b/campaigns')}
+              className="flex items-center justify-center gap-2 bg-cyan-500/20 border border-cyan-500/50 text-cyan-300 font-semibold py-3 rounded-lg text-sm hover:bg-cyan-500/30 transition-colors"
+            >
+              <Crown size={16} />
+              Campaigns
             </button>
             <button 
               onClick={() => setShowCreateItem(true)}
