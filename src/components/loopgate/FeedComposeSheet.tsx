@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, Sparkles, Link2, Globe } from "lucide-react";
+import { X, Sparkles, Link2, Globe, ImageIcon } from "lucide-react";
+import GifPicker from "./GifPicker";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { FeedPostItem } from "@/hooks/useFeedPosts";
@@ -24,10 +25,12 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
   const [mediaUrl, setMediaUrl] = useState("");
   const [postType, setPostType] = useState<FeedPostItem['post_type']>('text');
   const [submitting, setSubmitting] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [selectedGif, setSelectedGif] = useState<string | null>(null);
 
   const charsLeft = MAX_CHARS - content.length;
   const isOverLimit = charsLeft < 0;
-  const canSubmit = content.trim().length > 0 && !isOverLimit && !submitting;
+  const canSubmit = (content.trim().length > 0 || selectedGif) && !isOverLimit && !submitting;
 
   const detectPlatform = (url: string): string | undefined => {
     if (url.includes("tiktok.com")) return "tiktok";
@@ -39,13 +42,20 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
+    const finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
     const platform = mediaUrl ? detectPlatform(mediaUrl) : undefined;
-    await onPost(content.trim(), postType, mediaUrl.trim() || undefined, platform);
+    await onPost(finalContent, postType, mediaUrl.trim() || undefined, platform);
     setContent("");
     setMediaUrl("");
     setPostType('text');
+    setSelectedGif(null);
     setSubmitting(false);
     onClose();
+  };
+
+  const handleGifSelect = (gifUrl: string) => {
+    setSelectedGif(gifUrl);
+    setShowGifPicker(false);
   };
 
   const progressPct = Math.min(100, (content.length / MAX_CHARS) * 100);
@@ -156,6 +166,29 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
                     className="w-full bg-muted/20 border border-border/30 rounded-xl px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 mt-2"
                   />
                 )}
+
+                {/* Selected GIF preview */}
+                {selectedGif && (
+                  <div className="relative mt-3 inline-block">
+                    <img src={selectedGif} alt="Selected GIF" className="max-w-[200px] max-h-[160px] rounded-xl" />
+                    <button
+                      onClick={() => setSelectedGif(null)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-background border border-border rounded-full flex items-center justify-center shadow-sm"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* GIF Picker */}
+                {showGifPicker && (
+                  <div className="mt-3 rounded-xl overflow-hidden border border-border">
+                    <GifPicker
+                      onSelect={handleGifSelect}
+                      onClose={() => setShowGifPicker(false)}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -163,7 +196,15 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
           {/* Bottom action bar — persistent CTA */}
           <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-2 safe-bottom shrink-0">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] text-muted-foreground/70">{postType === 'edit_share' ? 'Add your edit link, then post' : 'Write your post and publish'}</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowGifPicker(!showGifPicker)}
+                  className={`p-2 rounded-full transition-colors ${showGifPicker ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'}`}
+                >
+                  <span className="text-[11px] font-black tracking-tight">GIF</span>
+                </button>
+                <p className="text-[11px] text-muted-foreground/70">{postType === 'edit_share' ? 'Add your edit link' : selectedGif ? 'GIF attached' : 'Write your post'}</p>
+              </div>
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
