@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, ArrowLeft, Share2, ExternalLink, AlertCircle } from 'lucide-react';
-import { AuthorityGavel, ScopeTarget, ArrowLink } from '@/components/loopgate/LoopgateIcons';
+import { Send, ArrowLeft, Share2, ExternalLink, AlertCircle, Play } from 'lucide-react';
+import { AuthorityGavel, ScopeTarget } from '@/components/loopgate/LoopgateIcons';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
@@ -158,7 +158,6 @@ export default function JudgeProfilePage() {
 
   const handleUrlChange = (value: string) => {
     setSubmissionUrl(value);
-    // Use substring detection for maximum compatibility with short/mobile links
     const lower = value.toLowerCase();
     if (lower.includes('tiktok.com') || lower.includes('vm.tiktok') || lower.includes('vt.tiktok')) {
       setPlatform('tiktok');
@@ -184,7 +183,6 @@ export default function JudgeProfilePage() {
       return;
     }
 
-    // Auto-detect platform if not already set
     let detectedPlatform = platform;
     if (!detectedPlatform) {
       const lower = trimmedUrl.toLowerCase();
@@ -213,7 +211,6 @@ export default function JudgeProfilePage() {
         });
       if (error) throw error;
       
-      // Award XP
       await supabase.rpc('award_xp', {
         p_user_id: user.id,
         p_amount: 10,
@@ -246,20 +243,19 @@ export default function JudgeProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-red-700 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!judge) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
-        <AlertCircle className="w-12 h-12 text-zinc-600 mb-4" />
-        <h1 className="font-display text-2xl mb-2 text-white">Not Found</h1>
-        <p className="text-zinc-500 mb-6">@{username} doesn't exist or is not a judge.</p>
-        <Link to="/judges" className="px-4 py-2 border border-zinc-700 text-sm text-zinc-300 hover:bg-zinc-900 transition-colors">
-          View Bureau
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 gap-4">
+        <AlertCircle className="w-10 h-10 text-muted-foreground/40" />
+        <p className="text-foreground text-lg font-medium">@{username} not found</p>
+        <Link to="/judges" className="text-sm text-red-400 hover:text-red-300 transition-colors">
+          Browse Judges →
         </Link>
       </div>
     );
@@ -267,16 +263,15 @@ export default function JudgeProfilePage() {
 
   if (!isJudge) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
-        <AlertCircle className="w-12 h-12 text-zinc-600 mb-4" />
-        <h1 className="font-display text-2xl mb-2 text-white">Not a Judge</h1>
-        <p className="text-zinc-500 mb-6">@{username} is not currently in the Bureau.</p>
-        <div className="flex gap-2">
-          <Link to={`/editor/${judge.id}`} className="px-4 py-2 border border-zinc-700 text-sm text-zinc-300 hover:bg-zinc-900 transition-colors">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 gap-4">
+        <AlertCircle className="w-10 h-10 text-muted-foreground/40" />
+        <p className="text-foreground text-lg font-medium">@{username} isn't a judge</p>
+        <div className="flex gap-3">
+          <Link to={`/editor/${judge.id}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             View Profile
           </Link>
-          <Link to="/judges" className="px-4 py-2 bg-red-700 text-white text-sm hover:bg-red-600 transition-colors">
-            View Bureau
+          <Link to="/judges" className="text-sm text-red-400 hover:text-red-300 transition-colors">
+            Browse Judges →
           </Link>
         </div>
       </div>
@@ -286,51 +281,37 @@ export default function JudgeProfilePage() {
   const judgeLevel = calculateJudgeLevel((judge as any).judge_xp || 0);
 
   return (
-    <div className="min-h-screen bg-black pb-24">
-      {/* ═══ RED TOP ACCENT ═══ */}
-      <div className="h-[2px] bg-red-700" />
-
-      {/* ═══ HEADER BAR ═══ */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <button onClick={() => navigate(-1)} className="p-1.5 hover:bg-white/5 transition-colors">
-          <ArrowLeft size={18} className="text-zinc-400" />
+    <div className="min-h-screen bg-background pb-24">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 h-12 border-b border-border/30">
+        <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground transition-colors">
+          <ArrowLeft size={18} />
         </button>
-        <div className="flex items-center gap-1">
-          <span className="text-[9px] text-zinc-600 uppercase tracking-[0.3em] font-mono">QOI Authority</span>
-        </div>
-        <button onClick={handleShare} className="p-1.5 hover:bg-white/5 transition-colors">
-          <Share2 size={16} className="text-zinc-400" />
+        <span className="text-[10px] text-muted-foreground/50 tracking-[0.25em] uppercase">Judge</span>
+        <button onClick={handleShare} className="p-1.5 -mr-1.5 text-muted-foreground hover:text-foreground transition-colors">
+          <Share2 size={16} />
         </button>
       </div>
 
-      {/* ═══ DOSSIER HEADER — compact, institutional ═══ */}
-      <div className="px-4 pb-4">
-        <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div className="relative shrink-0">
-            {judge.avatar_url ? (
-              <img
-                src={judge.avatar_url}
-                alt={judge.username}
-                className="w-20 h-20 rounded-sm object-cover"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-sm bg-red-950 flex items-center justify-center">
-                <AuthorityGavel size={28} className="text-red-400" />
-              </div>
-            )}
-          </div>
-
-          {/* Identity */}
-          <div className="flex-1 min-w-0 pt-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="font-display text-xl text-white tracking-wide">
-                {(judge.display_name || judge.username).toUpperCase()}
+      {/* Profile header */}
+      <div className="px-5 pt-5 pb-4">
+        <div className="flex items-center gap-4">
+          {judge.avatar_url ? (
+            <img src={judge.avatar_url} alt={judge.username} className="w-16 h-16 object-cover flex-shrink-0" />
+          ) : (
+            <div className="w-16 h-16 bg-red-950/60 flex items-center justify-center flex-shrink-0">
+              <AuthorityGavel size={24} className="text-red-400/70" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-semibold text-foreground leading-tight">
+                {judge.display_name || judge.username}
               </h1>
               {judge.verification_status && <VerifiedBadge size="sm" />}
             </div>
-            <p className="text-[11px] text-zinc-500 mb-2">@{judge.username}</p>
-            <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm text-muted-foreground mt-0.5">@{judge.username}</p>
+            <div className="flex items-center gap-1.5 mt-2">
               <JudgeDivisionBadge jxp={(judge as any).judge_xp || 0} size="sm" />
               <JudgeLevelBadge level={judgeLevel} size="sm" />
               {stats && <JudgeClassBadge reviewCount={stats.totalReviews} size="sm" />}
@@ -338,212 +319,161 @@ export default function JudgeProfilePage() {
           </div>
         </div>
 
-        {/* Bio line */}
         {judge.judge_bio && (
-          <p className="text-[12px] text-zinc-400 mt-3 border-l-2 border-red-800 pl-3 italic leading-relaxed">
+          <p className="text-[13px] text-muted-foreground mt-3 leading-relaxed">
             {judge.judge_bio}
           </p>
         )}
 
-        {/* Specialty */}
         {judge.judge_specialty && (
-          <div className="mt-3 flex items-center gap-2">
-            <ScopeTarget size={12} className="text-zinc-600" />
-            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-mono">Focus:</span>
-            <span className="text-[11px] text-zinc-300">{judge.judge_specialty}</span>
+          <p className="text-xs text-muted-foreground/60 mt-2">
+            Focus · {judge.judge_specialty}
+          </p>
+        )}
+      </div>
+
+      {/* Stats row */}
+      {stats && (
+        <div className="grid grid-cols-3 border-y border-border/30">
+          <div className="py-4 text-center">
+            <p className="text-xl font-semibold text-foreground tabular-nums">{stats.totalReviews}</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">Verdicts</p>
+          </div>
+          <div className="py-4 text-center border-x border-border/30">
+            <p className="text-xl font-semibold text-foreground tabular-nums">{stats.avgScore}</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">Avg Score</p>
+          </div>
+          <div className="py-4 text-center">
+            <p className="text-xl font-semibold text-red-400 tabular-nums">{stats.thisWeek}</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">This Week</p>
+          </div>
+        </div>
+      )}
+
+      {/* Submit CTA — clean, single-purpose */}
+      <div className="px-5 py-5">
+        {user ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Drop your edit link — <span className="text-foreground">@{judge.username}</span> will score it and give feedback.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Paste TikTok, IG, or YouTube link"
+                value={submissionUrl}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                className="h-11 bg-background border-border/40 text-sm placeholder:text-muted-foreground/40 focus:border-red-800/60 flex-1"
+              />
+              <button
+                onClick={handleSubmitRequest}
+                disabled={!submissionUrl.trim() || submitting}
+                className="h-11 px-5 bg-red-600 hover:bg-red-500 disabled:bg-muted disabled:text-muted-foreground text-white text-sm font-medium transition-colors flex items-center gap-2 shrink-0"
+              >
+                <Send size={14} />
+                {submitting ? '...' : 'Submit'}
+              </button>
+            </div>
+            {platform && (
+              <p className="text-[11px] text-green-500/80">✓ {platform.charAt(0).toUpperCase() + platform.slice(1)} detected</p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Get your edit rated by <span className="text-foreground">@{judge.username}</span> with a full score, grade, and feedback.
+            </p>
+            <Link to={`/login?returnTo=/judge/${username}`} className="block">
+              <button className="w-full h-12 bg-red-600 hover:bg-red-500 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                <Play size={14} />
+                Get Your Edit Rated
+              </button>
+            </Link>
+            <Link to={`/start?returnTo=/judge/${username}`} className="block">
+              <button className="w-full h-10 border border-border/40 text-muted-foreground text-xs hover:text-foreground hover:border-border transition-colors">
+                New here? Create free account
+              </button>
+            </Link>
           </div>
         )}
       </div>
 
-      {/* ═══ STATS — wire-service row ═══ */}
-      {stats && (
-        <>
-          <div className="h-px bg-zinc-800" />
-          <div className="grid grid-cols-3 gap-px bg-zinc-800">
-            <div className="bg-black p-3 text-center">
-              <div className="text-2xl font-display text-white">{stats.totalReviews}</div>
-              <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">Verdicts</div>
-            </div>
-            <div className="bg-black p-3 text-center">
-              <div className="text-2xl font-display text-white">{stats.avgScore}</div>
-              <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">Avg Score</div>
-            </div>
-            <div className="bg-black p-3 text-center">
-              <div className="text-2xl font-display text-red-400">{stats.thisWeek}</div>
-              <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">This Week</div>
-            </div>
-          </div>
-          <div className="h-px bg-zinc-800" />
-        </>
-      )}
-
-      {/* ═══ SUBMIT CTA — GET YOUR EDIT RATED ═══ */}
-      <div className="px-4 py-4">
-        <div className="border border-red-800/50 bg-red-950/20">
-          <div className="h-0.5 bg-red-700" />
-          <div className="p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Send size={14} className="text-red-400" />
-              <h2 className="font-display text-sm uppercase tracking-[0.15em] text-white">Get Your Edit Rated</h2>
-            </div>
-            <p className="text-[11px] text-zinc-500 mb-3 leading-relaxed">
-              Paste your edit link below — @{judge.username} will watch it, score it, and give you real feedback.
-            </p>
-
-            {user ? (
-              <div className="space-y-3">
-                <Input
-                  placeholder="Paste your edit link (TikTok, IG, YouTube)..."
-                  value={submissionUrl}
-                  onChange={(e) => handleUrlChange(e.target.value)}
-                  className="h-10 bg-black border-zinc-800 text-sm placeholder:text-zinc-700 focus:border-red-800"
-                />
-                {platform && (
-                  <p className="text-[10px] text-green-500 font-mono">
-                    ✓ {platform.toUpperCase()} DETECTED
-                  </p>
-                )}
-                <button
-                  onClick={handleSubmitRequest}
-                  disabled={!submissionUrl.trim() || submitting}
-                  className="w-full py-3 bg-red-700 hover:bg-red-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-sm font-display uppercase tracking-[0.15em] transition-colors flex items-center justify-center gap-2"
-                >
-                  <Send size={14} />
-                  {submitting ? 'Submitting...' : 'Submit Edit for Rating'}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-[11px] text-zinc-400 mb-3 leading-relaxed">
-                  Drop your edit link and @{judge.username} will rate it with a full QOI score, grade, and feedback. You earn +15 XP.
-                </p>
-                <Link to={`/login?returnTo=/judge/${username}`}>
-                  <button className="w-full py-3 bg-red-700 hover:bg-red-600 text-white text-sm font-display uppercase tracking-[0.15em] transition-colors">
-                    Login & Get Your Edit Rated
-                  </button>
-                </Link>
-                <Link to={`/start?returnTo=/judge/${username}`}>
-                  <button className="w-full py-2.5 border border-zinc-700 text-zinc-400 text-[11px] font-display uppercase tracking-wider hover:bg-zinc-900 transition-colors">
-                    New Here? Create Free Account
-                  </button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
+      {/* Tab bar */}
+      <div className="flex border-y border-border/30">
+        <button
+          onClick={() => setActiveTab('videos')}
+          className={`flex-1 h-11 text-xs font-medium tracking-wide transition-colors border-b-2 ${
+            activeTab === 'videos'
+              ? 'text-foreground border-red-500'
+              : 'text-muted-foreground/50 border-transparent hover:text-muted-foreground'
+          }`}
+        >
+          Videos
+        </button>
+        <button
+          onClick={() => setActiveTab('verdicts')}
+          className={`flex-1 h-11 text-xs font-medium tracking-wide transition-colors border-b-2 ${
+            activeTab === 'verdicts'
+              ? 'text-foreground border-red-500'
+              : 'text-muted-foreground/50 border-transparent hover:text-muted-foreground'
+          }`}
+        >
+          Verdicts{stats ? ` (${stats.totalReviews})` : ''}
+        </button>
       </div>
 
-      {/* ═══ TAB BAR — Videos / Verdicts ═══ */}
-      <div className="border-t border-zinc-800">
-        <div className="flex">
-          <button
-            onClick={() => setActiveTab('videos')}
-            className={`flex-1 py-3 text-center text-[11px] font-display uppercase tracking-[0.2em] transition-colors border-b-2 ${
-              activeTab === 'videos'
-                ? 'text-white border-b-red-600'
-                : 'text-zinc-600 border-b-transparent hover:text-zinc-400'
-            }`}
-          >
-            Videos
-          </button>
-          <button
-            onClick={() => setActiveTab('verdicts')}
-            className={`flex-1 py-3 text-center text-[11px] font-display uppercase tracking-[0.2em] transition-colors border-b-2 ${
-              activeTab === 'verdicts'
-                ? 'text-white border-b-red-600'
-                : 'text-zinc-600 border-b-transparent hover:text-zinc-400'
-            }`}
-          >
-            Verdicts ({stats?.totalReviews || 0})
-          </button>
-        </div>
-      </div>
-
-      {/* ═══ TAB CONTENT ═══ */}
+      {/* Tab content */}
       {activeTab === 'videos' ? (
         <PublicJudgeVideos userId={judge.id} />
       ) : (
         <div>
           {recentReviews.length > 0 ? (
-            <div>
-              {/* Column header */}
-              <div className="flex items-center gap-3 px-4 py-2 border-b border-zinc-900">
-                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono w-8">Grade</span>
-                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono flex-1">Editor</span>
-                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono w-12 text-right">Score</span>
-                <span className="text-[8px] text-zinc-700 uppercase tracking-wider font-mono w-16 text-right">Date</span>
-              </div>
-
+            <div className="divide-y divide-border/20">
               {recentReviews.map((review, i) => {
                 const { grade, color } = getGrade(review.total_score || 0);
                 return (
                   <motion.div
                     key={review.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.02 }}
-                    className="group"
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03, duration: 0.2 }}
+                    className="flex items-center gap-3 px-5 py-3 hover:bg-muted/20 transition-colors"
                   >
-                    <div className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.02] transition-colors">
-                      {/* Grade */}
-                      <div className={`w-8 text-center font-display text-sm ${color}`}>
-                        {grade}
-                      </div>
+                    {/* Grade pill */}
+                    <span className={`w-8 text-center text-sm font-semibold ${color}`}>{grade}</span>
 
-                      {/* Editor */}
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {review.avatar_url ? (
-                          <img src={review.avatar_url} alt="" className="w-6 h-6 rounded-sm object-cover" />
-                        ) : (
-                          <div className="w-6 h-6 rounded-sm bg-zinc-900 flex items-center justify-center text-[9px] text-zinc-500 font-bold">
-                            {review.username[0]?.toUpperCase()}
-                          </div>
-                        )}
-                        <span className="text-[12px] text-zinc-300 truncate">@{review.username}</span>
-                      </div>
-
-                      {/* Score */}
-                      <span className="text-[12px] text-zinc-400 font-mono w-12 text-right">
-                        {review.total_score}
-                      </span>
-
-                      {/* Date */}
-                      <span className="text-[10px] text-zinc-600 font-mono w-16 text-right">
-                        {new Date(review.reviewed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </span>
-
-                      {/* Link */}
-                      <a
-                        href={review.submission_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0 p-1 hover:bg-white/5 transition-colors"
-                      >
-                        <ExternalLink size={12} className="text-zinc-600" />
-                      </a>
-                    </div>
-
-                    {/* Comment preview */}
-                    {review.judge_comment && (
-                      <div className="px-4 pb-2 pl-16">
-                        <p className="text-[10px] text-zinc-600 italic line-clamp-1">"{review.judge_comment}"</p>
+                    {/* Avatar */}
+                    {review.avatar_url ? (
+                      <img src={review.avatar_url} alt="" className="w-7 h-7 object-cover shrink-0" />
+                    ) : (
+                      <div className="w-7 h-7 bg-muted flex items-center justify-center text-[10px] text-muted-foreground font-medium shrink-0">
+                        {review.username[0]?.toUpperCase()}
                       </div>
                     )}
 
-                    <div className="h-px bg-zinc-900 ml-12" />
+                    {/* Name + comment */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground truncate">@{review.username}</p>
+                      {review.judge_comment && (
+                        <p className="text-[11px] text-muted-foreground/60 truncate mt-0.5">"{review.judge_comment}"</p>
+                      )}
+                    </div>
+
+                    {/* Score */}
+                    <span className="text-sm text-muted-foreground tabular-nums shrink-0">{review.total_score}</span>
+
+                    {/* Link out */}
+                    <a href={review.submission_url} target="_blank" rel="noopener noreferrer" className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+                      <ExternalLink size={13} />
+                    </a>
                   </motion.div>
                 );
               })}
             </div>
           ) : (
-            <div className="text-center py-12 px-4">
-              <div className="w-12 h-12 mx-auto border border-zinc-800 flex items-center justify-center mb-3">
-                <AuthorityGavel className="text-zinc-600" size={20} />
-              </div>
-              <p className="font-display text-xs tracking-wider text-zinc-400 mb-1">NO VERDICTS FILED</p>
-              <p className="text-[10px] text-zinc-600">
-                Be the first to get reviewed by @{judge.username}
-              </p>
+            <div className="flex flex-col items-center justify-center py-16 px-6">
+              <AuthorityGavel className="text-muted-foreground/20" size={28} />
+              <p className="text-sm text-muted-foreground/50 mt-3">No verdicts yet</p>
+              <p className="text-xs text-muted-foreground/30 mt-1">Be the first to get rated</p>
             </div>
           )}
         </div>
