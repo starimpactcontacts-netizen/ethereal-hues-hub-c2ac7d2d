@@ -467,30 +467,26 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden border-[3px] border-black/15 bg-gradient-to-r from-red-600 via-red-500 to-red-600 group-hover:from-red-500 group-hover:via-red-400 group-hover:to-red-500 transition-all">
-            {/* Roblox inner shine */}
-            <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/15 pointer-events-none" />
-
-            {/* Content */}
-            <div className="relative z-10 flex items-center justify-between p-4 pl-5">
-                {/* Left side — icon + text */}
-                <div className="flex items-center gap-4">
-                  <div className="relative flex items-center justify-center shrink-0">
-                    <div className="relative w-12 h-10 bg-white/90 flex items-center justify-center group-active:scale-95 transition-transform border-2 border-black/10">
-                      <InfinityIcon className="w-5 h-5 text-red-600" strokeWidth={2.5} />
-                    </div>
+          <div className="relative overflow-hidden bg-surface-1 border border-border group-hover:border-red-500/50 transition-all">
+            {/* Left red accent */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500" />
+            
+            <div className="relative z-10 flex items-center justify-between p-3.5 pl-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 bg-red-600 flex items-center justify-center group-hover:bg-red-500 transition-colors">
+                    <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+                    <InfinityIcon className="w-4.5 h-4.5 text-white relative z-10" strokeWidth={2.5} />
                   </div>
                   
                   <div>
-                    <h2 className="font-display text-2xl tracking-wide text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.3)]">ARENA</h2>
-                    <p className="text-[11px] text-white/80 font-semibold">Enter editing battles</p>
+                    <h2 className="font-display text-xl tracking-wide text-foreground leading-none">ARENA</h2>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Enter editing battles</p>
                   </div>
                 </div>
                 
-                {/* Right side */}
-                <div className="flex items-center gap-2 font-display text-lg tracking-wider text-white whitespace-nowrap drop-shadow-[0_2px_0_rgba(0,0,0,0.3)]">
-                  <span>PLAY ▶</span>
+                <div className="flex items-center gap-1.5 font-display text-xs tracking-wider text-red-400 group-hover:text-red-300 transition-colors">
+                  <span>ENTER</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </div>
             </div>
           </div>

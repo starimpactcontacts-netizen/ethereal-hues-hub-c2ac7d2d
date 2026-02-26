@@ -117,54 +117,48 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
       <motion.button
         onClick={isSearching ? undefined : handleClick}
         disabled={isSearching}
-        whileTap={{ scale: 0.96 }}
+        whileTap={{ scale: 0.97 }}
         className="relative overflow-hidden group touch-manipulation select-none"
       >
-        {/* Roblox-style chunky border + Fortnite gradient */}
-        <div className="absolute inset-0 border-[3px] border-black/20 z-20 pointer-events-none" />
-        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-white/30 z-10" />
-        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/20 z-10" />
-
         <motion.div
           animate={isSearching ? {
-            boxShadow: ['0 4px 20px rgba(56,189,248,0.3)', '0 4px 40px rgba(56,189,248,0.5)', '0 4px 20px rgba(56,189,248,0.3)']
-          } : {
-            boxShadow: ['0 4px 15px rgba(239,68,68,0.25)', '0 4px 30px rgba(239,68,68,0.45)', '0 4px 15px rgba(239,68,68,0.25)']
-          }}
-          transition={{ duration: 1.8, repeat: Infinity }}
-          className={`${isSmall ? 'px-4 py-3' : 'px-6 py-4'} ${
+            boxShadow: ['0 0 20px rgba(239,68,68,0.2)', '0 0 35px rgba(239,68,68,0.4)', '0 0 20px rgba(239,68,68,0.2)']
+          } : {}}
+          transition={{ duration: 2, repeat: Infinity }}
+          className={`${isSmall ? 'px-4 py-3' : 'px-6 py-3.5'} ${
             isSearching 
-              ? 'bg-gradient-to-b from-red-400 via-red-500 to-red-700' 
-              : 'bg-gradient-to-b from-red-500 via-red-600 to-red-700 hover:from-red-400 hover:via-red-500 hover:to-red-600'
-          } flex items-center justify-center gap-2.5 active:brightness-90 transition-all`}
+              ? 'bg-red-600' 
+              : 'bg-red-600 hover:bg-red-500'
+          } transition-colors flex items-center justify-center gap-3`}
         >
-          {/* Roblox-style inner shine */}
-          <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
+          {/* Subtle top highlight */}
+          <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
 
           {isSearching ? (
             <>
               <Loader2 className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white animate-spin relative z-10`} />
-              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.4)] relative z-10`}>
+              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider relative z-10`}>
                 Searching...
               </span>
-              <span className={`flex items-center gap-1 ${isSmall ? 'text-[10px]' : 'text-xs'} text-white/80 font-mono relative z-10`}>
+              <span className={`flex items-center gap-1 ${isSmall ? 'text-[10px]' : 'text-xs'} text-white/70 font-mono relative z-10`}>
                 <Clock className="w-3 h-3" />
                 {formatElapsed(elapsed)}
               </span>
             </>
           ) : activeFight ? (
             <>
-              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white relative z-10`} />
-              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.4)] relative z-10`}>
+              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white relative z-10`} />
+              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider relative z-10`}>
                 Return to Fight
               </span>
             </>
           ) : (
             <>
-              <Zap className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-white relative z-10`} />
-              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.4)] relative z-10`}>
+              <Zap className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white relative z-10`} />
+              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider relative z-10`}>
                 Quick Edit Battle
               </span>
+              <span className={`text-[9px] text-white/50 font-bold relative z-10`}>+20 IDX</span>
             </>
           )}
         </motion.div>
@@ -177,20 +171,20 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
             initial={{ opacity: 0, y: -8, height: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -8, height: 0 }}
-            className="flex flex-col gap-2"
+            className="flex flex-col gap-1.5"
           >
             {/* Rotating tip banner */}
-            <div className="relative overflow-hidden bg-amber-500/10 border border-amber-500/30 px-3 py-2.5">
+            <div className="bg-surface-1 border border-border px-3 py-2">
               <div className="flex items-start gap-2">
                 <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={tipIndex}
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-[11px] text-amber-300/90 leading-snug"
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.25 }}
+                    className="text-[11px] text-muted-foreground leading-snug"
                   >
                     {QUEUE_TIPS[tipIndex]}
                   </motion.p>
@@ -199,16 +193,13 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
             </div>
 
             {/* Cancel button */}
-            <motion.button
+            <button
               onClick={handleCancel}
-              whileTap={{ scale: 0.97 }}
-              className={`relative overflow-hidden flex items-center justify-center gap-1.5 ${isSmall ? 'px-3 py-2 text-xs' : 'px-5 py-2.5 text-sm'} bg-gradient-to-b from-red-500 via-red-600 to-red-700 text-white font-display uppercase tracking-wider active:brightness-90 transition-all touch-manipulation select-none`}
+              className={`flex items-center justify-center gap-1.5 ${isSmall ? 'px-3 py-1.5 text-[10px]' : 'px-4 py-2 text-xs'} border border-border bg-surface-1 text-muted-foreground font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation select-none`}
             >
-              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
-              <div className="absolute inset-0 border-[3px] border-black/20 pointer-events-none" />
-              <X className="w-4 h-4 relative z-10" />
-              <span className="relative z-10">Cancel Search</span>
-            </motion.button>
+              <X className="w-3.5 h-3.5" />
+              Cancel
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
