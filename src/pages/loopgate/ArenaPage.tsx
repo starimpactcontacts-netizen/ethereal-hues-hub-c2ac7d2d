@@ -361,29 +361,32 @@ export default function ArenaPage() {
             </div>
           )}
 
-          {/* Quick Action Row */}
+          {/* Quick Action Row — Fortnite Ready-Up Style */}
           <div className="grid grid-cols-2 gap-2 mb-3">
-            {/* Quick 1v1 CTA */}
+            {/* Quick 1v1 CTA — Primary Yellow */}
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-              className="relative overflow-hidden py-3.5 bg-gradient-to-br from-red-600 to-red-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation"
+              className="relative overflow-hidden py-4 bg-gradient-to-b from-yellow-300 via-yellow-400 to-yellow-500 hover:from-yellow-200 hover:via-yellow-300 hover:to-yellow-400 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
             >
-              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.1)_50%,transparent_70%)]" />
-              <Zap className="w-4.5 h-4.5 text-white" />
-              <span className="font-display text-[10px] text-white uppercase tracking-wider">Quick Edit 1v1</span>
-              <span className="text-[8px] text-white/70 font-bold">+20 IDX • 3hr</span>
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-yellow-200/60" />
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-yellow-600/40" />
+              <Zap className="w-5 h-5 text-black" />
+              <span className="font-display text-xs text-black uppercase tracking-wider drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]">Quick 1v1</span>
+              <span className="text-[8px] text-black/60 font-bold">+20 IDX • 3hr</span>
             </motion.button>
 
-            {/* Create Battle CTA */}
+            {/* Create Battle CTA — Secondary Blue */}
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-              className="py-3.5 bg-surface-1 border border-border hover:border-red-500/40 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-colors"
+              className="relative overflow-hidden py-4 bg-gradient-to-b from-sky-400 via-sky-500 to-sky-600 hover:from-sky-300 hover:via-sky-400 hover:to-sky-500 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
             >
-              <Swords className="w-4.5 h-4.5 text-foreground" />
-              <span className="font-display text-[10px] text-foreground uppercase tracking-wider">Edit Battle</span>
-              <span className="text-[8px] text-muted-foreground font-bold">+20 IDX</span>
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-sky-300/60" />
+              <div className="absolute right-0 top-0 bottom-0 w-1 bg-sky-700/40" />
+              <Swords className="w-5 h-5 text-white" />
+              <span className="font-display text-xs text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.2)]">Edit Battle</span>
+              <span className="text-[8px] text-white/70 font-bold">+20 IDX</span>
             </motion.button>
           </div>
 

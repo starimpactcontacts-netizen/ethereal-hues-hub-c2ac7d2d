@@ -467,35 +467,31 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden rounded-xl border border-white/10 group-hover:border-white/20 transition-colors">
-            {/* Full-width gradient bg — black left to white right, no cutoff */}
-            <div className="absolute inset-0 z-0" style={{
-              background: 'linear-gradient(to right, hsl(var(--background)) 0%, hsl(var(--background)) 30%, rgba(255,255,255,0.03) 40%, rgba(255,255,255,0.08) 48%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0.35) 62%, rgba(255,255,255,0.55) 70%, rgba(255,255,255,0.75) 78%, rgba(255,255,255,0.9) 86%, white 94%)'
-            }} />
+          <div className="relative overflow-hidden border-2 border-yellow-400/60 group-hover:border-yellow-300 transition-colors bg-gradient-to-r from-surface-1 via-surface-1 to-yellow-400/10">
+            {/* Fortnite-style diagonal accent */}
+            <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-yellow-400/20 to-transparent skew-x-[-12deg] translate-x-4" />
+            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-yellow-400" />
 
             {/* Content */}
-            <div className="relative z-10 flex items-center justify-between p-4">
+            <div className="relative z-10 flex items-center justify-between p-4 pl-5">
                 {/* Left side — icon + text */}
                 <div className="flex items-center gap-4">
-                  {/* Arena Icon - Infinite color-morphing glitch edges */}
                   <div className="relative flex items-center justify-center shrink-0">
-                    <GlitchEdge side="left" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '-4px' }} />
-                    <GlitchEdge side="right" className="absolute w-12 h-10 rounded-[6px]" style={{ left: '4px' }} />
-                    <div className="relative w-12 h-10 bg-white rounded-[6px] flex items-center justify-center group-active:scale-95 transition-transform">
+                    <div className="relative w-12 h-10 bg-yellow-400 flex items-center justify-center group-active:scale-95 transition-transform">
                       <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
                     </div>
                   </div>
                   
                   <div>
-                    <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-white transition-colors duration-300">ARENA</h2>
+                    <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-yellow-300 transition-colors duration-200">ARENA</h2>
                     <p className="text-xs text-muted-foreground font-medium">Enter editing battles</p>
                   </div>
                 </div>
                 
-                {/* Right side — ENTER NOW text, no box, just lives in the white zone */}
-                <div className="flex items-center gap-2 font-display text-sm tracking-wide text-black whitespace-nowrap">
-                  <span>ENTER NOW</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                {/* Right side — Fortnite READY style */}
+                <div className="flex items-center gap-2 font-display text-base tracking-wider text-yellow-400 whitespace-nowrap group-hover:text-yellow-300 transition-colors">
+                  <span>READY!</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </div>
             </div>
           </div>
