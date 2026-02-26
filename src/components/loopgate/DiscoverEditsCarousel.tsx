@@ -490,17 +490,23 @@ export default function DiscoverEditsCarousel() {
         });
       });
 
-      // Sort: prioritize entries with thumbnails and high QOI scores, then by date
+      // Composite ranking: recent + thumbnail + score = highest
+      const now = Date.now();
       allEntries.sort((a, b) => {
-        const aThumb = a.thumbnail_url ? 1 : 0;
-        const bThumb = b.thumbnail_url ? 1 : 0;
-        if (aThumb !== bThumb) return bThumb - aThumb;
-        const aScore = a.qoi_score ?? 0;
-        const bScore = b.qoi_score ?? 0;
-        if (aScore >= 50 || bScore >= 50) {
-          if (aScore !== bScore) return bScore - aScore;
-        }
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        const rank = (e: EditEntry) => {
+          let score = 0;
+          // Recency boost: 0-50 pts (last 24h = max, decays over 7 days)
+          const ageHrs = (now - new Date(e.created_at).getTime()) / 3.6e6;
+          score += Math.max(0, 50 - (ageHrs / 168) * 50);
+          // Thumbnail = +30
+          if (e.thumbnail_url) score += 30;
+          // QOI score boost: up to +40
+          if (e.qoi_score && e.qoi_score > 0) {
+            score += Math.min(40, (e.qoi_score / 100) * 40);
+          }
+          return score;
+        };
+        return rank(b) - rank(a);
       });
       const seen = new Set<string>();
       const unique = allEntries.filter((e) => {
