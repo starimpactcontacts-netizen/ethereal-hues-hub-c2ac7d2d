@@ -6,7 +6,7 @@ import {
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
-  Sparkles, Music, Mail, ArrowRight, History, Play
+  Sparkles, Music, Mail, ArrowRight, History, Play, Loader2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,7 +25,7 @@ import BattleCard from "@/components/loopgate/BattleCard";
 import CreateBattleModal from "@/components/loopgate/CreateBattleModal";
 import { useSanctionedTournaments } from "@/hooks/useSanctionedTournaments";
 import { useBattles } from "@/hooks/useBattles";
-import { useRecentQuickFights } from "@/hooks/useQuickFight";
+import { useRecentQuickFights, findQuickFight, leaveQueue } from "@/hooks/useQuickFight";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -208,6 +208,8 @@ export default function ArenaPage() {
   const [quickSearch, setQuickSearch] = useState("");
   const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice'>((searchParams.get('mode') as any) || 'quick');
   const [userStats, setUserStats] = useState<{ wins: number; losses: number; streak: number; events: number } | null>(null);
+  const [qfSearching, setQfSearching] = useState(false);
+  const [qfElapsed, setQfElapsed] = useState(0);
 
   const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(["approved", "ready_up", "live", "bracket", "completed"]);
   const { battles, loading: battlesLoading } = useBattles(["pending", "active", "judging", "completed"]);
@@ -215,10 +217,32 @@ export default function ArenaPage() {
   const { fights: quickFights, loading: quickLoading } = useRecentQuickFights(100);
   const { liveDrops } = useFeaturedDrops();
   const { activeSolo, loading: soloLoading } = useSoloMode();
-  const { fights: myQuickFights } = useMyQuickFights();
+  const { fights: myQuickFights, inQueue: qfInQueue } = useMyQuickFights();
   const [arenaView, setArenaView] = useState<'arena' | 'my'>(() => searchParams.get('tab') === 'my' ? 'my' : 'arena');
   const [emailInput, setEmailInput] = useState("");
   const [savingEmail, setSavingEmail] = useState(false);
+
+  const qfActiveFight = useMemo(() => myQuickFights.find(f => f.status === 'active' || f.status === 'judging'), [myQuickFights]);
+  const isQfSearching = qfSearching || qfInQueue;
+
+  // Queue timer
+  useEffect(() => {
+    if (!isQfSearching) { setQfElapsed(0); return; }
+    setQfElapsed(0);
+    const t = setInterval(() => setQfElapsed(prev => prev + 1), 1000);
+    return () => clearInterval(t);
+  }, [isQfSearching]);
+
+  // Auto-navigate on match found
+  useEffect(() => {
+    if (!isQfSearching) return;
+    const matched = myQuickFights.find(f => f.status === 'active');
+    if (matched) {
+      toast.success('⚔️ Match found!');
+      navigate(`/fight/${matched.id}`);
+      setQfSearching(false);
+    }
+  }, [myQuickFights, isQfSearching]);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -321,9 +345,35 @@ export default function ArenaPage() {
     { key: "practice", label: "Practice" },
   ];
 
+  const handleQuickFight = async () => {
+    if (!user || !profile) { navigate('/start'); return; }
+    if (qfActiveFight) { navigate(`/fight/${qfActiveFight.id}`); return; }
+    setQfSearching(true);
+    try {
+      const fightId = await findQuickFight(user.id, profile.username, profile.avatar_url);
+      if (fightId) {
+        toast.success('⚔️ Match found!');
+        navigate(`/fight/${fightId}`);
+        setQfSearching(false);
+      } else {
+        toast('🔍 In queue — we\'ll notify you when matched!', { duration: 4000 });
+      }
+    } catch {
+      toast.error('Matchmaking failed');
+      setQfSearching(false);
+    }
+  };
+
+  const handleCancelQueue = async () => {
+    if (!user) return;
+    await leaveQueue(user.id);
+    setQfSearching(false);
+    toast('Search cancelled', { duration: 2000 });
+  };
+
   // Mode actions for the game lobby
   const modeActions: Record<string, () => void> = {
-    quick: () => profile ? navigate('/quick-fight') : navigate('/start'),
+    quick: handleQuickFight,
     battle: () => profile ? setShowCreateBattle(true) : navigate('/start'),
     solo: () => profile ? setShowSoloMode(true) : navigate('/start'),
     practice: () => setShowPracticeMode(true),
@@ -664,28 +714,50 @@ export default function ArenaPage() {
 
             {/* PLAY button — dual CTA for quick/solo, standard for others */}
             {(selectedMode === 'quick' || selectedMode === 'solo') ? (
-              <div className="flex gap-0 overflow-hidden border border-red-500/30">
+              <div className="flex flex-col gap-0">
+                <div className="flex gap-0 overflow-hidden border border-red-500/30">
                 {/* Quick Edit Battle */}
                 <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => { setSelectedMode('quick'); modeActions.quick(); }}
+                  whileTap={isQfSearching ? undefined : { scale: 0.97 }}
+                  onClick={() => { setSelectedMode('quick'); if (!isQfSearching) modeActions.quick(); }}
+                  disabled={isQfSearching}
                   className={`flex-1 relative overflow-hidden touch-manipulation group py-5 flex items-center justify-center gap-2 transition-all ${
-                    selectedMode === 'quick' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
+                    isQfSearching ? 'bg-red-600' : selectedMode === 'quick' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
                   }`}
                 >
-                  {selectedMode === 'quick' && (
+                  {(selectedMode === 'quick' || isQfSearching) && (
                     <>
                       <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-900/50 pointer-events-none" />
                     </>
                   )}
-                  <Zap className={`w-5 h-5 relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-muted-foreground'}`} />
-                  <div className="relative z-10 flex flex-col items-start">
-                    <span className={`text-[16px] font-black tracking-tight uppercase ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                      Quick Edit Battle
-                    </span>
-                  </div>
-                  <span className={`text-[11px] font-bold relative z-10 ml-1 ${selectedMode === 'quick' ? 'text-white/40' : 'text-gold'}`}>+20 IDX</span>
+                  {isQfSearching ? (
+                    <>
+                      <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
+                      <span className="text-[16px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        Searching...
+                      </span>
+                      <span className="text-[11px] font-mono text-white/50 relative z-10 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
+                      </span>
+                    </>
+                  ) : qfActiveFight ? (
+                    <>
+                      <Swords className="w-5 h-5 text-white relative z-10" />
+                      <span className="text-[16px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        Return to Fight
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Zap className={`w-5 h-5 relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-muted-foreground'}`} />
+                      <span className={`text-[16px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        Quick Edit Battle
+                      </span>
+                      <span className={`text-[11px] font-bold relative z-10 ml-1 ${selectedMode === 'quick' ? 'text-white/40' : 'text-gold'}`}>+20 IDX</span>
+                    </>
+                  )}
                 </motion.button>
 
                 {/* Divider */}
@@ -713,6 +785,17 @@ export default function ArenaPage() {
                   </div>
                   <span className={`text-[11px] font-bold relative z-10 ml-1 ${selectedMode === 'solo' ? 'text-white/40' : 'text-gold'}`}>100+ IDX</span>
                 </motion.button>
+              </div>
+              {/* Cancel queue button */}
+              {isQfSearching && (
+                <button
+                  onClick={handleCancelQueue}
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 border border-border bg-surface-1 text-muted-foreground text-xs font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Cancel Search
+                </button>
+              )}
               </div>
             ) : (
               <motion.button
