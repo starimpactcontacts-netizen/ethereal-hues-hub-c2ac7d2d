@@ -6,6 +6,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple password hashing using Web Crypto API
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
+  const data = encoder.encode(saltHex + password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return saltHex + ':' + hashHex;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -36,7 +47,6 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      // Get edits for each campaign
       const campaignIds = (campaigns || []).map(c => c.id);
       let edits: any[] = [];
       if (campaignIds.length > 0) {
@@ -80,7 +90,7 @@ serve(async (req) => {
 
     // ─── CREATE CAMPAIGN ───
     if (action === "create-campaign") {
-      const { client_id, name, description, start_date, end_date, budget_cents, cover_image_url } = params;
+      const { client_id, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views, goal_label } = params;
       if (!client_id || !name) {
         return new Response(JSON.stringify({ error: "client_id and name required" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
@@ -89,7 +99,7 @@ serve(async (req) => {
 
       const { data, error } = await supabase
         .from("artist_campaigns")
-        .insert({ client_id, name, description, start_date, end_date, budget_cents, cover_image_url })
+        .insert({ client_id, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views: goal_views || 0, goal_label })
         .select()
         .single();
 
@@ -108,10 +118,9 @@ serve(async (req) => {
         });
       }
 
-      // Only allow specific fields
       const allowed = ['name', 'description', 'status', 'total_views', 'total_impressions', 
         'total_engagements', 'total_clicks', 'budget_cents', 'spent_cents', 'roi_percentage',
-        'start_date', 'end_date', 'cover_image_url'];
+        'start_date', 'end_date', 'cover_image_url', 'goal_views', 'goal_label'];
       const filtered: Record<string, any> = {};
       for (const key of allowed) {
         if (updates[key] !== undefined) filtered[key] = updates[key];
@@ -236,6 +245,82 @@ serve(async (req) => {
 
       if (error) throw error;
       return new Response(JSON.stringify({ clients: data || [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // ─── ADMIN: SET CLIENT PASSWORD ───
+    if (action === "set-client-password") {
+      const { client_id, new_password } = params;
+      if (!client_id || !new_password || new_password.length < 6) {
+        return new Response(JSON.stringify({ error: "client_id and password (min 6 chars) required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const hashed = await hashPassword(new_password);
+      const { error } = await supabase
+        .from("enterprise_clients")
+        .update({ password_hash: hashed })
+        .eq("id", client_id);
+
+      if (error) throw error;
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // ─── CLIENT: REQUEST DASHBOARD UPDATE ───
+    if (action === "request-update") {
+      const { client_id, campaign_id, message } = params;
+      if (!client_id) {
+        return new Response(JSON.stringify({ error: "client_id required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const { data, error } = await supabase
+        .from("dashboard_update_requests")
+        .insert({ client_id, campaign_id: campaign_id || null, message: message || 'Please update my dashboard metrics' })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return new Response(JSON.stringify({ success: true, request: data }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // ─── ADMIN: GET UPDATE REQUESTS ───
+    if (action === "get-update-requests") {
+      const { data, error } = await supabase
+        .from("dashboard_update_requests")
+        .select("*, enterprise_clients(email, display_name)")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+      return new Response(JSON.stringify({ requests: data || [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // ─── ADMIN: RESOLVE UPDATE REQUEST ───
+    if (action === "resolve-request") {
+      const { request_id } = params;
+      if (!request_id) {
+        return new Response(JSON.stringify({ error: "request_id required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const { error } = await supabase
+        .from("dashboard_update_requests")
+        .update({ status: 'resolved', resolved_at: new Date().toISOString() })
+        .eq("id", request_id);
+
+      if (error) throw error;
+      return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
