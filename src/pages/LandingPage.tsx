@@ -54,47 +54,53 @@ export default function LandingPage() {
           <GlitchEdge side="left" className="absolute left-0 top-0 bottom-0 w-[3px] z-[3]" />
           <GlitchEdge side="right" className="absolute right-0 top-0 bottom-0 w-[3px] z-[3]" />
 
-          {/* Compact text strip at top */}
-          <div className="relative z-10 pt-10 sm:pt-14 pb-6 sm:pb-8 text-center px-6">
-            <motion.img
-              src={loopgateBrand}
-              alt="LOOPGATE"
-              className="h-10 sm:h-12 w-auto mx-auto mb-4"
+          {/* Hero text — Apple × Fortnite × Discord seamless CTA */}
+          <div className="relative z-10 pt-12 sm:pt-16 pb-8 sm:pb-10 text-center px-6">
+            <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-            />
-            <motion.p
-              className="text-base sm:text-xl text-foreground/85 max-w-2xl mx-auto mb-6 leading-relaxed"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+              className="mb-5"
             >
-              Where video editors compete. Submit edits, get judged by the community, and climb the global rankings.
+              <img src={loopgateBrand} alt="LOOPGATE" className="h-8 sm:h-10 w-auto mx-auto mb-5 opacity-80" />
+              <h1 className="font-display text-[2.8rem] sm:text-[4rem] md:text-[5rem] leading-[0.88] tracking-[0.02em] mb-0">
+                WHERE EDITORS
+                <br />
+                <span className="text-gold">COMPETE</span>
+              </h1>
+            </motion.div>
+            <motion.p
+              className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-7 leading-relaxed font-medium"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ delay: 0.15, duration: 0.6 }}
+            >
+              Submit edits. Get judged. Climb the global rankings.
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-3 items-center justify-center"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
+              transition={{ delay: 0.25, duration: 0.6 }}
             >
               <Link to="/start">
-                <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-lg px-12 py-5 h-auto gap-3 tracking-[0.08em]">
-                  <Play className="w-5 h-5" />
-                  Start Editing
+                <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-base sm:text-lg px-10 sm:px-14 py-4 sm:py-5 h-auto gap-2.5 tracking-[0.06em] rounded-none">
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Play Now
                 </Button>
               </Link>
               <button
                 onClick={handleGuestExplore}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors font-semibold tracking-[0.06em] px-4 py-3"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors font-semibold tracking-[0.08em] px-4 py-3 uppercase"
               >
                 Explore as Guest →
               </button>
             </motion.div>
             <motion.div
-              className="flex items-center gap-6 mt-5 text-sm sm:text-base text-muted-foreground justify-center"
+              className="flex items-center gap-5 mt-6 text-xs sm:text-sm text-muted-foreground justify-center"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
+              transition={{ delay: 0.45, duration: 0.6 }}
             >
-              <span className="flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" /></span><span className="text-foreground font-bold">{stats.activeUsers || 0}</span> editors online</span>
-              <span className="flex items-center gap-2"><Swords className="w-4 h-4 text-muted-foreground" /><span className="text-foreground font-bold">{stats.totalCompeting || 0}</span> competing</span>
+              <span className="flex items-center gap-1.5"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" /></span><span className="text-foreground font-bold">{stats.activeUsers || 0}</span> online</span>
+              <span className="w-px h-3 bg-border" />
+              <span className="flex items-center gap-1.5"><Swords className="w-3.5 h-3.5 text-muted-foreground" /><span className="text-foreground font-bold">{stats.totalCompeting || 0}</span> competing</span>
             </motion.div>
           </div>
 
