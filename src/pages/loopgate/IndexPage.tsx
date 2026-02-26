@@ -20,6 +20,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 import { supabase } from "@/integrations/supabase/client";
 import GatePattern from "@/components/loopgate/GatePattern";
+import EditoriumCarousel from "@/components/loopgate/EditoriumCarousel";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
 type RankFilter = "all" | "top10" | "top50" | "top100";
@@ -587,20 +588,8 @@ export default function IndexPage() {
                   </div>
                 )}
 
-                {/* ─── EDITORIUM CTA ─── */}
-                <div className="px-4 py-2">
-                  <button onClick={() => navigate('/editorium')}
-                    className="w-full bg-surface-1/60 border border-border/40 hover:border-gold/30 p-3.5 flex items-center gap-3 transition-all group card-hover">
-                    <div className="w-10 h-10 bg-gold/10 border border-gold/20 flex items-center justify-center flex-shrink-0">
-                      <Newspaper className="w-5 h-5 text-gold" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-xs font-bold text-foreground uppercase tracking-wider">Get Featured in Editorium</p>
-                      <p className="text-[10px] text-muted-foreground">Top editors get press coverage & immortalized</p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:text-gold transition-all" />
-                  </button>
-                </div>
+                {/* ─── EDITORIUM CAROUSEL ─── */}
+                <EditoriumCarousel />
 
                 {/* ─── TRENDING CAROUSEL ─── */}
                 {trending.length > 0 && (
