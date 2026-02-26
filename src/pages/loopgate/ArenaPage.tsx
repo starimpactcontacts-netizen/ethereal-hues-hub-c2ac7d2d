@@ -199,6 +199,7 @@ export default function ArenaPage() {
   const [showSoloMode, setShowSoloMode] = useState(false);
   const [showCreateBattle, setShowCreateBattle] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
+  const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice'>('quick');
   const [userStats, setUserStats] = useState<{ wins: number; losses: number; streak: number; events: number } | null>(null);
 
   const { tournaments: sanctionedTournaments, loading: sanctionedLoading } = useSanctionedTournaments(["approved", "ready_up", "live", "bracket", "completed"]);
@@ -287,8 +288,7 @@ export default function ArenaPage() {
     { key: "practice", label: "Practice" },
   ];
 
-  // Selected mode for the game lobby
-  const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice'>('quick');
+  // Mode actions for the game lobby
   const modeActions: Record<string, () => void> = {
     quick: () => profile ? navigate('/quick-fight') : navigate('/start'),
     battle: () => profile ? setShowCreateBattle(true) : navigate('/start'),
