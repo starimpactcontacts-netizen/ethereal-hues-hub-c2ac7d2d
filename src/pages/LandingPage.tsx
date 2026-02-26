@@ -75,10 +75,23 @@ export default function LandingPage() {
               transition={{ delay: 0.25, duration: 0.6 }}
             >
               <Link to="/start">
-                <Button size="lg" className="bg-foreground hover:bg-foreground/90 text-background font-display text-xl sm:text-2xl px-12 sm:px-16 py-5 sm:py-6 h-auto gap-3 tracking-[0.08em] rounded-none uppercase font-bold">
-                  <Swords className="w-5 h-5 sm:w-6 sm:h-6" />
-                  Compete Now
-                </Button>
+                <motion.div
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="relative overflow-hidden px-14 sm:px-20 py-4 sm:py-5 cursor-pointer select-none touch-manipulation"
+                  style={{ background: 'linear-gradient(180deg, #FFE566 0%, #FFD500 40%, #F5C400 100%)' }}
+                >
+                  {/* Top gloss highlight */}
+                  <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
+                  {/* Bottom shadow */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-gradient-to-t from-black/10 to-transparent pointer-events-none" />
+                  <div className="relative z-10 flex items-center justify-center gap-3">
+                    <Swords className="w-5 h-5 sm:w-6 sm:h-6 text-black" />
+                    <span className="text-black font-black text-2xl sm:text-3xl tracking-[0.06em] uppercase" style={{ fontFamily: 'Teko, Bebas Neue, sans-serif' }}>
+                      Compete Now
+                    </span>
+                  </div>
+                </motion.div>
               </Link>
               <button
                 onClick={handleGuestExplore}
