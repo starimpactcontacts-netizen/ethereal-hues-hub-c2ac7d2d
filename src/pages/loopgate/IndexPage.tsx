@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight } from "lucide-react";
+import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight, Eye, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRealRankings, useRealEvents, useEventRankings, useActiveSession } from "@/hooks/useRealData";
 import { useXPUserLeaderboard, useXPCrewLeaderboard } from "@/hooks/useXPLeaderboard";
@@ -43,16 +43,12 @@ interface JudgeEntry {
 
 const leagueOrder = { elite: 0, pro: 1, open: 2 };
 
-// Get class letter from GQT score or level
 function getClassLetter(bestGQT: number | null | undefined, level: number | undefined): GQTRank {
-  if (bestGQT && bestGQT > 0) {
-    return getRankFromScore(bestGQT).rank;
-  }
+  if (bestGQT && bestGQT > 0) return getRankFromScore(bestGQT).rank;
   if ((level || 1) >= 2) return 'D';
   return 'F';
 }
 
-// Get authority role for display
 function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | null {
   if (!roles) return null;
   if (roles.includes('dev')) return 'dev';
@@ -61,7 +57,6 @@ function getAuthorityRole(roles?: string[]): 'dev' | 'judge' | 'enterprise' | nu
   return null;
 }
 
-// Get class colors - refined AAA styling with filled backgrounds
 function getClassColors(classLetter: GQTRank, hasTakenGQT: boolean): string {
   const colors: Record<string, string> = {
     'S++': 'text-background bg-gradient-to-r from-gold via-amber-400 to-gold border-gold/50 font-black',
@@ -78,49 +73,138 @@ function getClassColors(classLetter: GQTRank, hasTakenGQT: boolean): string {
   return colors[classLetter] || colors['F'];
 }
 
-// Rank tier styles — clean, minimal, no heavy gradients
 const getRankStyle = (rank: number) => {
-  if (rank === 1) return {
-    bg: "bg-gold/8",
-    border: "border-l-2 border-gold",
-    glow: "",
-    text: "text-gold",
-    icon: Crown,
-    shimmer: false,
-  };
-  if (rank === 2) return {
-    bg: "bg-surface-1/40",
-    border: "border-l-2 border-foreground/30",
-    glow: "",
-    text: "text-foreground/70",
-    icon: Medal,
-    shimmer: false,
-  };
-  if (rank === 3) return {
-    bg: "bg-surface-1/30",
-    border: "border-l-2 border-foreground/20",
-    glow: "",
-    text: "text-foreground/50",
-    icon: Medal,
-    shimmer: false,
-  };
-  if (rank <= 10) return {
-    bg: "bg-surface-1/20",
-    border: "border-l border-border/50",
-    glow: "",
-    text: "text-muted-foreground",
-    icon: null,
-    shimmer: false,
-  };
-  return {
-    bg: "",
-    border: "border-l border-border/20",
-    glow: "",
-    text: "text-muted-foreground",
-    icon: null,
-    shimmer: false,
-  };
+  if (rank === 1) return { bg: "bg-gold/8", border: "border-l-2 border-gold", glow: "", text: "text-gold", icon: Crown, shimmer: false };
+  if (rank === 2) return { bg: "bg-surface-1/40", border: "border-l-2 border-foreground/30", glow: "", text: "text-foreground/70", icon: Medal, shimmer: false };
+  if (rank === 3) return { bg: "bg-surface-1/30", border: "border-l-2 border-foreground/20", glow: "", text: "text-foreground/50", icon: Medal, shimmer: false };
+  if (rank <= 10) return { bg: "bg-surface-1/20", border: "border-l border-border/50", glow: "", text: "text-muted-foreground", icon: null, shimmer: false };
+  return { bg: "", border: "border-l border-border/20", glow: "", text: "text-muted-foreground", icon: null, shimmer: false };
 };
+
+/* ═══════════════════════════════════════════════════
+   DISCOVER CARD — Thumbnail-first visual tile
+═══════════════════════════════════════════════════ */
+function EditorCard({ editor, pinnedEdits, navigate, size = "md", showRank = false }: {
+  editor: any;
+  pinnedEdits?: any[];
+  navigate: (path: string) => void;
+  size?: "lg" | "md" | "sm";
+  showRank?: boolean;
+}) {
+  const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
+  const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
+  const classStyle = getClassColors(classLetter, hasTakenGQT);
+  const authorityRole = getAuthorityRole(editor.roles);
+  const rank = editor.rank || 999;
+  const firstEdit = pinnedEdits?.[0];
+  
+  const widthClass = size === "lg" ? "w-[200px]" : size === "md" ? "w-[160px]" : "w-[140px]";
+  const thumbH = size === "lg" ? "h-[120px]" : size === "md" ? "h-[100px]" : "h-[88px]";
+
+  return (
+    <button
+      onClick={() => navigate(`/editor/${editor.id}`)}
+      className={`${widthClass} flex-shrink-0 text-left group`}
+    >
+      {/* Thumbnail / Visual */}
+      <div className={`relative ${thumbH} w-full bg-surface-1 border border-border/30 overflow-hidden mb-2`}>
+        {firstEdit?.thumbnail_url ? (
+          <ThumbnailImage src={firstEdit.thumbnail_url} alt={editor.username} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : editor.avatar_url ? (
+          <img src={editor.avatar_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-surface-2 to-surface-0 flex items-center justify-center">
+            <span className="font-display text-3xl text-muted-foreground/30">{editor.username[0]?.toUpperCase()}</span>
+          </div>
+        )}
+        
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        
+        {/* Rank badge */}
+        {showRank && rank <= 10 && (
+          <div className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-black ${
+            rank === 1 ? 'bg-gold text-background' : 'bg-background/80 text-foreground'
+          }`}>
+            #{rank}
+          </div>
+        )}
+        
+        {/* Class badge */}
+        <div className={`absolute top-1.5 right-1.5 px-1.5 py-0.5 text-[8px] border ${classStyle}`}>
+          {classLetter}
+        </div>
+        
+        {/* Verified + Authority in corner */}
+        <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
+          {editor.verification_status && <VerifiedBadge size="sm" />}
+          {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+        </div>
+        
+        {/* Play indicator if has edit */}
+        {firstEdit?.thumbnail_url && (
+          <div className="absolute bottom-1.5 left-1.5 w-5 h-5 bg-white/90 flex items-center justify-center">
+            <Play className="w-2.5 h-2.5 text-black fill-black" />
+          </div>
+        )}
+      </div>
+      
+      {/* Info */}
+      <div className="px-0.5">
+        <p className="font-semibold text-[13px] text-foreground truncate leading-tight">
+          {editor.display_name || editor.username}
+        </p>
+        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground">
+          {(editor.global_index_score || 0) > 0 && (
+            <span className="text-gold font-bold">{(editor.global_index_score || 0).toFixed(1)}</span>
+          )}
+          <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />{editor.connection_count || 0}</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION HEADER — Roblox-style with arrow
+═══════════════════════════════════════════════════ */
+function SectionHeader({ icon: Icon, label, count, onSeeAll }: {
+  icon: React.ElementType;
+  label: string;
+  count?: number;
+  onSeeAll?: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between px-4 mb-3">
+      <div className="flex items-center gap-2">
+        <Icon className="w-4 h-4 text-red-500" />
+        <h2 className="font-display text-xl tracking-wide text-foreground">{label}</h2>
+        {count !== undefined && (
+          <span className="text-[10px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">{count}</span>
+        )}
+      </div>
+      {onSeeAll && (
+        <button onClick={onSeeAll} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors">
+          See All <ChevronRight className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════════ */
+function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
+  return (
+    <div className="text-center py-16">
+      <div className="w-16 h-16 mx-auto mb-4 bg-surface-1 flex items-center justify-center">
+        <Icon className="w-8 h-8 text-muted-foreground" />
+      </div>
+      <p className="text-muted-foreground font-medium">{message}</p>
+    </div>
+  );
+}
 
 
 export default function IndexPage() {
@@ -132,11 +216,11 @@ export default function IndexPage() {
   const [rankFilter, setRankFilter] = useState<RankFilter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("editors");
   const [rankingSubTab, setRankingSubTab] = useState<RankingSubTab>("xp");
-  const [shuffleKey, setShuffleKey] = useState(0); // Trigger reshuffle
+  const [shuffleKey, setShuffleKey] = useState(0);
+  const [showFullIndex, setShowFullIndex] = useState(false);
   const eventIdFromUrl = searchParams.get("event");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
 
-  // Keep session active
   useActiveSession();
 
   const { rankings, loading, error } = useRealRankings();
@@ -156,25 +240,18 @@ export default function IndexPage() {
   const [judgesLoading, setJudgesLoading] = useState(false);
 
   useEffect(() => {
-    if (viewMode === "judges") {
-      fetchJudges();
-    }
+    if (viewMode === "judges") fetchJudges();
   }, [viewMode]);
 
   async function fetchJudges() {
     setJudgesLoading(true);
     try {
-      // Fetch both full judges and trial judges
       const { data: judgeRoles } = await supabase
         .from('user_roles')
         .select('user_id, role')
         .in('role', ['judge', 'trial_judge']);
 
-      if (!judgeRoles?.length) {
-        setJudges([]);
-        setJudgesLoading(false);
-        return;
-      }
+      if (!judgeRoles?.length) { setJudges([]); setJudgesLoading(false); return; }
 
       const judgeIds = judgeRoles.map(r => r.user_id);
       const trialJudgeIds = new Set(judgeRoles.filter(r => r.role === 'trial_judge').map(r => r.user_id));
@@ -184,11 +261,7 @@ export default function IndexPage() {
         .select('id, username, display_name, avatar_url, level, xp, verification_status, judge_xp, judge_review_count, judge_bio')
         .in('id', judgeIds);
 
-      if (!profiles) {
-        setJudges([]);
-        setJudgesLoading(false);
-        return;
-      }
+      if (!profiles) { setJudges([]); setJudgesLoading(false); return; }
 
       const { data: reviews } = await supabase
         .from('review_requests')
@@ -199,17 +272,9 @@ export default function IndexPage() {
       const entries: JudgeEntry[] = profiles.map(profile => {
         const judgeReviews = reviews?.filter(r => r.judge_id === profile.id) || [];
         const isTrial = trialJudgeIds.has(profile.id) && !judgeRoles.some(r => r.user_id === profile.id && r.role === 'judge');
-        return {
-          ...profile,
-          judge_xp: profile.judge_xp || 0,
-          judge_review_count: profile.judge_review_count || 0,
-          judge_bio: profile.judge_bio || null,
-          totalReviews: judgeReviews.length,
-          isTrial,
-        };
+        return { ...profile, judge_xp: profile.judge_xp || 0, judge_review_count: profile.judge_review_count || 0, judge_bio: profile.judge_bio || null, totalReviews: judgeReviews.length, isTrial };
       });
 
-      // Sort: full judges first (by reviews), then trial judges
       entries.sort((a, b) => {
         if (a.isTrial !== b.isTrial) return a.isTrial ? 1 : -1;
         return b.totalReviews - a.totalReviews;
@@ -222,56 +287,45 @@ export default function IndexPage() {
     }
   }
 
-  // Check if any filters are active (affects whether we show ranked or randomized)
   const hasActiveFilters = searchQuery !== "" || leagueFilter !== "all" || rankFilter !== "all";
 
-  // Prioritize "alive" users - those with engagement signals
-  // Then shuffle within priority tiers for variety
-  const shuffledRankings = useMemo(() => {
-    if (hasActiveFilters) return rankings; // Don't shuffle when filtering
+  // Curated sections from rankings
+  const { topRanked, trending, risingStars, allEditors } = useMemo(() => {
+    // Top ranked by global index
+    const sorted = [...rankings].sort((a, b) => (a.rank || 999) - (b.rank || 999));
+    const topRanked = sorted.slice(0, 10);
     
-    // Score each user by "aliveness" signals
-    // CRITICAL: Users without avatars are deprioritized to train identity creation
+    // "Trending" — editors with avatars + highest engagement signals
     const scored = rankings.map(editor => {
-      let aliveScore = 0;
-      const hasAvatar = !!editor.avatar_url;
-      
-      // Has profile picture = +6 (highest priority - makes page look alive)
-      if (hasAvatar) aliveScore += 6;
-      
-      // Has connections = +4 (shows active networking)
-      if ((editor.connection_count || 0) > 0) aliveScore += 4;
-      
-      // Many connections (5+) = extra +2
-      if ((editor.connection_count || 0) >= 5) aliveScore += 2;
-      
-      // Verified = +4
-      if (editor.verification_status) aliveScore += 4;
-      
-      // Took GQT test = +3
-      if (editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0) aliveScore += 3;
-      
-      // Has index score = +2
-      if ((editor.global_index_score || 0) > 0) aliveScore += 2;
-      
-      // Has competed in events = +3
-      if ((editor.total_events || 0) > 0) aliveScore += 3;
-      
-      // Level 2+ = +1
-      if ((editor.level || 1) >= 2) aliveScore += 1;
-      
-      return { editor, aliveScore, hasAvatar };
+      let score = 0;
+      if (editor.avatar_url) score += 6;
+      if ((editor.connection_count || 0) > 0) score += 4;
+      if ((editor.connection_count || 0) >= 5) score += 2;
+      if (editor.verification_status) score += 4;
+      if (editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0) score += 3;
+      if ((editor.global_index_score || 0) > 0) score += 2;
+      if ((editor.total_events || 0) > 0) score += 3;
+      if ((editor.level || 1) >= 2) score += 1;
+      return { editor, score };
     });
     
-    // Group: Avatar users first (high/medium), then no-avatar users (always low priority)
-    const withAvatar = scored.filter(s => s.hasAvatar);
-    const noAvatar = scored.filter(s => !s.hasAvatar);
+    const trendingSorted = [...scored].sort((a, b) => b.score - a.score);
+    // Filter out top ranked to avoid duplication
+    const topRankedIds = new Set(topRanked.map(e => e.id));
+    const trending = trendingSorted
+      .filter(s => !topRankedIds.has(s.editor.id) && s.score >= 8 && s.editor.avatar_url)
+      .slice(0, 15)
+      .map(s => s.editor);
     
-    // Within avatar users, sort by engagement
-    const avatarHigh = withAvatar.filter(s => s.aliveScore >= 12); // Avatar + strong signals
-    const avatarMedium = withAvatar.filter(s => s.aliveScore >= 6 && s.aliveScore < 12); // Avatar + some signals
-    
-    // Fisher-Yates shuffle within each tier
+    // "Rising Stars" — newer editors with some activity but not top ranked
+    const rising = scored
+      .filter(s => !topRankedIds.has(s.editor.id) && !trending.some(t => t.id === s.editor.id))
+      .filter(s => s.editor.avatar_url && s.score >= 2 && s.score < 10)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 15)
+      .map(s => s.editor);
+
+    // Full shuffled list for directory
     const shuffle = <T,>(arr: T[]): T[] => {
       const shuffled = [...arr];
       for (let i = shuffled.length - 1; i > 0; i--) {
@@ -281,43 +335,41 @@ export default function IndexPage() {
       return shuffled;
     };
     
-    // Combine: engaged avatar users → basic avatar users → no avatar users (pushed to bottom)
-    return [
-      ...shuffle(avatarHigh).map(s => s.editor),
-      ...shuffle(avatarMedium).map(s => s.editor),
-      ...shuffle(noAvatar).map(s => s.editor),
-    ];
+    const withAvatar = rankings.filter(e => e.avatar_url);
+    const noAvatar = rankings.filter(e => !e.avatar_url);
+    const allEditors = [...shuffle(withAvatar), ...shuffle(noAvatar)];
+
+    return { topRanked, trending, risingStars: rising, allEditors };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rankings, hasActiveFilters, shuffleKey]);
+  }, [rankings, shuffleKey]);
 
   const filteredEditors = useMemo(() => {
-    const source = hasActiveFilters ? rankings : shuffledRankings;
-    
+    const source = hasActiveFilters ? rankings : allEditors;
     return source.filter((editor) => {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        const matchesUsername = editor.username.toLowerCase().includes(query);
-        const matchesDisplayName = editor.display_name?.toLowerCase().includes(query);
-        if (!matchesUsername && !matchesDisplayName) {
-          return false;
-        }
+        if (!editor.username.toLowerCase().includes(query) && !editor.display_name?.toLowerCase().includes(query)) return false;
       }
-      if (leagueFilter !== "all" && editor.league !== leagueFilter) {
-        return false;
-      }
+      if (leagueFilter !== "all" && editor.league !== leagueFilter) return false;
       const rank = editor.rank || 999;
       if (rankFilter === "top10" && rank > 10) return false;
       if (rankFilter === "top50" && rank > 50) return false;
       if (rankFilter === "top100" && rank > 100) return false;
       return true;
     });
-  }, [rankings, shuffledRankings, searchQuery, leagueFilter, rankFilter, hasActiveFilters]);
+  }, [rankings, allEditors, searchQuery, leagueFilter, rankFilter, hasActiveFilters]);
 
-  // Batch fetch pinned edits for visible editors
-  const editorIds = useMemo(() => filteredEditors.slice(0, 50).map(e => e.id), [filteredEditors]);
-  const { editsByUser: pinnedEditsByUser } = useBatchPinnedEdits(editorIds);
+  // Batch fetch pinned edits
+  const allVisibleIds = useMemo(() => {
+    const ids = new Set<string>();
+    topRanked.forEach(e => ids.add(e.id));
+    trending.forEach(e => ids.add(e.id));
+    risingStars.forEach(e => ids.add(e.id));
+    filteredEditors.slice(0, 30).forEach(e => ids.add(e.id));
+    return Array.from(ids);
+  }, [topRanked, trending, risingStars, filteredEditors]);
+  const { editsByUser: pinnedEditsByUser } = useBatchPinnedEdits(allVisibleIds);
 
-  // Batch fetch pinned edits for judges
   const judgeIds = useMemo(() => judges.slice(0, 50).map(j => j.id), [judges]);
   const { editsByUser: judgePinnedEdits } = useBatchPinnedEdits(judgeIds);
 
@@ -334,34 +386,25 @@ export default function IndexPage() {
     { id: "events", label: "EVENTS", icon: Trophy },
   ];
 
-  // Units tab handler - navigate to units page
-  const handleCrewsTab = () => navigate("/units");
-
   // Event-specific leaderboard view within rankings
   if (viewMode === "rankings" && selectedEvent) {
     return (
       <div className="min-h-screen pb-24 bg-background">
-        {/* Cinematic Header */}
         <div className="relative overflow-hidden">
-          {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-b from-gold/10 via-background to-background" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.15),transparent_70%)]" />
           
           <header className="relative z-10 px-4 pt-4 pb-6">
             <div className="flex items-center gap-3 mb-4">
-              <button onClick={() => setSelectedEventId(null)} className="p-2 -ml-2 hover:bg-white/5 rounded-lg transition-colors">
+              <button onClick={() => setSelectedEventId(null)} className="p-2 -ml-2 hover:bg-white/5 transition-colors">
                 <ArrowLeft size={20} />
               </button>
               <StatusBadge status={selectedEvent.status} />
             </div>
-            
             <h1 className="font-display text-3xl tracking-wide text-white mb-1">{selectedEvent.title}</h1>
-            <p className="text-xs text-gold uppercase tracking-[0.3em]">
-              {selectedEvent.league} League • Leaderboard
-            </p>
+            <p className="text-xs text-gold uppercase tracking-[0.3em]">{selectedEvent.league} League • Leaderboard</p>
           </header>
 
-          {/* Live Pulse Bar */}
           {isLiveEvent && (
             <div className="relative px-4 pb-4">
               <div className="flex items-center gap-2 text-green-400">
@@ -383,7 +426,6 @@ export default function IndexPage() {
           )}
         </div>
 
-        {/* QOI Legend */}
         {isLiveEvent && (
           <div className="px-4 py-3 bg-surface-0/50 border-y border-border/50 flex items-center justify-center gap-6 text-[10px] uppercase tracking-[0.2em]">
             <span><span className="text-gold font-bold">Q</span> <span className="text-muted-foreground">Quality</span></span>
@@ -392,46 +434,22 @@ export default function IndexPage() {
           </div>
         )}
 
-        {/* Leaderboard */}
         <div className="px-4 py-6">
           {eventRankings.length === 0 && !eventRankingsLoading ? (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <p className="text-muted-foreground font-medium">No rankings yet</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Submissions are being reviewed</p>
-            </div>
+            <EmptyState icon={Trophy} message="No rankings yet" />
           ) : (
             <div className="space-y-2">
               {eventRankings.map((ranking, index) => {
                 const displayRank = ranking.final_rank || index + 1;
                 const style = getRankStyle(displayRank);
                 const IconComponent = style.icon;
-                
                 return (
-                  <motion.div
-                    key={ranking.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    className={`relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4`}
-                  >
-                    {/* Rank */}
+                  <motion.div key={ranking.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.03 }}
+                    className={`relative ${style.bg} ${style.border} ${style.glow} backdrop-blur-sm p-4 flex items-center gap-4`}>
                     <div className="w-12 flex items-center justify-center">
-                      {IconComponent ? (
-                        <IconComponent className={`w-6 h-6 ${style.text}`} />
-                      ) : (
-                        <span className={`font-display text-2xl ${style.text}`}>{displayRank}</span>
-                      )}
+                      {IconComponent ? <IconComponent className={`w-6 h-6 ${style.text}`} /> : <span className={`font-display text-2xl ${style.text}`}>{displayRank}</span>}
                     </div>
-                    
-                    {/* Username */}
-                    <div className="flex-1">
-                      <span className="font-semibold text-white">{ranking.profile?.username || 'Unknown'}</span>
-                    </div>
-                    
-                    {/* Scores */}
+                    <div className="flex-1"><span className="font-semibold text-white">{ranking.profile?.username || 'Unknown'}</span></div>
                     {isLiveEvent ? (
                       <div className="flex items-center gap-3">
                         <div className="flex gap-2 text-xs text-muted-foreground">
@@ -440,14 +458,10 @@ export default function IndexPage() {
                           <span>{ranking.impact_score || '—'}</span>
                         </div>
                         <div className="w-px h-6 bg-border" />
-                        <span className="font-display text-2xl text-gold min-w-[50px] text-right">
-                          {ranking.qoi_score?.toFixed(1) || '—'}
-                        </span>
+                        <span className="font-display text-2xl text-gold min-w-[50px] text-right">{ranking.qoi_score?.toFixed(1) || '—'}</span>
                       </div>
                     ) : (
-                      <span className="font-display text-2xl text-gold">
-                        {ranking.qoi_score?.toFixed(1) || '—'}
-                      </span>
+                      <span className="font-display text-2xl text-gold">{ranking.qoi_score?.toFixed(1) || '—'}</span>
                     )}
                   </motion.div>
                 );
@@ -459,100 +473,53 @@ export default function IndexPage() {
     );
   }
 
-  // Top 3 editors for spotlight
-  const topThreeEditors = useMemo(() => {
-    return [...rankings]
-      .sort((a, b) => (a.rank || 999) - (b.rank || 999))
-      .slice(0, 3);
-  }, [rankings]);
-
   return (
     <div className="min-h-screen bg-background pb-24">
       <SEO {...pageSEO.index} />
       
-      {/* ═══ CINEMATIC HERO ═══ */}
+      {/* ═══ COMPACT HERO ═══ */}
       <div className="relative overflow-hidden">
-        {/* Layered background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-red-950/20 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(220,38,38,0.12),transparent_60%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-500/5 blur-[120px]" />
-        
-        {/* Gate pattern */}
+        <div className="absolute inset-0 bg-gradient-to-b from-red-950/30 via-background to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(220,38,38,0.15),transparent_60%)]" />
         <GatePattern opacity={4} tileSize={80} />
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.7)_100%)]" />
-        
-        {/* Top accent line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
         
-        {/* Corner accents — red authority */}
-        <div className="absolute top-0 left-0 w-20 h-20 border-l-2 border-t-2 border-red-500/30" />
-        <div className="absolute top-0 right-0 w-20 h-20 border-r-2 border-t-2 border-red-500/30" />
-        
-        <header className="relative z-10 px-4 pt-6 pb-4">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-                <Search className="w-4 h-4 text-red-400" />
-              </div>
-              <span className="text-[10px] text-red-400/80 uppercase tracking-[0.4em] font-semibold">Discover</span>
-            </div>
-            
+        <header className="relative z-10 px-4 pt-5 pb-3">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] text-red-400/80 uppercase tracking-[0.4em] font-semibold">Discover</span>
             {viewMode === "editors" && (
-              <button
-                onClick={() => setShuffleKey(k => k + 1)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 hover:border-foreground/20 transition-all text-foreground/70 hover:text-foreground group"
-              >
-                <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
+              <button onClick={() => setShuffleKey(k => k + 1)} className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-foreground/70 hover:text-foreground group">
+                <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" />
                 <span className="text-[10px] uppercase tracking-wider font-medium">Shuffle</span>
               </button>
             )}
           </div>
           
-          {/* Hero Title */}
-          <div className="text-center mb-2">
-            <h1 className="font-display text-5xl sm:text-6xl tracking-wider text-foreground mb-1">
-              THE INDEX
-            </h1>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-[0.25em]">
-              Where Editors Become Legends
-            </p>
-          </div>
-
-          {/* Live counter pulse */}
-          <div className="flex items-center justify-center gap-2 mt-3">
-            <div className="relative">
-              <div className="w-2 h-2 bg-red-500" />
-              <div className="absolute inset-0 w-2 h-2 bg-red-500 animate-ping" />
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-4xl tracking-wider text-foreground">THE INDEX</h1>
+            <div className="flex items-center gap-1.5 ml-auto">
+              <div className="relative">
+                <div className="w-1.5 h-1.5 bg-red-500" />
+                <div className="absolute inset-0 w-1.5 h-1.5 bg-red-500 animate-ping" />
+              </div>
+              <span className="text-[10px] text-red-400 font-bold tabular-nums">{rankings.length} LIVE</span>
             </div>
-            <span className="text-[10px] text-red-400 uppercase tracking-[0.3em] font-bold">
-              {rankings.length} Editors Live
-            </span>
           </div>
         </header>
 
         {/* Tab Navigation */}
-        <div className="relative z-10 px-4 pb-5">
-          <div className="flex gap-1 bg-black/40 backdrop-blur-xl border border-foreground/10 p-1.5 shadow-[0_0_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.05)]">
+        <div className="relative z-10 px-4 pb-4">
+          <div className="flex gap-0.5 bg-black/40 backdrop-blur-xl border border-foreground/10 p-1">
             {tabs.map((tab) => {
               const isActive = viewMode === tab.id;
               const Icon = tab.icon;
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    if (tab.navigateTo) {
-                      navigate(tab.navigateTo);
-                    } else {
-                      setViewMode(tab.id);
-                    }
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-xs font-bold tracking-wider transition-all duration-200 ${
-                    isActive && !tab.navigateTo
-                      ? "bg-foreground text-background shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
+                <button key={tab.id}
+                  onClick={() => tab.navigateTo ? navigate(tab.navigateTo) : setViewMode(tab.id)}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold tracking-wider transition-all duration-200 ${
+                    isActive && !tab.navigateTo ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" />
                   {tab.label}
                 </button>
               );
@@ -562,342 +529,150 @@ export default function IndexPage() {
       </div>
 
       <AnimatePresence mode="wait">
-        {/* ═══ EDITORS VIEW ═══ */}
+        {/* ═══ EDITORS — DISCOVER FEED ═══ */}
         {viewMode === "editors" && (
-          <motion.div
-            key="editors"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            {/* ─── TOP 3 SPOTLIGHT ─── */}
-            {!hasActiveFilters && topThreeEditors.length >= 3 && (
-              <div className="px-4 pt-4 pb-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Flame className="w-4 h-4 text-red-500" />
-                  <span className="text-[10px] text-red-400 uppercase tracking-[0.3em] font-bold">Top Ranked</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {topThreeEditors.map((editor, i) => {
-                    const rank = i + 1;
-                    const accentClass = rank === 1 ? "border-gold/50 shadow-[0_0_20px_rgba(212,175,55,0.15)]" : rank === 2 ? "border-foreground/20" : "border-foreground/10";
-                    return (
-                      <motion.button
-                        key={editor.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        onClick={() => navigate(`/editor/${editor.id}`)}
-                        className={`relative bg-surface-1/60 border ${accentClass} p-3 flex flex-col items-center gap-2 card-hover overflow-hidden`}
-                      >
-                        {rank === 1 && (
-                          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent" />
-                        )}
-                        <div className="relative">
-                          <Avatar className={`w-14 h-14 border-2 ${rank === 1 ? 'border-gold/60' : 'border-border/40'}`}>
-                            <AvatarImage src={editor.avatar_url || undefined} />
-                            <AvatarFallback className="bg-surface-2 text-sm font-bold">
-                              {editor.username[0]?.toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className={`absolute -bottom-1 -right-1 w-5 h-5 flex items-center justify-center text-[9px] font-black ${rank === 1 ? 'bg-gold text-background' : 'bg-surface-2 text-foreground border border-border'}`}>
-                            {rank}
-                          </div>
-                        </div>
-                        <div className="text-center min-w-0 w-full">
-                          <p className="font-semibold text-xs text-foreground truncate">{editor.username}</p>
-                          <p className="text-[10px] text-gold tabular-nums font-bold">{(editor.global_index_score || 0).toFixed(1)}</p>
-                        </div>
-                        {editor.verification_status && (
-                          <div className="absolute top-2 right-2">
-                            <VerifiedBadge size="sm" />
-                          </div>
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* ─── EDITORIUM CTA — Aspiration driver ─── */}
-            {!hasActiveFilters && (
-              <div className="px-4 py-3">
-                <button
-                  onClick={() => navigate('/editorium')}
-                  className="w-full bg-gradient-to-r from-surface-1 to-surface-2 border border-border/50 hover:border-red-500/30 p-3 flex items-center gap-3 transition-all group card-hover"
-                >
-                  <div className="w-10 h-10 bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                    <Newspaper className="w-5 h-5 text-red-400" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="text-xs font-bold text-foreground uppercase tracking-wider">Get Featured in Editorium</p>
-                    <p className="text-[10px] text-muted-foreground">Top editors get press coverage & immortalized visibility</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:text-red-400 transition-all" />
-                </button>
-              </div>
-            )}
-
-            {/* Search */}
-            <div className="px-4 py-3">
-              <div className="relative group">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors" />
-                <input
-                  type="text"
-                  placeholder="Search editors..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-surface-0/60 backdrop-blur-sm border border-border/60 pl-12 pr-4 py-3 text-sm focus:outline-none focus:border-foreground/30 focus:bg-surface-0/80 transition-all placeholder:text-muted-foreground/60"
-                />
-              </div>
-            </div>
-
-            {/* Filters */}
-            <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
-              <div className="relative">
-                <select
-                  value={leagueFilter}
-                  onChange={(e) => setLeagueFilter(e.target.value as LeagueFilter)}
-                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-foreground/30 hover:border-foreground/20 transition-colors"
-                >
-                  <option value="all">All Leagues</option>
-                  <option value="elite">Elite</option>
-                  <option value="pro">Pro</option>
-                  <option value="open">Open</option>
-                </select>
-                <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground rotate-90 pointer-events-none" />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={rankFilter}
-                  onChange={(e) => setRankFilter(e.target.value as RankFilter)}
-                  className="bg-surface-0/80 backdrop-blur-sm border border-border/60 px-5 py-2.5 pr-8 text-xs font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none focus:border-gold/50 hover:border-gold/30 transition-colors"
-                >
-                  <option value="all">All Ranks</option>
-                  <option value="top10">Top 10</option>
-                  <option value="top50">Top 50</option>
-                  <option value="top100">Top 100</option>
-                </select>
-                <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground rotate-90 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Results Header */}
-            <div className="px-4 py-3 border-t border-b border-border/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="font-display text-lg text-foreground">
-                  {filteredEditors.length} <span className="text-muted-foreground text-sm">Editors</span>
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <TrendingUp className="w-3 h-3 text-gold" />
-                <span className="text-[9px] text-gold uppercase tracking-[0.2em] font-bold">
-                  Global Index
-                </span>
-              </div>
-            </div>
-
-            {/* Loading State */}
-            {loading && (
+          <motion.div key="editors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            
+            {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="relative">
-                  <Loader2 className="w-8 h-8 animate-spin text-red-400" />
-                  <div className="absolute inset-0 w-8 h-8 bg-red-400/20 blur-lg animate-pulse" />
-                </div>
+                <Loader2 className="w-8 h-8 animate-spin text-red-400" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading the index...</span>
               </div>
-            )}
-
-            {/* Error State */}
-            {error && (
+            ) : error ? (
               <div className="px-4 py-12 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-destructive/10 border border-destructive/30 flex items-center justify-center">
-                  <span className="text-2xl">⚠</span>
-                </div>
                 <p className="text-sm text-destructive font-medium">Failed to load rankings</p>
               </div>
-            )}
-
-            {/* Empty State */}
-            {!loading && !error && filteredEditors.length === 0 && (
-              <div className="px-4 py-20 text-center">
-                <div className="w-20 h-20 mx-auto mb-5 bg-surface-1 border border-border/50 flex items-center justify-center">
-                  <Search className="w-10 h-10 text-muted-foreground/50" />
+            ) : hasActiveFilters ? (
+              /* ═══ FILTERED VIEW — Dense list ═══ */
+              <>
+                {/* Search + Filters */}
+                <div className="px-4 py-3">
+                  <div className="relative group">
+                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+                    <input type="text" placeholder="Search editors..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-surface-0/60 backdrop-blur-sm border border-border/60 pl-12 pr-4 py-3 text-sm focus:outline-none focus:border-foreground/30 transition-all placeholder:text-muted-foreground/60" />
+                  </div>
                 </div>
-                <p className="font-display text-2xl text-muted-foreground mb-2">No editors found</p>
-                <p className="text-xs text-muted-foreground/60 uppercase tracking-wider">
-                  {rankings.length === 0 
-                    ? "Be the first to compete and claim your rank" 
-                    : "Try adjusting your filters"}
-                </p>
-              </div>
-            )}
+                <div className="px-4 pb-3 flex gap-2">
+                  <FilterSelect value={leagueFilter} onChange={(v) => setLeagueFilter(v as LeagueFilter)} options={[["all","All Leagues"],["elite","Elite"],["pro","Pro"],["open","Open"]]} />
+                  <FilterSelect value={rankFilter} onChange={(v) => setRankFilter(v as RankFilter)} options={[["all","All Ranks"],["top10","Top 10"],["top50","Top 50"],["top100","Top 100"]]} />
+                </div>
+                <div className="px-4 py-2 border-y border-border/30 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{filteredEditors.length} results</span>
+                </div>
+                <DirectoryList editors={filteredEditors} pinnedEditsByUser={pinnedEditsByUser} navigate={navigate} profile={profile} />
+              </>
+            ) : (
+              /* ═══ DISCOVER FEED — Visual carousels ═══ */
+              <>
+                {/* Search bar */}
+                <div className="px-4 pt-3 pb-1">
+                  <div className="relative group">
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 group-focus-within:text-foreground transition-colors" />
+                    <input type="text" placeholder="Search editors, units..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-surface-0/40 border border-border/40 pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-foreground/20 transition-all placeholder:text-muted-foreground/40" />
+                  </div>
+                </div>
 
-            {/* ─── EDITOR FEED — Redesigned Prestige Cards ─── */}
-            {!loading && !error && filteredEditors.length > 0 && (
-              <div className="py-1">
-                {filteredEditors.map((editor, index) => {
-                  const rank = editor.rank || 999;
-                  const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
-                  const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
-                  const classColorStyle = getClassColors(classLetter, hasTakenGQT);
-                  const authorityRole = getAuthorityRole(editor.roles);
-                  const isTopTen = rank <= 10;
-                  const isNumberOne = rank === 1;
+                {/* ─── TOP RANKED CAROUSEL ─── */}
+                {topRanked.length > 0 && (
+                  <div className="pt-5 pb-2">
+                    <SectionHeader icon={Crown} label="TOP RANKED" onSeeAll={() => { setRankFilter("top10"); setSearchQuery("_"); setSearchQuery(""); }} />
+                    <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2">
+                      {topRanked.map((editor, i) => (
+                        <motion.div key={editor.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                          <EditorCard editor={editor} pinnedEdits={pinnedEditsByUser[editor.id]} navigate={navigate} size="lg" showRank />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── EDITORIUM CTA ─── */}
+                <div className="px-4 py-2">
+                  <button onClick={() => navigate('/editorium')}
+                    className="w-full bg-gradient-to-r from-red-950/30 to-surface-1 border border-red-900/30 hover:border-red-500/40 p-3.5 flex items-center gap-3 transition-all group card-hover">
+                    <div className="w-10 h-10 bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                      <Newspaper className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="text-xs font-bold text-foreground uppercase tracking-wider">Get Featured in Editorium</p>
+                      <p className="text-[10px] text-muted-foreground">Top editors get press coverage & immortalized</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:text-red-400 transition-all" />
+                  </button>
+                </div>
+
+                {/* ─── TRENDING CAROUSEL ─── */}
+                {trending.length > 0 && (
+                  <div className="pt-4 pb-2">
+                    <SectionHeader icon={Flame} label="TRENDING" count={trending.length} />
+                    <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 pb-2">
+                      {trending.map((editor, i) => (
+                        <motion.div key={editor.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                          <EditorCard editor={editor} pinnedEdits={pinnedEditsByUser[editor.id]} navigate={navigate} size="md" />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── RISING STARS CAROUSEL ─── */}
+                {risingStars.length > 0 && (
+                  <div className="pt-4 pb-2">
+                    <SectionHeader icon={Sparkles} label="UP & COMING" count={risingStars.length} />
+                    <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 pb-2">
+                      {risingStars.map((editor, i) => (
+                        <motion.div key={editor.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                          <EditorCard editor={editor} pinnedEdits={pinnedEditsByUser[editor.id]} navigate={navigate} size="sm" />
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ─── FULL DIRECTORY ─── */}
+                <div className="pt-5">
+                  <div className="flex items-center justify-between px-4 mb-1">
+                    <div className="flex items-center gap-2">
+                      <Target className="w-4 h-4 text-muted-foreground" />
+                      <h2 className="font-display text-xl tracking-wide text-foreground">ALL EDITORS</h2>
+                      <span className="text-[10px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">{rankings.length}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <FilterSelect value={leagueFilter} onChange={(v) => setLeagueFilter(v as LeagueFilter)} options={[["all","All"],["elite","Elite"],["pro","Pro"],["open","Open"]]} />
+                    </div>
+                  </div>
                   
-                  return (
-                    <motion.div
-                      key={editor.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(index * 0.012, 0.5), duration: 0.25 }}
-                      className={`relative border-b border-border/20 ${
-                        isNumberOne ? 'bg-gold/5' : isTopTen ? 'bg-surface-0/60' : ''
-                      }`}
-                    >
-                      {/* Gold top bar for #1 */}
-                      {isNumberOne && (
-                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
-                      )}
-                      
-                      <div className="px-4 py-3.5">
-                        {/* Main row: Rank + Avatar + Info + Index Score */}
-                        <div className="flex items-center gap-3">
-                          {/* Rank number */}
-                          <div className="w-8 flex-shrink-0 text-center">
-                            {isNumberOne ? (
-                              <Crown className="w-5 h-5 text-gold mx-auto" />
-                            ) : rank <= 3 ? (
-                              <Medal className="w-4 h-4 text-muted-foreground mx-auto" />
-                            ) : (
-                              <span className={`font-display text-base tabular-nums ${isTopTen ? 'text-foreground/70' : 'text-muted-foreground/50'}`}>
-                                {rank}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Avatar */}
-                          <button 
-                            onClick={() => navigate(`/editor/${editor.id}`)} 
-                            className="flex-shrink-0"
-                          >
-                            <Avatar className={`w-12 h-12 border ${isNumberOne ? 'border-gold/50' : 'border-border/40'}`}>
-                              <AvatarImage src={editor.avatar_url || undefined} />
-                              <AvatarFallback className="bg-surface-1 text-sm font-bold">
-                                {editor.username[0]?.toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          </button>
-                          
-                          {/* Identity */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                onClick={() => navigate(`/editor/${editor.id}`)}
-                                className="font-semibold text-sm text-foreground hover:underline truncate"
-                              >
-                                {editor.display_name || editor.username}
-                              </button>
-                              {editor.verification_status && <VerifiedBadge size="sm" />}
-                              {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
-                              {editor.is_founding_member && <FoundingBadge size="sm" animate={false} />}
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
-                              <span>Lv {editor.level || 1}</span>
-                              <span className="text-border/50">•</span>
-                              <span className="flex items-center gap-0.5">
-                                <Users className="w-2.5 h-2.5" /> {editor.connection_count || 0}
-                              </span>
-                              {editor.crew && (
-                                <>
-                                  <span className="text-border/50">•</span>
-                                  <CrewBadge crew={editor.crew} size="sm" />
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Right side: Index Score + Class */}
-                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                            <span className={`font-display text-xl tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
-                              {(editor.global_index_score || 0).toFixed(1)}
-                            </span>
-                            <span className={`text-[8px] font-bold uppercase tracking-wider border px-1.5 py-0.5 ${classColorStyle}`}>
-                              {classLetter}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        {/* Pinned Edits row */}
-                        {pinnedEditsByUser[editor.id]?.length > 0 && (
-                          <div className="flex gap-2 mt-3 ml-11 overflow-x-auto scrollbar-hide">
-                            {pinnedEditsByUser[editor.id].map((edit) => (
-                              <a
-                                key={edit.id}
-                                href={edit.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="relative flex-shrink-0 w-20 h-12 overflow-hidden bg-surface-0 border border-border/30 hover:border-foreground/30 transition-colors group"
-                              >
-                                {edit.thumbnail_url ? (
-                                  <ThumbnailImage src={edit.thumbnail_url} alt={edit.title || "Edit"} className="w-full h-full object-cover" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <Play className="w-3 h-3 text-muted-foreground" />
-                                  </div>
-                                )}
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                                  <Play className="w-3 h-3 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                              </a>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {/* Action row */}
-                        <div className="flex items-center gap-2 mt-3 ml-11">
-                          <button
-                            onClick={() => navigate(`/editor/${editor.id}`)}
-                            className="flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider border border-foreground/15 text-foreground/80 hover:bg-foreground hover:text-background transition-colors"
-                          >
-                            View Profile
-                          </button>
-                          {profile?.id !== editor.id && (
-                            <div onClick={(e) => e.stopPropagation()} className="flex-1">
-                              <ConnectButton targetUserId={editor.id} variant="micro" className="w-full" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                  <DirectoryList
+                    editors={showFullIndex ? filteredEditors : filteredEditors.slice(0, 20)}
+                    pinnedEditsByUser={pinnedEditsByUser}
+                    navigate={navigate}
+                    profile={profile}
+                  />
+                  
+                  {!showFullIndex && filteredEditors.length > 20 && (
+                    <div className="px-4 py-4">
+                      <button onClick={() => setShowFullIndex(true)}
+                        className="w-full py-3 border border-border/40 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all">
+                        Show All {filteredEditors.length} Editors
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </motion.div>
         )}
 
-        {/* Judges View — Prestige Feed */}
+        {/* ═══ JUDGES VIEW ═══ */}
         {viewMode === "judges" && (
-          <motion.div
-            key="judges"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-          >
-            {/* Header */}
+          <motion.div key="judges" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
             <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="font-display text-lg text-foreground">
-                  {judges.length} <span className="text-muted-foreground text-sm">Officials</span>
-                </span>
+                <span className="font-display text-lg text-foreground">{judges.length} <span className="text-muted-foreground text-sm">Officials</span></span>
               </div>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">
-                The Bureau
-              </span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em]">The Bureau</span>
             </div>
             
             {judgesLoading ? (
@@ -921,37 +696,20 @@ export default function IndexPage() {
                   const edits = judgePinnedEdits[judge.id] || [];
 
                   return (
-                    <motion.div
-                      key={judge.id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02, duration: 0.3 }}
-                      className={`relative border-b border-border/30 ${isTop ? 'bg-surface-1/30' : ''}`}
-                    >
-                      {isTop && (
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                      )}
-
+                    <motion.div key={judge.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.02, duration: 0.3 }}
+                      className={`relative border-b border-border/30 ${isTop ? 'bg-surface-1/30' : ''}`}>
+                      {isTop && <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />}
                       <div className="px-4 py-4">
-                        {/* Row 1: Avatar + Identity + Division Badge */}
                         <div className="flex items-start gap-3.5 mb-3">
                           <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-shrink-0">
                             <Avatar className={`w-14 h-14 border-2 ${isTop ? 'border-red-700/60' : judge.isTrial ? 'border-border/40' : 'border-red-900/40'}`}>
                               <AvatarImage src={judge.avatar_url || undefined} />
-                              <AvatarFallback className="bg-surface-1 text-base font-bold">
-                                {judge.username[0]?.toUpperCase()}
-                              </AvatarFallback>
+                              <AvatarFallback className="bg-surface-1 text-base font-bold">{judge.username[0]?.toUpperCase()}</AvatarFallback>
                             </Avatar>
                           </button>
-
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <button
-                                onClick={() => navigate(`/judge/${judge.username}`)}
-                                className="font-semibold text-[15px] text-foreground hover:underline truncate"
-                              >
-                                {displayName}
-                              </button>
+                              <button onClick={() => navigate(`/judge/${judge.username}`)} className="font-semibold text-[15px] text-foreground hover:underline truncate">{displayName}</button>
                               {judge.verification_status && <VerifiedBadge size="sm" />}
                               {judge.isTrial ? (
                                 <span className="text-[8px] px-1.5 py-0.5 bg-muted/20 border border-muted/30 text-muted-foreground uppercase tracking-wider">Trial</span>
@@ -961,63 +719,29 @@ export default function IndexPage() {
                             </div>
                             <p className="text-[12px] text-muted-foreground mt-0.5">@{judge.username}</p>
                           </div>
-
-                          {/* Division Badge — right aligned */}
-                          {!judge.isTrial && (
-                            <div className="flex-shrink-0">
-                              <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />
-                            </div>
-                          )}
+                          {!judge.isTrial && <div className="flex-shrink-0"><JudgeDivisionBadge jxp={judge.judge_xp} size="sm" /></div>}
                         </div>
 
-                        {/* Row 2: Stats strip */}
                         <div className="flex items-center gap-4 mb-3 text-[11px]">
-                          <span className="text-muted-foreground">
-                            Rank <span className={`font-bold ${isTop ? 'text-red-400' : 'text-foreground'}`}>#{index + 1}</span>
-                          </span>
+                          <span className="text-muted-foreground">Rank <span className={`font-bold ${isTop ? 'text-red-400' : 'text-foreground'}`}>#{index + 1}</span></span>
                           <span className="text-border">•</span>
-                          <span className="text-muted-foreground">
-                            Verdicts <span className="font-bold text-foreground">{judge.totalReviews}</span>
-                          </span>
+                          <span className="text-muted-foreground">Verdicts <span className="font-bold text-foreground">{judge.totalReviews}</span></span>
                           <span className="text-border">•</span>
-                          <span className="text-muted-foreground">
-                            JXP <span className="font-bold text-foreground">{(judge.judge_xp || 0).toLocaleString()}</span>
-                          </span>
-                          <span className="text-border">•</span>
-                          <span className="text-muted-foreground">
-                            Level <span className="font-bold text-foreground">{judge.level || 1}</span>
-                          </span>
+                          <span className="text-muted-foreground">JXP <span className="font-bold text-foreground">{(judge.judge_xp || 0).toLocaleString()}</span></span>
                         </div>
 
-                        {/* Row 3: Bio */}
-                        {!judge.isTrial && (
-                          <p className="text-[11px] text-muted-foreground/80 leading-relaxed mb-3 line-clamp-2">
-                            {bio}
-                          </p>
-                        )}
+                        {!judge.isTrial && <p className="text-[11px] text-muted-foreground/80 leading-relaxed mb-3 line-clamp-2">{bio}</p>}
 
-                        {/* Row 3.5: Pinned Edits */}
                         {edits.length > 0 && (
                           <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-hide">
                             {edits.map((edit) => (
-                              <a
-                                key={edit.id}
-                                href={edit.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="relative flex-shrink-0 w-24 h-14 rounded-md overflow-hidden bg-surface-0 border border-border/30 hover:border-red-800/40 transition-colors group"
-                              >
+                              <a key={edit.id} href={edit.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                                className="relative flex-shrink-0 w-24 h-14 overflow-hidden bg-surface-0 border border-border/30 hover:border-red-800/40 transition-colors group">
                                 {edit.thumbnail_url ? (
                                   <ThumbnailImage src={edit.thumbnail_url} alt={edit.title || "Edit"} className="w-full h-full object-cover" />
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <Play className="w-4 h-4 text-muted-foreground" />
-                                  </div>
+                                  <div className="w-full h-full flex items-center justify-center"><Play className="w-4 h-4 text-muted-foreground" /></div>
                                 )}
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                  <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </div>
                                 {edit.title && (
                                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-0.5">
                                     <p className="text-[8px] text-white truncate">{edit.title}</p>
@@ -1028,21 +752,10 @@ export default function IndexPage() {
                           </div>
                         )}
 
-                        {/* Row 4: Action buttons */}
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => navigate(`/judge/${judge.username}`)}
-                            className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors rounded-md"
-                          >
-                            View Dossier
-                          </button>
+                          <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors">View Dossier</button>
                           {!judge.isTrial && (
-                            <button
-                              onClick={() => navigate(`/judge/${judge.username}`)}
-                              className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider bg-red-700 text-white hover:bg-red-600 transition-colors rounded-md"
-                            >
-                              Get Rated
-                            </button>
+                            <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider bg-red-700 text-white hover:bg-red-600 transition-colors">Get Rated</button>
                           )}
                         </div>
                       </div>
@@ -1056,90 +769,53 @@ export default function IndexPage() {
 
         {/* Rankings View */}
         {viewMode === "rankings" && (
-          <motion.div
-            key="rankings"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="px-4 py-4"
-          >
-            {/* Sub-tab Navigation */}
+          <motion.div key="rankings" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="px-4 py-4">
             <div className="flex gap-1 bg-surface-0/60 border border-border/40 p-1 mb-5">
               {rankingSubTabs.map((tab) => {
                 const isActive = rankingSubTab === tab.id;
                 const Icon = tab.icon;
                 return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setRankingSubTab(tab.id)}
+                  <button key={tab.id} onClick={() => setRankingSubTab(tab.id)}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-bold tracking-wider transition-all duration-200 ${
-                      isActive
-                        ? "bg-gold text-background"
-                        : "text-muted-foreground hover:text-white hover:bg-white/5"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {tab.label}
+                      isActive ? "bg-gold text-background" : "text-muted-foreground hover:text-white hover:bg-white/5"
+                    }`}>
+                    <Icon className="w-3.5 h-3.5" />{tab.label}
                   </button>
                 );
               })}
             </div>
 
-            {/* XP Leaderboard */}
             {rankingSubTab === "xp" && (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-gold" />
-                    <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Experience Points</span>
-                  </div>
+                  <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-gold" /><span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Experience Points</span></div>
                   <span className="text-[10px] text-muted-foreground">Top Grinders</span>
                 </div>
-                
-                {xpUsers.length === 0 && !xpLoading ? (
-                  <EmptyState icon={Zap} message="No XP rankings yet" />
-                ) : (
+                {xpUsers.length === 0 && !xpLoading ? <EmptyState icon={Zap} message="No XP rankings yet" /> : (
                   <div className="space-y-1">
                     {xpUsers.map((user, index) => {
                       const rank = user.rank || index + 1;
                       const style = getRankStyle(rank);
                       const IconComponent = style.icon;
-                      
                       return (
-                        <motion.button
-                          key={user.id}
-                          initial={{ opacity: 0, x: -12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.015 }}
+                        <motion.button key={user.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.015 }}
                           onClick={() => navigate(`/editor/${user.id}`)}
-                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_1px_3px_rgba(0,0,0,0.3)]`}
-                        >
+                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100`}>
                           <div className="w-7 flex items-center justify-center flex-shrink-0">
-                            {IconComponent ? (
-                              <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
-                            ) : (
-                              <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
-                            )}
+                            {IconComponent ? <IconComponent className={`w-4.5 h-4.5 ${style.text}`} /> : <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>}
                           </div>
-                          
                           <Avatar className={`w-8 h-8 border ${rank === 1 ? 'border-gold/40' : 'border-border/60'}`}>
                             <AvatarImage src={user.avatar_url || undefined} />
-                            <AvatarFallback className="bg-surface-1 text-[10px] font-bold">
-                              {user.username[0]?.toUpperCase()}
-                            </AvatarFallback>
+                            <AvatarFallback className="bg-surface-1 text-[10px] font-bold">{user.username[0]?.toUpperCase()}</AvatarFallback>
                           </Avatar>
-                          
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className="font-semibold text-sm text-foreground truncate">{user.username}</span>
                               <LevelBadge level={user.level} size="sm" />
                             </div>
                           </div>
-                          
                           <div className="text-right flex-shrink-0">
-                            <span className={`font-display text-xl tabular-nums ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>
-                              {user.xp.toLocaleString()}
-                            </span>
+                            <span className={`font-display text-xl tabular-nums ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>{user.xp.toLocaleString()}</span>
                             <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">XP</p>
                           </div>
                         </motion.button>
@@ -1150,63 +826,37 @@ export default function IndexPage() {
               </>
             )}
 
-            {/* Units Leaderboard */}
             {rankingSubTab === "crews" && (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-gold" />
-                    <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Unit Rankings</span>
-                  </div>
+                  <div className="flex items-center gap-2"><Users className="w-4 h-4 text-gold" /><span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Unit Rankings</span></div>
                   <span className="text-[10px] text-muted-foreground">Combined XP</span>
                 </div>
-                
-                {xpCrews.length === 0 && !crewsLoading ? (
-                  <EmptyState icon={Users} message="No units yet" />
-                ) : (
+                {xpCrews.length === 0 && !crewsLoading ? <EmptyState icon={Users} message="No units yet" /> : (
                   <div className="space-y-1">
                     {xpCrews.map((crew, index) => {
                       const rank = crew.rank || index + 1;
                       const style = getRankStyle(rank);
                       const IconComponent = style.icon;
-                      
                       return (
-                        <motion.button
-                          key={crew.id}
-                          initial={{ opacity: 0, x: -12 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.015 }}
+                        <motion.button key={crew.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.015 }}
                           onClick={() => navigate(`/units/${crew.id}`)}
-                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_1px_3px_rgba(0,0,0,0.3)]`}
-                        >
+                          className={`w-full ${style.bg} ${style.border} p-3 flex items-center gap-3 text-left active:scale-[0.995] transition-transform duration-100`}>
                           <div className="w-7 flex items-center justify-center flex-shrink-0">
-                            {IconComponent ? (
-                              <IconComponent className={`w-4.5 h-4.5 ${style.text}`} />
-                            ) : (
-                              <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>
-                            )}
+                            {IconComponent ? <IconComponent className={`w-4.5 h-4.5 ${style.text}`} /> : <span className={`font-display text-base ${style.text} tabular-nums`}>{rank}</span>}
                           </div>
-                          
                           <Avatar className={`w-8 h-8 border ${rank === 1 ? 'border-gold/40' : 'border-border/60'}`}>
                             <AvatarImage src={crew.avatar_url || undefined} />
-                            <AvatarFallback className="bg-surface-1 text-sm">
-                              {crew.emblem}
-                            </AvatarFallback>
+                            <AvatarFallback className="bg-surface-1 text-sm">{crew.emblem}</AvatarFallback>
                           </Avatar>
-                          
                           <div className="flex-1 min-w-0">
                             <span className="font-semibold text-sm text-foreground truncate block">{crew.name}</span>
                             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                              <span>{crew.member_count} editors</span>
-                              <span className="text-border">•</span>
-                              <span>Lv {crew.crewLevel}</span>
+                              <span>{crew.member_count} editors</span><span className="text-border">•</span><span>Lv {crew.crewLevel}</span>
                             </div>
                           </div>
-                          
                           <div className="text-right flex-shrink-0">
-                            <span className={`font-display text-xl tabular-nums ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>
-                              {crew.totalXP.toLocaleString()}
-                            </span>
+                            <span className={`font-display text-xl tabular-nums ${rank === 1 ? 'text-gold' : 'text-foreground'}`}>{crew.totalXP.toLocaleString()}</span>
                             <p className="text-[8px] text-muted-foreground/50 uppercase tracking-wider font-semibold">Total XP</p>
                           </div>
                         </motion.button>
@@ -1217,55 +867,25 @@ export default function IndexPage() {
               </>
             )}
 
-            {/* Events Leaderboard */}
             {rankingSubTab === "events" && (
               <>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-gold" />
-                    <span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Event Leaderboards</span>
-                  </div>
+                  <div className="flex items-center gap-2"><Trophy className="w-4 h-4 text-gold" /><span className="text-xs text-muted-foreground uppercase tracking-[0.2em]">Event Leaderboards</span></div>
                 </div>
-                
-                {rankedEvents.length === 0 ? (
-                  <EmptyState icon={Trophy} message="No ranked events yet" />
-                ) : (
-                  <div className="space-y-3">
-                    {rankedEvents.map((event, index) => (
-                      <motion.button
-                        key={event.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => setSelectedEventId(event.id)}
-                        className="w-full bg-surface-1/80 backdrop-blur-sm border border-border/50 hover:border-gold/30 p-4 text-left flex items-center gap-4 transition-all active:scale-[0.995] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_2px_6px_rgba(0,0,0,0.3)]"
-                      >
-                        {event.poster_url ? (
-                          <div
-                            className="w-14 h-20 bg-cover bg-center flex-shrink-0 border border-border/50"
-                            style={{ backgroundImage: `url(${event.poster_url})` }}
-                          />
-                        ) : (
-                          <div className="w-14 h-20 bg-surface-0 flex-shrink-0 flex items-center justify-center border border-border/50">
-                            <Trophy className="w-6 h-6 text-muted-foreground" />
-                          </div>
-                        )}
-                        
-                        <div className="flex-1 min-w-0">
+                {rankedEvents.length === 0 ? <EmptyState icon={Trophy} message="No ranked events yet" /> : (
+                  <div className="space-y-2">
+                    {rankedEvents.map((event) => (
+                      <button key={event.id} onClick={() => setSelectedEventId(event.id)}
+                        className="w-full bg-surface-0/60 border border-border/30 hover:border-gold/30 p-4 flex items-center gap-3 transition-all text-left active:scale-[0.995]">
+                        <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-display text-xl text-white truncate">{event.title}</h3>
-                            <StatusBadge status={event.status} small />
+                            <StatusBadge status={event.status} />
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{event.league}</span>
                           </div>
-                          {event.subtitle && (
-                            <p className="text-xs text-muted-foreground truncate mb-1">{event.subtitle}</p>
-                          )}
-                          <p className="text-[10px] text-gold uppercase tracking-[0.15em]">
-                            {event.league} League
-                          </p>
+                          <h3 className="font-semibold text-foreground">{event.title}</h3>
                         </div>
-                        
-                        <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
-                      </motion.button>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      </button>
                     ))}
                   </div>
                 )}
@@ -1274,28 +894,100 @@ export default function IndexPage() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Footer - Enhanced */}
-      <div className="p-5 text-center mt-4 border-t border-border/20">
-        <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.25em]">
-          {viewMode === "editors" ? "Real-time verified rankings" : 
-           viewMode === "judges" ? "Elite reviewers • Request feedback" :
-           viewMode === "rankings" ? "Where legends are made" :
-           "Performance-based progression"}
-        </p>
-      </div>
     </div>
   );
 }
 
-// Empty state component
-function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
+/* ═══════════════════════════════════════════════════
+   DIRECTORY LIST — Compact rows for full index
+═══════════════════════════════════════════════════ */
+function DirectoryList({ editors, pinnedEditsByUser, navigate, profile }: {
+  editors: any[];
+  pinnedEditsByUser: Record<string, any[]>;
+  navigate: (path: string) => void;
+  profile: any;
+}) {
   return (
-    <div className="text-center py-16">
-      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-1 flex items-center justify-center">
-        <Icon className="w-8 h-8 text-muted-foreground" />
-      </div>
-      <p className="text-muted-foreground font-medium">{message}</p>
+    <div className="py-1">
+      {editors.map((editor, index) => {
+        const rank = editor.rank || 999;
+        const classLetter = getClassLetter(editor.best_gatekeeper_qoi, editor.level);
+        const hasTakenGQT = !!(editor.best_gatekeeper_qoi && editor.best_gatekeeper_qoi > 0);
+        const classStyle = getClassColors(classLetter, hasTakenGQT);
+        const authorityRole = getAuthorityRole(editor.roles);
+        const isNumberOne = rank === 1;
+        const edits = pinnedEditsByUser[editor.id] || [];
+
+        return (
+          <button key={editor.id} onClick={() => navigate(`/editor/${editor.id}`)}
+            className={`w-full text-left border-b border-border/15 px-4 py-3 flex items-center gap-3 active:bg-surface-1/30 transition-colors ${isNumberOne ? 'bg-gold/5' : ''}`}>
+            
+            {/* Rank */}
+            <div className="w-7 flex-shrink-0 text-center">
+              {isNumberOne ? <Crown className="w-4 h-4 text-gold mx-auto" /> : (
+                <span className="font-display text-sm text-muted-foreground/50 tabular-nums">{rank}</span>
+              )}
+            </div>
+
+            {/* Avatar with thumbnail overlay */}
+            <div className="relative flex-shrink-0">
+              <Avatar className={`w-10 h-10 border ${isNumberOne ? 'border-gold/50' : 'border-border/30'}`}>
+                <AvatarImage src={editor.avatar_url || undefined} />
+                <AvatarFallback className="bg-surface-1 text-xs font-bold">{editor.username[0]?.toUpperCase()}</AvatarFallback>
+              </Avatar>
+              {edits[0]?.thumbnail_url && (
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 border border-border/40 overflow-hidden bg-surface-0">
+                  <ThumbnailImage src={edits[0].thumbnail_url} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+            
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1">
+                <span className="font-semibold text-[13px] text-foreground truncate">{editor.display_name || editor.username}</span>
+                {editor.verification_status && <VerifiedBadge size="sm" />}
+                {authorityRole && <AuthorityBadge role={authorityRole} size="sm" />}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                <span>Lv {editor.level || 1}</span>
+                <span className="text-border/50">•</span>
+                <span className="flex items-center gap-0.5"><Users className="w-2.5 h-2.5" />{editor.connection_count || 0}</span>
+                {editor.crew && (
+                  <><span className="text-border/50">•</span><CrewBadge crew={editor.crew} size="sm" /></>
+                )}
+              </div>
+            </div>
+            
+            {/* Score + Class */}
+            <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
+              <span className={`font-display text-lg tabular-nums ${isNumberOne ? 'text-gold' : 'text-foreground'}`}>
+                {(editor.global_index_score || 0).toFixed(1)}
+              </span>
+              <span className={`text-[7px] border px-1 py-px ${classStyle}`}>{classLetter}</span>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   FILTER SELECT — Compact dropdown
+═══════════════════════════════════════════════════ */
+function FilterSelect({ value, onChange, options }: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[][];
+}) {
+  return (
+    <div className="relative">
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className="bg-surface-0/80 border border-border/60 px-4 py-2 pr-7 text-[10px] font-bold uppercase tracking-wider appearance-none cursor-pointer focus:outline-none hover:border-foreground/20 transition-colors">
+        {options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+      </select>
+      <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground rotate-90 pointer-events-none" />
     </div>
   );
 }
