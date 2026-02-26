@@ -14,15 +14,15 @@ export default function FriendlyTournamentCard({
   const getStatusColor = () => {
     switch (tournament.status) {
       case 'filling':
-        return 'bg-violet-500/20 text-violet-400 border-violet-500/30';
+        return 'bg-background/40 text-amber-300 border-amber-400/35';
       case 'live':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+        return 'bg-background/40 text-emerald-400 border-emerald-400/40';
       case 'bracket':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+        return 'bg-background/40 text-sky-300 border-sky-400/40';
       case 'completed':
-        return 'bg-muted text-muted-foreground border-border';
+        return 'bg-background/30 text-muted-foreground border-border';
       default:
-        return 'bg-muted text-muted-foreground border-border';
+        return 'bg-background/30 text-muted-foreground border-border';
     }
   };
 
@@ -64,7 +64,7 @@ export default function FriendlyTournamentCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className="font-medium text-foreground truncate">{tournament.name}</h4>
-            <span className={`text-[9px] px-1.5 py-0.5 font-bold uppercase border ${getStatusColor()}`}>
+            <span className={`text-[10px] px-2 py-0.5 font-bold uppercase tracking-[0.08em] border rounded-full ${getStatusColor()}`}>
               {getStatusLabel()}
             </span>
           </div>

@@ -6,48 +6,41 @@ interface StatusBadgeProps {
 export default function StatusBadge({ status, small = false }: StatusBadgeProps) {
   const config = {
     live: {
-      bg: "bg-green-600",
-      text: "text-white",
+      tone: "border-emerald-400/50 text-emerald-400",
       label: "LIVE",
       dot: true,
     },
     pending: {
-      bg: "bg-surface-2",
-      text: "text-muted-foreground",
+      tone: "border-border text-muted-foreground",
       label: "PENDING",
       dot: false,
     },
     closed: {
-      bg: "bg-surface-2",
-      text: "text-muted-foreground",
+      tone: "border-border text-muted-foreground",
       label: "CLOSED",
       dot: false,
     },
     qualified: {
-      bg: "bg-gold/10",
-      text: "text-gold",
+      tone: "border-gold/40 text-gold",
       label: "QUALIFIED",
       dot: false,
     },
     eliminated: {
-      bg: "bg-destructive/10",
-      text: "text-destructive",
+      tone: "border-destructive/40 text-destructive",
       label: "ELIMINATED",
       dot: false,
     },
   };
 
-  const { bg, text, label, dot } = config[status];
+  const { tone, label, dot } = config[status];
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded ${bg} ${text} ${
-        small ? "px-1.5 py-0.5 text-[8px]" : "px-2 py-0.5 text-[10px]"
-      } font-semibold uppercase tracking-wider`}
+      className={`inline-flex items-center gap-1 rounded-full border bg-transparent ${tone} ${
+        small ? "px-2 py-0.5 text-[9px]" : "px-2.5 py-1 text-[10px]"
+      } font-bold uppercase tracking-[0.08em]`}
     >
-      {dot && (
-        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-      )}
+      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />}
       {label}
     </span>
   );

@@ -26,10 +26,10 @@ interface TournamentCardProps {
 }
 
 const phaseConfig: Record<TournamentPhase, { label: string; color: string; bgColor: string }> = {
-  "ready-up": { label: "READY UP", color: "text-amber-400", bgColor: "bg-amber-500/20 border-amber-500/40" },
-  "submission": { label: "SUBMITTING", color: "text-emerald-400", bgColor: "bg-emerald-500/20 border-emerald-500/40" },
-  "bracket": { label: "BRACKET LIVE", color: "text-sky-400", bgColor: "bg-sky-500/20 border-sky-500/40" },
-  "completed": { label: "WINNER", color: "text-gold", bgColor: "bg-gold/20 border-gold/40" },
+  "ready-up": { label: "READY UP", color: "text-amber-300", bgColor: "bg-background/45 border-amber-400/40 backdrop-blur-sm" },
+  "submission": { label: "SUBMITTING", color: "text-emerald-400", bgColor: "bg-background/45 border-emerald-400/40 backdrop-blur-sm" },
+  "bracket": { label: "BRACKET LIVE", color: "text-sky-300", bgColor: "bg-background/45 border-sky-400/40 backdrop-blur-sm" },
+  "completed": { label: "WINNER", color: "text-gold", bgColor: "bg-background/45 border-gold/40 backdrop-blur-sm" },
 };
 
 function formatTimeLeft(endDate: Date): string {
@@ -98,24 +98,24 @@ export default function TournamentCard({ tournament, onClick }: TournamentCardPr
         
         {/* Sanctioned badge */}
         {tournament.isSanctioned && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 bg-gold/90 px-2 py-0.5">
-            <Shield className="w-3 h-3 text-background" />
-            <span className="text-[8px] font-bold uppercase tracking-wider text-background">
+          <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full border border-gold/40 bg-background/45 px-2 py-0.5 backdrop-blur-sm">
+            <Shield className="w-3 h-3 text-gold" />
+            <span className="text-[8px] font-bold uppercase tracking-[0.08em] text-gold">
               Sanctioned
             </span>
           </div>
         )}
         
         {/* Phase badge */}
-        <div className={`absolute top-2 right-2 px-2 py-0.5 border ${phaseStyle.bgColor}`}>
-          <span className={`text-[8px] font-bold uppercase tracking-wider ${phaseStyle.color}`}>
+        <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 border ${phaseStyle.bgColor}`}>
+          <span className={`text-[8px] font-bold uppercase tracking-[0.08em] ${phaseStyle.color}`}>
             {phaseStyle.label}
           </span>
         </div>
         
         {/* Prize pool */}
         {tournament.prizePool && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1">
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full border border-gold/40 bg-background/45 px-2 py-0.5 backdrop-blur-sm">
             <Trophy className="w-3 h-3 text-gold" />
             <span className="text-[10px] font-bold text-gold">{tournament.prizePool}</span>
           </div>

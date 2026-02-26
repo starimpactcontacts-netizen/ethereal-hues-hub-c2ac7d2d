@@ -66,19 +66,19 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
         
         {/* Status badge */}
-        <div className="absolute top-2 right-2">
-          {isLive && (
-            <span className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-[8px] font-bold uppercase tracking-wider">
-              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-              Live
-            </span>
-          )}
-          {isJudging && (
-            <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[8px] font-bold uppercase tracking-wider animate-pulse">
-              Judging
-            </span>
-          )}
-        </div>
+          <div className="absolute top-2 right-2">
+            {isLive && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/45 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-emerald-400 backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live
+              </span>
+            )}
+            {isJudging && (
+              <span className="inline-flex items-center rounded-full border border-amber-400/45 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-amber-300 backdrop-blur-sm">
+                Judging
+              </span>
+            )}
+          </div>
       </div>
 
       <div className="p-3 -mt-6 relative">
