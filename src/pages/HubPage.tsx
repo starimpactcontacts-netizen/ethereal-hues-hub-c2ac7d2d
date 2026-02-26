@@ -5,8 +5,12 @@ import {
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
-  Zap, UserRound
+  Zap, UserRound, ChevronDown, Check
 } from 'lucide-react';
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
+  DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
 import { useActiveBattles } from '@/hooks/useActiveBattles';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -125,6 +129,7 @@ export default function HubPage() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
   const [userCrew, setUserCrew] = useState<UserCrew | null>(null);
+  const [quickAction, setQuickAction] = useState<'solo' | 'quick'>('solo');
   
   useActiveSession();
   
@@ -456,39 +461,70 @@ export default function HubPage() {
         </div>
       )}
 
-      {/* ⚔️ DUAL CTA — Quick Edit Battle / Solo Edit */}
+      {/* ⚔️ QUICK ACTION CTA — Dropdown to switch between Solo Edit / Quick Edit Battle */}
       <div className="px-4 mt-3">
         <div className="flex gap-0 border border-red-500/30 overflow-hidden">
           <motion.button
             whileTap={{ scale: 0.97 }}
-            onClick={() => navigate('/arena?mode=quick')}
-            className="flex-1 relative overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none group"
+            onClick={() => navigate(quickAction === 'solo' ? '/arena?mode=solo' : '/arena?mode=quick')}
+            className="flex-1 relative overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3.5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
           >
             <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-            <Zap className="w-5 h-5 text-white relative z-10" />
-            <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-              Quick Edit Battle
-            </span>
-            <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
+            {quickAction === 'solo' ? (
+              <>
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
+                  <UserRound className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  Solo Edit
+                </span>
+                <span className="text-[9px] text-white/50 font-bold relative z-10">100+ IDX</span>
+              </>
+            ) : (
+              <>
+                <Zap className="w-5 h-5 text-white relative z-10" />
+                <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  Quick Edit Battle
+                </span>
+                <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
+              </>
+            )}
           </motion.button>
 
-          <div className="w-[1px] bg-red-900/60" />
-
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => navigate('/arena?mode=solo')}
-            className="relative overflow-hidden flex items-center justify-center gap-2.5 px-5 py-3 bg-surface-1 hover:bg-surface-2 transition-colors touch-manipulation select-none border-l-0"
-          >
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-gold flex items-center justify-center shadow-lg shadow-red-500/20">
-              <UserRound className="w-3.5 h-3.5 text-white" />
-            </div>
-            <div className="flex flex-col items-start">
-              <span className="text-[15px] font-bold text-foreground uppercase tracking-tight leading-none" style={{ fontFamily: 'Teko, sans-serif' }}>
-                Solo Edit
-              </span>
-              <span className="text-[9px] text-gold font-bold tracking-wider uppercase leading-none">100+ IDX</span>
-            </div>
-          </motion.button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="relative overflow-hidden flex items-center justify-center px-3 py-3.5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/60">
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                <ChevronDown className="w-4 h-4 text-white/70 relative z-10" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
+              <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">Quick Action</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setQuickAction('solo')}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <UserRound className="w-4 h-4 text-gold" />
+                <div className="flex-1">
+                  <span className="text-sm font-semibold">Solo Edit</span>
+                  <span className="text-[10px] text-gold ml-1.5">100+ IDX</span>
+                </div>
+                {quickAction === 'solo' && <Check className="w-3.5 h-3.5 text-gold" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setQuickAction('quick')}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Zap className="w-4 h-4 text-red-400" />
+                <div className="flex-1">
+                  <span className="text-sm font-semibold">Quick Edit Battle</span>
+                  <span className="text-[10px] text-red-400 ml-1.5">+20 IDX</span>
+                </div>
+                {quickAction === 'quick' && <Check className="w-3.5 h-3.5 text-red-400" />}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
