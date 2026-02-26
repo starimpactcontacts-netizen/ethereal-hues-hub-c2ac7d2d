@@ -14,7 +14,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
-import { getThumbnail, LOOPGATE_PLACEHOLDER, type ThumbnailResult } from "@/lib/thumbnail";
+import { getThumbnail, getThumbnailAsync, LOOPGATE_PLACEHOLDER, type ThumbnailResult } from "@/lib/thumbnail";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 // ── Types ──
@@ -94,10 +94,23 @@ function EditShowcaseCard({
   onPlay: (entry: EditEntry) => void;
 }) {
   const [imgError, setImgError] = useState(false);
-  const thumb = useMemo(
-    () => getThumbnail(entry.submission_url, entry.platform, entry.thumbnail_url),
-    [entry.submission_url, entry.platform, entry.thumbnail_url]
+  const [thumb, setThumb] = useState<ThumbnailResult>(() =>
+    getThumbnail(entry.submission_url, entry.platform, entry.thumbnail_url)
   );
+
+  // Async resolve for TikTok/Instagram thumbnails
+  useEffect(() => {
+    if (thumb.status !== "error") return;
+    let cancelled = false;
+    getThumbnailAsync(entry.submission_url, entry.platform, entry.thumbnail_url).then((r) => {
+      if (!cancelled) {
+        setThumb(r);
+        setImgError(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [entry.submission_url, entry.platform, entry.thumbnail_url, thumb.status]);
+
   const showFallback = imgError || thumb.status === "error";
 
   const platformLabel =
