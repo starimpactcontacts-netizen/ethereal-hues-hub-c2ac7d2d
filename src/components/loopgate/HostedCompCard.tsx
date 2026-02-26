@@ -33,9 +33,9 @@ export default function HostedCompCard({ onEnter }: HostedCompCardProps) {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1 bg-cyan-500/20 border border-cyan-500/30 px-2 py-1">
+          <div className="flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-cyan-400" />
-            <span className="text-[9px] font-bold uppercase tracking-wider text-cyan-400">New</span>
+            <span className="text-[11px] font-bold text-cyan-400">New</span>
           </div>
         </div>
 
@@ -49,15 +49,15 @@ export default function HostedCompCard({ onEnter }: HostedCompCardProps) {
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="bg-surface-1 border border-border p-2 text-center">
             <Users className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-            <span className="text-[9px] text-muted-foreground">Any Host</span>
+            <span className="text-[11px] text-muted-foreground">Any Host</span>
           </div>
           <div className="bg-surface-1 border border-border p-2 text-center">
             <Crown className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-            <span className="text-[9px] text-muted-foreground">Host Judges</span>
+            <span className="text-[11px] text-muted-foreground">Host Judges</span>
           </div>
           <div className="bg-surface-1 border border-border p-2 text-center">
             <Clock className="w-4 h-4 text-cyan-400 mx-auto mb-1" />
-            <span className="text-[9px] text-muted-foreground">Flexible</span>
+            <span className="text-[11px] text-muted-foreground">Flexible</span>
           </div>
         </div>
 

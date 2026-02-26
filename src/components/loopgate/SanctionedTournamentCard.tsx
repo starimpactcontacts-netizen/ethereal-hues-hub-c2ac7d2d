@@ -8,12 +8,12 @@ interface SanctionedTournamentCardProps {
   onClick: () => void;
 }
 
-const phaseConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-  approved: { label: "OPEN", color: "text-emerald-400", bgColor: "bg-emerald-500/20 border-emerald-500/40" },
-  ready_up: { label: "READY UP", color: "text-amber-400", bgColor: "bg-amber-500/20 border-amber-500/40" },
-  live: { label: "LIVE", color: "text-red-400", bgColor: "bg-red-500/20 border-red-500/40" },
-  bracket: { label: "BRACKET", color: "text-sky-400", bgColor: "bg-sky-500/20 border-sky-500/40" },
-  completed: { label: "COMPLETE", color: "text-gold", bgColor: "bg-gold/20 border-gold/40" },
+const phaseConfig: Record<string, { label: string; color: string; dot?: boolean }> = {
+  approved: { label: "OPEN", color: "text-emerald-400" },
+  ready_up: { label: "READY UP", color: "text-amber-400" },
+  live: { label: "LIVE", color: "text-red-400", dot: true },
+  bracket: { label: "BRACKET", color: "text-sky-400" },
+  completed: { label: "COMPLETE", color: "text-gold" },
 };
 
 function formatTimeLeft(endDate: string | null): string {
@@ -98,25 +98,24 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-surface-1/50 to-transparent" />
         
-        {/* Mode badge */}
-        <div className={`absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 ${
-          isCrewVsCrew ? "bg-red-500/90" : "bg-gold/90"
-        }`}>
+        {/* Mode — seamless */}
+        <div className="absolute top-2 left-2 flex items-center gap-1">
           {isCrewVsCrew ? (
-            <Swords className="w-3 h-3 text-white" />
+            <Swords className="w-3 h-3 text-red-400" />
           ) : (
-            <Shield className="w-3 h-3 text-background" />
+            <Shield className="w-3 h-3 text-gold" />
           )}
-          <span className={`text-[8px] font-bold uppercase tracking-wider ${
-            isCrewVsCrew ? "text-white" : "text-background"
+          <span className={`text-[11px] font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] ${
+            isCrewVsCrew ? "text-red-400" : "text-gold"
           }`}>
             {isCrewVsCrew ? "Unit vs Unit" : "Sanctioned"}
           </span>
         </div>
         
-        {/* Phase badge */}
-        <div className={`absolute top-2 right-2 px-2 py-0.5 border ${phase.bgColor}`}>
-          <span className={`text-[8px] font-bold uppercase tracking-wider ${phase.color}`}>
+        {/* Phase — seamless */}
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          {phase.dot && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+          <span className={`text-[11px] font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] ${phase.color}`}>
             {phase.label}
           </span>
         </div>
@@ -125,7 +124,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
         {totalPrize > 0 && (
           <div className="absolute bottom-2 right-2 flex items-center gap-1">
             <Trophy className="w-3 h-3 text-gold" />
-            <span className="text-[10px] font-bold text-gold">{totalPrize} IDX</span>
+            <span className="text-[11px] font-bold text-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{totalPrize} IDX</span>
           </div>
         )}
       </div>
@@ -154,7 +153,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
                   <Shield className="w-2 h-2 text-gold" />
                 </div>
               )}
-              <span className="text-[9px] text-muted-foreground truncate">
+              <span className="text-[11px] text-muted-foreground truncate">
                 {tournament.crew_name}
               </span>
             </div>
@@ -176,7 +175,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
                   <Shield className="w-2 h-2 text-red-400" />
                 </div>
               )}
-              <span className="text-[9px] text-muted-foreground truncate">
+              <span className="text-[11px] text-muted-foreground truncate">
                 {tournament.challenged_crew_name || "TBD"}
               </span>
             </div>
@@ -202,7 +201,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
         
         {/* Editor count bar */}
         <div className="mb-2">
-          <div className="flex items-center justify-between text-[9px] mb-1">
+          <div className="flex items-center justify-between text-[11px] mb-1">
             <span className="text-muted-foreground">
               <Users className="w-3 h-3 inline mr-0.5" />
               {tournament.player_count}/{tournament.max_players} editors
@@ -225,7 +224,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
         
         {/* Challenge pending indicator */}
         {isCrewVsCrew && tournament.challenge_accepted === null && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-400 mb-3">
+          <div className="flex items-center gap-1 text-[11px] text-amber-400 mb-3">
             <Clock className="w-3 h-3" />
             <span>Awaiting response</span>
           </div>
@@ -233,14 +232,14 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
         
         {/* Timer */}
         {tournament.status === "ready_up" && tournament.ready_up_deadline && (
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-3">
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-3">
             <Clock className="w-3 h-3" />
             <span>{formatTimeLeft(tournament.ready_up_deadline)}</span>
             <span className="text-muted-foreground/50">to ready</span>
           </div>
         )}
         {tournament.status === "live" && tournament.submission_deadline && (
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-3">
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-3">
             <Clock className="w-3 h-3" />
             <span>{formatTimeLeft(tournament.submission_deadline)}</span>
             <span className="text-muted-foreground/50">left</span>
@@ -249,7 +248,7 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
         
         {/* Ready count for ready_up phase */}
         {tournament.status === "ready_up" && (
-          <div className="flex items-center gap-1 text-[10px] text-emerald-400 mb-3">
+          <div className="flex items-center gap-1 text-[11px] text-emerald-400 mb-3">
             <CheckCircle className="w-3 h-3" />
             <span>{tournament.ready_count}/{tournament.min_players} ready</span>
           </div>

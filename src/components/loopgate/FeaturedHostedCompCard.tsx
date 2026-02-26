@@ -66,17 +66,15 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
         
         {/* Status badge */}
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2 right-2 flex items-center gap-1">
             {isLive && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/45 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-emerald-400 backdrop-blur-sm">
+              <>
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Live
-              </span>
+                <span className="text-[11px] font-bold text-emerald-400 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">LIVE</span>
+              </>
             )}
             {isJudging && (
-              <span className="inline-flex items-center rounded-full border border-amber-400/45 bg-background/40 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-amber-300 backdrop-blur-sm">
-                Judging
-              </span>
+              <span className="text-[11px] font-bold text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">JUDGING</span>
             )}
           </div>
       </div>
@@ -93,7 +91,7 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
                   <Shield className="w-2.5 h-2.5 text-cyan-400" />
                 )}
               </div>
-              <span className="text-[9px] text-cyan-400 truncate">{crew.name}</span>
+              <span className="text-[11px] text-cyan-400 truncate">{crew.name}</span>
             </>
           ) : (
             <>
@@ -104,7 +102,7 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
                   <Globe className="w-2.5 h-2.5 text-cyan-400" />
                 )}
               </div>
-              <span className="text-[9px] text-cyan-400 truncate">{comp.host_name}</span>
+              <span className="text-[11px] text-cyan-400 truncate">{comp.host_name}</span>
             </>
           )}
         </div>
@@ -113,7 +111,7 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
         <h3 className="font-display text-xs text-foreground line-clamp-1 mb-2">{comp.name}</h3>
 
         {/* Stats - show participant count prominently */}
-        <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-0.5">
             <Users className="w-2.5 h-2.5 text-cyan-400" />
             <span>{comp.participant_count || comp.submission_count || 0}</span>
@@ -127,7 +125,7 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
         </div>
         
         {/* Deadline */}
-        <div className="flex items-center gap-1 text-[8px] text-muted-foreground mt-1.5">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1.5">
           <Clock className="w-2.5 h-2.5" />
           {deadlinePassed ? (
             <span className="text-amber-400">Submissions closed</span>

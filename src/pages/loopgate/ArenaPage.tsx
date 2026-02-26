@@ -317,6 +317,23 @@ export default function ArenaPage() {
             )}
           </div>
 
+          {/* ═══ GLOBAL SEARCH — top of Arena ═══ */}
+          <div className="relative mb-5">
+            <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search battles, events, players..."
+              value={quickSearch}
+              onChange={(e) => setQuickSearch(e.target.value)}
+              className="w-full h-11 pl-10 pr-9 bg-surface-1 border border-border rounded-full text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
+            />
+            {quickSearch && (
+              <button onClick={() => setQuickSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2">
+                <X className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+
           {/* ═══ STATS ROW ═══ */}
           {profile && userStats && (
             <div className="mb-5 bg-surface-1 border border-border p-4 flex items-center gap-4">
@@ -455,22 +472,7 @@ export default function ArenaPage() {
             </motion.button>
           )}
 
-          {/* ═══ GLOBAL SEARCH ═══ */}
-          <div className="relative mb-4">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search battles, events, players..."
-              value={quickSearch}
-              onChange={(e) => setQuickSearch(e.target.value)}
-              className="w-full h-11 pl-10 pr-9 bg-surface-1 border border-border rounded-full text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
-            />
-            {quickSearch && (
-              <button onClick={() => setQuickSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-muted-foreground" />
-              </button>
-            )}
-          </div>
+          {/* search bar moved to top */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
           <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">

@@ -8,14 +8,14 @@ interface BattleCardProps {
   onClick: () => void;
 }
 
-const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
-  pending: { label: "OPEN", color: "text-amber-400", bgColor: "bg-amber-500/20 border-amber-500/40" },
-  accepted: { label: "STARTING", color: "text-sky-400", bgColor: "bg-sky-500/20 border-sky-500/40" },
-  active: { label: "LIVE", color: "text-red-400", bgColor: "bg-red-500/20 border-red-500/40" },
-  judging: { label: "JUDGING", color: "text-purple-400", bgColor: "bg-purple-500/20 border-purple-500/40" },
-  completed: { label: "DECIDED", color: "text-gold", bgColor: "bg-gold/20 border-gold/40" },
-  forfeited: { label: "FORFEIT", color: "text-muted-foreground", bgColor: "bg-muted/20 border-muted/40" },
-  cancelled: { label: "CANCELLED", color: "text-muted-foreground", bgColor: "bg-muted/20 border-muted/40" },
+const statusConfig: Record<string, { label: string; color: string; dot?: boolean }> = {
+  pending: { label: "OPEN", color: "text-amber-400" },
+  accepted: { label: "STARTING", color: "text-sky-400" },
+  active: { label: "LIVE", color: "text-red-400", dot: true },
+  judging: { label: "JUDGING", color: "text-purple-400" },
+  completed: { label: "DECIDED", color: "text-gold" },
+  forfeited: { label: "FORFEIT", color: "text-muted-foreground" },
+  cancelled: { label: "CANCELLED", color: "text-muted-foreground" },
 };
 
 function formatTimeLeft(endDate: string | null): string {
@@ -83,7 +83,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
                 {battle.challenger_username.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-[9px] text-foreground font-medium mt-1 truncate max-w-[60px]">
+            <span className="text-[11px] text-foreground font-medium mt-1 truncate max-w-[60px]">
               {battle.challenger_username}
             </span>
           </div>
@@ -108,7 +108,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
                     {battle.opponent_username?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-[9px] text-foreground font-medium mt-1 truncate max-w-[60px]">
+                <span className="text-[11px] text-foreground font-medium mt-1 truncate max-w-[60px]">
                   {battle.opponent_username}
                 </span>
               </>
@@ -117,7 +117,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
                 <div className="w-10 h-10 rounded-full border-2 border-dashed border-red-500/30 flex items-center justify-center bg-surface-2">
                   <span className="text-lg text-red-400/50">?</span>
                 </div>
-                <span className="text-[9px] text-muted-foreground mt-1">
+                <span className="text-[11px] text-muted-foreground mt-1">
                   Open
                 </span>
               </>
@@ -125,23 +125,24 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
           </div>
         </div>
         
-        {/* Status badge */}
-        <div className={`absolute top-2 right-2 px-2 py-0.5 border ${status.bgColor}`}>
-          <span className={`text-[8px] font-bold uppercase tracking-wider ${status.color}`}>
+        {/* Status — seamless */}
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          {status.dot && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+          <span className={`text-[11px] font-bold ${status.color} drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`}>
             {status.label}
           </span>
         </div>
         
         {/* View count */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-background/80 px-1.5 py-0.5 rounded">
-          <Eye className="w-3 h-3 text-muted-foreground" />
-          <span className="text-[9px] text-foreground font-medium">{formatViews(battle.view_count)}</span>
+        <div className="absolute bottom-2 left-2 flex items-center gap-1">
+          <Eye className="w-3 h-3 text-muted-foreground/60" />
+          <span className="text-[11px] text-foreground/70 font-medium drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{formatViews(battle.view_count)}</span>
         </div>
         
         {/* IDX reward */}
         <div className="absolute bottom-2 right-2 flex items-center gap-1">
           <Trophy className="w-3 h-3 text-gold" />
-          <span className="text-[10px] font-bold text-gold">+20 IDX</span>
+          <span className="text-[11px] font-bold text-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">+20 IDX</span>
         </div>
       </div>
       
@@ -151,20 +152,20 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1">
             <Trophy className="w-3 h-3 text-gold" />
-            <span className="text-[10px] font-bold text-gold">+{battle.winner_index_awarded} IDX</span>
+            <span className="text-[11px] font-bold text-gold">+{battle.winner_index_awarded} IDX</span>
           </div>
-          <span className="text-[9px] text-muted-foreground uppercase">{battle.league_tier}</span>
+          <span className="text-[11px] text-muted-foreground uppercase">{battle.league_tier}</span>
         </div>
         
         {/* Duration */}
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-2">
-          <Clock className="w-3 h-3" />
-          <span>{battle.duration_hours}h battle</span>
-        </div>
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-2">
+            <Clock className="w-3 h-3" />
+            <span>{battle.duration_hours}h battle</span>
+          </div>
         
         {/* Timer (if active) */}
         {isLive && battle.ends_at && (
-          <div className="flex items-center gap-1 text-[10px] text-red-400 mb-2">
+          <div className="flex items-center gap-1 text-[11px] text-red-400 mb-2">
             <Flame className="w-3 h-3" />
             <span>{formatTimeLeft(battle.ends_at)} left</span>
           </div>
@@ -173,7 +174,7 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         {/* Vote bar (if judging or completed) */}
         {(battle.status === 'judging' || isCompleted) && totalVotes > 0 && (
           <div className="mb-2">
-            <div className="flex items-center justify-between text-[9px] mb-1">
+            <div className="flex items-center justify-between text-[11px] mb-1">
               <span className="text-muted-foreground">{battle.challenger_votes} votes</span>
               <span className="text-muted-foreground">{battle.opponent_votes} votes</span>
             </div>
