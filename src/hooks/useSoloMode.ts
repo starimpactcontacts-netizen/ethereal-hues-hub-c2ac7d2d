@@ -120,13 +120,15 @@ export function useSoloMode() {
       .update({ solo_cancel_count: cancelCount + 1 } as any)
       .eq('id', user.id);
     
-    // If not their first cancel, penalize 2 index points
+    // If not their first cancel, penalize 2 index points (subtract from current, floor at 0)
     if (cancelCount >= 1) {
+      const currentGlobal = (profileData as any)?.global_index_score || 0;
+      const currentSpendable = (profileData as any)?.spendable_index || 0;
       await supabase
         .from('profiles')
         .update({
-          global_index_score: Math.max(-999, ((profileData as any)?.global_index_score || 0) - 2),
-          spendable_index: Math.max(-999, ((profileData as any)?.spendable_index || 0) - 2),
+          global_index_score: Math.max(0, currentGlobal - 2),
+          spendable_index: Math.max(0, currentSpendable - 2),
         } as any)
         .eq('id', user.id);
     }
