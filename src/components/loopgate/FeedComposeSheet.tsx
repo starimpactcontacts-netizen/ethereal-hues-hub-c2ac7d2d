@@ -59,7 +59,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[60] bg-background flex flex-col"
+          className="fixed inset-0 z-[60] bg-background flex flex-col safe-top"
         >
           {/* Header — always visible */}
           <div className="flex items-center justify-between px-4 h-12 border-b border-border/30 shrink-0">
