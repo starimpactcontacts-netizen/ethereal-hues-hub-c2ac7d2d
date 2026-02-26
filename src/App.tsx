@@ -49,6 +49,8 @@ import BattleDetailPage from "./pages/loopgate/BattleDetailPage";
 import QuickFightPage from "./pages/loopgate/QuickFightPage";
 import JudgeQueuePage from "./pages/loopgate/JudgeQueuePage";
 import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
+import ArtistDashboardPage from "./pages/loopgate/ArtistDashboardPage";
+import CampaignAdminPage from "./pages/loopgate/CampaignAdminPage";
 import EnterpriseClientDashboard from "./pages/loopgate/EnterpriseClientDashboard";
 import EnterpriseAccountPage from "./pages/loopgate/EnterpriseAccountPage";
 import EnterprisePage from "./pages/EnterprisePage";
@@ -333,8 +335,15 @@ export default function App() {
             
             {/* Enterprise Portal - NO DEV MODE BYPASS - requires enterprise role only */}
             <Route path="/enterprise" element={<EnterprisePage />} />
-            <Route path="/enterprise/dashboard" element={<EnterpriseClientDashboard />} />
+            <Route path="/enterprise/dashboard" element={<ArtistDashboardPage />} />
             <Route path="/enterprise/account" element={<EnterpriseAccountPage />} />
+            
+            {/* Campaign Admin - requires ops access */}
+            <Route path="/ops-panel/a7c92ff31b/campaigns" element={
+              <ProtectedRoute requireOpsAccess={true}>
+                <CampaignAdminPage />
+              </ProtectedRoute>
+            } />
             
             {/* Legacy /crews redirects → /units */}
             <Route path="/crews" element={<Navigate to="/units" replace />} />

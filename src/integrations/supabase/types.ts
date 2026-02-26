@@ -110,6 +110,139 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_campaign_edits: {
+        Row: {
+          campaign_id: string
+          comment_count: number
+          created_at: string
+          editor_id: string | null
+          editor_username: string | null
+          id: string
+          like_count: number
+          platform: string | null
+          published_at: string | null
+          share_count: number
+          status: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+          view_count: number
+        }
+        Insert: {
+          campaign_id: string
+          comment_count?: number
+          created_at?: string
+          editor_id?: string | null
+          editor_username?: string | null
+          id?: string
+          like_count?: number
+          platform?: string | null
+          published_at?: string | null
+          share_count?: number
+          status?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+          view_count?: number
+        }
+        Update: {
+          campaign_id?: string
+          comment_count?: number
+          created_at?: string
+          editor_id?: string | null
+          editor_username?: string | null
+          id?: string
+          like_count?: number
+          platform?: string | null
+          published_at?: string | null
+          share_count?: number
+          status?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_campaign_edits_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "artist_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_campaigns: {
+        Row: {
+          budget_cents: number | null
+          client_id: string
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          name: string
+          roi_percentage: number | null
+          spent_cents: number | null
+          start_date: string | null
+          status: string
+          total_clicks: number
+          total_engagements: number
+          total_impressions: number
+          total_views: number
+          updated_at: string
+        }
+        Insert: {
+          budget_cents?: number | null
+          client_id: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          roi_percentage?: number | null
+          spent_cents?: number | null
+          start_date?: string | null
+          status?: string
+          total_clicks?: number
+          total_engagements?: number
+          total_impressions?: number
+          total_views?: number
+          updated_at?: string
+        }
+        Update: {
+          budget_cents?: number | null
+          client_id?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          roi_percentage?: number | null
+          spent_cents?: number | null
+          start_date?: string | null
+          status?: string
+          total_clicks?: number
+          total_engagements?: number
+          total_impressions?: number
+          total_views?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_campaigns_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       battle_invites: {
         Row: {
           battle_id: string
