@@ -57,10 +57,10 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-[240px] shrink-0 bg-surface-1 border border-red-500/30 hover:border-red-500/60 transition-all cursor-pointer group overflow-hidden"
+      className="w-[280px] shrink-0 bg-surface-1 border border-red-500/30 hover:border-red-500/60 transition-all cursor-pointer group overflow-hidden"
     >
       {/* Header - UFC Style VS Display */}
-      <div className="relative h-20 bg-gradient-to-br from-red-500/20 via-surface-2 to-surface-1 overflow-hidden">
+      <div className="relative h-28 bg-gradient-to-br from-red-500/20 via-surface-2 to-surface-1 overflow-hidden">
         {/* Background pattern */}
         <div 
           className="absolute inset-0 opacity-10"
@@ -74,24 +74,24 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         />
         
         {/* VS Display */}
-        <div className="absolute inset-0 flex items-center justify-center px-3">
+        <div className="absolute inset-0 flex items-center justify-center px-4">
           {/* Challenger */}
           <div className="flex-1 flex flex-col items-center">
-            <Avatar className="w-10 h-10 border-2 border-red-500/50 shadow-lg shadow-red-500/20">
+            <Avatar className="w-12 h-12 border-2 border-red-500/50 shadow-lg shadow-red-500/20">
               <AvatarImage src={battle.challenger_avatar_url || ''} />
-              <AvatarFallback className="bg-red-500/20 text-red-400 text-xs font-bold">
+              <AvatarFallback className="bg-red-500/20 text-red-400 text-sm font-bold">
                 {battle.challenger_username.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <span className="text-[11px] text-foreground font-medium mt-1 truncate max-w-[60px]">
+            <span className="text-[11px] text-foreground font-semibold mt-1.5 truncate max-w-[80px]">
               {battle.challenger_username}
             </span>
           </div>
           
           {/* VS Badge */}
-          <div className="relative mx-2">
-            <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/40">
-              <Swords className="w-4 h-4 text-white" />
+          <div className="relative mx-3">
+            <div className="w-9 h-9 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/40">
+              <Swords className="w-4.5 h-4.5 text-white" />
             </div>
             {isLive && (
               <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping" />
@@ -102,22 +102,22 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
           <div className="flex-1 flex flex-col items-center">
             {battle.opponent_id ? (
               <>
-                <Avatar className="w-10 h-10 border-2 border-red-500/50 shadow-lg shadow-red-500/20">
+                <Avatar className="w-12 h-12 border-2 border-red-500/50 shadow-lg shadow-red-500/20">
                   <AvatarImage src={battle.opponent_avatar_url || ''} />
-                  <AvatarFallback className="bg-red-500/20 text-red-400 text-xs font-bold">
+                  <AvatarFallback className="bg-red-500/20 text-red-400 text-sm font-bold">
                     {battle.opponent_username?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-[11px] text-foreground font-medium mt-1 truncate max-w-[60px]">
+                <span className="text-[11px] text-foreground font-semibold mt-1.5 truncate max-w-[80px]">
                   {battle.opponent_username}
                 </span>
               </>
             ) : (
               <>
-                <div className="w-10 h-10 rounded-full border-2 border-dashed border-red-500/30 flex items-center justify-center bg-surface-2">
-                  <span className="text-lg text-red-400/50">?</span>
+                <div className="w-12 h-12 rounded-full border-2 border-dashed border-red-500/30 flex items-center justify-center bg-surface-2">
+                  <span className="text-xl text-red-400/50">?</span>
                 </div>
-                <span className="text-[11px] text-muted-foreground mt-1">
+                <span className="text-[11px] text-muted-foreground mt-1.5 font-medium">
                   Open
                 </span>
               </>
@@ -134,15 +134,9 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         </div>
         
         {/* View count */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1">
-          <Eye className="w-3 h-3 text-muted-foreground/60" />
-          <span className="text-[11px] text-foreground/70 font-medium drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{formatViews(battle.view_count)}</span>
-        </div>
-        
-        {/* IDX reward */}
-        <div className="absolute bottom-2 right-2 flex items-center gap-1">
-          <Trophy className="w-3 h-3 text-gold" />
-          <span className="text-[11px] font-bold text-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">+20 IDX</span>
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-1.5 py-0.5">
+          <Eye className="w-3 h-3 text-muted-foreground/80" />
+          <span className="text-[10px] text-foreground/70 font-medium">{formatViews(battle.view_count)}</span>
         </div>
       </div>
       
