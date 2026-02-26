@@ -4039,6 +4039,7 @@ export type Database = {
           review_style: string | null
           rules_accepted: boolean | null
           software: string[] | null
+          solo_cancel_count: number
           spendable_index: number
           total_events: number | null
           total_wins: number | null
@@ -4090,6 +4091,7 @@ export type Database = {
           review_style?: string | null
           rules_accepted?: boolean | null
           software?: string[] | null
+          solo_cancel_count?: number
           spendable_index?: number
           total_events?: number | null
           total_wins?: number | null
@@ -4141,6 +4143,7 @@ export type Database = {
           review_style?: string | null
           rules_accepted?: boolean | null
           software?: string[] | null
+          solo_cancel_count?: number
           spendable_index?: number
           total_events?: number | null
           total_wins?: number | null
