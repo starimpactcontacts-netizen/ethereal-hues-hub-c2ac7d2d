@@ -490,8 +490,18 @@ export default function DiscoverEditsCarousel() {
         });
       });
 
-      // Sort by date, dedupe by URL, take top 30
-      allEntries.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Sort: prioritize entries with thumbnails and high QOI scores, then by date
+      allEntries.sort((a, b) => {
+        const aThumb = a.thumbnail_url ? 1 : 0;
+        const bThumb = b.thumbnail_url ? 1 : 0;
+        if (aThumb !== bThumb) return bThumb - aThumb;
+        const aScore = a.qoi_score ?? 0;
+        const bScore = b.qoi_score ?? 0;
+        if (aScore >= 50 || bScore >= 50) {
+          if (aScore !== bScore) return bScore - aScore;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
       const seen = new Set<string>();
       const unique = allEntries.filter((e) => {
         if (seen.has(e.submission_url)) return false;
