@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, Loader2, Gavel, Crown, Lock, ChevronRight, Users, Target, Medal, Zap, Trophy, RefreshCw, ArrowLeft, Plus, Play, Flame, Star, Newspaper, TrendingUp, ArrowRight, Eye, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -234,6 +234,7 @@ export default function IndexPage() {
   const [viewMode, setViewMode] = useState<ViewMode>("editors");
   const [rankingSubTab, setRankingSubTab] = useState<RankingSubTab>("xp");
   const [shuffleKey, setShuffleKey] = useState(0);
+  const directoryRef = React.useRef<HTMLDivElement>(null);
   const [showFullIndex, setShowFullIndex] = useState(false);
   const eventIdFromUrl = searchParams.get("event");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(eventIdFromUrl);
@@ -310,7 +311,7 @@ export default function IndexPage() {
   const { topRanked, trending, risingStars, allEditors } = useMemo(() => {
     // Top ranked by global index
     const sorted = [...rankings].sort((a, b) => (a.rank || 999) - (b.rank || 999));
-    const topRanked = sorted.slice(0, 10);
+    const topRanked = [...sorted.slice(0, 10)].sort(() => Math.random() - 0.5);
     
     // "Trending" — editors with avatars + highest engagement signals
     const scored = rankings.map(editor => {
@@ -329,10 +330,12 @@ export default function IndexPage() {
     const trendingSorted = [...scored].sort((a, b) => b.score - a.score);
     // Filter out top ranked to avoid duplication
     const topRankedIds = new Set(topRanked.map(e => e.id));
-    const trending = trendingSorted
+    const trendingFiltered = trendingSorted
       .filter(s => !topRankedIds.has(s.editor.id) && s.score >= 8 && s.editor.avatar_url)
       .slice(0, 15)
       .map(s => s.editor);
+    // Shuffle trending order so it feels fresh each time
+    const trending = [...trendingFiltered].sort(() => Math.random() - 0.5);
     
     // "Rising Stars" — newer editors with some activity but not top ranked
     const rising = scored
@@ -507,7 +510,11 @@ export default function IndexPage() {
           <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-semibold">Discover</span>
             {viewMode === "editors" && (
-              <button onClick={() => setShuffleKey(k => k + 1)} className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-foreground/70 hover:text-foreground group">
+              <button onClick={() => {
+                setShuffleKey(k => k + 1);
+                // Scroll to the top of the feed so the shuffle is visible
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-foreground/70 hover:text-foreground group active:scale-95">
                 <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" />
                 <span className="text-[10px] uppercase tracking-wider font-medium">Shuffle</span>
               </button>
