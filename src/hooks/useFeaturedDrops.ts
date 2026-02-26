@@ -33,6 +33,7 @@ export interface FeaturedDrop {
   xp_reward: number;
   index_reward: number;
   mystery_reward_label: string;
+  is_promoted: boolean;
   submission_count: number;
   top_score: number;
   top_scorer_id: string | null;
@@ -82,10 +83,13 @@ export function useFeaturedDrops() {
         .order('created_at', { ascending: false });
 
       if (data) {
-        setDrops(data.map((d: any) => ({
+        const mapped = data.map((d: any) => ({
           ...d,
           artist: d.featured_artists,
-        })));
+        }));
+        // Sort promoted drops first
+        mapped.sort((a: any, b: any) => (b.is_promoted ? 1 : 0) - (a.is_promoted ? 1 : 0));
+        setDrops(mapped);
       }
       setLoading(false);
     };
