@@ -183,7 +183,7 @@ function SectionHeader({ icon, title, badge, badgeColor = "bg-emerald-500/20 bor
     <div className="flex items-center justify-between px-4 mb-3">
       <div className="flex items-center gap-2.5">
         {icon}
-        <span className="font-display text-sm text-foreground tracking-wide">{title}</span>
+        <h2 className="text-base font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none', fontSize: '1rem', lineHeight: '1.3' }}>{title}</h2>
         {badge && (
           <span className={`flex items-center gap-1 border px-2 py-0.5 text-[9px] font-bold uppercase ${badgeColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
@@ -307,20 +307,20 @@ export default function ArenaPage() {
 
        <div className="relative px-4 pt-4 pb-4">
           {/* Top row */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-foreground flex items-center justify-center">
-                <InfinityIcon className="w-4.5 h-4.5 text-background" strokeWidth={2.5} />
+              <div className="w-10 h-10 bg-foreground flex items-center justify-center">
+                <InfinityIcon className="w-5 h-5 text-background" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="font-display text-xl text-foreground tracking-wide leading-none">ARENA</h1>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-[0.25em] mt-0.5">Edit · Battle · Win</p>
+                <h1 className="text-2xl font-black text-foreground tracking-tight leading-none" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none', lineHeight: '1.1' }}>Arena</h1>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Edit · Battle · Win</p>
               </div>
             </div>
             {totalLive > 0 && (
               <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 px-3 py-1.5">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[11px] font-bold text-red-400">{totalLive} Live</span>
+                <span className="text-xs font-bold text-red-400">{totalLive} Live</span>
               </div>
             )}
           </div>
@@ -334,27 +334,27 @@ export default function ArenaPage() {
                   <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <span className="text-xs font-bold text-foreground block leading-none">{profile.username}</span>
-                  <span className="text-[10px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
+                  <span className="text-sm font-bold text-foreground block leading-none">{profile.username}</span>
+                  <span className="text-[11px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-center">
-                  <span className="text-xs font-bold text-emerald-400 block leading-none">{userStats.wins}</span>
-                  <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Wins</span>
+                  <span className="text-sm font-bold text-emerald-400 block leading-none">{userStats.wins}</span>
+                  <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Wins</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-xs font-bold text-red-400 block leading-none">{userStats.losses}</span>
-                  <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Losses</span>
+                  <span className="text-sm font-bold text-red-400 block leading-none">{userStats.losses}</span>
+                  <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Losses</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-xs font-bold text-foreground block leading-none">{userStats.events}</span>
-                  <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Edits</span>
+                  <span className="text-sm font-bold text-foreground block leading-none">{userStats.events}</span>
+                  <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Edits</span>
                 </div>
                 {userStats.streak > 1 && (
                   <div className="text-center">
-                    <span className="text-xs font-bold text-gold block leading-none">🔥{userStats.streak}</span>
-                    <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Streak</span>
+                    <span className="text-sm font-bold text-gold block leading-none">🔥{userStats.streak}</span>
+                    <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Streak</span>
                   </div>
                 )}
               </div>
@@ -364,11 +364,11 @@ export default function ArenaPage() {
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
           <div className="mb-4">
             {/* Mode selector row */}
-            <div className="flex gap-2 mb-2.5">
+            <div className="flex gap-2.5 mb-3">
               {[
-                { key: 'quick', icon: <Zap className="w-4 h-4" />, label: 'QUICK 1v1', sub: '3hr • Auto-match', action: () => profile ? navigate('/quick-fight') : navigate('/start') },
-                { key: 'battle', icon: <Swords className="w-4 h-4" />, label: '1v1 BATTLE', sub: 'Invite opponent', action: () => profile ? setShowCreateBattle(true) : navigate('/start') },
-                { key: 'practice', icon: <Target className="w-4 h-4" />, label: 'PRACTICE', sub: 'No stakes', action: () => setShowPracticeMode(true) },
+                { key: 'quick', icon: <Zap className="w-4.5 h-4.5" />, label: 'Quick 1v1', sub: '3hr · Auto-match', action: () => profile ? navigate('/quick-fight') : navigate('/start') },
+                { key: 'battle', icon: <Swords className="w-4.5 h-4.5" />, label: '1v1 Battle', sub: 'Invite opponent', action: () => profile ? setShowCreateBattle(true) : navigate('/start') },
+                { key: 'practice', icon: <Target className="w-4.5 h-4.5" />, label: 'Practice', sub: 'No stakes', action: () => setShowPracticeMode(true) },
               ].map((mode) => (
                 <motion.button
                   key={mode.key}
@@ -376,14 +376,14 @@ export default function ArenaPage() {
                   onClick={mode.action}
                   className="flex-1 relative group touch-manipulation"
                 >
-                  <div className="bg-surface-1 border border-border group-hover:border-red-500/50 transition-all p-3.5 flex flex-col items-center gap-1.5">
+                  <div className="bg-surface-1 border border-border group-hover:border-red-500/50 transition-all p-4 flex flex-col items-center gap-2">
                     {/* Top accent line */}
                     <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500/0 group-hover:bg-red-500 transition-all" />
-                    <div className="w-9 h-9 bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
+                    <div className="w-10 h-10 bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
                       <span className="text-red-400 group-hover:text-red-300 transition-colors">{mode.icon}</span>
                     </div>
-                    <span className="font-display text-[11px] text-foreground tracking-wider leading-none">{mode.label}</span>
-                    <span className="text-[9px] text-muted-foreground leading-none">{mode.sub}</span>
+                    <span className="text-xs font-bold text-foreground leading-none">{mode.label}</span>
+                    <span className="text-[10px] text-muted-foreground leading-none">{mode.sub}</span>
                   </div>
                 </motion.button>
               ))}
@@ -395,14 +395,14 @@ export default function ArenaPage() {
               onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
               className="w-full relative overflow-hidden touch-manipulation group"
             >
-              <div className="bg-red-600 hover:bg-red-500 transition-colors py-4 flex items-center justify-center gap-3">
+              <div className="bg-red-600 hover:bg-red-500 transition-colors py-4.5 flex items-center justify-center gap-3">
                 {/* Subtle inner top highlight */}
                 <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.10] to-transparent pointer-events-none" />
                 <Zap className="w-5 h-5 text-white relative z-10" />
-                <span className="font-display text-xl text-white uppercase tracking-wider relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                <span className="text-xl font-black text-white relative z-10 tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none', lineHeight: '1' }}>
                   Play
                 </span>
-                <span className="text-[10px] text-white/50 font-bold relative z-10 uppercase">+20 IDX</span>
+                <span className="text-[11px] text-white/50 font-bold relative z-10">+20 IDX</span>
               </div>
             </motion.button>
           </div>
@@ -459,7 +459,7 @@ export default function ArenaPage() {
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 shrink-0 ${
+                  className={`px-3.5 py-2 text-[11px] font-semibold border transition-all flex items-center gap-1.5 shrink-0 ${
                     active
                       ? isRed ? "bg-red-500 text-white border-red-500"
                       : isGold ? "bg-gold text-background border-gold"
@@ -519,13 +519,13 @@ export default function ArenaPage() {
                 action={
                   <button
                     onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-                    className="text-[10px] text-red-400 hover:text-red-300 font-bold uppercase flex items-center gap-1"
+                    className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1"
                   >
-                    <Zap className="w-3 h-3" /> Start Editing
+                    <Zap className="w-3.5 h-3.5" /> Start Editing
                   </button>
                 }
               />
-              <p className="text-[9px] text-muted-foreground px-4 mb-2">Instant matchmaking • 3hr edit window • Winner +20 IDX</p>
+              <p className="text-[11px] text-muted-foreground px-4 mb-2.5">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
 
               {/* Search */}
               <div className="px-4 mb-2">
@@ -598,7 +598,7 @@ export default function ArenaPage() {
                 badge={liveBattles > 0 ? `${liveBattles} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
               />
-              <p className="text-[9px] text-muted-foreground px-4 mb-2">Head-to-head editing showdowns • Winner +20 IDX</p>
+              <p className="text-[11px] text-muted-foreground px-4 mb-2.5">Head-to-head editing showdowns · Winner +20 IDX</p>
 
               {battlesLoading ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
@@ -644,7 +644,7 @@ export default function ArenaPage() {
                 badge={liveEvents.length > 0 ? `${liveEvents.length} Live` : undefined}
                 badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
                 action={
-                  <Link to="/events" className="text-[10px] text-muted-foreground hover:text-foreground">View All</Link>
+                  <Link to="/events" className="text-xs text-muted-foreground hover:text-foreground font-medium">View All</Link>
                 }
               />
 
