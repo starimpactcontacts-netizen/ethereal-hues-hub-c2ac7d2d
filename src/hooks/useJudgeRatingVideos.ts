@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { enrichSubmission } from '@/lib/enrichSubmission';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
@@ -63,7 +64,7 @@ export function useJudgeRatingVideos(judgeId?: string) {
     }
 
     try {
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('judge_rating_videos')
         .insert({
           judge_id: user.id,
@@ -71,9 +72,16 @@ export function useJudgeRatingVideos(judgeId?: string) {
           video_url: videoUrl,
           title: title || null,
           views_at_submission: 0,
-        });
+        })
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Fire-and-forget: enrich with oEmbed metadata
+      if (inserted?.id) {
+        enrichSubmission({ url: videoUrl, platform, table: 'judge_rating_videos', row_id: inserted.id });
+      }
 
       toast.success('Rating video submitted!');
       await fetchVideos();

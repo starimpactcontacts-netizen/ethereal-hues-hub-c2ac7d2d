@@ -307,14 +307,14 @@ export default function DiscoverEditsCarousel() {
         // Round submissions
         supabase
           .from("round_participations")
-          .select("id, user_id, submission_url, platform, qoi_score, status, submitted_at, round_number")
+          .select("id, user_id, submission_url, platform, qoi_score, status, submitted_at, round_number, thumbnail_url")
           .not("submission_url", "is", null)
           .order("submitted_at", { ascending: false, nullsFirst: false })
           .limit(15),
         // Event submissions
         supabase
           .from("event_participations")
-          .select("id, user_id, submission_url, platform, qoi_score, status, submitted_at")
+          .select("id, user_id, submission_url, platform, qoi_score, status, submitted_at, thumbnail_url")
           .not("submission_url", "is", null)
           .order("submitted_at", { ascending: false, nullsFirst: false })
           .limit(15),
@@ -335,13 +335,13 @@ export default function DiscoverEditsCarousel() {
         // Featured drop submissions
         supabase
           .from("featured_submissions")
-          .select("id, user_id, username, avatar_url, submission_url, platform, qoi_score, status, created_at")
+          .select("id, user_id, username, avatar_url, submission_url, platform, qoi_score, status, created_at, thumbnail_url")
           .order("created_at", { ascending: false })
           .limit(15),
         // Judge rating videos
         supabase
           .from("judge_rating_videos")
-          .select("id, judge_id, video_url, platform, title, submitted_at")
+          .select("id, judge_id, video_url, platform, title, submitted_at, thumbnail_url")
           .order("submitted_at", { ascending: false })
           .limit(10),
       ]);
@@ -377,7 +377,7 @@ export default function DiscoverEditsCarousel() {
           avatar_url: p?.avatar_url || null,
           submission_url: r.submission_url!,
           platform: r.platform || "tiktok",
-          thumbnail_url: null,
+          thumbnail_url: r.thumbnail_url || null,
           qoi_score: r.qoi_score,
           source: "competition",
           source_label: `Round ${r.round_number || ""}`,
@@ -395,7 +395,7 @@ export default function DiscoverEditsCarousel() {
           avatar_url: p?.avatar_url || null,
           submission_url: e.submission_url!,
           platform: e.platform || "tiktok",
-          thumbnail_url: null,
+          thumbnail_url: e.thumbnail_url || null,
           qoi_score: e.qoi_score,
           source: "competition",
           source_label: "Arena",
@@ -464,7 +464,7 @@ export default function DiscoverEditsCarousel() {
           avatar_url: d.avatar_url || null,
           submission_url: d.submission_url,
           platform: d.platform || "tiktok",
-          thumbnail_url: null,
+          thumbnail_url: d.thumbnail_url || null,
           qoi_score: d.qoi_score,
           source: "drop",
           source_label: "Drop",
@@ -482,7 +482,7 @@ export default function DiscoverEditsCarousel() {
           avatar_url: p?.avatar_url || null,
           submission_url: j.video_url,
           platform: j.platform || "tiktok",
-          thumbnail_url: null,
+          thumbnail_url: j.thumbnail_url || null,
           qoi_score: null,
           source: "judge_video",
           source_label: j.title || "Rating",

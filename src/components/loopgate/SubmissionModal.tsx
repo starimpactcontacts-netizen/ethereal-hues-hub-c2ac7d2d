@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, ExternalLink, Loader2 } from "lucide-react";
 import { validatePlatformUrl, getPlatformUrlPlaceholder, type PlatformType } from "@/lib/urlValidation";
 import { supabase } from "@/integrations/supabase/client";
+import { enrichSubmission } from "@/lib/enrichSubmission";
 import { useAuth } from "@/hooks/useAuth";
 import { useInviteSubmissionBonus } from "@/hooks/useInvites";
 import { toast } from "sonner";
@@ -68,7 +69,7 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
     try {
       // For Open Arena events, submit to round_participations table
       if (roundNumber) {
-        const { error } = await supabase.from('round_participations').insert({
+        const { data: inserted, error } = await supabase.from('round_participations').insert({
           event_id: eventId,
           user_id: user.id,
           round_number: roundNumber,
@@ -76,18 +77,26 @@ export default function SubmissionModal({ isOpen, onClose, eventId, eventTitle, 
           submission_url: platformLink,
           status: 'active',
           submitted_at: new Date().toISOString(),
-        });
+        }).select('id').single();
         if (error) throw error;
+        // Fire-and-forget: enrich with oEmbed metadata (thumbnail, title, author)
+        if (inserted?.id) {
+          enrichSubmission({ url: platformLink, platform, table: 'round_participations', row_id: inserted.id });
+        }
       } else {
         // Standard event submission
-        const { error } = await supabase.from('event_participations').insert({
+        const { data: inserted, error } = await supabase.from('event_participations').insert({
           event_id: eventId,
           user_id: user.id,
           platform: platform,
           submission_url: platformLink,
           status: 'pending',
-        });
+        }).select('id').single();
         if (error) throw error;
+        // Fire-and-forget: enrich with oEmbed metadata
+        if (inserted?.id) {
+          enrichSubmission({ url: platformLink, platform, table: 'event_participations', row_id: inserted.id });
+        }
       }
       
       // Check if user was invited and this is their first submission within 24h
