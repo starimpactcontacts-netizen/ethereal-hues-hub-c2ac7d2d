@@ -1,59 +1,70 @@
 
-# Add GIF Support to Feed Replies + Default "Meme" Category
 
-## Overview
-Integrate the existing Tenor GIF picker into all three comment/reply systems across the feed, and change the default category from "reaction" to "meme" across all GIF picker instances.
+# Loopgate Studio — Quick Edit Toolkit + Software Launcher
 
-## Changes
+## The Problem
+Editors leave Loopgate to go edit, and often don't come back to submit. The goal isn't to build a full NLE (that would take years) — it's to keep editors inside the ecosystem and make submitting as frictionless as possible.
 
-### 1. GifPicker.tsx - Default to "meme" category
-- Change the initial `search` state from `"reaction"` to `"meme"`
-- This applies globally (DMs, crew chat, and new comment integrations)
+## The Solution: `/studio` — A Creative Toolkit Page
+A single page at `/studio` that combines three things:
 
-### 2. FeedInlineComments.tsx - Add GIF button to inline reply input
-- Import `GifPicker` and the `Smile` icon
-- Add state: `showGifPicker`
-- Add a GIF toggle button next to the send button
-- When a GIF is selected, submit it as the comment content (the URL)
-- Position the GIF picker above the input area
-- Render GIF URLs as inline images in the comment display (detect tenor URLs in `ThreadComment`)
+### 1. Quick Clip Editor (Browser-Based)
+A lightweight tool for fast edits directly in the browser:
+- **Upload a clip** (or use a battle/competition's provided source material)
+- **Trim** start/end points with a visual waveform scrubber
+- **Add text overlays** (title cards, captions) with preset styles matching Loopgate aesthetic
+- **Apply filters** (contrast, saturation, color grading presets like "Cinematic", "Phonk", "Noir")
+- **Add music** from a small built-in library or upload their own (using the existing audio trimmer)
+- **Export as WebM** and directly submit to an active competition/battle from the export screen
 
-### 3. FeedComments.tsx - Add GIF button to bottom-sheet comment input
-- Import `GifPicker` and the `Smile` icon
-- Add state: `showGifPicker`
-- Add a GIF toggle button in the input area between the avatar and textarea
-- When a GIF is selected, submit it as comment content
-- Position the picker above the input inside the sheet
-- Render GIF URLs as inline images in `CommentItem`
+This uses the Web Audio API + Canvas + MediaRecorder pattern already proven in the Upscaler page.
 
-### 4. UnitFeedCommentsSheet.tsx - Add GIF button to unit feed comments
-- Import `GifPicker` and the `Smile` icon
-- Add state: `showGifPicker`
-- Add a GIF toggle button next to the send button
-- When a GIF is selected, submit as comment content
-- Render GIF URLs as inline images
+### 2. Software Quick-Launch Cards
+Beautiful cards for popular editing software with deep links:
+- **CapCut** — opens CapCut app or web editor
+- **DaVinci Resolve** — link to download (free)
+- **Adobe Premiere Pro** — link to Adobe Creative Cloud
+- **After Effects** — link to Adobe
+- **Final Cut Pro** — App Store link
+- **VN Video Editor** — mobile app stores
 
-### 5. GIF Content Rendering (all three components)
-- In the comment content display, detect if content is a Tenor GIF URL (contains `tenor.com` or ends with `.gif`)
-- If so, render an `<img>` tag instead of text
-- This keeps it simple - GIFs are stored as plain URLs in the `content` field, same pattern as DMs
+Each card shows: logo, "Free" or "Paid" badge, platforms (iOS/Android/Desktop), and a "Start Editing" button. On mobile, these deep-link directly into the apps.
 
-## Technical Details
+### 3. Submit Shortcut
+A prominent "Ready to Submit?" section at the top that shows:
+- Active competitions/battles the user can submit to
+- Direct upload button that routes to the submission flow
+- Links to the user's draft submissions if any exist
 
-**GIF detection helper** (inline in each component or shared):
-```typescript
-const isGifUrl = (text: string) =>
-  text.match(/^https?:\/\/.*\.(gif|gifv)(\?.*)?$/i) ||
-  text.includes('tenor.com') || text.includes('giphy.com');
-```
+## Technical Plan
 
-**Comment content rendering pattern:**
-```tsx
-{isGifUrl(comment.content) ? (
-  <img src={comment.content} alt="GIF" className="max-w-[200px] rounded-lg mt-1" loading="lazy" />
-) : (
-  <p className="text-sm break-words">{comment.content}</p>
-)}
-```
+### New Files
+1. **`src/pages/loopgate/StudioPage.tsx`** — Main page with three sections:
+   - Submit shortcut bar (active comps)
+   - Quick Clip Editor (canvas-based trim + filters + text)
+   - Software launcher cards grid
 
-**No database changes needed** - GIF URLs are stored as regular text in the existing `content` column of `feed_comments` and `unit_feed_comments` tables.
+2. **`src/components/loopgate/QuickClipEditor.tsx`** — The browser-based editor component:
+   - Video upload + canvas preview
+   - Trim handles (start/end markers on a timeline bar)
+   - Filter selector (CSS filter presets applied via canvas)
+   - Text overlay input (positioned via drag on canvas)
+   - Export button using MediaRecorder (same pattern as UpscalerPage)
+
+3. **`src/components/loopgate/SoftwareLauncherGrid.tsx`** — Grid of editing software cards with icons, badges, and deep links
+
+### Modified Files
+4. **`src/App.tsx`** — Add route: `/studio` pointing to StudioPage
+5. **`src/pages/loopgate/HomePage.tsx`** or Hub — Add a "Studio" entry point card
+
+### No Database Changes Required
+This is entirely client-side. No new tables, no storage buckets, no edge functions. The export flow reuses the existing submission modal/flow.
+
+### Key UX Details
+- The Quick Clip Editor is intentionally simple — trim, filter, text, export. No multi-track timeline, no keyframes. Think "Instagram Reels editor" level.
+- Export outputs WebM via MediaRecorder (same as Upscaler)
+- After export, a "Submit to Competition" button appears showing active events
+- Software launcher cards detect mobile vs desktop and show appropriate download links
+- Sharp-corner design language throughout (no rounded corners)
+- Gold accent colors consistent with the rest of Loopgate
+
