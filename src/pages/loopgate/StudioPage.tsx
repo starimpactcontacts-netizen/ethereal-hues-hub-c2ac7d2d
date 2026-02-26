@@ -1,12 +1,14 @@
 import { ArrowLeft, Clapperboard, Zap, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import QuickClipEditor from "@/components/loopgate/QuickClipEditor";
 import SoftwareLauncherGrid from "@/components/loopgate/SoftwareLauncherGrid";
+import SoloModeBanner from "@/components/loopgate/SoloModeBanner";
 import SEO from "@/components/SEO";
 
 export default function StudioPage() {
   const navigate = useNavigate();
-
+  const [searchParams] = useSearchParams();
+  const soloId = searchParams.get("solo");
   return (
     <div className="min-h-screen bg-background pb-24">
       <SEO
@@ -31,6 +33,8 @@ export default function StudioPage() {
       </div>
 
       <div className="px-4 pt-4 space-y-6">
+        {/* Solo Mode Banner */}
+        {soloId && <SoloModeBanner soloId={soloId} />}
         {/* Submit Shortcut */}
         <button
           onClick={() => navigate("/events")}

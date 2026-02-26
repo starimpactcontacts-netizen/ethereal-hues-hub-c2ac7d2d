@@ -4950,6 +4950,112 @@ export type Database = {
         }
         Relationships: []
       }
+      solo_submissions: {
+        Row: {
+          artist_name: string | null
+          avatar_url: string | null
+          created_at: string
+          drop_id: string | null
+          id: string
+          impact_score: number | null
+          index_awarded: number | null
+          judge_claimed_at: string | null
+          judge_id: string | null
+          judge_notes: string | null
+          judged_at: string | null
+          originality_score: number | null
+          qoi_score: number | null
+          quality_score: number | null
+          song_name: string
+          status: string
+          submission_platform: string | null
+          submission_url: string | null
+          submitted_at: string | null
+          theme: string
+          thumbnail_url: string | null
+          updated_at: string
+          user_id: string
+          username: string
+          video_title: string | null
+        }
+        Insert: {
+          artist_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          drop_id?: string | null
+          id?: string
+          impact_score?: number | null
+          index_awarded?: number | null
+          judge_claimed_at?: string | null
+          judge_id?: string | null
+          judge_notes?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          qoi_score?: number | null
+          quality_score?: number | null
+          song_name: string
+          status?: string
+          submission_platform?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          theme: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+          video_title?: string | null
+        }
+        Update: {
+          artist_name?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          drop_id?: string | null
+          id?: string
+          impact_score?: number | null
+          index_awarded?: number | null
+          judge_claimed_at?: string | null
+          judge_id?: string | null
+          judge_notes?: string | null
+          judged_at?: string | null
+          originality_score?: number | null
+          qoi_score?: number | null
+          quality_score?: number | null
+          song_name?: string
+          status?: string
+          submission_platform?: string | null
+          submission_url?: string | null
+          submitted_at?: string | null
+          theme?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+          video_title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_submissions_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solo_submissions_judge_id_fkey"
+            columns: ["judge_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "solo_submissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_messages: {
         Row: {
           avatar_url: string | null
