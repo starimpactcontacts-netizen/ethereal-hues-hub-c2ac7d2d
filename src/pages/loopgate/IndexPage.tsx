@@ -177,7 +177,7 @@ function SectionHeader({ icon: Icon, label, count, onSeeAll }: {
   return (
     <div className="flex items-center justify-between px-4 mb-3">
       <div className="flex items-center gap-2">
-        <Icon className="w-4 h-4 text-red-500" />
+        <Icon className="w-4 h-4 text-foreground/50" />
         <h2 className="font-display text-xl tracking-wide text-foreground">{label}</h2>
         {count !== undefined && (
           <span className="text-[10px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">{count}</span>
@@ -479,14 +479,13 @@ export default function IndexPage() {
       
       {/* ═══ COMPACT HERO ═══ */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-red-950/30 via-background to-background" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(220,38,38,0.15),transparent_60%)]" />
-        <GatePattern opacity={4} tileSize={80} />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-surface-2/80 via-background to-background" />
+        <GatePattern opacity={5} tileSize={64} />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
         
         <header className="relative z-10 px-4 pt-5 pb-3">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] text-red-400/80 uppercase tracking-[0.4em] font-semibold">Discover</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-[0.4em] font-semibold">Discover</span>
             {viewMode === "editors" && (
               <button onClick={() => setShuffleKey(k => k + 1)} className="flex items-center gap-1.5 px-3 py-1.5 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all text-foreground/70 hover:text-foreground group">
                 <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" />
@@ -499,10 +498,10 @@ export default function IndexPage() {
             <h1 className="font-display text-4xl tracking-wider text-foreground">THE INDEX</h1>
             <div className="flex items-center gap-1.5 ml-auto">
               <div className="relative">
-                <div className="w-1.5 h-1.5 bg-red-500" />
-                <div className="absolute inset-0 w-1.5 h-1.5 bg-red-500 animate-ping" />
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                <div className="absolute inset-0 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
               </div>
-              <span className="text-[10px] text-red-400 font-bold tabular-nums">{rankings.length} LIVE</span>
+              <span className="text-[10px] text-foreground/60 font-bold tabular-nums">{rankings.length} LIVE</span>
             </div>
           </div>
         </header>
@@ -535,7 +534,7 @@ export default function IndexPage() {
             
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-red-400" />
+                <Loader2 className="w-8 h-8 animate-spin text-foreground/30" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading the index...</span>
               </div>
             ) : error ? (
@@ -591,15 +590,15 @@ export default function IndexPage() {
                 {/* ─── EDITORIUM CTA ─── */}
                 <div className="px-4 py-2">
                   <button onClick={() => navigate('/editorium')}
-                    className="w-full bg-gradient-to-r from-red-950/30 to-surface-1 border border-red-900/30 hover:border-red-500/40 p-3.5 flex items-center gap-3 transition-all group card-hover">
-                    <div className="w-10 h-10 bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                      <Newspaper className="w-5 h-5 text-red-400" />
+                    className="w-full bg-surface-1/60 border border-border/40 hover:border-gold/30 p-3.5 flex items-center gap-3 transition-all group card-hover">
+                    <div className="w-10 h-10 bg-gold/10 border border-gold/20 flex items-center justify-center flex-shrink-0">
+                      <Newspaper className="w-5 h-5 text-gold" />
                     </div>
                     <div className="flex-1 text-left">
                       <p className="text-xs font-bold text-foreground uppercase tracking-wider">Get Featured in Editorium</p>
                       <p className="text-[10px] text-muted-foreground">Top editors get press coverage & immortalized</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:text-red-400 transition-all" />
+                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 group-hover:text-gold transition-all" />
                   </button>
                 </div>
 
@@ -677,7 +676,7 @@ export default function IndexPage() {
             
             {judgesLoading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-red-400" />
+                <Loader2 className="w-8 h-8 animate-spin text-foreground/30" />
                 <span className="text-xs text-muted-foreground uppercase tracking-wider">Loading officials...</span>
               </div>
             ) : judges.length === 0 ? (
@@ -698,11 +697,11 @@ export default function IndexPage() {
                   return (
                     <motion.div key={judge.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.02, duration: 0.3 }}
                       className={`relative border-b border-border/30 ${isTop ? 'bg-surface-1/30' : ''}`}>
-                      {isTop && <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />}
+                      {isTop && <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />}
                       <div className="px-4 py-4">
                         <div className="flex items-start gap-3.5 mb-3">
                           <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-shrink-0">
-                            <Avatar className={`w-14 h-14 border-2 ${isTop ? 'border-red-700/60' : judge.isTrial ? 'border-border/40' : 'border-red-900/40'}`}>
+                            <Avatar className={`w-14 h-14 border-2 ${isTop ? 'border-gold/40' : judge.isTrial ? 'border-border/40' : 'border-border/60'}`}>
                               <AvatarImage src={judge.avatar_url || undefined} />
                               <AvatarFallback className="bg-surface-1 text-base font-bold">{judge.username[0]?.toUpperCase()}</AvatarFallback>
                             </Avatar>
@@ -723,7 +722,7 @@ export default function IndexPage() {
                         </div>
 
                         <div className="flex items-center gap-4 mb-3 text-[11px]">
-                          <span className="text-muted-foreground">Rank <span className={`font-bold ${isTop ? 'text-red-400' : 'text-foreground'}`}>#{index + 1}</span></span>
+                          <span className="text-muted-foreground">Rank <span className={`font-bold ${isTop ? 'text-gold' : 'text-foreground'}`}>#{index + 1}</span></span>
                           <span className="text-border">•</span>
                           <span className="text-muted-foreground">Verdicts <span className="font-bold text-foreground">{judge.totalReviews}</span></span>
                           <span className="text-border">•</span>
@@ -736,7 +735,7 @@ export default function IndexPage() {
                           <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-hide">
                             {edits.map((edit) => (
                               <a key={edit.id} href={edit.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                                className="relative flex-shrink-0 w-24 h-14 overflow-hidden bg-surface-0 border border-border/30 hover:border-red-800/40 transition-colors group">
+                                className="relative flex-shrink-0 w-24 h-14 overflow-hidden bg-surface-0 border border-border/30 hover:border-foreground/30 transition-colors group">
                                 {edit.thumbnail_url ? (
                                   <ThumbnailImage src={edit.thumbnail_url} alt={edit.title || "Edit"} className="w-full h-full object-cover" />
                                 ) : (
@@ -755,7 +754,7 @@ export default function IndexPage() {
                         <div className="flex items-center gap-2">
                           <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-colors">View Dossier</button>
                           {!judge.isTrial && (
-                            <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider bg-red-700 text-white hover:bg-red-600 transition-colors">Get Rated</button>
+                            <button onClick={() => navigate(`/judge/${judge.username}`)} className="flex-1 py-2 text-[11px] font-bold uppercase tracking-wider bg-foreground text-background hover:bg-foreground/90 transition-colors">Get Rated</button>
                           )}
                         </div>
                       </div>
