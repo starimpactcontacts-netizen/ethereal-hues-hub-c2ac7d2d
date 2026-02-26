@@ -65,7 +65,7 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
             {/* Inner bg */}
             <div className="absolute inset-[1.5px] rounded-full bg-background" />
             <span className="relative text-sm font-bold tracking-[0.2em] text-foreground">
-              QOI
+              QOI TEST
             </span>
           </motion.button>
           
@@ -96,7 +96,7 @@ export default function LandingHeader({ bannerVisible = false }: LandingHeaderPr
             />
             <div className="absolute inset-[1.5px] rounded-full bg-background" />
             <span className="relative text-xs font-bold tracking-[0.2em] text-foreground">
-              QOI
+              QOI TEST
             </span>
           </motion.button>
           
