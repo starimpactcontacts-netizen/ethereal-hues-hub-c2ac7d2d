@@ -64,32 +64,28 @@ function EventCard({ event }: { event: Event }) {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-surface-1/40 to-transparent" />
           {isLive && (
-            <div className="absolute top-2 left-2 flex items-center gap-1 bg-emerald-500 px-2 py-0.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-background animate-pulse" />
-              <span className="text-[8px] font-bold uppercase text-background">Live</span>
+            <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-emerald-500/90 px-2.5 py-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <span className="text-[11px] font-bold text-white tracking-wide">LIVE</span>
             </div>
           )}
           {event.prize_pool && (
             <div className="absolute top-2 right-2 bg-background/90 border border-gold/50 px-2 py-0.5">
-              <span className="text-[10px] font-display text-gold">{event.prize_pool}</span>
+              <span className="text-[11px] font-bold text-gold">{event.prize_pool}</span>
             </div>
           )}
-          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-gold/90 px-1.5 py-0.5">
-            <InfinityIcon className="w-2.5 h-2.5 text-background" />
-            <span className="text-[7px] font-bold uppercase text-background">Official</span>
-          </div>
         </div>
-        <div className="p-2.5">
-          <h3 className="font-display text-xs text-foreground truncate">{event.title}</h3>
-          <div className="flex items-center gap-2 text-[9px] text-muted-foreground mt-1">
-            <span className="uppercase">{event.league}</span>
+        <div className="p-3">
+          <h3 className="text-[13px] font-bold text-foreground truncate" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>{event.title}</h3>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
+            <span className="uppercase font-medium">{event.league}</span>
             {event.xp_reward && (
-              <span className="text-gold flex items-center gap-0.5">
-                <Flame className="w-2.5 h-2.5" /> +{event.xp_reward} XP
+              <span className="text-gold flex items-center gap-0.5 font-semibold">
+                <Flame className="w-3 h-3" /> +{event.xp_reward} XP
               </span>
             )}
           </div>
-          <div className="mt-1.5">
+          <div className="mt-2">
             <CountdownTimer endDate={isLive ? event.end_date : event.start_date} label={isLive ? "Ends" : "Starts"} />
           </div>
         </div>
@@ -98,7 +94,7 @@ function EventCard({ event }: { event: Event }) {
   );
 }
 
-// ─── Ghost Placeholder Slot (shows empty carousel space) ───────
+// ─── Ghost Placeholder Slot ────────────────────────────────────
 function GhostSlot({ icon, label, width = "w-[240px]", height = "h-44", accentColor = "border-border/40" }: {
   icon: React.ReactNode;
   label: string;
@@ -108,15 +104,15 @@ function GhostSlot({ icon, label, width = "w-[240px]", height = "h-44", accentCo
 }) {
   return (
     <div className={`shrink-0 ${width} ${height} border border-dashed ${accentColor} bg-surface-0/40 flex flex-col items-center justify-center gap-2`}>
-      <div className="w-8 h-8 rounded-full bg-surface-2/60 flex items-center justify-center">
+      <div className="w-8 h-8 bg-surface-2/60 flex items-center justify-center">
         {icon}
       </div>
-      <span className="text-[9px] text-muted-foreground/40 font-semibold uppercase tracking-wider">{label}</span>
+      <span className="text-[11px] text-muted-foreground/40 font-medium">{label}</span>
     </div>
   );
 }
 
-// ─── Quick 1v1 Row Card (Browse) ───────────────────────────────
+// ─── Quick 1v1 Row Card ────────────────────────────────────────
 function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
   const statusMap: Record<string, { label: string; color: string }> = {
     waiting: { label: "OPEN", color: "text-amber-400" },
@@ -132,40 +128,31 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
 
   return (
     <motion.button
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left"
+      className="w-full flex items-center gap-3 p-3.5 bg-surface-1 border border-border hover:border-red-500/40 transition-all touch-manipulation text-left"
     >
-      {/* P1 avatar */}
-      <Avatar className="w-9 h-9 border border-red-500/40 shrink-0">
+      <Avatar className="w-10 h-10 border border-border shrink-0">
         <AvatarImage src={fight.player_1_avatar_url || ''} />
-        <AvatarFallback className="bg-red-500/20 text-red-400 text-[10px] font-bold">
+        <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">
           {fight.player_1_username?.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
-      {/* VS */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
-        <div className="min-w-0">
-          <span className="text-xs font-bold text-foreground truncate block">{fight.player_1_username}</span>
-        </div>
-        <div className="shrink-0 w-6 h-6 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center">
-          <Swords className="w-3 h-3 text-red-400" />
-        </div>
-        <div className="min-w-0">
-          <span className="text-xs font-bold text-foreground truncate block">
-            {fight.player_2_username || "???"}
-          </span>
-        </div>
+        <span className="text-[13px] font-bold text-foreground truncate">{fight.player_1_username}</span>
+        <span className="text-[11px] font-black text-muted-foreground/50 shrink-0">vs</span>
+        <span className="text-[13px] font-bold text-foreground truncate">
+          {fight.player_2_username || "—"}
+        </span>
       </div>
 
-      {/* Status + Prize */}
-      <div className="shrink-0 flex flex-col items-end gap-0.5">
-        <div className="flex items-center gap-1">
-          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
-          <span className={`text-[9px] font-bold uppercase ${s.color}`}>{s.label}</span>
+      <div className="shrink-0 flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          {isLive && <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+          <span className={`text-[11px] font-bold ${s.color}`}>{s.label}</span>
         </div>
-        <span className="text-[9px] font-bold text-gold">+20 IDX</span>
+        <span className="text-[11px] font-bold text-gold">+20 IDX</span>
       </div>
     </motion.button>
   );
@@ -181,11 +168,11 @@ function SectionHeader({ icon, title, badge, badgeColor = "bg-emerald-500/20 bor
 }) {
   return (
     <div className="flex items-center justify-between px-4 mb-3">
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2">
         {icon}
-        <h2 className="text-base font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none', fontSize: '1rem', lineHeight: '1.3' }}>{title}</h2>
+        <span className="text-[15px] font-extrabold text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
         {badge && (
-          <span className={`flex items-center gap-1 border px-2 py-0.5 text-[9px] font-bold uppercase ${badgeColor}`}>
+          <span className={`flex items-center gap-1.5 border px-2 py-0.5 text-[11px] font-bold ${badgeColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {badge}
           </span>
@@ -222,7 +209,6 @@ export default function ArenaPage() {
     fetchEvents();
   }, []);
 
-  // Fetch user stats
   useEffect(() => {
     if (!user) return;
     const fetchStats = async () => {
@@ -233,15 +219,11 @@ export default function ArenaPage() {
       const allMatches = [...(battlesRes.data || []), ...(quickRes.data || [])];
       const wins = allMatches.filter(m => m.winner_id === user.id).length;
       const losses = allMatches.length - wins;
-      
-      // Calculate streak from most recent
       let streak = 0;
-      const sorted = allMatches; // already recent
-      for (const m of sorted) {
+      for (const m of allMatches) {
         if (m.winner_id === user.id) streak++;
         else break;
       }
-
       const [epRes, stRes, rpRes] = await Promise.all([
         supabase.from('event_participations').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
         supabase.from('sanctioned_tournament_participants').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
@@ -263,7 +245,6 @@ export default function ArenaPage() {
   const liveQuick = quickFights.filter(f => f.status === "active" || f.status === "judging").length;
   const totalLive = liveEvents.length + liveBattles + liveTournaments + liveHosted + liveQuick;
 
-  // Featured match — hottest live fight or battle
   const featuredFight = useMemo(() => {
     const liveFights = quickFights.filter(f => f.status === 'active' || f.status === 'judging');
     if (liveFights.length > 0) return { type: 'quick' as const, data: liveFights[0] };
@@ -272,7 +253,6 @@ export default function ArenaPage() {
     return null;
   }, [quickFights, battles]);
 
-  // Quick fight filtering for Browse section
   const filteredQuickFights = useMemo(() => {
     if (!quickSearch) return quickFights;
     const q = quickSearch.toLowerCase();
@@ -288,73 +268,77 @@ export default function ArenaPage() {
 
   const filters: { key: typeof activeFilter; label: string; icon?: React.ReactNode; accent?: string }[] = [
     { key: "all", label: "All" },
-    { key: "quick", label: "Quick 1v1", icon: <Zap className="w-3 h-3" />, accent: "red" },
-    { key: "battles", label: "1v1", icon: <Swords className="w-3 h-3" />, accent: "red" },
-    { key: "official", label: "Official", icon: <InfinityIcon className="w-3 h-3" />, accent: "gold" },
-    { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3 h-3" /> },
-    { key: "hosted", label: "Hosted", icon: <Globe className="w-3 h-3" />, accent: "cyan" },
+    { key: "quick", label: "Quick 1v1", icon: <Zap className="w-3.5 h-3.5" />, accent: "red" },
+    { key: "battles", label: "1v1", icon: <Swords className="w-3.5 h-3.5" />, accent: "red" },
+    { key: "official", label: "Official", icon: <InfinityIcon className="w-3.5 h-3.5" />, accent: "gold" },
+    { key: "sanctioned", label: "Sanctioned", icon: <Shield className="w-3.5 h-3.5" /> },
+    { key: "hosted", label: "Hosted", icon: <Globe className="w-3.5 h-3.5" />, accent: "cyan" },
     { key: "practice", label: "Practice" },
   ];
+
+  // Selected mode for the game lobby
+  const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'practice'>('quick');
+  const modeActions: Record<string, () => void> = {
+    quick: () => profile ? navigate('/quick-fight') : navigate('/start'),
+    battle: () => profile ? setShowCreateBattle(true) : navigate('/start'),
+    practice: () => setShowPracticeMode(true),
+  };
 
   return (
     <div className="min-h-screen bg-background pb-32">
       <LoopMonster />
 
-      {/* ═══ HERO HEADER ═══ */}
+      {/* ═══ HERO ═══ */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-red-500/8 via-background to-background" />
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
+        {/* Ambient glow */}
+        <div className="absolute inset-0 bg-gradient-to-b from-red-600/6 via-transparent to-transparent" />
 
-       <div className="relative px-4 pt-4 pb-4">
-          {/* Top row */}
-          <div className="flex items-center justify-between mb-5">
+        <div className="relative px-4 pt-5 pb-5">
+          {/* Title row */}
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-foreground flex items-center justify-center">
-                <InfinityIcon className="w-5 h-5 text-background" strokeWidth={2.5} />
+              <div className="w-11 h-11 bg-foreground flex items-center justify-center">
+                <InfinityIcon className="w-5.5 h-5.5 text-background" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-foreground tracking-tight leading-none" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none', lineHeight: '1.1' }}>Arena</h1>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Edit · Battle · Win</p>
+                <h1 className="text-[28px] font-black text-foreground leading-none tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>Arena</h1>
+                <p className="text-[12px] text-muted-foreground mt-0.5 font-medium">Compete. Win. Climb.</p>
               </div>
             </div>
             {totalLive > 0 && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 px-3 py-1.5">
+              <div className="flex items-center gap-2 border border-red-500/30 px-3 py-2">
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-xs font-bold text-red-400">{totalLive} Live</span>
+                <span className="text-[13px] font-bold text-red-400 tabular-nums">{totalLive} Live</span>
               </div>
             )}
           </div>
 
-          {/* ═══ YOUR STATS BANNER ═══ */}
+          {/* ═══ STATS ROW ═══ */}
           {profile && userStats && (
-            <div className="mb-4 bg-surface-1/80 border border-border/60 p-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar className="w-9 h-9 border border-border/60">
-                  <AvatarImage src={profile.avatar_url || ''} />
-                  <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <span className="text-sm font-bold text-foreground block leading-none">{profile.username}</span>
-                  <span className="text-[11px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
-                </div>
+            <div className="mb-5 bg-surface-1 border border-border p-4 flex items-center gap-4">
+              <Avatar className="w-11 h-11 border-2 border-border shrink-0">
+                <AvatarImage src={profile.avatar_url || ''} />
+                <AvatarFallback className="bg-surface-2 text-foreground text-[12px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <span className="text-[14px] font-bold text-foreground block leading-none truncate">{profile.username}</span>
+                <span className="text-[12px] text-muted-foreground mt-1 block">Class {profile.league_tier || 'F'}</span>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <span className="text-sm font-bold text-emerald-400 block leading-none">{userStats.wins}</span>
-                  <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Wins</span>
-                </div>
-                <div className="text-center">
-                  <span className="text-sm font-bold text-red-400 block leading-none">{userStats.losses}</span>
-                  <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Losses</span>
-                </div>
-                <div className="text-center">
-                  <span className="text-sm font-bold text-foreground block leading-none">{userStats.events}</span>
-                  <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Edits</span>
-                </div>
+              <div className="flex items-center gap-5">
+                {[
+                  { val: userStats.wins, label: 'W', color: 'text-emerald-400' },
+                  { val: userStats.losses, label: 'L', color: 'text-red-400' },
+                  { val: userStats.events, label: 'Edits', color: 'text-foreground' },
+                ].map(s => (
+                  <div key={s.label} className="text-center">
+                    <span className={`text-[16px] font-black ${s.color} block leading-none tabular-nums`}>{s.val}</span>
+                    <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block">{s.label}</span>
+                  </div>
+                ))}
                 {userStats.streak > 1 && (
                   <div className="text-center">
-                    <span className="text-sm font-bold text-gold block leading-none">🔥{userStats.streak}</span>
-                    <span className="text-[9px] text-muted-foreground uppercase mt-0.5 block">Streak</span>
+                    <span className="text-[16px] font-black text-gold block leading-none">🔥{userStats.streak}</span>
+                    <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block">Streak</span>
                   </div>
                 )}
               </div>
@@ -362,52 +346,65 @@ export default function ArenaPage() {
           )}
 
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
-          <div className="mb-4">
-            {/* Mode selector row */}
-            <div className="flex gap-2.5 mb-3">
+          <div className="mb-5">
+            {/* Mode tabs */}
+            <div className="flex gap-0 mb-3 bg-surface-1 border border-border overflow-hidden">
               {[
-                { key: 'quick', icon: <Zap className="w-4.5 h-4.5" />, label: 'Quick 1v1', sub: '3hr · Auto-match', action: () => profile ? navigate('/quick-fight') : navigate('/start') },
-                { key: 'battle', icon: <Swords className="w-4.5 h-4.5" />, label: '1v1 Battle', sub: 'Invite opponent', action: () => profile ? setShowCreateBattle(true) : navigate('/start') },
-                { key: 'practice', icon: <Target className="w-4.5 h-4.5" />, label: 'Practice', sub: 'No stakes', action: () => setShowPracticeMode(true) },
-              ].map((mode) => (
-                <motion.button
-                  key={mode.key}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={mode.action}
-                  className="flex-1 relative group touch-manipulation"
-                >
-                  <div className="bg-surface-1 border border-border group-hover:border-red-500/50 transition-all p-4 flex flex-col items-center gap-2">
-                    {/* Top accent line */}
-                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500/0 group-hover:bg-red-500 transition-all" />
-                    <div className="w-10 h-10 bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
-                      <span className="text-red-400 group-hover:text-red-300 transition-colors">{mode.icon}</span>
-                    </div>
-                    <span className="text-xs font-bold text-foreground leading-none">{mode.label}</span>
-                    <span className="text-[10px] text-muted-foreground leading-none">{mode.sub}</span>
-                  </div>
-                </motion.button>
-              ))}
+                { key: 'quick' as const, icon: <Zap className="w-4 h-4" />, label: 'Quick 1v1', desc: 'Auto-match · 3hr' },
+                { key: 'battle' as const, icon: <Swords className="w-4 h-4" />, label: '1v1 Battle', desc: 'Invite opponent' },
+                { key: 'practice' as const, icon: <Target className="w-4 h-4" />, label: 'Practice', desc: 'No stakes' },
+              ].map((mode, i) => {
+                const active = selectedMode === mode.key;
+                return (
+                  <button
+                    key={mode.key}
+                    onClick={() => setSelectedMode(mode.key)}
+                    className={`flex-1 relative py-4 px-2 flex flex-col items-center gap-1.5 transition-all touch-manipulation ${
+                      active ? 'bg-surface-2' : 'hover:bg-surface-0'
+                    } ${i > 0 ? 'border-l border-border' : ''}`}
+                  >
+                    {/* Active indicator — top bar */}
+                    {active && <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500" />}
+                    <span className={`transition-colors ${active ? 'text-red-400' : 'text-muted-foreground'}`}>{mode.icon}</span>
+                    <span className={`text-[13px] font-bold leading-none transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                      {mode.label}
+                    </span>
+                    <span className={`text-[11px] leading-none transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
+                      {mode.desc}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Primary PLAY button */}
+            {/* PLAY button */}
             <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
+              whileTap={{ scale: 0.98 }}
+              onClick={modeActions[selectedMode]}
               className="w-full relative overflow-hidden touch-manipulation group"
             >
-              <div className="bg-red-600 hover:bg-red-500 transition-colors py-4.5 flex items-center justify-center gap-3">
-                {/* Subtle inner top highlight */}
-                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.10] to-transparent pointer-events-none" />
-                <Zap className="w-5 h-5 text-white relative z-10" />
-                <span className="text-xl font-black text-white relative z-10 tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none', lineHeight: '1' }}>
-                  Play
+              <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-5 flex items-center justify-center gap-3">
+                {/* Inner glass highlight */}
+                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                {/* Bottom edge shadow */}
+                <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-900/50 pointer-events-none" />
+
+                {selectedMode === 'quick' && <Zap className="w-5 h-5 text-white relative z-10" />}
+                {selectedMode === 'battle' && <Swords className="w-5 h-5 text-white relative z-10" />}
+                {selectedMode === 'practice' && <Target className="w-5 h-5 text-white relative z-10" />}
+
+                <span className="text-[22px] font-black text-white relative z-10 tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                  {selectedMode === 'practice' ? 'Start' : 'Play'}
                 </span>
-                <span className="text-[11px] text-white/50 font-bold relative z-10">+20 IDX</span>
+
+                {selectedMode !== 'practice' && (
+                  <span className="text-[12px] text-white/40 font-bold relative z-10 ml-1">+20 IDX</span>
+                )}
               </div>
             </motion.button>
           </div>
 
-          {/* ═══ FEATURED MATCH SPOTLIGHT ═══ */}
+          {/* ═══ FEATURED MATCH ═══ */}
           {featuredFight && (
             <motion.button
               initial={{ opacity: 0, y: 4 }}
@@ -417,39 +414,45 @@ export default function ArenaPage() {
                 if (featuredFight.type === 'quick') navigate(`/fight/${featuredFight.data.id}`);
                 else navigate(`/battle/${featuredFight.data.id}`);
               }}
-              className="w-full mb-3 bg-gradient-to-r from-red-950/50 via-surface-1 to-blue-950/50 border border-red-500/30 p-3 flex items-center gap-3 touch-manipulation"
+              className="w-full mb-4 bg-surface-1 border border-border hover:border-red-500/30 p-4 flex items-center gap-4 touch-manipulation transition-all"
             >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Avatar className="w-9 h-9 border-2 border-red-500/50 shrink-0">
+              {/* Avatars VS */}
+              <div className="flex items-center gap-2 shrink-0">
+                <Avatar className="w-10 h-10 border-2 border-red-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_1_avatar_url : (featuredFight.data as any).challenger_avatar_url} />
-                  <AvatarFallback className="bg-red-500/20 text-red-400 text-[9px] font-bold">
+                  <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username)?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col items-center shrink-0">
-                  <span className="text-[8px] font-bold text-red-400 uppercase animate-pulse">🔴 LIVE</span>
-                  <span className="text-[10px] font-black text-foreground/50">VS</span>
-                </div>
-                <Avatar className="w-9 h-9 border-2 border-blue-500/50 shrink-0">
+                <span className="text-[12px] font-black text-muted-foreground/40">VS</span>
+                <Avatar className="w-10 h-10 border-2 border-blue-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_2_avatar_url : (featuredFight.data as any).opponent_avatar_url} />
-                  <AvatarFallback className="bg-blue-500/20 text-blue-400 text-[9px] font-bold">
+                  <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_2_username : (featuredFight.data as any).opponent_username)?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
               </div>
+
+              {/* Names + CTA */}
               <div className="flex-1 min-w-0 text-left">
-                <span className="text-[10px] font-bold text-foreground block truncate">
+                <span className="text-[13px] font-bold text-foreground block truncate">
                   {featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username}
                   {' vs '}
                   {featuredFight.type === 'quick' ? (featuredFight.data.player_2_username || '???') : ((featuredFight.data as any).opponent_username || '???')}
                 </span>
-                <span className="text-[8px] text-gold font-bold">+20 IDX • WATCH NOW →</span>
+                <span className="text-[12px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
+              </div>
+
+              {/* Live pill */}
+              <div className="shrink-0 flex items-center gap-1.5 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[12px] font-bold text-emerald-400">LIVE</span>
               </div>
             </motion.button>
           )}
 
-          {/* Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
+          {/* ═══ FILTER PILLS ═══ */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
             {filters.map(f => {
               const active = activeFilter === f.key;
               const isRed = f.accent === "red";
@@ -459,7 +462,7 @@ export default function ArenaPage() {
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`px-3.5 py-2 text-[11px] font-semibold border transition-all flex items-center gap-1.5 shrink-0 ${
+                  className={`px-3.5 py-2 text-[12px] font-semibold border transition-all flex items-center gap-1.5 shrink-0 touch-manipulation ${
                     active
                       ? isRed ? "bg-red-500 text-white border-red-500"
                       : isGold ? "bg-gold text-background border-gold"
@@ -490,9 +493,9 @@ export default function ArenaPage() {
 
       {/* ═══ MAIN CONTENT ═══ */}
       {!loading && (
-        <div className="mt-1.5 space-y-5">
+        <div className="mt-2 space-y-6">
 
-          {/* ═══ FEATURED ARTIST DROPS ═══ */}
+          {/* Featured Drops */}
           {liveDrops.length > 0 && (activeFilter === "all" || activeFilter === "official") && (
             <motion.section key="featured-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
@@ -508,7 +511,8 @@ export default function ArenaPage() {
               </div>
             </motion.section>
           )}
-          {/* ═══ BROWSE QUICK 1v1s ═══ */}
+
+          {/* Quick 1v1s */}
           {(activeFilter === "all" || activeFilter === "quick") && (
             <motion.section key="quick-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
@@ -519,28 +523,28 @@ export default function ArenaPage() {
                 action={
                   <button
                     onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-                    className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1"
+                    className="text-[12px] text-red-400 hover:text-red-300 font-semibold flex items-center gap-1.5 transition-colors"
                   >
                     <Zap className="w-3.5 h-3.5" /> Start Editing
                   </button>
                 }
               />
-              <p className="text-[11px] text-muted-foreground px-4 mb-2.5">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
+              <p className="text-[12px] text-muted-foreground px-4 mb-3">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
 
               {/* Search */}
-              <div className="px-4 mb-2">
+              <div className="px-4 mb-2.5">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <Input
                     type="text"
                     placeholder="Search fights..."
                     value={quickSearch}
                     onChange={(e) => setQuickSearch(e.target.value)}
-                    className="h-9 pl-9 pr-8 bg-surface-1 border-border text-xs placeholder:text-muted-foreground/50"
+                    className="h-10 pl-10 pr-8 bg-surface-1 border-border text-[13px] placeholder:text-muted-foreground/50"
                   />
                   {quickSearch && (
-                    <button onClick={() => setQuickSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
-                      <X className="w-3.5 h-3.5 text-muted-foreground" />
+                    <button onClick={() => setQuickSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <X className="w-4 h-4 text-muted-foreground" />
                     </button>
                   )}
                 </div>
@@ -550,9 +554,9 @@ export default function ArenaPage() {
               <div className="px-4 space-y-1.5">
                 {quickLoading ? (
                   <div className="space-y-1.5">
-                    <Skeleton className="h-14 w-full" />
-                    <Skeleton className="h-14 w-full" />
-                    <Skeleton className="h-14 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
                   </div>
                 ) : filteredQuickFights.length > 0 ? (
                   <>
@@ -562,26 +566,26 @@ export default function ArenaPage() {
                     {activeFilter !== "quick" && filteredQuickFights.length > 5 && (
                       <button
                         onClick={() => setActiveFilter("quick")}
-                        className="w-full py-2.5 text-[10px] font-bold text-red-400 uppercase tracking-wider hover:bg-red-500/5 transition-colors flex items-center justify-center gap-1"
+                        className="w-full py-3 text-[12px] font-bold text-red-400 hover:bg-red-500/5 transition-colors flex items-center justify-center gap-1.5"
                       >
                         View All {filteredQuickFights.length} Fights
-                        <ChevronRight className="w-3 h-3" />
+                        <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </>
                 ) : (
-                  <div className="text-center py-8 bg-surface-1/60 border border-border/50">
-                    <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2">
-                      <Zap className="w-5 h-5 text-red-400/40" />
+                  <div className="text-center py-10 bg-surface-1 border border-border">
+                    <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-3">
+                      <Zap className="w-6 h-6 text-red-400/40" />
                     </div>
-                    <p className="text-xs text-muted-foreground mb-1">{quickSearch ? "No matches found" : "No Quick 1v1s Yet"}</p>
-                    <p className="text-[9px] text-muted-foreground/60 mb-3">Be the first to fight</p>
+                    <p className="text-[13px] text-muted-foreground font-medium mb-1">{quickSearch ? "No matches found" : "No Quick 1v1s Yet"}</p>
+                    <p className="text-[12px] text-muted-foreground/60 mb-4">Be the first to start a fight</p>
                     <Button
                       size="sm"
                       onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-                       className="bg-red-500 hover:bg-red-600 text-white text-[10px]"
+                      className="bg-red-500 hover:bg-red-600 text-white text-[12px] h-9 px-5"
                     >
-                      <Zap className="w-3 h-3 mr-1" /> Start Quick 1v1
+                      <Zap className="w-3.5 h-3.5 mr-1.5" /> Start Quick 1v1
                     </Button>
                   </div>
                 )}
@@ -589,7 +593,7 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* ═══ 1v1 BATTLES ═══ */}
+          {/* 1v1 Battles */}
           {(activeFilter === "all" || activeFilter === "battles") && (
             <motion.section key="battles-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
@@ -598,7 +602,7 @@ export default function ArenaPage() {
                 badge={liveBattles > 0 ? `${liveBattles} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
               />
-              <p className="text-[11px] text-muted-foreground px-4 mb-2.5">Head-to-head editing showdowns · Winner +20 IDX</p>
+              <p className="text-[12px] text-muted-foreground px-4 mb-3">Head-to-head editing showdowns · Winner +20 IDX</p>
 
               {battlesLoading ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
@@ -610,24 +614,23 @@ export default function ArenaPage() {
                   {battles.slice(0, 10).map(battle => (
                     <BattleCard key={battle.id} battle={battle} onClick={() => navigate(`/battle/${battle.id}`)} />
                   ))}
-                  {/* Ghost slots to fill carousel */}
                   {battles.length < 4 && Array.from({ length: Math.max(0, 3 - battles.length) }).map((_, i) => (
                     <GhostSlot key={`ghost-battle-${i}`} icon={<Swords className="w-4 h-4 text-muted-foreground/20" />} label="More battles" accentColor="border-red-500/15" />
                   ))}
                 </div>
               ) : (
                 <div className="px-4">
-                  <div className="bg-surface-1/60 border border-red-500/15 border-dashed p-6 text-center">
-                    <div className="w-10 h-10 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2">
-                      <Swords className="w-5 h-5 text-red-400/30" />
+                  <div className="bg-surface-1 border border-red-500/15 border-dashed p-8 text-center">
+                    <div className="w-12 h-12 bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-3">
+                      <Swords className="w-6 h-6 text-red-400/30" />
                     </div>
-                    <p className="text-xs text-muted-foreground mb-3">No active edit battles</p>
+                    <p className="text-[13px] text-muted-foreground font-medium mb-4">No active edit battles</p>
                     <Button
                       size="sm"
                       onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-                      className="bg-red-500 hover:bg-red-600 text-white text-[10px]"
+                      className="bg-red-500 hover:bg-red-600 text-white text-[12px] h-9 px-5"
                     >
-                      <Swords className="w-3 h-3 mr-1" /> Start Editing
+                      <Swords className="w-3.5 h-3.5 mr-1.5" /> Create Battle
                     </Button>
                   </div>
                 </div>
@@ -635,7 +638,7 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* ═══ OFFICIAL EVENTS ═══ */}
+          {/* Official Events */}
           {(activeFilter === "all" || activeFilter === "official") && (
             <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
@@ -644,32 +647,30 @@ export default function ArenaPage() {
                 badge={liveEvents.length > 0 ? `${liveEvents.length} Live` : undefined}
                 badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
                 action={
-                  <Link to="/events" className="text-xs text-muted-foreground hover:text-foreground font-medium">View All</Link>
+                  <Link to="/events" className="text-[12px] text-muted-foreground hover:text-foreground font-medium transition-colors">View All</Link>
                 }
               />
-
               {allActiveEvents.length > 0 ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
                   {allActiveEvents.map(event => <EventCard key={event.id} event={event} />)}
-                  {/* Ghost slots */}
                   {allActiveEvents.length < 3 && Array.from({ length: Math.max(0, 3 - allActiveEvents.length) }).map((_, i) => (
                     <GhostSlot key={`ghost-event-${i}`} width="w-[240px]" icon={<Trophy className="w-4 h-4 text-gold/20" />} label="Upcoming" accentColor="border-gold/15" />
                   ))}
                 </div>
               ) : (
                 <div className="px-4">
-                  <div className="bg-surface-1/60 border border-border/50 border-dashed p-6 text-center">
-                    <div className="w-10 h-10 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-2">
-                      <InfinityIcon className="w-5 h-5 text-gold/30" />
+                  <div className="bg-surface-1 border border-border border-dashed p-8 text-center">
+                    <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
+                      <InfinityIcon className="w-6 h-6 text-gold/30" />
                     </div>
-                    <p className="text-xs text-muted-foreground">No active events</p>
+                    <p className="text-[13px] text-muted-foreground font-medium">No active events</p>
                   </div>
                 </div>
               )}
             </motion.section>
           )}
 
-          {/* ═══ PREMIUM COMPS ═══ */}
+          {/* Premium Comps */}
           {(activeFilter === "all") && (
             <motion.section key="premium-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
               <SectionHeader
@@ -692,17 +693,17 @@ export default function ArenaPage() {
                   }
                 </div>
               ) : (
-                <div className="bg-surface-1/60 border border-purple-500/15 border-dashed p-6 text-center">
-                  <div className="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-2">
-                    <Crown className="w-5 h-5 text-purple-400/30" />
+                <div className="bg-surface-1 border border-purple-500/15 border-dashed p-8 text-center">
+                  <div className="w-12 h-12 bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-3">
+                    <Crown className="w-6 h-6 text-purple-400/30" />
                   </div>
-                  <p className="text-xs text-muted-foreground">No premium comps right now</p>
+                  <p className="text-[13px] text-muted-foreground font-medium">No premium comps right now</p>
                 </div>
               )}
             </motion.section>
           )}
 
-          {/* ═══ SANCTIONED TOURNAMENTS ═══ */}
+          {/* Sanctioned Tournaments */}
           {(activeFilter === "all" || activeFilter === "sanctioned") && (
             <motion.section key="sanctioned-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
               <SectionHeader
@@ -712,16 +713,15 @@ export default function ArenaPage() {
                 badgeColor="bg-gold/20 border-gold/40 text-gold"
                 action={
                   profile?.crew_id ? (
-                    <Link to="/units" className="text-[10px] text-gold hover:text-gold/80 flex items-center gap-1">
-                      <Plus className="w-3 h-3" /> Propose
+                    <Link to="/units" className="text-[12px] text-gold hover:text-gold/80 flex items-center gap-1 font-semibold transition-colors">
+                      <Plus className="w-3.5 h-3.5" /> Propose
                     </Link>
                   ) : undefined
                 }
               />
 
-              {/* Clickable CTA card */}
               <motion.button
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => navigate('/units')}
                 className="w-full bg-surface-1 border border-border hover:border-gold/40 p-4 flex items-center gap-4 text-left transition-all mb-3"
               >
@@ -729,16 +729,15 @@ export default function ArenaPage() {
                   <Shield className="w-6 h-6 text-gold" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="font-display text-sm text-foreground block">Unit Tournaments</span>
-                  <span className="text-[10px] text-muted-foreground">Single elimination brackets • Up to 100 editors</span>
+                  <span className="text-[14px] font-bold text-foreground block" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Unit Tournaments</span>
+                  <span className="text-[12px] text-muted-foreground">Single elimination · Up to 100 editors</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
               </motion.button>
 
-              {/* Carousel */}
               {sanctionedLoading ? (
                 <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
-                   <Skeleton className="h-48 w-[240px] shrink-0" />
+                  <Skeleton className="h-48 w-[240px] shrink-0" />
                   <Skeleton className="h-48 w-[240px] shrink-0" />
                 </div>
               ) : sanctionedTournaments.length > 0 ? (
@@ -760,7 +759,7 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* ═══ HOSTED COMPS ═══ */}
+          {/* Hosted Comps */}
           {(activeFilter === "all" || activeFilter === "hosted") && (
             <motion.section key="hosted-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
               <SectionHeader
@@ -769,9 +768,8 @@ export default function ArenaPage() {
                 badge="New"
                 badgeColor="bg-cyan-500/20 border-cyan-500/30 text-cyan-400"
               />
-              {/* Big clickable CTA card */}
               <motion.button
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => navigate('/hosted-comps')}
                 className="w-full bg-surface-1 border border-border hover:border-cyan-500/40 p-4 flex items-center gap-4 text-left transition-all"
               >
@@ -779,16 +777,15 @@ export default function ArenaPage() {
                   <Globe className="w-6 h-6 text-cyan-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="font-display text-sm text-foreground block">Browse or Host a Competition</span>
-                  <span className="text-[10px] text-muted-foreground">Discord servers & creators run comps with Loopgate infrastructure</span>
+                  <span className="text-[14px] font-bold text-foreground block" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Browse or Host a Competition</span>
+                  <span className="text-[12px] text-muted-foreground">Discord servers & creators run comps with Loopgate infrastructure</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
               </motion.button>
 
-              {/* Featured carousel */}
               {hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length > 0 && (
                 <div className="mt-3">
-                  <span className="text-[9px] font-semibold uppercase tracking-widest text-cyan-400 mb-2 block">Featured</span>
+                  <span className="text-[11px] font-bold text-cyan-400 mb-2 block tracking-wide">FEATURED</span>
                   <div className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4">
                     {hostedComps
                       .filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging'))
@@ -796,7 +793,6 @@ export default function ArenaPage() {
                       .map(comp => (
                         <FeaturedHostedCompCard key={comp.id} comp={comp} onClick={() => navigate(`/hosted-comp/${comp.id}`)} />
                       ))}
-                    {/* Ghost slots for featured */}
                     {hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length < 3 && 
                       Array.from({ length: Math.max(0, 3 - hostedComps.filter(c => c.is_featured && (c.status === 'live' || c.status === 'judging')).length) }).map((_, i) => (
                         <GhostSlot key={`ghost-hosted-${i}`} icon={<Globe className="w-4 h-4 text-cyan-400/20" />} label="Open slot" accentColor="border-cyan-500/15" />
@@ -808,16 +804,15 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* ═══ PRACTICE ═══ */}
+          {/* Practice */}
           {(activeFilter === "all" || activeFilter === "practice") && (
             <motion.section key="practice-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="px-4">
               <SectionHeader
                 icon={<Target className="w-4 h-4 text-emerald-400" />}
                 title="Practice Mode"
               />
-              {/* Clickable CTA card */}
               <motion.button
-                whileTap={{ scale: 0.97 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setShowPracticeMode(true)}
                 className="w-full bg-surface-1 border border-border hover:border-emerald-500/40 p-4 flex items-center gap-4 text-left transition-all"
               >
@@ -825,8 +820,8 @@ export default function ArenaPage() {
                   <Target className="w-6 h-6 text-emerald-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="font-display text-sm text-foreground block">Get Feedback</span>
-                  <span className="text-[10px] text-muted-foreground">Submit work for judge review • +30 XP</span>
+                  <span className="text-[14px] font-bold text-foreground block" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Get Feedback</span>
+                  <span className="text-[12px] text-muted-foreground">Submit work for judge review · +30 XP</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
               </motion.button>
