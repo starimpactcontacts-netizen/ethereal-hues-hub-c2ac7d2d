@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { FeedPostItem } from "@/hooks/useFeedPosts";
 import VerifiedBadge from "./VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
+import RichMessageContent from "./RichMessageContent";
 import { useState } from "react";
 
 interface FeedPostCardProps {
@@ -135,9 +136,9 @@ export default function FeedPostCard({ post, isLiked, isBookmarked, onLike, onBo
             )}
 
             {/* Post content */}
-            <p className="text-[14px] text-foreground leading-snug whitespace-pre-wrap break-words">
-              {post.content}
-            </p>
+            <div className="text-[14px] text-foreground leading-snug whitespace-pre-wrap break-words">
+              <RichMessageContent content={post.content} showLinkPreviews={false} />
+            </div>
 
             {/* Media link preview */}
             {post.media_url && (
