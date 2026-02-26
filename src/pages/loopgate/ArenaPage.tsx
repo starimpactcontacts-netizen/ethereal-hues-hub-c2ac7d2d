@@ -361,35 +361,49 @@ export default function ArenaPage() {
             </div>
           )}
 
-          {/* Quick Action Row — Fortnite × Roblox Ready-Up Style */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            {/* Quick 1v1 CTA — Primary Yellow (Fortnite Ready) */}
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
-              className="relative overflow-hidden py-4 bg-gradient-to-b from-red-500 via-red-600 to-red-700 hover:from-red-400 hover:via-red-500 hover:to-red-600 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
-            >
-              {/* Roblox chunky border + inner shine */}
-              <div className="absolute inset-0 border-[3px] border-black/15 pointer-events-none" />
-              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/25 to-transparent pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/15 pointer-events-none" />
-              <Zap className="w-5 h-5 text-white relative z-10" />
-              <span className="font-display text-xs text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.3)] relative z-10">Quick 1v1</span>
-              <span className="text-[8px] text-white/70 font-bold relative z-10">+20 IDX • 3hr</span>
-            </motion.button>
+          {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
+          <div className="mb-3">
+            {/* Mode selector row */}
+            <div className="flex gap-1.5 mb-2">
+              {[
+                { key: 'quick', icon: <Zap className="w-3.5 h-3.5" />, label: 'QUICK 1v1', sub: '3hr • Auto-match', action: () => profile ? navigate('/quick-fight') : navigate('/start') },
+                { key: 'battle', icon: <Swords className="w-3.5 h-3.5" />, label: '1v1 BATTLE', sub: 'Invite opponent', action: () => profile ? setShowCreateBattle(true) : navigate('/start') },
+                { key: 'practice', icon: <Target className="w-3.5 h-3.5" />, label: 'PRACTICE', sub: 'No stakes', action: () => setShowPracticeMode(true) },
+              ].map((mode, i) => (
+                <motion.button
+                  key={mode.key}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={mode.action}
+                  className="flex-1 relative group touch-manipulation"
+                >
+                  <div className="bg-surface-1 border border-border group-hover:border-red-500/50 transition-all p-2.5 flex flex-col items-center gap-1">
+                    {/* Top accent line */}
+                    <div className="absolute top-0 left-2 right-2 h-[2px] bg-red-500/0 group-hover:bg-red-500 transition-all" />
+                    <div className="w-7 h-7 bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
+                      <span className="text-red-400 group-hover:text-red-300 transition-colors">{mode.icon}</span>
+                    </div>
+                    <span className="font-display text-[9px] text-foreground tracking-wider leading-none">{mode.label}</span>
+                    <span className="text-[7px] text-muted-foreground leading-none">{mode.sub}</span>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
 
-            {/* Create Battle CTA — Secondary Green (Roblox Play) */}
+            {/* Primary PLAY button */}
             <motion.button
-              whileTap={{ scale: 0.96 }}
-              onClick={() => profile ? setShowCreateBattle(true) : navigate('/start')}
-              className="relative overflow-hidden py-4 bg-gradient-to-b from-red-600 via-red-700 to-red-800 hover:from-red-500 hover:via-red-600 hover:to-red-700 flex flex-col items-center justify-center gap-0.5 touch-manipulation transition-all active:brightness-90"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
+              className="w-full relative overflow-hidden touch-manipulation group"
             >
-              <div className="absolute inset-0 border-[3px] border-black/15 pointer-events-none" />
-              <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/15 pointer-events-none" />
-              <Swords className="w-5 h-5 text-white relative z-10" />
-              <span className="font-display text-xs text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.25)] relative z-10">Edit Battle</span>
-              <span className="text-[8px] text-white/60 font-bold relative z-10">+20 IDX</span>
+              <div className="bg-red-600 hover:bg-red-500 transition-colors py-3.5 flex items-center justify-center gap-3">
+                {/* Subtle inner top highlight */}
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                <Zap className="w-5 h-5 text-white relative z-10" />
+                <span className="font-display text-lg text-white uppercase tracking-wider relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                  Play
+                </span>
+                <span className="text-[9px] text-white/60 font-bold relative z-10 uppercase">+20 IDX</span>
+              </div>
             </motion.button>
           </div>
 
