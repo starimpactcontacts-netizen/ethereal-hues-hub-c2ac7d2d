@@ -25,10 +25,10 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
       {/* Top accent */}
       <div className="h-0.5 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500" />
 
-      {/* Premium indicator */}
-      <div className="absolute top-2.5 left-2 flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 px-1.5 py-0.5 z-10">
-        <Crown className="w-2.5 h-2.5 text-white" />
-        <span className="text-[8px] font-bold uppercase tracking-wider text-white">Premium</span>
+      {/* Premium indicator — seamless */}
+      <div className="absolute top-2.5 left-2 flex items-center gap-1 z-10">
+        <Crown className="w-3 h-3 text-purple-400" />
+        <span className="text-[11px] font-bold text-purple-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">Premium</span>
       </div>
 
       {/* Poster or gradient header — same h-20 as FeaturedHostedCompCard */}
@@ -41,17 +41,15 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
 
         {/* Status badge */}
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-1">
           {isLive && (
-            <span className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 text-[8px] font-bold uppercase tracking-wider">
-              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-              Live
-            </span>
+            <>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[11px] font-bold text-emerald-400 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">LIVE</span>
+            </>
           )}
           {isJudging && (
-            <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[8px] font-bold uppercase tracking-wider animate-pulse">
-              Judging
-            </span>
+            <span className="text-[11px] font-bold text-amber-400 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">JUDGING</span>
           )}
         </div>
       </div>
@@ -66,14 +64,14 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
               <Crown className="w-2.5 h-2.5 text-purple-400" />
             )}
           </div>
-          <span className="text-[9px] text-purple-300 truncate">{comp.host_name}</span>
+          <span className="text-[11px] text-purple-300 truncate">{comp.host_name}</span>
         </div>
 
         {/* Title */}
         <h3 className="font-display text-xs text-foreground line-clamp-1 mb-2">{comp.name}</h3>
 
         {/* Stats */}
-        <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-0.5">
             <Users className="w-2.5 h-2.5 text-purple-400" />
             <span>{comp.participant_count || comp.submission_count || 0}</span>
@@ -87,7 +85,7 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
         </div>
 
         {/* Deadline */}
-        <div className="flex items-center gap-1 text-[8px] text-muted-foreground mt-1.5">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1.5">
           <Clock className="w-2.5 h-2.5" />
           {deadlinePassed ? (
             <span className="text-amber-400">Submissions closed</span>
@@ -97,7 +95,7 @@ export default function PremiumCompCard({ comp, onClick }: PremiumCompCardProps)
         </div>
 
         {/* CTA */}
-        <div className="flex items-center gap-1 text-[8px] text-purple-400 font-semibold mt-2">
+        <div className="flex items-center gap-1 text-[11px] text-purple-400 font-semibold mt-2">
           <Sparkles className="w-2.5 h-2.5" />
           <span>Easy Entry Guide</span>
         </div>

@@ -25,11 +25,11 @@ interface TournamentCardProps {
   onClick: () => void;
 }
 
-const phaseConfig: Record<TournamentPhase, { label: string; color: string; bgColor: string }> = {
-  "ready-up": { label: "READY UP", color: "text-amber-300", bgColor: "bg-background/45 border-amber-400/40 backdrop-blur-sm" },
-  "submission": { label: "SUBMITTING", color: "text-emerald-400", bgColor: "bg-background/45 border-emerald-400/40 backdrop-blur-sm" },
-  "bracket": { label: "BRACKET LIVE", color: "text-sky-300", bgColor: "bg-background/45 border-sky-400/40 backdrop-blur-sm" },
-  "completed": { label: "WINNER", color: "text-gold", bgColor: "bg-background/45 border-gold/40 backdrop-blur-sm" },
+const phaseConfig: Record<TournamentPhase, { label: string; color: string; dot?: boolean }> = {
+  "ready-up": { label: "READY UP", color: "text-amber-300" },
+  "submission": { label: "SUBMITTING", color: "text-emerald-400" },
+  "bracket": { label: "BRACKET LIVE", color: "text-sky-300", dot: true },
+  "completed": { label: "WINNER", color: "text-gold" },
 };
 
 function formatTimeLeft(endDate: Date): string {
@@ -96,28 +96,29 @@ export default function TournamentCard({ tournament, onClick }: TournamentCardPr
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-surface-1/50 to-transparent" />
         
-        {/* Sanctioned badge */}
+        {/* Sanctioned — seamless */}
         {tournament.isSanctioned && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 rounded-full border border-gold/40 bg-background/45 px-2 py-0.5 backdrop-blur-sm">
+          <div className="absolute top-2 left-2 flex items-center gap-1">
             <Shield className="w-3 h-3 text-gold" />
-            <span className="text-[8px] font-bold uppercase tracking-[0.08em] text-gold">
+            <span className="text-[11px] font-bold text-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
               Sanctioned
             </span>
           </div>
         )}
         
-        {/* Phase badge */}
-        <div className={`absolute top-2 right-2 rounded-full px-2 py-0.5 border ${phaseStyle.bgColor}`}>
-          <span className={`text-[8px] font-bold uppercase tracking-[0.08em] ${phaseStyle.color}`}>
+        {/* Phase — seamless */}
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          {phaseStyle.dot && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+          <span className={`text-[11px] font-bold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] ${phaseStyle.color}`}>
             {phaseStyle.label}
           </span>
         </div>
         
-        {/* Prize pool */}
+        {/* Prize pool — seamless */}
         {tournament.prizePool && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full border border-gold/40 bg-background/45 px-2 py-0.5 backdrop-blur-sm">
+          <div className="absolute bottom-2 right-2 flex items-center gap-1">
             <Trophy className="w-3 h-3 text-gold" />
-            <span className="text-[10px] font-bold text-gold">{tournament.prizePool}</span>
+            <span className="text-[11px] font-bold text-gold drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{tournament.prizePool}</span>
           </div>
         )}
       </div>
@@ -149,7 +150,7 @@ export default function TournamentCard({ tournament, onClick }: TournamentCardPr
         
         {/* Player count bar */}
         <div className="mb-2">
-          <div className="flex items-center justify-between text-[9px] mb-1">
+          <div className="flex items-center justify-between text-[11px] mb-1">
             <span className="text-muted-foreground">
               <Users className="w-3 h-3 inline mr-0.5" />
               {tournament.playerCount}/{tournament.maxPlayers}
@@ -167,7 +168,7 @@ export default function TournamentCard({ tournament, onClick }: TournamentCardPr
         </div>
         
         {/* Phase timer */}
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-3">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-3">
           <Clock className="w-3 h-3" />
           <span>{formatTimeLeft(tournament.phaseEndsAt)}</span>
           <span className="text-muted-foreground/50">remaining</span>
