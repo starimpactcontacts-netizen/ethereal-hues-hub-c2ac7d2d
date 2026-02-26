@@ -13,6 +13,8 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
+import previewDesktop from '@/assets/preview-desktop.png';
+import previewMobile from '@/assets/preview-mobile.png';
 
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
 
@@ -44,390 +46,127 @@ export default function LandingPage() {
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
 
-        {/* ═══════════════ HERO — IMMERSIVE FULL BLEED (Discord/Twitch style) ═══════════════ */}
-        <section className="relative min-h-[100vh] flex items-center overflow-hidden">
-          {/* Atmospheric gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-red-950/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-[1]" />
+        {/* ═══════════════ HERO — PREVIEW-DOMINANT (Discord/Twitch style) ═══════════════ */}
+        <section className="relative min-h-[100vh] flex flex-col overflow-hidden">
+          {/* Full atmospheric bg */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-red-950/10" />
           <GatePattern className="z-[1]" opacity={2} tileSize={120} />
-          
-          {/* Ambient glow orbs */}
-          <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-gold/[0.03] rounded-full blur-[120px] z-[1]" />
-          <div className="absolute bottom-1/4 left-[16%] w-[400px] h-[400px] bg-red-500/[0.04] rounded-full blur-[100px] z-[1]" />
-          
-          {/* Glitch accent edges */}
+          <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-gold/[0.03] rounded-full blur-[120px] z-[1]" />
+          <div className="absolute bottom-1/3 left-[10%] w-[400px] h-[400px] bg-red-500/[0.04] rounded-full blur-[100px] z-[1]" />
           <GlitchEdge side="left" className="absolute left-0 top-0 bottom-0 w-[3px] z-[3]" />
           <GlitchEdge side="right" className="absolute right-0 top-0 bottom-0 w-[3px] z-[3]" />
 
-          {/* Content — Split layout */}
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 py-20">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-              
-              {/* Left — Text & CTA */}
-              <motion.div
-                className="text-center lg:text-left"
-                style={{ y: heroParallax }}
+          {/* Compact text strip at top */}
+          <div className="relative z-10 pt-12 sm:pt-16 pb-6 sm:pb-8 text-center px-6">
+            <motion.img
+              src={loopgateBrand}
+              alt="LOOPGATE"
+              className="h-10 sm:h-12 w-auto mx-auto mb-4"
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            />
+            <motion.p
+              className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto mb-6"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              Battle head-to-head. Get rated by certified judges. Climb the global rankings.
+            </motion.p>
+            <motion.div
+              className="flex flex-col sm:flex-row gap-3 items-center justify-center"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <Link to="/start">
+                <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-lg px-12 py-5 h-auto gap-3 tracking-wider">
+                  <Play className="w-5 h-5" />
+                  Open Loopgate
+                </Button>
+              </Link>
+              <button 
+                onClick={handleGuestExplore}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors font-display tracking-wider px-4 py-3"
               >
-                {/* Brand logo */}
-                <motion.img
-                  src={loopgateBrand}
-                  alt="LOOPGATE"
-                  className="h-14 sm:h-18 md:h-20 w-auto mx-auto lg:mx-0 mb-8"
-                  variants={fadeUp} custom={0} initial="hidden" animate="visible"
-                />
-
-                {/* Headline — massive, Discord-style */}
-                <motion.h1
-                  className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.85] mb-6 tracking-tight"
-                  variants={fadeUp} custom={1} initial="hidden" animate="visible"
-                >
-                  WHERE<br />
-                  EDITORS<br />
-                  <span className="text-gold">COMPETE</span>
-                </motion.h1>
-
-                {/* Subtitle */}
-                <motion.p
-                  className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 mb-10 leading-relaxed"
-                  variants={fadeUp} custom={2} initial="hidden" animate="visible"
-                >
-                  Battle head-to-head. Get rated by certified judges. 
-                  Climb the global rankings. Your legacy starts here.
-                </motion.p>
-
-                {/* CTAs */}
-                <motion.div
-                  className="flex flex-col sm:flex-row gap-3 items-center lg:items-start justify-center lg:justify-start"
-                  variants={fadeUp} custom={3} initial="hidden" animate="visible"
-                >
-                  <Link to="/start">
-                    <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-lg px-12 py-5 h-auto gap-3 tracking-wider">
-                      <Play className="w-5 h-5" />
-                      Open Loopgate
-                    </Button>
-                  </Link>
-                  <button 
-                    onClick={handleGuestExplore}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors font-display tracking-wider px-4 py-3"
-                  >
-                    Explore as Guest →
-                  </button>
-                </motion.div>
-
-                {/* Live stats row */}
-                <motion.div
-                  className="flex items-center gap-6 mt-10 text-sm text-muted-foreground justify-center lg:justify-start"
-                  variants={fadeUp} custom={4} initial="hidden" animate="visible"
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                    </span>
-                    <span className="text-foreground font-semibold">{stats.activeUsers || 0}</span> online
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Swords className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="text-foreground font-semibold">{stats.totalCompeting || 0}</span> competing
-                  </span>
-                </motion.div>
-              </motion.div>
-
-              {/* Right — Live platform mockup (desktop only) */}
-              <motion.div
-                className="hidden lg:block"
-                initial={{ opacity: 0, x: 80, rotateY: -8 }}
-                animate={{ opacity: 1, x: 0, rotateY: 0 }}
-                transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <div className="relative" style={{ perspective: '1200px' }}>
-                  {/* Glow behind mockup */}
-                  <div className="absolute -inset-10 bg-gradient-to-br from-gold/[0.08] via-red-500/[0.05] to-cyan-500/[0.03] blur-3xl" />
-                  
-                  {/* Desktop mockup frame — full fidelity app preview */}
-                  <div className="relative border border-border/50 bg-background shadow-2xl shadow-black/60 overflow-hidden">
-                    {/* Browser chrome bar */}
-                    <div className="h-7 bg-surface-1 border-b border-border/40 flex items-center px-3 gap-2">
-                      <div className="flex gap-1.5">
-                        <div className="w-2 h-2 rounded-full bg-red-500/50" />
-                        <div className="w-2 h-2 rounded-full bg-yellow-500/50" />
-                        <div className="w-2 h-2 rounded-full bg-green-500/50" />
-                      </div>
-                      <div className="flex-1 mx-6">
-                        <div className="bg-surface-2/60 border border-border/20 h-3.5 flex items-center px-2 gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500/40" />
-                          <span className="text-[7px] text-muted-foreground">loopgate.io</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* App layout — sidebar + main content */}
-                    <div className="flex min-h-[440px]">
-                      {/* Sidebar nav */}
-                      <div className="w-12 bg-surface-0 border-r border-border/30 flex flex-col items-center py-3 gap-3">
-                        <img src={loopgateLogo} alt="" className="w-6 h-6 opacity-80" />
-                        <div className="w-6 h-px bg-border/30" />
-                        {[
-                          { icon: '🏠', active: true },
-                          { icon: '⚔️', active: false },
-                          { icon: '🏆', active: false },
-                          { icon: '👥', active: false },
-                          { icon: '📰', active: false },
-                        ].map((item, i) => (
-                          <div key={i} className={`w-8 h-8 flex items-center justify-center text-[11px] ${item.active ? 'bg-gold/15 border border-gold/20' : 'hover:bg-surface-1'} transition-colors cursor-default`}>
-                            {item.icon}
-                          </div>
-                        ))}
-                        <div className="flex-1" />
-                        <div className="w-7 h-7 bg-gradient-to-br from-cyan-500/30 to-cyan-900/30 border border-cyan-500/20 flex items-center justify-center">
-                          <span className="text-[8px] font-bold text-cyan-400">Y</span>
-                        </div>
-                      </div>
-
-                      {/* Main content area */}
-                      <div className="flex-1 overflow-hidden">
-                        {/* App header bar */}
-                        <div className="h-10 border-b border-border/30 bg-surface-0/50 flex items-center justify-between px-4">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">Hub</span>
-                            <div className="w-px h-4 bg-border/30" />
-                            <span className="text-[9px] text-muted-foreground">Welcome back</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 bg-surface-1 border border-border/20 px-2 py-0.5">
-                              <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
-                              <span className="text-[8px] text-emerald-400 font-bold">247 online</span>
-                            </div>
-                            <div className="w-5 h-5 bg-surface-2 flex items-center justify-center">
-                              <span className="text-[8px]">🔔</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Content grid */}
-                        <div className="p-3 space-y-3">
-                          {/* Featured battle — hero card */}
-                          <div className="border border-red-500/25 bg-gradient-to-r from-red-500/[0.06] to-transparent overflow-hidden">
-                            <div className="h-[1.5px] bg-gradient-to-r from-red-500 via-red-400 to-transparent" />
-                            <div className="p-3">
-                              <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" /></span>
-                                  <span className="text-[8px] font-bold uppercase tracking-widest text-red-400">Featured Battle</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Eye className="w-2.5 h-2.5 text-muted-foreground" />
-                                  <span className="text-[7px] text-muted-foreground">342 watching</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-4">
-                                {/* Player 1 */}
-                                <div className="flex items-center gap-2 flex-1">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-red-500/30 to-red-900/30 border border-red-500/30 flex items-center justify-center">
-                                    <span className="text-xs font-bold text-red-400">K</span>
-                                  </div>
-                                  <div>
-                                    <p className="text-[10px] font-bold text-foreground">KXZEN</p>
-                                    <p className="text-[7px] text-gold font-bold">S+ Class</p>
-                                    <p className="text-[7px] text-muted-foreground">Index: 2,691</p>
-                                  </div>
-                                </div>
-                                {/* VS */}
-                                <div className="flex flex-col items-center gap-0.5">
-                                  <span className="font-display text-lg text-red-400/80">VS</span>
-                                  <span className="text-[6px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">18H LEFT</span>
-                                </div>
-                                {/* Player 2 */}
-                                <div className="flex items-center gap-2 flex-1 justify-end">
-                                  <div className="text-right">
-                                    <p className="text-[10px] font-bold text-foreground">RXSE</p>
-                                    <p className="text-[7px] text-gold font-bold">S Class</p>
-                                    <p className="text-[7px] text-muted-foreground">Index: 2,534</p>
-                                  </div>
-                                  <div className="w-10 h-10 bg-gradient-to-br from-cyan-500/30 to-cyan-900/30 border border-cyan-500/30 flex items-center justify-center">
-                                    <span className="text-xs font-bold text-cyan-400">R</span>
-                                  </div>
-                                </div>
-                              </div>
-                              {/* Judge bar */}
-                              <div className="mt-2.5 flex items-center gap-2 bg-surface-0 border border-border/30 px-2.5 py-1.5">
-                                <Gavel className="w-2.5 h-2.5 text-gold" />
-                                <span className="text-[7px] text-muted-foreground">Judge: <span className="text-gold font-semibold">MVRKO</span></span>
-                                <span className="w-px h-2.5 bg-border/30 mx-0.5" />
-                                <span className="text-[7px] text-muted-foreground">Awaiting submissions</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Two column grid — Rankings + Activity */}
-                          <div className="grid grid-cols-2 gap-2.5">
-                            {/* Rankings snippet */}
-                            <div className="border border-border/30 bg-surface-0/50">
-                              <div className="px-2.5 py-1.5 border-b border-border/20 flex items-center justify-between">
-                                <span className="text-[8px] font-bold uppercase tracking-widest text-foreground">Global Index</span>
-                                <span className="text-[7px] text-gold font-bold">Live</span>
-                              </div>
-                              <div className="divide-y divide-border/15">
-                                {[
-                                  { r: 1, n: 'PRXSTIGE', c: 'S++', idx: '2,847', ch: '+12' },
-                                  { r: 2, n: 'KXZEN', c: 'S+', idx: '2,691', ch: '+8' },
-                                  { r: 3, n: 'AETHRVL', c: 'S', idx: '2,534', ch: '-3' },
-                                  { r: 4, n: 'RXSE', c: 'S', idx: '2,488', ch: '+15' },
-                                  { r: 5, n: 'DVRK', c: 'A', idx: '2,301', ch: '+4' },
-                                ].map(row => (
-                                  <div key={row.r} className="flex items-center gap-1.5 px-2.5 py-1.5">
-                                    <span className={`text-[8px] font-bold w-3 ${row.r <= 3 ? 'text-gold' : 'text-muted-foreground'}`}>#{row.r}</span>
-                                    <div className="w-4 h-4 bg-surface-2 border border-border/20 flex items-center justify-center"><span className="text-[6px] font-bold">{row.n[0]}</span></div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-[8px] font-bold text-foreground truncate">{row.n}</p>
-                                    </div>
-                                    <span className="text-[6px] text-gold font-bold">{row.c}</span>
-                                    <span className={`text-[6px] font-bold ${row.ch.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>{row.ch}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Live activity feed */}
-                            <div className="border border-border/30 bg-surface-0/50">
-                              <div className="px-2.5 py-1.5 border-b border-border/20">
-                                <span className="text-[8px] font-bold uppercase tracking-widest text-foreground">Activity</span>
-                              </div>
-                              <div className="p-2 space-y-2">
-                                {[
-                                  { user: 'NVDIA', action: 'won a battle vs FLUX', time: '2m', color: 'text-emerald-400' },
-                                  { user: 'ZEPH', action: 'joined Unit NOVA', time: '5m', color: 'text-cyan-400' },
-                                  { user: 'PRXSTIGE', action: 'rated A Class by Judge VAL', time: '12m', color: 'text-gold' },
-                                  { user: 'KXZEN', action: 'challenged DVRK to 1v1', time: '18m', color: 'text-red-400' },
-                                  { user: 'MVRKO', action: 'completed 3 judge reviews', time: '24m', color: 'text-purple-400' },
-                                ].map((a, i) => (
-                                  <div key={i} className="flex items-start gap-1.5">
-                                    <div className="w-3.5 h-3.5 bg-surface-2 border border-border/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                      <span className="text-[5px] font-bold">{a.user[0]}</span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-[7px] leading-tight"><span className={`font-bold ${a.color}`}>{a.user}</span> <span className="text-muted-foreground">{a.action}</span></p>
-                                    </div>
-                                    <span className="text-[6px] text-muted-foreground/60 flex-shrink-0">{a.time}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* QOI Score card */}
-                          <div className="border border-gold/20 bg-gradient-to-r from-gold/[0.04] to-transparent">
-                            <div className="h-[1.5px] bg-gradient-to-r from-gold via-gold/50 to-transparent" />
-                            <div className="p-2.5 flex items-center gap-3">
-                              <div className="w-11 h-11 rounded-full border-2 border-gold/30 bg-gold/5 flex items-center justify-center flex-shrink-0">
-                                <span className="font-display text-base text-gold">84</span>
-                              </div>
-                              <div className="flex-1 space-y-1">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[8px] font-bold text-gold uppercase tracking-widest">Your QOI Score</span>
-                                  <span className="text-[7px] text-gold font-bold">A CLASS</span>
-                                </div>
-                                {[
-                                  { l: 'Emotion', v: 88, c: 'bg-emerald-500' },
-                                  { l: 'Creativity', v: 82, c: 'bg-cyan-500' },
-                                  { l: 'Sync', v: 90, c: 'bg-red-500' },
-                                  { l: 'Identity', v: 79, c: 'bg-purple-500' },
-                                  { l: 'Execution', v: 81, c: 'bg-gold' },
-                                ].map(p => (
-                                  <div key={p.l} className="flex items-center gap-1.5">
-                                    <span className="text-[6px] text-muted-foreground w-11 text-right">{p.l}</span>
-                                    <div className="flex-1 h-[3px] bg-surface-2 overflow-hidden"><div className={`h-full ${p.c}`} style={{ width: `${p.v}%` }} /></div>
-                                    <span className="text-[6px] font-bold text-foreground w-4 text-right">{p.v}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Bottom nav bar */}
-                    <div className="h-8 bg-surface-0 border-t border-border/30 flex items-center justify-around px-4">
-                      {['Hub', 'Arena', 'Feed', 'Rankings', 'Profile'].map((t, i) => (
-                        <span key={t} className={`text-[7px] font-bold uppercase tracking-wider ${i === 0 ? 'text-gold' : 'text-muted-foreground/60'}`}>{t}</span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Phone mockup — floating beside, showing profile */}
-                  <motion.div
-                    className="absolute -right-16 -bottom-6 w-[155px]"
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 1 }}
-                  >
-                    <div className="border border-border/50 bg-background shadow-xl shadow-black/40 overflow-hidden" style={{ borderRadius: '14px' }}>
-                      {/* Phone notch */}
-                      <div className="h-5 bg-surface-0 border-b border-border/20 flex items-center justify-center relative">
-                        <div className="w-14 h-2 bg-surface-2/60" style={{ borderRadius: '4px' }} />
-                      </div>
-                      {/* Phone content — arena view */}
-                      <div className="p-2.5 space-y-2 min-h-[240px]">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[8px] font-bold text-foreground uppercase tracking-widest">Arena</span>
-                          <span className="text-[6px] text-red-400 font-bold bg-red-500/10 px-1.5 py-0.5">3 LIVE</span>
-                        </div>
-                        {/* Mini battle cards */}
-                        {[
-                          { p1: 'NVDIA', p2: 'FLUX', status: 'Judging', statusColor: 'text-gold' },
-                          { p1: 'ZEPH', p2: 'PRXS', status: 'Live', statusColor: 'text-red-400' },
-                        ].map((b, i) => (
-                          <div key={i} className="border border-border/30 bg-surface-0 p-2">
-                            <div className="flex items-center justify-between mb-1.5">
-                              <div className="flex items-center gap-1.5">
-                                <div className="w-5 h-5 bg-red-500/15 border border-red-500/20 flex items-center justify-center"><span className="text-[6px] font-bold text-red-400">{b.p1[0]}</span></div>
-                                <span className="text-[7px] font-bold text-foreground">{b.p1}</span>
-                              </div>
-                              <span className="text-[7px] text-muted-foreground/60">vs</span>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[7px] font-bold text-foreground">{b.p2}</span>
-                                <div className="w-5 h-5 bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center"><span className="text-[6px] font-bold text-cyan-400">{b.p2[0]}</span></div>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-center gap-1">
-                              {b.status === 'Live' && <span className="relative flex h-1 w-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1 w-1 bg-red-500" /></span>}
-                              <span className={`text-[6px] font-bold uppercase tracking-wider ${b.statusColor}`}>{b.status}</span>
-                            </div>
-                          </div>
-                        ))}
-                        {/* Quick stats */}
-                        <div className="border border-gold/15 bg-gold/[0.03] p-2">
-                          <span className="text-[7px] text-gold font-bold block mb-1">Your Stats</span>
-                          <div className="grid grid-cols-3 gap-1">
-                            {[{ l: 'W/L', v: '12/3' }, { l: 'Rank', v: '#47' }, { l: 'Class', v: 'A' }].map(s => (
-                              <div key={s.l} className="text-center">
-                                <p className="text-[9px] font-bold text-foreground">{s.v}</p>
-                                <p className="text-[5px] text-muted-foreground uppercase">{s.l}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Phone bottom nav */}
-                      <div className="h-6 bg-surface-0 border-t border-border/20 flex items-center justify-around px-3">
-                        {['🏠', '⚔️', '📊', '👤'].map((e, i) => (
-                          <span key={i} className={`text-[9px] ${i === 1 ? 'opacity-100' : 'opacity-40'}`}>{e}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
-            </div>
+                Explore as Guest →
+              </button>
+            </motion.div>
+            {/* Live stats */}
+            <motion.div
+              className="flex items-center gap-6 mt-5 text-sm text-muted-foreground justify-center"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <span className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-foreground font-semibold">{stats.activeUsers || 0}</span> online
+              </span>
+              <span className="flex items-center gap-2">
+                <Swords className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-foreground font-semibold">{stats.totalCompeting || 0}</span> competing
+              </span>
+            </motion.div>
           </div>
 
-          {/* Bottom scroll hint */}
+          {/* ──── MASSIVE PREVIEW — the star of the page ──── */}
+          <div className="relative z-10 flex-1 flex items-end justify-center px-4 sm:px-8 pb-16">
+            {/* Glow behind previews */}
+            <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-gold/[0.04] via-transparent to-transparent pointer-events-none" />
+            
+            <motion.div
+              className="relative w-full max-w-6xl"
+              initial={{ opacity: 0, y: 60, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {/* Desktop preview — big hero image */}
+              <div className="relative rounded-lg overflow-hidden border border-border/40 shadow-2xl shadow-black/50">
+                {/* Browser chrome */}
+                <div className="h-8 bg-surface-1 border-b border-border/30 flex items-center px-3 gap-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                  </div>
+                  <div className="flex-1 mx-8">
+                    <div className="bg-surface-2/50 border border-border/20 rounded h-4 flex items-center px-2.5 gap-1.5 max-w-xs mx-auto">
+                      <div className="w-2 h-2 rounded-full bg-green-500/40" />
+                      <span className="text-[9px] text-muted-foreground">loopgate.app</span>
+                    </div>
+                  </div>
+                </div>
+                <img 
+                  src={previewDesktop} 
+                  alt="Loopgate platform — 1v1 battles, leaderboards, QOI scoring" 
+                  className="w-full h-auto block"
+                />
+              </div>
+
+              {/* Mobile preview — floating beside */}
+              <motion.div
+                className="absolute -right-4 sm:right-6 -bottom-8 sm:-bottom-4 w-[120px] sm:w-[180px] md:w-[200px]"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.9 }}
+              >
+                <div className="rounded-2xl overflow-hidden border border-border/50 shadow-xl shadow-black/50 bg-background">
+                  <img 
+                    src={previewMobile} 
+                    alt="Loopgate mobile arena" 
+                    className="w-full h-auto block"
+                  />
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Scroll hint */}
           <motion.div
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5"
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 0.8 }}
           >
-            <span className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground hidden sm:block">Scroll to explore</span>
             <ChevronDown className="w-4 h-4 text-muted-foreground animate-bounce" />
           </motion.div>
         </section>
