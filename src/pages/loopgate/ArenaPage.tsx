@@ -180,12 +180,12 @@ function SectionHeader({ icon, title, badge, badgeColor = "bg-emerald-500/20 bor
   action?: React.ReactNode;
 }) {
   return (
-          <div className="flex items-center justify-between px-4 mb-2.5">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between px-4 mb-3">
+      <div className="flex items-center gap-2.5">
         {icon}
-        <span className="text-[11px] font-bold uppercase tracking-wider text-foreground">{title}</span>
+        <span className="font-display text-sm text-foreground tracking-wide">{title}</span>
         {badge && (
-          <span className={`flex items-center gap-1 border px-1.5 py-0.5 text-[8px] font-bold uppercase ${badgeColor}`}>
+          <span className={`flex items-center gap-1 border px-2 py-0.5 text-[9px] font-bold uppercase ${badgeColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {badge}
           </span>
@@ -305,56 +305,56 @@ export default function ArenaPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-red-500/8 via-background to-background" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
 
-       <div className="relative px-4 pt-3 pb-3">
+       <div className="relative px-4 pt-4 pb-4">
           {/* Top row */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-foreground rounded-full flex items-center justify-center">
-                <InfinityIcon className="w-3.5 h-3.5 text-background" strokeWidth={2.5} />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-foreground flex items-center justify-center">
+                <InfinityIcon className="w-4.5 h-4.5 text-background" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="font-display text-base text-foreground tracking-wide leading-none">ARENA</h1>
-                <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Edit · Battle · Win</p>
+                <h1 className="font-display text-xl text-foreground tracking-wide leading-none">ARENA</h1>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-[0.25em] mt-0.5">Edit · Battle · Win</p>
               </div>
             </div>
             {totalLive > 0 && (
-              <div className="flex items-center gap-1.5 bg-red-500/15 border border-red-500/30 px-2 py-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[9px] font-bold text-red-400">{totalLive} Live</span>
+              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 px-3 py-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-[11px] font-bold text-red-400">{totalLive} Live</span>
               </div>
             )}
           </div>
 
           {/* ═══ YOUR STATS BANNER ═══ */}
           {profile && userStats && (
-            <div className="mb-3 bg-surface-1/80 border border-border/60 p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <Avatar className="w-8 h-8 border border-border/60">
+            <div className="mb-4 bg-surface-1/80 border border-border/60 p-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-9 h-9 border border-border/60">
                   <AvatarImage src={profile.avatar_url || ''} />
-                  <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <span className="text-[11px] font-bold text-foreground block leading-none">{profile.username}</span>
-                  <span className="text-[9px] text-muted-foreground">Class {profile.league_tier || 'F'}</span>
+                  <span className="text-xs font-bold text-foreground block leading-none">{profile.username}</span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="text-center">
-                  <span className="text-[11px] font-bold text-emerald-400 block leading-none">{userStats.wins}</span>
-                  <span className="text-[7px] text-muted-foreground uppercase">Wins</span>
+                  <span className="text-xs font-bold text-emerald-400 block leading-none">{userStats.wins}</span>
+                  <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Wins</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-[11px] font-bold text-red-400 block leading-none">{userStats.losses}</span>
-                  <span className="text-[7px] text-muted-foreground uppercase">Losses</span>
+                  <span className="text-xs font-bold text-red-400 block leading-none">{userStats.losses}</span>
+                  <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Losses</span>
                 </div>
                 <div className="text-center">
-                  <span className="text-[11px] font-bold text-foreground block leading-none">{userStats.events}</span>
-                  <span className="text-[7px] text-muted-foreground uppercase">Edits</span>
+                  <span className="text-xs font-bold text-foreground block leading-none">{userStats.events}</span>
+                  <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Edits</span>
                 </div>
                 {userStats.streak > 1 && (
                   <div className="text-center">
-                    <span className="text-[11px] font-bold text-gold block leading-none">🔥{userStats.streak}</span>
-                    <span className="text-[7px] text-muted-foreground uppercase">Streak</span>
+                    <span className="text-xs font-bold text-gold block leading-none">🔥{userStats.streak}</span>
+                    <span className="text-[8px] text-muted-foreground uppercase mt-0.5 block">Streak</span>
                   </div>
                 )}
               </div>
@@ -362,28 +362,28 @@ export default function ArenaPage() {
           )}
 
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
-          <div className="mb-3">
+          <div className="mb-4">
             {/* Mode selector row */}
-            <div className="flex gap-1.5 mb-2">
+            <div className="flex gap-2 mb-2.5">
               {[
-                { key: 'quick', icon: <Zap className="w-3.5 h-3.5" />, label: 'QUICK 1v1', sub: '3hr • Auto-match', action: () => profile ? navigate('/quick-fight') : navigate('/start') },
-                { key: 'battle', icon: <Swords className="w-3.5 h-3.5" />, label: '1v1 BATTLE', sub: 'Invite opponent', action: () => profile ? setShowCreateBattle(true) : navigate('/start') },
-                { key: 'practice', icon: <Target className="w-3.5 h-3.5" />, label: 'PRACTICE', sub: 'No stakes', action: () => setShowPracticeMode(true) },
-              ].map((mode, i) => (
+                { key: 'quick', icon: <Zap className="w-4 h-4" />, label: 'QUICK 1v1', sub: '3hr • Auto-match', action: () => profile ? navigate('/quick-fight') : navigate('/start') },
+                { key: 'battle', icon: <Swords className="w-4 h-4" />, label: '1v1 BATTLE', sub: 'Invite opponent', action: () => profile ? setShowCreateBattle(true) : navigate('/start') },
+                { key: 'practice', icon: <Target className="w-4 h-4" />, label: 'PRACTICE', sub: 'No stakes', action: () => setShowPracticeMode(true) },
+              ].map((mode) => (
                 <motion.button
                   key={mode.key}
                   whileTap={{ scale: 0.95 }}
                   onClick={mode.action}
                   className="flex-1 relative group touch-manipulation"
                 >
-                  <div className="bg-surface-1 border border-border group-hover:border-red-500/50 transition-all p-2.5 flex flex-col items-center gap-1">
+                  <div className="bg-surface-1 border border-border group-hover:border-red-500/50 transition-all p-3.5 flex flex-col items-center gap-1.5">
                     {/* Top accent line */}
-                    <div className="absolute top-0 left-2 right-2 h-[2px] bg-red-500/0 group-hover:bg-red-500 transition-all" />
-                    <div className="w-7 h-7 bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500/0 group-hover:bg-red-500 transition-all" />
+                    <div className="w-9 h-9 bg-red-500/10 group-hover:bg-red-500/20 flex items-center justify-center transition-colors">
                       <span className="text-red-400 group-hover:text-red-300 transition-colors">{mode.icon}</span>
                     </div>
-                    <span className="font-display text-[9px] text-foreground tracking-wider leading-none">{mode.label}</span>
-                    <span className="text-[7px] text-muted-foreground leading-none">{mode.sub}</span>
+                    <span className="font-display text-[11px] text-foreground tracking-wider leading-none">{mode.label}</span>
+                    <span className="text-[9px] text-muted-foreground leading-none">{mode.sub}</span>
                   </div>
                 </motion.button>
               ))}
@@ -395,14 +395,14 @@ export default function ArenaPage() {
               onClick={() => profile ? navigate('/quick-fight') : navigate('/start')}
               className="w-full relative overflow-hidden touch-manipulation group"
             >
-              <div className="bg-red-600 hover:bg-red-500 transition-colors py-3.5 flex items-center justify-center gap-3">
+              <div className="bg-red-600 hover:bg-red-500 transition-colors py-4 flex items-center justify-center gap-3">
                 {/* Subtle inner top highlight */}
-                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.10] to-transparent pointer-events-none" />
                 <Zap className="w-5 h-5 text-white relative z-10" />
-                <span className="font-display text-lg text-white uppercase tracking-wider relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                <span className="font-display text-xl text-white uppercase tracking-wider relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
                   Play
                 </span>
-                <span className="text-[9px] text-white/60 font-bold relative z-10 uppercase">+20 IDX</span>
+                <span className="text-[10px] text-white/50 font-bold relative z-10 uppercase">+20 IDX</span>
               </div>
             </motion.button>
           </div>
@@ -449,7 +449,7 @@ export default function ArenaPage() {
           )}
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-1 px-1">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
             {filters.map(f => {
               const active = activeFilter === f.key;
               const isRed = f.accent === "red";
@@ -459,7 +459,7 @@ export default function ArenaPage() {
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`px-2.5 py-1 text-[8px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1 shrink-0 ${
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5 shrink-0 ${
                     active
                       ? isRed ? "bg-red-500 text-white border-red-500"
                       : isGold ? "bg-gold text-background border-gold"
