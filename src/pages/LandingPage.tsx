@@ -49,11 +49,9 @@ export default function LandingPage() {
         <section className="relative min-h-[100vh] flex flex-col overflow-hidden">
           {/* Full atmospheric bg */}
           <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-red-950/10" />
-          <GatePattern className="z-[1]" opacity={2} tileSize={120} />
+          <GatePattern className="z-[1]" opacity={4} tileSize={56} />
           <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-gold/[0.03] rounded-full blur-[120px] z-[1]" />
           <div className="absolute bottom-1/3 left-[10%] w-[400px] h-[400px] bg-red-500/[0.04] rounded-full blur-[100px] z-[1]" />
-          <GlitchEdge side="left" className="absolute left-0 top-0 bottom-0 w-[3px] z-[3]" />
-          <GlitchEdge side="right" className="absolute right-0 top-0 bottom-0 w-[3px] z-[3]" />
 
           {/* Hero text — Apple × Fortnite × Discord seamless CTA */}
           <div className="relative z-10 pt-12 sm:pt-16 pb-8 sm:pb-10 text-center px-6">
@@ -62,7 +60,6 @@ export default function LandingPage() {
               transition={{ duration: 0.6 }}
               className="mb-5"
             >
-              <img src={loopgateBrand} alt="LOOPGATE" className="h-8 sm:h-10 w-auto mx-auto mb-5 opacity-80" />
               <img src={whereEditorsCompete} alt="WHERE EDITORS COMPETE" className="w-full max-w-[600px] sm:max-w-[700px] md:max-w-[800px] mx-auto" />
             </motion.div>
             <motion.p
