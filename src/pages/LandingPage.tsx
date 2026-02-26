@@ -69,7 +69,7 @@ export default function LandingPage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
             >
-              The competitive platform for video editors. Battle 1v1, get rated by certified judges, and climb the global rankings.
+              Where video editors compete. Submit edits, get judged by the community, and climb the global rankings.
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-3 items-center justify-center"
@@ -204,37 +204,71 @@ export default function LandingPage() {
                             </div>
                           </div>
 
-                          {/* Competitors */}
-                          <div className="flex items-center gap-4 sm:gap-8">
-                            {/* Player 1 */}
-                            <div className="flex items-center gap-2.5 sm:gap-3 flex-1">
-                              <div className="w-11 h-11 sm:w-14 sm:h-14 bg-gradient-to-br from-red-500/25 to-red-900/25 border border-red-500/30 flex items-center justify-center flex-shrink-0">
-                                <span className="text-sm sm:text-lg font-display text-red-400">K</span>
+                          {/* Competitors with edit thumbnails */}
+                          <div className="flex items-center gap-3 sm:gap-6">
+                            {/* Player 1 with edit preview */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2.5 sm:gap-3 mb-2">
+                                <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-red-500/25 to-red-900/25 border border-red-500/30 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-xs sm:text-sm font-display text-red-400">K</span>
+                                </div>
+                                <div>
+                                  <p className="text-[10px] sm:text-sm font-bold text-foreground tracking-wide">KXZEN</p>
+                                  <p className="text-[6px] sm:text-[9px] text-muted-foreground">After Effects · S+ Class</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-[10px] sm:text-sm font-bold text-foreground tracking-wide">KXZEN</p>
-                                <p className="text-[7px] sm:text-[10px] text-gold font-bold">S+ Class</p>
-                                <p className="text-[6px] sm:text-[9px] text-muted-foreground tabular-nums">Index: 2,691</p>
+                              {/* Edit thumbnail mockup */}
+                              <div className="relative border border-border/20 bg-surface-2/50 aspect-video overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-cyan-500/5" />
+                                <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-8 bg-surface-0/90 border-t border-border/20 flex items-center px-2 gap-1">
+                                  <Play className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-muted-foreground" />
+                                  <div className="flex-1 flex items-center gap-[1px]">
+                                    {Array.from({length: 24}).map((_, i) => (
+                                      <div key={i} className="flex-1 h-[3px] sm:h-1 bg-red-400/40" style={{ height: `${Math.random() * 6 + 2}px` }} />
+                                    ))}
+                                  </div>
+                                  <span className="text-[5px] sm:text-[7px] text-muted-foreground tabular-nums">0:42</span>
+                                </div>
+                                <div className="absolute top-1.5 left-1.5 bg-surface-0/80 border border-border/20 px-1.5 py-0.5">
+                                  <span className="text-[5px] sm:text-[7px] font-bold text-foreground">"DARK LIGHT" — AMV Edit</span>
+                                </div>
                               </div>
                             </div>
 
                             {/* VS */}
-                            <div className="flex flex-col items-center gap-1">
+                            <div className="flex flex-col items-center gap-1 flex-shrink-0">
                               <span className="font-display text-lg sm:text-2xl text-red-400/70">VS</span>
                               <div className="bg-surface-1 border border-border/20 px-2 py-0.5">
                                 <span className="text-[6px] sm:text-[8px] text-muted-foreground font-bold tabular-nums">18H LEFT</span>
                               </div>
                             </div>
 
-                            {/* Player 2 */}
-                            <div className="flex items-center gap-2.5 sm:gap-3 flex-1 justify-end">
-                              <div className="text-right">
-                                <p className="text-[10px] sm:text-sm font-bold text-foreground tracking-wide">RXSE</p>
-                                <p className="text-[7px] sm:text-[10px] text-gold font-bold">S Class</p>
-                                <p className="text-[6px] sm:text-[9px] text-muted-foreground tabular-nums">Index: 2,534</p>
+                            {/* Player 2 with edit preview */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2.5 sm:gap-3 mb-2 justify-end">
+                                <div className="text-right">
+                                  <p className="text-[10px] sm:text-sm font-bold text-foreground tracking-wide">RXSE</p>
+                                  <p className="text-[6px] sm:text-[9px] text-muted-foreground">Premiere Pro · S Class</p>
+                                </div>
+                                <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-cyan-500/25 to-cyan-900/25 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-xs sm:text-sm font-display text-cyan-400">R</span>
+                                </div>
                               </div>
-                              <div className="w-11 h-11 sm:w-14 sm:h-14 bg-gradient-to-br from-cyan-500/25 to-cyan-900/25 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
-                                <span className="text-sm sm:text-lg font-display text-cyan-400">R</span>
+                              {/* Edit thumbnail mockup */}
+                              <div className="relative border border-border/20 bg-surface-2/50 aspect-video overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-purple-500/5" />
+                                <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-8 bg-surface-0/90 border-t border-border/20 flex items-center px-2 gap-1">
+                                  <Play className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-muted-foreground" />
+                                  <div className="flex-1 flex items-center gap-[1px]">
+                                    {Array.from({length: 24}).map((_, i) => (
+                                      <div key={i} className="flex-1 h-[3px] sm:h-1 bg-cyan-400/40" style={{ height: `${Math.random() * 6 + 2}px` }} />
+                                    ))}
+                                  </div>
+                                  <span className="text-[5px] sm:text-[7px] text-muted-foreground tabular-nums">0:38</span>
+                                </div>
+                                <div className="absolute top-1.5 left-1.5 bg-surface-0/80 border border-border/20 px-1.5 py-0.5">
+                                  <span className="text-[5px] sm:text-[7px] font-bold text-foreground">"VENDETTA" — Anime Edit</span>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -244,7 +278,7 @@ export default function LandingPage() {
                             <Gavel className="w-3 h-3 text-gold" />
                             <span className="text-[7px] sm:text-[10px] text-muted-foreground">Judge: <span className="text-gold font-semibold">MVRKO</span></span>
                             <span className="w-px h-3 bg-border/20 mx-1" />
-                            <span className="text-[7px] sm:text-[10px] text-muted-foreground">Awaiting submissions</span>
+                            <span className="text-[7px] sm:text-[10px] text-muted-foreground">Scoring in progress</span>
                             <span className="flex-1" />
                             <span className="text-[6px] sm:text-[9px] text-muted-foreground/50 hidden sm:inline">🎵 Night Lovell — Dark Light</span>
                           </div>
@@ -302,11 +336,11 @@ export default function LandingPage() {
                           </div>
                           <div className="p-2 sm:p-3 space-y-2 sm:space-y-2.5">
                             {[
-                              { user: 'NVDIA', action: 'won battle vs FLUX', time: '2m', color: 'text-emerald-400', icon: '🏆' },
-                              { user: 'ZEPH', action: 'joined Unit NOVA', time: '5m', color: 'text-cyan-400', icon: '🛡' },
-                              { user: 'PRXSTIGE', action: 'rated S Class', time: '12m', color: 'text-gold', icon: '⭐' },
-                              { user: 'KXZEN', action: 'challenged DVRK', time: '18m', color: 'text-red-400', icon: '⚔️' },
-                              { user: 'MVRKO', action: '3 reviews done', time: '24m', color: 'text-purple-400', icon: '📝' },
+                              { user: 'NVDIA', action: 'submitted edit "AFTERLIFE"', time: '2m', color: 'text-emerald-400', icon: '🎬' },
+                              { user: 'ZEPH', action: 'edit scored 87 QOI', time: '5m', color: 'text-cyan-400', icon: '⭐' },
+                              { user: 'PRXSTIGE', action: 'won 1v1 vs FLUX', time: '12m', color: 'text-gold', icon: '🏆' },
+                              { user: 'KXZEN', action: 'new edit "VENDETTA"', time: '18m', color: 'text-red-400', icon: '🎞️' },
+                              { user: 'MVRKO', action: 'judged 3 edits', time: '24m', color: 'text-purple-400', icon: '📝' },
                             ].map((a, i) => (
                               <div key={i} className="flex items-start gap-1.5 sm:gap-2">
                                 <div className="w-4 h-4 sm:w-5 sm:h-5 bg-surface-2 border border-border/15 flex items-center justify-center flex-shrink-0 mt-0.5">
