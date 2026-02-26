@@ -467,31 +467,30 @@ export default function HubPage() {
         className="px-4 mt-1"
       >
         <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden border-2 border-yellow-400/60 group-hover:border-yellow-300 transition-colors bg-gradient-to-r from-surface-1 via-surface-1 to-yellow-400/10">
-            {/* Fortnite-style diagonal accent */}
-            <div className="absolute right-0 top-0 bottom-0 w-28 bg-gradient-to-l from-yellow-400/20 to-transparent skew-x-[-12deg] translate-x-4" />
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-yellow-400" />
+          <div className="relative overflow-hidden border-[3px] border-black/15 bg-gradient-to-r from-emerald-500 via-emerald-500 to-emerald-400 group-hover:from-emerald-400 group-hover:via-emerald-400 group-hover:to-emerald-300 transition-all">
+            {/* Roblox inner shine */}
+            <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/15 pointer-events-none" />
 
             {/* Content */}
             <div className="relative z-10 flex items-center justify-between p-4 pl-5">
                 {/* Left side — icon + text */}
                 <div className="flex items-center gap-4">
                   <div className="relative flex items-center justify-center shrink-0">
-                    <div className="relative w-12 h-10 bg-yellow-400 flex items-center justify-center group-active:scale-95 transition-transform">
-                      <InfinityIcon className="w-5 h-5 text-black" strokeWidth={2.5} />
+                    <div className="relative w-12 h-10 bg-white/90 flex items-center justify-center group-active:scale-95 transition-transform border-2 border-black/10">
+                      <InfinityIcon className="w-5 h-5 text-emerald-600" strokeWidth={2.5} />
                     </div>
                   </div>
                   
                   <div>
-                    <h2 className="font-display text-2xl tracking-wide text-foreground group-hover:text-yellow-300 transition-colors duration-200">ARENA</h2>
-                    <p className="text-xs text-muted-foreground font-medium">Enter editing battles</p>
+                    <h2 className="font-display text-2xl tracking-wide text-white drop-shadow-[0_2px_0_rgba(0,0,0,0.2)] group-hover:drop-shadow-[0_2px_0_rgba(0,0,0,0.3)] transition-all">ARENA</h2>
+                    <p className="text-[11px] text-white/80 font-semibold">Enter editing battles</p>
                   </div>
                 </div>
                 
-                {/* Right side — Fortnite READY style */}
-                <div className="flex items-center gap-2 font-display text-base tracking-wider text-yellow-400 whitespace-nowrap group-hover:text-yellow-300 transition-colors">
-                  <span>READY!</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                {/* Right side — Roblox PLAY style */}
+                <div className="flex items-center gap-2 font-display text-lg tracking-wider text-white whitespace-nowrap drop-shadow-[0_2px_0_rgba(0,0,0,0.25)]">
+                  <span>PLAY ▶</span>
                 </div>
             </div>
           </div>
