@@ -2151,6 +2151,7 @@ export type Database = {
           ends_at: string | null
           id: string
           index_reward: number | null
+          is_promoted: boolean
           mystery_reward_label: string | null
           poster_url: string | null
           random_pick_id: string | null
@@ -2175,6 +2176,7 @@ export type Database = {
           ends_at?: string | null
           id?: string
           index_reward?: number | null
+          is_promoted?: boolean
           mystery_reward_label?: string | null
           poster_url?: string | null
           random_pick_id?: string | null
@@ -2199,6 +2201,7 @@ export type Database = {
           ends_at?: string | null
           id?: string
           index_reward?: number | null
+          is_promoted?: boolean
           mystery_reward_label?: string | null
           poster_url?: string | null
           random_pick_id?: string | null
