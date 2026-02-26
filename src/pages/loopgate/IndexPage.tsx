@@ -20,6 +20,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRankFromScore, GQTRank } from "@/data/gqtConfig";
 import { supabase } from "@/integrations/supabase/client";
 import GatePattern from "@/components/loopgate/GatePattern";
+import IndexHeroPattern from "@/components/loopgate/IndexHeroPattern";
 import EditoriumCarousel from "@/components/loopgate/EditoriumCarousel";
 
 type LeagueFilter = "all" | "open" | "pro" | "elite";
@@ -498,7 +499,8 @@ export default function IndexPage() {
       
       {/* ═══ COMPACT HERO ═══ */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-surface-2/80 via-background/95 to-background/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-surface-2/90 via-background/95 to-background" />
+        <IndexHeroPattern />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
         
         <header className="relative z-10 px-4 pt-5 pb-3">
