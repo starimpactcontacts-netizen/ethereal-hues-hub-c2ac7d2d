@@ -563,10 +563,11 @@ export default function LandingPage() {
                 </div>
               </div>
               <div>
-                <h4 className="text-[10px] font-bold tracking-[0.25em] uppercase text-foreground mb-5">Company</h4>
+              <h4 className="text-[10px] font-bold tracking-[0.25em] uppercase text-foreground mb-5">Company</h4>
                 <div className="space-y-3">
                   <Link to="/about" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">About</Link>
                   <Link to="/enterprise" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Enterprise</Link>
+                  <Link to="/enterprise/account" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Artist Login</Link>
                   <Link to="/support" className="block text-sm text-muted-foreground hover:text-foreground transition-colors">Support</Link>
                 </div>
               </div>
