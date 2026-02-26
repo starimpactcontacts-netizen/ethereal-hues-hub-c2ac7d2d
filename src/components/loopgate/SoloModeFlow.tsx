@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Music, Sparkles, ArrowLeft, Zap, Trophy, Loader2 } from "lucide-react";
 import SongPicker from "./SongPicker";
+import { Button } from "@/components/ui/button";
 import { useSoloMode } from "@/hooks/useSoloMode";
 import { getRandomTheme } from "@/hooks/useSoloMode";
 
@@ -17,12 +18,50 @@ interface FeaturedDrop {
 
 export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
   const navigate = useNavigate();
-  const { startSolo } = useSoloMode();
+  const { startSolo, activeSolo, loading: soloLoading } = useSoloMode();
   const [phase, setPhase] = useState<"pick" | "reveal" | "go">("pick");
   const [saving, setSaving] = useState(false);
   const [pickedDrop, setPickedDrop] = useState<FeaturedDrop | null>(null);
   const [theme, setTheme] = useState("");
   const [soloId, setSoloId] = useState<string | null>(null);
+
+  // If user already has an active solo, show resume instead of pick
+  if (!soloLoading && activeSolo && phase === "pick") {
+    return (
+      <div className="min-h-screen bg-background pb-32">
+        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <button onClick={onBack} className="p-1"><ArrowLeft className="w-5 h-5" /></button>
+            <h1 className="font-display text-lg flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-gold" /> Solo Mode
+            </h1>
+          </div>
+        </div>
+        <div className="px-4 pt-4 space-y-4">
+          <div className="bg-gradient-to-br from-gold/10 via-surface-1 to-gold/5 border border-gold/40 p-5 text-center">
+            <Sparkles className="w-6 h-6 text-gold mx-auto mb-2" />
+            <p className="text-[10px] text-gold font-bold uppercase tracking-widest mb-1">Active Solo Session</p>
+            <h2 className="text-xl font-black text-foreground mb-1">{activeSolo.theme}</h2>
+            <p className="text-[12px] text-muted-foreground">Song: {activeSolo.song_name}</p>
+            <p className="text-[11px] text-muted-foreground/60 mt-1">
+              Status: <span className="text-gold font-semibold">{activeSolo.status}</span>
+            </p>
+          </div>
+          <p className="text-[11px] text-muted-foreground text-center">You can only have 1 active solo at a time. Complete or cancel this one first.</p>
+          <motion.button whileTap={{ scale: 0.98 }} onClick={() => navigate(`/studio?solo=${activeSolo.id}`)}
+            className="w-full relative overflow-hidden">
+            <div className="relative bg-gold hover:bg-gold/90 transition-colors py-5 flex items-center justify-center gap-3">
+              <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.15] to-transparent pointer-events-none" />
+              <Zap className="w-5 h-5 text-background relative z-10" />
+              <span className="text-[20px] font-black text-background relative z-10 tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                {activeSolo.status === 'editing' ? 'CONTINUE EDITING' : 'VIEW SUBMISSION'}
+              </span>
+            </div>
+          </motion.button>
+        </div>
+      </div>
+    );
+  }
 
   const handlePick = async (drop: FeaturedDrop) => {
     setSaving(true);

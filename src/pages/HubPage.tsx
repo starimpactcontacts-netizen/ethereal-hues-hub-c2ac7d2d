@@ -27,6 +27,7 @@ import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
 import { findQuickFight, useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
+import { useSoloMode } from '@/hooks/useSoloMode';
 import { useAccountPrompt } from '@/hooks/useAccountPrompt';
 import GlitchEdge from '@/components/loopgate/GlitchEdge';
 import InviteModal from '@/components/loopgate/InviteModal';
@@ -128,6 +129,7 @@ export default function HubPage() {
   const activityStats = useUserActivityStats(user?.id);
   const { activeBattles } = useActiveBattles();
   const { liveDrops } = useFeaturedDrops();
+  const { activeSolo } = useSoloMode();
   const navigate = useNavigate();
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [judgeReviewCount, setJudgeReviewCount] = useState(0);
@@ -531,6 +533,27 @@ export default function HubPage() {
               </motion.div>
             );
           })}
+        </div>
+      )}
+
+      {/* 🎵 ACTIVE SOLO RESUME BANNER */}
+      {activeSolo && (
+        <div className="px-4 mt-2">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+            <button
+              onClick={() => navigate(`/studio?solo=${activeSolo.id}`)}
+              className="w-full bg-gradient-to-r from-gold/15 via-surface-1 to-gold/15 border border-gold/40 hover:border-gold/60 p-3 flex items-center gap-3 transition-all text-left"
+            >
+              <div className="w-9 h-9 bg-gold/20 flex items-center justify-center shrink-0">
+                <Star className="w-4 h-4 text-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] text-gold font-bold uppercase tracking-wider block">Active Solo — {activeSolo.status}</span>
+                <span className="text-xs text-foreground font-bold truncate block">{activeSolo.theme} · {activeSolo.song_name}</span>
+              </div>
+              <span className="text-[11px] font-bold text-gold shrink-0">Resume →</span>
+            </button>
+          </motion.div>
         </div>
       )}
 
