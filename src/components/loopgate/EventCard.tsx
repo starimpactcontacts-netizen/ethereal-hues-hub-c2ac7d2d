@@ -64,7 +64,7 @@ export default function EventCard({ event, featured = false }: EventCardProps) {
 
           {/* Prize pool overlay */}
           {event.prizePool && (
-            <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-gold">
+            <div className="absolute top-3 right-3 rounded-full border border-gold/40 bg-background/40 backdrop-blur-sm px-2.5 py-1 text-[10px] font-bold text-gold">
               {event.prizePool}
             </div>
           )}
