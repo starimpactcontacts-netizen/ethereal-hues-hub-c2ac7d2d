@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Swords, Users, Gavel, Trophy, Flame, Download, Globe, Smartphone, Target, Crown, Shield, Eye, MessageSquare, TrendingUp, Award, Play, ChevronDown } from 'lucide-react';
+import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
@@ -13,7 +13,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
-import whereEditorsCompete from '@/assets/where-editors-compete.png';
+
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
 
 const fadeUp = {
@@ -44,94 +44,243 @@ export default function LandingPage() {
         <SEO {...pageSEO.home} />
         <LandingHeader bannerVisible={bannerVisible} />
 
-        {/* ═══════════════ HERO — CINEMATIC FULL BLEED ═══════════════ */}
-        <section className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden">
-          {/* Layered background */}
-          <div className="absolute inset-0 bg-background" />
-          <GatePattern className="z-[1]" opacity={3} tileSize={100} />
-          <div className="absolute inset-0 z-[2] bg-[radial-gradient(ellipse_70%_50%_at_50%_40%,rgba(255,255,255,0.03),transparent)]" />
+        {/* ═══════════════ HERO — IMMERSIVE FULL BLEED (Discord/Twitch style) ═══════════════ */}
+        <section className="relative min-h-[100vh] flex items-center overflow-hidden">
+          {/* Atmospheric gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-red-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-[1]" />
+          <GatePattern className="z-[1]" opacity={2} tileSize={120} />
+          
+          {/* Ambient glow orbs */}
+          <div className="absolute top-1/4 right-1/4 w-[600px] h-[600px] bg-gold/[0.03] rounded-full blur-[120px] z-[1]" />
+          <div className="absolute bottom-1/4 left-[16%] w-[400px] h-[400px] bg-red-500/[0.04] rounded-full blur-[100px] z-[1]" />
           
           {/* Glitch accent edges */}
           <GlitchEdge side="left" className="absolute left-0 top-0 bottom-0 w-[3px] z-[3]" />
           <GlitchEdge side="right" className="absolute right-0 top-0 bottom-0 w-[3px] z-[3]" />
 
-          <motion.div
-            className="relative z-10 text-center px-4 max-w-5xl mx-auto"
-            style={{ y: heroParallax }}
-          >
-            {/* Logo — massive, dominant */}
-            <motion.img
-              src={loopgateBrand}
-              alt="LOOPGATE"
-              className="h-32 sm:h-48 md:h-64 lg:h-72 w-auto mx-auto"
-              variants={fadeUp} custom={0} initial="hidden" animate="visible"
-            />
+          {/* Content — Split layout */}
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 py-20">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+              
+              {/* Left — Text & CTA */}
+              <motion.div
+                className="text-center lg:text-left"
+                style={{ y: heroParallax }}
+              >
+                {/* Brand logo */}
+                <motion.img
+                  src={loopgateBrand}
+                  alt="LOOPGATE"
+                  className="h-14 sm:h-18 md:h-20 w-auto mx-auto lg:mx-0 mb-8"
+                  variants={fadeUp} custom={0} initial="hidden" animate="visible"
+                />
 
-            {/* Tagline — PNG asset, tight to logo */}
-            <motion.div
-              className="-mt-6 sm:-mt-8 md:-mt-10"
-              variants={fadeUp} custom={1} initial="hidden" animate="visible"
-            >
-              <img
-                src={whereEditorsCompete}
-                alt="WHERE EDITORS COMPETE"
-                className="h-20 sm:h-26 md:h-32 w-auto mx-auto"
-              />
-              <h1 className="sr-only">Where Editors Compete</h1>
-            </motion.div>
+                {/* Headline — massive, Discord-style */}
+                <motion.h1
+                  className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.85] mb-6 tracking-tight"
+                  variants={fadeUp} custom={1} initial="hidden" animate="visible"
+                >
+                  WHERE<br />
+                  EDITORS<br />
+                  <span className="text-gold">COMPETE</span>
+                </motion.h1>
 
-            {/* Sub — restrained, confident */}
-            <motion.p
-              className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto mt-2 mb-6 leading-relaxed tracking-wide"
-              variants={fadeUp} custom={2} initial="hidden" animate="visible"
-            >
-              Battle head to head. Get rated by real judges.<br className="hidden sm:block" /> Climb the global rankings.
-            </motion.p>
+                {/* Subtitle */}
+                <motion.p
+                  className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto lg:mx-0 mb-10 leading-relaxed"
+                  variants={fadeUp} custom={2} initial="hidden" animate="visible"
+                >
+                  Battle head-to-head. Get rated by certified judges. 
+                  Climb the global rankings. Your legacy starts here.
+                </motion.p>
 
-            {/* CTAs */}
-            <motion.div
-              className="flex flex-col sm:flex-row gap-2.5 justify-center items-center mb-16"
-              variants={fadeUp} custom={3} initial="hidden" animate="visible"
-            >
-              <Link to="/start">
-                <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-base sm:text-lg px-10 py-4 h-auto gap-2.5 tracking-wider">
-                  <Play className="w-5 h-5" />
-                  Enter Loopgate
-                </Button>
-              </Link>
-              <Link to="/download" className="hidden sm:inline-flex">
-                <Button size="default" variant="ghost" className="text-muted-foreground hover:text-foreground font-display text-xs px-5 py-2 h-auto gap-2 tracking-wider">
-                  <Smartphone className="w-3.5 h-3.5" />
-                  iOS App Available
-                </Button>
-              </Link>
-            </motion.div>
-          </motion.div>
+                {/* CTAs */}
+                <motion.div
+                  className="flex flex-col sm:flex-row gap-3 items-center lg:items-start justify-center lg:justify-start"
+                  variants={fadeUp} custom={3} initial="hidden" animate="visible"
+                >
+                  <Link to="/start">
+                    <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-lg px-12 py-5 h-auto gap-3 tracking-wider">
+                      <Play className="w-5 h-5" />
+                      Open Loopgate
+                    </Button>
+                  </Link>
+                  <button 
+                    onClick={handleGuestExplore}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors font-display tracking-wider px-4 py-3"
+                  >
+                    Explore as Guest →
+                  </button>
+                </motion.div>
 
-          {/* Bottom live ticker */}
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 z-10 border-t border-border/50 bg-background/80 backdrop-blur-sm"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 0.8 }}
-          >
-            <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-8 text-xs text-muted-foreground">
-                <span className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                {/* Live stats row */}
+                <motion.div
+                  className="flex items-center gap-6 mt-10 text-sm text-muted-foreground justify-center lg:justify-start"
+                  variants={fadeUp} custom={4} initial="hidden" animate="visible"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    </span>
+                    <span className="text-foreground font-semibold">{stats.activeUsers || 0}</span> online
                   </span>
-                  <span className="text-foreground font-semibold">{stats.activeUsers || 0}</span> online
-                </span>
-                <span className="hidden sm:flex items-center gap-2">
-                  <Swords className="w-3 h-3 text-muted-foreground" />
-                  <span className="text-foreground font-semibold">{stats.totalCompeting || 0}</span> competing
-                </span>
-              </div>
-              <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground hidden sm:block">
-                Scroll to explore
-              </span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground animate-bounce sm:hidden" />
+                  <span className="flex items-center gap-2">
+                    <Swords className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="text-foreground font-semibold">{stats.totalCompeting || 0}</span> competing
+                  </span>
+                </motion.div>
+              </motion.div>
+
+              {/* Right — Live platform mockup (desktop only) */}
+              <motion.div
+                className="hidden lg:block"
+                initial={{ opacity: 0, x: 80, rotateY: -8 }}
+                animate={{ opacity: 1, x: 0, rotateY: 0 }}
+                transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="relative" style={{ perspective: '1200px' }}>
+                  {/* Glow behind mockup */}
+                  <div className="absolute -inset-8 bg-gradient-to-br from-gold/[0.06] via-red-500/[0.04] to-transparent blur-2xl" />
+                  
+                  {/* Desktop mockup frame */}
+                  <div className="relative border border-border/60 bg-surface-0 shadow-2xl shadow-black/40 overflow-hidden">
+                    {/* Browser chrome */}
+                    <div className="h-8 bg-surface-1 border-b border-border/50 flex items-center px-3 gap-2">
+                      <div className="flex gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                      </div>
+                      <div className="flex-1 mx-8">
+                        <div className="bg-surface-2 border border-border/30 h-4 flex items-center px-2">
+                          <span className="text-[8px] text-muted-foreground">loopgate.io/hub</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* App content mockup */}
+                    <div className="p-4 space-y-3 bg-background min-h-[380px]">
+                      {/* Header mockup */}
+                      <div className="flex items-center justify-between">
+                        <img src={loopgateLogo} alt="" className="h-5 opacity-70" />
+                        <div className="flex gap-2">
+                          {['Hub', 'Arena', 'Rankings'].map(t => (
+                            <span key={t} className={`text-[9px] px-2 py-1 ${t === 'Hub' ? 'bg-gold/15 text-gold' : 'text-muted-foreground'} font-bold tracking-wider uppercase`}>{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Live battle card */}
+                      <div className="border border-red-500/20 bg-red-500/[0.03] p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" /></span>
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-red-400">Live Battle</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="text-center">
+                            <div className="w-8 h-8 bg-gradient-to-br from-red-500/20 to-red-900/20 border border-red-500/30 flex items-center justify-center mb-1"><span className="text-[10px] font-bold text-red-400">K</span></div>
+                            <p className="text-[8px] font-bold text-foreground">KXZEN</p>
+                          </div>
+                          <span className="font-display text-base text-red-400/70">VS</span>
+                          <div className="text-center">
+                            <div className="w-8 h-8 bg-gradient-to-br from-cyan-500/20 to-cyan-900/20 border border-cyan-500/30 flex items-center justify-center mb-1"><span className="text-[10px] font-bold text-cyan-400">R</span></div>
+                            <p className="text-[8px] font-bold text-foreground">RXSE</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Rankings preview */}
+                      <div className="border border-border/40 bg-surface-0 p-2.5">
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground mb-2 block">Rankings</span>
+                        {[
+                          { r: 1, n: 'PRXSTIGE', c: 'S++' },
+                          { r: 2, n: 'KXZEN', c: 'S+' },
+                          { r: 3, n: 'AETHRVL', c: 'S' },
+                        ].map(row => (
+                          <div key={row.r} className="flex items-center gap-2 py-1">
+                            <span className={`text-[9px] font-bold w-4 ${row.r <= 2 ? 'text-gold' : 'text-muted-foreground'}`}>#{row.r}</span>
+                            <div className="w-4 h-4 bg-surface-2 flex items-center justify-center"><span className="text-[7px] font-bold">{row.n[0]}</span></div>
+                            <span className="text-[9px] font-semibold text-foreground flex-1">{row.n}</span>
+                            <span className="text-[7px] text-gold font-bold">{row.c}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Judge review card */}
+                      <div className="border border-gold/15 bg-gold/[0.02] p-2.5">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Gavel className="w-3 h-3 text-gold" />
+                          <span className="text-[8px] font-bold uppercase tracking-widest text-gold">QOI Score</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full border border-gold/30 bg-gold/5 flex items-center justify-center">
+                            <span className="font-display text-sm text-gold">84</span>
+                          </div>
+                          <div className="flex-1 space-y-1">
+                            {['Emotion', 'Sync', 'Execution'].map((p, i) => (
+                              <div key={p} className="flex items-center gap-1.5">
+                                <span className="text-[7px] text-muted-foreground w-12">{p}</span>
+                                <div className="flex-1 h-1 bg-surface-2 overflow-hidden">
+                                  <div className="h-full bg-gold" style={{ width: `${[88, 90, 81][i]}%` }} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Phone mockup — floating beside */}
+                  <motion.div
+                    className="absolute -right-12 -bottom-8 w-[140px]"
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 1 }}
+                  >
+                    <div className="border border-border/60 bg-surface-0 shadow-xl shadow-black/30 overflow-hidden" style={{ borderRadius: '12px' }}>
+                      <div className="h-4 bg-surface-1 border-b border-border/30 flex items-center justify-center">
+                        <div className="w-10 h-1.5 bg-surface-2" style={{ borderRadius: '4px' }} />
+                      </div>
+                      <div className="p-2 bg-background space-y-1.5 min-h-[200px]">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <img src={loopgateLogo} alt="" className="h-3 opacity-60" />
+                          <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-wider">Loopgate</span>
+                        </div>
+                        <div className="border border-border/30 bg-surface-0 p-1.5">
+                          <span className="text-[6px] text-gold font-bold uppercase tracking-wider">Your Profile</span>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <div className="w-5 h-5 bg-surface-2 flex items-center justify-center"><span className="text-[6px] font-bold">Y</span></div>
+                            <div>
+                              <p className="text-[7px] font-bold text-foreground">YOU</p>
+                              <p className="text-[5px] text-gold">A Class</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          {['Battles', 'Units', 'Feed'].map(t => (
+                            <div key={t} className="bg-surface-1 border border-border/20 p-1 text-center">
+                              <span className="text-[5px] text-muted-foreground uppercase font-bold">{t}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
             </div>
+          </div>
+
+          {/* Bottom scroll hint */}
+          <motion.div
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 0.8 }}
+          >
+            <span className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground hidden sm:block">Scroll to explore</span>
+            <ChevronDown className="w-4 h-4 text-muted-foreground animate-bounce" />
           </motion.div>
         </section>
 
