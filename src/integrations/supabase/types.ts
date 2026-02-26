@@ -179,12 +179,14 @@ export type Database = {
         Row: {
           budget_cents: number | null
           client_id: string
+          client_name: string | null
           cover_image_url: string | null
           created_at: string
           description: string | null
           end_date: string | null
           featured_artist_id: string | null
           goal_label: string | null
+          goal_posts: number
           goal_views: number
           id: string
           name: string
@@ -203,12 +205,14 @@ export type Database = {
         Insert: {
           budget_cents?: number | null
           client_id: string
+          client_name?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
           featured_artist_id?: string | null
           goal_label?: string | null
+          goal_posts?: number
           goal_views?: number
           id?: string
           name: string
@@ -227,12 +231,14 @@ export type Database = {
         Update: {
           budget_cents?: number | null
           client_id?: string
+          client_name?: string | null
           cover_image_url?: string | null
           created_at?: string
           description?: string | null
           end_date?: string | null
           featured_artist_id?: string | null
           goal_label?: string | null
+          goal_posts?: number
           goal_views?: number
           id?: string
           name?: string

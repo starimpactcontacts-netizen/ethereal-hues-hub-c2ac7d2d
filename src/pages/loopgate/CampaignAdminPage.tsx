@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Save, BarChart3, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, KeyRound, Bell, Check, Link2, Target, RefreshCw, Lock, Music } from 'lucide-react';
+import { Plus, Trash2, Save, BarChart3, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, Bell, Check, Link2, RefreshCw, Music, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useArtistCampaigns, useEnterpriseClients, useUpdateRequests } from '@/hooks/useArtistCampaigns';
+import { useArtistCampaigns, useUpdateRequests } from '@/hooks/useArtistCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,53 +24,57 @@ interface FeaturedArtistOption {
 }
 
 export default function CampaignAdminPage() {
-  const { campaigns, edits, loading, createCampaign, updateCampaign, deleteCampaign, addEdit, updateEdit, deleteEdit, getEditsForCampaign, setClientPassword, refresh } = useArtistCampaigns();
-  const { clients } = useEnterpriseClients();
+  const { campaigns, edits, loading, createCampaign, updateCampaign, deleteCampaign, addEdit, updateEdit, deleteEdit, getEditsForCampaign, refresh } = useArtistCampaigns();
   const { requests, resolveRequest, refresh: refreshRequests } = useUpdateRequests();
+  const [clientNames, setClientNames] = useState<string[]>([]);
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
   
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showAddEditForm, setShowAddEditForm] = useState<string | null>(null);
   const [editingStats, setEditingStats] = useState<string | null>(null);
-  const [passwordModal, setPasswordModal] = useState<{ clientId: string; email: string } | null>(null);
-  const [newPassword, setNewPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'campaigns' | 'clients' | 'requests'>('campaigns');
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'requests'>('campaigns');
   const [artists, setArtists] = useState<FeaturedArtistOption[]>([]);
 
-  // Fetch featured artists for dropdown
+  // Fetch featured artists and client names
   useEffect(() => {
-    async function fetchArtists() {
+    async function fetchData() {
       try {
-        const { data } = await supabase.functions.invoke('manage-campaigns', {
-          body: { action: 'get-featured-artists' }
-        });
-        setArtists(data?.artists || []);
+        const [artistRes, clientRes] = await Promise.all([
+          supabase.functions.invoke('manage-campaigns', { body: { action: 'get-featured-artists' } }),
+          supabase.functions.invoke('manage-campaigns', { body: { action: 'get-client-names' } }),
+        ]);
+        setArtists(artistRes.data?.artists || []);
+        setClientNames(clientRes.data?.names || []);
       } catch (err) {
-        console.error('Failed to fetch artists:', err);
+        console.error('Failed to fetch data:', err);
       }
     }
-    fetchArtists();
+    fetchData();
   }, []);
 
   // Create campaign form
-  const [newCampaign, setNewCampaign] = useState({ client_id: '', name: '', description: '', goal_views: 0, goal_label: '', featured_artist_id: '', password: '' });
+  const [newCampaign, setNewCampaign] = useState({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '' });
   // Add edit form
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
   // Edit stats form
-  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_label: '' });
+  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '' });
+
+  const filteredClientNames = newCampaign.client_name.trim()
+    ? clientNames.filter(n => n.toLowerCase().includes(newCampaign.client_name.toLowerCase()))
+    : [];
 
   const handleCreateCampaign = async () => {
-    if (!newCampaign.client_id || !newCampaign.name) {
-      toast.error('Select a client and enter campaign name');
+    if (!newCampaign.client_name.trim() || !newCampaign.name) {
+      toast.error('Enter a client name and campaign name');
       return;
     }
     try {
       const params: Record<string, unknown> = { ...newCampaign };
       if (!params.featured_artist_id) delete params.featured_artist_id;
-      if (!params.password) delete params.password;
       await createCampaign(params);
       toast.success('Campaign created');
-      setNewCampaign({ client_id: '', name: '', description: '', goal_views: 0, goal_label: '', featured_artist_id: '', password: '' });
+      setNewCampaign({ client_name: '', name: '', description: '', goal_views: 0, goal_posts: 0, goal_label: '', featured_artist_id: '' });
       setShowCreateForm(false);
     } catch (err: any) {
       toast.error(err.message);
@@ -131,32 +135,11 @@ export default function CampaignAdminPage() {
     }
   };
 
-  const handleSetPassword = async () => {
-    if (!passwordModal || newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
-    }
-    try {
-      await setClientPassword(passwordModal.clientId, newPassword);
-      toast.success(`Password set for ${passwordModal.email}`);
-      setPasswordModal(null);
-      setNewPassword('');
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  };
-
   const copyCampaignLink = (slug: string | null) => {
     if (!slug) return;
     const url = `${window.location.origin}/campaign/${slug}`;
     navigator.clipboard.writeText(url);
     toast.success('Campaign link copied!');
-  };
-
-  const copyDashboardLink = (clientEmail: string) => {
-    const url = `${window.location.origin}/enterprise/account`;
-    navigator.clipboard.writeText(url);
-    toast.success(`Dashboard link copied! Send to ${clientEmail}`);
   };
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
@@ -192,7 +175,7 @@ export default function CampaignAdminPage() {
 
       {/* Tabs */}
       <div className="flex border border-border">
-        {(['campaigns', 'clients', 'requests'] as const).map(tab => (
+        {(['campaigns', 'requests'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -204,50 +187,6 @@ export default function CampaignAdminPage() {
           </button>
         ))}
       </div>
-
-      {/* ═══ CLIENTS TAB ═══ */}
-      {activeTab === 'clients' && (
-        <div className="space-y-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Client Accounts</p>
-          {clients.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">No clients registered yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {clients.map(client => (
-                <div key={client.id} className="bg-surface-1 border border-border p-4 flex items-center gap-4">
-                  <div className="w-9 h-9 bg-surface-0 border border-border flex items-center justify-center flex-shrink-0">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase">
-                      {(client.display_name || client.email)[0]}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-display text-sm truncate">{client.display_name || client.email}</p>
-                    <p className="text-[10px] text-muted-foreground">{client.email}</p>
-                  </div>
-                  <div className="flex gap-1.5">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => copyDashboardLink(client.email)}
-                      className="h-7 text-[9px] gap-1"
-                    >
-                      <Link2 className="w-3 h-3" /> Copy Link
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => { setPasswordModal({ clientId: client.id, email: client.email }); setNewPassword(''); }}
-                      className="h-7 text-[9px] gap-1"
-                    >
-                      <KeyRound className="w-3 h-3" /> Set Password
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ═══ REQUESTS TAB ═══ */}
       {activeTab === 'requests' && (
@@ -302,16 +241,33 @@ export default function CampaignAdminPage() {
               className="bg-surface-1 border border-border p-4 space-y-3"
             >
               <h3 className="font-display text-sm">Create Campaign</h3>
-              <select
-                value={newCampaign.client_id}
-                onChange={e => setNewCampaign(p => ({ ...p, client_id: e.target.value }))}
-                className="w-full bg-surface-0 border border-border text-sm p-2 text-foreground"
-              >
-                <option value="">Select Client...</option>
-                {clients.map(c => (
-                  <option key={c.id} value={c.id}>{c.display_name || c.email}</option>
-                ))}
-              </select>
+              
+              {/* Client Name with Autocomplete */}
+              <div className="relative">
+                <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Client Name</label>
+                <Input
+                  placeholder="Type client name..."
+                  value={newCampaign.client_name}
+                  onChange={e => { setNewCampaign(p => ({ ...p, client_name: e.target.value })); setShowClientSuggestions(true); }}
+                  onFocus={() => setShowClientSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
+                  className="bg-surface-0"
+                />
+                {showClientSuggestions && filteredClientNames.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-surface-1 border border-border max-h-32 overflow-y-auto">
+                    {filteredClientNames.map(name => (
+                      <button
+                        key={name}
+                        onMouseDown={() => { setNewCampaign(p => ({ ...p, client_name: name })); setShowClientSuggestions(false); }}
+                        className="w-full text-left px-3 py-2 text-xs hover:bg-surface-0 text-foreground"
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <Input
                 placeholder="Campaign Name"
                 value={newCampaign.name}
@@ -340,22 +296,7 @@ export default function CampaignAdminPage() {
                 </select>
               </div>
 
-              {/* Campaign Password */}
-              <div>
-                <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">
-                  <Lock className="w-3 h-3 inline mr-1" />
-                  Campaign Password (client uses this to access)
-                </label>
-                <Input
-                  type="text"
-                  placeholder="e.g. artist2025"
-                  value={newCampaign.password}
-                  onChange={e => setNewCampaign(p => ({ ...p, password: e.target.value }))}
-                  className="bg-surface-0"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Goal Views</label>
                   <Input
@@ -363,6 +304,16 @@ export default function CampaignAdminPage() {
                     placeholder="e.g. 1000000"
                     value={newCampaign.goal_views || ''}
                     onChange={e => setNewCampaign(p => ({ ...p, goal_views: Number(e.target.value) }))}
+                    className="bg-surface-0"
+                  />
+                </div>
+                <div>
+                  <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Goal Posts</label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 20"
+                    value={newCampaign.goal_posts || ''}
+                    onChange={e => setNewCampaign(p => ({ ...p, goal_posts: Number(e.target.value) }))}
                     className="bg-surface-0"
                   />
                 </div>
@@ -399,6 +350,7 @@ export default function CampaignAdminPage() {
                 const clientInfo = (campaign as any).enterprise_clients;
                 const artistInfo = (campaign as any).featured_artists;
                 const goalProgress = campaign.goal_views > 0 ? Math.min(100, (campaign.total_views / campaign.goal_views) * 100) : 0;
+                const postsProgress = (campaign as any).goal_posts > 0 ? Math.min(100, (campaignEdits.length / (campaign as any).goal_posts) * 100) : 0;
 
                 return (
                   <div key={campaign.id} className="bg-surface-1 border border-border overflow-hidden">
@@ -430,7 +382,7 @@ export default function CampaignAdminPage() {
                             }`}>{campaign.status}</span>
                           </div>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
-                            {clientInfo?.display_name || clientInfo?.email || 'Unknown client'} • {campaignEdits.length} edits • {formatNumber(campaign.total_views)} views
+                            {(campaign as any).client_name || clientInfo?.display_name || clientInfo?.email || 'Unknown client'} • {campaignEdits.length} edits • {formatNumber(campaign.total_views)} views
                             {campaign.goal_views > 0 && ` • ${Math.round(goalProgress)}% to goal`}
                           </p>
                         </div>
@@ -452,15 +404,33 @@ export default function CampaignAdminPage() {
                       </Button>
                     </div>
 
-                    {/* Goal Progress Bar */}
-                    {campaign.goal_views > 0 && (
-                      <div className="px-4 pb-2">
-                        <div className="h-1.5 bg-surface-0 overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-gold/60 to-gold transition-all"
-                            style={{ width: `${goalProgress}%` }}
-                          />
-                        </div>
+                    {/* Goal Progress Bars */}
+                    {(campaign.goal_views > 0 || (campaign as any).goal_posts > 0) && (
+                      <div className="px-4 pb-2 space-y-1">
+                        {campaign.goal_views > 0 && (
+                          <div className="flex items-center gap-2">
+                            <Eye className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                            <div className="h-1.5 bg-surface-0 overflow-hidden flex-1">
+                              <div 
+                                className="h-full bg-gradient-to-r from-gold/60 to-gold transition-all"
+                                style={{ width: `${goalProgress}%` }}
+                              />
+                            </div>
+                            <span className="text-[8px] text-muted-foreground w-8 text-right">{Math.round(goalProgress)}%</span>
+                          </div>
+                        )}
+                        {(campaign as any).goal_posts > 0 && (
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                            <div className="h-1.5 bg-surface-0 overflow-hidden flex-1">
+                              <div 
+                                className="h-full bg-gradient-to-r from-cyan-500/60 to-cyan-400 transition-all"
+                                style={{ width: `${postsProgress}%` }}
+                              />
+                            </div>
+                            <span className="text-[8px] text-muted-foreground w-16 text-right">{campaignEdits.length}/{(campaign as any).goal_posts}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -470,7 +440,7 @@ export default function CampaignAdminPage() {
                         {/* Campaign Link Info */}
                         {campaign.slug && (
                           <div className="px-4 py-2 border-b border-border bg-surface-0/50 flex items-center gap-2">
-                            <Lock className="w-3 h-3 text-muted-foreground" />
+                            <Link2 className="w-3 h-3 text-muted-foreground" />
                             <code className="text-[10px] text-cyan-400 flex-1 truncate">/campaign/{campaign.slug}</code>
                             <Button
                               size="sm"
@@ -509,6 +479,7 @@ export default function CampaignAdminPage() {
                                     total_clicks: campaign.total_clicks,
                                     roi_percentage: campaign.roi_percentage,
                                     goal_views: campaign.goal_views,
+                                    goal_posts: (campaign as any).goal_posts || 0,
                                     goal_label: campaign.goal_label || '',
                                   });
                                 }}
@@ -540,13 +511,22 @@ export default function CampaignAdminPage() {
                                   </div>
                                 ))}
                               </div>
-                              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border">
+                              <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border">
                                 <div>
                                   <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Goal Views</label>
                                   <Input
                                     type="number"
                                     value={statsForm.goal_views}
                                     onChange={e => setStatsForm(p => ({ ...p, goal_views: Number(e.target.value) }))}
+                                    className="bg-surface-0 h-8 text-xs"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Goal Posts</label>
+                                  <Input
+                                    type="number"
+                                    value={statsForm.goal_posts}
+                                    onChange={e => setStatsForm(p => ({ ...p, goal_posts: Number(e.target.value) }))}
                                     className="bg-surface-0 h-8 text-xs"
                                   />
                                 </div>
@@ -664,31 +644,6 @@ export default function CampaignAdminPage() {
             </div>
           )}
         </>
-      )}
-
-      {/* Password Modal */}
-      {passwordModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={() => setPasswordModal(null)}>
-          <div className="bg-surface-1 border border-border p-6 max-w-sm w-full space-y-4" onClick={e => e.stopPropagation()}>
-            <div>
-              <h3 className="font-display text-lg">Set Client Password</h3>
-              <p className="text-xs text-muted-foreground mt-1">{passwordModal.email}</p>
-            </div>
-            <Input
-              type="text"
-              placeholder="New password (min 6 chars)"
-              value={newPassword}
-              onChange={e => setNewPassword(e.target.value)}
-              className="bg-surface-0"
-            />
-            <div className="flex gap-2">
-              <Button onClick={handleSetPassword} className="bg-gold hover:bg-gold/90 text-background flex-1">
-                <KeyRound className="w-4 h-4 mr-2" /> Set Password
-              </Button>
-              <Button onClick={() => setPasswordModal(null)} variant="outline">Cancel</Button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

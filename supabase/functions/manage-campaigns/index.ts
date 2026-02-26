@@ -73,7 +73,7 @@ serve(async (req) => {
 
       const { data: campaign, error } = await supabase
         .from("artist_campaigns")
-        .select("id, name, description, status, total_views, total_impressions, total_engagements, total_clicks, budget_cents, spent_cents, roi_percentage, goal_views, goal_label, start_date, end_date, cover_image_url, slug, featured_artist_id")
+        .select("id, name, description, status, total_views, total_impressions, total_engagements, total_clicks, budget_cents, spent_cents, roi_percentage, goal_views, goal_label, goal_posts, start_date, end_date, cover_image_url, slug, featured_artist_id, client_name")
         .eq("slug", slug)
         .single();
 
@@ -152,8 +152,35 @@ serve(async (req) => {
 
     // ─── CREATE CAMPAIGN ───
     if (action === "create-campaign") {
-      const { client_id, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views, goal_label, featured_artist_id, password } = params;
-      if (!client_id || !name) return jsonRes({ error: "client_id and name required" }, 400);
+      const { client_id, client_name, name, description, start_date, end_date, budget_cents, cover_image_url, goal_views, goal_label, goal_posts, featured_artist_id, password } = params;
+      if (!name) return jsonRes({ error: "name required" }, 400);
+
+      // Resolve client_id: use provided or find/create by client_name
+      let resolved_client_id = client_id;
+      if (!resolved_client_id && client_name) {
+        // Try to find existing client by display_name
+        const { data: existing } = await supabase
+          .from("enterprise_clients")
+          .select("id")
+          .ilike("display_name", client_name)
+          .limit(1)
+          .single();
+        
+        if (existing) {
+          resolved_client_id = existing.id;
+        } else {
+          // Create a new client with just a display name
+          const { data: created, error: createErr } = await supabase
+            .from("enterprise_clients")
+            .insert({ display_name: client_name, email: client_name.toLowerCase().replace(/\s+/g, '.') + '@client.loopgate' })
+            .select("id")
+            .single();
+          if (createErr) throw createErr;
+          resolved_client_id = created.id;
+        }
+      }
+
+      if (!resolved_client_id) return jsonRes({ error: "client_name or client_id required" }, 400);
 
       let password_hash = null;
       if (password && password.length >= 4) {
@@ -163,8 +190,10 @@ serve(async (req) => {
       const { data, error } = await supabase
         .from("artist_campaigns")
         .insert({ 
-          client_id, name, description, start_date, end_date, budget_cents, cover_image_url, 
-          goal_views: goal_views || 0, goal_label, featured_artist_id: featured_artist_id || null,
+          client_id: resolved_client_id, name, description, start_date, end_date, budget_cents, cover_image_url, 
+          goal_views: goal_views || 0, goal_label, goal_posts: goal_posts || 0,
+          featured_artist_id: featured_artist_id || null,
+          client_name: client_name || null,
           password_hash
         })
         .select("*, featured_artists(name, avatar_url)")
@@ -181,7 +210,7 @@ serve(async (req) => {
 
       const allowed = ['name', 'description', 'status', 'total_views', 'total_impressions', 
         'total_engagements', 'total_clicks', 'budget_cents', 'spent_cents', 'roi_percentage',
-        'start_date', 'end_date', 'cover_image_url', 'goal_views', 'goal_label', 'featured_artist_id'];
+        'start_date', 'end_date', 'cover_image_url', 'goal_views', 'goal_label', 'goal_posts', 'featured_artist_id', 'client_name'];
       const filtered: Record<string, any> = {};
       for (const key of allowed) {
         if (updates[key] !== undefined) filtered[key] = updates[key];
@@ -351,6 +380,28 @@ serve(async (req) => {
 
       if (error) throw error;
       return jsonRes({ artists: data || [] });
+    }
+
+    // ─── GET CLIENT NAME SUGGESTIONS ───
+    if (action === "get-client-names") {
+      const { data, error } = await supabase
+        .from("enterprise_clients")
+        .select("id, display_name")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      // Also get unique client_names from campaigns
+      const { data: campaignNames } = await supabase
+        .from("artist_campaigns")
+        .select("client_name, client_id")
+        .not("client_name", "is", null);
+
+      const names = new Set<string>();
+      (data || []).forEach((c: any) => { if (c.display_name) names.add(c.display_name); });
+      (campaignNames || []).forEach((c: any) => { if (c.client_name) names.add(c.client_name); });
+
+      return jsonRes({ names: Array.from(names) });
     }
 
     return jsonRes({ error: "Unknown action" }, 400);

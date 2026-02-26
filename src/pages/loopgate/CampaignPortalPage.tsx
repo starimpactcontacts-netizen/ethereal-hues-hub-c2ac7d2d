@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, ArrowRight, Shield, Music, Globe, CheckCircle } from 'lucide-react';
+import { Eye, TrendingUp, Zap, MousePointerClick, BarChart3, ExternalLink, Play, Music, Globe, CheckCircle } from 'lucide-react';
 import { SiTiktok, SiYoutube, SiInstagram } from '@icons-pack/react-simple-icons';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ interface CampaignData {
   roi_percentage: number | null;
   goal_views: number;
   goal_label: string | null;
+  goal_posts: number;
   start_date: string | null;
   end_date: string | null;
   cover_image_url: string | null;
@@ -84,71 +85,36 @@ function getPlatformColor(platform: string | null) {
   }
 }
 
-const SESSION_KEY = 'campaign-auth-';
-
 export default function CampaignPortalPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState('');
   const [campaign, setCampaign] = useState<CampaignData | null>(null);
   const [artist, setArtist] = useState<ArtistData | null>(null);
   const [edits, setEdits] = useState<EditData[]>([]);
 
-  // Check persistent session
+  // Fetch campaign data immediately on load (no password needed)
   useEffect(() => {
     if (!slug) return;
-    const stored = localStorage.getItem(SESSION_KEY + slug);
-    if (stored === 'true') {
-      setIsAuthenticated(true);
-    }
-    setLoading(false);
-  }, [slug]);
-
-  // Fetch campaign data when authenticated
-  const fetchCampaignData = useCallback(async () => {
-    if (!slug) return;
-    try {
-      const { data, error: fetchError } = await supabase.functions.invoke('manage-campaigns', {
-        body: { action: 'get-campaign-public', slug }
-      });
-      if (fetchError) throw fetchError;
-      if (data?.error) throw new Error(data.error);
-      setCampaign(data.campaign);
-      setArtist(data.artist);
-      setEdits(data.edits || []);
-    } catch (err: any) {
-      console.error('Failed to fetch campaign:', err);
-      setError('Failed to load campaign data');
-    }
-  }, [slug]);
-
-  useEffect(() => {
-    if (isAuthenticated) fetchCampaignData();
-  }, [isAuthenticated, fetchCampaignData]);
-
-  const handleAuth = async () => {
-    if (!slug || !password) return;
-    setAuthLoading(true);
-    setError('');
-    try {
-      const { data, error: authError } = await supabase.functions.invoke('manage-campaigns', {
-        body: { action: 'authenticate-campaign', slug, password }
-      });
-      if (authError) throw authError;
-      if (data?.error) throw new Error(data.error);
-      if (data?.authenticated) {
-        localStorage.setItem(SESSION_KEY + slug, 'true');
-        setIsAuthenticated(true);
+    async function fetchData() {
+      try {
+        const { data, error: fetchError } = await supabase.functions.invoke('manage-campaigns', {
+          body: { action: 'get-campaign-public', slug }
+        });
+        if (fetchError) throw fetchError;
+        if (data?.error) throw new Error(data.error);
+        setCampaign(data.campaign);
+        setArtist(data.artist);
+        setEdits(data.edits || []);
+      } catch (err: any) {
+        console.error('Failed to fetch campaign:', err);
+        setError('Campaign not found');
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      setError(err.message || 'Invalid password');
-    } finally {
-      setAuthLoading(false);
     }
-  };
+    fetchData();
+  }, [slug]);
 
   // Loading state
   if (loading) {
@@ -159,70 +125,15 @@ export default function CampaignPortalPage() {
     );
   }
 
-  // Password gate
-  if (!isAuthenticated) {
+  // Error state
+  if (error) {
     return (
-      <div className="min-h-screen bg-[#060606] flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Ambient glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-red-900/10 rounded-full blur-[120px] pointer-events-none" />
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm relative"
-        >
-          {/* Crest */}
-          <div className="flex justify-center mb-8">
-            <img src={viralCartelCrest} alt="" className="w-16 h-16 opacity-60" />
-          </div>
-          
-          <div className="bg-[#0a0a0a] border border-white/[0.06] p-8 space-y-6">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Shield size={14} className="text-red-500/60" />
-                <span className="text-[9px] uppercase tracking-[0.2em] text-red-500/60 font-bold">Private Campaign</span>
-              </div>
-              <h1 className="font-display text-2xl text-white/90 mt-3">Campaign Access</h1>
-              <p className="text-xs text-white/30 mt-1">Enter your access code to view analytics</p>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                <Input
-                  type="password"
-                  placeholder="Access code"
-                  value={password}
-                  onChange={e => { setPassword(e.target.value); setError(''); }}
-                  onKeyDown={e => e.key === 'Enter' && handleAuth()}
-                  className="pl-10 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-white/20 h-12 text-sm focus:border-red-500/30 focus:ring-red-500/20"
-                />
-              </div>
-              
-              {error && (
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-red-400 text-[11px] text-center">
-                  {error}
-                </motion.p>
-              )}
-              
-              <Button
-                onClick={handleAuth}
-                disabled={authLoading || !password}
-                className="w-full h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-display text-sm tracking-wider border-0"
-              >
-                {authLoading ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <>Enter <ArrowRight className="ml-2 w-4 h-4" /></>
-                )}
-              </Button>
-            </div>
-          </div>
-          
-          <p className="text-center text-[9px] text-white/15 mt-6 tracking-wider uppercase">
-            Viral Cartel Studios
-          </p>
-        </motion.div>
+      <div className="min-h-screen bg-[#060606] flex items-center justify-center p-4">
+        <div className="text-center">
+          <img src={viralCartelCrest} alt="" className="w-16 h-16 opacity-60 mx-auto mb-4" />
+          <h1 className="font-display text-xl text-white/90">{error}</h1>
+          <p className="text-xs text-white/30 mt-2">This campaign link may be invalid.</p>
+        </div>
       </div>
     );
   }
@@ -237,6 +148,7 @@ export default function CampaignPortalPage() {
   }
 
   const goalProgress = campaign.goal_views > 0 ? Math.min(100, (campaign.total_views / campaign.goal_views) * 100) : 0;
+  const postsProgress = campaign.goal_posts > 0 ? Math.min(100, (edits.length / campaign.goal_posts) * 100) : 0;
   const totalEditViews = edits.reduce((sum, e) => sum + e.view_count, 0);
   const totalLikes = edits.reduce((sum, e) => sum + e.like_count, 0);
   const totalShares = edits.reduce((sum, e) => sum + e.share_count, 0);
@@ -345,31 +257,55 @@ export default function CampaignPortalPage() {
         </motion.div>
 
         {/* Goal Progress */}
-        {campaign.goal_views > 0 && (
+        {(campaign.goal_views > 0 || campaign.goal_posts > 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="bg-[#0a0a0a] border border-white/[0.06] p-5"
+            className="bg-[#0a0a0a] border border-white/[0.06] p-5 space-y-4"
           >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-bold">
-                {campaign.goal_label || 'Campaign Goal'}
-              </span>
-              <span className="font-display text-sm text-white">{Math.round(goalProgress)}%</span>
-            </div>
-            <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${goalProgress}%` }}
-                transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
-                className="h-full bg-gradient-to-r from-red-600 via-red-500 to-amber-500 rounded-full"
-              />
-            </div>
-            <div className="flex justify-between mt-2">
-              <span className="text-[10px] text-white/25">{formatNumber(campaign.total_views)} views</span>
-              <span className="text-[10px] text-white/25">Goal: {formatNumber(campaign.goal_views)}</span>
-            </div>
+            {campaign.goal_views > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-bold">
+                    {campaign.goal_label || 'Views Goal'}
+                  </span>
+                  <span className="font-display text-sm text-white">{Math.round(goalProgress)}%</span>
+                </div>
+                <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${goalProgress}%` }}
+                    transition={{ duration: 1.5, ease: 'easeOut', delay: 0.5 }}
+                    className="h-full bg-gradient-to-r from-red-600 via-red-500 to-amber-500 rounded-full"
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-[10px] text-white/25">{formatNumber(campaign.total_views)} views</span>
+                  <span className="text-[10px] text-white/25">Goal: {formatNumber(campaign.goal_views)}</span>
+                </div>
+              </div>
+            )}
+            {campaign.goal_posts > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-bold">Posts Goal</span>
+                  <span className="font-display text-sm text-white">{edits.length}/{campaign.goal_posts}</span>
+                </div>
+                <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${postsProgress}%` }}
+                    transition={{ duration: 1.5, ease: 'easeOut', delay: 0.7 }}
+                    className="h-full bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-400 rounded-full"
+                  />
+                </div>
+                <div className="flex justify-between mt-1.5">
+                  <span className="text-[10px] text-white/25">{edits.length} edits submitted</span>
+                  <span className="text-[10px] text-white/25">Goal: {campaign.goal_posts} posts</span>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 
