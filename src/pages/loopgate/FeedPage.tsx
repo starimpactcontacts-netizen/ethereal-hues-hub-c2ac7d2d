@@ -638,14 +638,6 @@ export default function FeedPage() {
         )}
       </div>
 
-      {/* ─── Compose FAB ─── */}
-      <motion.button
-        whileTap={{ scale: 0.9 }}
-        onClick={() => navigate('/studio')}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+84px)] right-4 z-30 w-12 h-12 rounded-full bg-gold text-primary-foreground shadow-[0_4px_20px_rgba(212,175,55,0.4)] flex items-center justify-center"
-      >
-        <Clapperboard className="w-5 h-5" />
-      </motion.button>
 
       {/* Video Player */}
       {playerItem && (
