@@ -3,11 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 const SOLO_THEMES = [
-  "Cinematic Chaos", "Midnight Velocity", "Neon Nightmare", "Dark Renaissance",
-  "Glitch Storm", "Dreamstate", "Adrenaline Rush", "Shadow Dance",
-  "Cyber Drift", "Phonk Fury", "Ethereal Flow", "Raw Energy",
-  "Time Warp", "Silent Rage", "Crystal Vision", "Urban Decay",
-  "Hypnotic Loop", "Electric Soul", "Frozen Flame", "Void Walker",
+  "Sad Edit", "Hype Edit", "Dark Edit", "Chill Edit",
+  "Anime Edit", "Horror Edit", "Love Edit", "Action Edit",
+  "Revenge Edit", "Villain Edit", "Heartbreak Edit", "Rage Edit",
+  "Nostalgia Edit", "Motivational Edit", "Psycho Edit", "Betrayal Edit",
+  "Flex Edit", "Emotional Edit", "Peaceful Edit", "Chaotic Edit",
 ];
 
 export function getRandomTheme(): string {
