@@ -102,40 +102,46 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
       <motion.button
         onClick={isSearching ? undefined : handleClick}
         disabled={isSearching}
-        whileTap={{ scale: 0.95 }}
+        whileTap={{ scale: 0.96 }}
         className="relative overflow-hidden group touch-manipulation select-none"
       >
+        {/* Fortnite-style skewed accent stripe */}
+        <div className="absolute -left-3 top-0 bottom-0 w-3 bg-yellow-300 skew-x-[-8deg] z-10" />
+        <div className="absolute -right-3 top-0 bottom-0 w-3 bg-yellow-300 skew-x-[-8deg] z-10" />
+
         <motion.div
-          animate={{
-            boxShadow: isSearching
-              ? ['0 0 20px rgba(239,68,68,0.3)', '0 0 40px rgba(239,68,68,0.5)', '0 0 20px rgba(239,68,68,0.3)']
-              : ['0 0 15px rgba(239,68,68,0.2)', '0 0 30px rgba(239,68,68,0.4)', '0 0 15px rgba(239,68,68,0.2)']
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className={`${isSmall ? 'px-4 py-3' : 'px-6 py-3.5'} bg-gradient-to-r from-red-600 via-red-500 to-red-600 flex items-center justify-center gap-2 rounded-lg active:opacity-90`}
+          animate={isSearching ? {
+            boxShadow: ['0 0 20px rgba(250,204,21,0.3)', '0 0 40px rgba(250,204,21,0.6)', '0 0 20px rgba(250,204,21,0.3)']
+          } : {}}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className={`${isSmall ? 'px-4 py-3' : 'px-6 py-4'} ${
+            isSearching 
+              ? 'bg-gradient-to-r from-sky-500 via-sky-400 to-sky-500' 
+              : 'bg-gradient-to-b from-yellow-300 via-yellow-400 to-yellow-500 hover:from-yellow-200 hover:via-yellow-300 hover:to-yellow-400'
+          } flex items-center justify-center gap-2.5 active:brightness-90 transition-all`}
         >
           {isSearching ? (
             <>
               <Loader2 className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white animate-spin`} />
-              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider`}>
+              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-white uppercase tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.3)]`}>
                 Searching...
               </span>
-              <span className={`flex items-center gap-1 ${isSmall ? 'text-[10px]' : 'text-xs'} text-white/70 font-mono`}>
+              <span className={`flex items-center gap-1 ${isSmall ? 'text-[10px]' : 'text-xs'} text-white/80 font-mono`}>
                 <Clock className="w-3 h-3" />
                 {formatElapsed(elapsed)}
               </span>
             </>
           ) : activeFight ? (
             <>
-              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white`} />
-              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider`}>
+              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-black`} />
+              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-black uppercase tracking-wider drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]`}>
                 Return to Fight
               </span>
             </>
           ) : (
             <>
-              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-5 h-5'} text-white`} />
-              <span className={`font-display ${isSmall ? 'text-sm' : 'text-lg'} text-white uppercase tracking-wider`}>
+              <Swords className={`${isSmall ? 'w-4 h-4' : 'w-6 h-6'} text-black`} />
+              <span className={`font-display ${isSmall ? 'text-base' : 'text-xl'} text-black uppercase tracking-wider drop-shadow-[0_1px_0_rgba(255,255,255,0.3)]`}>
                 Quick Edit Battle
               </span>
             </>
@@ -149,7 +155,7 @@ export default function QuickFightButton({ size = 'lg', className = '' }: QuickF
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           onClick={handleCancel}
-          className={`flex items-center justify-center gap-1.5 ${isSmall ? 'px-3 py-2 text-xs' : 'px-5 py-2.5 text-sm'} rounded-lg border border-destructive/40 bg-destructive/10 text-destructive font-display uppercase tracking-wider hover:bg-destructive/20 active:bg-destructive/25 transition-colors touch-manipulation select-none`}
+          className={`flex items-center justify-center gap-1.5 ${isSmall ? 'px-3 py-2 text-xs' : 'px-5 py-2.5 text-sm'} border-2 border-red-500/60 bg-red-500/15 text-red-400 font-display uppercase tracking-wider hover:bg-red-500/25 active:bg-red-500/30 transition-colors touch-manipulation select-none`}
         >
           <X className="w-4 h-4" />
           Cancel Search
