@@ -14,7 +14,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
-import LandingAppMockup from '@/components/loopgate/LandingAppMockup';
+import loopgatePreviewDevices from '@/assets/loopgate-preview-devices.png';
 
 
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
@@ -103,44 +103,13 @@ export default function LandingPage() {
 
           {/* ──── REAL LOOPGATE UI PREVIEW ──── */}
           <div className="relative z-10 flex-1 flex items-end justify-center px-4 sm:px-8 pb-16">
-            <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-gold/[0.04] via-transparent to-transparent pointer-events-none" />
-
             <motion.div
-              className="relative w-full max-w-6xl"
+              className="relative w-full max-w-4xl mx-auto"
               initial={{ opacity: 0, y: 40, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="border border-border/40 bg-surface-0/70 shadow-2xl shadow-black/60 overflow-hidden">
-                <div className="h-10 bg-surface-1/80 border-b border-border/30 px-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-gold/80" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
-                  </div>
-                  <div className="text-[11px] sm:text-xs text-muted-foreground font-medium tracking-[0.08em]">
-                    loopgate.io live preview
-                  </div>
-                  <div className="w-12" />
-                </div>
-
-                <LandingAppMockup />
-              </div>
-
-              {/* Mobile mini preview */}
-              <motion.div
-                className="absolute -right-2 sm:right-5 -bottom-8 sm:-bottom-6 w-[120px] sm:w-[170px] md:w-[190px] border border-border/50 bg-surface-0 shadow-2xl shadow-black/50 overflow-hidden"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.85 }}
-              >
-                <div className="h-5 bg-surface-1 border-b border-border/30 flex items-center justify-center">
-                  <div className="w-14 h-1.5 bg-surface-2/80 rounded-full" />
-                </div>
-                <div className="w-full aspect-[9/19] overflow-hidden">
-                  <LandingAppMockup />
-                </div>
-              </motion.div>
+              <img src={loopgatePreviewDevices} alt="Loopgate on mobile and desktop" className="w-full h-auto" />
             </motion.div>
           </div>
 
