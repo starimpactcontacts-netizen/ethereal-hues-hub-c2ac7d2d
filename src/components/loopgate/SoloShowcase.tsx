@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
-  Sparkles, Trophy, Zap, Music, Eye, Clock, 
+  UserRound, Trophy, Zap, Music, Eye, Clock, 
   ChevronRight, Flame, Play, User
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,7 +29,7 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
           <img src={solo.thumbnail_url} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-1.5">
-            <Sparkles className="w-5 h-5 text-gold/40" />
+            <UserRound className="w-5 h-5 text-gold/40" />
             <span className="text-[10px] font-bold text-gold/50 uppercase tracking-widest">
               {solo.theme}
             </span>
@@ -139,7 +139,7 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
       {/* Section header */}
       <div className="flex items-center justify-between px-4 mb-1">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-gold" />
+          <UserRound className="w-4 h-4 text-gold" />
           <span className="text-[15px] font-extrabold text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
             Solo Mode
           </span>
@@ -181,21 +181,36 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
       {/* Live activity ticker */}
       <SoloActivityTicker submissions={submissions} />
 
-      {/* Big CTA */}
+      {/* Big CTA — Fortnite x Roblox x Discord */}
       <div className="px-4 mb-3">
         <motion.button
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.01 }}
           onClick={() => profile ? onStartSolo() : navigate('/start')}
-          className="w-full relative overflow-hidden touch-manipulation"
+          className="w-full relative overflow-hidden touch-manipulation group"
         >
-          <div className="relative bg-gradient-to-r from-gold via-amber-500 to-gold hover:from-gold/90 hover:via-amber-500/90 hover:to-gold/90 transition-colors py-5 flex items-center justify-center gap-3">
-            <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.18] to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-amber-900/40 pointer-events-none" />
-            <Sparkles className="w-5 h-5 text-background relative z-10" />
-            <span className="text-[20px] font-black text-background relative z-10 tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-              Start Solo Edit
-            </span>
-            <span className="text-[12px] text-background/50 font-bold relative z-10 ml-1">UP TO 100+ IDX</span>
+          {/* Outer glow */}
+          <div className="absolute -inset-[1px] bg-gradient-to-r from-red-500 via-gold to-red-500 opacity-80 group-hover:opacity-100 transition-opacity" />
+          
+          <div className="relative bg-gradient-to-b from-[hsl(0,0%,12%)] to-[hsl(0,0%,8%)] py-5 flex items-center justify-center gap-3">
+            {/* Top gloss */}
+            <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+            {/* Bottom edge */}
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/60 pointer-events-none" />
+            
+            {/* Icon */}
+            <div className="relative z-10 w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-gold flex items-center justify-center shadow-lg shadow-red-500/30">
+              <UserRound className="w-4.5 h-4.5 text-white" />
+            </div>
+            
+            <div className="relative z-10 flex flex-col items-start">
+              <span className="text-[18px] font-black text-foreground tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                Start Solo Edit
+              </span>
+              <span className="text-[10px] text-gold font-bold -mt-1 tracking-wider uppercase">Earn up to 100+ IDX</span>
+            </div>
+            
+            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all relative z-10 ml-auto mr-2" />
           </div>
         </motion.button>
       </div>
@@ -215,7 +230,7 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
           {submissions.length < 4 && Array.from({ length: Math.max(0, 3 - submissions.length) }).map((_, i) => (
             <div key={`ghost-solo-${i}`} className="shrink-0 w-[220px] h-[180px] border border-dashed border-gold/15 bg-surface-0/40 flex flex-col items-center justify-center gap-2">
               <div className="w-8 h-8 bg-surface-2/60 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-gold/20" />
+                <UserRound className="w-4 h-4 text-gold/20" />
               </div>
               <span className="text-[11px] text-muted-foreground/40 font-medium">Your edit here</span>
             </div>
@@ -225,7 +240,7 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
         <div className="px-4">
           <div className="bg-surface-1 border border-gold/15 border-dashed p-8 text-center">
             <div className="w-14 h-14 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
-              <Sparkles className="w-6 h-6 text-gold/30" />
+              <UserRound className="w-6 h-6 text-gold/30" />
             </div>
             <p className="text-[13px] text-muted-foreground font-medium mb-1">No solo edits yet</p>
             <p className="text-[12px] text-muted-foreground/60 mb-4">Be the first to start a solo edit session</p>
@@ -234,7 +249,7 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
               onClick={() => profile ? onStartSolo() : navigate('/start')}
               className="inline-flex items-center gap-1.5 bg-gold hover:bg-gold/90 text-background text-[12px] font-bold px-5 py-2.5 transition-colors"
             >
-              <Sparkles className="w-3.5 h-3.5" /> Start Solo Mode
+              <UserRound className="w-3.5 h-3.5" /> Start Solo Mode
             </motion.button>
           </div>
         </div>
