@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   Sparkles, Trophy, Zap, Music, Eye, Clock, 
-  ChevronRight, Flame, Play, Star
+  ChevronRight, Flame, Play, User
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRecentSoloSubmissions, type RecentSolo } from "@/hooks/useRecentSoloSubmissions";
@@ -167,7 +167,7 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
           {[
             { val: stats.total, label: 'Total Edits', icon: <Flame className="w-3 h-3" />, color: 'text-gold' },
             { val: stats.submitted, label: 'Awaiting Judge', icon: <Clock className="w-3 h-3" />, color: 'text-sky-400' },
-            { val: stats.scored, label: 'Scored', icon: <Star className="w-3 h-3" />, color: 'text-emerald-400' },
+            { val: stats.scored, label: 'Scored', icon: <User className="w-3 h-3" />, color: 'text-emerald-400' },
           ].map(s => (
             <div key={s.label} className="flex items-center gap-1.5">
               <span className={s.color}>{s.icon}</span>
