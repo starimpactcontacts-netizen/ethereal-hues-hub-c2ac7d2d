@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
 import IOSAppBanner from '@/components/loopgate/iOSAppBanner';
 import GatePattern from '@/components/loopgate/GatePattern';
@@ -13,6 +13,7 @@ import { useGuestMode } from '@/hooks/useGuestMode';
 import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
+import loopgateLiveUiPreview from '@/assets/loopgate-live-ui-preview.png';
 
 
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
@@ -30,8 +31,6 @@ export default function LandingPage() {
   const { setGuest } = useGuestMode();
   const { stats } = useGlobalStats();
   const [bannerVisible, setBannerVisible] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const heroParallax = useTransform(scrollYProgress, [0, 0.3], [0, -80]);
 
   const handleGuestExplore = () => {
     setGuest(true);
@@ -56,16 +55,16 @@ export default function LandingPage() {
           <GlitchEdge side="right" className="absolute right-0 top-0 bottom-0 w-[3px] z-[3]" />
 
           {/* Compact text strip at top */}
-          <div className="relative z-10 pt-10 sm:pt-14 pb-5 sm:pb-6 text-center px-6">
+          <div className="relative z-10 pt-10 sm:pt-14 pb-6 sm:pb-8 text-center px-6">
             <motion.img
               src={loopgateBrand}
               alt="LOOPGATE"
-              className="h-10 sm:h-12 w-auto mx-auto mb-3"
+              className="h-10 sm:h-12 w-auto mx-auto mb-4"
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             />
             <motion.p
-              className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-5"
+              className="text-base sm:text-xl text-foreground/85 max-w-2xl mx-auto mb-6 leading-relaxed"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
             >
@@ -77,384 +76,74 @@ export default function LandingPage() {
               transition={{ delay: 0.3, duration: 0.6 }}
             >
               <Link to="/start">
-                <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-lg px-12 py-5 h-auto gap-3 tracking-wider">
+                <Button size="lg" className="bg-gold hover:bg-gold/90 text-background font-display text-lg px-12 py-5 h-auto gap-3 tracking-[0.08em]">
                   <Play className="w-5 h-5" />
                   Start Editing
                 </Button>
               </Link>
-              <button 
+              <button
                 onClick={handleGuestExplore}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors font-display tracking-wider px-4 py-3"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors font-semibold tracking-[0.06em] px-4 py-3"
               >
                 Explore as Guest →
               </button>
             </motion.div>
-            {/* Live stats */}
             <motion.div
-              className="flex items-center gap-6 mt-4 text-sm text-muted-foreground justify-center"
+              className="flex items-center gap-6 mt-5 text-sm sm:text-base text-muted-foreground justify-center"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              <span className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="text-foreground font-semibold">{stats.activeUsers || 0}</span> editors online
-              </span>
-              <span className="flex items-center gap-2">
-                <Swords className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-foreground font-semibold">{stats.totalCompeting || 0}</span> competing
-              </span>
+              <span className="flex items-center gap-2"><span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" /></span><span className="text-foreground font-bold">{stats.activeUsers || 0}</span> editors online</span>
+              <span className="flex items-center gap-2"><Swords className="w-4 h-4 text-muted-foreground" /><span className="text-foreground font-bold">{stats.totalCompeting || 0}</span> competing</span>
             </motion.div>
           </div>
 
-          {/* ──── MASSIVE CODE-BUILT APP PREVIEW ──── */}
+          {/* ──── REAL LOOPGATE UI PREVIEW ──── */}
           <div className="relative z-10 flex-1 flex items-end justify-center px-4 sm:px-8 pb-16">
             <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-gold/[0.04] via-transparent to-transparent pointer-events-none" />
-            
+
             <motion.div
               className="relative w-full max-w-6xl"
-              initial={{ opacity: 0, y: 60, scale: 0.95 }}
+              initial={{ opacity: 0, y: 40, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* Desktop mockup — sharp corners, AAA fidelity */}
-              <div className="relative overflow-hidden border border-border/40 shadow-2xl shadow-black/60">
-                {/* Browser chrome */}
-                <div className="h-8 sm:h-9 bg-[hsl(var(--surface-1))] border-b border-border/30 flex items-center px-3 sm:px-4 gap-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+              <div className="border border-border/40 bg-surface-0/70 shadow-2xl shadow-black/60 overflow-hidden">
+                <div className="h-10 bg-surface-1/80 border-b border-border/30 px-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-gold/80" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
                   </div>
-                  <div className="flex-1 mx-6 sm:mx-12">
-                    <div className="bg-surface-2/40 border border-border/20 h-4 sm:h-5 flex items-center px-3 gap-1.5 max-w-sm mx-auto">
-                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
-                      <span className="text-[8px] sm:text-[10px] text-muted-foreground font-medium">loopgate.io</span>
-                    </div>
+                  <div className="text-[11px] sm:text-xs text-muted-foreground font-medium tracking-[0.08em]">
+                    loopgate.io live preview
                   </div>
+                  <div className="w-12" />
                 </div>
 
-                {/* ── App Layout ── */}
-                <div className="flex min-h-[400px] sm:min-h-[520px] bg-background">
-                  {/* Sidebar — icon-only nav */}
-                  <div className="w-12 sm:w-[52px] bg-surface-0 border-r border-border/30 flex flex-col items-center py-3 sm:py-4 gap-1.5 sm:gap-2 flex-shrink-0">
-                    <img src={loopgateLogo} alt="" className="w-6 h-6 sm:w-7 sm:h-7 opacity-90 mb-1" />
-                    <div className="w-6 sm:w-7 h-px bg-border/20" />
-                    {[
-                      { icon: '🏠', active: true, label: 'Hub' },
-                      { icon: '⚔️', active: false, label: 'Arena' },
-                      { icon: '🏆', active: false, label: 'Ranks' },
-                      { icon: '🛡', active: false, label: 'Units' },
-                      { icon: '📰', active: false, label: 'Feed' },
-                      { icon: '⚙️', active: false, label: 'Settings' },
-                    ].map((item, i) => (
-                      <div key={i} className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-[10px] sm:text-xs cursor-default transition-colors ${item.active ? 'bg-gold/15 border border-gold/25' : 'opacity-50 hover:opacity-80'}`}>
-                        {item.icon}
-                      </div>
-                    ))}
-                    <div className="flex-1" />
-                    {/* User avatar */}
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-red-500/40 to-red-900/40 border border-red-500/30 flex items-center justify-center">
-                      <span className="text-[8px] sm:text-[10px] font-bold text-red-400">Y</span>
-                    </div>
-                  </div>
-
-                  {/* Main content area */}
-                  <div className="flex-1 overflow-hidden">
-                    {/* App header */}
-                    <div className="h-10 sm:h-12 border-b border-border/30 bg-surface-0/40 flex items-center justify-between px-4 sm:px-6">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] sm:text-sm font-bold text-foreground uppercase tracking-[0.15em]">Hub</span>
-                        <div className="w-px h-4 bg-border/20" />
-                        <span className="text-[8px] sm:text-xs text-muted-foreground hidden sm:inline">Welcome back, <span className="text-foreground font-semibold">YXUNG</span></span>
-                      </div>
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="flex items-center gap-1.5 bg-surface-1/80 border border-border/20 px-2 sm:px-2.5 py-0.5 sm:py-1">
-                          <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
-                          <span className="text-[7px] sm:text-[10px] text-emerald-400 font-bold tabular-nums">247 online</span>
-                        </div>
-                        <div className="w-6 h-6 sm:w-7 sm:h-7 bg-surface-1 border border-border/20 flex items-center justify-center relative">
-                          <span className="text-[9px] sm:text-xs">🔔</span>
-                          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
-                        </div>
-                        <div className="w-6 h-6 sm:w-7 sm:h-7 bg-surface-1 border border-border/20 flex items-center justify-center">
-                          <span className="text-[9px] sm:text-xs">✉️</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
-
-                      {/* ── Featured Battle — hero card ── */}
-                      <div className="border border-red-500/20 bg-gradient-to-r from-red-500/[0.05] via-transparent to-transparent overflow-hidden">
-                        <div className="h-[2px] bg-gradient-to-r from-red-500 via-red-400/60 to-transparent" />
-                        <div className="p-3 sm:p-5">
-                          <div className="flex items-center justify-between mb-3 sm:mb-4">
-                            <div className="flex items-center gap-2">
-                              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" /></span>
-                              <span className="text-[8px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-red-400">Featured Battle</span>
-                              <span className="text-[7px] sm:text-[9px] bg-red-500/10 text-red-400 px-1.5 py-0.5 font-bold hidden sm:inline">RAPID</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <Eye className="w-3 h-3 text-muted-foreground" />
-                              <span className="text-[7px] sm:text-[10px] text-muted-foreground tabular-nums">342 watching</span>
-                            </div>
-                          </div>
-
-                          {/* Competitors with edit thumbnails */}
-                          <div className="flex items-center gap-3 sm:gap-6">
-                            {/* Player 1 with edit preview */}
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2.5 sm:gap-3 mb-2">
-                                <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-red-500/25 to-red-900/25 border border-red-500/30 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-xs sm:text-sm font-display text-red-400">K</span>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] sm:text-sm font-bold text-foreground tracking-wide">KXZEN</p>
-                                  <p className="text-[6px] sm:text-[9px] text-muted-foreground">After Effects · S+ Class</p>
-                                </div>
-                              </div>
-                              {/* Edit thumbnail mockup */}
-                              <div className="relative border border-border/20 bg-surface-2/50 aspect-video overflow-hidden group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-cyan-500/5" />
-                                <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-8 bg-surface-0/90 border-t border-border/20 flex items-center px-2 gap-1">
-                                  <Play className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-muted-foreground" />
-                                  <div className="flex-1 flex items-center gap-[1px]">
-                                    {Array.from({length: 24}).map((_, i) => (
-                                      <div key={i} className="flex-1 h-[3px] sm:h-1 bg-red-400/40" style={{ height: `${Math.random() * 6 + 2}px` }} />
-                                    ))}
-                                  </div>
-                                  <span className="text-[5px] sm:text-[7px] text-muted-foreground tabular-nums">0:42</span>
-                                </div>
-                                <div className="absolute top-1.5 left-1.5 bg-surface-0/80 border border-border/20 px-1.5 py-0.5">
-                                  <span className="text-[5px] sm:text-[7px] font-bold text-foreground">"DARK LIGHT" — AMV Edit</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* VS */}
-                            <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                              <span className="font-display text-lg sm:text-2xl text-red-400/70">VS</span>
-                              <div className="bg-surface-1 border border-border/20 px-2 py-0.5">
-                                <span className="text-[6px] sm:text-[8px] text-muted-foreground font-bold tabular-nums">18H LEFT</span>
-                              </div>
-                            </div>
-
-                            {/* Player 2 with edit preview */}
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2.5 sm:gap-3 mb-2 justify-end">
-                                <div className="text-right">
-                                  <p className="text-[10px] sm:text-sm font-bold text-foreground tracking-wide">RXSE</p>
-                                  <p className="text-[6px] sm:text-[9px] text-muted-foreground">Premiere Pro · S Class</p>
-                                </div>
-                                <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-cyan-500/25 to-cyan-900/25 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-xs sm:text-sm font-display text-cyan-400">R</span>
-                                </div>
-                              </div>
-                              {/* Edit thumbnail mockup */}
-                              <div className="relative border border-border/20 bg-surface-2/50 aspect-video overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-purple-500/5" />
-                                <div className="absolute bottom-0 left-0 right-0 h-6 sm:h-8 bg-surface-0/90 border-t border-border/20 flex items-center px-2 gap-1">
-                                  <Play className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-muted-foreground" />
-                                  <div className="flex-1 flex items-center gap-[1px]">
-                                    {Array.from({length: 24}).map((_, i) => (
-                                      <div key={i} className="flex-1 h-[3px] sm:h-1 bg-cyan-400/40" style={{ height: `${Math.random() * 6 + 2}px` }} />
-                                    ))}
-                                  </div>
-                                  <span className="text-[5px] sm:text-[7px] text-muted-foreground tabular-nums">0:38</span>
-                                </div>
-                                <div className="absolute top-1.5 left-1.5 bg-surface-0/80 border border-border/20 px-1.5 py-0.5">
-                                  <span className="text-[5px] sm:text-[7px] font-bold text-foreground">"VENDETTA" — Anime Edit</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Judge bar */}
-                          <div className="mt-3 sm:mt-4 flex items-center gap-2 bg-surface-0/80 border border-border/20 px-3 py-1.5 sm:py-2">
-                            <Gavel className="w-3 h-3 text-gold" />
-                            <span className="text-[7px] sm:text-[10px] text-muted-foreground">Judge: <span className="text-gold font-semibold">MVRKO</span></span>
-                            <span className="w-px h-3 bg-border/20 mx-1" />
-                            <span className="text-[7px] sm:text-[10px] text-muted-foreground">Scoring in progress</span>
-                            <span className="flex-1" />
-                            <span className="text-[6px] sm:text-[9px] text-muted-foreground/50 hidden sm:inline">🎵 Night Lovell — Dark Light</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* ── Two-col: Rankings + Live Activity ── */}
-                      <div className="grid grid-cols-5 gap-2 sm:gap-3">
-                        {/* Global Index — 3 cols */}
-                        <div className="col-span-3 border border-border/25 bg-surface-0/40">
-                          <div className="px-3 sm:px-4 py-2 border-b border-border/15 flex items-center justify-between">
-                            <span className="text-[8px] sm:text-[11px] font-bold uppercase tracking-[0.15em] text-foreground">Global Index</span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500" /></span>
-                              <span className="text-[7px] sm:text-[9px] text-red-400 font-bold">Live</span>
-                            </div>
-                          </div>
-                          {/* Table header */}
-                          <div className="flex items-center gap-1 px-3 sm:px-4 py-1 border-b border-border/10 text-[6px] sm:text-[8px] text-muted-foreground/60 uppercase tracking-wider">
-                            <span className="w-5">#</span>
-                            <span className="flex-1">Editor</span>
-                            <span className="w-8 text-right">Class</span>
-                            <span className="w-10 text-right hidden sm:block">Index</span>
-                            <span className="w-7 text-right">Δ</span>
-                          </div>
-                          <div className="divide-y divide-border/10">
-                            {[
-                              { r: 1, n: 'PRXSTIGE', c: 'S++', idx: '2,847', ch: '+12', software: 'AE' },
-                              { r: 2, n: 'KXZEN', c: 'S+', idx: '2,691', ch: '+8', software: 'PR' },
-                              { r: 3, n: 'AETHRVL', c: 'S', idx: '2,534', ch: '-3', software: 'AE' },
-                              { r: 4, n: 'RXSE', c: 'S', idx: '2,488', ch: '+15', software: 'CP' },
-                              { r: 5, n: 'DVRK', c: 'A', idx: '2,301', ch: '+4', software: 'AE' },
-                            ].map(row => (
-                              <div key={row.r} className={`flex items-center gap-1 px-3 sm:px-4 py-1.5 sm:py-2 ${row.r === 1 ? 'bg-gold/[0.03]' : ''}`}>
-                                <span className={`text-[8px] sm:text-[10px] font-bold w-5 tabular-nums ${row.r === 1 ? 'text-gold' : row.r <= 3 ? 'text-foreground' : 'text-muted-foreground'}`}>#{row.r}</span>
-                                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-surface-2 border border-border/15 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-[6px] sm:text-[8px] font-bold text-foreground">{row.n[0]}</span>
-                                </div>
-                                <div className="flex-1 min-w-0 flex items-center gap-1.5">
-                                  <p className={`text-[8px] sm:text-[11px] font-bold truncate ${row.r === 1 ? 'text-gold' : 'text-foreground'}`}>{row.n}</p>
-                                  <span className="text-[5px] sm:text-[7px] text-muted-foreground/40 hidden sm:inline">{row.software}</span>
-                                </div>
-                                <span className="text-[7px] sm:text-[9px] text-gold font-bold w-8 text-right">{row.c}</span>
-                                <span className="text-[7px] sm:text-[9px] text-muted-foreground w-10 text-right tabular-nums hidden sm:block">{row.idx}</span>
-                                <span className={`text-[7px] sm:text-[9px] font-bold w-7 text-right tabular-nums ${row.ch.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>{row.ch}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Live Activity — 2 cols */}
-                        <div className="col-span-2 border border-border/25 bg-surface-0/40">
-                          <div className="px-3 py-2 border-b border-border/15 flex items-center gap-2">
-                            <span className="text-[8px] sm:text-[11px] font-bold uppercase tracking-[0.15em] text-foreground">Live Activity</span>
-                          </div>
-                          <div className="p-2 sm:p-3 space-y-2 sm:space-y-2.5">
-                            {[
-                              { user: 'NVDIA', action: 'submitted edit "AFTERLIFE"', time: '2m', color: 'text-emerald-400', icon: '🎬' },
-                              { user: 'ZEPH', action: 'edit scored 87 QOI', time: '5m', color: 'text-cyan-400', icon: '⭐' },
-                              { user: 'PRXSTIGE', action: 'won 1v1 vs FLUX', time: '12m', color: 'text-gold', icon: '🏆' },
-                              { user: 'KXZEN', action: 'new edit "VENDETTA"', time: '18m', color: 'text-red-400', icon: '🎞️' },
-                              { user: 'MVRKO', action: 'judged 3 edits', time: '24m', color: 'text-purple-400', icon: '📝' },
-                            ].map((a, i) => (
-                              <div key={i} className="flex items-start gap-1.5 sm:gap-2">
-                                <div className="w-4 h-4 sm:w-5 sm:h-5 bg-surface-2 border border-border/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                  <span className="text-[6px] sm:text-[8px]">{a.icon}</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[7px] sm:text-[9px] leading-snug"><span className={`font-bold ${a.color}`}>{a.user}</span> <span className="text-muted-foreground">{a.action}</span></p>
-                                </div>
-                                <span className="text-[6px] sm:text-[8px] text-muted-foreground/40 flex-shrink-0 tabular-nums">{a.time}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* ── QOI Score — inline card ── */}
-                      <div className="border border-gold/15 bg-gradient-to-r from-gold/[0.03] via-transparent to-transparent">
-                        <div className="h-[2px] bg-gradient-to-r from-gold via-gold/40 to-transparent" />
-                        <div className="p-2.5 sm:p-4 flex items-center gap-3 sm:gap-4">
-                          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-gold/30 bg-gold/[0.06] flex items-center justify-center flex-shrink-0">
-                            <span className="font-display text-base sm:text-xl text-gold">84</span>
-                          </div>
-                          <div className="flex-1 space-y-0.5 sm:space-y-1">
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="text-[7px] sm:text-[10px] font-bold text-gold uppercase tracking-[0.15em]">Your QOI Score</span>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[6px] sm:text-[9px] text-gold font-bold">A CLASS</span>
-                                <span className="text-[5px] sm:text-[8px] text-muted-foreground/40">Top 15%</span>
-                              </div>
-                            </div>
-                            {[
-                              { l: 'Emotion', v: 88, c: 'bg-emerald-500' },
-                              { l: 'Creativity', v: 82, c: 'bg-cyan-500' },
-                              { l: 'Sync', v: 90, c: 'bg-red-500' },
-                              { l: 'Identity', v: 79, c: 'bg-purple-500' },
-                              { l: 'Execution', v: 81, c: 'bg-gold' },
-                            ].map(p => (
-                              <div key={p.l} className="flex items-center gap-1.5 sm:gap-2">
-                                <span className="text-[6px] sm:text-[8px] text-muted-foreground w-12 sm:w-16 text-right">{p.l}</span>
-                                <div className="flex-1 h-[2px] sm:h-[3px] bg-surface-2 overflow-hidden"><div className={`h-full ${p.c}`} style={{ width: `${p.v}%` }} /></div>
-                                <span className="text-[6px] sm:text-[8px] font-bold text-foreground w-4 sm:w-5 text-right tabular-nums">{p.v}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom nav */}
-                <div className="h-8 sm:h-10 bg-surface-0 border-t border-border/25 flex items-center justify-around px-6">
-                  {['Hub', 'Arena', 'Feed', 'Rankings', 'Profile'].map((t, i) => (
-                    <span key={t} className={`text-[7px] sm:text-[9px] font-bold uppercase tracking-[0.12em] ${i === 0 ? 'text-gold' : 'text-muted-foreground/40'}`}>{t}</span>
-                  ))}
-                </div>
+                <img
+                  src={loopgateLiveUiPreview}
+                  alt="Real Loopgate interface preview showing the in-app competitive lobby"
+                  className="w-full h-auto object-cover object-top"
+                  loading="eager"
+                />
               </div>
 
-              {/* Floating phone mockup */}
               <motion.div
-                className="absolute -right-2 sm:right-4 -bottom-6 sm:-bottom-2 w-[100px] sm:w-[160px] md:w-[180px]"
-                initial={{ opacity: 0, y: 40 }}
+                className="absolute -right-2 sm:right-5 -bottom-8 sm:-bottom-6 w-[120px] sm:w-[170px] md:w-[190px] border border-border/50 bg-surface-0 shadow-2xl shadow-black/50 overflow-hidden"
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.9 }}
+                transition={{ duration: 0.7, delay: 0.85 }}
               >
-                <div className="border border-border/50 bg-background shadow-xl shadow-black/40 overflow-hidden" style={{ borderRadius: '14px' }}>
-                  <div className="h-4 sm:h-5 bg-surface-0 border-b border-border/20 flex items-center justify-center">
-                    <div className="w-10 sm:w-14 h-1.5 sm:h-2 bg-surface-2/60" style={{ borderRadius: '4px' }} />
-                  </div>
-                  <div className="p-2 sm:p-2.5 space-y-1.5 sm:space-y-2 min-h-[160px] sm:min-h-[220px]">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[7px] sm:text-[9px] font-bold text-foreground uppercase tracking-widest">Arena</span>
-                      <span className="text-[5px] sm:text-[7px] text-red-400 font-bold bg-red-500/10 px-1 py-0.5">3 LIVE</span>
-                    </div>
-                    {[
-                      { p1: 'NVDIA', p2: 'FLUX', status: 'Judging', statusColor: 'text-gold' },
-                      { p1: 'ZEPH', p2: 'PRXS', status: 'Live', statusColor: 'text-red-400' },
-                    ].map((b, i) => (
-                      <div key={i} className="border border-border/30 bg-surface-0 p-1.5 sm:p-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 bg-red-500/15 border border-red-500/20 flex items-center justify-center"><span className="text-[5px] sm:text-[6px] font-bold text-red-400">{b.p1[0]}</span></div>
-                            <span className="text-[6px] sm:text-[8px] font-bold text-foreground">{b.p1}</span>
-                          </div>
-                          <span className="text-[6px] sm:text-[7px] text-muted-foreground/60">vs</span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-[6px] sm:text-[8px] font-bold text-foreground">{b.p2}</span>
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center"><span className="text-[5px] sm:text-[6px] font-bold text-cyan-400">{b.p2[0]}</span></div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-center gap-1">
-                          {b.status === 'Live' && <span className="relative flex h-1 w-1"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" /><span className="relative inline-flex rounded-full h-1 w-1 bg-red-500" /></span>}
-                          <span className={`text-[5px] sm:text-[7px] font-bold uppercase tracking-wider ${b.statusColor}`}>{b.status}</span>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="border border-gold/15 bg-gold/[0.03] p-1.5 sm:p-2">
-                      <span className="text-[6px] sm:text-[8px] text-gold font-bold block mb-0.5">Your Stats</span>
-                      <div className="grid grid-cols-3 gap-1">
-                        {[{ l: 'W/L', v: '12/3' }, { l: 'Rank', v: '#47' }, { l: 'Class', v: 'A' }].map(s => (
-                          <div key={s.l} className="text-center">
-                            <p className="text-[8px] sm:text-[10px] font-bold text-foreground">{s.v}</p>
-                            <p className="text-[4px] sm:text-[6px] text-muted-foreground uppercase">{s.l}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="h-5 sm:h-6 bg-surface-0 border-t border-border/20 flex items-center justify-around px-2 sm:px-3">
-                    {['🏠', '⚔️', '📊', '👤'].map((e, i) => (
-                      <span key={i} className={`text-[8px] sm:text-[10px] ${i === 1 ? 'opacity-100' : 'opacity-40'}`}>{e}</span>
-                    ))}
-                  </div>
+                <div className="h-5 bg-surface-1 border-b border-border/30 flex items-center justify-center">
+                  <div className="w-14 h-1.5 bg-surface-2/80 rounded-full" />
                 </div>
+                <img
+                  src={loopgateLiveUiPreview}
+                  alt="Loopgate mobile in-app view"
+                  className="w-full aspect-[9/19] object-cover object-top"
+                  loading="lazy"
+                />
               </motion.div>
             </motion.div>
           </div>
