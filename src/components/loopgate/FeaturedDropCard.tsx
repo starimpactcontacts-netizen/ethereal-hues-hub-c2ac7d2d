@@ -73,9 +73,9 @@ export default function FeaturedDropCard({ drop }: Props) {
 
           {/* Status */}
           {isLive && (
-            <div className="absolute top-1.5 right-1.5 flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5">
-              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[7px] font-bold text-emerald-400 uppercase">Live</span>
+            <div className="absolute top-1.5 right-1.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5 border border-emerald-500/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+              <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
             </div>
           )}
 
