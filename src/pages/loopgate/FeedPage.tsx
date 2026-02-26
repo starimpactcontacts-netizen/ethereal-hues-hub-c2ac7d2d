@@ -1,18 +1,21 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Play, Loader2, Search, TrendingUp, Shield, Clapperboard, X } from "lucide-react";
+import { Play, Loader2, Search, TrendingUp, Shield, Clapperboard, X, PenSquare } from "lucide-react";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import LoopFeedCard, { type LoopFeedItem } from "@/components/loopgate/LoopFeedCard";
 import FeedVideoPlayer from "@/components/loopgate/FeedVideoPlayer";
+import FeedPostComposer from "@/components/loopgate/FeedPostComposer";
+import FeedPostCard from "@/components/loopgate/FeedPostCard";
+import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 
 const BATCH_SIZE = 20;
 
-type FeedTab = 'foryou' | 'connections';
+type FeedTab = 'foryou' | 'connections' | 'posts';
 
 export default function FeedPage() {
   const navigate = useNavigate();
@@ -32,6 +35,18 @@ export default function FeedPage() {
   const [connectionIds, setConnectionIds] = useState<string[]>([]);
   const [trendingEditors, setTrendingEditors] = useState<Array<{ id: string; username: string; avatar_url: string | null; is_verified: boolean }>>([]);
   const [trendingUnits, setTrendingUnits] = useState<Array<{ id: string; name: string; avatar_url: string | null; emblem: string }>>([]);
+  const [userProfile, setUserProfile] = useState<{ username: string; avatar_url: string | null; league?: string; level?: number } | null>(null);
+
+  // Feed posts hook
+  const { posts: feedPosts, likedPostIds, bookmarkedPostIds, createPost, toggleLike, toggleBookmark, deletePost, loading: postsLoading } = useFeedPosts();
+
+  // Fetch user profile for composer
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('username, avatar_url, league, level').eq('id', user.id).single().then(({ data }) => {
+      if (data) setUserProfile(data);
+    });
+  }, [user]);
 
   // Fetch connections for the connections tab
   useEffect(() => {
@@ -352,7 +367,33 @@ export default function FeedPage() {
     return true;
   });
 
-  if (loading) {
+  // For "For You" tab, interleave text posts with activity items
+  const interleavedFeed = activeTab === 'foryou' ? (() => {
+    const combined: Array<{ kind: 'activity'; item: LoopFeedItem } | { kind: 'post'; item: FeedPostItem }> = [];
+    
+    // Merge by created_at
+    let ai = 0, pi = 0;
+    const activityItems = filteredItems;
+    const postItems = feedPosts;
+    
+    while (ai < activityItems.length || pi < postItems.length) {
+      const aTime = ai < activityItems.length ? new Date(activityItems[ai].created_at).getTime() : -Infinity;
+      const pTime = pi < postItems.length ? new Date(postItems[pi].created_at).getTime() : -Infinity;
+      
+      if (pTime >= aTime && pi < postItems.length) {
+        combined.push({ kind: 'post', item: postItems[pi] });
+        pi++;
+      } else if (ai < activityItems.length) {
+        combined.push({ kind: 'activity', item: activityItems[ai] });
+        ai++;
+      } else {
+        break;
+      }
+    }
+    return combined;
+  })() : null;
+
+  if (loading && postsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center pb-14">
         <div className="flex flex-col items-center gap-3">
@@ -406,9 +447,9 @@ export default function FeedPage() {
             )}
           </AnimatePresence>
 
-          {/* Tabs — bold X-style */}
+          {/* Tabs */}
           <div className="flex border-b border-border/40">
-            {(['foryou', 'connections'] as FeedTab[]).map(tab => (
+            {(['foryou', 'posts', 'connections'] as FeedTab[]).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -416,7 +457,7 @@ export default function FeedPage() {
                   activeTab === tab ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/60 hover:bg-muted/10'
                 }`}
               >
-                {tab === 'foryou' ? 'For You' : 'Connections'}
+                {tab === 'foryou' ? 'For You' : tab === 'posts' ? 'Posts' : 'Connections'}
                 {activeTab === tab && (
                   <motion.div
                     layoutId="feedTabIndicator"
@@ -430,7 +471,7 @@ export default function FeedPage() {
       </div>
 
       {/* ─── Trending Strip (Stories-style) ─── */}
-      {(trendingEditors.length > 0 || trendingUnits.length > 0) && (
+      {activeTab !== 'posts' && (trendingEditors.length > 0 || trendingUnits.length > 0) && (
         <div className="max-w-2xl mx-auto border-b border-border/30">
           <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-3 py-2.5">
             {/* Units first */}
@@ -487,38 +528,103 @@ export default function FeedPage() {
         </div>
       )}
 
+      {/* ─── Post Composer ─── */}
+      <div className="max-w-2xl mx-auto">
+        {user && (activeTab === 'foryou' || activeTab === 'posts') && (
+          <FeedPostComposer
+            userProfile={userProfile}
+            onPost={createPost}
+          />
+        )}
+      </div>
+
       {/* ─── Feed ─── */}
       <div className="max-w-2xl mx-auto">
-        {filteredItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 px-6">
-            <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
-              <Play className="w-6 h-6 text-muted-foreground/40" />
+        {activeTab === 'posts' ? (
+          // Posts-only tab
+          feedPosts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6">
+              <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
+                <PenSquare className="w-6 h-6 text-muted-foreground/40" />
+              </div>
+              <p className="text-sm font-semibold text-foreground/60 mb-1">No posts yet</p>
+              <p className="text-xs text-muted-foreground text-center max-w-[240px]">
+                Be the first to post — share a flex, an edit, or just say what's on your mind.
+              </p>
             </div>
-            <p className="text-sm font-semibold text-foreground/60 mb-1">
-              {activeTab === 'connections'
-                ? "Nothing from connections yet"
-                : searchQuery
-                  ? "No results"
-                  : "The Loop is quiet"}
-            </p>
-            <p className="text-xs text-muted-foreground text-center max-w-[240px]">
-              {activeTab === 'connections'
-                ? "Connect with editors to see their edits here"
-                : searchQuery
-                  ? "Try a different search"
-                  : "Submit an edit to the Arena to get things moving"}
-            </p>
-          </div>
+          ) : (
+            feedPosts.map(post => (
+              <FeedPostCard
+                key={post.id}
+                post={post}
+                isLiked={likedPostIds.has(post.id)}
+                isBookmarked={bookmarkedPostIds.has(post.id)}
+                onLike={toggleLike}
+                onBookmark={toggleBookmark}
+                onDelete={deletePost}
+              />
+            ))
+          )
+        ) : activeTab === 'foryou' && interleavedFeed ? (
+          // Interleaved For You tab
+          interleavedFeed.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6">
+              <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
+                <Play className="w-6 h-6 text-muted-foreground/40" />
+              </div>
+              <p className="text-sm font-semibold text-foreground/60 mb-1">The Loop is quiet</p>
+              <p className="text-xs text-muted-foreground text-center max-w-[240px]">
+                Post something or submit an edit to get things moving
+              </p>
+            </div>
+          ) : (
+            interleavedFeed.map(entry => (
+              entry.kind === 'post' ? (
+                <FeedPostCard
+                  key={`post-${entry.item.id}`}
+                  post={entry.item}
+                  isLiked={likedPostIds.has(entry.item.id)}
+                  isBookmarked={bookmarkedPostIds.has(entry.item.id)}
+                  onLike={toggleLike}
+                  onBookmark={toggleBookmark}
+                  onDelete={deletePost}
+                />
+              ) : (
+                <LoopFeedCard
+                  key={entry.item.id}
+                  item={entry.item}
+                  isExpanded={expandedId === entry.item.id}
+                  onToggleExpand={() => setExpandedId(prev => prev === entry.item.id ? null : entry.item.id)}
+                  onOpenPlayer={() => setPlayerItem(entry.item)}
+                />
+              )
+            ))
+          )
         ) : (
-          filteredItems.map(item => (
-            <LoopFeedCard
-              key={item.id}
-              item={item}
-              isExpanded={expandedId === item.id}
-              onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)}
-              onOpenPlayer={() => setPlayerItem(item)}
-            />
-          ))
+          // Connections tab
+          filteredItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6">
+              <div className="w-14 h-14 rounded-full bg-muted/30 flex items-center justify-center mb-3">
+                <Play className="w-6 h-6 text-muted-foreground/40" />
+              </div>
+              <p className="text-sm font-semibold text-foreground/60 mb-1">
+                {searchQuery ? "No results" : "Nothing from connections yet"}
+              </p>
+              <p className="text-xs text-muted-foreground text-center max-w-[240px]">
+                {searchQuery ? "Try a different search" : "Connect with editors to see their edits here"}
+              </p>
+            </div>
+          ) : (
+            filteredItems.map(item => (
+              <LoopFeedCard
+                key={item.id}
+                item={item}
+                isExpanded={expandedId === item.id}
+                onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)}
+                onOpenPlayer={() => setPlayerItem(item)}
+              />
+            ))
+          )
         )}
 
         {loadingMore && (
@@ -527,7 +633,7 @@ export default function FeedPage() {
           </div>
         )}
 
-        {!hasMore && filteredItems.length > 0 && (
+        {!hasMore && filteredItems.length > 0 && activeTab !== 'posts' && (
           <p className="text-center text-xs text-muted-foreground py-6">You've reached the end 🔥</p>
         )}
       </div>

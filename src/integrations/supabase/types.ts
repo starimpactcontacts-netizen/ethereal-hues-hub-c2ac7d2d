@@ -2296,6 +2296,115 @@ export type Database = {
           },
         ]
       }
+      feed_post_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_post_bookmarks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_posts: {
+        Row: {
+          bookmark_count: number
+          comment_count: number
+          content: string
+          created_at: string
+          data: Json | null
+          id: string
+          is_system: boolean
+          like_count: number
+          media_platform: string | null
+          media_url: string | null
+          post_type: string
+          share_count: number
+          submission_id: string | null
+          user_id: string
+        }
+        Insert: {
+          bookmark_count?: number
+          comment_count?: number
+          content: string
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_system?: boolean
+          like_count?: number
+          media_platform?: string | null
+          media_url?: string | null
+          post_type?: string
+          share_count?: number
+          submission_id?: string | null
+          user_id: string
+        }
+        Update: {
+          bookmark_count?: number
+          comment_count?: number
+          content?: string
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_system?: boolean
+          like_count?: number
+          media_platform?: string | null
+          media_url?: string | null
+          post_type?: string
+          share_count?: number
+          submission_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       friendly_tournament_participants: {
         Row: {
           avatar_url: string | null
