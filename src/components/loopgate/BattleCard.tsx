@@ -125,10 +125,10 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
           </div>
         </div>
         
-        {/* Status — seamless */}
-        <div className="absolute top-2 right-2 flex items-center gap-1">
-          {status.dot && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
-          <span className={`text-[11px] font-bold ${status.color} drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]`}>
+        {/* Status — pill badge */}
+        <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5 border border-white/10">
+          {status.dot && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shadow-[0_0_6px_rgba(248,113,113,0.6)]" />}
+          <span className={`text-[9px] font-bold uppercase tracking-wider ${status.color}`}>
             {status.label}
           </span>
         </div>

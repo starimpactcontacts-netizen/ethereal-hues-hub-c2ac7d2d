@@ -66,17 +66,22 @@ export default function FeaturedHostedCompCard({ comp, onClick }: FeaturedHosted
         <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
         
         {/* Status badge */}
-          <div className="absolute top-2 right-2 flex items-center gap-1">
-            {isLive && (
-              <>
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] font-bold text-emerald-400 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">LIVE</span>
-              </>
-            )}
-            {isJudging && (
-              <span className="text-[11px] font-bold text-amber-300 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">JUDGING</span>
-            )}
-          </div>
+          {(isLive || isJudging) && (
+            <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5 border border-white/10">
+              {isLive && (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
+                </>
+              )}
+              {isJudging && (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                  <span className="text-[9px] font-bold text-amber-300 uppercase tracking-wider">Judging</span>
+                </>
+              )}
+            </div>
+          )}
       </div>
 
       <div className="p-3 -mt-6 relative">
