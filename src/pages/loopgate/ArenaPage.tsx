@@ -1087,7 +1087,7 @@ export default function ArenaPage() {
                 badge={liveEvents.length > 0 ? `${liveEvents.length} Live` : undefined}
                 badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
                 action={
-                  <Link to="/events" className="text-[12px] text-muted-foreground hover:text-foreground font-medium transition-colors">View All</Link>
+                  <Link to="/arena" className="text-[12px] text-muted-foreground hover:text-foreground font-medium transition-colors">View All</Link>
                 }
               />
               {allActiveEvents.length > 0 ? (

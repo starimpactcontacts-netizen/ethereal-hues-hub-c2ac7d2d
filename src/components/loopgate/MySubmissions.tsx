@@ -49,7 +49,7 @@ export default function MySubmissions() {
         <Trophy className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
         <p className="text-sm text-muted-foreground mb-3">No submissions yet</p>
         <Link 
-          to="/events" 
+          to="/arena" 
           className="text-xs text-gold hover:underline uppercase tracking-wider"
         >
           Browse Events →
