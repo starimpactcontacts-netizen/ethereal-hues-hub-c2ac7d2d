@@ -653,6 +653,29 @@ export default function HubPage() {
             </DropdownMenu>
           </div>
 
+          {/* Judge Panel CTA — Fortnite-style for judges */}
+          {isJudge && (
+            <div 
+              className="flex gap-0 overflow-hidden mt-2"
+              style={{ clipPath: 'polygon(2% 0, 100% 0, 98% 100%, 0% 100%)' }}
+            >
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate('/judge-panel')}
+                className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 bg-purple-700 hover:bg-purple-600 transition-colors touch-manipulation select-none"
+              >
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
+                  <Gavel className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                  Judge Panel
+                </span>
+                <ChevronRight className="w-5 h-5 text-white/50 relative z-10" />
+              </motion.button>
+            </div>
+          )}
+
           {/* Queue status bar — when searching for Quick Edit Battle */}
           <AnimatePresence>
             {quickAction === 'quick' && qfIsSearching && (
