@@ -52,7 +52,11 @@ export default function SoloModeBanner({ soloId }: { soloId: string }) {
 
   const handleCancel = async () => {
     const result = await cancelSolo(soloId);
-    if (result?.penalized) {
+    if (!result?.success) {
+      toast.error("Couldn’t cancel this solo right now. Try again.");
+      return;
+    }
+    if (result.penalized) {
       toast.error(`Solo cancelled — you lost 2 Index points (cancel #${result.cancelCount})`);
     } else {
       toast("Solo session cancelled — first one's free!");

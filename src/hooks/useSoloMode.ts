@@ -100,28 +100,47 @@ export function useSoloMode() {
   }, [fetchActive]);
 
   const cancelSolo = useCallback(async (soloId: string) => {
-    if (!user) return;
-    
-    // Get current cancel count
-    const { data: profileData } = await supabase
+    if (!user) {
+      return { success: false, penalized: false, cancelCount: 0 };
+    }
+
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .select('solo_cancel_count')
+      .select('solo_cancel_count, global_index_score, spendable_index')
       .eq('id', user.id)
       .single();
-    
+
+    if (profileError) {
+      return { success: false, penalized: false, cancelCount: 0 };
+    }
+
     const cancelCount = (profileData as any)?.solo_cancel_count || 0;
-    
-    // Delete the solo submission
-    await supabase.from('solo_submissions').delete().eq('id', soloId);
-    
-    // Increment cancel count
-    await supabase
+
+    // Hard-stop any lingering active solos for this user (prevents persistent ghost sessions)
+    const { error: deleteError } = await supabase
+      .from('solo_submissions')
+      .delete()
+      .eq('user_id', user.id)
+      .in('status', ['picking_song', 'editing', 'submitted', 'judging']);
+
+    if (deleteError) {
+      await fetchActive();
+      return { success: false, penalized: false, cancelCount: cancelCount };
+    }
+
+    const { error: countError } = await supabase
       .from('profiles')
       .update({ solo_cancel_count: cancelCount + 1 } as any)
       .eq('id', user.id);
-    
-    // If not their first cancel, penalize 2 index points (subtract from current, floor at 0)
-    if (cancelCount >= 1) {
+
+    if (countError) {
+      await fetchActive();
+      return { success: false, penalized: false, cancelCount: cancelCount };
+    }
+
+    const penalized = cancelCount >= 1;
+
+    if (penalized) {
       const currentGlobal = (profileData as any)?.global_index_score || 0;
       const currentSpendable = (profileData as any)?.spendable_index || 0;
       await supabase
@@ -132,10 +151,11 @@ export function useSoloMode() {
         } as any)
         .eq('id', user.id);
     }
-    
+
     setActiveSolo(null);
-    return { penalized: cancelCount >= 1, cancelCount: cancelCount + 1 };
-  }, [user]);
+    await fetchActive();
+    return { success: true, penalized, cancelCount: cancelCount + 1 };
+  }, [user, fetchActive]);
 
   return { activeSolo, loading, startSolo, submitEdit, cancelSolo, refetch: fetchActive };
 }

@@ -62,7 +62,11 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
             <button
               onClick={async () => {
                 const result = await cancelSolo(activeSolo.id);
-                if (result?.penalized) {
+                if (!result?.success) {
+                  toast.error("Couldn’t cancel this solo right now. Try again.");
+                  return;
+                }
+                if (result.penalized) {
                   toast.error(`Solo cancelled — lost 2 Index (cancel #${result.cancelCount})`);
                 } else {
                   toast("Solo cancelled — first one's free!");
