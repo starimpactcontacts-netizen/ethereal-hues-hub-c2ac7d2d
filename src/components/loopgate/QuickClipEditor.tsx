@@ -83,7 +83,7 @@ export default function QuickClipEditor() {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
-    if (f.size > 500 * 1024 * 1024) { toast.error("Max 500MB"); return; }
+    if (f.size > 2 * 1024 * 1024 * 1024) { toast.error("Max 2GB"); return; }
     setFile(f); setVideoUrl(URL.createObjectURL(f)); setResultUrl(null); setState("idle");
     setProgress(0); setTextOverlays([]); setActiveFilter(FILTER_PRESETS[0]);
     setAudioFile(null); setAudioName(""); setSpeed(1); setIsFullscreen(true);
@@ -268,7 +268,7 @@ export default function QuickClipEditor() {
   const handleUpscaleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f2 = e.target.files?.[0];
     if (!f2 || !f2.type.startsWith("video/")) { toast.error("Select a video file"); return; }
-    if (f2.size > 500 * 1024 * 1024) { toast.error("Max 500MB"); return; }
+    if (f2.size > 2 * 1024 * 1024 * 1024) { toast.error("Max 2GB"); return; }
     setUpscaleFile(f2); setUpscaleUrl(URL.createObjectURL(f2));
     setUpscaleResultUrl(null); setUpscaleState("idle"); setUpscaleProgress(0);
     e.target.value = "";
@@ -334,7 +334,7 @@ export default function QuickClipEditor() {
           <div className="text-center space-y-1.5">
             <p className="font-semibold text-base" style={{ color: ACCENT }}>Start Editing</p>
             <p className="text-[11px]" style={{ color: "#666" }}>Tap to upload a clip</p>
-            <p className="text-[10px]" style={{ color: "#444" }}>MP4, MOV, WEBM • Max 500MB</p>
+            <p className="text-[10px]" style={{ color: "#444" }}>MP4, MOV, WEBM • Max 2GB</p>
           </div>
         </motion.button>
         <div className="grid grid-cols-4 gap-2.5">

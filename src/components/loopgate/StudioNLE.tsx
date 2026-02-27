@@ -179,7 +179,7 @@ export default function StudioNLE() {
       if (!f.type.startsWith("video/") && !f.type.startsWith("image/") && !f.type.startsWith("audio/")) {
         toast.error(`Unsupported file: ${f.name}`); return;
       }
-      if (f.size > 500 * 1024 * 1024) { toast.error("Max 500MB per file"); return; }
+      if (f.size > 2 * 1024 * 1024 * 1024) { toast.error("Max 2GB per file"); return; }
       const url = URL.createObjectURL(f);
       const id = crypto.randomUUID();
       const type = f.type.startsWith("video/") ? "video" : f.type.startsWith("audio/") ? "audio" : "image";
@@ -332,7 +332,7 @@ export default function StudioNLE() {
   const handleUpscaleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f || !f.type.startsWith("video/")) { toast.error("Select a video file"); return; }
-    if (f.size > 500 * 1024 * 1024) { toast.error("Max 500MB"); return; }
+    if (f.size > 2 * 1024 * 1024 * 1024) { toast.error("Max 2GB"); return; }
     setUpscaleFile(f); setUpscaleUrl(URL.createObjectURL(f));
     setUpscaleResultUrl(null); setUpscaleState("idle"); setUpscaleProgress(0);
     e.target.value = "";
