@@ -1,8 +1,8 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { 
   UserRound, Trophy, Zap, Music, Eye, Clock, 
-  ChevronRight, Flame, Play, User
+  ChevronRight, Flame, Play, User, ThumbsUp, ThumbsDown, MessageCircle
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRecentSoloSubmissions, type RecentSolo } from "@/hooks/useRecentSoloSubmissions";
@@ -22,7 +22,7 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
   const timeAgo = formatDistanceToNow(new Date(solo.created_at), { addSuffix: false });
 
   return (
-    <div className="shrink-0 w-[220px] bg-surface-1 border border-border hover:border-gold/40 transition-all overflow-hidden group">
+    <Link to={`/solo/${solo.id}`} className="shrink-0 w-[220px] bg-surface-1 border border-border hover:border-gold/40 transition-all overflow-hidden group block">
       {/* Thumbnail / Theme visual */}
       <div className="relative h-28 bg-gradient-to-br from-gold/10 via-surface-2 to-purple-500/10 overflow-hidden">
         {solo.thumbnail_url ? (
@@ -76,10 +76,23 @@ function SoloCard({ solo }: { solo: RecentSolo }) {
         </div>
         <div className="flex items-center justify-between mt-1.5">
           <span className="text-[9px] text-muted-foreground/60 italic">"{solo.theme}"</span>
-          <span className="text-[9px] text-muted-foreground/40">{timeAgo}</span>
+          <div className="flex items-center gap-2">
+            {((solo as any).upvotes > 0 || (solo as any).downvotes > 0) && (
+              <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground/60">
+                <ThumbsUp className="w-2.5 h-2.5" />{(solo as any).upvotes || 0}
+                <ThumbsDown className="w-2.5 h-2.5 ml-0.5" />{(solo as any).downvotes || 0}
+              </div>
+            )}
+            {(solo as any).comment_count > 0 && (
+              <div className="flex items-center gap-0.5 text-[9px] text-muted-foreground/60">
+                <MessageCircle className="w-2.5 h-2.5" />{(solo as any).comment_count}
+              </div>
+            )}
+            <span className="text-[9px] text-muted-foreground/40">{timeAgo}</span>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

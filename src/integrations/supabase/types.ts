@@ -5032,11 +5032,45 @@ export type Database = {
         }
         Relationships: []
       }
+      solo_submission_votes: {
+        Row: {
+          created_at: string
+          id: string
+          submission_id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          submission_id: string
+          user_id: string
+          vote_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          submission_id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solo_submission_votes_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "solo_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       solo_submissions: {
         Row: {
           artist_name: string | null
           avatar_url: string | null
+          comment_count: number
           created_at: string
+          downvotes: number
           drop_id: string | null
           id: string
           impact_score: number | null
@@ -5056,6 +5090,7 @@ export type Database = {
           theme: string
           thumbnail_url: string | null
           updated_at: string
+          upvotes: number
           user_id: string
           username: string
           video_title: string | null
@@ -5063,7 +5098,9 @@ export type Database = {
         Insert: {
           artist_name?: string | null
           avatar_url?: string | null
+          comment_count?: number
           created_at?: string
+          downvotes?: number
           drop_id?: string | null
           id?: string
           impact_score?: number | null
@@ -5083,6 +5120,7 @@ export type Database = {
           theme: string
           thumbnail_url?: string | null
           updated_at?: string
+          upvotes?: number
           user_id: string
           username: string
           video_title?: string | null
@@ -5090,7 +5128,9 @@ export type Database = {
         Update: {
           artist_name?: string | null
           avatar_url?: string | null
+          comment_count?: number
           created_at?: string
+          downvotes?: number
           drop_id?: string | null
           id?: string
           impact_score?: number | null
@@ -5110,6 +5150,7 @@ export type Database = {
           theme?: string
           thumbnail_url?: string | null
           updated_at?: string
+          upvotes?: number
           user_id?: string
           username?: string
           video_title?: string | null

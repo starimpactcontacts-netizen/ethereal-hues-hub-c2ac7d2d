@@ -75,6 +75,7 @@ import EditoriumPage from "./pages/loopgate/EditoriumPage";
 import EditoriumArticlePage from "./pages/loopgate/EditoriumArticlePage";
 import UpscalerPage from "./pages/loopgate/UpscalerPage";
 import StudioPage from "./pages/loopgate/StudioPage";
+import SoloDetailPage from "./pages/loopgate/SoloDetailPage";
 import NotFound from "./pages/NotFound";
 
 // Components
@@ -293,6 +294,7 @@ export default function App() {
               <Route path="/drop/:dropId" element={<FeaturedDropDetailPage />} />
               <Route path="/editorium" element={<EditoriumPage />} />
               <Route path="/editorium/:slug" element={<EditoriumArticlePage />} />
+              <Route path="/solo/:id" element={<SoloDetailPage />} />
             </Route>
 
             {/* Protected routes - auth required */}
