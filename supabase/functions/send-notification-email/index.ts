@@ -89,7 +89,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
           Rated by <strong style="color: #fff;">@${data.judge_username || "judge"}</strong>
         </p>
         ${data.feedback ? `<p style="color: #888; font-size: 13px; margin-top: 12px; font-style: italic;">"${data.feedback}"</p>` : ""}
-        <a href="https://ethereal-hues-hub.lovable.app/arena?tab=my" style="${ctaStyle}">View Your Score →</a>
+        <a href="https://loopgate.io/arena?tab=my" style="${ctaStyle}">View Your Score →</a>
         `,
         `Your edit scored ${data.score}/100 QOI on Loopgate`
       );
@@ -100,7 +100,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
         <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px;">Battle Update</p>
         <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 800; color: #fff;">${data.title || "Your battle needs attention"}</h2>
         <p style="color: #aaa; font-size: 14px; margin: 0;">${data.message || ""}</p>
-        <a href="https://ethereal-hues-hub.lovable.app/arena" style="${ctaStyle}">Go to Arena →</a>
+        <a href="https://loopgate.io/arena" style="${ctaStyle}">Go to Arena →</a>
         `,
         data.title || "Battle update on Loopgate"
       );
@@ -117,7 +117,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
           vs <strong style="color: #fff;">@${data.opponent_username || "opponent"}</strong>
           ${data.score ? ` — Score: ${data.score}` : ""}
         </p>
-        <a href="https://ethereal-hues-hub.lovable.app/battle/${data.battle_id || ""}" style="${ctaStyle}">View Result →</a>
+        <a href="https://loopgate.io/battle/${data.battle_id || ""}" style="${ctaStyle}">View Result →</a>
         `,
         won ? "You won your battle on Loopgate! 🏆" : "Battle result on Loopgate"
       );
@@ -133,7 +133,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
         <p style="color: #888; font-size: 13px; margin-top: 8px;">
           Submit your edit and get rated by judges. ${data.xp_reward ? `+${data.xp_reward} XP reward.` : ""}
         </p>
-        <a href="https://ethereal-hues-hub.lovable.app/drops" style="${ctaStyle}">Submit Your Edit →</a>
+        <a href="https://loopgate.io/drops" style="${ctaStyle}">Submit Your Edit →</a>
         `,
         `New drop: ${data.song_name || "Featured Song"} — submit your edit`
       );
@@ -145,7 +145,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
         <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 800; color: #fff;">
           @${data.sender_username || "someone"} wants to connect
         </h2>
-        <a href="https://ethereal-hues-hub.lovable.app/network" style="${ctaStyle}">View Request →</a>
+        <a href="https://loopgate.io/network" style="${ctaStyle}">View Request →</a>
         `,
         `@${data.sender_username || "Someone"} wants to connect on Loopgate`
       );
@@ -157,7 +157,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
         <h2 style="margin: 0 0 8px; font-size: 20px; font-weight: 800; color: #fff;">
           @${data.accepter_username || "someone"} accepted your request!
         </h2>
-        <a href="https://ethereal-hues-hub.lovable.app/editor/${data.accepter_id || ""}" style="${ctaStyle}">View Profile →</a>
+        <a href="https://loopgate.io/editor/${data.accepter_id || ""}" style="${ctaStyle}">View Profile →</a>
         `,
         `@${data.accepter_username || "Someone"} connected with you on Loopgate`
       );
@@ -165,7 +165,7 @@ function buildEmail(type: EmailType, data: Record<string, any>): { subject: stri
     default:
       return wrap(
         `<p style="color: #aaa;">You have a new notification on Loopgate.</p>
-        <a href="https://ethereal-hues-hub.lovable.app" style="${ctaStyle}">Open Loopgate →</a>`,
+        <a href="https://loopgate.io" style="${ctaStyle}">Open Loopgate →</a>`,
         "Notification from Loopgate"
       );
   }
@@ -247,7 +247,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Loopgate <notifications@loopgate.app>",
+        from: "Loopgate <notifications@loopgate.io>",
         to: [toEmail],
         subject,
         html,
