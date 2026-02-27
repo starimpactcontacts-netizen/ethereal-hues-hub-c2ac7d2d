@@ -407,11 +407,20 @@ export default function HeaderMusicPlayer() {
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Seekable Progress Bar */}
         <div className="px-4 pb-1">
-          <div className="w-full h-1 bg-border rounded-full overflow-hidden">
-            <motion.div className="h-full bg-emerald-500 rounded-full" style={{ width: `${progress}%` }} transition={{ duration: 0.2 }} />
-          </div>
+          <Slider
+            value={[progress]}
+            onValueChange={([v]) => {
+              setProgress(v);
+              if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration)) {
+                audioRef.current.currentTime = (v / 100) * audioRef.current.duration;
+              }
+            }}
+            max={100}
+            step={0.5}
+            className="w-full [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none"
+          />
         </div>
 
         {/* Controls */}
