@@ -134,9 +134,14 @@ function SoloScoringModal({ entry, onClose, onComplete }: { entry: SoloEntry; on
           judged_at: new Date().toISOString(),
           status: 'scored',
         })
-        .eq('id', entry.id);
+        .eq('id', entry.id)
+        .select('id')
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Score submit error:', error);
+        throw error;
+      }
 
       // Award judge XP
       await awardReviewXP(user.id, profile.username, entry.user_id);
@@ -317,14 +322,16 @@ export default function JudgeSoloQueue() {
 
   const handleClaim = async (entry: SoloEntry) => {
     if (!user) return;
-    // Claim it
-    const { error } = await supabase
+    // Claim it — use select to check if update matched any rows
+    const { data, error } = await supabase
       .from('solo_submissions')
       .update({ judge_id: user.id, judge_claimed_at: new Date().toISOString(), status: 'judging' })
       .eq('id', entry.id)
-      .is('judge_id', null);
+      .is('judge_id', null)
+      .select('id')
+      .maybeSingle();
 
-    if (error) {
+    if (error || !data) {
       toast.error('Already claimed by another judge');
       fetchQueue();
       return;
