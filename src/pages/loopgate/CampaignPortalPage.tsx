@@ -162,10 +162,32 @@ export default function CampaignPortalPage() {
       </div>
 
       <div className="relative max-w-3xl mx-auto px-4 py-8 space-y-8">
-        {/* Header with Crest */}
+        {/* Header with Crest + Quick Links */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-between">
-          <img src={viralCartelCrest} alt="" className="w-8 h-8 opacity-40" />
-          <span className="text-[8px] uppercase tracking-[0.3em] text-white/20 font-bold">Campaign Dashboard</span>
+          <div className="flex items-center gap-3">
+            <img src={viralCartelCrest} alt="" className="w-8 h-8 opacity-40" />
+            <span className="text-[8px] uppercase tracking-[0.3em] text-white/20 font-bold">Campaign Dashboard</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <a
+              href="/hub?guest=true"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-bold border border-white/10 text-white/50 hover:text-white hover:border-white/30 transition-all bg-white/[0.03]"
+            >
+              <Globe size={12} /> Browse LOOPGATE
+            </a>
+            {artist && (
+              <a
+                href={`/artist/${artist.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[9px] uppercase tracking-wider font-bold border border-red-500/20 text-red-400/70 hover:text-red-400 hover:border-red-500/40 transition-all bg-red-500/[0.03]"
+              >
+                <Music size={12} /> View Artist
+              </a>
+            )}
+          </div>
         </motion.div>
 
         {/* Artist Profile Hero */}
