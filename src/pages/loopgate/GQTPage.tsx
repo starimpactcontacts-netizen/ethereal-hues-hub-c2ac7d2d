@@ -11,10 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Target, Send, Trophy, Clock, AlertCircle, ExternalLink, LogIn, Zap, RefreshCw, ChevronRight, ChevronLeft, Crosshair, ArrowRight } from 'lucide-react';
+import { Send, Clock, AlertCircle, ExternalLink, LogIn, Zap, RefreshCw, ChevronLeft, ArrowRight, Crosshair, Shield } from 'lucide-react';
 import { validatePlatformUrl, detectPlatform, type PlatformType } from '@/lib/urlValidation';
 import { toast } from 'sonner';
 import GQTResultCard from '@/components/loopgate/GQTResultCard';
+import GatePattern from '@/components/loopgate/GatePattern';
 import { 
   editorTypes, 
   yearsEditingOptions, 
@@ -248,98 +249,160 @@ export default function GQTPage() {
   };
   
   const canProceed = editorType && yearsEditing && editingSoftware && editingSpeed && testPurpose && editingGoal;
+
+  // Shared select question renderer
+  const renderQuestion = (
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+    options: readonly { readonly value: string; readonly label: string }[],
+    placeholder: string,
+    noteValue: string,
+    onNoteChange: (v: string) => void,
+    notePrompt: string,
+    index: number,
+  ) => (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      className="space-y-2"
+    >
+      <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">{label}</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="h-11 bg-background/50 border-border/40 hover:border-foreground/20 transition-colors text-sm">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(opt => (
+            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {value === 'other' && (
+        <Textarea
+          placeholder={notePrompt}
+          value={noteValue}
+          onChange={(e) => onNoteChange(e.target.value)}
+          className="mt-1.5 text-sm resize-none bg-background/50 border-border/40"
+          rows={2}
+        />
+      )}
+    </motion.div>
+  );
   
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Compact Hero Header */}
-      <div className="p-4 pt-6">
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-surface-1/80 backdrop-blur-xl border border-border/50 overflow-hidden"
-        >
-          {/* Main Header Content */}
-          <div className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-surface-0 border border-gold/40 flex items-center justify-center">
-                <Crosshair className="w-7 h-7 text-gold" />
-              </div>
-              <div>
-                <h1 className="font-display text-2xl text-foreground tracking-wide">
-                  GLOBAL QOI TEST
-                </h1>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Submit an edit. Get your rank.
-                </p>
-              </div>
-            </div>
-            
-            {/* Best Score Badge */}
-            {bestScore && rank && (
-              <div className={`${rank.bgClass} border ${rank.borderClass} px-3 py-2 text-right`}>
-                <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Best</p>
-                <div className="flex items-baseline gap-1">
-                  <span className={`font-display text-2xl ${rank.color}`}>{bestScore.toFixed(0)}</span>
-                  <span className="text-[10px] text-muted-foreground">/100</span>
-                </div>
-                <span className={`font-display text-sm ${rank.color}`}>{rank.rank}</span>
-              </div>
-            )}
-          </div>
+    <div className="min-h-screen bg-background pb-24 relative">
+      {/* Background pattern */}
+      <GatePattern opacity={4} tileSize={56} />
+      
+      {/* Architectural top line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
 
-          {/* Cooldown Banner */}
-          {cooldownDays !== null && cooldownDays > 0 && (
-            <div className="px-4 py-2 bg-surface-0 border-t border-border/30 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="w-4 h-4" />
-                <span>Cooldown active</span>
+      {/* ═══════════════ HERO ═══════════════ */}
+      <div className="relative px-4 pt-8 pb-6">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,hsl(var(--gold)/0.04),transparent_60%)]" />
+        
+        <motion.div 
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative max-w-lg mx-auto text-center"
+        >
+          {/* Crosshair icon */}
+          <div className="w-14 h-14 mx-auto mb-4 border border-foreground/10 flex items-center justify-center relative">
+            <Crosshair className="w-6 h-6 text-foreground/60" />
+            <div className="absolute inset-0 border border-foreground/5" style={{ transform: 'rotate(45deg) scale(0.7)' }} />
+          </div>
+          
+          <p className="text-[10px] text-gold/80 uppercase tracking-[0.4em] font-semibold mb-2">Advanced Evaluation</p>
+          <h1 className="font-display text-4xl sm:text-5xl text-foreground tracking-[0.08em] mb-2">
+            QOI TEST
+          </h1>
+          <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
+            Submit your best edit. Get evaluated by real judges. Receive your official class ranking.
+          </p>
+          
+          {/* Best Score */}
+          {bestScore && rank && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mt-5 inline-flex items-center gap-3 px-4 py-2.5 border border-border/40 bg-surface-1/40 backdrop-blur-sm"
+            >
+              <div>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-[0.2em]">Your Best</p>
+                <span className={`font-display text-2xl ${rank.color}`}>{bestScore.toFixed(0)}</span>
+                <span className="text-[10px] text-muted-foreground ml-0.5">/100</span>
               </div>
-              <span className="text-sm font-display text-foreground">
-                {cooldownDays} day{cooldownDays === 1 ? '' : 's'} remaining
-              </span>
-            </div>
+              <div className="w-px h-8 bg-border/40" />
+              <div>
+                <p className="text-[8px] text-muted-foreground uppercase tracking-[0.2em]">Class</p>
+                <span className={`font-display text-2xl ${rank.color}`}>{rank.rank}</span>
+              </div>
+            </motion.div>
           )}
         </motion.div>
       </div>
 
-      <div className="px-4 space-y-4">
-        {/* Pending Submission Card */}
+      {/* Separator */}
+      <div className="h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
+
+      {/* ═══════════════ CONTENT ═══════════════ */}
+      <div className="px-4 pt-5 max-w-lg mx-auto space-y-4">
+        
+        {/* Cooldown Banner */}
+        {cooldownDays !== null && cooldownDays > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center justify-between px-4 py-3 border border-border/30 bg-surface-1/30"
+          >
+            <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4 text-foreground/40" />
+              <span className="text-xs">Cooldown active</span>
+            </div>
+            <span className="text-xs font-display text-foreground tracking-wide">
+              {cooldownDays}d remaining
+            </span>
+          </motion.div>
+        )}
+
+        {/* ═══ Pending Submission ═══ */}
         <AnimatePresence mode="wait">
           {pendingSubmission && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -16 }}
             >
               <Link 
                 to={pendingSubmission.submission_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block bg-surface-1/80 backdrop-blur-xl border border-gold/30 p-4"
+                className="group block border border-gold/20 bg-gold/[0.03] hover:border-gold/30 transition-all p-5"
               >
                 <div className="flex items-center gap-4">
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                      <Clock className="w-6 h-6 text-gold" />
+                    <div className="w-11 h-11 border border-gold/30 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-gold/70" />
                     </div>
-                    <div className="absolute inset-0 border border-gold/20 animate-ping opacity-40" />
+                    <div className="absolute inset-0 border border-gold/15 animate-ping opacity-30" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-gold uppercase tracking-[0.15em] font-semibold">Awaiting Judgment</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                    <span className="text-[10px] text-gold/70 uppercase tracking-[0.2em] font-semibold">Awaiting Judgment</span>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
                       Your submission is in the queue
                     </p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gold shrink-0" />
+                  <ExternalLink className="w-4 h-4 text-gold/50 group-hover:text-gold/80 transition-colors shrink-0" />
                 </div>
               </Link>
             </motion.div>
           )}
         </AnimatePresence>
         
-        {/* Latest Result Card */}
+        {/* ═══ Latest Result ═══ */}
         {latestSubmission && latestSubmission.status === 'scored' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
@@ -347,14 +410,14 @@ export default function GQTPage() {
             className="space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-lg text-foreground">Your Results</h2>
+              <h2 className="font-display text-lg text-foreground tracking-wide">Your Results</h2>
               {cooldownDays === null || cooldownDays <= 0 ? (
                 <button
                   onClick={handleRetake}
-                  className="flex items-center gap-1.5 text-xs text-gold hover:text-gold/80 transition-colors"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  Retake Test
+                  Retake
                 </button>
               ) : null}
             </div>
@@ -368,17 +431,13 @@ export default function GQTPage() {
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-3">
               <Link to="/arena" className="block">
-                <Button className="w-full h-12 bg-gold hover:bg-gold/90 text-background font-display">
+                <Button className="w-full h-11 bg-gold hover:bg-gold/90 text-gold-foreground font-display tracking-wide">
                   <Zap className="w-4 h-4 mr-2" />
-                  Open Arena
+                  Arena
                 </Button>
               </Link>
               {cooldownDays !== null && cooldownDays > 0 ? (
-                <Button
-                  variant="outline"
-                  disabled
-                  className="h-12 border-border text-muted-foreground"
-                >
+                <Button variant="outline" disabled className="h-11 border-border/40 text-muted-foreground">
                   <Clock className="w-4 h-4 mr-2" />
                   {cooldownDays}d Cooldown
                 </Button>
@@ -386,7 +445,7 @@ export default function GQTPage() {
                 <Button
                   variant="outline"
                   onClick={handleRetake}
-                  className="h-12 border-border hover:border-gold/50 hover:text-gold"
+                  className="h-11 border-border/40 hover:border-foreground/20 hover:text-foreground"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   New Edit
@@ -396,96 +455,112 @@ export default function GQTPage() {
           </motion.div>
         )}
         
-        {/* Submit Flow */}
+        {/* ═══ Submit Flow ═══ */}
         {!pendingSubmission && !latestSubmission && (
           <AnimatePresence mode="wait">
             {step === 'form' ? (
               <motion.div
                 key="form"
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -16 }}
                 className="space-y-4"
               >
                 {/* Submit Card */}
-                <div className="bg-surface-1/80 backdrop-blur-xl border border-border/50 p-5 space-y-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-surface-0 border border-border flex items-center justify-center shrink-0">
-                      <Target className="w-5 h-5 text-foreground" />
+                <div className="relative border border-border/30 bg-surface-1/20 backdrop-blur-sm overflow-hidden">
+                  {/* Decorative corner marks */}
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-foreground/10" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-foreground/10" />
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-foreground/10" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-foreground/10" />
+                  
+                  <div className="p-5 sm:p-6 space-y-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 border border-foreground/10 flex items-center justify-center shrink-0">
+                        <Shield className="w-5 h-5 text-foreground/50" />
+                      </div>
+                      <div>
+                        <h2 className="font-display text-xl text-foreground tracking-wide">Submit Your Edit</h2>
+                        <p className="text-[10px] text-muted-foreground tracking-wide">Get scored by real judges</p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="font-display text-xl text-foreground">Submit Your Edit</h2>
-                      <p className="text-[11px] text-muted-foreground">Get scored by real judges</p>
+                    
+                    {/* URL Input */}
+                    <div className="space-y-2">
+                      <Label htmlFor="url" className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">
+                        Video URL
+                      </Label>
+                      <Input
+                        id="url"
+                        value={url}
+                        onChange={(e) => handleUrlChange(e.target.value)}
+                        placeholder="https://tiktok.com/@handle/video/..."
+                        className={`h-12 bg-background/50 text-sm ${urlError ? 'border-destructive' : 'border-border/40 focus:border-foreground/30'}`}
+                      />
+                      {urlError && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" /> {urlError}
+                        </p>
+                      )}
                     </div>
+                    
+                    {/* Platform */}
+                    <div className="flex items-center justify-between px-3 py-2.5 bg-background/30 border border-border/20">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em]">Platform</span>
+                      <span className="text-sm font-semibold text-foreground capitalize">{platform}</span>
+                    </div>
+                    
+                    {/* CTA */}
+                    <Button
+                      onClick={handleProceedToInterrogation}
+                      disabled={!url}
+                      className="w-full h-12 bg-foreground hover:bg-foreground/90 text-background font-display text-sm tracking-wide"
+                    >
+                      <span className="flex items-center gap-2">
+                        Continue
+                        <ArrowRight className="w-4 h-4" />
+                      </span>
+                    </Button>
+                    
+                    <p className="text-[9px] text-center text-muted-foreground tracking-wide">
+                      Supports TikTok, Instagram Reels, and YouTube Shorts
+                    </p>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="url" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Video URL</Label>
-                    <Input
-                      id="url"
-                      value={url}
-                      onChange={(e) => handleUrlChange(e.target.value)}
-                      placeholder="https://tiktok.com/@handle/video/..."
-                      className={`h-12 bg-surface-0 ${urlError ? 'border-destructive' : 'border-border focus:border-gold/50'}`}
-                    />
-                    {urlError && (
-                      <p className="text-xs text-destructive flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {urlError}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center justify-between px-3 py-2 bg-surface-0 border border-border/50">
-                    <span className="text-[11px] text-muted-foreground uppercase tracking-wider">Platform</span>
-                    <span className="text-sm font-semibold capitalize">{platform}</span>
-                  </div>
-                  
-                  <Button
-                    onClick={handleProceedToInterrogation}
-                    disabled={!url}
-                    className="w-full h-14 bg-gold hover:bg-gold/90 text-background font-display text-base"
-                  >
-                    <span className="flex items-center gap-2">
-                      Continue
-                      <ArrowRight className="w-5 h-5" />
-                    </span>
-                  </Button>
-                  
-                  <p className="text-[10px] text-center text-muted-foreground">
-                    Supports TikTok, Instagram Reels, and YouTube Shorts
-                  </p>
                 </div>
 
-                {/* Info Cards */}
+                {/* Info Stats */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-surface-1/60 border border-border/30 p-4">
-                    <p className="font-display text-lg text-foreground">24-48h</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Review Time</p>
+                  <div className="border border-border/20 bg-surface-1/20 p-4">
+                    <p className="font-display text-lg text-foreground tracking-wide">24-48h</p>
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-[0.15em] mt-0.5">Review Time</p>
                   </div>
-                  <div className="bg-surface-1/60 border border-border/30 p-4">
-                    <p className="font-display text-lg text-foreground">7 Days</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Cooldown</p>
+                  <div className="border border-border/20 bg-surface-1/20 p-4">
+                    <p className="font-display text-lg text-foreground tracking-wide">7 Days</p>
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-[0.15em] mt-0.5">Cooldown</p>
                   </div>
                 </div>
               </motion.div>
             ) : (
               <motion.div
                 key="interrogation"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
+                exit={{ opacity: 0, x: 16 }}
                 className="space-y-4"
               >
                 {/* Interrogation Header */}
-                <div className="bg-surface-1/80 backdrop-blur-xl border border-border/50 p-4">
-                  <div className="flex items-center justify-between">
+                <div className="relative border border-border/30 bg-surface-1/20 backdrop-blur-sm overflow-hidden">
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-foreground/10" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-foreground/10" />
+                  
+                  <div className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gold/10 border border-gold/30 flex items-center justify-center">
-                        <Zap className="w-5 h-5 text-gold" />
+                      <div className="w-10 h-10 border border-foreground/10 flex items-center justify-center">
+                        <Crosshair className="w-5 h-5 text-foreground/50" />
                       </div>
                       <div>
-                        <h2 className="font-display text-xl text-foreground">Interrogation</h2>
-                        <p className="text-[11px] text-muted-foreground">Answer honestly for better feedback</p>
+                        <h2 className="font-display text-xl text-foreground tracking-wide">Interrogation</h2>
+                        <p className="text-[10px] text-muted-foreground tracking-wide">Answer honestly for better feedback</p>
                       </div>
                     </div>
                     <button
@@ -498,195 +573,71 @@ export default function GQTPage() {
                   </div>
                 </div>
 
-                {/* Questions Card */}
-                <div className="bg-surface-1/80 backdrop-blur-xl border border-border/50 p-5 space-y-5">
-                  {/* Question 1 */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Editor Type</Label>
-                    <Select value={editorType} onValueChange={setEditorType}>
-                      <SelectTrigger className="h-12 bg-surface-0">
-                        <SelectValue placeholder="Select your style..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {editorTypes.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {editorType === 'other' && (
-                      <Textarea
-                        placeholder="Tell us what type of editor you are..."
-                        value={editorTypeNote}
-                        onChange={(e) => setEditorTypeNote(e.target.value)}
-                        className="mt-2 text-sm resize-none bg-surface-0"
-                        rows={2}
-                      />
-                    )}
-                  </div>
+                {/* Questions */}
+                <div className="relative border border-border/30 bg-surface-1/20 backdrop-blur-sm overflow-hidden">
+                  <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-foreground/10" />
+                  <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-foreground/10" />
+                  <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-foreground/10" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-foreground/10" />
                   
-                  {/* Question 2 */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Experience</Label>
-                    <Select value={yearsEditing} onValueChange={setYearsEditing}>
-                      <SelectTrigger className="h-12 bg-surface-0">
-                        <SelectValue placeholder="How long have you been editing..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {yearsEditingOptions.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {yearsEditing === 'other' && (
-                      <Textarea
-                        placeholder="Explain your editing experience..."
-                        value={yearsEditingNote}
-                        onChange={(e) => setYearsEditingNote(e.target.value)}
-                        className="mt-2 text-sm resize-none bg-surface-0"
-                        rows={2}
+                  <div className="p-5 sm:p-6 space-y-5">
+                    {renderQuestion('Editor Type', editorType, setEditorType, editorTypes, 'Select your style...', editorTypeNote, setEditorTypeNote, 'Tell us what type of editor you are...', 0)}
+                    {renderQuestion('Experience', yearsEditing, setYearsEditing, yearsEditingOptions, 'How long have you been editing...', yearsEditingNote, setYearsEditingNote, 'Explain your editing experience...', 1)}
+                    {renderQuestion('Software', editingSoftware, setEditingSoftware, softwareOptions, 'Select software...', editingSoftwareNote, setEditingSoftwareNote, 'What software do you use?', 2)}
+                    {renderQuestion('Editing Speed', editingSpeed, setEditingSpeed, editingSpeedOptions, 'How fast do you edit...', editingSpeedNote, setEditingSpeedNote, 'Describe your editing pace...', 3)}
+                    {renderQuestion('Intention', testPurpose, setTestPurpose, testPurposeOptions, 'Why are you here...', testPurposeNote, setTestPurposeNote, "What's your intention?", 4)}
+                    
+                    {/* Confidence Slider */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">Confidence</Label>
+                        <span className={`text-sm font-display tracking-wide ${confidenceLevel >= 7 ? 'text-gold' : 'text-foreground'}`}>
+                          {confidenceLevel}/10
+                        </span>
+                      </div>
+                      <Slider
+                        value={[confidenceLevel]}
+                        onValueChange={(v) => setConfidenceLevel(v[0])}
+                        min={1}
+                        max={10}
+                        step={1}
+                        className="w-full"
                       />
-                    )}
-                  </div>
-                  
-                  {/* Question 3 */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Software</Label>
-                    <Select value={editingSoftware} onValueChange={setEditingSoftware}>
-                      <SelectTrigger className="h-12 bg-surface-0">
-                        <SelectValue placeholder="Select software..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {softwareOptions.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {editingSoftware === 'other' && (
-                      <Textarea
-                        placeholder="What software do you use?"
-                        value={editingSoftwareNote}
-                        onChange={(e) => setEditingSoftwareNote(e.target.value)}
-                        className="mt-2 text-sm resize-none bg-surface-0"
-                        rows={2}
-                      />
-                    )}
-                  </div>
-                  
-                  {/* Question 4 */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Editing Speed</Label>
-                    <Select value={editingSpeed} onValueChange={setEditingSpeed}>
-                      <SelectTrigger className="h-12 bg-surface-0">
-                        <SelectValue placeholder="How fast do you edit..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {editingSpeedOptions.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {editingSpeed === 'other' && (
-                      <Textarea
-                        placeholder="Describe your editing pace..."
-                        value={editingSpeedNote}
-                        onChange={(e) => setEditingSpeedNote(e.target.value)}
-                        className="mt-2 text-sm resize-none bg-surface-0"
-                        rows={2}
-                      />
-                    )}
-                  </div>
-                  
-                  {/* Question 5 */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Intention</Label>
-                    <Select value={testPurpose} onValueChange={setTestPurpose}>
-                      <SelectTrigger className="h-12 bg-surface-0">
-                        <SelectValue placeholder="Why are you here..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {testPurposeOptions.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {testPurpose === 'other' && (
-                      <Textarea
-                        placeholder="What's your intention?"
-                        value={testPurposeNote}
-                        onChange={(e) => setTestPurposeNote(e.target.value)}
-                        className="mt-2 text-sm resize-none bg-surface-0"
-                        rows={2}
-                      />
-                    )}
-                  </div>
-                  
-                  {/* Question 6 - Confidence Slider */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Confidence Level</Label>
-                      <span className={`text-sm font-display ${confidenceLevel >= 7 ? 'text-gold' : 'text-foreground'}`}>
-                        {confidenceLevel}/10
-                      </span>
-                    </div>
-                    <Slider
-                      value={[confidenceLevel]}
-                      onValueChange={(v) => setConfidenceLevel(v[0])}
-                      min={1}
-                      max={10}
-                      step={1}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-center text-muted-foreground italic">
-                      "{confidenceLabels[confidenceLevel]}"
-                    </p>
-                  </div>
-                  
-                  {/* Question 7 */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Goal</Label>
-                    <Select value={editingGoal} onValueChange={setEditingGoal}>
-                      <SelectTrigger className="h-12 bg-surface-0">
-                        <SelectValue placeholder="What's your editing goal..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {editingGoalOptions.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {editingGoal === 'other' && (
-                      <Textarea
-                        placeholder="What's your editing goal?"
-                        value={editingGoalNote}
-                        onChange={(e) => setEditingGoalNote(e.target.value)}
-                        className="mt-2 text-sm resize-none bg-surface-0"
-                        rows={2}
-                      />
-                    )}
+                      <p className="text-[10px] text-center text-muted-foreground italic">
+                        "{confidenceLabels[confidenceLevel]}"
+                      </p>
+                    </motion.div>
+                    
+                    {renderQuestion('Goal', editingGoal, setEditingGoal, editingGoalOptions, "What's your editing goal...", editingGoalNote, setEditingGoalNote, "What's your editing goal?", 6)}
                   </div>
                 </div>
                 
-                {/* Submit Button */}
+                {/* Submit */}
                 <Button
                   onClick={handleSubmit}
                   disabled={isSubmitting || !canProceed}
-                  className="w-full h-14 bg-gold hover:bg-gold/90 text-background font-display text-base"
+                  className="w-full h-12 bg-foreground hover:bg-foreground/90 text-background font-display text-sm tracking-wide"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-background/30 border-t-background rounded-full animate-spin" />
                       Submitting...
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      <Send className="w-5 h-5" />
+                      <Send className="w-4 h-4" />
                       Submit for Judgment
                     </span>
                   )}
                 </Button>
                 
-                <p className="text-[10px] text-center text-muted-foreground">
-                  Reviewed by real judges • Best score saved to profile
+                <p className="text-[9px] text-center text-muted-foreground tracking-wide">
+                  Reviewed by real judges · Best score saved to profile
                 </p>
               </motion.div>
             )}
@@ -696,23 +647,23 @@ export default function GQTPage() {
       
       {/* Auth Prompt Dialog */}
       <Dialog open={showAuthPrompt} onOpenChange={setShowAuthPrompt}>
-        <DialogContent className="bg-surface-0 border border-border max-w-sm">
+        <DialogContent className="bg-surface-0 border border-border/40 max-w-sm">
           <DialogHeader>
-            <div className="w-16 h-16 mx-auto mb-4 bg-gold/10 border border-gold/30 flex items-center justify-center">
-              <LogIn className="w-8 h-8 text-gold" />
+            <div className="w-14 h-14 mx-auto mb-4 border border-foreground/10 flex items-center justify-center">
+              <LogIn className="w-7 h-7 text-foreground/60" />
             </div>
-            <DialogTitle className="font-display text-2xl text-center text-foreground">
+            <DialogTitle className="font-display text-2xl text-center text-foreground tracking-wide">
               Almost There
             </DialogTitle>
-            <DialogDescription className="text-center text-muted-foreground space-y-2">
-              <p>Create a free account to submit and get your official rank.</p>
+            <DialogDescription className="text-center text-muted-foreground text-xs">
+              Create a free account to submit and get your official rank.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-3 pt-4">
             <Button 
               onClick={() => navigate('/start')}
-              className="w-full bg-gold hover:bg-gold/90 text-background font-display h-12"
+              className="w-full bg-foreground hover:bg-foreground/90 text-background font-display h-11 tracking-wide"
             >
               <LogIn className="w-4 h-4 mr-2" />
               Create Account
@@ -720,13 +671,13 @@ export default function GQTPage() {
             <Button 
               variant="outline" 
               onClick={() => setShowAuthPrompt(false)}
-              className="w-full border-border text-muted-foreground h-11"
+              className="w-full border-border/40 text-muted-foreground h-10"
             >
               Later
             </Button>
           </div>
           
-          <p className="text-[10px] text-center text-muted-foreground pt-2">
+          <p className="text-[9px] text-center text-muted-foreground pt-2">
             Your answers are saved — just sign up and submit
           </p>
         </DialogContent>
