@@ -2246,6 +2246,75 @@ export type Database = {
           },
         ]
       }
+      featured_drop_queue: {
+        Row: {
+          author_username: string | null
+          avatar_url: string | null
+          created_at: string
+          drop_id: string
+          embed_html: string | null
+          id: string
+          platform: string
+          promoted_to_round_id: string | null
+          queue_position: number
+          status: string
+          submission_url: string
+          thumbnail_url: string | null
+          user_id: string
+          username: string
+          video_title: string | null
+        }
+        Insert: {
+          author_username?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          drop_id: string
+          embed_html?: string | null
+          id?: string
+          platform?: string
+          promoted_to_round_id?: string | null
+          queue_position?: number
+          status?: string
+          submission_url: string
+          thumbnail_url?: string | null
+          user_id: string
+          username: string
+          video_title?: string | null
+        }
+        Update: {
+          author_username?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          drop_id?: string
+          embed_html?: string | null
+          id?: string
+          platform?: string
+          promoted_to_round_id?: string | null
+          queue_position?: number
+          status?: string
+          submission_url?: string
+          thumbnail_url?: string | null
+          user_id?: string
+          username?: string
+          video_title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_drop_queue_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "featured_drop_queue_promoted_to_round_id_fkey"
+            columns: ["promoted_to_round_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drop_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_drop_rounds: {
         Row: {
           created_at: string

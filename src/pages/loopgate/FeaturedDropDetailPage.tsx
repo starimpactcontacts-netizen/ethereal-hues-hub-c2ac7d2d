@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
   Zap, Send, ChevronRight, Users, Clock, Eye, Share2, Check,
-  TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2, Download
+  TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2, Download,
+  ListOrdered
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
@@ -14,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDropSubmissions } from "@/hooks/useFeaturedDrops";
 import { useDropRounds } from "@/hooks/useDropRounds";
+import { useDropQueue } from "@/hooks/useDropQueue";
 import type { FeaturedDrop, FeaturedArtist, FeaturedSubmission } from "@/hooks/useFeaturedDrops";
 import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
 import CompLobbyHeader from "@/components/loopgate/CompLobbyHeader";
@@ -36,6 +38,7 @@ export default function FeaturedDropDetailPage() {
   const [resolvedId, setResolvedId] = useState<string | null>(null);
   const { submissions, loading: subsLoading } = useDropSubmissions(resolvedId);
   const { rounds, rankings, activeRound, currentRound } = useDropRounds(resolvedId);
+  const { queue, queueCount } = useDropQueue(resolvedId);
 
   useEffect(() => {
     if (!dropId) return;
@@ -93,6 +96,8 @@ export default function FeaturedDropDetailPage() {
   const slotsLeft = activeRound ? activeRound.max_submissions - activeRoundSubs.length : 0;
   const slotsTotal = activeRound?.max_submissions || 0;
   const slotsFilled = activeRound ? activeRoundSubs.length : 0;
+  const allRoundsFull = hasRounds && !rounds.some(r => r.status === 'open');
+  const canQueueSubmit = isLive && allRoundsFull && queueCount < 100;
 
   // For non-round drops, fallback to old behavior
   const allSubs = submissions;
@@ -315,7 +320,83 @@ export default function FeaturedDropDetailPage() {
               </motion.div>
             )}
 
-            {/* Round in judging state — waiting for judge video */}
+            {/* ═══ QUEUE — when all rounds full, editors can still submit ═══ */}
+            {allRoundsFull && isLive && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-surface-1 border-2 border-gold/20 p-4 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-display text-base text-foreground tracking-wide flex items-center gap-2">
+                      <ListOrdered className="w-4 h-4 text-gold" />
+                      NEXT ROUND QUEUE
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Round full — submit here to queue for next round
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`font-display text-2xl tabular-nums ${queueCount >= 100 ? 'text-destructive' : 'text-gold'}`}>
+                      {queueCount}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-bold">/100</span>
+                  </div>
+                </div>
+
+                {/* Queue progress bar */}
+                <div className="w-full h-2 bg-surface-2 border border-border overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min((queueCount / 100) * 100, 100)}%` }}
+                    className="h-full bg-gradient-to-r from-gold/60 to-gold"
+                    transition={{ duration: 0.6 }}
+                  />
+                </div>
+
+                {/* Queue avatars */}
+                {queue.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {queue.slice(0, 12).map((q) => (
+                        <Avatar key={q.id} className="w-6 h-6 border-2 border-background ring-1 ring-border">
+                          <AvatarImage src={q.avatar_url || ''} />
+                          <AvatarFallback className="bg-surface-2 text-[7px] font-bold text-foreground">
+                            {q.username?.[0]?.toUpperCase() || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                      {queueCount > 12 && (
+                        <div className="w-6 h-6 rounded-full bg-surface-2 border-2 border-background ring-1 ring-border flex items-center justify-center">
+                          <span className="text-[7px] font-bold text-muted-foreground">+{queueCount - 12}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[9px] text-muted-foreground">{queueCount} queued</span>
+                  </div>
+                )}
+
+                {/* Queue submit CTA */}
+                {canQueueSubmit && (
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+                    className="w-full py-3.5 bg-gradient-to-r from-gold/90 to-gold/70 text-background font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                  >
+                    <ListOrdered className="w-4 h-4" />
+                    Join Queue for Next Round
+                    <ChevronRight className="w-4 h-4" />
+                  </motion.button>
+                )}
+                {queueCount >= 100 && (
+                  <p className="text-[10px] font-black text-destructive uppercase tracking-widest text-center">
+                    🔒 QUEUE FULL
+                  </p>
+                )}
+              </motion.div>
+            )}
+
             {currentRound?.status === 'judging' && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -645,6 +726,7 @@ export default function FeaturedDropDetailPage() {
         <FeaturedSubmitModal
           drop={drop}
           roundId={activeRound?.id || null}
+          queueMode={allRoundsFull}
           onClose={() => setShowSubmit(false)}
         />
       )}

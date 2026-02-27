@@ -12,6 +12,7 @@ import type { FeaturedDrop } from "@/hooks/useFeaturedDrops";
 interface Props {
   drop: FeaturedDrop;
   roundId?: string | null;
+  queueMode?: boolean;
   onClose: () => void;
 }
 
@@ -33,7 +34,7 @@ interface PendingSubmission {
   timestamp: number;
 }
 
-export default function FeaturedSubmitModal({ drop, roundId, onClose }: Props) {
+export default function FeaturedSubmitModal({ drop, roundId, queueMode, onClose }: Props) {
   const { user, profile } = useAuth();
   const [url, setUrl] = useState('');
   const [platform, setPlatform] = useState('tiktok');
@@ -69,39 +70,69 @@ export default function FeaturedSubmitModal({ drop, roundId, onClose }: Props) {
 
     setSubmitting(true);
     try {
-      const insertData: Record<string, any> = {
-        drop_id: drop.id,
-        user_id: user.id,
-        username: profile.username || 'unknown',
-        avatar_url: profile.avatar_url,
-        submission_url: submitUrl.trim(),
-        platform: submitPlatform,
-      };
+      if (queueMode) {
+        // Submit to queue instead of round
+        const { error } = await supabase
+          .from('featured_drop_queue')
+          .insert({
+            drop_id: drop.id,
+            user_id: user.id,
+            username: profile.username || 'unknown',
+            avatar_url: profile.avatar_url,
+            submission_url: submitUrl.trim(),
+            platform: submitPlatform,
+          } as any)
+          .select('id')
+          .single();
 
-      if (roundId) {
-        insertData.round_id = roundId;
-      }
-
-      const { data: inserted, error } = await supabase
-        .from('featured_submissions')
-        .insert(insertData as any)
-        .select('id')
-        .single();
-
-      if (error) {
-        if (error.message.includes('Round is full')) {
-          toast.error('Round is full — no more slots!');
-        } else if (error.message.includes('not accepting')) {
-          toast.error('This round is not accepting submissions');
+        if (error) {
+          if (error.message.includes('Queue is full')) {
+            toast.error('Queue is full (100/100)!');
+          } else if (error.message.includes('duplicate')) {
+            toast.error('You already have an entry in the queue');
+          } else {
+            toast.error(error.message);
+          }
         } else {
-          toast.error(error.message);
+          toast.success('Queued for next round! 🔥');
+          onClose();
         }
       } else {
-        if (inserted?.id) {
-          enrichSubmission({ url: submitUrl.trim(), platform: submitPlatform, table: 'featured_submissions', row_id: inserted.id });
+        // Original round submission flow
+        const insertData: Record<string, any> = {
+          drop_id: drop.id,
+          user_id: user.id,
+          username: profile.username || 'unknown',
+          avatar_url: profile.avatar_url,
+          submission_url: submitUrl.trim(),
+          platform: submitPlatform,
+        };
+
+        if (roundId) {
+          insertData.round_id = roundId;
         }
-        toast.success('Edit submitted! 🔥');
-        onClose();
+
+        const { data: inserted, error } = await supabase
+          .from('featured_submissions')
+          .insert(insertData as any)
+          .select('id')
+          .single();
+
+        if (error) {
+          if (error.message.includes('Round is full')) {
+            toast.error('Round is full — no more slots!');
+          } else if (error.message.includes('not accepting')) {
+            toast.error('This round is not accepting submissions');
+          } else {
+            toast.error(error.message);
+          }
+        } else {
+          if (inserted?.id) {
+            enrichSubmission({ url: submitUrl.trim(), platform: submitPlatform, table: 'featured_submissions', row_id: inserted.id });
+          }
+          toast.success('Edit submitted! 🔥');
+          onClose();
+        }
       }
     } catch (e) {
       toast.error('Failed to submit');
@@ -141,7 +172,7 @@ export default function FeaturedSubmitModal({ drop, roundId, onClose }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Music className="w-5 h-5 text-destructive" />
-            Submit to "{drop.title}"
+            {queueMode ? `Queue for "${drop.title}"` : `Submit to "${drop.title}"`}
           </DialogTitle>
         </DialogHeader>
 
@@ -246,14 +277,20 @@ export default function FeaturedSubmitModal({ drop, roundId, onClose }: Props) {
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !url.trim()}
-                className="w-full py-3 bg-gradient-to-r from-destructive to-destructive/80 text-white font-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                className={`w-full py-3 font-bold disabled:opacity-50 flex items-center justify-center gap-2 ${
+                  queueMode
+                    ? 'bg-gradient-to-r from-gold/90 to-gold/70 text-background'
+                    : 'bg-gradient-to-r from-destructive to-destructive/80 text-white'
+                }`}
               >
                 {submitting ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    {user ? 'Submit Edit' : 'Submit & Sign Up'}
+                    {queueMode
+                      ? 'Join Queue'
+                      : user ? 'Submit Edit' : 'Submit & Sign Up'}
                   </>
                 )}
               </button>
