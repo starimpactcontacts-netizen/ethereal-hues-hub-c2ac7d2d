@@ -450,7 +450,7 @@ export default function CampaignAdminPage() {
                         </div>
                         {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                       </button>
-                      {/* Campaign Link Button */}
+                      {/* Quick action buttons */}
                       {campaign.slug && (
                         <Button 
                           onClick={() => copyCampaignLink(campaign.slug)} 
@@ -459,6 +459,26 @@ export default function CampaignAdminPage() {
                           className="h-7 text-[9px] gap-1 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
                         >
                           <Link2 className="w-3 h-3" /> Copy Link
+                        </Button>
+                      )}
+                      {campaign.slug && (
+                        <Button
+                          onClick={() => window.open(`/campaign/${campaign.slug}`, '_blank')}
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[9px] gap-1 border-green-500/30 text-green-400 hover:bg-green-500/10"
+                        >
+                          <Eye className="w-3 h-3" /> Dashboard
+                        </Button>
+                      )}
+                      {artistInfo?.slug && (
+                        <Button
+                          onClick={() => window.open(`/artist/${artistInfo.slug}`, '_blank')}
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-[9px] gap-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                        >
+                          <Music className="w-3 h-3" /> Artist
                         </Button>
                       )}
                       <Button onClick={() => handleDeleteCampaign(campaign.id)} size="sm" variant="ghost" className="text-destructive hover:text-destructive">
