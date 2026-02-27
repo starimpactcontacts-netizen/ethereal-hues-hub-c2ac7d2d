@@ -2285,6 +2285,7 @@ export type Database = {
           poster_url: string | null
           random_pick_id: string | null
           random_pick_username: string | null
+          slug: string | null
           song_name: string
           song_preview_url: string | null
           song_url: string | null
@@ -2310,6 +2311,7 @@ export type Database = {
           poster_url?: string | null
           random_pick_id?: string | null
           random_pick_username?: string | null
+          slug?: string | null
           song_name: string
           song_preview_url?: string | null
           song_url?: string | null
@@ -2335,6 +2337,7 @@ export type Database = {
           poster_url?: string | null
           random_pick_id?: string | null
           random_pick_username?: string | null
+          slug?: string | null
           song_name?: string
           song_preview_url?: string | null
           song_url?: string | null

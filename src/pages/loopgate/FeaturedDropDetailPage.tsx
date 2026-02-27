@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
   Zap, Send, ChevronRight, Users, Clock, Eye, Share2, Check,
-  TrendingUp, ChevronDown, Play, Lock, Video, Award
+  TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2
 } from "lucide-react";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,6 +29,7 @@ export default function FeaturedDropDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showSubmit, setShowSubmit] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const { submissions, loading: subsLoading } = useDropSubmissions(dropId || null);
@@ -37,11 +38,15 @@ export default function FeaturedDropDetailPage() {
   useEffect(() => {
     if (!dropId) return;
     const fetch = async () => {
-      const { data } = await supabase
+      // Try UUID first, then slug
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dropId);
+      const query = supabase
         .from('featured_drops')
-        .select('*, featured_artists(*)')
-        .eq('id', dropId)
-        .single();
+        .select('*, featured_artists(*)');
+      
+      const { data } = isUUID 
+        ? await query.eq('id', dropId).single()
+        : await query.eq('slug', dropId).single();
 
       if (data) {
         setDrop({ ...data, artist: (data as any).featured_artists } as FeaturedDrop);
@@ -91,18 +96,27 @@ export default function FeaturedDropDetailPage() {
   const scored = allSubs.filter(s => s.status === 'scored').sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
   const pending = allSubs.filter(s => s.status === 'pending');
 
+  // Clean slug-based link for bios
+  const cleanLink = `${window.location.origin}/drop/${(drop as any).slug || dropId}`;
+
   const handleShare = async () => {
-    const url = `${window.location.origin}/drop/${dropId}`;
     try {
       if (navigator.share) {
-        await navigator.share({ title: drop.title, text: `Join "${drop.title}" on Loopgate!`, url });
+        await navigator.share({ title: drop.title, text: `Join "${drop.title}" on Loopgate!`, url: cleanLink });
       } else {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(cleanLink);
         setCopied(true);
         toast.success("Link copied!");
         setTimeout(() => setCopied(false), 2000);
       }
     } catch {}
+  };
+
+  const handleQuickLink = async () => {
+    await navigator.clipboard.writeText(cleanLink);
+    setLinkCopied(true);
+    toast.success("Clean link copied — paste in your bio!");
+    setTimeout(() => setLinkCopied(false), 2500);
   };
 
   const getRoundLabel = (num: number) => {
@@ -142,6 +156,9 @@ export default function FeaturedDropDetailPage() {
                 <span className="text-[9px] font-bold text-gold uppercase tracking-wider">⚡ Judging</span>
               </div>
             )}
+            <button onClick={handleQuickLink} className="p-2 bg-background/80 backdrop-blur-sm border border-border rounded-full" title="Copy clean link for bio">
+              {linkCopied ? <Check className="w-4 h-4 text-gold" /> : <Link2 className="w-4 h-4 text-foreground" />}
+            </button>
             <button onClick={handleShare} className="p-2 bg-background/80 backdrop-blur-sm border border-border rounded-full">
               {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-foreground" />}
             </button>
