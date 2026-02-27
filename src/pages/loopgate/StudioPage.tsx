@@ -1,4 +1,4 @@
-import { ArrowLeft, Clapperboard, Zap, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Clapperboard, Zap, ArrowRight, ChevronDown, ChevronUp, Monitor } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import QuickClipEditor from "@/components/loopgate/QuickClipEditor";
@@ -39,10 +39,16 @@ export default function StudioPage() {
         {/* Solo Mode Banner */}
         {soloId && <SoloModeBanner soloId={soloId} />}
 
-        {/* Quick Clip Editor — THE HERO */}
-        <QuickClipEditor />
+      {/* Desktop Editors — PRIMARY */}
+        <div>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+            <Monitor className="w-3.5 h-3.5 text-gold" />
+            Editing Software
+          </h2>
+          <SoftwareLauncherGrid />
+        </div>
 
-        {/* Submit Shortcut — compact */}
+        {/* Submit Shortcut */}
         <button
           onClick={() => navigate("/events")}
           className="w-full bg-gold/10 border border-gold/30 p-2.5 flex items-center gap-3 hover:bg-gold/15 transition-all group"
@@ -54,15 +60,15 @@ export default function StudioPage() {
           <ArrowRight className="w-3.5 h-3.5 text-gold opacity-50 group-hover:opacity-100" />
         </button>
 
-        {/* Software Launcher — collapsible */}
+        {/* Quick Clip Editor — collapsible secondary */}
         <button
           onClick={() => setShowSoftware(!showSoftware)}
           className="w-full flex items-center justify-between py-2 text-muted-foreground hover:text-foreground transition-colors"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-wider">Need a desktop editor?</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider">Quick Clip Editor</span>
           {showSoftware ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
-        {showSoftware && <SoftwareLauncherGrid />}
+        {showSoftware && <QuickClipEditor />}
       </div>
     </div>
   );
