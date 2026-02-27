@@ -504,10 +504,19 @@ export default function GQTPage() {
                       )}
                     </div>
                     
-                    {/* Platform */}
-                    <div className="flex items-center justify-between px-3 py-2.5 bg-background/30 border border-border/20">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-[0.15em]">Platform</span>
-                      <span className="text-sm font-semibold text-foreground capitalize">{platform}</span>
+                    {/* Platform Selector */}
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">Platform</Label>
+                      <Select value={platform} onValueChange={(v) => setPlatform(v as PlatformType)}>
+                        <SelectTrigger className="h-11 bg-background/50 border-border/40 hover:border-foreground/20 transition-colors text-sm capitalize">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="tiktok">TikTok</SelectItem>
+                          <SelectItem value="instagram">Instagram Reels</SelectItem>
+                          <SelectItem value="youtube">YouTube / Shorts</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     {/* CTA */}
