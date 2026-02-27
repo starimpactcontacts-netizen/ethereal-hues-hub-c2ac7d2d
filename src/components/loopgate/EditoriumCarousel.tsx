@@ -45,7 +45,7 @@ export default function EditoriumCarousel() {
       {/* Header */}
       <div className="flex items-center justify-between px-4 mb-3">
         <div className="flex items-center gap-2.5">
-          <img src={editoriumLogo} alt="" className="h-4 opacity-80" />
+          <img src={editoriumLogo} alt="Editorium" className="h-6 opacity-90" />
           <span className="text-[10px] text-muted-foreground bg-surface-1 px-1.5 py-0.5">{articles.length} articles</span>
         </div>
         <Link to="/editorium" className="text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 uppercase tracking-wider">

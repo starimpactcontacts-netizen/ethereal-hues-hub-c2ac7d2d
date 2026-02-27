@@ -15,6 +15,7 @@ import loopgateBrand from '@/assets/loopgate-brand.png';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
 import loopgatePreviewDevices from '@/assets/loopgate-preview-devices.png';
+import editoriumLogo from '@/assets/editorium-logo.png';
 
 
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
@@ -184,6 +185,31 @@ export default function LandingPage() {
           </motion.div>
         </section>
 
+        {/* ═══════════════ QUICK LINKS — Editorium + Browse ═══════════════ */}
+        <section className="relative py-8 border-b border-border/30 bg-surface-0">
+          <div className="max-w-4xl mx-auto px-6">
+            <motion.div
+              className="flex items-center justify-center gap-6 sm:gap-10"
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <Link to="/editorium" className="group flex flex-col items-center gap-2 px-6 py-4 bg-surface-1/50 border border-border/40 hover:border-foreground/20 transition-all">
+                <img src={editoriumLogo} alt="Editorium" className="h-6 sm:h-8 opacity-80 group-hover:opacity-100 transition-opacity" />
+                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] group-hover:text-foreground transition-colors">Read Now</span>
+              </Link>
+              <Link to="/index" className="group flex flex-col items-center gap-2 px-6 py-4 bg-surface-1/50 border border-border/40 hover:border-foreground/20 transition-all">
+                <Eye className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] group-hover:text-foreground transition-colors">Discover</span>
+              </Link>
+              <Link to="/rankings" className="group flex flex-col items-center gap-2 px-6 py-4 bg-surface-1/50 border border-border/40 hover:border-foreground/20 transition-all">
+                <Award className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <span className="text-[9px] text-muted-foreground uppercase tracking-[0.2em] group-hover:text-foreground transition-colors">Rankings</span>
+              </Link>
+            </motion.div>
+          </div>
+        </section>
 
         {/* ═══════════════ FEATURE 1: 1v1 — FULL WIDTH CINEMATIC ═══════════════ */}
         <section className="relative py-24 sm:py-32 overflow-hidden">
