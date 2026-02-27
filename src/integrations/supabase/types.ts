@@ -4327,6 +4327,7 @@ export type Database = {
           notify_drops: boolean
           notify_scores: boolean
           onboarding_completed: boolean | null
+          playlist_name: string | null
           portfolio_url: string | null
           primary_crew_changed_at: string | null
           profile_bg_color: string | null
@@ -4384,6 +4385,7 @@ export type Database = {
           notify_drops?: boolean
           notify_scores?: boolean
           onboarding_completed?: boolean | null
+          playlist_name?: string | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null
           profile_bg_color?: string | null
@@ -4441,6 +4443,7 @@ export type Database = {
           notify_drops?: boolean
           notify_scores?: boolean
           onboarding_completed?: boolean | null
+          playlist_name?: string | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null
           profile_bg_color?: string | null

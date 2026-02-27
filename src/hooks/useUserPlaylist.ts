@@ -16,8 +16,25 @@ export interface UserPlaylistTrack {
 
 export function useUserPlaylist(userId: string | null) {
   const [myTracks, setMyTracks] = useState<UserPlaylistTrack[]>([]);
+  const [playlistName, setPlaylistName] = useState<string>('My Playlist');
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Fetch playlist name from profile
+  useEffect(() => {
+    if (!userId) return;
+    supabase.from('profiles').select('playlist_name').eq('id', userId).single()
+      .then(({ data }) => {
+        if (data?.playlist_name) setPlaylistName(data.playlist_name);
+      });
+  }, [userId]);
+
+  const renamePlaylist = useCallback(async (name: string) => {
+    const trimmed = name.trim().slice(0, 40);
+    if (!trimmed || !userId) return;
+    setPlaylistName(trimmed);
+    await supabase.from('profiles').update({ playlist_name: trimmed }).eq('id', userId);
+  }, [userId]);
 
   const fetchTracks = useCallback(async () => {
     if (!userId) { setMyTracks([]); return; }
@@ -97,12 +114,12 @@ export function useUserPlaylist(userId: string | null) {
     fetchTracks();
   }, [fetchTracks]);
 
-  return { myTracks, loading, uploading, uploadTrack, deleteTrack, togglePublic, refetch: fetchTracks };
+  return { myTracks, loading, uploading, playlistName, renamePlaylist, uploadTrack, deleteTrack, togglePublic, refetch: fetchTracks };
 }
 
 /** Fetch public playlists from other users */
 export function useCuratedPlaylists() {
-  const [playlists, setPlaylists] = useState<{ user_id: string; username: string; avatar_url: string | null; tracks: UserPlaylistTrack[] }[]>([]);
+  const [playlists, setPlaylists] = useState<{ user_id: string; username: string; avatar_url: string | null; playlist_name: string | null; tracks: UserPlaylistTrack[] }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -132,18 +149,19 @@ export function useCuratedPlaylists() {
       const userIds = Object.keys(grouped);
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, username, avatar_url')
+        .select('id, username, avatar_url, playlist_name')
         .in('id', userIds);
 
-      const profileMap: Record<string, { username: string; avatar_url: string | null }> = {};
+      const profileMap: Record<string, { username: string; avatar_url: string | null; playlist_name: string | null }> = {};
       for (const p of profiles || []) {
-        profileMap[p.id] = { username: p.username, avatar_url: p.avatar_url };
+        profileMap[p.id] = { username: p.username, avatar_url: p.avatar_url, playlist_name: (p as any).playlist_name };
       }
 
       const result = userIds.map(uid => ({
         user_id: uid,
         username: profileMap[uid]?.username || 'Unknown',
         avatar_url: profileMap[uid]?.avatar_url || null,
+        playlist_name: profileMap[uid]?.playlist_name || null,
         tracks: grouped[uid],
       }));
 
