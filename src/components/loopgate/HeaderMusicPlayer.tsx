@@ -93,6 +93,7 @@ export default function HeaderMusicPlayer() {
   const [shuffled, setShuffled] = useState(true);
   const [progress, setProgress] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1.0);
+  const [pitchSemitones, setPitchSemitones] = useState(0);
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const [introPlayed, setIntroPlayed] = useState(false);
   const [playlistMode, setPlaylistMode] = useState<PlaylistMode>('loopgate');
@@ -164,7 +165,8 @@ export default function HeaderMusicPlayer() {
     audioModeRef.current = 'loopgate';
     const a = new Audio(track.song_preview_url);
     a.volume = volume;
-    a.playbackRate = playbackRate;
+    a.preservesPitch = false;
+    a.playbackRate = playbackRate * Math.pow(2, pitchSemitones / 12);
     audioRef.current = a;
     a.addEventListener('ended', () => {
       setCurrentIndex(i => (i + 1) % tracks.length);
@@ -185,7 +187,8 @@ export default function HeaderMusicPlayer() {
     audioModeRef.current = 'myplaylist';
     const a = new Audio(track.audio_url);
     a.volume = volume;
-    a.playbackRate = playbackRate;
+    a.preservesPitch = false;
+    a.playbackRate = playbackRate * Math.pow(2, pitchSemitones / 12);
     audioRef.current = a;
     a.addEventListener('ended', () => {
       setMyPlaylistIndex(i => {
@@ -284,8 +287,11 @@ export default function HeaderMusicPlayer() {
   }, [volume]);
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.playbackRate = playbackRate;
-  }, [playbackRate]);
+    if (audioRef.current) {
+      audioRef.current.preservesPitch = false;
+      audioRef.current.playbackRate = playbackRate * Math.pow(2, pitchSemitones / 12);
+    }
+  }, [playbackRate, pitchSemitones]);
 
   const toggleShuffle = useCallback(() => {
     setShuffled(s => {
@@ -505,23 +511,30 @@ export default function HeaderMusicPlayer() {
           </div>
         </div>
 
-        {/* Pitcher — Continuous fine-tune slider */}
+        {/* Pitcher — Real pitch shift in semitones */}
         <div className="px-4 pb-3">
           <div className="flex items-center gap-1 mb-1.5">
             <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
-            <span className="text-[8px] text-muted-foreground/60 ml-auto">fine-tune</span>
+            <span className="text-[8px] text-muted-foreground/60 ml-auto">
+              {pitchSemitones === 0 ? 'default' : `${pitchSemitones > 0 ? '+' : ''}${pitchSemitones} st`}
+            </span>
+            {pitchSemitones !== 0 && (
+              <button onClick={() => setPitchSemitones(0)} className="text-[8px] text-emerald-500 hover:text-emerald-400 font-bold ml-1">
+                reset
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[9px] text-muted-foreground font-bold shrink-0">0.5</span>
+            <span className="text-[9px] text-muted-foreground font-bold shrink-0">−8</span>
             <Slider
-              value={[playbackRate * 100]}
-              onValueChange={([v]) => setPlaybackRate(Math.round(v) / 100)}
-              min={50}
-              max={200}
+              value={[pitchSemitones]}
+              onValueChange={([v]) => setPitchSemitones(v)}
+              min={-8}
+              max={8}
               step={1}
-              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none"
+              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500"
             />
-            <span className="text-[9px] text-muted-foreground font-bold shrink-0">2.0</span>
+            <span className="text-[9px] text-muted-foreground font-bold shrink-0">+8</span>
           </div>
         </div>
 
