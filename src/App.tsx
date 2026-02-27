@@ -81,7 +81,7 @@ const ArtistProfilePage = lazy(() => import("./pages/loopgate/ArtistProfilePage"
 const FeaturedDropDetailPage = lazy(() => import("./pages/loopgate/FeaturedDropDetailPage"));
 const EditoriumPage = lazy(() => import("./pages/loopgate/EditoriumPage"));
 const EditoriumArticlePage = lazy(() => import("./pages/loopgate/EditoriumArticlePage"));
-const UpscalerPage = lazy(() => import("./pages/loopgate/UpscalerPage"));
+
 const StudioPage = lazy(() => import("./pages/loopgate/StudioPage"));
 const SoloDetailPage = lazy(() => import("./pages/loopgate/SoloDetailPage"));
 const PlaylistsPage = lazy(() => import("./pages/loopgate/PlaylistsPage"));
@@ -334,7 +334,7 @@ export default function App() {
               <Route path="/connections" element={<ConnectionsPage />} />
               <Route path="/units/:crewId/settings" element={<CrewSettingsPage />} />
               <Route path="/shop" element={<ShopPage />} />
-              <Route path="/upscaler" element={<UpscalerPage />} />
+              
               <Route path="/studio" element={<StudioPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
             </Route>

@@ -322,19 +322,6 @@ export default function ProfilePage() {
             </motion.div>
           </Link>
           
-          <Link to="/upscaler">
-            <motion.div 
-              whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-gold/30 rounded-md p-2 flex items-center gap-1.5 hover:border-gold/50 transition-colors"
-            >
-              <div className="w-6 h-6 rounded-full bg-gold/15 flex items-center justify-center">
-                <Sparkles className="w-3 h-3 text-gold" />
-              </div>
-              <div className="flex-1 min-w-0 hidden sm:block">
-                <p className="text-[10px] font-medium text-gold">4K</p>
-              </div>
-            </motion.div>
-          </Link>
           
           <Link to="/connections">
             <motion.div 
