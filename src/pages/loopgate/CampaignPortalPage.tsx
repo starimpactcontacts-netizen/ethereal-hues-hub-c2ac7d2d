@@ -281,7 +281,7 @@ export default function CampaignPortalPage() {
                   />
                 </div>
                 <div className="flex justify-between mt-1.5">
-                  <span className="text-[10px] text-white/25">{formatNumber(campaign.total_views)} views</span>
+                  <span className="text-[10px] text-white/25">{campaign.total_views > 0 ? `${formatNumber(campaign.total_views)} views` : 'Waiting for update'}</span>
                   <span className="text-[10px] text-white/25">Goal: {formatNumber(campaign.goal_views)}</span>
                 </div>
               </div>
@@ -317,10 +317,10 @@ export default function CampaignPortalPage() {
           className="grid grid-cols-2 sm:grid-cols-4 gap-3"
         >
           {[
-            { label: 'Total Views', value: formatNumber(campaign.total_views), icon: Eye, accent: 'text-cyan-400' },
-            { label: 'Impressions', value: formatNumber(campaign.total_impressions), icon: TrendingUp, accent: 'text-blue-400' },
-            { label: 'Engagements', value: formatNumber(campaign.total_engagements), icon: Zap, accent: 'text-amber-400' },
-            { label: 'Clicks', value: formatNumber(campaign.total_clicks), icon: MousePointerClick, accent: 'text-green-400' },
+            { label: 'Total Views', raw: campaign.total_views, icon: Eye, accent: 'text-cyan-400' },
+            { label: 'Impressions', raw: campaign.total_impressions, icon: TrendingUp, accent: 'text-blue-400' },
+            { label: 'Engagements', raw: campaign.total_engagements, icon: Zap, accent: 'text-amber-400' },
+            { label: 'Clicks', raw: campaign.total_clicks, icon: MousePointerClick, accent: 'text-green-400' },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -330,7 +330,7 @@ export default function CampaignPortalPage() {
               className="bg-[#0a0a0a] border border-white/[0.06] p-4 hover:border-white/[0.1] transition-colors"
             >
               <stat.icon size={16} className={`${stat.accent} mb-3 opacity-60`} />
-              <p className="font-display text-xl text-white">{stat.value}</p>
+              <p className="font-display text-xl text-white">{stat.raw > 0 ? formatNumber(stat.raw) : '?'}</p>
               <p className="text-[8px] uppercase tracking-[0.2em] text-white/25 mt-1">{stat.label}</p>
             </motion.div>
           ))}
@@ -381,7 +381,7 @@ export default function CampaignPortalPage() {
               <div>
                 <h3 className="font-display text-lg text-white">Campaign Posts</h3>
                 <p className="text-[10px] text-white/25 mt-0.5">
-                  {edits.length} edits • {formatNumber(totalEditViews)} total views • {formatNumber(totalLikes)} likes
+                  {edits.length} edits{totalEditViews > 0 ? ` • ${formatNumber(totalEditViews)} total views` : ''}{totalLikes > 0 ? ` • ${formatNumber(totalLikes)} likes` : ''}
                 </p>
               </div>
             </div>
@@ -432,25 +432,35 @@ export default function CampaignPortalPage() {
                         )}
                       </div>
 
-                      {/* Stats row */}
-                      <div className="flex items-center gap-4 mt-3">
-                        <div>
-                          <p className="font-display text-sm text-white">{formatNumber(edit.view_count)}</p>
-                          <p className="text-[7px] uppercase tracking-widest text-white/20">Views</p>
+                      {/* Stats row — only show if any stat > 0 */}
+                      {(edit.view_count > 0 || edit.like_count > 0 || edit.share_count > 0 || edit.comment_count > 0) && (
+                        <div className="flex items-center gap-4 mt-3">
+                          {edit.view_count > 0 && (
+                            <div>
+                              <p className="font-display text-sm text-white">{formatNumber(edit.view_count)}</p>
+                              <p className="text-[7px] uppercase tracking-widest text-white/20">Views</p>
+                            </div>
+                          )}
+                          {edit.like_count > 0 && (
+                            <div>
+                              <p className="font-display text-sm text-white">{formatNumber(edit.like_count)}</p>
+                              <p className="text-[7px] uppercase tracking-widest text-white/20">Likes</p>
+                            </div>
+                          )}
+                          {edit.share_count > 0 && (
+                            <div>
+                              <p className="font-display text-sm text-white">{formatNumber(edit.share_count)}</p>
+                              <p className="text-[7px] uppercase tracking-widest text-white/20">Shares</p>
+                            </div>
+                          )}
+                          {edit.comment_count > 0 && (
+                            <div>
+                              <p className="font-display text-sm text-white">{formatNumber(edit.comment_count)}</p>
+                              <p className="text-[7px] uppercase tracking-widest text-white/20">Comments</p>
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <p className="font-display text-sm text-white">{formatNumber(edit.like_count)}</p>
-                          <p className="text-[7px] uppercase tracking-widest text-white/20">Likes</p>
-                        </div>
-                        <div>
-                          <p className="font-display text-sm text-white">{formatNumber(edit.share_count)}</p>
-                          <p className="text-[7px] uppercase tracking-widest text-white/20">Shares</p>
-                        </div>
-                        <div>
-                          <p className="font-display text-sm text-white">{formatNumber(edit.comment_count)}</p>
-                          <p className="text-[7px] uppercase tracking-widest text-white/20">Comments</p>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>
