@@ -112,6 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (profileData) {
       setProfile(profileData as Profile);
+      // Claim any guest submissions after profile is loaded
+      import('@/lib/claimGuestSubmissions').then(({ claimGuestSubmissions }) => {
+        claimGuestSubmissions(userId, (profileData as any).username, (profileData as any).avatar_url);
+      });
     }
 
     const { data: platformsData } = await supabase
