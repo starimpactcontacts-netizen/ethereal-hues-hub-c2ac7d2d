@@ -3,78 +3,27 @@ import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, SkipBack, SkipForward, Scissors, RotateCcw,
   Sparkles, Volume2, VolumeX, Plus, Image,
-  Maximize2, Minimize2, Layers, Eye, EyeOff,
+  Layers, Eye, EyeOff,
   Trash2, Copy, ZoomIn, ZoomOut, Undo, Redo,
-  FileVideo, Wand2, SlidersHorizontal, ChevronDown
+  FileVideo, Wand2, SlidersHorizontal, Keyboard, Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import {
+  FILTER_PRESETS, TEXT_STYLES, EFFECTS, TRANSITIONS, SPEED_OPTIONS,
+  EXPORT_QUALITIES,
+  applyEffect, renderTextOverlay, buildComputedFilter, formatTimecode,
+  type FilterPreset, type TextStyleKey, type ExportQuality,
+} from "@/lib/studioEffects";
 
 // ─── Types ───
-type FilterPreset = { name: string; label: string; filter: string; color: string };
-type TextOverlay = { id: string; text: string; x: number; y: number; style: "bold" | "caption" | "title" | "glow" };
+type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
-type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "speed";
-type EffectType = { id: string; name: string; label: string; apply: (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, t: number) => void };
-type TransitionType = { id: string; name: string; label: string; icon: string };
-
-// ─── Constants ───
-const FILTER_PRESETS: FilterPreset[] = [
-  { name: "none", label: "Original", filter: "none", color: "hsl(0 0% 30%)" },
-  { name: "cinematic", label: "Cinema", filter: "contrast(1.15) saturate(0.85) brightness(0.95) sepia(0.1)", color: "hsl(30 30% 35%)" },
-  { name: "phonk", label: "Phonk", filter: "contrast(1.4) saturate(1.3) brightness(0.85) hue-rotate(-10deg)", color: "hsl(340 60% 30%)" },
-  { name: "noir", label: "Noir", filter: "grayscale(1) contrast(1.3) brightness(0.9)", color: "hsl(0 0% 20%)" },
-  { name: "cold", label: "Cold", filter: "saturate(0.7) brightness(1.05) hue-rotate(15deg) contrast(1.1)", color: "hsl(210 50% 35%)" },
-  { name: "heat", label: "Heat", filter: "saturate(1.4) brightness(1.05) hue-rotate(-15deg) contrast(1.1)", color: "hsl(15 70% 35%)" },
-  { name: "vintage", label: "Vintage", filter: "sepia(0.4) contrast(1.1) brightness(0.95) saturate(0.8)", color: "hsl(35 40% 35%)" },
-  { name: "neon", label: "Neon", filter: "contrast(1.3) saturate(1.6) brightness(1.1)", color: "hsl(280 70% 40%)" },
-  { name: "fade", label: "Fade", filter: "contrast(0.85) saturate(0.6) brightness(1.15)", color: "hsl(220 15% 45%)" },
-  { name: "chrome", label: "Chrome", filter: "contrast(1.2) saturate(0.4) brightness(1.1)", color: "hsl(200 10% 50%)" },
-  { name: "lofi", label: "Lo-Fi", filter: "contrast(1.5) saturate(1.1) brightness(0.8)", color: "hsl(0 40% 25%)" },
-  { name: "dream", label: "Dream", filter: "contrast(0.9) saturate(1.3) brightness(1.15)", color: "hsl(270 40% 50%)" },
-];
-
-const TEXT_STYLES = {
-  bold: { font: "bold 48px 'Bebas Neue', sans-serif", color: "#ffffff", stroke: "#000000", label: "Bold" },
-  caption: { font: "600 24px 'Inter', sans-serif", color: "#ffffff", stroke: "#000000", label: "Caption" },
-  title: { font: "bold 64px 'Bebas Neue', sans-serif", color: "hsl(43, 74%, 49%)", stroke: "#000000", label: "Title" },
-  glow: { font: "bold 48px 'Bebas Neue', sans-serif", color: "#ffffff", stroke: "rgba(200,150,50,0.8)", label: "Glow" },
-};
-
-const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
-
-const EFFECTS: { id: string; label: string; icon: string }[] = [
-  { id: "glitch", label: "Glitch", icon: "⚡" },
-  { id: "shake", label: "Shake", icon: "📳" },
-  { id: "zoom_pulse", label: "Zoom Pulse", icon: "🔍" },
-  { id: "flash", label: "Flash", icon: "💥" },
-  { id: "rgb_split", label: "RGB Split", icon: "🌈" },
-  { id: "blur_pulse", label: "Blur", icon: "💨" },
-  { id: "vhs", label: "VHS", icon: "📼" },
-  { id: "grain", label: "Grain", icon: "🎞" },
-  { id: "light_leak", label: "Light Leak", icon: "☀️" },
-  { id: "mirror", label: "Mirror", icon: "🪞" },
-  { id: "pixelate", label: "Pixelate", icon: "🟩" },
-  { id: "invert", label: "Invert", icon: "🔄" },
-];
-
-const TRANSITIONS: { id: string; label: string; icon: string }[] = [
-  { id: "fade", label: "Fade", icon: "🌅" },
-  { id: "dissolve", label: "Dissolve", icon: "✨" },
-  { id: "slide_left", label: "Slide Left", icon: "⬅" },
-  { id: "slide_right", label: "Slide Right", icon: "➡" },
-  { id: "slide_up", label: "Slide Up", icon: "⬆" },
-  { id: "wipe", label: "Wipe", icon: "🧹" },
-  { id: "zoom_in", label: "Zoom In", icon: "🔎" },
-  { id: "zoom_out", label: "Zoom Out", icon: "🔍" },
-  { id: "spin", label: "Spin", icon: "🌀" },
-  { id: "blur_trans", label: "Blur", icon: "💨" },
-  { id: "glitch_trans", label: "Glitch", icon: "⚡" },
-  { id: "flash_trans", label: "Flash", icon: "💫" },
-];
+type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export";
+type HistoryEntry = { filter: FilterPreset; effects: string[]; brightness: number; contrast: number; saturation: number; hueRotate: number; speed: number; trimStart: number; trimEnd: number; textOverlays: TextOverlay[] };
 
 const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "media", icon: FileVideo, label: "Media" },
@@ -84,153 +33,9 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "text", icon: Type, label: "Text" },
   { id: "audio", icon: Music, label: "Audio" },
   { id: "adjust", icon: SlidersHorizontal, label: "Adjust" },
+  { id: "export", icon: Settings, label: "Export" },
 ];
 
-// ─── Effect application on canvas ───
-function applyEffect(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, effectId: string, time: number) {
-  const w = canvas.width, h = canvas.height;
-  const t = time % 4; // loop every 4s for animations
-  switch (effectId) {
-    case "glitch": {
-      const sliceCount = 8 + Math.floor(Math.random() * 8);
-      for (let i = 0; i < sliceCount; i++) {
-        const y = Math.random() * h;
-        const sliceH = 2 + Math.random() * 20;
-        const offset = (Math.random() - 0.5) * 30;
-        const imgData = ctx.getImageData(0, y, w, sliceH);
-        ctx.putImageData(imgData, offset, y);
-      }
-      break;
-    }
-    case "shake": {
-      const ox = (Math.random() - 0.5) * 12;
-      const oy = (Math.random() - 0.5) * 12;
-      const imgData = ctx.getImageData(0, 0, w, h);
-      ctx.clearRect(0, 0, w, h);
-      ctx.putImageData(imgData, ox, oy);
-      break;
-    }
-    case "zoom_pulse": {
-      const scale = 1 + Math.sin(time * 4) * 0.03;
-      const imgData = ctx.getImageData(0, 0, w, h);
-      ctx.clearRect(0, 0, w, h);
-      ctx.save();
-      ctx.translate(w / 2, h / 2);
-      ctx.scale(scale, scale);
-      ctx.translate(-w / 2, -h / 2);
-      ctx.putImageData(imgData, 0, 0);
-      ctx.restore();
-      break;
-    }
-    case "flash": {
-      if (Math.random() < 0.05) {
-        ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.random() * 0.5})`;
-        ctx.fillRect(0, 0, w, h);
-      }
-      break;
-    }
-    case "rgb_split": {
-      const imgData = ctx.getImageData(0, 0, w, h);
-      const shift = 4 + Math.sin(time * 3) * 3;
-      const shifted = ctx.createImageData(w, h);
-      for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-          const idx = (y * w + x) * 4;
-          const rIdx = (y * w + Math.min(w - 1, x + Math.round(shift))) * 4;
-          const bIdx = (y * w + Math.max(0, x - Math.round(shift))) * 4;
-          shifted.data[idx] = imgData.data[rIdx]; // R from shifted
-          shifted.data[idx + 1] = imgData.data[idx + 1]; // G stays
-          shifted.data[idx + 2] = imgData.data[bIdx + 2]; // B from opposite shift
-          shifted.data[idx + 3] = 255;
-        }
-      }
-      ctx.putImageData(shifted, 0, 0);
-      break;
-    }
-    case "vhs": {
-      // Scanlines
-      ctx.fillStyle = "rgba(0,0,0,0.03)";
-      for (let y = 0; y < h; y += 2) {
-        ctx.fillRect(0, y, w, 1);
-      }
-      // Color bleed
-      ctx.globalAlpha = 0.05;
-      ctx.fillStyle = `hsl(${(time * 60) % 360}, 100%, 50%)`;
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalAlpha = 1;
-      // Tracking offset
-      const trackY = (Math.sin(time * 2) * 0.5 + 0.5) * h;
-      const trackH = 3 + Math.random() * 5;
-      const imgData = ctx.getImageData(0, trackY, w, trackH);
-      ctx.putImageData(imgData, (Math.random() - 0.5) * 8, trackY);
-      break;
-    }
-    case "grain": {
-      const imgData = ctx.getImageData(0, 0, w, h);
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        const noise = (Math.random() - 0.5) * 30;
-        imgData.data[i] += noise;
-        imgData.data[i + 1] += noise;
-        imgData.data[i + 2] += noise;
-      }
-      ctx.putImageData(imgData, 0, 0);
-      break;
-    }
-    case "light_leak": {
-      const gradient = ctx.createRadialGradient(
-        w * (0.3 + Math.sin(time * 0.5) * 0.3), h * 0.3, 0,
-        w * 0.5, h * 0.5, w * 0.8
-      );
-      gradient.addColorStop(0, `hsla(${(time * 30) % 60 + 20}, 80%, 60%, 0.15)`);
-      gradient.addColorStop(1, "transparent");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, w, h);
-      break;
-    }
-    case "mirror": {
-      const half = ctx.getImageData(0, 0, w / 2, h);
-      ctx.save();
-      ctx.translate(w, 0);
-      ctx.scale(-1, 1);
-      ctx.putImageData(half, w / 2, 0);
-      ctx.restore();
-      break;
-    }
-    case "pixelate": {
-      const size = 8;
-      for (let y = 0; y < h; y += size) {
-        for (let x = 0; x < w; x += size) {
-          const imgData = ctx.getImageData(x, y, 1, 1);
-          ctx.fillStyle = `rgb(${imgData.data[0]},${imgData.data[1]},${imgData.data[2]})`;
-          ctx.fillRect(x, y, size, size);
-        }
-      }
-      break;
-    }
-    case "invert": {
-      const imgData = ctx.getImageData(0, 0, w, h);
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        imgData.data[i] = 255 - imgData.data[i];
-        imgData.data[i + 1] = 255 - imgData.data[i + 1];
-        imgData.data[i + 2] = 255 - imgData.data[i + 2];
-      }
-      ctx.putImageData(imgData, 0, 0);
-      break;
-    }
-    case "blur_pulse": {
-      // Simple fake blur via overlaying slightly offset copies
-      ctx.globalAlpha = 0.15;
-      const imgData = ctx.getImageData(0, 0, w, h);
-      for (let i = 0; i < 3; i++) {
-        ctx.putImageData(imgData, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4);
-      }
-      ctx.globalAlpha = 1;
-      break;
-    }
-  }
-}
-
-// ─── Main Component ───
 export default function StudioNLE() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -250,7 +55,7 @@ export default function StudioNLE() {
   const [activeFilter, setActiveFilter] = useState<FilterPreset>(FILTER_PRESETS[0]);
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [textInput, setTextInput] = useState("");
-  const [textStyle, setTextStyle] = useState<"bold" | "caption" | "title" | "glow">("bold");
+  const [textStyle, setTextStyle] = useState<TextStyleKey>("bold");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioName, setAudioName] = useState("");
   const [speed, setSpeed] = useState(1);
@@ -259,21 +64,26 @@ export default function StudioNLE() {
   const [progress, setProgress] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
-  
-  // Effects & transitions
   const [activeEffects, setActiveEffects] = useState<string[]>([]);
   const [activeTransition, setActiveTransition] = useState<string | null>(null);
 
   // UI state
   const [activeToolTab, setActiveToolTab] = useState<ToolTab | null>(null);
   const [timelineZoom, setTimelineZoom] = useState(1);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [exportQuality, setExportQuality] = useState<ExportQuality>("high");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [effectCategory, setEffectCategory] = useState<string>("all");
 
   // Color grading
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
   const [hueRotate, setHueRotate] = useState(0);
+
+  // Undo/Redo
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
@@ -284,16 +94,66 @@ export default function StudioNLE() {
   ]);
 
   const videoUrl = activeMedia?.url ?? null;
+  const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
 
-  const computedFilter = useMemo(() => {
-    const parts: string[] = [];
-    if (activeFilter.filter !== "none") parts.push(activeFilter.filter);
-    if (brightness !== 100) parts.push(`brightness(${brightness / 100})`);
-    if (contrast !== 100) parts.push(`contrast(${contrast / 100})`);
-    if (saturation !== 100) parts.push(`saturate(${saturation / 100})`);
-    if (hueRotate !== 0) parts.push(`hue-rotate(${hueRotate}deg)`);
-    return parts.length > 0 ? parts.join(" ") : "none";
-  }, [activeFilter, brightness, contrast, saturation, hueRotate]);
+  const filteredFilters = useMemo(() => filterCategory === "all" ? FILTER_PRESETS : FILTER_PRESETS.filter(f => f.category === filterCategory), [filterCategory]);
+  const filteredEffects = useMemo(() => effectCategory === "all" ? EFFECTS : EFFECTS.filter(e => e.category === effectCategory), [effectCategory]);
+
+  // ─── Undo/Redo ───
+  const pushHistory = useCallback(() => {
+    const entry: HistoryEntry = { filter: activeFilter, effects: [...activeEffects], brightness, contrast, saturation, hueRotate, speed, trimStart, trimEnd, textOverlays: [...textOverlays] };
+    setHistory(prev => [...prev.slice(0, historyIndex + 1), entry]);
+    setHistoryIndex(prev => prev + 1);
+  }, [activeFilter, activeEffects, brightness, contrast, saturation, hueRotate, speed, trimStart, trimEnd, textOverlays, historyIndex]);
+
+  const undo = useCallback(() => {
+    if (historyIndex <= 0) return;
+    const entry = history[historyIndex - 1];
+    setActiveFilter(entry.filter); setActiveEffects(entry.effects);
+    setBrightness(entry.brightness); setContrast(entry.contrast);
+    setSaturation(entry.saturation); setHueRotate(entry.hueRotate);
+    setSpeed(entry.speed); setTrimStart(entry.trimStart); setTrimEnd(entry.trimEnd);
+    setTextOverlays(entry.textOverlays);
+    setHistoryIndex(prev => prev - 1);
+  }, [history, historyIndex]);
+
+  const redo = useCallback(() => {
+    if (historyIndex >= history.length - 1) return;
+    const entry = history[historyIndex + 1];
+    setActiveFilter(entry.filter); setActiveEffects(entry.effects);
+    setBrightness(entry.brightness); setContrast(entry.contrast);
+    setSaturation(entry.saturation); setHueRotate(entry.hueRotate);
+    setSpeed(entry.speed); setTrimStart(entry.trimStart); setTrimEnd(entry.trimEnd);
+    setTextOverlays(entry.textOverlays);
+    setHistoryIndex(prev => prev + 1);
+  }, [history, historyIndex]);
+
+  // ─── Keyboard Shortcuts ───
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).tagName === "INPUT" || (e.target as HTMLElement).tagName === "TEXTAREA") return;
+      switch (e.key) {
+        case " ": e.preventDefault(); togglePlay(); break;
+        case "ArrowLeft": e.preventDefault(); seekTo(Math.max(0, currentTime - (e.shiftKey ? 5 : 1))); break;
+        case "ArrowRight": e.preventDefault(); seekTo(Math.min(duration, currentTime + (e.shiftKey ? 5 : 1))); break;
+        case "j": seekTo(Math.max(0, currentTime - 5)); break;
+        case "k": togglePlay(); break;
+        case "l": seekTo(Math.min(duration, currentTime + 5)); break;
+        case "i": setTrimStart(currentTime); pushHistory(); toast.success("In point set"); break;
+        case "o": setTrimEnd(currentTime); pushHistory(); toast.success("Out point set"); break;
+        case "s": if (e.ctrlKey || e.metaKey) { e.preventDefault(); startExport(); } break;
+        case "z": if (e.ctrlKey || e.metaKey) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); } break;
+        case "m": setMuted(prev => !prev); break;
+        case "[": setSpeed(prev => SPEED_OPTIONS[Math.max(0, SPEED_OPTIONS.indexOf(prev) - 1)]); break;
+        case "]": setSpeed(prev => SPEED_OPTIONS[Math.min(SPEED_OPTIONS.length - 1, SPEED_OPTIONS.indexOf(prev) + 1)]); break;
+        case "Home": seekTo(trimStart); break;
+        case "End": seekTo(trimEnd); break;
+        case "?": setShowShortcuts(prev => !prev); break;
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [currentTime, duration, trimStart, trimEnd, playing]);
 
   // ─── File Handling ───
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,8 +201,8 @@ export default function StudioNLE() {
   };
 
   const toggleEffect = (effectId: string) => {
+    pushHistory();
     setActiveEffects(prev => prev.includes(effectId) ? prev.filter(e => e !== effectId) : [...prev, effectId]);
-    toast.success(activeEffects.includes(effectId) ? "Effect removed" : "Effect applied");
   };
 
   // ─── Timeline Thumbnails ───
@@ -352,7 +212,7 @@ export default function StudioNLE() {
     vid.src = videoUrl; vid.crossOrigin = "anonymous"; vid.muted = true; vid.preload = "auto";
     vid.onloadedmetadata = () => {
       setDuration(vid.duration); setTrimEnd(vid.duration);
-      const count = Math.min(20, Math.max(8, Math.floor(vid.duration / 1.5)));
+      const count = Math.min(24, Math.max(8, Math.floor(vid.duration / 1.2)));
       const interval = vid.duration / count;
       const canvas = document.createElement("canvas"); canvas.width = 80; canvas.height = 45;
       const ctx = canvas.getContext("2d")!;
@@ -384,20 +244,11 @@ export default function StudioNLE() {
         ctx.filter = computedFilter;
         ctx.drawImage(vid, 0, 0);
         ctx.filter = "none";
-        // Apply active effects
-        activeEffects.forEach(effectId => {
-          applyEffect(ctx, canvas, effectId, vid.currentTime);
-        });
-        // Text overlays
+        activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
         textOverlays.forEach((overlay) => {
-          const style = TEXT_STYLES[overlay.style];
-          ctx.font = style.font; ctx.textAlign = "center";
-          if (overlay.style === "glow") { ctx.shadowColor = "rgba(200,150,50,0.9)"; ctx.shadowBlur = 20; }
-          ctx.strokeStyle = style.stroke; ctx.lineWidth = 4;
-          ctx.strokeText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-          ctx.fillStyle = style.color;
-          ctx.fillText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-          ctx.shadowBlur = 0;
+          if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
+            renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+          }
         });
       }
       animRef.current = requestAnimationFrame(draw);
@@ -407,11 +258,11 @@ export default function StudioNLE() {
   }, [videoUrl, computedFilter, textOverlays, activeEffects]);
 
   // ─── Playback Controls ───
-  const togglePlay = () => {
+  const togglePlay = useCallback(() => {
     const vid = videoRef.current; if (!vid) return;
     if (vid.paused) { vid.currentTime = Math.max(vid.currentTime, trimStart); vid.playbackRate = speed; vid.play(); setPlaying(true); }
     else { vid.pause(); setPlaying(false); }
-  };
+  }, [trimStart, speed]);
 
   useEffect(() => {
     const vid = videoRef.current; if (!vid || !playing) return;
@@ -423,7 +274,7 @@ export default function StudioNLE() {
   useEffect(() => { if (videoRef.current) videoRef.current.playbackRate = speed; }, [speed]);
   useEffect(() => { if (videoRef.current) videoRef.current.muted = muted; }, [muted]);
 
-  const seekTo = (time: number) => { if (videoRef.current) { videoRef.current.currentTime = time; setCurrentTime(time); } };
+  const seekTo = useCallback((time: number) => { if (videoRef.current) { videoRef.current.currentTime = time; setCurrentTime(time); } }, []);
   const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!timelineRef.current || !duration) return;
     const rect = timelineRef.current.getBoundingClientRect();
@@ -433,33 +284,46 @@ export default function StudioNLE() {
 
   const addTextOverlay = () => {
     if (!textInput.trim()) return;
-    setTextOverlays((prev) => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle }]);
+    pushHistory();
+    setTextOverlays((prev) => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle, startTime: trimStart, endTime: trimEnd }]);
     setTextInput(""); toast.success("Text overlay added");
   };
 
-  const removeTextOverlay = (id: string) => setTextOverlays((prev) => prev.filter((t) => t.id !== id));
+  const removeTextOverlay = (id: string) => { pushHistory(); setTextOverlays((prev) => prev.filter((t) => t.id !== id)); };
+
+  const splitAtPlayhead = () => {
+    if (!activeMedia || currentTime <= trimStart || currentTime >= trimEnd) return;
+    pushHistory();
+    toast.success(`Split at ${formatTimecode(currentTime, true)}`);
+  };
+
+  const resetColorGrading = () => { pushHistory(); setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); };
 
   // ─── Export ───
   const startExport = useCallback(async () => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !activeMedia) return;
     setState("processing"); setProgress(0);
+    const quality = EXPORT_QUALITIES.find(q => q.id === exportQuality) ?? EXPORT_QUALITIES[2];
     const ctx = canvas.getContext("2d")!;
-    canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
-    const stream = canvas.captureStream(30);
+    canvas.width = Math.round(vid.videoWidth * quality.resolution);
+    canvas.height = Math.round(vid.videoHeight * quality.resolution);
+    const stream = canvas.captureStream(quality.fps);
     if (audioFile) {
-      const audioCtx = new AudioContext();
-      const buf = await audioFile.arrayBuffer();
-      const decoded = await audioCtx.decodeAudioData(buf);
-      const source = audioCtx.createBufferSource();
-      source.buffer = decoded;
-      const dest = audioCtx.createMediaStreamDestination();
-      source.connect(dest);
-      dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
-      source.start(0);
+      try {
+        const audioCtx = new AudioContext();
+        const buf = await audioFile.arrayBuffer();
+        const decoded = await audioCtx.decodeAudioData(buf);
+        const source = audioCtx.createBufferSource();
+        source.buffer = decoded;
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest);
+        dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+        source.start(0);
+      } catch { /* audio error, continue without */ }
     }
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: Math.min(vid.videoWidth * vid.videoHeight * 8, 40_000_000) });
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: quality.bitrate });
     const chunks: Blob[] = [];
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
     const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
@@ -469,17 +333,14 @@ export default function StudioNLE() {
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
-      ctx.filter = computedFilter; ctx.drawImage(vid, 0, 0); ctx.filter = "none";
+      ctx.filter = computedFilter;
+      ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+      ctx.filter = "none";
       activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
       textOverlays.forEach((overlay) => {
-        const style = TEXT_STYLES[overlay.style];
-        ctx.font = style.font; ctx.textAlign = "center";
-        if (overlay.style === "glow") { ctx.shadowColor = "rgba(200,150,50,0.9)"; ctx.shadowBlur = 20; }
-        ctx.strokeStyle = style.stroke; ctx.lineWidth = 4;
-        ctx.strokeText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-        ctx.fillStyle = style.color;
-        ctx.fillText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-        ctx.shadowBlur = 0;
+        if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
+          renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+        }
       });
       setProgress(Math.min(99, Math.round(((vid.currentTime - trimStart) / exportDuration) * 100)));
       requestAnimationFrame(drawLoop);
@@ -488,22 +349,16 @@ export default function StudioNLE() {
     const blob = await resultPromise;
     setResultUrl(URL.createObjectURL(blob));
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
+    canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects]);
+  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, exportQuality]);
 
   const handleDownload = () => {
     if (!resultUrl || !activeMedia) return;
     const a = document.createElement("a"); a.href = resultUrl;
-    a.download = `${activeMedia.name.replace(/\.[^/.]+$/, "")}_edited.webm`;
+    a.download = `${activeMedia.name.replace(/\.[^/.]+$/, "")}_loopgate.webm`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
-
-  const fmt = (t: number) => {
-    const m = Math.floor(t / 60); const s = Math.floor(t % 60); const f = Math.floor((t % 1) * 30);
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}:${f.toString().padStart(2, "0")}`;
-  };
-
-  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); };
 
   // ─── RENDER ───
   return (
@@ -511,16 +366,30 @@ export default function StudioNLE() {
       {/* ═══ TOP BAR ═══ */}
       <div className="h-11 flex items-center bg-surface-1 border-b border-border px-3 gap-2 flex-shrink-0">
         <span className="font-display text-sm text-foreground tracking-wider">STUDIO</span>
+        <span className="text-[9px] text-muted-foreground bg-gold/10 text-gold px-1.5 py-0.5 rounded-sm font-bold">PRO</span>
         <div className="flex-1" />
 
         {/* Undo/Redo */}
-        <button onClick={() => { setTrimStart(0); setTrimEnd(duration); resetColorGrading(); setActiveFilter(FILTER_PRESETS[0]); setActiveEffects([]); }}
-          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors" title="Reset">
+        <div className="flex items-center gap-0.5">
+          <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors" title="Undo (Ctrl+Z)">
+            <Undo className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors" title="Redo (Ctrl+Shift+Z)">
+            <Redo className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="w-px h-5 bg-border" />
+
+        <button onClick={() => setShowShortcuts(prev => !prev)} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors" title="Keyboard Shortcuts (?)">
+          <Keyboard className="w-3.5 h-3.5" />
+        </button>
+
+        <button onClick={() => { pushHistory(); setTrimStart(0); setTrimEnd(duration); resetColorGrading(); setActiveFilter(FILTER_PRESETS[0]); setActiveEffects([]); }}
+          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors" title="Reset All">
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
         <div className="w-px h-5 bg-border" />
 
-        {/* Export */}
         {state === "done" ? (
           <Button onClick={handleDownload} size="sm" className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5">
             <Download className="w-3.5 h-3.5" /> Download
@@ -534,7 +403,7 @@ export default function StudioNLE() {
         )}
       </div>
 
-      {/* ═══ MAIN AREA: Preview + Optional Side Panel ═══ */}
+      {/* ═══ MAIN AREA ═══ */}
       <div className="flex-1 flex min-h-0">
         {/* ─── CENTER: Preview ─── */}
         <div className="flex-1 flex flex-col min-w-0">
@@ -544,7 +413,6 @@ export default function StudioNLE() {
                 <video ref={videoRef} src={videoUrl} className="hidden" playsInline />
                 <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
 
-                {/* Play overlay */}
                 {!playing && (
                   <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/20 transition-colors">
                     <div className="w-14 h-14 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10 hover:bg-black/60 transition-colors">
@@ -579,7 +447,6 @@ export default function StudioNLE() {
                   )}
                 </div>
 
-                {/* Processing overlay */}
                 {state === "processing" && (
                   <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3">
                     <Loader2 className="w-8 h-8 text-gold animate-spin" />
@@ -598,14 +465,52 @@ export default function StudioNLE() {
                 <div>
                   <p className="text-sm font-display text-foreground">Import Media</p>
                   <p className="text-[11px] text-muted-foreground mt-1">Video, Image, Audio • Max 500MB</p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5">or press Ctrl+I</p>
                 </div>
               </button>
             )}
+
+            {/* Keyboard shortcuts overlay */}
+            <AnimatePresence>
+              {showShortcuts && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/90 backdrop-blur-sm z-30 flex items-center justify-center p-8">
+                  <div className="max-w-lg w-full">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-display text-foreground tracking-wider">KEYBOARD SHORTCUTS</h3>
+                      <button onClick={() => setShowShortcuts(false)} className="p-1 text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[11px]">
+                      {[
+                        ["Space", "Play / Pause"],
+                        ["← →", "Seek ±1s"],
+                        ["Shift+← →", "Seek ±5s"],
+                        ["J / K / L", "Back / Play / Forward"],
+                        ["I", "Set In Point"],
+                        ["O", "Set Out Point"],
+                        ["M", "Toggle Mute"],
+                        ["[ ]", "Speed Down / Up"],
+                        ["Ctrl+Z", "Undo"],
+                        ["Ctrl+Shift+Z", "Redo"],
+                        ["Ctrl+S", "Export"],
+                        ["Home / End", "Go to In / Out"],
+                        ["?", "Toggle Shortcuts"],
+                      ].map(([key, desc]) => (
+                        <div key={key} className="flex items-center gap-2">
+                          <kbd className="bg-surface-2 border border-border rounded px-1.5 py-0.5 font-mono text-[10px] text-gold min-w-[40px] text-center">{key}</kbd>
+                          <span className="text-muted-foreground">{desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* ─── Player Controls ─── */}
           <div className="h-12 bg-surface-1 border-t border-border flex items-center px-4 gap-3 flex-shrink-0">
-            <span className="text-[11px] text-gold tabular-nums font-mono w-24">{fmt(currentTime)}</span>
+            <span className="text-[11px] text-gold tabular-nums font-mono w-24">{formatTimecode(currentTime, true)}</span>
             <div className="flex items-center gap-1.5">
               <button onClick={() => seekTo(trimStart)} className="p-1.5 text-muted-foreground hover:text-foreground"><SkipBack className="w-4 h-4" /></button>
               <button onClick={togglePlay} className="w-10 h-10 bg-gold/10 border border-gold/30 rounded-full flex items-center justify-center hover:bg-gold/20 transition-colors">
@@ -613,10 +518,12 @@ export default function StudioNLE() {
               </button>
               <button onClick={() => seekTo(trimEnd)} className="p-1.5 text-muted-foreground hover:text-foreground"><SkipForward className="w-4 h-4" /></button>
             </div>
-            <span className="text-[11px] text-muted-foreground tabular-nums font-mono w-24">/ {fmt(duration)}</span>
+            <span className="text-[11px] text-muted-foreground tabular-nums font-mono w-24">/ {formatTimecode(duration, true)}</span>
             <div className="flex-1" />
 
-            {/* Speed selector */}
+            <button onClick={splitAtPlayhead} className="p-1.5 text-muted-foreground hover:text-gold transition-colors" title="Split at Playhead">
+              <Scissors className="w-4 h-4" />
+            </button>
             <button onClick={() => setSpeed(SPEED_OPTIONS[(SPEED_OPTIONS.indexOf(speed) + 1) % SPEED_OPTIONS.length])}
               className="px-2 py-1 text-[10px] font-bold text-muted-foreground hover:text-gold border border-border rounded-sm transition-colors">
               {speed}x
@@ -627,12 +534,12 @@ export default function StudioNLE() {
           </div>
         </div>
 
-        {/* ─── SIDE PANEL (when tool selected) ─── */}
+        {/* ─── SIDE PANEL ─── */}
         <AnimatePresence>
           {activeToolTab && (
             <motion.div
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 300, opacity: 1 }}
+              animate={{ width: 320, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="flex-shrink-0 bg-surface-1 border-l border-border overflow-hidden flex flex-col"
@@ -669,6 +576,7 @@ export default function StudioNLE() {
                             )}
                             <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5">
                               <p className="text-[8px] text-white/80 truncate">{item.name}</p>
+                              {item.duration > 0 && <p className="text-[7px] text-white/50">{formatTimecode(item.duration)}</p>}
                             </div>
                             <button onClick={(e) => { e.stopPropagation(); removeMedia(item.id); }}
                               className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full items-center justify-center hidden group-hover:flex">
@@ -684,9 +592,16 @@ export default function StudioNLE() {
                 {/* EFFECTS */}
                 {activeToolTab === "effects" && (
                   <>
-                    <p className="text-[10px] text-muted-foreground">Tap to toggle effects • multiple allowed</p>
+                    <div className="flex gap-1 flex-wrap">
+                      {["all", "distort", "color", "style", "light"].map(cat => (
+                        <button key={cat} onClick={() => setEffectCategory(cat)}
+                          className={`px-2 py-1 text-[9px] font-bold uppercase rounded-md border transition-all ${effectCategory === cat ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
                     <div className="grid grid-cols-3 gap-2">
-                      {EFFECTS.map((effect) => {
+                      {filteredEffects.map((effect) => {
                         const isActive = activeEffects.includes(effect.id);
                         return (
                           <button key={effect.id} onClick={() => toggleEffect(effect.id)}
@@ -699,8 +614,8 @@ export default function StudioNLE() {
                       })}
                     </div>
                     {activeEffects.length > 0 && (
-                      <button onClick={() => setActiveEffects([])} className="w-full py-2 text-[10px] text-destructive font-semibold border border-destructive/20 rounded-md hover:bg-destructive/5">
-                        Clear All Effects
+                      <button onClick={() => { pushHistory(); setActiveEffects([]); }} className="w-full py-2 text-[10px] text-destructive font-semibold border border-destructive/20 rounded-md hover:bg-destructive/5">
+                        Clear All Effects ({activeEffects.length})
                       </button>
                     )}
                   </>
@@ -727,15 +642,25 @@ export default function StudioNLE() {
 
                 {/* FILTERS */}
                 {activeToolTab === "filters" && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {FILTER_PRESETS.map((preset) => (
-                      <button key={preset.name} onClick={() => setActiveFilter(preset)} className="flex flex-col items-center gap-1.5">
-                        <div className={`w-full aspect-square rounded-lg border-2 transition-all ${activeFilter.name === preset.name ? "border-gold shadow-[0_0_10px_rgba(var(--gold),0.2)]" : "border-border hover:border-foreground/20"}`}
-                          style={{ backgroundColor: preset.color }} />
-                        <span className={`text-[9px] font-semibold ${activeFilter.name === preset.name ? "text-gold" : "text-muted-foreground"}`}>{preset.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <>
+                    <div className="flex gap-1 flex-wrap">
+                      {["all", "basic", "cinema", "mood", "film"].map(cat => (
+                        <button key={cat} onClick={() => setFilterCategory(cat)}
+                          className={`px-2 py-1 text-[9px] font-bold uppercase rounded-md border transition-all ${filterCategory === cat ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {filteredFilters.map((preset) => (
+                        <button key={preset.name} onClick={() => { pushHistory(); setActiveFilter(preset); }} className="flex flex-col items-center gap-1.5">
+                          <div className={`w-full aspect-square rounded-lg border-2 transition-all ${activeFilter.name === preset.name ? "border-gold shadow-[0_0_10px_rgba(var(--gold),0.2)]" : "border-border hover:border-foreground/20"}`}
+                            style={{ backgroundColor: preset.color }} />
+                          <span className={`text-[9px] font-semibold ${activeFilter.name === preset.name ? "text-gold" : "text-muted-foreground"}`}>{preset.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
 
                 {/* TEXT */}
@@ -744,10 +669,10 @@ export default function StudioNLE() {
                     <input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Type your text..."
                       className="w-full bg-surface-0 border border-border rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
                       onKeyDown={(e) => e.key === "Enter" && addTextOverlay()} />
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {(Object.entries(TEXT_STYLES) as [keyof typeof TEXT_STYLES, typeof TEXT_STYLES[keyof typeof TEXT_STYLES]][]).map(([key, s]) => (
-                        <button key={key} onClick={() => setTextStyle(key as any)}
-                          className={`py-2.5 text-[10px] font-bold uppercase border rounded-md transition-all ${textStyle === key ? "border-gold bg-gold/8 text-gold" : "border-border text-muted-foreground"}`}>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {(Object.entries(TEXT_STYLES) as [TextStyleKey, typeof TEXT_STYLES[TextStyleKey]][]).map(([key, s]) => (
+                        <button key={key} onClick={() => setTextStyle(key)}
+                          className={`py-2 text-[9px] font-bold uppercase border rounded-md transition-all ${textStyle === key ? "border-gold bg-gold/8 text-gold" : "border-border text-muted-foreground hover:border-foreground/20"}`}>
                           {s.label}
                         </button>
                       ))}
@@ -757,11 +682,12 @@ export default function StudioNLE() {
                     </Button>
                     {textOverlays.length > 0 && (
                       <div className="space-y-1 pt-2 border-t border-border">
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Active</span>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Active ({textOverlays.length})</span>
                         {textOverlays.map((t) => (
                           <div key={t.id} className="flex items-center gap-2 bg-surface-0 border border-border rounded-md px-2 py-1.5">
                             <Type className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                             <span className="text-[11px] text-foreground truncate flex-1">{t.text}</span>
+                            <span className="text-[8px] text-muted-foreground">{formatTimecode(t.startTime)}</span>
                             <button onClick={() => removeTextOverlay(t.id)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
                           </div>
                         ))}
@@ -814,6 +740,38 @@ export default function StudioNLE() {
                     ))}
                   </>
                 )}
+
+                {/* EXPORT SETTINGS */}
+                {activeToolTab === "export" && (
+                  <>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Export Quality</p>
+                    <div className="space-y-2">
+                      {EXPORT_QUALITIES.map((q) => (
+                        <button key={q.id} onClick={() => setExportQuality(q.id)}
+                          className={`w-full text-left px-3 py-3 rounded-lg border transition-all ${exportQuality === q.id ? "border-gold bg-gold/10" : "border-border bg-surface-2 hover:border-foreground/20"}`}>
+                          <div className="flex items-center justify-between">
+                            <span className={`text-xs font-bold ${exportQuality === q.id ? "text-gold" : "text-foreground"}`}>{q.label}</span>
+                            <span className="text-[9px] text-muted-foreground">{q.fps}fps</span>
+                          </div>
+                          <p className="text-[9px] text-muted-foreground mt-0.5">
+                            {Math.round(q.resolution * 100)}% resolution • {(q.bitrate / 1_000_000).toFixed(0)}Mbps
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="pt-2 border-t border-border space-y-2">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Speed</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SPEED_OPTIONS.map((s) => (
+                          <button key={s} onClick={() => { pushHistory(); setSpeed(s); }}
+                            className={`px-2.5 py-1.5 text-[10px] font-bold border rounded-md transition-all ${speed === s ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                            {s}x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
@@ -822,26 +780,25 @@ export default function StudioNLE() {
 
       {/* ═══ TIMELINE ═══ */}
       <div className="h-[180px] flex-shrink-0 bg-surface-1 border-t border-border flex flex-col">
-        {/* Timeline toolbar */}
         <div className="h-8 flex items-center px-3 gap-2 border-b border-border flex-shrink-0">
-          <button className="p-1 text-muted-foreground hover:text-foreground"><Scissors className="w-3.5 h-3.5" /></button>
+          <button onClick={splitAtPlayhead} className="p-1 text-muted-foreground hover:text-gold transition-colors" title="Split at Playhead"><Scissors className="w-3.5 h-3.5" /></button>
           <button className="p-1 text-muted-foreground hover:text-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
           <button className="p-1 text-muted-foreground hover:text-foreground"><Copy className="w-3.5 h-3.5" /></button>
           <div className="w-px h-4 bg-border" />
-          <span className="text-[10px] text-gold font-mono tabular-nums">{fmt(currentTime)}</span>
+          <span className="text-[10px] text-gold font-mono tabular-nums">{formatTimecode(currentTime, true)}</span>
           <div className="flex-1" />
+          <span className="text-[9px] text-muted-foreground">Trim: {formatTimecode(trimStart)} — {formatTimecode(trimEnd)}</span>
+          <div className="w-px h-4 bg-border" />
           <button onClick={() => setTimelineZoom(Math.max(0.5, timelineZoom - 0.25))} className="p-1 text-muted-foreground hover:text-foreground">
             <ZoomOut className="w-3.5 h-3.5" />
           </button>
           <span className="text-[9px] text-muted-foreground w-8 text-center">{Math.round(timelineZoom * 100)}%</span>
-          <button onClick={() => setTimelineZoom(Math.min(3, timelineZoom + 0.25))} className="p-1 text-muted-foreground hover:text-foreground">
+          <button onClick={() => setTimelineZoom(Math.min(4, timelineZoom + 0.25))} className="p-1 text-muted-foreground hover:text-foreground">
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        {/* Timeline tracks */}
         <div className="flex-1 flex min-h-0">
-          {/* Track headers */}
           <div className="w-[90px] flex-shrink-0 border-r border-border">
             {tracks.map((track) => (
               <div key={track.id} className="h-[36px] flex items-center px-2 gap-1 border-b border-border/50">
@@ -853,9 +810,7 @@ export default function StudioNLE() {
             ))}
           </div>
 
-          {/* Timeline content */}
           <div className="flex-1 overflow-x-auto overflow-y-hidden relative">
-            {/* Timecode ruler */}
             <div className="h-4 border-b border-border/50 flex items-end px-0 sticky top-0 bg-surface-1 z-10">
               {duration > 0 && Array.from({ length: Math.ceil(duration) + 1 }).map((_, i) => (
                 <div key={i} className="flex-shrink-0 relative" style={{ width: `${60 * timelineZoom}px` }}>
@@ -867,7 +822,6 @@ export default function StudioNLE() {
               ))}
             </div>
 
-            {/* Video track */}
             <div ref={timelineRef} onClick={handleTimelineClick} className="h-[36px] border-b border-border/50 relative cursor-pointer">
               {activeMedia && duration > 0 && (
                 <div className="absolute top-0.5 bottom-0.5 bg-gold/15 border border-gold/30 rounded-sm overflow-hidden flex"
@@ -884,7 +838,6 @@ export default function StudioNLE() {
               {!activeMedia && <div className="absolute inset-0 flex items-center justify-center"><span className="text-[9px] text-muted-foreground/40">Import media to start editing</span></div>}
             </div>
 
-            {/* Audio track */}
             <div className="h-[36px] border-b border-border/50 relative">
               {audioName && duration > 0 && (
                 <div className="absolute top-0.5 bottom-0.5 left-0 bg-purple-500/15 border border-purple-500/30 rounded-sm flex items-center px-2 gap-1"
@@ -895,18 +848,16 @@ export default function StudioNLE() {
               )}
             </div>
 
-            {/* Text track */}
             <div className="h-[36px] border-b border-border/50 relative">
               {textOverlays.map((t, i) => (
                 <div key={t.id} className="absolute top-0.5 bottom-0.5 bg-emerald-500/15 border border-emerald-500/30 rounded-sm flex items-center px-2"
-                  style={{ left: `${i * 80}px`, width: `${Math.max(120, duration * 20) * timelineZoom}px` }}>
+                  style={{ left: `${t.startTime * 60 * timelineZoom}px`, width: `${Math.max(60, (t.endTime - t.startTime) * 60 * timelineZoom)}px` }}>
                   <Type className="w-3 h-3 text-emerald-400 mr-1 flex-shrink-0" />
                   <span className="text-[7px] text-emerald-400 truncate">{t.text}</span>
                 </div>
               ))}
             </div>
 
-            {/* Effects track */}
             <div className="h-[36px] border-b border-border/50 relative">
               {activeEffects.length > 0 && duration > 0 && (
                 <div className="absolute top-0.5 bottom-0.5 left-0 bg-amber-500/15 border border-amber-500/30 rounded-sm flex items-center px-2 gap-1"
@@ -917,7 +868,6 @@ export default function StudioNLE() {
               )}
             </div>
 
-            {/* Playhead */}
             {duration > 0 && (
               <div className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none"
                 style={{ left: `${(currentTime / duration) * duration * 60 * timelineZoom}px` }}>
@@ -928,7 +878,7 @@ export default function StudioNLE() {
         </div>
       </div>
 
-      {/* ═══ BOTTOM TOOL BAR (CapCut-style) ═══ */}
+      {/* ═══ BOTTOM TOOL BAR ═══ */}
       <div className="h-14 bg-surface-1 border-t border-border flex items-center justify-around px-2 flex-shrink-0">
         {TOOL_TABS.map((tab) => {
           const isActive = activeToolTab === tab.id;
@@ -942,7 +892,6 @@ export default function StudioNLE() {
         })}
       </div>
 
-      {/* Hidden inputs */}
       <input ref={fileInputRef} type="file" accept="video/*,image/*,audio/*" multiple onChange={handleFileSelect} className="hidden" />
       <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
     </div>
