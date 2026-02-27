@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, UserRound, Disc3, Award } from 'lucide-react';
+import { Gavel, Inbox, CheckCircle, BarChart3, ArrowLeft, Star, Palette, Video, Zap, Target, Swords, User, UserRound, Disc3, Award, Music } from 'lucide-react';
 import JudgeOnboardingCard, { useJudgeOnboarding } from '@/components/loopgate/JudgeOnboardingCard';
 import JudgeFormatInfo from '@/components/loopgate/JudgeFormatInfo';
 import { Link } from 'react-router-dom';
@@ -20,6 +20,7 @@ import Judge1v1Rating from '@/components/loopgate/Judge1v1Rating';
 import JudgeQuickFightsTab from '@/components/loopgate/JudgeQuickFightsTab';
 import JudgeQOIResultCard from '@/components/loopgate/JudgeQOIResultCard';
 import JudgeSoloQueue from '@/components/loopgate/JudgeSoloQueue';
+import JudgeDropQueue from '@/components/loopgate/JudgeDropQueue';
 
 type JudgeFormat = 'solo' | '1v1' | 'qoi' | 'quick' | 'flywheel';
 
@@ -243,12 +244,19 @@ export default function JudgePanelPage() {
       {activeFormat === 'solo' && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full bg-black rounded-none border-b border-zinc-800 h-10 p-0">
-            <TabsTrigger
+           <TabsTrigger
               value="solo_queue"
               className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-gold data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
             >
               <UserRound className="w-3 h-3" />
-              Solo Queue
+              Solo
+            </TabsTrigger>
+            <TabsTrigger
+              value="drops"
+              className="flex-1 h-full rounded-none data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-red-500 data-[state=active]:text-white data-[state=active]:shadow-none text-[10px] text-zinc-500 gap-1"
+            >
+              <Music className="w-3 h-3" />
+              Drops
             </TabsTrigger>
             <TabsTrigger
               value="missions"
@@ -282,6 +290,9 @@ export default function JudgePanelPage() {
 
           <TabsContent value="solo_queue" className="mt-0">
             <JudgeSoloQueue />
+          </TabsContent>
+          <TabsContent value="drops" className="mt-0">
+            <JudgeDropQueue />
           </TabsContent>
           <TabsContent value="missions" className="mt-0">
             <JudgeMissionsPanel />
