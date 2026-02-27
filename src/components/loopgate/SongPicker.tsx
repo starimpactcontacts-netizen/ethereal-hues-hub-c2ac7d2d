@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Play, Pause, Check, Volume2, VolumeX, Loader2 } from "lucide-react";
+import { Music, Play, Pause, Check, Volume2, VolumeX, Loader2, Rocket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FeaturedDrop {
@@ -26,7 +26,9 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
   const [drops, setDrops] = useState<FeaturedDrop[]>([]);
   const [fetchingDrops, setFetchingDrops] = useState(true);
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const confirmAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const fetchDrops = async () => {
@@ -40,7 +42,6 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
         .limit(20);
 
       if (data) {
-        // Sort promoted drops first
         const sorted = (data as unknown as (FeaturedDrop & { is_promoted?: boolean })[])
           .sort((a, b) => ((b as any).is_promoted ? 1 : 0) - ((a as any).is_promoted ? 1 : 0));
         setDrops(sorted);
@@ -78,13 +79,35 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
     setPlayingId(drop.id);
   };
 
-  const handlePick = (drop: FeaturedDrop) => {
+  const handleSelect = (drop: FeaturedDrop) => {
+    if (loading) return;
+    setHighlightedId(drop.id);
+    // Play a short confirmation tick sound
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.value = 0.15;
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      osc.stop(ctx.currentTime + 0.12);
+    } catch {}
+  };
+
+  const handleConfirm = useCallback(() => {
+    const drop = drops.find(d => d.id === highlightedId);
+    if (!drop || loading) return;
     if (audioRef.current) {
       audioRef.current.pause();
       setPlayingId(null);
     }
     onPick(drop);
-  };
+  }, [highlightedId, drops, loading, onPick]);
+
+  const highlightedDrop = drops.find(d => d.id === highlightedId);
 
   if (fetchingDrops) {
     return (
@@ -127,10 +150,50 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
         )}
       </div>
 
-      {/* Song List — Spotify-style */}
+      {/* Confirm Button — grey when no selection, green + pulse when selected */}
+      <AnimatePresence mode="wait">
+        <motion.button
+          key={highlightedId || "empty"}
+          onClick={handleConfirm}
+          disabled={!highlightedId || loading}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`
+            w-full py-3 px-4 flex items-center justify-center gap-2.5 font-bold text-sm uppercase tracking-wider transition-all
+            ${highlightedId
+              ? "bg-emerald-500 text-background hover:bg-emerald-400 shadow-lg shadow-emerald-500/30"
+              : "bg-white/[0.06] text-muted-foreground cursor-not-allowed"
+            }
+          `}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Locking In...
+            </>
+          ) : highlightedId ? (
+            <motion.span
+              className="flex items-center gap-2"
+              animate={{ scale: [1, 1.03, 1] }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Rocket className="w-4 h-4" />
+              Lock In — {highlightedDrop?.song_name}
+            </motion.span>
+          ) : (
+            <>
+              <Music className="w-4 h-4" />
+              Select a Song Below
+            </>
+          )}
+        </motion.button>
+      </AnimatePresence>
+
+      {/* Song List */}
       <div className="space-y-1">
         {drops.map((drop, index) => {
           const isPlaying = playingId === drop.id;
+          const isHighlighted = highlightedId === drop.id;
           const isSelected = selectedDropId === drop.id;
           const hasPreview = !!drop.song_preview_url;
           const artistName = drop.artist?.name || "Unknown Artist";
@@ -146,14 +209,16 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
                 group flex items-center gap-3 p-2.5 rounded-lg transition-all cursor-pointer
                 ${isSelected
                   ? "bg-emerald-500/15 border border-emerald-500/40"
-                  : isPromoted
-                    ? "bg-gold/[0.04] border border-gold/30 hover:border-gold/50"
-                    : "hover:bg-white/[0.04] border border-transparent"
+                  : isHighlighted
+                    ? "bg-emerald-500/10 border border-emerald-500/30"
+                    : isPromoted
+                      ? "bg-gold/[0.04] border border-gold/30 hover:border-gold/50"
+                      : "hover:bg-white/[0.04] border border-transparent"
                 }
               `}
-              onClick={() => !isSelected && !loading && handlePick(drop)}
+              onClick={() => !isSelected && handleSelect(drop)}
             >
-              {/* Track Number / Play Button */}
+              {/* Play Button */}
               <div className="w-8 h-8 flex items-center justify-center shrink-0">
                 {hasPreview ? (
                   <button
@@ -185,11 +250,7 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
               {/* Cover Art */}
               <div className="w-10 h-10 rounded overflow-hidden shrink-0 bg-surface-2">
                 {drop.poster_url ? (
-                  <img
-                    src={drop.poster_url}
-                    alt={drop.song_name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={drop.poster_url} alt={drop.song_name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-900/40 to-emerald-800/20">
                     <Music className="w-4 h-4 text-emerald-400/60" />
@@ -200,30 +261,21 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
               {/* Song Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className={`text-sm font-medium truncate ${isSelected ? "text-emerald-400" : isPromoted ? "text-gold" : "text-foreground"}`}>
+                  <p className={`text-sm font-medium truncate ${isSelected || isHighlighted ? "text-emerald-400" : isPromoted ? "text-gold" : "text-foreground"}`}>
                     {drop.song_name}
                   </p>
-                  {isPromoted && !isSelected && (
+                  {isPromoted && !isSelected && !isHighlighted && (
                     <span className="text-[7px] font-bold text-gold bg-gold/10 border border-gold/20 px-1.5 py-0.5 rounded-full shrink-0 uppercase tracking-wider">
                       Featured
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    {artistName}
-                  </p>
-                  {!hasPreview && (
-                    <span className="text-[9px] text-muted-foreground/60 bg-white/[0.04] px-1.5 py-0.5 rounded shrink-0">
-                      No preview
-                    </span>
-                  )}
-                </div>
+                <p className="text-[11px] text-muted-foreground truncate">{artistName}</p>
               </div>
 
-              {/* Preview indicator / Selected check */}
+              {/* Check / Bars */}
               <div className="shrink-0">
-                {isSelected ? (
+                {isHighlighted || isSelected ? (
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
@@ -250,13 +302,6 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
           );
         })}
       </div>
-
-      {loading && (
-        <div className="flex items-center justify-center gap-2 py-3">
-          <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
-          <span className="text-xs text-muted-foreground">Saving your pick...</span>
-        </div>
-      )}
     </div>
   );
 }
