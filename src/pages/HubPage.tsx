@@ -429,13 +429,13 @@ export default function HubPage() {
                       </div>
                     </Link>
                   ) : (
-                    <Link to="/judges" className="group">
+                    <Link to="/arena" className="group">
                       <div className="bg-red-950/30 border border-red-800/30 rounded-xl p-3 group-hover:border-red-700/50 transition-colors h-full">
                         <div className="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center mb-2">
-                          <Gavel className="w-4 h-4 text-red-400" />
+                          <Swords className="w-4 h-4 text-red-400" />
                         </div>
-                        <p className="text-[9px] text-red-400 uppercase tracking-[0.12em] font-semibold mb-0.5">Get Rated</p>
-                        <p className="font-display text-xs text-foreground leading-tight">Submit to a Judge</p>
+                        <p className="text-[9px] text-red-400 uppercase tracking-[0.12em] font-semibold mb-0.5">Arena</p>
+                        <p className="font-display text-xs text-foreground leading-tight">Compete & Get Rated</p>
                       </div>
                     </Link>
                   )}
@@ -687,38 +687,7 @@ export default function HubPage() {
         </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-        className="px-4 mt-1"
-      >
-        <Link to="/arena" className="block group">
-          <div className="relative overflow-hidden bg-surface-1 border border-border group-hover:border-red-500/50 transition-all">
-            {/* Left red accent */}
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500" />
-            
-            <div className="relative z-10 flex items-center justify-between p-3.5 pl-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 bg-red-600 flex items-center justify-center group-hover:bg-red-500 transition-colors">
-                    <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-                    <InfinityIcon className="w-4.5 h-4.5 text-white relative z-10" strokeWidth={2.5} />
-                  </div>
-                  
-                  <div>
-                    <h2 className="font-display text-xl tracking-wide text-foreground leading-none">ARENA</h2>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Enter editing battles</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-1.5 font-display text-xs tracking-wider text-red-400 group-hover:text-red-300 transition-colors">
-                  <span>ENTER</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </div>
-            </div>
-          </div>
-        </Link>
-      </motion.div>
+      {/* Arena banner removed — Arena access consolidated into quick-access grid */}
 
       {/* ═══════════════════════════════════════════════════════════════════
           📺 FEATURED SECTION - Official events + Sanctioned tournaments
