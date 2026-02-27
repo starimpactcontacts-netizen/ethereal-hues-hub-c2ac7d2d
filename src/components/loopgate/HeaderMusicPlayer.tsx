@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,11 +26,14 @@ export default function HeaderMusicPlayer() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [volume, setVolume] = useState(0.3);
   const [shuffled, setShuffled] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const isMuted = volume === 0;
 
   useEffect(() => {
     const fetchTracks = async () => {
@@ -77,7 +80,7 @@ export default function HeaderMusicPlayer() {
     }
     stopProgressTracking();
     const a = new Audio(track.song_preview_url);
-    a.volume = muted ? 0 : 0.4;
+    a.volume = volume;
     audioRef.current = a;
     a.addEventListener('ended', () => {
       setCurrentIndex(i => (i + 1) % tracks.length);
@@ -86,7 +89,7 @@ export default function HeaderMusicPlayer() {
       setIsPlaying(true);
       startProgressTracking();
     }).catch(() => {});
-  }, [muted, tracks.length, startProgressTracking, stopProgressTracking]);
+  }, [volume, tracks.length, startProgressTracking, stopProgressTracking]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
@@ -119,6 +122,15 @@ export default function HeaderMusicPlayer() {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length]);
 
+  // Auto-play on first load
+  useEffect(() => {
+    if (tracks.length > 0 && !hasAutoPlayed && current) {
+      setHasAutoPlayed(true);
+      playTrack(current);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tracks]);
+
   // When index changes and was playing, auto-play next
   useEffect(() => {
     if (!current) return;
@@ -128,9 +140,10 @@ export default function HeaderMusicPlayer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
+  // Volume change
   useEffect(() => {
-    if (audioRef.current) audioRef.current.muted = muted;
-  }, [muted]);
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
 
   const toggleShuffle = useCallback(() => {
     setShuffled(s => {
@@ -139,6 +152,10 @@ export default function HeaderMusicPlayer() {
       setCurrentIndex(0);
       return next;
     });
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    setVolume(v => v === 0 ? 0.3 : 0);
   }, []);
 
   // Cleanup
@@ -174,7 +191,6 @@ export default function HeaderMusicPlayer() {
               </>
             )}
           </AnimatePresence>
-          {/* Sound wave bars icon when playing, radio icon when not */}
           {isPlaying ? (
             <div className="flex gap-[3px] items-end h-5">
               {[0, 1, 2, 3, 4].map(b => (
@@ -215,7 +231,7 @@ export default function HeaderMusicPlayer() {
                   [0, 1, 2, 3].map(b => (
                     <motion.div
                       key={b}
-                      className="w-[2px] bg-gold rounded-full"
+                      className="w-[2px] bg-emerald-500 rounded-full"
                       animate={{ height: ['3px', '12px', '3px'] }}
                       transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.12 }}
                     />
@@ -226,7 +242,7 @@ export default function HeaderMusicPlayer() {
                   ))
                 )}
               </div>
-              <span className="text-[9px] uppercase tracking-[0.2em] text-gold font-bold">
+              <span className="text-[9px] uppercase tracking-[0.2em] text-emerald-500 font-bold">
                 LOOPGATE Radio
               </span>
             </div>
@@ -239,7 +255,7 @@ export default function HeaderMusicPlayer() {
         <div className="px-4 pb-1">
           <div className="w-full h-1 bg-border rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gold rounded-full"
+              className="h-full bg-emerald-500 rounded-full"
               style={{ width: `${progress}%` }}
               transition={{ duration: 0.2 }}
             />
@@ -250,7 +266,7 @@ export default function HeaderMusicPlayer() {
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={toggleShuffle}
-            className={`p-1.5 transition-colors ${shuffled ? 'text-gold' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`p-1.5 transition-colors ${shuffled ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}
           >
             <Shuffle size={14} />
           </button>
@@ -263,7 +279,7 @@ export default function HeaderMusicPlayer() {
             </button>
             <button
               onClick={togglePlay}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-gold text-black hover:bg-gold/80 transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-colors"
             >
               {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
             </button>
@@ -275,11 +291,24 @@ export default function HeaderMusicPlayer() {
             </button>
           </div>
           <button
-            onClick={() => setMuted(m => !m)}
+            onClick={toggleMute}
             className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
           >
-            {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
           </button>
+        </div>
+
+        {/* Volume Slider */}
+        <div className="px-4 pb-3 flex items-center gap-3">
+          <VolumeX size={12} className="text-muted-foreground shrink-0" />
+          <Slider
+            value={[volume * 100]}
+            onValueChange={([v]) => setVolume(v / 100)}
+            max={100}
+            step={1}
+            className="flex-1 [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500"
+          />
+          <Volume2 size={12} className="text-muted-foreground shrink-0" />
         </div>
 
         {/* Track List */}
@@ -295,10 +324,9 @@ export default function HeaderMusicPlayer() {
                 }
               }}
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                i === currentIndex ? 'bg-gold/10 text-gold' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
+                i === currentIndex ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
               }`}
             >
-              {/* Poster Thumb */}
               <div className="w-8 h-8 rounded-sm bg-surface-1 overflow-hidden shrink-0">
                 {track.poster_url ? (
                   <img src={track.poster_url} alt="" className="w-full h-full object-cover" />
@@ -317,7 +345,7 @@ export default function HeaderMusicPlayer() {
                   {[0, 1, 2].map(b => (
                     <motion.div
                       key={b}
-                      className="w-[2px] bg-gold rounded-full"
+                      className="w-[2px] bg-emerald-500 rounded-full"
                       animate={{ height: ['4px', '12px', '4px'] }}
                       transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }}
                     />
