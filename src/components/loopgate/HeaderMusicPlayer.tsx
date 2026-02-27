@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
@@ -102,7 +102,9 @@ export default function HeaderMusicPlayer() {
   // Track which mode the current audioRef belongs to, so we can detect stale sources
   const audioModeRef = useRef<PlaylistMode>('loopgate');
 
-  const { myTracks, loading: myLoading, uploading, uploadTrack, deleteTrack, togglePublic } = useUserPlaylist(userId);
+  const { myTracks, loading: myLoading, uploading, uploadTrack, deleteTrack, togglePublic, playlistName, renamePlaylist } = useUserPlaylist(userId);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
@@ -332,11 +334,11 @@ export default function HeaderMusicPlayer() {
           </button>
           <button
             onClick={() => setPlaylistMode('myplaylist')}
-            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 ${
               playlistMode === 'myplaylist' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Music size={12} className="inline mr-1 -mt-0.5" /> MY PLAYLIST
+            <Music size={12} className="-mt-0.5" /> {playlistName?.toUpperCase() || 'MY PLAYLIST'}
           </button>
         </div>
 
@@ -364,8 +366,26 @@ export default function HeaderMusicPlayer() {
                 )}
               </div>
               <span className="text-[9px] uppercase tracking-[0.2em] text-emerald-500 font-bold">
-                {playlistMode === 'loopgate' ? 'LOOPGATE Playlist' : 'My Playlist'}
+                {playlistMode === 'loopgate' ? 'LOOPGATE Playlist' : playlistName}
               </span>
+              {playlistMode === 'myplaylist' && userId && (
+                editingName ? (
+                  <form className="ml-1" onSubmit={(e) => { e.preventDefault(); renamePlaylist(nameInput); setEditingName(false); }}>
+                    <input
+                      autoFocus
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      onBlur={() => { renamePlaylist(nameInput); setEditingName(false); }}
+                      maxLength={40}
+                      className="text-[9px] bg-transparent border-b border-emerald-500 text-foreground outline-none w-20"
+                    />
+                  </form>
+                ) : (
+                  <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="ml-1 text-muted-foreground hover:text-emerald-500">
+                    <Pencil size={8} />
+                  </button>
+                )
+              )}
             </div>
             <p className="text-sm font-display text-foreground truncate">
               {playlistMode === 'loopgate'

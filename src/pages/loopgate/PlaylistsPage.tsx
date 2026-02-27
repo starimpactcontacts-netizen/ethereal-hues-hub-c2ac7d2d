@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Radio, Music, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Shuffle, Users, Loader2 } from 'lucide-react';
+import { Radio, Music, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Shuffle, Users, Loader2, Pencil } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,7 +38,9 @@ export default function PlaylistsPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { myTracks, loading: myLoading, uploading, uploadTrack, deleteTrack, togglePublic } = useUserPlaylist(userId);
+  const { myTracks, loading: myLoading, uploading, uploadTrack, deleteTrack, togglePublic, playlistName, renamePlaylist } = useUserPlaylist(userId);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
   const { playlists: curatedPlaylists, loading: curatedLoading } = useCuratedPlaylists();
 
   useEffect(() => {
@@ -303,7 +305,27 @@ export default function PlaylistsPage() {
             <div className="rounded-xl border border-border bg-surface-0 overflow-hidden">
               <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
                 <Music size={14} className="text-emerald-500" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">My Playlist</h2>
+                {editingName ? (
+                  <form className="flex-1" onSubmit={(e) => { e.preventDefault(); renamePlaylist(nameInput); setEditingName(false); }}>
+                    <input
+                      autoFocus
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      onBlur={() => { renamePlaylist(nameInput); setEditingName(false); }}
+                      maxLength={40}
+                      className="text-xs font-bold uppercase tracking-wider bg-transparent border-b border-emerald-500 text-foreground outline-none w-full"
+                    />
+                  </form>
+                ) : (
+                  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    {playlistName}
+                    {userId && (
+                      <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="text-muted-foreground hover:text-emerald-500">
+                        <Pencil size={10} />
+                      </button>
+                    )}
+                  </h2>
+                )}
                 <span className="text-[9px] text-muted-foreground ml-auto">{myTracks.length}/25</span>
               </div>
               <MyPlaylistTab
@@ -355,8 +377,8 @@ export default function PlaylistsPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold truncate text-foreground">@{playlist.username}</p>
-                        <p className="text-[9px] text-muted-foreground">{playlist.tracks.length} track{playlist.tracks.length !== 1 ? 's' : ''}</p>
+                        <p className="text-xs font-bold truncate text-foreground">{playlist.playlist_name || `@${playlist.username}'s Playlist`}</p>
+                        <p className="text-[9px] text-muted-foreground">@{playlist.username} · {playlist.tracks.length} track{playlist.tracks.length !== 1 ? 's' : ''}</p>
                       </div>
                       <button
                         onClick={() => playCuratedTrack(playlist.user_id, 0)}
