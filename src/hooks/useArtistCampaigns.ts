@@ -75,7 +75,38 @@ export function useArtistCampaigns(clientId?: string) {
       setCampaigns(data.campaigns || []);
       setEdits(data.edits || []);
     } catch (err) {
-      console.error('Failed to fetch campaigns:', err);
+      console.error('Failed to fetch campaigns via manage-campaigns:', err);
+
+      // Fallback for admin view: read directly from database so campaigns still appear
+      if (!clientId) {
+        try {
+          const { data: campaignsData, error: campaignsError } = await supabase
+            .from('artist_campaigns')
+            .select('*, enterprise_clients(email, display_name), featured_artists(name, avatar_url)')
+            .order('created_at', { ascending: false });
+
+          if (campaignsError) throw campaignsError;
+
+          const campaignIds = (campaignsData || []).map((c: any) => c.id);
+          let editsData: any[] = [];
+
+          if (campaignIds.length > 0) {
+            const { data: fetchedEdits, error: editsError } = await supabase
+              .from('artist_campaign_edits')
+              .select('*')
+              .in('campaign_id', campaignIds)
+              .order('created_at', { ascending: false });
+
+            if (editsError) throw editsError;
+            editsData = fetchedEdits || [];
+          }
+
+          setCampaigns((campaignsData as Campaign[]) || []);
+          setEdits((editsData as CampaignEdit[]) || []);
+        } catch (fallbackErr) {
+          console.error('Fallback campaign fetch failed:', fallbackErr);
+        }
+      }
     } finally {
       setLoading(false);
     }

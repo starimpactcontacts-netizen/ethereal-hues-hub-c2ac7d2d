@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Save, BarChart3, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, Bell, Check, Link2, RefreshCw, Music, FileText } from 'lucide-react';
+import { Plus, Trash2, Save, BarChart3, Eye, TrendingUp, Zap, MousePointerClick, Edit3, X, ChevronDown, ChevronUp, Copy, Bell, Check, Link2, RefreshCw, Music, FileText, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useArtistCampaigns, useUpdateRequests } from '@/hooks/useArtistCampaigns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-
 function formatNumber(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
@@ -24,11 +24,11 @@ interface FeaturedArtistOption {
 }
 
 export default function CampaignAdminPage() {
+  const navigate = useNavigate();
   const { campaigns, edits, loading, createCampaign, updateCampaign, deleteCampaign, addEdit, updateEdit, deleteEdit, getEditsForCampaign, refresh } = useArtistCampaigns();
   const { requests, resolveRequest, refresh: refreshRequests } = useUpdateRequests();
   const [clientNames, setClientNames] = useState<string[]>([]);
   const [showClientSuggestions, setShowClientSuggestions] = useState(false);
-  
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showAddEditForm, setShowAddEditForm] = useState<string | null>(null);
@@ -147,12 +147,27 @@ export default function CampaignAdminPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-display text-2xl">Campaign Manager</h2>
-          <p className="text-xs text-muted-foreground mt-1">Manage artist/client campaigns, edits, and analytics</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate('/ops-panel/a7c92ff31b')}
+            className="h-8 w-8 mt-0.5"
+            aria-label="Back to admin panel"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h2 className="font-display text-2xl">Campaign Manager</h2>
+            <p className="text-xs text-muted-foreground mt-1">Manage artist/client campaigns, edits, and analytics</p>
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={refresh} variant="outline" className="gap-2">
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </Button>
           {pendingRequests.length > 0 && (
             <Button
               onClick={() => setActiveTab('requests')}
