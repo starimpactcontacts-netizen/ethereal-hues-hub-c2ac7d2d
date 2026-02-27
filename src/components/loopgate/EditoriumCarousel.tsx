@@ -61,10 +61,10 @@ export default function EditoriumCarousel() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.22 + i * 0.05 }}
-              className="w-[220px] bg-surface-1/60 border border-border/40 hover:border-foreground/20 transition-all overflow-hidden"
+              className="w-[280px] bg-surface-1/60 border border-border/40 hover:border-foreground/20 transition-all overflow-hidden"
             >
               {/* Cover */}
-              <div className="h-28 overflow-hidden relative bg-surface-2">
+              <div className="h-40 overflow-hidden relative bg-surface-2">
                 {article.cover_image_url ? (
                   <img src={article.cover_image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
@@ -73,15 +73,18 @@ export default function EditoriumCarousel() {
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
-                <div className="absolute top-1.5 left-1.5 bg-foreground px-1.5 py-0.5">
-                  <span className="text-[7px] font-bold text-background uppercase tracking-wider">Feature</span>
+                <div className="absolute top-2 left-2 bg-foreground px-2 py-0.5">
+                  <span className="text-[8px] font-bold text-background uppercase tracking-wider">Feature</span>
                 </div>
               </div>
 
               {/* Info */}
-              <div className="p-3">
-                <p className="font-display text-xs text-foreground leading-tight line-clamp-2 group-hover:text-gold transition-colors">{article.title}</p>
-                <div className="flex items-center gap-2 mt-2 text-[9px] text-muted-foreground">
+              <div className="p-3.5">
+                <p className="font-display text-sm text-foreground leading-tight line-clamp-2 group-hover:text-gold transition-colors">{article.title}</p>
+                {article.subtitle && (
+                  <p className="text-[10px] text-muted-foreground mt-1 line-clamp-1">{article.subtitle}</p>
+                )}
+                <div className="flex items-center gap-2 mt-2.5 text-[9px] text-muted-foreground">
                   <span>{article.author_name}</span>
                   <span>·</span>
                   <span className="flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />{article.read_time_minutes || 5}m read</span>
