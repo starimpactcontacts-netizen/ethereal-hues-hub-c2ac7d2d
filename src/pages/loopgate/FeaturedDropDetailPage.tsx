@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -39,7 +39,7 @@ export default function FeaturedDropDetailPage() {
   const { submissions, loading: subsLoading } = useDropSubmissions(resolvedId);
   const { rounds, rankings, activeRound, currentRound } = useDropRounds(resolvedId);
   const { queue, queueCount } = useDropQueue(resolvedId);
-
+  const queueRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!dropId) return;
     const fetch = async () => {
@@ -62,6 +62,15 @@ export default function FeaturedDropDetailPage() {
     };
     fetch();
   }, [dropId]);
+
+  // Auto-scroll to queue/active round section on page load
+  useEffect(() => {
+    if (!loading && drop && queueRef.current) {
+      setTimeout(() => {
+        queueRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 400);
+    }
+  }, [loading, drop]);
 
   if (loading) {
     return (
@@ -213,7 +222,7 @@ export default function FeaturedDropDetailPage() {
 
         {/* ═══ ROUND SYSTEM ═══ */}
         {hasRounds && (
-          <div className="space-y-3">
+          <div ref={queueRef} className="space-y-3">
             {/* Round timeline */}
             <div className="flex items-center gap-1 overflow-x-auto pb-1">
               {rounds.map((round) => {
