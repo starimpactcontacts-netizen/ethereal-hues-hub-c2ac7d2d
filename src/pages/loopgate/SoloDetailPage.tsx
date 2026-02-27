@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, ExternalLink, ThumbsUp, ThumbsDown, Camera, Music,
-  Trophy, Zap, Clock, UserRound, MessageCircle, Upload
+  Trophy, Zap, Clock, UserRound, MessageCircle, Upload, Play
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +14,7 @@ import { useSoloVote } from '@/hooks/useSoloVote';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import FeedInlineComments from '@/components/loopgate/FeedInlineComments';
+import FeedVideoPlayer from '@/components/loopgate/FeedVideoPlayer';
 import type { SoloSubmission } from '@/hooks/useSoloMode';
 
 export default function SoloDetailPage() {
@@ -24,6 +25,7 @@ export default function SoloDetailPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
+  const [showPlayer, setShowPlayer] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { myVote, upvotes, downvotes, vote } = useSoloVote(id);
 
@@ -146,16 +148,14 @@ export default function SoloDetailPage() {
           </div>
         )}
 
-        {/* Watch button */}
+        {/* Watch button — opens inline player */}
         {solo.submission_url && (
-          <a
-            href={solo.submission_url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowPlayer(true)}
             className="absolute top-3 left-3 bg-gold/90 hover:bg-gold text-background px-3 py-1.5 flex items-center gap-1.5 text-xs font-bold transition-colors"
           >
-            <ExternalLink className="w-3.5 h-3.5" /> Watch Edit
-          </a>
+            <Play className="w-3.5 h-3.5" /> Watch Edit
+          </button>
         )}
       </div>
 
@@ -294,6 +294,18 @@ export default function SoloDetailPage() {
           onCommentCountChange={setCommentCount}
         />
       </div>
+      {/* Video Player Modal */}
+      {solo.submission_url && (
+        <FeedVideoPlayer
+          isOpen={showPlayer}
+          onClose={() => setShowPlayer(false)}
+          submissionUrl={solo.submission_url}
+          platform={solo.submission_platform || 'youtube'}
+          submissionId={solo.id}
+          submissionType={'solo' as any}
+          username={solo.username || ''}
+        />
+      )}
     </div>
   );
 }
