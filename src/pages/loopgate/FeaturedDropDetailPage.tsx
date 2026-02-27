@@ -11,7 +11,6 @@ import DropSubmissionCarousel from "@/components/loopgate/DropSubmissionCarousel
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDropSubmissions } from "@/hooks/useFeaturedDrops";
@@ -82,8 +81,8 @@ export default function FeaturedDropDetailPage() {
   const pending = submissions.filter(s => s.status === 'pending');
   const userSubmissions = user ? submissions.filter(s => s.user_id === user.id) : [];
   const userSubmissionCount = userSubmissions.length;
+  const allRanked = [...scored, ...pending];
 
-  // Fire indicators: count how many users each person beat
   const getFireIndicator = (sub: FeaturedSubmission, rank: number) => {
     if (rank === 1 && scored.length >= 3) return { label: '🔥 TAKING OVER', color: 'text-orange-400' };
     if (rank <= 3 && scored.length >= 5) return { label: '⚡ ON FIRE', color: 'text-amber-400' };
@@ -106,15 +105,15 @@ export default function FeaturedDropDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Hero / Poster */}
+      {/* ═══ HERO ═══ */}
       <div className="relative">
-        <div className="h-48 w-full overflow-hidden">
+        <div className="h-52 w-full overflow-hidden">
           {drop.poster_url ? (
             <img src={drop.poster_url} alt={drop.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-purple-900/60 to-pink-900/60" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent" />
         </div>
 
         {/* Nav */}
@@ -140,121 +139,127 @@ export default function FeaturedDropDetailPage() {
           </div>
         </div>
 
-        {/* Artist chip */}
-        {artist && (
-          <Link to={`/artist/${artist.slug}`} className="absolute bottom-3 left-3 flex items-center gap-2 bg-background/80 backdrop-blur border border-border rounded-full pl-1 pr-3 py-1">
-            <Avatar className="w-6 h-6 border border-purple-500/40">
-              <AvatarImage src={artist.avatar_url || ''} />
-              <AvatarFallback className="bg-purple-500/20 text-[8px] text-purple-300 font-bold">{artist.name?.[0]}</AvatarFallback>
-            </Avatar>
-            <span className="text-[10px] font-bold text-foreground">{artist.name}</span>
-            <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[7px] px-1 py-0">ARTIST</Badge>
-          </Link>
-        )}
+        {/* Title + Artist overlaid at bottom of hero */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+          <h1 className="font-display text-xl text-foreground tracking-wide leading-tight">{drop.title}</h1>
+          {artist && (
+            <Link to={`/artist/${artist.slug}`} className="inline-flex items-center gap-1.5 mt-1.5">
+              <Avatar className="w-5 h-5 border border-purple-500/40">
+                <AvatarImage src={artist.avatar_url || ''} />
+                <AvatarFallback className="bg-purple-500/20 text-[7px] text-purple-300 font-bold">{artist.name?.[0]}</AvatarFallback>
+              </Avatar>
+              <span className="text-[10px] font-bold text-foreground/80">{artist.name}</span>
+              <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[7px] px-1 py-0">ARTIST</Badge>
+            </Link>
+          )}
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="px-4 space-y-4 mt-4">
-        {/* Title & Song */}
-        <div>
-          <h1 className="font-display text-xl text-foreground tracking-wide">{drop.title}</h1>
-        </div>
+      {/* ═══ BODY ═══ */}
+      <div className="px-4 space-y-3 mt-3">
 
-        {/* ═══ GREEN SUBMIT CTA — top, unmissable ═══ */}
+        {/* ─── SUBMIT CTA ─── */}
         {isLive && (
-          <div className="space-y-2">
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
-              className="w-full py-4 bg-emerald-500 text-white font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 rounded-xl shadow-lg shadow-emerald-500/25 hover:bg-emerald-400 transition-colors"
-            >
-              <Flame className="w-5 h-5" />
-              {userSubmissionCount > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
-              <ChevronRight className="w-5 h-5" />
-            </motion.button>
-            {userSubmissionCount > 0 && (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-center">
-                <p className="text-sm text-emerald-400 font-medium flex items-center justify-center gap-1.5">
-                  <Check className="w-4 h-4" /> {userSubmissionCount} edit{userSubmissionCount > 1 ? 's' : ''} submitted
-                </p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Submit as many as you want — keep climbing 🔥
-                </p>
-              </div>
-            )}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+            className="w-full py-4 bg-emerald-500 text-white font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 rounded-xl shadow-lg shadow-emerald-500/25 hover:bg-emerald-400 transition-colors"
+          >
+            <Flame className="w-5 h-5" />
+            {userSubmissionCount > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
+            <ChevronRight className="w-5 h-5" />
+          </motion.button>
+        )}
+        {isLive && userSubmissionCount > 0 && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-3 py-2 text-center">
+            <p className="text-[11px] text-emerald-400 font-medium flex items-center justify-center gap-1">
+              <Check className="w-3.5 h-3.5" /> {userSubmissionCount} edit{userSubmissionCount > 1 ? 's' : ''} submitted — keep climbing 🔥
+            </p>
           </div>
         )}
 
-        {/* ═══ HOW DO I JOIN? — collapsible, beginner-friendly ═══ */}
-        {isLive && (
-          <div>
-            <button
-              onClick={() => setShowGuide(!showGuide)}
-              className="w-full py-2.5 bg-purple-500/10 border border-purple-500/30 rounded-xl text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-purple-500/15 transition-colors"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              How Do I Join?
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showGuide ? 'rotate-180' : ''}`} />
-            </button>
-            {showGuide && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mt-2 bg-surface-1 border border-purple-500/20 rounded-xl p-4 space-y-2.5"
-              >
-                {[
-                  { num: '1', text: '🎧 Listen to the song above & vibe with it' },
-                  { num: '2', text: '🎬 Make a fire edit using the song — any app works' },
-                  { num: '3', text: '📱 Post it on TikTok, IG, or YouTube' },
-                  { num: '4', text: '🔗 Come back & paste the link — done!' },
-                ].map((step) => (
-                  <div key={step.num} className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold text-purple-400">{step.num}</span>
-                    </div>
-                    <p className="text-[11px] font-medium text-foreground">{step.text}</p>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </div>
-        )}
-
-        {/* ═══ SOUND LINK — big & clear ═══ */}
-        {drop.song_url && (
-          <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
-            className="block bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 hover:bg-purple-500/15 transition-colors group">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0">
-                <Music className="w-5 h-5 text-purple-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground truncate">{drop.song_name}</p>
-                <p className="text-[10px] text-purple-400 font-medium uppercase tracking-wider mt-0.5">⚡ Post using this sound</p>
-              </div>
-              <ExternalLink className="w-5 h-5 text-purple-400 shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </div>
-          </a>
-        )}
-
-        {/* Song Preview Player */}
-        {drop.song_preview_url && (
-          <div className="bg-surface-1 border border-purple-500/30 rounded-xl p-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+        {/* ─── SONG + REWARDS — compact row ─── */}
+        <div className="flex gap-2">
+          {/* Song link — takes most space */}
+          {drop.song_url && (
+            <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
+              className="flex-1 min-w-0 flex items-center gap-2.5 bg-purple-500/10 border border-purple-500/30 rounded-xl px-3 py-2.5 hover:bg-purple-500/15 transition-colors group">
+              <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0">
                 <Music className="w-4 h-4 text-purple-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-foreground truncate">🔊 Song Preview</p>
-                <p className="text-[10px] text-muted-foreground truncate">{drop.song_name}</p>
+                <p className="text-xs font-bold text-foreground truncate">{drop.song_name}</p>
+                <p className="text-[9px] text-purple-400 font-medium uppercase tracking-wider">⚡ Use this sound</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-purple-400 shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </a>
+          )}
+          {/* Rewards — compact chips */}
+          <div className="flex flex-col gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 bg-surface-1 border border-border rounded-lg px-2 py-1.5">
+              <Zap className="w-3 h-3 text-brand" />
+              <span className="text-[10px] font-bold text-foreground tabular-nums">+{drop.xp_reward}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-surface-1 border border-border rounded-lg px-2 py-1.5">
+              <Trophy className="w-3 h-3 text-brand" />
+              <span className="text-[10px] font-bold text-foreground tabular-nums">+{drop.index_reward}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Song Preview Player */}
+        {drop.song_preview_url && (
+          <div className="bg-surface-1 border border-purple-500/30 rounded-xl p-3 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <Music className="w-3.5 h-3.5 text-purple-400" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold text-foreground truncate">🔊 Preview</p>
+                <p className="text-[9px] text-muted-foreground truncate">{drop.song_name}</p>
               </div>
             </div>
             <audio
               src={drop.song_preview_url}
               controls
-              className="w-full h-10 rounded-lg"
+              className="w-full h-9 rounded-lg"
               preload="metadata"
             />
+          </div>
+        )}
+
+        {/* ─── HOW TO JOIN — collapsible ─── */}
+        {isLive && (
+          <div>
+            <button
+              onClick={() => setShowGuide(!showGuide)}
+              className="w-full py-2 bg-purple-500/10 border border-purple-500/30 rounded-xl text-[10px] font-bold text-purple-400 uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-purple-500/15 transition-colors"
+            >
+              <Zap className="w-3 h-3" />
+              How Do I Join?
+              <ChevronDown className={`w-3 h-3 transition-transform ${showGuide ? 'rotate-180' : ''}`} />
+            </button>
+            {showGuide && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="mt-2 bg-surface-1 border border-purple-500/20 rounded-xl p-3 space-y-2"
+              >
+                {[
+                  { num: '1', text: '🎧 Listen to the song & vibe with it' },
+                  { num: '2', text: '🎬 Make a fire edit — any app works' },
+                  { num: '3', text: '📱 Post on TikTok, IG, or YouTube' },
+                  { num: '4', text: '🔗 Come back & paste the link' },
+                ].map((step) => (
+                  <div key={step.num} className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
+                      <span className="text-[9px] font-bold text-purple-400">{step.num}</span>
+                    </div>
+                    <p className="text-[10px] font-medium text-foreground">{step.text}</p>
+                  </div>
+                ))}
+              </motion.div>
+            )}
           </div>
         )}
 
@@ -268,31 +273,12 @@ export default function FeaturedDropDetailPage() {
           accentColor="text-purple-400"
         />
 
-        {/* Rewards */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
-            <Zap className="w-4 h-4 text-brand mx-auto mb-1" />
-            <span className="text-sm font-bold text-foreground tabular-nums">+{drop.xp_reward}</span>
-            <p className="text-[8px] text-muted-foreground uppercase">XP</p>
-          </div>
-          <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
-            <Trophy className="w-4 h-4 text-brand mx-auto mb-1" />
-            <span className="text-sm font-bold text-foreground tabular-nums">+{drop.index_reward}</span>
-            <p className="text-[8px] text-muted-foreground uppercase">INDEX</p>
-          </div>
-          <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
-            <Gift className="w-4 h-4 text-gold mx-auto mb-1" />
-            <span className="text-[10px] font-bold text-foreground truncate block">{drop.mystery_reward_label || '???'}</span>
-            <p className="text-[8px] text-muted-foreground uppercase">Mystery</p>
-          </div>
-        </div>
-
         {/* Description — collapsible */}
         {drop.description && (
           <div>
             <button
               onClick={() => setShowDesc(!showDesc)}
-              className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors"
             >
               About This Drop
               <ChevronDown className={`w-3 h-3 transition-transform ${showDesc ? 'rotate-180' : ''}`} />
@@ -312,17 +298,19 @@ export default function FeaturedDropDetailPage() {
         {/* ═══ EDITS SHOWCASE CAROUSEL ═══ */}
         <DropSubmissionCarousel submissions={submissions} loading={subsLoading} />
 
-        {/* ═══ LEADERBOARD — Top 3 + always-visible full leaderboard button ═══ */}
-        <div className="space-y-3">
-          <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-gold" />
-            {scored.length > 0 ? 'Leaderboard' : 'Submissions'}
-            <span className="text-[9px] text-muted-foreground font-normal">({submissions.length} total)</span>
-          </h2>
+        {/* ═══ LEADERBOARD — always inline, full ═══ */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-foreground flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-gold" />
+              {scored.length > 0 ? 'Leaderboard' : 'Submissions'}
+            </h2>
+            <span className="text-[10px] text-muted-foreground tabular-nums">{submissions.length} {submissions.length === 1 ? 'entry' : 'entries'}</span>
+          </div>
 
           {subsLoading ? (
             <div className="space-y-2">
-              {[1,2,3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+              {[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
             </div>
           ) : submissions.length === 0 ? (
             <div className="bg-surface-1 border border-border rounded-xl p-8 text-center">
@@ -331,8 +319,9 @@ export default function FeaturedDropDetailPage() {
               <p className="text-[10px] text-muted-foreground/60 mt-1">Be the first to enter & set the bar 🔥</p>
             </div>
           ) : (
-            <div className="space-y-2.5">
-              {scored.slice(0, 3).map((sub, idx) => (
+            <div className="space-y-2">
+              {/* Scored entries first, then pending */}
+              {scored.map((sub, idx) => (
                 <div key={sub.id} className="relative">
                   {getFireIndicator(sub, idx + 1) && (
                     <div className={`flex items-center gap-1 mb-1 ${getFireIndicator(sub, idx + 1)!.color}`}>
@@ -349,56 +338,11 @@ export default function FeaturedDropDetailPage() {
                   />
                 </div>
               ))}
-              {scored.length < 3 && pending.slice(0, 3 - scored.length).map((sub) => (
+              {pending.map((sub) => (
                 <DropSubmissionCard key={sub.id} submission={sub} />
               ))}
             </div>
           )}
-
-          {/* View Full Leaderboard — always visible */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <button className="w-full py-3 bg-surface-1 border border-border rounded-xl text-xs font-bold text-foreground flex items-center justify-center gap-2 hover:bg-surface-2 transition-colors">
-                <Trophy className="w-3.5 h-3.5 text-gold" />
-                View Full Leaderboard
-                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[9px] px-1.5 py-0">
-                  {submissions.length}
-                </Badge>
-                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="max-h-[85vh] bg-background border-border overflow-hidden flex flex-col">
-              <SheetHeader className="shrink-0">
-                <SheetTitle className="flex items-center gap-2 text-base">
-                  <Trophy className="w-5 h-5 text-gold" />
-                  Full Leaderboard
-                  <span className="text-xs text-muted-foreground font-normal">({submissions.length} entries)</span>
-                </SheetTitle>
-              </SheetHeader>
-              <div className="overflow-y-auto flex-1 space-y-2.5 pb-8 mt-4">
-                {scored.map((sub, idx) => (
-                  <div key={sub.id} className="relative">
-                    {getFireIndicator(sub, idx + 1) && (
-                      <div className={`flex items-center gap-1 mb-1 ${getFireIndicator(sub, idx + 1)!.color}`}>
-                        <TrendingUp className="w-3 h-3" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider">
-                          {getFireIndicator(sub, idx + 1)!.label}
-                        </span>
-                      </div>
-                    )}
-                    <DropSubmissionCard
-                      submission={sub}
-                      rank={idx + 1}
-                      isTopScorer={idx === 0}
-                    />
-                  </div>
-                ))}
-                {pending.map((sub) => (
-                  <DropSubmissionCard key={sub.id} submission={sub} />
-                ))}
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
 
         {/* ═══ LIVE CHAT ═══ */}
@@ -407,8 +351,8 @@ export default function FeaturedDropDetailPage() {
         {/* Winner highlights */}
         {(drop.top_scorer_username || drop.random_pick_username) && (
           <div className="space-y-2">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Star className="w-4 h-4 text-gold" /> Winners
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <Star className="w-3.5 h-3.5 text-gold" /> Winners
             </h2>
             {drop.top_scorer_username && (
               <div className="flex items-center gap-3 p-3 bg-gold/10 border border-gold/30 rounded-lg">
