@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Play, Pause, Check, Volume2, VolumeX, Loader2, Rocket } from "lucide-react";
+import { Music, Play, Pause, Check, Volume2, VolumeX, Loader2, Rocket, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FeaturedDrop {
@@ -199,6 +199,93 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
           const artistName = drop.artist?.name || "Unknown Artist";
           const isPromoted = !!(drop as any).is_promoted;
 
+          if (isPromoted) {
+            // ── LOOPGATE'S CHOICE — enlarged hero row ──
+            return (
+              <motion.div
+                key={drop.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03 }}
+                className={`
+                  group relative overflow-hidden rounded-lg cursor-pointer transition-all
+                  ${isSelected
+                    ? "bg-emerald-500/15 border-2 border-emerald-500/40"
+                    : isHighlighted
+                      ? "bg-emerald-500/10 border-2 border-emerald-500/30"
+                      : "bg-gold/[0.06] border-2 border-gold/40 hover:border-gold/60"
+                  }
+                `}
+                onClick={() => !isSelected && handleSelect(drop)}
+              >
+                {/* Loopgate's Choice badge */}
+                <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1">
+                  <Crown className="w-3 h-3 text-gold" />
+                  <span className="text-[8px] font-black text-gold uppercase tracking-[0.15em]">Loopgate's Choice</span>
+                </div>
+
+                <div className="flex items-center gap-3.5 px-3 pb-3">
+                  {/* Play Button — bigger */}
+                  <div className="w-11 h-11 flex items-center justify-center shrink-0">
+                    {hasPreview ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); togglePlay(drop); }}
+                        className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                          isPlaying
+                            ? "bg-emerald-500 text-background shadow-lg shadow-emerald-500/30"
+                            : "bg-white/[0.08] text-muted-foreground group-hover:bg-white/[0.12] group-hover:text-foreground"
+                        }`}
+                      >
+                        {isPlaying ? <Pause className="w-4.5 h-4.5" fill="currentColor" /> : <Play className="w-4.5 h-4.5 ml-0.5" fill="currentColor" />}
+                      </button>
+                    ) : (
+                      <div className="w-11 h-11 rounded-full bg-white/[0.04] flex items-center justify-center">
+                        <VolumeX className="w-4 h-4 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cover Art — bigger */}
+                  <div className="w-14 h-14 rounded-md overflow-hidden shrink-0 bg-surface-2 shadow-md">
+                    {drop.poster_url ? (
+                      <img src={drop.poster_url} alt={drop.song_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold/20 to-surface-2">
+                        <Music className="w-5 h-5 text-gold/60" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Song Info — bigger text */}
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[15px] font-bold truncate ${isSelected || isHighlighted ? "text-emerald-400" : "text-foreground"}`}>
+                      {drop.song_name}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground truncate">{artistName}</p>
+                  </div>
+
+                  {/* Check / Bars */}
+                  <div className="shrink-0">
+                    {isHighlighted || isSelected ? (
+                      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center">
+                        <Check className="w-4 h-4 text-background" />
+                      </motion.div>
+                    ) : isPlaying ? (
+                      <div className="flex items-center gap-0.5">
+                        {[0, 1, 2].map((i) => (
+                          <motion.div key={i} animate={{ height: [4, 16, 4] }} transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }} className="w-[3px] bg-emerald-400 rounded-full" />
+                        ))}
+                      </div>
+                    ) : (
+                      <Volume2 className="w-4 h-4 text-transparent group-hover:text-muted-foreground/40 transition-colors" />
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          }
+
+          // ── Standard song row ──
           return (
             <motion.div
               key={drop.id}
@@ -211,9 +298,7 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
                   ? "bg-emerald-500/15 border border-emerald-500/40"
                   : isHighlighted
                     ? "bg-emerald-500/10 border border-emerald-500/30"
-                    : isPromoted
-                      ? "bg-gold/[0.04] border border-gold/30 hover:border-gold/50"
-                      : "hover:bg-white/[0.04] border border-transparent"
+                    : "hover:bg-white/[0.04] border border-transparent"
                 }
               `}
               onClick={() => !isSelected && handleSelect(drop)}
@@ -260,16 +345,9 @@ export default function SongPicker({ onPick, loading, selectedDropId, opponentPi
 
               {/* Song Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className={`text-sm font-medium truncate ${isSelected || isHighlighted ? "text-emerald-400" : isPromoted ? "text-gold" : "text-foreground"}`}>
-                    {drop.song_name}
-                  </p>
-                  {isPromoted && !isSelected && !isHighlighted && (
-                    <span className="text-[7px] font-bold text-gold bg-gold/10 border border-gold/20 px-1.5 py-0.5 rounded-full shrink-0 uppercase tracking-wider">
-                      Featured
-                    </span>
-                  )}
-                </div>
+                <p className={`text-sm font-medium truncate ${isSelected || isHighlighted ? "text-emerald-400" : "text-foreground"}`}>
+                  {drop.song_name}
+                </p>
                 <p className="text-[11px] text-muted-foreground truncate">{artistName}</p>
               </div>
 
