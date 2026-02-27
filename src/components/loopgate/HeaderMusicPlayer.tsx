@@ -459,50 +459,60 @@ export default function HeaderMusicPlayer() {
         <div className="px-4 pb-2 flex items-center gap-3">
           <VolumeX size={12} className="text-muted-foreground shrink-0" />
           <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
-            className="flex-1 [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
+            className="flex-1 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none" />
           <Volume2 size={12} className="text-muted-foreground shrink-0" />
         </div>
 
-        {/* Pitch / Speed Slider */}
-        <div className="px-4 pb-3">
-          <div className="flex items-center justify-between mb-1">
+        {/* Speed Presets */}
+        <div className="px-4 pb-1.5">
+          <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-1">
               <Gauge size={11} className="text-muted-foreground" />
-              <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
+              <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Speed</span>
             </div>
             <button
               onClick={() => setPlaybackRate(1.0)}
-              className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded transition-colors ${
+              className={`text-[9px] font-mono font-bold px-2 py-1 rounded transition-colors ${
                 playbackRate === 1.0 ? 'text-muted-foreground' : 'text-emerald-500 hover:text-emerald-400 bg-emerald-500/10'
               }`}
             >
               {playbackRate < 1 ? '🌙' : playbackRate > 1 ? '⚡' : '•'} {playbackRate.toFixed(2)}x
             </button>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[8px] text-muted-foreground font-bold shrink-0">SLOW</span>
-            <Slider
-              value={[playbackRate * 100]}
-              onValueChange={([v]) => setPlaybackRate(Math.round(v) / 100)}
-              min={50}
-              max={200}
-              step={5}
-              className="flex-1 [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500"
-            />
-            <span className="text-[8px] text-muted-foreground font-bold shrink-0">FAST</span>
-          </div>
-          <div className="flex justify-between mt-1 px-1">
-            {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map(rate => (
+          <div className="grid grid-cols-5 gap-1.5">
+            {[0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0].map(rate => (
               <button
                 key={rate}
                 onClick={() => setPlaybackRate(rate)}
-                className={`text-[8px] font-mono px-1 py-0.5 rounded transition-colors ${
-                  Math.abs(playbackRate - rate) < 0.01 ? 'text-emerald-500 bg-emerald-500/10 font-bold' : 'text-muted-foreground/60 hover:text-foreground'
+                className={`text-[10px] font-mono py-2 rounded-md transition-colors tap-target ${
+                  Math.abs(playbackRate - rate) < 0.01
+                    ? 'text-emerald-500 bg-emerald-500/15 font-bold border border-emerald-500/30'
+                    : 'text-muted-foreground bg-surface-2 hover:text-foreground hover:bg-surface-3 border border-transparent'
                 }`}
               >
                 {rate}x
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Pitcher — Continuous fine-tune slider */}
+        <div className="px-4 pb-3">
+          <div className="flex items-center gap-1 mb-1.5">
+            <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
+            <span className="text-[8px] text-muted-foreground/60 ml-auto">fine-tune</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] text-muted-foreground font-bold shrink-0">0.5</span>
+            <Slider
+              value={[playbackRate * 100]}
+              onValueChange={([v]) => setPlaybackRate(Math.round(v) / 100)}
+              min={50}
+              max={200}
+              step={1}
+              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none"
+            />
+            <span className="text-[9px] text-muted-foreground font-bold shrink-0">2.0</span>
           </div>
         </div>
 
