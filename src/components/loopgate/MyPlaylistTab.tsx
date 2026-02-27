@@ -1,38 +1,79 @@
-import { useRef } from 'react';
-import { Plus, Trash2, Globe, Lock, Radio, Loader2, Music } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Plus, Trash2, Globe, Lock, Loader2, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { UserRadioTrack } from '@/hooks/useUserRadio';
+import { UserPlaylistTrack } from '@/hooks/useUserPlaylist';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
-interface MyRadioTabProps {
-  tracks: UserRadioTrack[];
+interface MyPlaylistTabProps {
+  tracks: UserPlaylistTrack[];
   loading: boolean;
   uploading: boolean;
   currentTrackId: string | null;
   isPlaying: boolean;
   isLoggedIn: boolean;
   onUpload: (file: File) => void;
-  onPlay: (track: UserRadioTrack, index: number) => void;
+  onPlay: (track: UserPlaylistTrack, index: number) => void;
   onDelete: (trackId: string, audioUrl: string) => void;
   onTogglePublic: (trackId: string, isPublic: boolean) => void;
+  compact?: boolean;
 }
 
-export default function MyRadioTab({
+export default function MyPlaylistTab({
   tracks, loading, uploading, currentTrackId, isPlaying, isLoggedIn,
-  onUpload, onPlay, onDelete, onTogglePublic,
-}: MyRadioTabProps) {
+  onUpload, onPlay, onDelete, onTogglePublic, compact = true,
+}: MyPlaylistTabProps) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [confirmTrack, setConfirmTrack] = useState<{ id: string; isPublic: boolean } | null>(null);
 
   if (!isLoggedIn) {
     return (
       <div className="p-6 text-center">
         <Music size={24} className="mx-auto mb-2 text-muted-foreground/50" />
-        <p className="text-xs text-muted-foreground">Sign in to create your own radio</p>
+        <p className="text-xs text-muted-foreground">Sign in to create your own playlist</p>
       </div>
     );
   }
 
   return (
     <div>
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!confirmTrack} onOpenChange={(open) => !open && setConfirmTrack(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmTrack?.isPublic ? 'Make Private?' : 'Make Public?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmTrack?.isPublic
+                ? 'This track will be removed from curated playlists and only you will be able to hear it.'
+                : 'This track will be visible in curated playlists and anyone on LOOPGATE can listen to it.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmTrack) {
+                  onTogglePublic(confirmTrack.id, confirmTrack.isPublic);
+                  setConfirmTrack(null);
+                }
+              }}
+            >
+              {confirmTrack?.isPublic ? 'Make Private' : 'Make Public'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Upload button */}
       <div className="px-3 py-2 border-b border-border">
         <input
@@ -60,15 +101,15 @@ export default function MyRadioTab({
       </div>
 
       {/* Track list */}
-      <div className="max-h-48 overflow-y-auto">
+      <div className={compact ? 'max-h-48 overflow-y-auto' : ''}>
         {loading ? (
           <div className="p-4 text-center">
             <Loader2 size={16} className="mx-auto animate-spin text-muted-foreground" />
           </div>
         ) : tracks.length === 0 ? (
           <div className="p-6 text-center">
-            <Radio size={20} className="mx-auto mb-2 text-muted-foreground/40" />
-            <p className="text-[10px] text-muted-foreground">Upload MP3s to build your radio</p>
+            <Music size={20} className="mx-auto mb-2 text-muted-foreground/40" />
+            <p className="text-[10px] text-muted-foreground">Upload MP3s to build your playlist</p>
           </div>
         ) : (
           tracks.map((track, i) => (
@@ -108,7 +149,7 @@ export default function MyRadioTab({
               </button>
               {/* Actions */}
               <button
-                onClick={() => onTogglePublic(track.id, track.is_public)}
+                onClick={() => setConfirmTrack({ id: track.id, isPublic: track.is_public })}
                 className="p-1 text-muted-foreground hover:text-foreground transition-colors"
                 title={track.is_public ? 'Public — click to make private' : 'Private — click to make public'}
               >

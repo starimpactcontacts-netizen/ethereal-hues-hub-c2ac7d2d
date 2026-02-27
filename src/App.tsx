@@ -84,6 +84,7 @@ const EditoriumArticlePage = lazy(() => import("./pages/loopgate/EditoriumArticl
 const UpscalerPage = lazy(() => import("./pages/loopgate/UpscalerPage"));
 const StudioPage = lazy(() => import("./pages/loopgate/StudioPage"));
 const SoloDetailPage = lazy(() => import("./pages/loopgate/SoloDetailPage"));
+const PlaylistsPage = lazy(() => import("./pages/loopgate/PlaylistsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
@@ -307,6 +308,7 @@ export default function App() {
               <Route path="/judges/divisions/create" element={<CreateJudgeDivisionPage />} />
               <Route path="/artist/:slug" element={<ArtistProfilePage />} />
               <Route path="/drop/:dropId" element={<FeaturedDropDetailPage />} />
+              <Route path="/playlists" element={<PlaylistsPage />} />
               <Route path="/editorium" element={<EditoriumPage />} />
               <Route path="/editorium/:slug" element={<EditoriumArticlePage />} />
               <Route path="/solo/:id" element={<SoloDetailPage />} />
