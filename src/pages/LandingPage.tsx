@@ -120,26 +120,36 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              {/* Color-shifting glow behind the mockup */}
+              {/* Layered cinematic glow — two offset orbs for depth */}
               <div
-                className="absolute inset-0 -inset-x-12 -inset-y-8 rounded-[40px] blur-[80px] opacity-40"
-                style={{
-                  background: 'radial-gradient(ellipse at center, currentColor, transparent 70%)',
-                  animation: 'heroGlow 8s linear infinite',
-                }}
-              />
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[130%] pointer-events-none"
+                aria-hidden
+              >
+                {/* Primary glow — large, slow color cycle */}
+                <div
+                  className="absolute inset-0 rounded-full blur-[120px] sm:blur-[160px] opacity-20"
+                  style={{ animation: 'heroGlowA 12s ease-in-out infinite' }}
+                />
+                {/* Secondary glow — offset, counter-phase */}
+                <div
+                  className="absolute inset-[15%] rounded-full blur-[80px] sm:blur-[120px] opacity-15"
+                  style={{ animation: 'heroGlowB 12s ease-in-out infinite' }}
+                />
+              </div>
               <style>{`
-                @keyframes heroGlow {
-                  0%   { color: hsl(0, 80%, 55%); }
-                  16%  { color: hsl(30, 90%, 50%); }
-                  33%  { color: hsl(45, 85%, 55%); }
-                  50%  { color: hsl(200, 70%, 50%); }
-                  66%  { color: hsl(280, 60%, 50%); }
-                  83%  { color: hsl(340, 75%, 50%); }
-                  100% { color: hsl(360, 80%, 55%); }
+                @keyframes heroGlowA {
+                  0%, 100% { background: radial-gradient(ellipse at 45% 50%, hsl(0 70% 45% / 0.6), transparent 70%); }
+                  25%  { background: radial-gradient(ellipse at 55% 45%, hsl(35 80% 45% / 0.5), transparent 70%); }
+                  50%  { background: radial-gradient(ellipse at 50% 55%, hsl(220 50% 40% / 0.4), transparent 70%); }
+                  75%  { background: radial-gradient(ellipse at 45% 50%, hsl(350 65% 40% / 0.5), transparent 70%); }
+                }
+                @keyframes heroGlowB {
+                  0%, 100% { background: radial-gradient(ellipse at 55% 55%, hsl(45 75% 50% / 0.5), transparent 65%); }
+                  33%  { background: radial-gradient(ellipse at 40% 50%, hsl(0 60% 40% / 0.4), transparent 65%); }
+                  66%  { background: radial-gradient(ellipse at 60% 45%, hsl(280 40% 35% / 0.35), transparent 65%); }
                 }
               `}</style>
-              <img src={loopgatePreviewDevices} alt="Loopgate on mobile and desktop" className="relative z-10 w-full h-auto" />
+              <img src={loopgatePreviewDevices} alt="Loopgate on mobile and desktop" className="relative z-10 w-full h-auto drop-shadow-[0_20px_60px_rgba(0,0,0,0.5)]" />
             </motion.div>
           </div>
 
