@@ -5,7 +5,7 @@ import {
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
-  Zap, UserRound, ChevronDown, Check, Clock, X, Info
+  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -429,13 +429,32 @@ export default function HubPage() {
                       </div>
                     </Link>
                   ) : (
-                    <Link to="/arena" className="group">
-                      <div className="bg-red-950/30 border border-red-800/30 rounded-xl p-3 group-hover:border-red-700/50 transition-colors h-full">
-                        <div className="w-8 h-8 rounded-lg bg-red-900/30 flex items-center justify-center mb-2">
-                          <Swords className="w-4 h-4 text-red-400" />
+                    <Link to="/studio" className="group">
+                      <div className="relative overflow-hidden bg-gradient-to-br from-surface-1 via-background to-surface-1 border border-border/50 rounded-xl p-3 group-hover:border-foreground/30 transition-all h-full">
+                        {/* Inline crosshair pattern */}
+                        <svg className="absolute inset-0 w-full h-full opacity-[0.06] pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <pattern id="studio-grid" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+                              <line x1="12" y1="14" x2="16" y2="14" stroke="currentColor" strokeWidth="0.5" />
+                              <line x1="14" y1="12" x2="14" y2="16" stroke="currentColor" strokeWidth="0.5" />
+                              <circle cx="0" cy="0" r="0.4" fill="currentColor" />
+                              <circle cx="28" cy="0" r="0.4" fill="currentColor" />
+                              <circle cx="0" cy="28" r="0.4" fill="currentColor" />
+                              <circle cx="28" cy="28" r="0.4" fill="currentColor" />
+                            </pattern>
+                          </defs>
+                          <rect width="100%" height="100%" fill="url(#studio-grid)" />
+                        </svg>
+                        {/* Accent glow */}
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-accent/5 blur-2xl rounded-full" />
+                        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground/10 to-transparent" />
+                        <div className="relative">
+                          <div className="w-8 h-8 rounded-lg bg-foreground/5 border border-border/50 flex items-center justify-center mb-2">
+                            <Clapperboard className="w-4 h-4 text-foreground/70" />
+                          </div>
+                          <p className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold mb-0.5">Studio</p>
+                          <p className="font-display text-xs text-foreground leading-tight">Open Editor</p>
                         </div>
-                        <p className="text-[9px] text-red-400 uppercase tracking-[0.12em] font-semibold mb-0.5">Arena</p>
-                        <p className="font-display text-xs text-foreground leading-tight">Compete & Get Rated</p>
                       </div>
                     </Link>
                   )}
