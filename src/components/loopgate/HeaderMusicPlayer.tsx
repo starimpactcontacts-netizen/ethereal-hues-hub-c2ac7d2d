@@ -130,7 +130,9 @@ export default function HeaderMusicPlayer() {
         .limit(50);
       if (data) {
         const valid = data.filter(t => t.song_preview_url) as Track[];
-        setTracks(shuffled ? shuffleArray(valid) : valid);
+        // Always shuffle on load so every session gets a unique order
+        setTracks(shuffleArray(valid));
+        setCurrentIndex(Math.floor(Math.random() * valid.length));
       }
     };
     fetchTracks();
@@ -376,32 +378,25 @@ export default function HeaderMusicPlayer() {
         align="start"
         className="w-72 bg-surface-0 border-border p-0 overflow-hidden"
       >
-        {/* Tab Switcher - only show tabs if logged in */}
-        {userId ? (
-          <div className="flex border-b border-border">
-            <button
-              onClick={() => setRadioMode('loopgate')}
-              className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                radioMode === 'loopgate' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Radio size={12} className="inline mr-1 -mt-0.5" /> LOOPGATE
-            </button>
-            <button
-              onClick={() => setRadioMode('myradio')}
-              className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                radioMode === 'myradio' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Music size={12} className="inline mr-1 -mt-0.5" /> MY RADIO
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border">
-            <Radio size={12} className="text-emerald-500" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">LOOPGATE Radio</span>
-          </div>
-        )}
+        {/* Tab Switcher */}
+        <div className="flex border-b border-border">
+          <button
+            onClick={() => setRadioMode('loopgate')}
+            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              radioMode === 'loopgate' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Radio size={12} className="inline mr-1 -mt-0.5" /> LOOPGATE
+          </button>
+          <button
+            onClick={() => setRadioMode('myradio')}
+            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              radioMode === 'myradio' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Music size={12} className="inline mr-1 -mt-0.5" /> MY RADIO
+          </button>
+        </div>
 
         {/* Now Playing Hero */}
         <div className="relative">
