@@ -115,7 +115,7 @@ export default function LandingPage() {
           {/* ──── REAL LOOPGATE UI PREVIEW ──── */}
           <div className="relative z-10 flex-1 flex items-end justify-center px-4 sm:px-8 pb-16">
             <motion.div
-              className="relative w-full max-w-4xl mx-auto"
+              className="relative w-full max-w-5xl mx-auto"
               initial={{ opacity: 0, y: 40, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
