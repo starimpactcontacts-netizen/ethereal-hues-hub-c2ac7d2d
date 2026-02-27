@@ -284,7 +284,7 @@ export default function CampaignAdminPage() {
               </div>
 
               <Input
-                placeholder="Campaign Name"
+                placeholder="Song Name"
                 value={newCampaign.name}
                 onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
                 className="bg-surface-0"
