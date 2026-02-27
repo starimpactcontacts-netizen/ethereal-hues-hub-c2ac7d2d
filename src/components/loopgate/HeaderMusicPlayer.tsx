@@ -152,33 +152,48 @@ export default function HeaderMusicPlayer() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 relative text-foreground hover:text-gold hover:bg-gold/10"
+        <button
+          className="relative flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:bg-accent"
         >
-          <Radio className="h-5 w-5" />
+          {/* Pulsing green ring when playing */}
           <AnimatePresence>
             {isPlaying && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-gold rounded-full"
-              >
+              <>
                 <motion.div
-                  className="w-full h-full bg-gold rounded-full"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ duration: 1.2, repeat: Infinity }}
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute inset-0 rounded-full border-2 border-emerald-500"
                 />
-              </motion.div>
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                  className="absolute inset-0 rounded-full border border-emerald-500/50"
+                />
+              </>
             )}
           </AnimatePresence>
-        </Button>
+          {/* Sound wave bars icon when playing, radio icon when not */}
+          {isPlaying ? (
+            <div className="flex gap-[3px] items-end h-5">
+              {[0, 1, 2, 3, 4].map(b => (
+                <motion.div
+                  key={b}
+                  className="w-[3px] bg-emerald-500 rounded-full"
+                  animate={{ height: ['4px', '18px', '6px', '14px', '4px'] }}
+                  transition={{ duration: 0.8, repeat: Infinity, delay: b * 0.1, ease: 'easeInOut' }}
+                />
+              ))}
+            </div>
+          ) : (
+            <Radio className="h-6 w-6 text-muted-foreground" />
+          )}
+        </button>
       </PopoverTrigger>
       <PopoverContent
         side="bottom"
-        align="end"
+        align="start"
         className="w-72 bg-surface-0 border-border p-0 overflow-hidden"
       >
         {/* Now Playing Hero */}

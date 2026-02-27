@@ -58,18 +58,18 @@ export default function AppHeader() {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
       <div className="flex items-center justify-between px-4 h-14">
-        {/* Logo - Official brand wordmark */}
-        <Link to="/hub">
-          <img src={loopgateBrand} alt="LOOPGATE" className="h-6 w-auto" />
-        </Link>
+        {/* Left side: Logo + Music Player */}
+        <div className="flex items-center gap-2">
+          <Link to="/hub">
+            <img src={loopgateBrand} alt="LOOPGATE" className="h-6 w-auto" />
+          </Link>
+          <HeaderMusicPlayer />
+        </div>
 
-        {/* Right side: Messages + Invite + Notifications + Menu */}
+        {/* Right side: Messages + Notifications + Menu */}
         <div className="flex items-center gap-1">
           {/* Messages */}
           <MessagesHeaderIcon />
-          
-          {/* Music Player */}
-          <HeaderMusicPlayer />
           
           <NotificationCenter />
           
