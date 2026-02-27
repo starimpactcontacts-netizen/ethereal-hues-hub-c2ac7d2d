@@ -120,7 +120,26 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              <img src={loopgatePreviewDevices} alt="Loopgate on mobile and desktop" className="w-full h-auto" />
+              {/* Color-shifting glow behind the mockup */}
+              <div
+                className="absolute inset-0 -inset-x-12 -inset-y-8 rounded-[40px] blur-[80px] opacity-40"
+                style={{
+                  background: 'radial-gradient(ellipse at center, currentColor, transparent 70%)',
+                  animation: 'heroGlow 8s linear infinite',
+                }}
+              />
+              <style>{`
+                @keyframes heroGlow {
+                  0%   { color: hsl(0, 80%, 55%); }
+                  16%  { color: hsl(30, 90%, 50%); }
+                  33%  { color: hsl(45, 85%, 55%); }
+                  50%  { color: hsl(200, 70%, 50%); }
+                  66%  { color: hsl(280, 60%, 50%); }
+                  83%  { color: hsl(340, 75%, 50%); }
+                  100% { color: hsl(360, 80%, 55%); }
+                }
+              `}</style>
+              <img src={loopgatePreviewDevices} alt="Loopgate on mobile and desktop" className="relative z-10 w-full h-auto" />
             </motion.div>
           </div>
 
