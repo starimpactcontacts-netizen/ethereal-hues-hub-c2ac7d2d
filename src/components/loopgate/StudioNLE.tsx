@@ -544,20 +544,7 @@ export default function StudioNLE() {
                       </div>
                     </button>
 
-                    <p className="text-[10px] text-center" style={{ color: "#444" }}>No media? Create with these tools</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { icon: Sparkles, label: "AI media" },
-                        { icon: Image, label: "AI avatars" },
-                        { icon: Mic, label: "Record" },
-                      ].map(({ icon: Icon, label }) => (
-                        <button key={label} className="py-4 rounded-lg flex flex-col items-center gap-2 transition-all hover:bg-white/5"
-                          style={{ border: "1px solid #2a2a2a", background: "#151515" }}>
-                          <Icon className="w-5 h-5" style={{ color: "#666" }} />
-                          <span className="text-[10px]" style={{ color: "#888" }}>{label}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <p className="text-[10px] text-center" style={{ color: "#444" }}>Import your clips to get started</p>
 
                     {mediaItems.length > 0 && (
                       <div className="grid grid-cols-2 gap-1.5 pt-2">
