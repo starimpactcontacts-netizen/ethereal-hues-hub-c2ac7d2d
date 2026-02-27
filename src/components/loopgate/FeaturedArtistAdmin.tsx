@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Music, Plus, Pencil, Trash2, Eye, Play, Square, Trophy, Star, Users, Zap, ChevronDown, ChevronUp, ExternalLink, Loader2 } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Music, Plus, Pencil, Trash2, Eye, Play, Square, Trophy, Star, Users, Zap, ChevronDown, ChevronUp, ExternalLink, Loader2, Video, Award, Lock, Flame, Check, Hash, ArrowUp, ArrowDown, Search } from "lucide-react";
 // Audio files are uploaded directly — no client-side trimming needed
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,6 +50,184 @@ export default function FeaturedArtistAdmin() {
 
   // Delete
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'artist' | 'drop'; id: string } | null>(null);
+
+  // Round management state
+  interface DropRound {
+    id: string;
+    drop_id: string;
+    round_number: number;
+    max_submissions: number;
+    status: string;
+    judge_id: string | null;
+    judge_username: string | null;
+    judge_avatar_url: string | null;
+    judge_video_url: string | null;
+    starts_at: string | null;
+    ends_at: string | null;
+    created_at: string;
+  }
+  interface RoundRanking {
+    id: string;
+    round_id: string;
+    submission_id: string;
+    rank: number;
+    index_awarded: number;
+    xp_awarded: number;
+  }
+  const [dropRounds, setDropRounds] = useState<Record<string, DropRound[]>>({});
+  const [dropRankings, setDropRankings] = useState<Record<string, RoundRanking[]>>({});
+  const [roundLoading, setRoundLoading] = useState<string | null>(null);
+  const [judgeSearch, setJudgeSearch] = useState('');
+  const [judgeResults, setJudgeResults] = useState<{ id: string; username: string; avatar_url: string | null }[]>([]);
+  const [assigningJudge, setAssigningJudge] = useState<{ dropId: string; roundId: string } | null>(null);
+  const [judgeVideoUrl, setJudgeVideoUrl] = useState('');
+  const [rankingRound, setRankingRound] = useState<{ dropId: string; roundId: string } | null>(null);
+  const [rankOrder, setRankOrder] = useState<string[]>([]); // submission IDs in rank order
+  const [rankXp, setRankXp] = useState(30);
+  const [rankIndex, setRankIndex] = useState(15);
+
+  // ═══ ROUND MANAGEMENT FUNCTIONS ═══
+
+  const fetchRoundsForDrop = async (dropId: string) => {
+    const { data: roundsData } = await supabase
+      .from('featured_drop_rounds')
+      .select('*')
+      .eq('drop_id', dropId)
+      .order('round_number', { ascending: true });
+    const rounds = (roundsData || []) as unknown as DropRound[];
+    setDropRounds(prev => ({ ...prev, [dropId]: rounds }));
+
+    if (rounds.length > 0) {
+      const roundIds = rounds.map(r => r.id);
+      const { data: rankData } = await supabase
+        .from('featured_round_rankings')
+        .select('*')
+        .in('round_id', roundIds)
+        .order('rank', { ascending: true });
+      setDropRankings(prev => ({ ...prev, [dropId]: (rankData || []) as unknown as RoundRanking[] }));
+    }
+  };
+
+  useEffect(() => {
+    if (expandedDropId && !dropRounds[expandedDropId]) {
+      fetchRoundsForDrop(expandedDropId);
+    }
+  }, [expandedDropId]);
+
+  const handleCreateRounds = async (dropId: string) => {
+    setRoundLoading(dropId);
+    const defaultRounds = [
+      { drop_id: dropId, round_number: 1, max_submissions: 3, status: 'pending' },
+      { drop_id: dropId, round_number: 2, max_submissions: 5, status: 'pending' },
+      { drop_id: dropId, round_number: 3, max_submissions: 10, status: 'pending' },
+    ];
+    const { error } = await supabase.from('featured_drop_rounds').insert(defaultRounds as any);
+    if (error) toast.error(error.message);
+    else { toast.success('Rounds created (R1: 3, R2: 5, R3: 10)'); await fetchRoundsForDrop(dropId); }
+    setRoundLoading(null);
+  };
+
+  const handleAddExtraRound = async (dropId: string) => {
+    const existing = dropRounds[dropId] || [];
+    const nextNum = existing.length + 1;
+    setRoundLoading(dropId);
+    const { error } = await supabase.from('featured_drop_rounds').insert({
+      drop_id: dropId, round_number: nextNum, max_submissions: 10, status: 'pending',
+    } as any);
+    if (error) toast.error(error.message);
+    else { toast.success(`Round ${nextNum} added (10 slots)`); await fetchRoundsForDrop(dropId); }
+    setRoundLoading(null);
+  };
+
+  const handleOpenRound = async (dropId: string, roundId: string) => {
+    setRoundLoading(roundId);
+    const { error } = await supabase.from('featured_drop_rounds').update({ status: 'open', starts_at: new Date().toISOString() } as any).eq('id', roundId);
+    if (error) toast.error(error.message);
+    else { toast.success('Round opened!'); await fetchRoundsForDrop(dropId); }
+    setRoundLoading(null);
+  };
+
+  const handleSetRoundJudging = async (dropId: string, roundId: string) => {
+    setRoundLoading(roundId);
+    const { error } = await supabase.from('featured_drop_rounds').update({ status: 'judging' } as any).eq('id', roundId);
+    if (error) toast.error(error.message);
+    else { toast.success('Round moved to judging'); await fetchRoundsForDrop(dropId); }
+    setRoundLoading(null);
+  };
+
+  const handleCompleteRound = async (dropId: string, roundId: string) => {
+    setRoundLoading(roundId);
+    const { error } = await supabase.from('featured_drop_rounds').update({ status: 'completed', ends_at: new Date().toISOString() } as any).eq('id', roundId);
+    if (error) toast.error(error.message);
+    else { toast.success('Round completed!'); await fetchRoundsForDrop(dropId); }
+    setRoundLoading(null);
+  };
+
+  const handleSearchJudges = async (query: string) => {
+    setJudgeSearch(query);
+    if (query.length < 2) { setJudgeResults([]); return; }
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, username, avatar_url')
+      .ilike('username', `%${query}%`)
+      .limit(5);
+    setJudgeResults((data || []) as any);
+  };
+
+  const handleAssignJudge = async (judgeId: string, judgeUsername: string, judgeAvatar: string | null) => {
+    if (!assigningJudge) return;
+    setRoundLoading(assigningJudge.roundId);
+    const { error } = await supabase.from('featured_drop_rounds').update({
+      judge_id: judgeId, judge_username: judgeUsername, judge_avatar_url: judgeAvatar,
+    } as any).eq('id', assigningJudge.roundId);
+    if (error) toast.error(error.message);
+    else { toast.success(`Judge @${judgeUsername} assigned!`); await fetchRoundsForDrop(assigningJudge.dropId); }
+    setAssigningJudge(null); setJudgeSearch(''); setJudgeResults([]); setRoundLoading(null);
+  };
+
+  const handleSubmitJudgeVideo = async (dropId: string, roundId: string) => {
+    if (!judgeVideoUrl.trim()) return;
+    setRoundLoading(roundId);
+    const { error } = await supabase.from('featured_drop_rounds').update({ judge_video_url: judgeVideoUrl.trim() } as any).eq('id', roundId);
+    if (error) toast.error(error.message);
+    else { toast.success('Judge video submitted!'); setJudgeVideoUrl(''); await fetchRoundsForDrop(dropId); }
+    setRoundLoading(null);
+  };
+
+  const handleSaveRankings = async () => {
+    if (!rankingRound || rankOrder.length === 0) return;
+    setRoundLoading(rankingRound.roundId);
+    await supabase.from('featured_round_rankings').delete().eq('round_id', rankingRound.roundId);
+    const inserts = rankOrder.map((subId, i) => {
+      const rank = i + 1;
+      const xpMult = rank === 1 ? 1 : rank === 2 ? 0.7 : rank === 3 ? 0.5 : 0.3;
+      const idxMult = rank === 1 ? 1 : rank === 2 ? 0.6 : rank === 3 ? 0.4 : 0.2;
+      return { round_id: rankingRound.roundId, submission_id: subId, rank, xp_awarded: Math.round(rankXp * xpMult), index_awarded: Math.round(rankIndex * idxMult) };
+    });
+    const { error } = await supabase.from('featured_round_rankings').insert(inserts as any);
+    if (error) { toast.error(error.message); }
+    else {
+      for (const ins of inserts) {
+        const sub = submissions.find(s => s.id === ins.submission_id);
+        if (sub && ins.xp_awarded > 0) {
+          await supabase.rpc('award_xp', { p_user_id: sub.user_id, p_amount: ins.xp_awarded, p_action: 'featured_drop_round', p_description: `Featured Drop round rank #${ins.rank}` });
+        }
+        if (sub && ins.index_awarded > 0) {
+          const { data: profile } = await supabase.from('profiles').select('spendable_index, global_index_score').eq('id', sub.user_id).single();
+          if (profile) {
+            await supabase.from('profiles').update({ spendable_index: (profile.spendable_index || 0) + ins.index_awarded, global_index_score: (profile.global_index_score || 0) + ins.index_awarded }).eq('id', sub.user_id);
+          }
+        }
+      }
+      toast.success('Rankings saved & rewards distributed!');
+      setRankingRound(null); setRankOrder([]);
+      await fetchRoundsForDrop(rankingRound.dropId);
+    }
+    setRoundLoading(null);
+  };
+
+  const moveRankUp = (i: number) => { if (i === 0) return; setRankOrder(p => { const n = [...p]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; return n; }); };
+  const moveRankDown = (i: number) => { if (i >= rankOrder.length - 1) return; setRankOrder(p => { const n = [...p]; [n[i], n[i + 1]] = [n[i + 1], n[i]]; return n; }); };
 
   const handleCreateArtist = async () => {
     if (!newArtist.name || !newArtist.slug) return;
@@ -375,38 +553,217 @@ export default function FeaturedArtistAdmin() {
                   </div>
                 </div>
 
-                {/* Expanded: show submissions for scoring */}
+                {/* Expanded: show submissions + round management */}
                 {isExpanded && (
-                  <div className="border-t border-border p-3 space-y-2">
-                    {dropSubs.length === 0 ? (
-                      <p className="text-xs text-muted-foreground text-center py-4">No submissions yet</p>
-                    ) : (
-                      dropSubs.map(sub => (
-                        <div key={sub.id} className={`flex items-center justify-between p-2 rounded-lg border ${
-                          sub.status === 'scored' ? 'bg-surface-1 border-border' : 'bg-gold/5 border-gold/30'
-                        }`}>
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-xs font-bold truncate">@{sub.username}</span>
-                            <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-purple-400">
-                              <ExternalLink size={12} />
-                            </a>
-                            <span className="text-[9px] text-muted-foreground">{sub.platform}</span>
+                  <div className="border-t border-border p-3 space-y-4">
+                    {/* Submissions */}
+                    <div className="space-y-2">
+                      <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Submissions ({dropSubs.length})</h4>
+                      {dropSubs.length === 0 ? (
+                        <p className="text-xs text-muted-foreground text-center py-2">No submissions yet</p>
+                      ) : (
+                        dropSubs.map(sub => (
+                          <div key={sub.id} className={`flex items-center justify-between p-2 rounded-lg border ${
+                            sub.status === 'scored' ? 'bg-surface-1 border-border' : 'bg-gold/5 border-gold/30'
+                          }`}>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-xs font-bold truncate">@{sub.username}</span>
+                              <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-destructive">
+                                <ExternalLink size={12} />
+                              </a>
+                              <span className="text-[9px] text-muted-foreground">{sub.platform}</span>
+                              {(sub as any).round_id && <span className="text-[8px] bg-surface-2 px-1.5 py-0.5 rounded text-muted-foreground">R{(dropRounds[drop.id] || []).find(r => r.id === (sub as any).round_id)?.round_number || '?'}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {sub.status === 'scored' ? (
+                                <span className={`text-sm font-bold tabular-nums ${
+                                  (sub.qoi_score || 0) >= 70 ? 'text-gold' : (sub.qoi_score || 0) >= 40 ? 'text-foreground' : 'text-destructive'
+                                }`}>{Math.round(sub.qoi_score || 0)} QOI</span>
+                              ) : (
+                                <button onClick={() => { setScoringSub(sub); setScores({ quality: 70, originality: 70, impact: 70 }); setFeedback(''); }}
+                                  className="text-[10px] bg-gold text-black px-3 py-1 rounded font-bold">
+                                  Score
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
-                            {sub.status === 'scored' ? (
-                              <span className={`text-sm font-bold tabular-nums ${
-                                (sub.qoi_score || 0) >= 70 ? 'text-gold' : (sub.qoi_score || 0) >= 40 ? 'text-foreground' : 'text-red-400'
-                              }`}>{Math.round(sub.qoi_score || 0)} QOI</span>
-                            ) : (
-                              <button onClick={() => { setScoringSub(sub); setScores({ quality: 70, originality: 70, impact: 70 }); setFeedback(''); }}
-                                className="text-[10px] bg-gold text-black px-3 py-1 rounded font-bold">
-                                Score
-                              </button>
-                            )}
+                        ))
+                      )}
+                    </div>
+
+                    {/* ═══ ROUND MANAGEMENT ═══ */}
+                    <div className="space-y-3 border-t border-border pt-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold flex items-center gap-1.5">
+                          <Flame size={12} className="text-destructive" /> Round System
+                        </h4>
+                        {!(dropRounds[drop.id]?.length) && (
+                          <button
+                            onClick={() => handleCreateRounds(drop.id)}
+                            disabled={roundLoading === drop.id}
+                            className="text-[10px] bg-destructive/20 border border-destructive/50 text-destructive px-3 py-1.5 rounded-lg font-bold flex items-center gap-1"
+                          >
+                            {roundLoading === drop.id ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
+                            Init Rounds (3→5→10)
+                          </button>
+                        )}
+                      </div>
+
+                      {(dropRounds[drop.id] || []).map((round) => {
+                        const roundSubmissions = dropSubs.filter((s: any) => s.round_id === round.id);
+                        const roundRankings = (dropRankings[drop.id] || []).filter(rk => rk.round_id === round.id);
+                        const slotsFilled = roundSubmissions.length;
+                        const slotsTotal = round.max_submissions;
+
+                        return (
+                          <div key={round.id} className={`border rounded-lg overflow-hidden ${
+                            round.status === 'open' ? 'border-destructive/40 bg-destructive/5' :
+                            round.status === 'judging' ? 'border-gold/40 bg-gold/5' :
+                            round.status === 'completed' ? 'border-emerald-500/30 bg-emerald-500/5' :
+                            'border-border bg-surface-1'
+                          }`}>
+                            <div className="p-3 space-y-2">
+                              {/* Round header */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-black uppercase tracking-wider">R{round.round_number}</span>
+                                  <Badge className={`text-[8px] ${
+                                    round.status === 'open' ? 'bg-destructive text-white' :
+                                    round.status === 'full' ? 'bg-amber-500 text-white' :
+                                    round.status === 'judging' ? 'bg-gold text-black' :
+                                    round.status === 'completed' ? 'bg-emerald-500 text-white' :
+                                    'bg-muted text-muted-foreground'
+                                  }`}>{round.status.toUpperCase()}</Badge>
+                                  <span className="text-[10px] text-muted-foreground">{slotsFilled}/{slotsTotal} slots</span>
+                                </div>
+
+                                {/* Round actions */}
+                                <div className="flex items-center gap-1">
+                                  {round.status === 'pending' && (
+                                    <button onClick={() => handleOpenRound(drop.id, round.id)} disabled={roundLoading === round.id}
+                                      className="text-[9px] bg-destructive/20 text-destructive px-2 py-1 rounded font-bold flex items-center gap-1">
+                                      {roundLoading === round.id ? <Loader2 size={10} className="animate-spin" /> : <Play size={10} />} Open
+                                    </button>
+                                  )}
+                                  {(round.status === 'open' || round.status === 'full') && (
+                                    <button onClick={() => handleSetRoundJudging(drop.id, round.id)} disabled={roundLoading === round.id}
+                                      className="text-[9px] bg-gold/20 text-gold px-2 py-1 rounded font-bold flex items-center gap-1">
+                                      {roundLoading === round.id ? <Loader2 size={10} className="animate-spin" /> : <Video size={10} />} → Judging
+                                    </button>
+                                  )}
+                                  {round.status === 'judging' && (
+                                    <button onClick={() => handleCompleteRound(drop.id, round.id)} disabled={roundLoading === round.id}
+                                      className="text-[9px] bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded font-bold flex items-center gap-1">
+                                      {roundLoading === round.id ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />} Complete
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Judge assignment */}
+                              <div className="flex items-center gap-2">
+                                {round.judge_username ? (
+                                  <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-2 py-1 rounded">
+                                    <Award size={10} className="text-gold" />
+                                    <span className="text-[9px] font-bold text-gold">@{round.judge_username}</span>
+                                  </div>
+                                ) : (
+                                  <button onClick={() => { setAssigningJudge({ dropId: drop.id, roundId: round.id }); setJudgeSearch(''); setJudgeResults([]); }}
+                                    className="text-[9px] bg-surface-2 border border-border px-2 py-1 rounded font-bold text-muted-foreground flex items-center gap-1 hover:border-gold/50">
+                                    <Award size={10} /> Assign Judge
+                                  </button>
+                                )}
+
+                                {/* Judge video URL (for judging/completed rounds) */}
+                                {(round.status === 'judging' || round.status === 'completed') && !round.judge_video_url && (
+                                  <div className="flex items-center gap-1 flex-1 min-w-0">
+                                    <Input
+                                      value={judgeVideoUrl}
+                                      onChange={e => setJudgeVideoUrl(e.target.value)}
+                                      placeholder="Judge video URL..."
+                                      className="h-7 text-[10px] flex-1 min-w-0"
+                                    />
+                                    <button onClick={() => handleSubmitJudgeVideo(drop.id, round.id)} disabled={!judgeVideoUrl.trim()}
+                                      className="text-[9px] bg-gold text-black px-2 py-1 rounded font-bold shrink-0 disabled:opacity-50">
+                                      <Video size={10} />
+                                    </button>
+                                  </div>
+                                )}
+                                {round.judge_video_url && (
+                                  <a href={round.judge_video_url} target="_blank" rel="noopener noreferrer"
+                                    className="text-[9px] text-gold flex items-center gap-1 hover:underline">
+                                    <Video size={10} /> Video ↗
+                                  </a>
+                                )}
+                              </div>
+
+                              {/* Round submissions list */}
+                              {roundSubmissions.length > 0 && (
+                                <div className="space-y-1">
+                                  {roundSubmissions.map((sub, idx) => (
+                                    <div key={sub.id} className="flex items-center justify-between text-[10px] p-1.5 bg-background/50 rounded border border-border/50">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-muted-foreground font-bold w-4 text-center">#{idx + 1}</span>
+                                        <span className="font-bold truncate">@{sub.username}</span>
+                                        <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-destructive shrink-0"><ExternalLink size={10} /></a>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Rankings (completed) */}
+                              {roundRankings.length > 0 && (
+                                <div className="space-y-1 border-t border-border/50 pt-2">
+                                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Rankings</p>
+                                  {roundRankings.map(rk => {
+                                    const sub = dropSubs.find(s => s.id === rk.submission_id);
+                                    return (
+                                      <div key={rk.id} className={`flex items-center justify-between text-[10px] p-1.5 rounded ${
+                                        rk.rank === 1 ? 'bg-gold/10 border border-gold/20' : 'bg-surface-1 border border-border/30'
+                                      }`}>
+                                        <div className="flex items-center gap-2">
+                                          <span className={`font-black ${rk.rank === 1 ? 'text-gold' : 'text-muted-foreground'}`}>#{rk.rank}</span>
+                                          <span className="font-bold">@{sub?.username || '?'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
+                                          <span>+{rk.xp_awarded} XP</span>
+                                          <span>+{rk.index_awarded} IDX</span>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+
+                              {/* Set Rankings button (for judging rounds with submissions) */}
+                              {(round.status === 'judging' || round.status === 'completed') && roundSubmissions.length > 0 && roundRankings.length === 0 && (
+                                <button
+                                  onClick={() => {
+                                    setRankingRound({ dropId: drop.id, roundId: round.id });
+                                    setRankOrder(roundSubmissions.map(s => s.id));
+                                    setRankXp(drop.xp_reward || 30);
+                                    setRankIndex(drop.index_reward || 15);
+                                  }}
+                                  className="w-full text-[10px] bg-gold/20 border border-gold/40 text-gold py-2 rounded font-bold flex items-center justify-center gap-1.5"
+                                >
+                                  <Trophy size={12} /> Set Rankings
+                                </button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))
-                    )}
+                        );
+                      })}
+
+                      {/* Add extra round button */}
+                      {(dropRounds[drop.id]?.length || 0) >= 3 && (
+                        <button onClick={() => handleAddExtraRound(drop.id)} disabled={roundLoading === drop.id}
+                          className="w-full text-[10px] border border-dashed border-border text-muted-foreground py-2 rounded-lg font-bold flex items-center justify-center gap-1.5 hover:border-destructive/50 hover:text-destructive transition-colors">
+                          {roundLoading === drop.id ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
+                          Add Round {(dropRounds[drop.id]?.length || 0) + 1} (10 slots)
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -727,6 +1084,79 @@ export default function FeaturedArtistAdmin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Judge Dialog */}
+      <Dialog open={!!assigningJudge} onOpenChange={(open) => !open && setAssigningJudge(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Award size={18} className="text-gold" /> Assign Judge</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <Input value={judgeSearch} onChange={e => handleSearchJudges(e.target.value)} placeholder="Search username..." />
+            {judgeResults.length > 0 && (
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {judgeResults.map(j => (
+                  <button key={j.id} onClick={() => handleAssignJudge(j.id, j.username, j.avatar_url)}
+                    className="w-full flex items-center gap-2 p-2 rounded-lg border border-border hover:border-gold/50 hover:bg-gold/5 transition-colors text-left">
+                    <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center text-[9px] font-bold overflow-hidden">
+                      {j.avatar_url ? <img src={j.avatar_url} className="w-full h-full object-cover" /> : j.username[0]?.toUpperCase()}
+                    </div>
+                    <span className="text-xs font-bold">@{j.username}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {judgeSearch.length >= 2 && judgeResults.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No users found</p>}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Set Rankings Dialog */}
+      <Dialog open={!!rankingRound} onOpenChange={(open) => !open && setRankingRound(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Trophy size={18} className="text-gold" /> Set Rankings</DialogTitle>
+          </DialogHeader>
+          {rankingRound && (
+            <div className="space-y-4 pt-2">
+              <p className="text-[10px] text-muted-foreground">Use arrows to reorder. #1 = best edit.</p>
+              <div className="space-y-1.5">
+                {rankOrder.map((subId, idx) => {
+                  const sub = submissions.find(s => s.id === subId);
+                  if (!sub) return null;
+                  return (
+                    <div key={subId} className={`flex items-center gap-2 p-2 rounded-lg border ${idx === 0 ? 'bg-gold/10 border-gold/30' : 'bg-surface-1 border-border'}`}>
+                      <span className={`text-sm font-black w-6 text-center ${idx === 0 ? 'text-gold' : 'text-muted-foreground'}`}>#{idx + 1}</span>
+                      <span className="text-xs font-bold flex-1 truncate">@{sub.username}</span>
+                      <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-destructive shrink-0"><ExternalLink size={10} /></a>
+                      <div className="flex flex-col gap-0.5 shrink-0">
+                        <button onClick={() => moveRankUp(idx)} disabled={idx === 0} className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"><ArrowUp size={12} /></button>
+                        <button onClick={() => moveRankDown(idx)} disabled={idx >= rankOrder.length - 1} className="p-0.5 text-muted-foreground hover:text-foreground disabled:opacity-30"><ArrowDown size={12} /></button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div><Label className="text-[10px]">1st Place XP</Label><Input type="number" value={rankXp} onChange={e => setRankXp(Number(e.target.value))} className="mt-1 h-8 text-xs" /></div>
+                <div><Label className="text-[10px]">1st Place Index</Label><Input type="number" value={rankIndex} onChange={e => setRankIndex(Number(e.target.value))} className="mt-1 h-8 text-xs" /></div>
+              </div>
+              <div className="text-[9px] text-muted-foreground bg-surface-1 p-2 rounded space-y-0.5">
+                {rankOrder.map((_, i) => {
+                  const rank = i + 1;
+                  const xpM = rank === 1 ? 1 : rank === 2 ? 0.7 : rank === 3 ? 0.5 : 0.3;
+                  const idxM = rank === 1 ? 1 : rank === 2 ? 0.6 : rank === 3 ? 0.4 : 0.2;
+                  return <p key={i}>#{rank}: {Math.round(rankXp * xpM)} XP, {Math.round(rankIndex * idxM)} Index</p>;
+                })}
+              </div>
+              <button onClick={handleSaveRankings} disabled={!!roundLoading}
+                className="w-full py-3 bg-gold text-black font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2">
+                {roundLoading ? <Loader2 size={16} className="animate-spin" /> : <><Trophy size={16} /> Save Rankings & Distribute</>}
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
