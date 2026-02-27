@@ -5,86 +5,86 @@ import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "sonner";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { useUserRoles } from "./hooks/useUserRoles";
+import { lazy, Suspense } from "react";
 
-// Pages
+// Eagerly loaded (critical path)
 import LandingPage from "./pages/LandingPage";
-
-import LoginPage from "./pages/LoginPage";
-import OnboardingPage from "./pages/OnboardingPage";
-import EnterpriseOnboardingPage from "./pages/EnterpriseOnboardingPage";
-import HubPage from "./pages/HubPage";
-import HomePage from "./pages/loopgate/HomePage";
-import EventDetailPage from "./pages/loopgate/EventDetailPage";
-import RankingsPage from "./pages/loopgate/RankingsPage";
-import ProfilePage from "./pages/loopgate/ProfilePage";
-import ProfileSettingsPage from "./pages/loopgate/ProfileSettingsPage";
-import ProfileStatsPage from "./pages/loopgate/ProfileStatsPage";
-import PublicProfilePage from "./pages/loopgate/PublicProfilePage";
-import UsernameLookupPage from "./pages/loopgate/UsernameLookupPage";
-import ClassPage from "./pages/loopgate/ClassPage";
-import LeaguePage from "./pages/loopgate/LeaguePage";
-import IndexPage from "./pages/loopgate/IndexPage";
-import ArenasPage from "./pages/loopgate/ArenasPage";
-import ArenaPage from "./pages/loopgate/ArenaPage";
-import ArenaChatPage from "./pages/loopgate/ArenaChatPage";
-import CrewsPage from "./pages/loopgate/CrewsPage";
-import CreateCrewPage from "./pages/loopgate/CreateCrewPage";
-import CrewDetailPage from "./pages/loopgate/CrewDetailPage";
-import CrewChatPage from "./pages/loopgate/CrewChatPage";
-import UnitChatPage from "./pages/loopgate/UnitChatPage";
-import CrewSettingsPage from "./pages/loopgate/CrewSettingsPage";
-import ShopPage from "./pages/loopgate/ShopPage";
-import FeedPage from "./pages/loopgate/FeedPage";
-import GQTPage from "./pages/loopgate/GQTPage";
-import JoinCrewPage from "./pages/loopgate/JoinCrewPage";
-import JudgeProfilePage from "./pages/loopgate/JudgeProfilePage";
-import JudgeLeaderboardPage from "./pages/loopgate/JudgeLeaderboardPage";
-import JudgeHubPage from "./pages/loopgate/JudgeHubPage";
-import JudgePanelPage from "./pages/loopgate/JudgePanelPage";
-import JudgeApplicationPage from "./pages/loopgate/JudgeApplicationPage";
-import CreateJudgeDivisionPage from "./pages/loopgate/CreateJudgeDivisionPage";
-import OpsPanel from "./pages/loopgate/OpsPanel";
-import SanctionedTournamentPage from "./pages/loopgate/SanctionedTournamentPage";
-import BattleDetailPage from "./pages/loopgate/BattleDetailPage";
-import QuickFightPage from "./pages/loopgate/QuickFightPage";
-import JudgeQueuePage from "./pages/loopgate/JudgeQueuePage";
-import EnterpriseDashboard from "./pages/loopgate/EnterpriseDashboard";
-import ArtistDashboardPage from "./pages/loopgate/ArtistDashboardPage";
-import CampaignAdminPage from "./pages/loopgate/CampaignAdminPage";
-import CampaignPortalPage from "./pages/loopgate/CampaignPortalPage";
-import EnterpriseClientDashboard from "./pages/loopgate/EnterpriseClientDashboard";
-import EnterpriseAccountPage from "./pages/loopgate/EnterpriseAccountPage";
-import EnterprisePage from "./pages/EnterprisePage";
-import SupportPage from "./pages/SupportPage";
-import RulesPage from "./pages/RulesPage";
-import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
-import AboutPage from "./pages/AboutPage";
-import DownloadPage from "./pages/DownloadPage";
-import AppPage from "./pages/AppPage";
-import HowItWorksPage from "./pages/HowItWorksPage";
-import FAQPage from "./pages/FAQPage";
-import StartPage from "./pages/StartPage";
-import MessagesPage from "./pages/loopgate/MessagesPage";
-import DirectMessagePage from "./pages/loopgate/DirectMessagePage";
-import HostedCompsPage from "./pages/loopgate/HostedCompsPage";
-import HostedCompDetailPage from "./pages/loopgate/HostedCompDetailPage";
-import ConnectionsPage from "./pages/loopgate/ConnectionsPage";
-import ArtistProfilePage from "./pages/loopgate/ArtistProfilePage";
-import FeaturedDropDetailPage from "./pages/loopgate/FeaturedDropDetailPage";
-import EditoriumPage from "./pages/loopgate/EditoriumPage";
-import EditoriumArticlePage from "./pages/loopgate/EditoriumArticlePage";
-import UpscalerPage from "./pages/loopgate/UpscalerPage";
-import StudioPage from "./pages/loopgate/StudioPage";
-import SoloDetailPage from "./pages/loopgate/SoloDetailPage";
-import NotFound from "./pages/NotFound";
-
-// Components
 import AuthenticatedLayout from "./components/loopgate/AuthenticatedLayout";
 import ProtectedRoute from "./components/loopgate/ProtectedRoute";
 import DevModeBadge from "./components/loopgate/DevModeBadge";
 import LoadingScreen from "./components/loopgate/LoadingScreen";
 import GlobalAccountPrompt from "./components/loopgate/GlobalAccountPrompt";
 import { isNativeApp } from "./lib/native";
+
+// Lazy-loaded pages — code-split per route
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
+const EnterpriseOnboardingPage = lazy(() => import("./pages/EnterpriseOnboardingPage"));
+const HubPage = lazy(() => import("./pages/HubPage"));
+const HomePage = lazy(() => import("./pages/loopgate/HomePage"));
+const EventDetailPage = lazy(() => import("./pages/loopgate/EventDetailPage"));
+const RankingsPage = lazy(() => import("./pages/loopgate/RankingsPage"));
+const ProfilePage = lazy(() => import("./pages/loopgate/ProfilePage"));
+const ProfileSettingsPage = lazy(() => import("./pages/loopgate/ProfileSettingsPage"));
+const ProfileStatsPage = lazy(() => import("./pages/loopgate/ProfileStatsPage"));
+const PublicProfilePage = lazy(() => import("./pages/loopgate/PublicProfilePage"));
+const UsernameLookupPage = lazy(() => import("./pages/loopgate/UsernameLookupPage"));
+const ClassPage = lazy(() => import("./pages/loopgate/ClassPage"));
+const LeaguePage = lazy(() => import("./pages/loopgate/LeaguePage"));
+const IndexPage = lazy(() => import("./pages/loopgate/IndexPage"));
+const ArenasPage = lazy(() => import("./pages/loopgate/ArenasPage"));
+const ArenaPage = lazy(() => import("./pages/loopgate/ArenaPage"));
+const ArenaChatPage = lazy(() => import("./pages/loopgate/ArenaChatPage"));
+const CrewsPage = lazy(() => import("./pages/loopgate/CrewsPage"));
+const CreateCrewPage = lazy(() => import("./pages/loopgate/CreateCrewPage"));
+const CrewDetailPage = lazy(() => import("./pages/loopgate/CrewDetailPage"));
+const CrewChatPage = lazy(() => import("./pages/loopgate/CrewChatPage"));
+const UnitChatPage = lazy(() => import("./pages/loopgate/UnitChatPage"));
+const CrewSettingsPage = lazy(() => import("./pages/loopgate/CrewSettingsPage"));
+const ShopPage = lazy(() => import("./pages/loopgate/ShopPage"));
+const FeedPage = lazy(() => import("./pages/loopgate/FeedPage"));
+const GQTPage = lazy(() => import("./pages/loopgate/GQTPage"));
+const JoinCrewPage = lazy(() => import("./pages/loopgate/JoinCrewPage"));
+const JudgeProfilePage = lazy(() => import("./pages/loopgate/JudgeProfilePage"));
+const JudgeLeaderboardPage = lazy(() => import("./pages/loopgate/JudgeLeaderboardPage"));
+const JudgeHubPage = lazy(() => import("./pages/loopgate/JudgeHubPage"));
+const JudgePanelPage = lazy(() => import("./pages/loopgate/JudgePanelPage"));
+const JudgeApplicationPage = lazy(() => import("./pages/loopgate/JudgeApplicationPage"));
+const CreateJudgeDivisionPage = lazy(() => import("./pages/loopgate/CreateJudgeDivisionPage"));
+const OpsPanel = lazy(() => import("./pages/loopgate/OpsPanel"));
+const SanctionedTournamentPage = lazy(() => import("./pages/loopgate/SanctionedTournamentPage"));
+const BattleDetailPage = lazy(() => import("./pages/loopgate/BattleDetailPage"));
+const QuickFightPage = lazy(() => import("./pages/loopgate/QuickFightPage"));
+const JudgeQueuePage = lazy(() => import("./pages/loopgate/JudgeQueuePage"));
+const EnterpriseDashboard = lazy(() => import("./pages/loopgate/EnterpriseDashboard"));
+const ArtistDashboardPage = lazy(() => import("./pages/loopgate/ArtistDashboardPage"));
+const CampaignAdminPage = lazy(() => import("./pages/loopgate/CampaignAdminPage"));
+const CampaignPortalPage = lazy(() => import("./pages/loopgate/CampaignPortalPage"));
+const EnterpriseClientDashboard = lazy(() => import("./pages/loopgate/EnterpriseClientDashboard"));
+const EnterpriseAccountPage = lazy(() => import("./pages/loopgate/EnterpriseAccountPage"));
+const EnterprisePage = lazy(() => import("./pages/EnterprisePage"));
+const SupportPage = lazy(() => import("./pages/SupportPage"));
+const RulesPage = lazy(() => import("./pages/RulesPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const DownloadPage = lazy(() => import("./pages/DownloadPage"));
+const AppPage = lazy(() => import("./pages/AppPage"));
+const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const StartPage = lazy(() => import("./pages/StartPage"));
+const MessagesPage = lazy(() => import("./pages/loopgate/MessagesPage"));
+const DirectMessagePage = lazy(() => import("./pages/loopgate/DirectMessagePage"));
+const HostedCompsPage = lazy(() => import("./pages/loopgate/HostedCompsPage"));
+const HostedCompDetailPage = lazy(() => import("./pages/loopgate/HostedCompDetailPage"));
+const ConnectionsPage = lazy(() => import("./pages/loopgate/ConnectionsPage"));
+const ArtistProfilePage = lazy(() => import("./pages/loopgate/ArtistProfilePage"));
+const FeaturedDropDetailPage = lazy(() => import("./pages/loopgate/FeaturedDropDetailPage"));
+const EditoriumPage = lazy(() => import("./pages/loopgate/EditoriumPage"));
+const EditoriumArticlePage = lazy(() => import("./pages/loopgate/EditoriumArticlePage"));
+const UpscalerPage = lazy(() => import("./pages/loopgate/UpscalerPage"));
+const StudioPage = lazy(() => import("./pages/loopgate/StudioPage"));
+const SoloDetailPage = lazy(() => import("./pages/loopgate/SoloDetailPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
@@ -116,7 +116,21 @@ if (isDevPreview && !isProduction && typeof window !== 'undefined') {
   console.log('[LOOPGATE] Dev mode active - all routes unlocked');
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60, // 1 min stale time — prevents refetching on every mount
+      gcTime: 1000 * 60 * 5, // 5 min garbage collection
+      refetchOnWindowFocus: false, // Don't refetch when tab re-focuses
+      retry: 1,
+    },
+  },
+});
+
+// Lazy fallback — shows nothing (HTML splash or AuthenticatedLayout's Suspense handles it)
+function LazyFallback() {
+  return <LoadingScreen minimal />;
+}
 
 // Root redirect component
 function RootRedirect() {
@@ -241,6 +255,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
         <AuthProvider>
+          <Suspense fallback={<LazyFallback />}>
           <Routes>
             {/* Public routes - no auth required */}
             <Route path="/" element={<RootRedirect />} />
@@ -358,6 +373,7 @@ export default function App() {
             {/* 404 - public */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
           <GlobalAccountPrompt />
           <DevModeBadge />
           <Toaster 
