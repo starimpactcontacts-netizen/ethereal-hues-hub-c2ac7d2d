@@ -3,197 +3,22 @@ import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, Check, SkipBack, SkipForward, Scissors, RotateCcw,
   ChevronLeft, Sparkles, Volume2, VolumeX, Gauge, Layers,
-  Wand2, SlidersHorizontal
+  Wand2, SlidersHorizontal, Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import {
+  FILTER_PRESETS, TEXT_STYLES, EFFECTS, TRANSITIONS, SPEED_OPTIONS,
+  EXPORT_QUALITIES,
+  applyEffect, renderTextOverlay, buildComputedFilter, formatTimecode,
+  type FilterPreset, type TextStyleKey, type ExportQuality,
+} from "@/lib/studioEffects";
 
-// ─── Types & Constants ───
-type FilterPreset = { name: string; label: string; filter: string; preview: string };
-type TextOverlay = { id: string; text: string; x: number; y: number; style: "bold" | "caption" | "title" | "glow" };
-type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust";
-
-const FILTER_PRESETS: FilterPreset[] = [
-  { name: "none", label: "Original", filter: "none", preview: "linear-gradient(135deg, hsl(0 0% 30%), hsl(0 0% 50%))" },
-  { name: "cinematic", label: "Cinema", filter: "contrast(1.15) saturate(0.85) brightness(0.95) sepia(0.1)", preview: "linear-gradient(135deg, hsl(30 30% 25%), hsl(40 40% 45%))" },
-  { name: "phonk", label: "Phonk", filter: "contrast(1.4) saturate(1.3) brightness(0.85) hue-rotate(-10deg)", preview: "linear-gradient(135deg, hsl(340 60% 25%), hsl(0 70% 40%))" },
-  { name: "noir", label: "Noir", filter: "grayscale(1) contrast(1.3) brightness(0.9)", preview: "linear-gradient(135deg, hsl(0 0% 10%), hsl(0 0% 35%))" },
-  { name: "cold", label: "Cold", filter: "saturate(0.7) brightness(1.05) hue-rotate(15deg) contrast(1.1)", preview: "linear-gradient(135deg, hsl(210 50% 25%), hsl(200 60% 50%))" },
-  { name: "heat", label: "Heat", filter: "saturate(1.4) brightness(1.05) hue-rotate(-15deg) contrast(1.1)", preview: "linear-gradient(135deg, hsl(15 70% 30%), hsl(30 80% 50%))" },
-  { name: "vintage", label: "Vintage", filter: "sepia(0.4) contrast(1.1) brightness(0.95) saturate(0.8)", preview: "linear-gradient(135deg, hsl(35 40% 25%), hsl(40 50% 45%))" },
-  { name: "neon", label: "Neon", filter: "contrast(1.3) saturate(1.6) brightness(1.1)", preview: "linear-gradient(135deg, hsl(280 70% 30%), hsl(180 70% 45%))" },
-  { name: "fade", label: "Fade", filter: "contrast(0.85) saturate(0.6) brightness(1.15)", preview: "linear-gradient(135deg, hsl(220 15% 40%), hsl(200 20% 60%))" },
-  { name: "chrome", label: "Chrome", filter: "contrast(1.2) saturate(0.4) brightness(1.1)", preview: "linear-gradient(135deg, hsl(200 10% 40%), hsl(210 20% 55%))" },
-  { name: "lofi", label: "Lo-Fi", filter: "contrast(1.5) saturate(1.1) brightness(0.8)", preview: "linear-gradient(135deg, hsl(0 40% 20%), hsl(350 30% 35%))" },
-  { name: "dream", label: "Dream", filter: "contrast(0.9) saturate(1.3) brightness(1.15)", preview: "linear-gradient(135deg, hsl(270 40% 40%), hsl(280 50% 55%))" },
-];
-
-const TEXT_STYLES = {
-  bold: { font: "bold 48px 'Bebas Neue', sans-serif", color: "#ffffff", stroke: "#000000", label: "Bold" },
-  caption: { font: "600 24px 'Inter', sans-serif", color: "#ffffff", stroke: "#000000", label: "Caption" },
-  title: { font: "bold 64px 'Bebas Neue', sans-serif", color: "hsl(43, 74%, 49%)", stroke: "#000000", label: "Title" },
-  glow: { font: "bold 48px 'Bebas Neue', sans-serif", color: "#ffffff", stroke: "rgba(200,150,50,0.8)", label: "Glow" },
-};
-
-const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
-
-const EFFECTS = [
-  { id: "glitch", label: "Glitch", icon: "⚡" },
-  { id: "shake", label: "Shake", icon: "📳" },
-  { id: "zoom_pulse", label: "Zoom", icon: "🔍" },
-  { id: "flash", label: "Flash", icon: "💥" },
-  { id: "rgb_split", label: "RGB Split", icon: "🌈" },
-  { id: "vhs", label: "VHS", icon: "📼" },
-  { id: "grain", label: "Grain", icon: "🎞" },
-  { id: "light_leak", label: "Leak", icon: "☀️" },
-  { id: "mirror", label: "Mirror", icon: "🪞" },
-  { id: "pixelate", label: "Pixel", icon: "🟩" },
-  { id: "invert", label: "Invert", icon: "🔄" },
-  { id: "blur_pulse", label: "Blur", icon: "💨" },
-];
-
-const TRANSITIONS = [
-  { id: "fade", label: "Fade", icon: "🌅" },
-  { id: "dissolve", label: "Dissolve", icon: "✨" },
-  { id: "slide_left", label: "Slide L", icon: "⬅" },
-  { id: "slide_right", label: "Slide R", icon: "➡" },
-  { id: "wipe", label: "Wipe", icon: "🧹" },
-  { id: "zoom_in", label: "Zoom In", icon: "🔎" },
-  { id: "spin", label: "Spin", icon: "🌀" },
-  { id: "glitch_trans", label: "Glitch", icon: "⚡" },
-  { id: "flash_trans", label: "Flash", icon: "💫" },
-];
-
-// ─── Effect application (shared with desktop) ───
-function applyEffect(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, effectId: string, time: number) {
-  const w = canvas.width, h = canvas.height;
-  switch (effectId) {
-    case "glitch": {
-      const sliceCount = 6 + Math.floor(Math.random() * 6);
-      for (let i = 0; i < sliceCount; i++) {
-        const y = Math.random() * h;
-        const sliceH = 2 + Math.random() * 15;
-        const offset = (Math.random() - 0.5) * 20;
-        const imgData = ctx.getImageData(0, y, w, sliceH);
-        ctx.putImageData(imgData, offset, y);
-      }
-      break;
-    }
-    case "shake": {
-      const ox = (Math.random() - 0.5) * 10;
-      const oy = (Math.random() - 0.5) * 10;
-      const imgData = ctx.getImageData(0, 0, w, h);
-      ctx.clearRect(0, 0, w, h);
-      ctx.putImageData(imgData, ox, oy);
-      break;
-    }
-    case "zoom_pulse": {
-      const scale = 1 + Math.sin(time * 4) * 0.03;
-      const imgData = ctx.getImageData(0, 0, w, h);
-      ctx.clearRect(0, 0, w, h);
-      ctx.save();
-      ctx.translate(w / 2, h / 2); ctx.scale(scale, scale); ctx.translate(-w / 2, -h / 2);
-      ctx.putImageData(imgData, 0, 0);
-      ctx.restore();
-      break;
-    }
-    case "flash": {
-      if (Math.random() < 0.05) {
-        ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.random() * 0.5})`;
-        ctx.fillRect(0, 0, w, h);
-      }
-      break;
-    }
-    case "rgb_split": {
-      const imgData = ctx.getImageData(0, 0, w, h);
-      const shift = 3 + Math.sin(time * 3) * 2;
-      const shifted = ctx.createImageData(w, h);
-      for (let y2 = 0; y2 < h; y2++) {
-        for (let x = 0; x < w; x++) {
-          const idx = (y2 * w + x) * 4;
-          const rIdx = (y2 * w + Math.min(w - 1, x + Math.round(shift))) * 4;
-          const bIdx = (y2 * w + Math.max(0, x - Math.round(shift))) * 4;
-          shifted.data[idx] = imgData.data[rIdx];
-          shifted.data[idx + 1] = imgData.data[idx + 1];
-          shifted.data[idx + 2] = imgData.data[bIdx + 2];
-          shifted.data[idx + 3] = 255;
-        }
-      }
-      ctx.putImageData(shifted, 0, 0);
-      break;
-    }
-    case "vhs": {
-      ctx.fillStyle = "rgba(0,0,0,0.03)";
-      for (let y2 = 0; y2 < h; y2 += 2) ctx.fillRect(0, y2, w, 1);
-      ctx.globalAlpha = 0.05;
-      ctx.fillStyle = `hsl(${(time * 60) % 360}, 100%, 50%)`;
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalAlpha = 1;
-      break;
-    }
-    case "grain": {
-      const imgData = ctx.getImageData(0, 0, w, h);
-      for (let i = 0; i < imgData.data.length; i += 16) { // Skip pixels for mobile perf
-        const noise = (Math.random() - 0.5) * 25;
-        imgData.data[i] += noise;
-        imgData.data[i + 1] += noise;
-        imgData.data[i + 2] += noise;
-      }
-      ctx.putImageData(imgData, 0, 0);
-      break;
-    }
-    case "light_leak": {
-      const gradient = ctx.createRadialGradient(
-        w * (0.3 + Math.sin(time * 0.5) * 0.3), h * 0.3, 0,
-        w * 0.5, h * 0.5, w * 0.8
-      );
-      gradient.addColorStop(0, `hsla(${(time * 30) % 60 + 20}, 80%, 60%, 0.12)`);
-      gradient.addColorStop(1, "transparent");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, w, h);
-      break;
-    }
-    case "mirror": {
-      const half = ctx.getImageData(0, 0, w / 2, h);
-      ctx.save(); ctx.translate(w, 0); ctx.scale(-1, 1);
-      ctx.putImageData(half, w / 2, 0);
-      ctx.restore();
-      break;
-    }
-    case "pixelate": {
-      const size = 10;
-      for (let y2 = 0; y2 < h; y2 += size) {
-        for (let x = 0; x < w; x += size) {
-          const imgData = ctx.getImageData(x, y2, 1, 1);
-          ctx.fillStyle = `rgb(${imgData.data[0]},${imgData.data[1]},${imgData.data[2]})`;
-          ctx.fillRect(x, y2, size, size);
-        }
-      }
-      break;
-    }
-    case "invert": {
-      const imgData = ctx.getImageData(0, 0, w, h);
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        imgData.data[i] = 255 - imgData.data[i];
-        imgData.data[i + 1] = 255 - imgData.data[i + 1];
-        imgData.data[i + 2] = 255 - imgData.data[i + 2];
-      }
-      ctx.putImageData(imgData, 0, 0);
-      break;
-    }
-    case "blur_pulse": {
-      ctx.globalAlpha = 0.12;
-      const imgData = ctx.getImageData(0, 0, w, h);
-      for (let i = 0; i < 2; i++) {
-        ctx.putImageData(imgData, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3);
-      }
-      ctx.globalAlpha = 1;
-      break;
-    }
-  }
-}
+// ─── Types ───
+type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
+type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export";
 
 export default function QuickClipEditor() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -213,7 +38,7 @@ export default function QuickClipEditor() {
   const [activeFilter, setActiveFilter] = useState<FilterPreset>(FILTER_PRESETS[0]);
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [textInput, setTextInput] = useState("");
-  const [textStyle, setTextStyle] = useState<"bold" | "caption" | "title" | "glow">("bold");
+  const [textStyle, setTextStyle] = useState<TextStyleKey>("bold");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioName, setAudioName] = useState("");
   const [activeTool, setActiveTool] = useState<EditorTool | null>(null);
@@ -224,26 +49,16 @@ export default function QuickClipEditor() {
   const [muted, setMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
-  
-  // Effects & transitions
   const [activeEffects, setActiveEffects] = useState<string[]>([]);
   const [activeTransition, setActiveTransition] = useState<string | null>(null);
-  
-  // Color grading
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
   const [hueRotate, setHueRotate] = useState(0);
+  const [exportQuality, setExportQuality] = useState<ExportQuality>("standard");
+  const [filterTab, setFilterTab] = useState<string>("all");
 
-  const computedFilter = useMemo(() => {
-    const parts: string[] = [];
-    if (activeFilter.filter !== "none") parts.push(activeFilter.filter);
-    if (brightness !== 100) parts.push(`brightness(${brightness / 100})`);
-    if (contrast !== 100) parts.push(`contrast(${contrast / 100})`);
-    if (saturation !== 100) parts.push(`saturate(${saturation / 100})`);
-    if (hueRotate !== 0) parts.push(`hue-rotate(${hueRotate}deg)`);
-    return parts.length > 0 ? parts.join(" ") : "none";
-  }, [activeFilter, brightness, contrast, saturation, hueRotate]);
+  const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
 
   const toggleEffect = (effectId: string) => {
     setActiveEffects(prev => prev.includes(effectId) ? prev.filter(e => e !== effectId) : [...prev, effectId]);
@@ -268,14 +83,13 @@ export default function QuickClipEditor() {
     setAudioFile(f); setAudioName(f.name); toast.success("Audio track added");
   };
 
-  // Thumbnails
   useEffect(() => {
     if (!videoUrl) return;
     const vid = document.createElement("video");
     vid.src = videoUrl; vid.crossOrigin = "anonymous"; vid.muted = true; vid.preload = "auto";
     vid.onloadedmetadata = () => {
       setDuration(vid.duration); setTrimEnd(vid.duration);
-      const count = Math.min(12, Math.max(6, Math.floor(vid.duration / 2)));
+      const count = Math.min(14, Math.max(6, Math.floor(vid.duration / 2)));
       const interval = vid.duration / count;
       const canvas = document.createElement("canvas"); canvas.width = 80; canvas.height = 60;
       const ctx = canvas.getContext("2d")!;
@@ -295,7 +109,6 @@ export default function QuickClipEditor() {
     return () => { vid.removeEventListener("loadedmetadata", onMeta); vid.removeEventListener("timeupdate", onTime); };
   }, [videoUrl]);
 
-  // Canvas draw loop with effects
   useEffect(() => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !videoUrl) return;
@@ -306,18 +119,11 @@ export default function QuickClipEditor() {
         ctx.filter = computedFilter;
         ctx.drawImage(vid, 0, 0);
         ctx.filter = "none";
-        // Apply effects
         activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
-        // Text overlays
         textOverlays.forEach((overlay) => {
-          const style = TEXT_STYLES[overlay.style];
-          ctx.font = style.font; ctx.textAlign = "center";
-          if (overlay.style === "glow") { ctx.shadowColor = "rgba(200,150,50,0.9)"; ctx.shadowBlur = 20; }
-          ctx.strokeStyle = style.stroke; ctx.lineWidth = 4;
-          ctx.strokeText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-          ctx.fillStyle = style.color;
-          ctx.fillText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-          ctx.shadowBlur = 0;
+          if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
+            renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+          }
         });
       }
       animRef.current = requestAnimationFrame(draw);
@@ -344,7 +150,7 @@ export default function QuickClipEditor() {
 
   const addTextOverlay = () => {
     if (!textInput.trim()) return;
-    setTextOverlays(prev => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle }]);
+    setTextOverlays(prev => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle, startTime: trimStart, endTime: trimEnd }]);
     setTextInput(""); toast.success("Text added");
   };
 
@@ -372,22 +178,26 @@ export default function QuickClipEditor() {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !file) return;
     setState("processing"); setProgress(0);
+    const quality = EXPORT_QUALITIES.find(q => q.id === exportQuality) ?? EXPORT_QUALITIES[1];
     const ctx = canvas.getContext("2d")!;
-    canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
-    const stream = canvas.captureStream(30);
+    canvas.width = Math.round(vid.videoWidth * quality.resolution);
+    canvas.height = Math.round(vid.videoHeight * quality.resolution);
+    const stream = canvas.captureStream(quality.fps);
     if (audioFile) {
-      const audioCtx = new AudioContext();
-      const buf = await audioFile.arrayBuffer();
-      const decoded = await audioCtx.decodeAudioData(buf);
-      const source = audioCtx.createBufferSource();
-      source.buffer = decoded;
-      const dest = audioCtx.createMediaStreamDestination();
-      source.connect(dest);
-      dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
-      source.start(0);
+      try {
+        const audioCtx = new AudioContext();
+        const buf = await audioFile.arrayBuffer();
+        const decoded = await audioCtx.decodeAudioData(buf);
+        const source = audioCtx.createBufferSource();
+        source.buffer = decoded;
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest);
+        dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+        source.start(0);
+      } catch { /* continue without audio */ }
     }
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: Math.min(vid.videoWidth * vid.videoHeight * 8, 40_000_000) });
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: quality.bitrate });
     const chunks: Blob[] = [];
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
     const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
@@ -397,17 +207,14 @@ export default function QuickClipEditor() {
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
-      ctx.filter = computedFilter; ctx.drawImage(vid, 0, 0); ctx.filter = "none";
+      ctx.filter = computedFilter;
+      ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+      ctx.filter = "none";
       activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
       textOverlays.forEach((overlay) => {
-        const style = TEXT_STYLES[overlay.style];
-        ctx.font = style.font; ctx.textAlign = "center";
-        if (overlay.style === "glow") { ctx.shadowColor = "rgba(200,150,50,0.9)"; ctx.shadowBlur = 20; }
-        ctx.strokeStyle = style.stroke; ctx.lineWidth = 4;
-        ctx.strokeText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-        ctx.fillStyle = style.color;
-        ctx.fillText(overlay.text, canvas.width * overlay.x, canvas.height * overlay.y);
-        ctx.shadowBlur = 0;
+        if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
+          renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+        }
       });
       setProgress(Math.min(99, Math.round(((vid.currentTime - trimStart) / exportDuration) * 100)));
       requestAnimationFrame(drawLoop);
@@ -416,21 +223,18 @@ export default function QuickClipEditor() {
     const blob = await resultPromise;
     setResultUrl(URL.createObjectURL(blob));
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
+    canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [file, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects]);
+  }, [file, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, exportQuality]);
 
   const handleDownload = () => {
     if (!resultUrl || !file) return;
     const a = document.createElement("a"); a.href = resultUrl;
-    a.download = `${file.name.replace(/\.[^/.]+$/, "")}_edited.webm`;
+    a.download = `${file.name.replace(/\.[^/.]+$/, "")}_loopgate.webm`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
 
-  const fmt = (t: number) => {
-    const m = Math.floor(t / 60); const s = Math.floor(t % 60);
-    const ms = Math.floor((t % 1) * 10);
-    return `${m}:${s.toString().padStart(2, "0")}.${ms}`;
-  };
+  const filteredFilters = useMemo(() => filterTab === "all" ? FILTER_PRESETS : FILTER_PRESETS.filter(f => f.category === filterTab), [filterTab]);
 
   // ─── Upload Screen ───
   if (!file) {
@@ -451,9 +255,9 @@ export default function QuickClipEditor() {
         <div className="grid grid-cols-4 gap-2">
           {[
             { icon: Scissors, label: "Trim" },
-            { icon: Sparkles, label: "Effects" },
-            { icon: Type, label: "Text" },
-            { icon: Wand2, label: "Filters" },
+            { icon: Sparkles, label: "18 Effects" },
+            { icon: Type, label: "9 Styles" },
+            { icon: Wand2, label: "24 Filters" },
           ].map(({ icon: Icon, label }) => (
             <div key={label} className="bg-surface-1 border border-border rounded-lg p-3 flex flex-col items-center gap-1.5">
               <Icon className="w-4 h-4 text-gold/60" />
@@ -480,7 +284,7 @@ export default function QuickClipEditor() {
           </button>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold truncate text-foreground">{file.name}</p>
-            <p className="text-[10px] text-muted-foreground">{fmt(trimEnd - trimStart)} clip</p>
+            <p className="text-[10px] text-muted-foreground">{formatTimecode(trimEnd - trimStart)} clip</p>
           </div>
           <div className="flex items-center gap-1">
             {state === "done" ? (
@@ -510,7 +314,6 @@ export default function QuickClipEditor() {
           )}
           {playing && <button onClick={togglePlay} className="absolute inset-0" />}
 
-          {/* Active effects badges */}
           {activeEffects.length > 0 && (
             <div className="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[60%]">
               {activeEffects.map(eff => (
@@ -552,7 +355,7 @@ export default function QuickClipEditor() {
         {/* ─── Timeline ─── */}
         <div className="flex-shrink-0 bg-surface-1 border-t border-border">
           <div className="flex items-center justify-between px-3 pt-2 pb-1">
-            <span className="text-[10px] text-gold tabular-nums font-mono">{fmt(currentTime)}</span>
+            <span className="text-[10px] text-gold tabular-nums font-mono">{formatTimecode(currentTime)}</span>
             <div className="flex items-center gap-3">
               <button onClick={() => seekTo(trimStart)} className="p-1"><SkipBack className="w-4 h-4 text-muted-foreground" /></button>
               <button onClick={togglePlay} className="w-9 h-9 bg-gold/10 border border-gold/30 rounded-full flex items-center justify-center hover:bg-gold/20 transition-colors">
@@ -560,7 +363,7 @@ export default function QuickClipEditor() {
               </button>
               <button onClick={() => seekTo(trimEnd)} className="p-1"><SkipForward className="w-4 h-4 text-muted-foreground" /></button>
             </div>
-            <span className="text-[10px] text-muted-foreground tabular-nums font-mono">{fmt(trimEnd - trimStart)}</span>
+            <span className="text-[10px] text-muted-foreground tabular-nums font-mono">{formatTimecode(trimEnd - trimStart)}</span>
           </div>
 
           <div className="px-3 pb-2">
@@ -578,7 +381,7 @@ export default function QuickClipEditor() {
                 <>
                   <div className="absolute inset-y-0 left-0 bg-black/60 rounded-l-md" style={{ width: `${(trimStart / duration) * 100}%` }} />
                   <div className="absolute inset-y-0 right-0 bg-black/60 rounded-r-md" style={{ width: `${((duration - trimEnd) / duration) * 100}%` }} />
-                  <div className="absolute inset-y-0 w-1 bg-gold cursor-col-resize z-10 rounded-sm"
+                  <div className="absolute inset-y-0 w-1.5 bg-gold cursor-col-resize z-10 rounded-l-sm"
                     style={{ left: `${(trimStart / duration) * 100}%` }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
@@ -587,7 +390,7 @@ export default function QuickClipEditor() {
                       const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
                       window.addEventListener("touchmove", onMove); window.addEventListener("touchend", onEnd);
                     }} />
-                  <div className="absolute inset-y-0 w-1 bg-gold cursor-col-resize z-10 rounded-sm"
+                  <div className="absolute inset-y-0 w-1.5 bg-gold cursor-col-resize z-10 rounded-r-sm"
                     style={{ left: `${(trimEnd / duration) * 100}%` }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
@@ -597,7 +400,7 @@ export default function QuickClipEditor() {
                       window.addEventListener("touchmove", onMove); window.addEventListener("touchend", onEnd);
                     }} />
                   <div className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%` }}>
-                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full" />
+                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-red-500 rounded-full" />
                   </div>
                 </>
               )}
@@ -611,12 +414,13 @@ export default function QuickClipEditor() {
           </div>
         </div>
 
-        {/* ─── Tool Panel (slides up) ─── */}
+        {/* ─── Tool Panel ─── */}
         <AnimatePresence>
           {activeTool && state === "idle" && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }} className="flex-shrink-0 bg-surface-1 border-t border-border overflow-hidden">
-              <div className="p-3">
+              <div className="p-3 max-h-[35vh] overflow-y-auto scrollbar-hide">
+
                 {/* Filters */}
                 {activeTool === "filters" && (
                   <div className="space-y-2">
@@ -624,11 +428,19 @@ export default function QuickClipEditor() {
                       <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Filters</span>
                       <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
                     </div>
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+                      {["all", "basic", "cinema", "mood", "film"].map(cat => (
+                        <button key={cat} onClick={() => setFilterTab(cat)}
+                          className={`px-2 py-0.5 text-[8px] font-bold uppercase rounded-sm border flex-shrink-0 transition-all ${filterTab === cat ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
                     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                      {FILTER_PRESETS.map((preset) => (
+                      {filteredFilters.map((preset) => (
                         <button key={preset.name} onClick={() => setActiveFilter(preset)} className="flex-shrink-0 flex flex-col items-center gap-1">
                           <div className={`w-14 h-14 border-2 rounded-lg transition-all ${activeFilter.name === preset.name ? "border-gold" : "border-border"}`}
-                            style={{ background: preset.preview }} />
+                            style={{ backgroundColor: preset.color }} />
                           <span className={`text-[9px] font-semibold ${activeFilter.name === preset.name ? "text-gold" : "text-muted-foreground"}`}>{preset.label}</span>
                         </button>
                       ))}
@@ -657,7 +469,7 @@ export default function QuickClipEditor() {
                     </div>
                     {activeEffects.length > 0 && (
                       <button onClick={() => setActiveEffects([])} className="w-full py-1.5 text-[10px] text-destructive font-semibold border border-destructive/20 rounded-md">
-                        Clear All
+                        Clear All ({activeEffects.length})
                       </button>
                     )}
                   </div>
@@ -694,10 +506,10 @@ export default function QuickClipEditor() {
                     </div>
                     <input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Type your text..."
                       className="w-full bg-background border border-border rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" autoFocus />
-                    <div className="flex gap-1.5">
-                      {(Object.entries(TEXT_STYLES) as [keyof typeof TEXT_STYLES, typeof TEXT_STYLES[keyof typeof TEXT_STYLES]][]).map(([key, s]) => (
-                        <button key={key} onClick={() => setTextStyle(key as any)}
-                          className={`flex-1 py-2 text-[10px] font-bold uppercase border rounded-md transition-all ${textStyle === key ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                    <div className="grid grid-cols-3 gap-1">
+                      {(Object.entries(TEXT_STYLES) as [TextStyleKey, typeof TEXT_STYLES[TextStyleKey]][]).map(([key, s]) => (
+                        <button key={key} onClick={() => setTextStyle(key)}
+                          className={`py-1.5 text-[9px] font-bold uppercase border rounded-md transition-all ${textStyle === key ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
                           {s.label}
                         </button>
                       ))}
@@ -776,14 +588,14 @@ export default function QuickClipEditor() {
                         <input type="range" min={0} max={duration} step={0.1} value={trimStart}
                           onChange={(e) => setTrimStart(Math.min(Number(e.target.value), trimEnd - 0.5))}
                           className="w-full accent-[hsl(var(--gold))] h-1" />
-                        <span className="text-[10px] text-gold tabular-nums font-mono">{fmt(trimStart)}</span>
+                        <span className="text-[10px] text-gold tabular-nums font-mono">{formatTimecode(trimStart)}</span>
                       </div>
                       <div className="flex-1 space-y-1">
                         <label className="text-[9px] text-muted-foreground uppercase">End</label>
                         <input type="range" min={0} max={duration} step={0.1} value={trimEnd}
                           onChange={(e) => setTrimEnd(Math.max(Number(e.target.value), trimStart + 0.5))}
                           className="w-full accent-[hsl(var(--gold))] h-1" />
-                        <span className="text-[10px] text-gold tabular-nums font-mono">{fmt(trimEnd)}</span>
+                        <span className="text-[10px] text-gold tabular-nums font-mono">{formatTimecode(trimEnd)}</span>
                       </div>
                     </div>
                     <Button onClick={() => { setTrimStart(0); setTrimEnd(duration); }} variant="outline" size="sm" className="text-[10px] h-7 border-border gap-1 rounded-md">
@@ -792,7 +604,7 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
-                {/* Adjust / Color Grading */}
+                {/* Adjust */}
                 {activeTool === "adjust" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -818,6 +630,25 @@ export default function QuickClipEditor() {
                     ))}
                   </div>
                 )}
+
+                {/* Export Settings */}
+                {activeTool === "export" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Export Quality</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                    </div>
+                    <div className="space-y-1.5">
+                      {EXPORT_QUALITIES.map((q) => (
+                        <button key={q.id} onClick={() => setExportQuality(q.id)}
+                          className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${exportQuality === q.id ? "border-gold bg-gold/10" : "border-border bg-surface-2"}`}>
+                          <span className={`text-xs font-bold ${exportQuality === q.id ? "text-gold" : "text-foreground"}`}>{q.label}</span>
+                          <span className="text-[9px] text-muted-foreground ml-2">{q.fps}fps • {(q.bitrate / 1_000_000).toFixed(0)}Mbps</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -835,9 +666,10 @@ export default function QuickClipEditor() {
               { id: "audio" as EditorTool, icon: Music, label: "Audio" },
               { id: "speed" as EditorTool, icon: Gauge, label: "Speed" },
               { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
+              { id: "export" as EditorTool, icon: Settings, label: "Quality" },
             ]).map(({ id, icon: Icon, label }) => (
               <button key={id} onClick={() => setActiveTool(activeTool === id ? null : id)}
-                className={`flex-1 min-w-[52px] py-3 flex flex-col items-center gap-0.5 transition-colors ${activeTool === id ? "text-gold bg-gold/5" : "text-muted-foreground"}`}>
+                className={`flex-1 min-w-[48px] py-3 flex flex-col items-center gap-0.5 transition-colors ${activeTool === id ? "text-gold bg-gold/5" : "text-muted-foreground"}`}>
                 <Icon className="w-5 h-5" />
                 <span className="text-[8px] font-semibold uppercase tracking-wider">{label}</span>
               </button>
