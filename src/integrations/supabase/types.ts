@@ -2250,6 +2250,7 @@ export type Database = {
         Row: {
           author_username: string | null
           avatar_url: string | null
+          claim_token: string | null
           created_at: string
           drop_id: string
           embed_html: string | null
@@ -2260,13 +2261,14 @@ export type Database = {
           status: string
           submission_url: string
           thumbnail_url: string | null
-          user_id: string
+          user_id: string | null
           username: string
           video_title: string | null
         }
         Insert: {
           author_username?: string | null
           avatar_url?: string | null
+          claim_token?: string | null
           created_at?: string
           drop_id: string
           embed_html?: string | null
@@ -2277,13 +2279,14 @@ export type Database = {
           status?: string
           submission_url: string
           thumbnail_url?: string | null
-          user_id: string
+          user_id?: string | null
           username: string
           video_title?: string | null
         }
         Update: {
           author_username?: string | null
           avatar_url?: string | null
+          claim_token?: string | null
           created_at?: string
           drop_id?: string
           embed_html?: string | null
@@ -2294,7 +2297,7 @@ export type Database = {
           status?: string
           submission_url?: string
           thumbnail_url?: string | null
-          user_id?: string
+          user_id?: string | null
           username?: string
           video_title?: string | null
         }
@@ -2538,6 +2541,7 @@ export type Database = {
         Row: {
           author_username: string | null
           avatar_url: string | null
+          claim_token: string | null
           created_at: string | null
           downvotes: number
           drop_id: string
@@ -2558,7 +2562,7 @@ export type Database = {
           submission_url: string
           thumbnail_url: string | null
           upvotes: number
-          user_id: string
+          user_id: string | null
           username: string
           video_title: string | null
           view_count: number | null
@@ -2567,6 +2571,7 @@ export type Database = {
         Insert: {
           author_username?: string | null
           avatar_url?: string | null
+          claim_token?: string | null
           created_at?: string | null
           downvotes?: number
           drop_id: string
@@ -2587,7 +2592,7 @@ export type Database = {
           submission_url: string
           thumbnail_url?: string | null
           upvotes?: number
-          user_id: string
+          user_id?: string | null
           username: string
           video_title?: string | null
           view_count?: number | null
@@ -2596,6 +2601,7 @@ export type Database = {
         Update: {
           author_username?: string | null
           avatar_url?: string | null
+          claim_token?: string | null
           created_at?: string | null
           downvotes?: number
           drop_id?: string
@@ -2616,7 +2622,7 @@ export type Database = {
           submission_url?: string
           thumbnail_url?: string | null
           upvotes?: number
-          user_id?: string
+          user_id?: string | null
           username?: string
           video_title?: string | null
           view_count?: number | null
