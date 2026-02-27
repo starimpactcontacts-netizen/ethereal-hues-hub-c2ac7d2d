@@ -560,9 +560,10 @@ export default function HubPage() {
       {/* ⚔️ QUICK ACTION CTA — Dropdown to switch between Solo Edit / Quick Edit Battle */}
       <div className="px-4 mt-3">
         <div className="flex flex-col gap-0">
-          <div className="flex gap-0 border border-red-500/30 overflow-hidden">
+          <div className="flex gap-0">
+            {/* Main CTA — Fortnite diagonal skew */}
             <motion.button
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.96 }}
               disabled={quickAction === 'quick' && qfIsSearching}
               onClick={() => {
                 if (!profile) { navigate('/start'); return; }
@@ -576,53 +577,60 @@ export default function HubPage() {
                   }
                 }
               }}
-              className="flex-1 relative overflow-hidden flex items-center justify-center gap-2.5 px-4 py-3.5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
+              className="flex-1 relative overflow-hidden touch-manipulation select-none"
+              style={{ clipPath: 'polygon(0 0, 100% 0, 97% 100%, 3% 100%)' }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-              {quickAction === 'solo' ? (
-                <>
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
-                    <UserRound className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Solo Edit
-                  </span>
-                  <span className="text-[9px] text-white/50 font-bold relative z-10">100+ IDX</span>
-                </>
-              ) : qfIsSearching ? (
-                <>
-                  <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
-                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Searching...
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-white/70 font-mono relative z-10">
-                    <Clock className="w-3 h-3" />
-                    {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
-                  </span>
-                </>
-              ) : qfActiveFight ? (
-                <>
-                  <Swords className="w-5 h-5 text-white relative z-10" />
-                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Return to Fight
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Zap className="w-5 h-5 text-white relative z-10" />
-                  <span className="text-[17px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
-                    Quick Edit Battle
-                  </span>
-                  <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
-                </>
-              )}
+              <div className="flex items-center justify-center gap-3 px-6 py-5 bg-red-600 hover:bg-red-500 transition-colors">
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
+                {quickAction === 'solo' ? (
+                  <>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
+                      <UserRound className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Solo Edit
+                    </span>
+                    <span className="text-[10px] text-white/50 font-bold relative z-10">100+ IDX</span>
+                  </>
+                ) : qfIsSearching ? (
+                  <>
+                    <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
+                    <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Searching...
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-white/70 font-mono relative z-10">
+                      <Clock className="w-3 h-3" />
+                      {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
+                    </span>
+                  </>
+                ) : qfActiveFight ? (
+                  <>
+                    <Swords className="w-5 h-5 text-white relative z-10" />
+                    <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Return to Fight
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-5 h-5 text-white relative z-10" />
+                    <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                      Quick Edit Battle
+                    </span>
+                    <span className="text-[10px] text-white/50 font-bold relative z-10">+20 IDX</span>
+                  </>
+                )}
+              </div>
             </motion.button>
 
+            {/* Dropdown toggle — matching skew */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative overflow-hidden flex items-center justify-center px-3 py-3.5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/60">
+                <button 
+                  className="relative overflow-hidden flex items-center justify-center px-4 py-5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none -ml-1"
+                  style={{ clipPath: 'polygon(8% 0, 100% 0, 100% 100%, 0% 100%)' }}
+                >
                   <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-                  <ChevronDown className="w-4 h-4 text-white/70 relative z-10" />
+                  <ChevronDown className="w-5 h-5 text-white/70 relative z-10" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 bg-surface-1 border-border">
