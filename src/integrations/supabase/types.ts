@@ -2219,6 +2219,59 @@ export type Database = {
           },
         ]
       }
+      featured_drop_rounds: {
+        Row: {
+          created_at: string
+          drop_id: string
+          ends_at: string | null
+          id: string
+          judge_avatar_url: string | null
+          judge_id: string | null
+          judge_username: string | null
+          judge_video_url: string | null
+          max_submissions: number
+          round_number: number
+          starts_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          drop_id: string
+          ends_at?: string | null
+          id?: string
+          judge_avatar_url?: string | null
+          judge_id?: string | null
+          judge_username?: string | null
+          judge_video_url?: string | null
+          max_submissions?: number
+          round_number?: number
+          starts_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          drop_id?: string
+          ends_at?: string | null
+          id?: string
+          judge_avatar_url?: string | null
+          judge_id?: string | null
+          judge_username?: string | null
+          judge_video_url?: string | null
+          max_submissions?: number
+          round_number?: number
+          starts_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_drop_rounds_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_drops: {
         Row: {
           artist_id: string
@@ -2305,6 +2358,51 @@ export type Database = {
           },
         ]
       }
+      featured_round_rankings: {
+        Row: {
+          created_at: string
+          id: string
+          index_awarded: number
+          rank: number
+          round_id: string
+          submission_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          index_awarded?: number
+          rank: number
+          round_id: string
+          submission_id: string
+          xp_awarded?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          index_awarded?: number
+          rank?: number
+          round_id?: string
+          submission_id?: string
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_round_rankings_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drop_rounds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "featured_round_rankings_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "featured_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       featured_submission_votes: {
         Row: {
           created_at: string
@@ -2356,6 +2454,7 @@ export type Database = {
           platform: string | null
           qoi_score: number | null
           quality_score: number | null
+          round_id: string | null
           status: string | null
           submission_url: string
           thumbnail_url: string | null
@@ -2384,6 +2483,7 @@ export type Database = {
           platform?: string | null
           qoi_score?: number | null
           quality_score?: number | null
+          round_id?: string | null
           status?: string | null
           submission_url: string
           thumbnail_url?: string | null
@@ -2412,6 +2512,7 @@ export type Database = {
           platform?: string | null
           qoi_score?: number | null
           quality_score?: number | null
+          round_id?: string | null
           status?: string | null
           submission_url?: string
           thumbnail_url?: string | null
@@ -2428,6 +2529,13 @@ export type Database = {
             columns: ["drop_id"]
             isOneToOne: false
             referencedRelation: "featured_drops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "featured_submissions_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "featured_drop_rounds"
             referencedColumns: ["id"]
           },
         ]
