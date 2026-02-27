@@ -23,6 +23,12 @@ interface FeaturedArtistOption {
   verified: boolean | null;
 }
 
+interface ArtistSong {
+  id: string;
+  song_name: string;
+  title: string;
+}
+
 export default function CampaignAdminPage() {
   const navigate = useNavigate();
   const { campaigns, edits, loading, createCampaign, updateCampaign, deleteCampaign, addEdit, updateEdit, deleteEdit, getEditsForCampaign, refresh } = useArtistCampaigns();
@@ -59,6 +65,29 @@ export default function CampaignAdminPage() {
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
   // Edit stats form
   const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '' });
+
+  const [artistSongs, setArtistSongs] = useState<ArtistSong[]>([]);
+
+  // Fetch songs when artist changes
+  useEffect(() => {
+    if (!newCampaign.featured_artist_id) {
+      setArtistSongs([]);
+      return;
+    }
+    async function fetchSongs() {
+      try {
+        const { data } = await supabase
+          .from('featured_drops')
+          .select('id, song_name, title')
+          .eq('artist_id', newCampaign.featured_artist_id)
+          .order('created_at', { ascending: false });
+        setArtistSongs(data || []);
+      } catch (err) {
+        console.error('Failed to fetch songs:', err);
+      }
+    }
+    fetchSongs();
+  }, [newCampaign.featured_artist_id]);
 
   const filteredClientNames = newCampaign.client_name.trim()
     ? clientNames.filter(n => n.toLowerCase().includes(newCampaign.client_name.toLowerCase()))
@@ -283,25 +312,12 @@ export default function CampaignAdminPage() {
                 )}
               </div>
 
-              <Input
-                placeholder="Song Name"
-                value={newCampaign.name}
-                onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
-                className="bg-surface-0"
-              />
-              <Input
-                placeholder="Description (optional)"
-                value={newCampaign.description}
-                onChange={e => setNewCampaign(p => ({ ...p, description: e.target.value }))}
-                className="bg-surface-0"
-              />
-              
               {/* Featured Artist Selector */}
               <div>
                 <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Featured Artist</label>
                 <select
                   value={newCampaign.featured_artist_id}
-                  onChange={e => setNewCampaign(p => ({ ...p, featured_artist_id: e.target.value }))}
+                  onChange={e => setNewCampaign(p => ({ ...p, featured_artist_id: e.target.value, name: '' }))}
                   className="w-full bg-surface-0 border border-border text-sm p-2 text-foreground"
                 >
                   <option value="">None (no artist profile)</option>
@@ -310,6 +326,37 @@ export default function CampaignAdminPage() {
                   ))}
                 </select>
               </div>
+
+              {/* Song selector - shows drops from selected artist */}
+              <div>
+                <label className="text-[8px] text-muted-foreground uppercase tracking-wider block mb-1">Song</label>
+                {newCampaign.featured_artist_id && artistSongs.length > 0 ? (
+                  <select
+                    value={newCampaign.name}
+                    onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
+                    className="w-full bg-surface-0 border border-border text-sm p-2 text-foreground"
+                  >
+                    <option value="">Select a song</option>
+                    {artistSongs.map(s => (
+                      <option key={s.id} value={s.song_name}>{s.song_name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <Input
+                    placeholder={newCampaign.featured_artist_id ? 'No drops found — type manually' : 'Select an artist first or type manually'}
+                    value={newCampaign.name}
+                    onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))}
+                    className="bg-surface-0"
+                  />
+                )}
+              </div>
+
+              <Input
+                placeholder="Description (optional)"
+                value={newCampaign.description}
+                onChange={e => setNewCampaign(p => ({ ...p, description: e.target.value }))}
+                className="bg-surface-0"
+              />
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
