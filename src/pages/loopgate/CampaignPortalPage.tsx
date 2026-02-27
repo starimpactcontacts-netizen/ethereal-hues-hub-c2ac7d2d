@@ -337,7 +337,7 @@ export default function CampaignPortalPage() {
         </motion.div>
 
         {/* ROI + Budget row */}
-        {(campaign.roi_percentage || campaign.budget_cents) && (
+        {!!(campaign.roi_percentage || campaign.budget_cents) && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
