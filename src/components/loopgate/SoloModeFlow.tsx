@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Sparkles, ArrowLeft, Zap, Trophy, Loader2 } from "lucide-react";
+import { Music, Sparkles, Star, ArrowLeft, Zap, Trophy, Loader2 } from "lucide-react";
 import SongPicker from "./SongPicker";
 import { Button } from "@/components/ui/button";
 import { useSoloMode, getRandomTheme } from "@/hooks/useSoloMode";
@@ -39,7 +39,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
         </div>
         <div className="px-4 pt-4 space-y-4">
           <div className="bg-gradient-to-br from-gold/10 via-surface-1 to-gold/5 border border-gold/40 p-5 text-center">
-            <Sparkles className="w-6 h-6 text-gold mx-auto mb-2" />
+            <Star className="w-6 h-6 text-gold mx-auto mb-2" />
             <p className="text-[10px] text-gold font-bold uppercase tracking-widest mb-1">Active Solo Session</p>
             <h2 className="text-xl font-black text-foreground mb-1">{activeSolo.theme}</h2>
             <p className="text-[12px] text-muted-foreground">Song: {activeSolo.song_name}</p>

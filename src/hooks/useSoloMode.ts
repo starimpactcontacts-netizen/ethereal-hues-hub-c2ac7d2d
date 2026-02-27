@@ -116,16 +116,17 @@ export function useSoloMode() {
 
     const cancelCount = (profileData as any)?.solo_cancel_count || 0;
 
-    // Hard-stop any lingering active solos for this user (prevents persistent ghost sessions)
-    const { error: deleteError } = await supabase
+    // Mark all current active solos as cancelled to guarantee they no longer appear as active
+    const { data: cancelledRows, error: cancelError } = await supabase
       .from('solo_submissions')
-      .delete()
+      .update({ status: 'cancelled' })
       .eq('user_id', user.id)
-      .in('status', ['picking_song', 'editing', 'submitted', 'judging']);
+      .in('status', ['picking_song', 'editing', 'submitted', 'judging'])
+      .select('id');
 
-    if (deleteError) {
+    if (cancelError || !cancelledRows || cancelledRows.length === 0) {
       await fetchActive();
-      return { success: false, penalized: false, cancelCount: cancelCount };
+      return { success: false, penalized: false, cancelCount };
     }
 
     const { error: countError } = await supabase
@@ -135,7 +136,7 @@ export function useSoloMode() {
 
     if (countError) {
       await fetchActive();
-      return { success: false, penalized: false, cancelCount: cancelCount };
+      return { success: false, penalized: false, cancelCount };
     }
 
     const penalized = cancelCount >= 1;
