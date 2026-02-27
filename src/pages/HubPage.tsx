@@ -1148,7 +1148,7 @@ export default function HubPage() {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="font-display text-lg text-foreground">{stats.entries24h}</p>
-              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Entries 24h</p>
+              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Entries {stats.entriesLabel}</p>
             </div>
             <div>
               <p className="font-display text-lg text-foreground">{stats.activeUsers}</p>
