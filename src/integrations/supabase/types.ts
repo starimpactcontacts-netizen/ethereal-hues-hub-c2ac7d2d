@@ -5178,11 +5178,13 @@ export type Database = {
           avatar_url: string | null
           comment_count: number
           created_at: string
+          disqualify_reason: string | null
           downvotes: number
           drop_id: string | null
           id: string
           impact_score: number | null
           index_awarded: number | null
+          is_disqualified: boolean | null
           judge_claimed_at: string | null
           judge_id: string | null
           judge_notes: string | null
@@ -5208,11 +5210,13 @@ export type Database = {
           avatar_url?: string | null
           comment_count?: number
           created_at?: string
+          disqualify_reason?: string | null
           downvotes?: number
           drop_id?: string | null
           id?: string
           impact_score?: number | null
           index_awarded?: number | null
+          is_disqualified?: boolean | null
           judge_claimed_at?: string | null
           judge_id?: string | null
           judge_notes?: string | null
@@ -5238,11 +5242,13 @@ export type Database = {
           avatar_url?: string | null
           comment_count?: number
           created_at?: string
+          disqualify_reason?: string | null
           downvotes?: number
           drop_id?: string | null
           id?: string
           impact_score?: number | null
           index_awarded?: number | null
+          is_disqualified?: boolean | null
           judge_claimed_at?: string | null
           judge_id?: string | null
           judge_notes?: string | null

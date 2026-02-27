@@ -36,6 +36,8 @@ export interface SoloSubmission {
   judge_notes: string | null;
   judged_at: string | null;
   index_awarded: number;
+  is_disqualified: boolean;
+  disqualify_reason: string | null;
   status: string;
   created_at: string;
 }
