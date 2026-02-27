@@ -1805,6 +1805,33 @@ export type Database = {
           },
         ]
       }
+      email_notifications_log: {
+        Row: {
+          email_type: string
+          id: string
+          resend_id: string | null
+          sent_at: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          email_type: string
+          id?: string
+          resend_id?: string | null
+          sent_at?: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          email_type?: string
+          id?: string
+          resend_id?: string | null
+          sent_at?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       enterprise_campaigns: {
         Row: {
           asset_urls: string[] | null
@@ -4219,6 +4246,11 @@ export type Database = {
           judge_xp: number
           league: Database["public"]["Enums"]["league_tier"]
           level: number
+          notification_email: string | null
+          notify_battles: boolean
+          notify_connections: boolean
+          notify_drops: boolean
+          notify_scores: boolean
           onboarding_completed: boolean | null
           portfolio_url: string | null
           primary_crew_changed_at: string | null
@@ -4271,6 +4303,11 @@ export type Database = {
           judge_xp?: number
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
+          notification_email?: string | null
+          notify_battles?: boolean
+          notify_connections?: boolean
+          notify_drops?: boolean
+          notify_scores?: boolean
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null
@@ -4323,6 +4360,11 @@ export type Database = {
           judge_xp?: number
           league?: Database["public"]["Enums"]["league_tier"]
           level?: number
+          notification_email?: string | null
+          notify_battles?: boolean
+          notify_connections?: boolean
+          notify_drops?: boolean
+          notify_scores?: boolean
           onboarding_completed?: boolean | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null

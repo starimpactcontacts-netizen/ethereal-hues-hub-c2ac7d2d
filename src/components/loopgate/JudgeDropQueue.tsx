@@ -7,6 +7,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useThumbnail } from '@/hooks/useThumbnail';
+import { sendEmailNotification } from '@/hooks/useSendEmailNotification';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -178,6 +179,13 @@ function DropScoringModal({
         title: 'Drop Edit Scored! 🔥',
         message: `@${profile.username} rated your edit ${score}/100 in "${round.drop_title || 'Featured Drop'}"`,
         data: { submission_id: sub.id, score, judge: profile.username },
+      });
+
+      // Email notification
+      sendEmailNotification(sub.user_id, 'score_rated', {
+        score,
+        judge_username: profile.username,
+        feedback: comment || null,
       });
 
       toast.success(`Scored @${sub.username} — ${score}/100`);

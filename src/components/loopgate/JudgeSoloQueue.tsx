@@ -8,6 +8,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useThumbnail } from '@/hooks/useThumbnail';
+import { sendEmailNotification } from '@/hooks/useSendEmailNotification';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -157,6 +158,13 @@ function SoloScoringModal({ entry, onClose, onComplete }: { entry: SoloEntry; on
         title: 'Solo Edit Scored! 🎬',
         message: `@${profile.username} scored your "${entry.theme}" edit — ${totalScore}/100`,
         data: { solo_id: entry.id, score: totalScore, judge: profile.username },
+      });
+
+      // Email notification
+      sendEmailNotification(entry.user_id, 'score_rated', {
+        score: totalScore,
+        judge_username: profile.username,
+        feedback: comment || null,
       });
 
       // Activity feed

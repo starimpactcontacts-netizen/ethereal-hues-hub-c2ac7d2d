@@ -36,6 +36,7 @@ import { useSoloMode } from "@/hooks/useSoloMode";
 import { useMyQuickFights } from "@/hooks/useQuickFight";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 
 interface Event {
   id: string;
@@ -661,35 +662,8 @@ export default function ArenaPage() {
                 )}
               </div>
 
-              {/* Email for notifications */}
-              {user && !user.email && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="bg-surface-1 border border-amber-500/30 p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Mail className="w-4 h-4 text-amber-400" />
-                    <span className="text-[12px] font-bold text-foreground">Get Notified</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mb-3">
-                    Add your email to get notified when you're matched, when battles start, and during big drops.
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="email"
-                      placeholder="your@email.com"
-                      value={emailInput}
-                      onChange={(e) => setEmailInput(e.target.value)}
-                      className="flex-1 h-9 px-3 bg-background border border-border text-[12px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-amber-500/50"
-                    />
-                    <button
-                      onClick={handleSaveEmail}
-                      disabled={savingEmail || !emailInput.trim()}
-                      className="px-4 h-9 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-background text-[11px] font-bold transition-colors"
-                    >
-                      {savingEmail ? '...' : 'Save'}
-                    </button>
-                  </div>
-                </motion.div>
-              )}
+              {/* Email Notification Settings */}
+              <EmailNotificationSettings />
             </div>
           ) : (
           <>
