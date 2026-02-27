@@ -18,9 +18,10 @@ import {
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
 type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export";
 
-const ACCENT = "#00D1C1";
-const ACCENT_DIM = "rgba(0,209,193,0.12)";
-const ACCENT_BORDER = "rgba(0,209,193,0.25)";
+// Adobe Pro accent — Premiere/AE blue-purple
+const ACCENT = "#9999FF";
+const ACCENT_DIM = "rgba(153,153,255,0.10)";
+const ACCENT_BORDER = "rgba(153,153,255,0.22)";
 
 export default function QuickClipEditor() {
   const fileInputRef = useRef<HTMLInputElement>(null);
