@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
   Zap, Send, ChevronRight, Users, Clock, Eye, Share2, Check,
-  TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2
+  TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2, Download
 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -422,17 +423,52 @@ export default function FeaturedDropDetailPage() {
 
         {/* ─── SOUND link ─── */}
         {drop.song_url && (
-          <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2.5 bg-surface-1 border border-border hover:border-destructive/30 px-3 py-2.5 transition-colors group">
-            <div className="w-9 h-9 bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
-              <Music className="w-4 h-4 text-destructive" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-foreground truncate">{drop.song_name}</p>
-              <p className="text-[9px] text-destructive font-bold uppercase tracking-wider">⚡ Use this sound</p>
-            </div>
-            <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-          </a>
+          <div className="flex items-center bg-surface-1 border border-border hover:border-destructive/30 transition-colors">
+            <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2.5 px-3 py-2.5 flex-1 min-w-0 group">
+              <div className="w-9 h-9 bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+                <Music className="w-4 h-4 text-destructive" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-foreground truncate">{drop.song_name}</p>
+                <p className="text-[9px] text-destructive font-bold uppercase tracking-wider">⚡ Use this sound</p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+            </a>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="px-3 py-2.5 border-l border-border hover:bg-surface-2 transition-colors shrink-0">
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-surface-1 border-border">
+                <DropdownMenuItem asChild>
+                  <a href={drop.song_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Open Sound Link
+                  </a>
+                </DropdownMenuItem>
+                {drop.song_preview_url && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const a = document.createElement('a');
+                      a.href = drop.song_preview_url!;
+                      a.download = `${drop.song_name || 'preview'}.m4a`;
+                      a.target = '_blank';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      toast.success('Downloading audio preview…');
+                    }}
+                    className="flex items-center gap-2 text-xs"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Download Preview Audio
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
 
         {/* Song Preview */}
@@ -446,6 +482,23 @@ export default function FeaturedDropDetailPage() {
                 <p className="text-[10px] font-bold text-foreground truncate">🔊 Preview</p>
                 <p className="text-[9px] text-muted-foreground truncate">{drop.song_name}</p>
               </div>
+              <button
+                onClick={() => {
+                  const a = document.createElement('a');
+                  a.href = drop.song_preview_url!;
+                  a.download = `${drop.song_name || 'preview'}.m4a`;
+                  a.target = '_blank';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  toast.success('Downloading…');
+                }}
+                className="flex items-center gap-1.5 bg-surface-2 border border-border hover:border-destructive/30 px-2 py-1 transition-colors"
+                title="Download audio"
+              >
+                <Download className="w-3 h-3 text-destructive" />
+                <span className="text-[8px] font-bold text-foreground uppercase tracking-wider">DL</span>
+              </button>
             </div>
             <audio src={drop.song_preview_url} controls className="w-full h-9" preload="metadata" />
           </div>
