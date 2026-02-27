@@ -32,8 +32,9 @@ export default function FeaturedDropDetailPage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
-  const { submissions, loading: subsLoading } = useDropSubmissions(dropId || null);
-  const { rounds, rankings, activeRound, currentRound } = useDropRounds(dropId || null);
+  const [resolvedId, setResolvedId] = useState<string | null>(null);
+  const { submissions, loading: subsLoading } = useDropSubmissions(resolvedId);
+  const { rounds, rankings, activeRound, currentRound } = useDropRounds(resolvedId);
 
   useEffect(() => {
     if (!dropId) return;
@@ -51,6 +52,7 @@ export default function FeaturedDropDetailPage() {
       if (data) {
         setDrop({ ...data, artist: (data as any).featured_artists } as FeaturedDrop);
         setArtist((data as any).featured_artists as FeaturedArtist);
+        setResolvedId(data.id);
       }
       setLoading(false);
     };
