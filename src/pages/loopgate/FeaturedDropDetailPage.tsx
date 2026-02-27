@@ -309,7 +309,7 @@ export default function FeaturedDropDetailPage() {
                 {slotsLeft > 0 && (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
-                    onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+                    onClick={() => setShowSubmit(true)}
                     className="w-full py-4 bg-gradient-to-r from-destructive to-destructive/80 text-white font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
                   >
                     <Flame className="w-5 h-5" />
@@ -416,7 +416,7 @@ export default function FeaturedDropDetailPage() {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     whileHover={{ scale: 1.01 }}
-                    onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+                    onClick={() => setShowSubmit(true)}
                     className="w-full py-4 bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
                   >
                     <Flame className="w-5 h-5" />
@@ -548,7 +548,7 @@ export default function FeaturedDropDetailPage() {
             {isLive && (
               <motion.button
                 whileTap={{ scale: 0.97 }}
-                onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+                onClick={() => setShowSubmit(true)}
                 className="w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
               >
                 <Flame className="w-5 h-5" />
