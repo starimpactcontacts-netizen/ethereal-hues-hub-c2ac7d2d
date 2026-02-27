@@ -506,8 +506,9 @@ export function useEventStats(eventId: string | null) {
 
 // Hook for global stats (for Hub page) - aggregates ALL platform activity
 export function useGlobalStats() {
-  const [stats, setStats] = useState<{ entries24h: number; activeUsers: number; totalCompeting: number }>({
+  const [stats, setStats] = useState<{ entries24h: number; entriesLabel: string; activeUsers: number; totalCompeting: number }>({
     entries24h: 0,
+    entriesLabel: '24h',
     activeUsers: 0,
     totalCompeting: 0,
   });
@@ -602,6 +603,27 @@ export function useGlobalStats() {
       (battles.count || 0) + 
       (gqtSubmissions.count || 0);
 
+    // If 24h is 0, try 7-day window
+    let finalEntries = totalEntries;
+    let entriesLabel = '24h';
+    
+    if (totalEntries === 0) {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const [e7, r7, s7, rv7, b7, g7] = await Promise.all([
+        supabase.from('event_participations').select('*', { count: 'exact', head: true }).gte('submitted_at', sevenDaysAgo),
+        supabase.from('round_participations').select('*', { count: 'exact', head: true }).not('submission_url', 'is', null).gte('submitted_at', sevenDaysAgo),
+        supabase.from('sanctioned_tournament_participants').select('*', { count: 'exact', head: true }).gte('joined_at', sevenDaysAgo),
+        supabase.from('review_requests').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
+        supabase.from('battles').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
+        supabase.from('gatekeeper_submissions').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
+      ]);
+      const weekTotal = (e7.count||0)+(r7.count||0)+(s7.count||0)+(rv7.count||0)+(b7.count||0)+(g7.count||0);
+      if (weekTotal > 0) {
+        finalEntries = weekTotal;
+        entriesLabel = '7d';
+      }
+    }
+
     // Total competing = sanctioned + battle participants (unique-ish approximation)
     const totalCompeting = 
       (sanctionedCompeting.count || 0) + 
@@ -614,7 +636,8 @@ export function useGlobalStats() {
     );
 
     setStats({
-      entries24h: totalEntries,
+      entries24h: finalEntries,
+      entriesLabel,
       activeUsers: activeNow,
       totalCompeting: totalCompeting,
     });

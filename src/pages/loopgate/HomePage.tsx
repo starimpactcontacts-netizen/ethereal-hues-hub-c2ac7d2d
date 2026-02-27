@@ -181,7 +181,7 @@ export default function HomePage() {
             <span className="flex items-center gap-1.5">
               <Flame className="w-3 h-3 text-gold" />
               <span className="text-foreground font-medium">{stats.entries24h}</span>
-              <span>edits today</span>
+              <span>edits {stats.entriesLabel === '7d' ? 'this week' : 'today'}</span>
             </span>
             <span className="flex items-center gap-1.5">
               <Users className="w-3 h-3" />
