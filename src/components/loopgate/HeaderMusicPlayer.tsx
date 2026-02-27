@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
@@ -92,6 +92,7 @@ export default function HeaderMusicPlayer() {
   const [volume, setVolume] = useState(0.3);
   const [shuffled, setShuffled] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const [introPlayed, setIntroPlayed] = useState(false);
   const [playlistMode, setPlaylistMode] = useState<PlaylistMode>('loopgate');
@@ -163,6 +164,7 @@ export default function HeaderMusicPlayer() {
     audioModeRef.current = 'loopgate';
     const a = new Audio(track.song_preview_url);
     a.volume = volume;
+    a.playbackRate = playbackRate;
     audioRef.current = a;
     a.addEventListener('ended', () => {
       setCurrentIndex(i => (i + 1) % tracks.length);
@@ -183,6 +185,7 @@ export default function HeaderMusicPlayer() {
     audioModeRef.current = 'myplaylist';
     const a = new Audio(track.audio_url);
     a.volume = volume;
+    a.playbackRate = playbackRate;
     audioRef.current = a;
     a.addEventListener('ended', () => {
       setMyPlaylistIndex(i => {
@@ -279,6 +282,10 @@ export default function HeaderMusicPlayer() {
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.playbackRate = playbackRate;
+  }, [playbackRate]);
 
   const toggleShuffle = useCallback(() => {
     setShuffled(s => {
@@ -449,11 +456,54 @@ export default function HeaderMusicPlayer() {
         </div>
 
         {/* Volume Slider */}
-        <div className="px-4 pb-3 flex items-center gap-3">
+        <div className="px-4 pb-2 flex items-center gap-3">
           <VolumeX size={12} className="text-muted-foreground shrink-0" />
           <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
             className="flex-1 [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
           <Volume2 size={12} className="text-muted-foreground shrink-0" />
+        </div>
+
+        {/* Pitch / Speed Slider */}
+        <div className="px-4 pb-3">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1">
+              <Gauge size={11} className="text-muted-foreground" />
+              <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
+            </div>
+            <button
+              onClick={() => setPlaybackRate(1.0)}
+              className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded transition-colors ${
+                playbackRate === 1.0 ? 'text-muted-foreground' : 'text-emerald-500 hover:text-emerald-400 bg-emerald-500/10'
+              }`}
+            >
+              {playbackRate < 1 ? '🌙' : playbackRate > 1 ? '⚡' : '•'} {playbackRate.toFixed(2)}x
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[8px] text-muted-foreground font-bold shrink-0">SLOW</span>
+            <Slider
+              value={[playbackRate * 100]}
+              onValueChange={([v]) => setPlaybackRate(Math.round(v) / 100)}
+              min={50}
+              max={200}
+              step={5}
+              className="flex-1 [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500"
+            />
+            <span className="text-[8px] text-muted-foreground font-bold shrink-0">FAST</span>
+          </div>
+          <div className="flex justify-between mt-1 px-1">
+            {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map(rate => (
+              <button
+                key={rate}
+                onClick={() => setPlaybackRate(rate)}
+                className={`text-[8px] font-mono px-1 py-0.5 rounded transition-colors ${
+                  Math.abs(playbackRate - rate) < 0.01 ? 'text-emerald-500 bg-emerald-500/10 font-bold' : 'text-muted-foreground/60 hover:text-foreground'
+                }`}
+              >
+                {rate}x
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Track Lists */}
