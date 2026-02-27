@@ -6,7 +6,7 @@ import {
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
-  Sparkles, Music, Mail, ArrowRight, History, Play, Loader2
+  Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -494,7 +494,7 @@ export default function ArenaPage() {
                   <div className="bg-gradient-to-r from-gold/10 via-surface-1 to-gold/5 border border-gold/40 p-4">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-10 h-10 bg-gold/20 flex items-center justify-center shrink-0">
-                        <Sparkles className="w-5 h-5 text-gold" />
+                        <Star className="w-5 h-5 text-gold" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-gold font-bold uppercase tracking-wider">Active Solo Session</p>
