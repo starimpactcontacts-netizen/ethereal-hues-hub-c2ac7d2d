@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Music, Zap, Trophy, ChevronRight, Flame, Gift, Crown, Star, Clock, TrendingUp } from "lucide-react";
+import { Music, Zap, Trophy, ChevronRight, Flame, Gift, Crown, Star, Clock, TrendingUp, Link2, Check } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import type { FeaturedDrop } from "@/hooks/useFeaturedDrops";
@@ -39,11 +39,21 @@ function useActivitySignal(drop: FeaturedDrop) {
 export default function FeaturedDropCard({ drop }: Props) {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
   const artist = drop.artist;
   const isLive = drop.status === 'live';
   const isPromoted = !!(drop as any).is_promoted;
   const activity = useActivitySignal(drop);
   const ActivityIcon = activity.icon;
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const slug = (drop as any).slug || drop.id;
+    const link = `${window.location.origin}/drop/${slug}`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   return (
     <>
@@ -82,13 +92,26 @@ export default function FeaturedDropCard({ drop }: Props) {
             </div>
           )}
 
-          {/* Status */}
-          {isLive && (
-            <div className="absolute top-1.5 right-1.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5 border border-emerald-500/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
-              <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
-            </div>
-          )}
+          {/* Status + Quick Link */}
+          <div className="absolute top-1.5 right-1.5 flex items-center gap-1">
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5 border border-border/30 hover:border-brand/50 transition-colors"
+              title="Copy clean link"
+            >
+              {copied ? (
+                <Check className="w-2.5 h-2.5 text-emerald-400" />
+              ) : (
+                <Link2 className="w-2.5 h-2.5 text-muted-foreground" />
+              )}
+            </button>
+            {isLive && (
+              <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5 border border-emerald-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+                <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
+              </div>
+            )}
+          </div>
 
           {/* Title + Song — bottom */}
           <div className="absolute bottom-0 left-0 right-0 px-2.5 pb-2">
