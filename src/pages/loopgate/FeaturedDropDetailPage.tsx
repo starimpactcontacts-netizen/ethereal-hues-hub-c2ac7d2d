@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
-  Zap, Gift, Send, ChevronRight, Users, Clock, Eye, Share2, Check,
-  TrendingUp, ChevronDown
+  Zap, Send, ChevronRight, Users, Clock, Eye, Share2, Check,
+  TrendingUp, ChevronDown, Play, Lock, Video, Award
 } from "lucide-react";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
-import DropSubmissionCarousel from "@/components/loopgate/DropSubmissionCarousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDropSubmissions } from "@/hooks/useFeaturedDrops";
+import { useDropRounds } from "@/hooks/useDropRounds";
 import type { FeaturedDrop, FeaturedArtist, FeaturedSubmission } from "@/hooks/useFeaturedDrops";
 import FeaturedSubmitModal from "@/components/loopgate/FeaturedSubmitModal";
 import CompLobbyHeader from "@/components/loopgate/CompLobbyHeader";
@@ -33,6 +32,7 @@ export default function FeaturedDropDetailPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const { submissions, loading: subsLoading } = useDropSubmissions(dropId || null);
+  const { rounds, rankings, activeRound, currentRound } = useDropRounds(dropId || null);
 
   useEffect(() => {
     if (!dropId) return;
@@ -55,7 +55,7 @@ export default function FeaturedDropDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-20 p-4 space-y-4">
-        <Skeleton className="h-48 w-full rounded-lg" />
+        <Skeleton className="h-48 w-full" />
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-20 w-full" />
       </div>
@@ -77,16 +77,19 @@ export default function FeaturedDropDetailPage() {
   const isLive = drop.status === 'live';
   const isJudging = drop.status === 'judging';
   const isClosed = drop.status === 'closed';
-  const scored = submissions.filter(s => s.status === 'scored').sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
-  const pending = submissions.filter(s => s.status === 'pending');
-  const userSubmissions = user ? submissions.filter(s => s.user_id === user.id) : [];
-  const userSubmissionCount = userSubmissions.length;
 
-  const getFireIndicator = (sub: FeaturedSubmission, rank: number) => {
-    if (rank === 1 && scored.length >= 3) return { label: '🔥 TAKING OVER', color: 'text-orange-400' };
-    if (rank <= 3 && scored.length >= 5) return { label: '⚡ ON FIRE', color: 'text-amber-400' };
-    return null;
-  };
+  // Round-based data
+  const hasRounds = rounds.length > 0;
+  const roundSubs = (roundId: string) => submissions.filter((s: any) => s.round_id === roundId);
+  const activeRoundSubs = activeRound ? roundSubs(activeRound.id) : [];
+  const slotsLeft = activeRound ? activeRound.max_submissions - activeRoundSubs.length : 0;
+  const slotsTotal = activeRound?.max_submissions || 0;
+  const slotsFilled = activeRound ? activeRoundSubs.length : 0;
+
+  // For non-round drops, fallback to old behavior
+  const allSubs = submissions;
+  const scored = allSubs.filter(s => s.status === 'scored').sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
+  const pending = allSubs.filter(s => s.status === 'pending');
 
   const handleShare = async () => {
     const url = `${window.location.origin}/drop/${dropId}`;
@@ -100,6 +103,13 @@ export default function FeaturedDropDetailPage() {
         setTimeout(() => setCopied(false), 2000);
       }
     } catch {}
+  };
+
+  const getRoundLabel = (num: number) => {
+    if (num === 1) return '3 EDITS';
+    if (num === 2) return '5 EDITS';
+    if (num === 3) return '10 EDITS';
+    return `${10} EDITS`;
   };
 
   return (
@@ -138,7 +148,7 @@ export default function FeaturedDropDetailPage() {
           </div>
         </div>
 
-        {/* Title + Artist — bottom of hero */}
+        {/* Title + Artist */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
           <h1 className="font-display text-2xl text-foreground tracking-wide leading-none">{drop.title}</h1>
           {artist && (
@@ -157,61 +167,260 @@ export default function FeaturedDropDetailPage() {
       {/* ═══ BODY ═══ */}
       <div className="px-4 space-y-3 mt-3">
 
-        {/* ─── SUBMIT CTA — aggressive, red-tinted glow ─── */}
-        {isLive && (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
-            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
-          >
-            <Flame className="w-5 h-5" />
-            {userSubmissionCount > 0 ? 'Submit Another Edit' : 'Submit Your Edit'}
-            <ChevronRight className="w-5 h-5" />
-          </motion.button>
-        )}
-        {isLive && userSubmissionCount > 0 && (
-          <div className="bg-emerald-500/8 border border-emerald-500/20 px-3 py-2 text-center">
-            <p className="text-[10px] text-emerald-400 font-bold flex items-center justify-center gap-1">
-              <Check className="w-3 h-3" /> {userSubmissionCount} submitted — keep stacking 🔥
-            </p>
+        {/* ═══ ROUND SYSTEM ═══ */}
+        {hasRounds && (
+          <div className="space-y-3">
+            {/* Round timeline */}
+            <div className="flex items-center gap-1 overflow-x-auto pb-1">
+              {rounds.map((round) => {
+                const isActive = round.status === 'open' || round.status === 'full';
+                const isCompleted = round.status === 'completed';
+                const isCurrentJudging = round.status === 'judging';
+                return (
+                  <div
+                    key={round.id}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 border shrink-0 transition-colors ${
+                      isActive
+                        ? 'bg-destructive/10 border-destructive/30 text-destructive'
+                        : isCurrentJudging
+                        ? 'bg-gold/10 border-gold/30 text-gold'
+                        : isCompleted
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                        : 'bg-surface-1 border-border text-muted-foreground'
+                    }`}
+                  >
+                    <span className="text-[9px] font-black uppercase tracking-wider">R{round.round_number}</span>
+                    <span className="text-[8px] font-bold">{getRoundLabel(round.round_number)}</span>
+                    {isCompleted && <Check className="w-3 h-3" />}
+                    {isCurrentJudging && <Video className="w-3 h-3" />}
+                    {isActive && <Flame className="w-3 h-3" />}
+                    {round.status === 'pending' && <Lock className="w-3 h-3" />}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Active round — SLOT COUNTER (the star of the show) */}
+            {activeRound && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-surface-1 border-2 border-destructive/30 p-4 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display text-lg text-foreground tracking-wide">
+                      ROUND {activeRound.round_number}
+                    </h2>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {slotsLeft > 0
+                        ? 'Submit before the slots fill up'
+                        : 'All slots filled — waiting for judge'}
+                    </p>
+                  </div>
+                  {activeRound.judge_username && (
+                    <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-2 py-1">
+                      <Award className="w-3 h-3 text-gold" />
+                      <span className="text-[9px] font-bold text-gold">Judge: @{activeRound.judge_username}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Slot visual */}
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: slotsTotal }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 h-10 border-2 flex items-center justify-center transition-all ${
+                        i < slotsFilled
+                          ? 'bg-destructive/15 border-destructive/40'
+                          : 'bg-surface-2 border-border border-dashed'
+                      }`}
+                    >
+                      {i < slotsFilled ? (
+                        <Check className="w-4 h-4 text-destructive" />
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground/40 font-bold">?</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Slot counter text */}
+                <div className="text-center">
+                  <span className={`font-display text-3xl tabular-nums ${
+                    slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-foreground'
+                  }`}>
+                    {slotsLeft}
+                  </span>
+                  <span className="text-sm text-muted-foreground font-bold">/{slotsTotal}</span>
+                  <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${
+                    slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-muted-foreground'
+                  }`}>
+                    {slotsLeft === 0 ? '🔒 ROUND FULL' : slotsLeft === 1 ? '🔥 LAST SLOT' : 'SLOTS LEFT'}
+                  </p>
+                </div>
+
+                {/* SUBMIT CTA */}
+                {slotsLeft > 0 && (
+                  <motion.button
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+                    className="w-full py-4 bg-gradient-to-r from-destructive to-destructive/80 text-white font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
+                  >
+                    <Flame className="w-5 h-5" />
+                    Submit Your Edit
+                    <ChevronRight className="w-5 h-5" />
+                  </motion.button>
+                )}
+              </motion.div>
+            )}
+
+            {/* Round in judging state — waiting for judge video */}
+            {currentRound?.status === 'judging' && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="bg-gold/5 border-2 border-gold/30 p-4 text-center space-y-2"
+              >
+                <Video className="w-8 h-8 text-gold mx-auto" />
+                <h3 className="font-display text-sm text-gold uppercase tracking-widest">
+                  Waiting for Judge Video
+                </h3>
+                <p className="text-[10px] text-muted-foreground">
+                  Round {currentRound.round_number} is full — the judge is ranking your edits
+                </p>
+                {currentRound.judge_username && (
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <Avatar className="w-6 h-6 border border-gold/40">
+                      <AvatarImage src={currentRound.judge_avatar_url || ''} />
+                      <AvatarFallback className="bg-gold/10 text-[7px] text-gold font-bold">
+                        {currentRound.judge_username?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-bold text-foreground">@{currentRound.judge_username}</span>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Completed rounds — show judge video + rankings */}
+            {rounds.filter(r => r.status === 'completed').map((round) => {
+              const roundRankings = rankings.filter(rk => rk.round_id === round.id);
+              const roundSubmissions = roundSubs(round.id);
+              return (
+                <div key={round.id} className="space-y-2">
+                  <div className="flex items-center gap-2 border-b border-border pb-2">
+                    <Trophy className="w-4 h-4 text-gold" />
+                    <h3 className="font-display text-sm text-foreground uppercase tracking-wider">
+                      Round {round.round_number} Results
+                    </h3>
+                    <Check className="w-3.5 h-3.5 text-emerald-400 ml-auto" />
+                  </div>
+
+                  {/* Judge video */}
+                  {round.judge_video_url && (
+                    <a
+                      href={round.judge_video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 bg-gold/5 border border-gold/20 hover:border-gold/40 transition-colors group"
+                    >
+                      <div className="w-10 h-10 bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                        <Play className="w-5 h-5 text-gold" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-foreground">Judge's Ranking Video</p>
+                        <p className="text-[9px] text-gold font-bold uppercase tracking-wider">
+                          by @{round.judge_username}
+                        </p>
+                      </div>
+                      <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors shrink-0" />
+                    </a>
+                  )}
+
+                  {/* Rankings */}
+                  {roundRankings.length > 0 && (
+                    <div className="space-y-1.5">
+                      {roundRankings.map((rk) => {
+                        const sub = roundSubmissions.find(s => s.id === rk.submission_id);
+                        if (!sub) return null;
+                        return (
+                          <div
+                            key={rk.id}
+                            className={`flex items-center gap-3 p-2.5 border ${
+                              rk.rank === 1
+                                ? 'bg-gold/5 border-gold/30'
+                                : rk.rank === 2
+                                ? 'bg-surface-1 border-border'
+                                : 'bg-surface-1 border-border/60'
+                            }`}
+                          >
+                            <span className={`text-lg font-display tabular-nums w-8 text-center shrink-0 ${
+                              rk.rank === 1 ? 'text-gold' : rk.rank === 2 ? 'text-foreground' : 'text-muted-foreground'
+                            }`}>
+                              #{rk.rank}
+                            </span>
+                            <Avatar className="w-7 h-7 border border-border shrink-0">
+                              <AvatarImage src={sub.avatar_url || ''} />
+                              <AvatarFallback className="text-[8px] bg-surface-2 font-bold">
+                                {sub.username?.[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs font-bold text-foreground flex-1 truncate">@{sub.username}</span>
+                            {rk.rank === 1 && <Crown className="w-4 h-4 text-gold shrink-0" />}
+                            {rk.index_awarded > 0 && (
+                              <span className="text-[9px] font-bold text-emerald-400">+{rk.index_awarded} IDX</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* ─── SOUND + REWARDS — tight row ─── */}
-        <div className="flex gap-2">
-          {drop.song_url ? (
-            <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
-              className="flex-1 min-w-0 flex items-center gap-2.5 bg-surface-1 border border-border hover:border-gold/30 px-3 py-2.5 transition-colors group">
-              <div className="w-9 h-9 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
-                <Music className="w-4 h-4 text-destructive" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-foreground truncate">{drop.song_name}</p>
-                <p className="text-[9px] text-gold font-bold uppercase tracking-wider">⚡ Use this sound</p>
-              </div>
-              <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-            </a>
-          ) : (
-            <div className="flex-1" />
-          )}
-          {/* Reward chips */}
-          <div className="flex flex-col gap-1 shrink-0">
-            <div className="flex items-center gap-1.5 bg-surface-1 border border-border px-2.5 py-1.5">
-              <Zap className="w-3 h-3 text-gold" />
-              <span className="text-[10px] font-bold text-foreground tabular-nums">+{drop.xp_reward}</span>
+        {/* ═══ NON-ROUND DROPS (legacy fallback) ═══ */}
+        {!hasRounds && (
+          <>
+            {/* Submit CTA */}
+            {isLive && (
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
+                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
+              >
+                <Flame className="w-5 h-5" />
+                Submit Your Edit
+                <ChevronRight className="w-5 h-5" />
+              </motion.button>
+            )}
+          </>
+        )}
+
+        {/* ─── SOUND link ─── */}
+        {drop.song_url && (
+          <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2.5 bg-surface-1 border border-border hover:border-destructive/30 px-3 py-2.5 transition-colors group">
+            <div className="w-9 h-9 bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+              <Music className="w-4 h-4 text-destructive" />
             </div>
-            <div className="flex items-center gap-1.5 bg-surface-1 border border-border px-2.5 py-1.5">
-              <Trophy className="w-3 h-3 text-gold" />
-              <span className="text-[10px] font-bold text-foreground tabular-nums">+{drop.index_reward}</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-foreground truncate">{drop.song_name}</p>
+              <p className="text-[9px] text-destructive font-bold uppercase tracking-wider">⚡ Use this sound</p>
             </div>
-          </div>
-        </div>
+            <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+          </a>
+        )}
 
         {/* Song Preview */}
         {drop.song_preview_url && (
           <div className="bg-surface-1 border border-border p-3 space-y-2">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center">
+              <div className="w-7 h-7 bg-destructive/10 flex items-center justify-center">
                 <Music className="w-3.5 h-3.5 text-destructive" />
               </div>
               <div className="min-w-0 flex-1">
@@ -223,12 +432,12 @@ export default function FeaturedDropDetailPage() {
           </div>
         )}
 
-        {/* ─── HOW TO JOIN ─── */}
+        {/* How to join */}
         {isLive && (
           <div>
             <button
               onClick={() => setShowGuide(!showGuide)}
-              className="w-full py-2 bg-surface-1 border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center justify-center gap-2 hover:text-foreground hover:border-gold/30 transition-colors"
+              className="w-full py-2 bg-surface-1 border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center justify-center gap-2 hover:text-foreground hover:border-destructive/30 transition-colors"
             >
               <Zap className="w-3 h-3 text-gold" />
               How Do I Join?
@@ -258,16 +467,6 @@ export default function FeaturedDropDetailPage() {
           </div>
         )}
 
-        {/* Lobby — avatars + countdown */}
-        <CompLobbyHeader
-          participantTable="featured_submissions"
-          filterColumn="drop_id"
-          filterId={dropId!}
-          deadline={drop.ends_at}
-          totalEntries={drop.submission_count}
-          accentColor="text-gold"
-        />
-
         {/* Description */}
         {drop.description && (
           <div>
@@ -290,55 +489,57 @@ export default function FeaturedDropDetailPage() {
           </div>
         )}
 
-        {/* ═══ EDITS SHOWCASE ═══ */}
-        <DropSubmissionCarousel submissions={submissions} loading={subsLoading} />
+        {/* ═══ ALL SUBMISSIONS (leaderboard for non-round, or current round subs) ═══ */}
+        {!hasRounds && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b border-border pb-2">
+              <h2 className="font-display text-lg text-foreground flex items-center gap-2 tracking-wide">
+                <Trophy className="w-4 h-4 text-gold" />
+                {scored.length > 0 ? 'LEADERBOARD' : 'SUBMISSIONS'}
+              </h2>
+              <span className="text-[10px] text-muted-foreground font-bold tabular-nums">{allSubs.length} {allSubs.length === 1 ? 'ENTRY' : 'ENTRIES'}</span>
+            </div>
 
-        {/* ═══ LEADERBOARD — inline, full ═══ */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between border-b border-border pb-2">
-            <h2 className="font-display text-lg text-foreground flex items-center gap-2 tracking-wide">
-              <Trophy className="w-4 h-4 text-gold" />
-              {scored.length > 0 ? 'LEADERBOARD' : 'SUBMISSIONS'}
-            </h2>
-            <span className="text-[10px] text-muted-foreground font-bold tabular-nums">{submissions.length} {submissions.length === 1 ? 'ENTRY' : 'ENTRIES'}</span>
+            {subsLoading ? (
+              <div className="space-y-2">
+                {[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full" />)}
+              </div>
+            ) : allSubs.length === 0 ? (
+              <div className="bg-surface-1 border border-border p-8 text-center">
+                <Flame className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
+                <p className="text-sm font-bold text-muted-foreground">No submissions yet</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">Be the first to enter & set the bar 🔥</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {scored.map((sub, idx) => (
+                  <DropSubmissionCard key={sub.id} submission={sub} rank={idx + 1} isTopScorer={idx === 0} />
+                ))}
+                {pending.map((sub) => (
+                  <DropSubmissionCard key={sub.id} submission={sub} />
+                ))}
+              </div>
+            )}
           </div>
+        )}
 
-          {subsLoading ? (
-            <div className="space-y-2">
-              {[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full" />)}
-            </div>
-          ) : submissions.length === 0 ? (
-            <div className="bg-surface-1 border border-border p-8 text-center">
-              <Flame className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
-              <p className="text-sm font-bold text-muted-foreground">No submissions yet</p>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">Be the first to enter & set the bar 🔥</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {scored.map((sub, idx) => (
-                <div key={sub.id} className="relative">
-                  {getFireIndicator(sub, idx + 1) && (
-                    <div className={`flex items-center gap-1 mb-1 ${getFireIndicator(sub, idx + 1)!.color}`}>
-                      <TrendingUp className="w-3 h-3" />
-                      <span className="text-[9px] font-bold uppercase tracking-wider">
-                        {getFireIndicator(sub, idx + 1)!.label}
-                      </span>
-                    </div>
-                  )}
-                  <DropSubmissionCard submission={sub} rank={idx + 1} isTopScorer={idx === 0} />
-                </div>
-              ))}
-              {pending.map((sub) => (
-                <DropSubmissionCard key={sub.id} submission={sub} />
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Round-based submissions display */}
+        {hasRounds && activeRound && activeRoundSubs.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="font-display text-sm text-foreground uppercase tracking-wider flex items-center gap-2">
+              <Users className="w-3.5 h-3.5 text-destructive" />
+              Round {activeRound.round_number} Entries
+            </h3>
+            {activeRoundSubs.map((sub) => (
+              <DropSubmissionCard key={sub.id} submission={sub} />
+            ))}
+          </div>
+        )}
 
         {/* ═══ LIVE CHAT ═══ */}
         <DropLobbyChat dropId={dropId!} />
 
-        {/* Winner highlights */}
+        {/* Winners (legacy) */}
         {(drop.top_scorer_username || drop.random_pick_username) && (
           <div className="space-y-2">
             <h2 className="font-display text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
@@ -368,7 +569,11 @@ export default function FeaturedDropDetailPage() {
 
       {/* Submit Modal */}
       {showSubmit && drop && (
-        <FeaturedSubmitModal drop={drop} onClose={() => setShowSubmit(false)} />
+        <FeaturedSubmitModal
+          drop={drop}
+          roundId={activeRound?.id || null}
+          onClose={() => setShowSubmit(false)}
+        />
       )}
     </div>
   );

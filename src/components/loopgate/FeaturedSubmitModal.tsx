@@ -11,6 +11,7 @@ import type { FeaturedDrop } from "@/hooks/useFeaturedDrops";
 
 interface Props {
   drop: FeaturedDrop;
+  roundId?: string | null;
   onClose: () => void;
 }
 
@@ -21,7 +22,7 @@ const PLATFORMS = [
   { id: 'other', label: 'Other' },
 ];
 
-export default function FeaturedSubmitModal({ drop, onClose }: Props) {
+export default function FeaturedSubmitModal({ drop, roundId, onClose }: Props) {
   const { user, profile } = useAuth();
   const [url, setUrl] = useState('');
   const [platform, setPlatform] = useState('tiktok');
@@ -32,23 +33,39 @@ export default function FeaturedSubmitModal({ drop, onClose }: Props) {
 
     setSubmitting(true);
     try {
-      const { data: inserted, error } = await supabase.from('featured_submissions').insert({
+      const insertData: Record<string, any> = {
         drop_id: drop.id,
         user_id: user.id,
         username: profile.username || 'unknown',
         avatar_url: profile.avatar_url,
         submission_url: url.trim(),
         platform,
-      }).select('id').single();
+      };
+
+      // Attach round_id if this is a round-based drop
+      if (roundId) {
+        insertData.round_id = roundId;
+      }
+
+      const { data: inserted, error } = await supabase
+        .from('featured_submissions')
+        .insert(insertData as any)
+        .select('id')
+        .single();
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes('Round is full')) {
+          toast.error('Round is full — no more slots!');
+        } else if (error.message.includes('not accepting')) {
+          toast.error('This round is not accepting submissions');
+        } else {
+          toast.error(error.message);
+        }
       } else {
-        // Fire-and-forget: enrich with oEmbed metadata
         if (inserted?.id) {
           enrichSubmission({ url: url.trim(), platform, table: 'featured_submissions', row_id: inserted.id });
         }
-        toast.success('Edit submitted! 🔥 Wait for your score.');
+        toast.success('Edit submitted! 🔥');
         onClose();
       }
     } catch (e) {
@@ -59,24 +76,24 @@ export default function FeaturedSubmitModal({ drop, onClose }: Props) {
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-sm bg-background border-purple-500/30">
+      <DialogContent className="max-w-sm bg-background border-destructive/30">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Music className="w-5 h-5 text-purple-400" />
+            <Music className="w-5 h-5 text-destructive" />
             Submit to "{drop.title}"
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
           {/* Song info */}
-          <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
-            <p className="text-xs text-purple-300 flex items-center gap-2">
+          <div className="bg-destructive/10 border border-destructive/30 p-3">
+            <p className="text-xs text-destructive flex items-center gap-2">
               <Music className="w-3.5 h-3.5" />
               <span className="font-bold">{drop.song_name}</span>
             </p>
             {drop.song_url && (
               <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
-                className="text-[10px] text-purple-400 flex items-center gap-1 mt-1 hover:underline">
+                className="text-[10px] text-destructive/80 flex items-center gap-1 mt-1 hover:underline">
                 <ExternalLink className="w-3 h-3" /> Listen / Download
               </a>
             )}
@@ -93,10 +110,10 @@ export default function FeaturedSubmitModal({ drop, onClose }: Props) {
                 <button
                   key={p.id}
                   onClick={() => setPlatform(p.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  className={`px-3 py-1.5 text-xs font-medium border transition-all ${
                     platform === p.id
-                      ? 'bg-purple-500/20 border-purple-500/50 text-purple-300'
-                      : 'bg-surface-1 border-border text-muted-foreground hover:border-purple-500/30'
+                      ? 'bg-destructive/20 border-destructive/50 text-destructive'
+                      : 'bg-surface-1 border-border text-muted-foreground hover:border-destructive/30'
                   }`}
                 >
                   {p.label}
@@ -119,19 +136,11 @@ export default function FeaturedSubmitModal({ drop, onClose }: Props) {
             </p>
           </div>
 
-          {/* Rewards info */}
-          <div className="bg-surface-1 border border-border rounded-lg p-3 text-[10px] text-muted-foreground space-y-1">
-            <p>✅ Get scored by an official judge (QOI rating)</p>
-            <p>🏆 Top scorer gets artist shoutout + {drop.mystery_reward_label}</p>
-            <p>⚡ Earn up to +{drop.xp_reward} XP & +{drop.index_reward} INDEX</p>
-            <p>💀 Low score? You'll get honest feedback (public leaderboard)</p>
-          </div>
-
           {/* Submit */}
           <button
             onClick={handleSubmit}
             disabled={submitting || !url.trim()}
-            className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-3 bg-gradient-to-r from-destructive to-destructive/80 text-white font-bold disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {submitting ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
