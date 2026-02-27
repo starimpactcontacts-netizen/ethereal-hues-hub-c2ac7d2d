@@ -6,7 +6,6 @@ import {
   Wand2, SlidersHorizontal, Settings
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
@@ -18,6 +17,10 @@ import {
 
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
 type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export";
+
+const ACCENT = "#00D1C1";
+const ACCENT_DIM = "rgba(0,209,193,0.12)";
+const ACCENT_BORDER = "rgba(0,209,193,0.25)";
 
 export default function QuickClipEditor() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -257,15 +260,15 @@ export default function QuickClipEditor() {
         <motion.button
           onClick={() => fileInputRef.current?.click()}
           whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.97 }}
-          className="w-full aspect-[9/16] max-h-[55vh] border border-border/30 bg-surface-1/40 backdrop-blur-sm hover:bg-surface-1/60 transition-all flex flex-col items-center justify-center gap-5 rounded-2xl"
-        >
-          <div className="w-16 h-16 bg-gold/8 backdrop-blur-md rounded-2xl flex items-center justify-center border border-gold/20 shadow-[0_8px_32px_hsl(var(--gold)/0.08)]">
-            <Upload className="w-7 h-7 text-gold/70" />
+          className="w-full aspect-[9/16] max-h-[55vh] flex flex-col items-center justify-center gap-5 rounded-2xl transition-all"
+          style={{ border: "1px solid #2a2a2a", background: "#151515" }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: ACCENT_DIM, border: `1px solid ${ACCENT_BORDER}` }}>
+            <Upload className="w-7 h-7" style={{ color: ACCENT }} />
           </div>
           <div className="text-center space-y-1.5">
-            <p className="font-display text-lg text-gold/90 tracking-wider">START EDITING</p>
-            <p className="text-[11px] text-muted-foreground/60">Tap to upload a clip</p>
-            <p className="text-[10px] text-muted-foreground/30">MP4, MOV, WEBM • Max 500MB</p>
+            <p className="font-semibold text-base" style={{ color: ACCENT }}>Start Editing</p>
+            <p className="text-[11px]" style={{ color: "#666" }}>Tap to upload a clip</p>
+            <p className="text-[10px]" style={{ color: "#444" }}>MP4, MOV, WEBM • Max 500MB</p>
           </div>
         </motion.button>
         <div className="grid grid-cols-4 gap-2.5">
@@ -275,9 +278,10 @@ export default function QuickClipEditor() {
             { icon: Type, label: "9 Styles" },
             { icon: Wand2, label: "24 Filters" },
           ].map(({ icon: Icon, label }) => (
-            <div key={label} className="bg-surface-1/30 backdrop-blur-sm border border-border/20 rounded-xl p-3.5 flex flex-col items-center gap-2">
-              <Icon className="w-4 h-4 text-gold/40" />
-              <span className="text-[9px] text-muted-foreground/50 font-medium">{label}</span>
+            <div key={label} className="rounded-xl p-3.5 flex flex-col items-center gap-2"
+              style={{ background: "#151515", border: "1px solid #2a2a2a" }}>
+              <Icon className="w-4 h-4" style={{ color: "#555" }} />
+              <span className="text-[9px] font-medium" style={{ color: "#666" }}>{label}</span>
             </div>
           ))}
         </div>
@@ -290,59 +294,60 @@ export default function QuickClipEditor() {
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className={`flex flex-col bg-black ${isFullscreen ? "fixed inset-0 z-50" : "relative"}`}
-        style={{ height: isFullscreen ? "100dvh" : "auto" }}>
+        className={`flex flex-col ${isFullscreen ? "fixed inset-0 z-50" : "relative"}`}
+        style={{ height: isFullscreen ? "100dvh" : "auto", background: "#0a0a0a" }}>
 
-        {/* ─── Top Bar — Glass ─── */}
-        <div className="flex items-center gap-3 px-3 py-2.5 bg-surface-0/80 backdrop-blur-xl border-b border-border/20 flex-shrink-0 safe-top">
+        {/* ─── Top Bar ─── */}
+        <div className="flex items-center gap-3 px-3 py-2.5 flex-shrink-0 safe-top" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
           <button onClick={() => { if (isFullscreen) setIsFullscreen(false); else clearFile(); }}
-            className="p-2 hover:bg-surface-2/40 transition-all rounded-full">
-            <ChevronLeft className="w-5 h-5 text-foreground/80" />
+            className="p-2 rounded-full transition-all hover:bg-white/5">
+            <ChevronLeft className="w-5 h-5" style={{ color: "#aaa" }} />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold truncate text-foreground/90">{file.name}</p>
-            <p className="text-[10px] text-muted-foreground/40">{formatTimecode(trimEnd - trimStart)} clip</p>
+            <p className="text-xs font-medium truncate" style={{ color: "#e0e0e0" }}>{file.name}</p>
+            <p className="text-[10px]" style={{ color: "#555" }}>{formatTimecode(trimEnd - trimStart)} clip</p>
           </div>
           <div className="flex items-center gap-1.5">
             {state === "done" ? (
-              <Button onClick={handleDownload} size="sm"
-                className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5 rounded-full px-4 shadow-[0_0_16px_hsl(var(--gold)/0.2)]">
+              <button onClick={handleDownload}
+                className="h-8 px-4 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition-all"
+                style={{ background: ACCENT, color: "#000" }}>
                 <Download className="w-3.5 h-3.5" /> Save
-              </Button>
+              </button>
             ) : (
-              <Button onClick={startExport} size="sm" disabled={state === "processing"}
-                className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5 rounded-full px-4 shadow-[0_0_16px_hsl(var(--gold)/0.15)]">
+              <button onClick={startExport} disabled={state === "processing"}
+                className="h-8 px-4 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition-all disabled:opacity-30"
+                style={{ background: ACCENT, color: "#000" }}>
                 {state === "processing" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Film className="w-3.5 h-3.5" />}
                 {state === "processing" ? `${progress}%` : "Export"}
-              </Button>
+              </button>
             )}
           </div>
         </div>
 
         {/* ─── Video Preview ─── */}
-        <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden min-h-0">
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0" style={{ background: "#000" }}>
           <video ref={videoRef} src={videoUrl!} className="hidden" playsInline preload="auto" />
           <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
 
-          {/* Play overlay */}
           <AnimatePresence>
             {!playing && (
               <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={togglePlay} className="absolute inset-0 flex items-center justify-center">
-                <motion.div whileTap={{ scale: 0.9 }}
-                  className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}>
                   <Play className="w-6 h-6 text-white ml-0.5" />
-                </motion.div>
+                </div>
               </motion.button>
             )}
           </AnimatePresence>
           {playing && <button onClick={togglePlay} className="absolute inset-0" />}
 
-          {/* Effect badges */}
           {activeEffects.length > 0 && (
             <div className="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[60%]">
               {activeEffects.map(eff => (
-                <span key={eff} className="bg-black/50 backdrop-blur-md px-2 py-0.5 border border-gold/20 rounded-full text-[8px] text-gold/80 font-semibold tracking-wide">
+                <span key={eff} className="px-2 py-0.5 rounded text-[8px] font-medium"
+                  style={{ background: "rgba(0,0,0,0.6)", color: ACCENT, border: `1px solid ${ACCENT_BORDER}` }}>
                   {EFFECTS.find(e => e.id === eff)?.label}
                 </span>
               ))}
@@ -350,79 +355,75 @@ export default function QuickClipEditor() {
           )}
 
           {speed !== 1 && (
-            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-md px-2 py-0.5 border border-gold/20 rounded-full">
-              <span className="text-[10px] text-gold/80 font-bold">{speed}x</span>
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full" style={{ background: "rgba(0,0,0,0.6)", border: `1px solid ${ACCENT_BORDER}` }}>
+              <span className="text-[10px] font-semibold" style={{ color: ACCENT }}>{speed}x</span>
             </div>
           )}
 
           <button onClick={() => setMuted(!muted)}
-            className="absolute bottom-2 right-2 w-8 h-8 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10">
-            {muted ? <VolumeX className="w-4 h-4 text-white/50" /> : <Volume2 className="w-4 h-4 text-white/50" />}
+            className="absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}>
+            {muted ? <VolumeX className="w-4 h-4" style={{ color: "#666" }} /> : <Volume2 className="w-4 h-4" style={{ color: "#888" }} />}
           </button>
 
-          {/* Export overlay */}
           {state === "processing" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-              <div className="relative">
-                <Loader2 className="w-10 h-10 text-gold animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[10px] text-gold font-bold">{progress}%</span>
-                </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: "rgba(0,0,0,0.85)" }}>
+              <Loader2 className="w-10 h-10 animate-spin" style={{ color: ACCENT }} />
+              <p className="text-sm font-medium" style={{ color: "#ccc" }}>Exporting {progress}%</p>
+              <div className="w-48 h-1 rounded-full overflow-hidden" style={{ background: "#2a2a2a" }}>
+                <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: ACCENT }} />
               </div>
-              <p className="text-sm font-medium text-foreground/80">Exporting</p>
-              <div className="w-48 h-1 bg-surface-2 rounded-full overflow-hidden">
-                <motion.div className="h-full bg-gradient-to-r from-gold to-gold/70 rounded-full" animate={{ width: `${progress}%` }} />
-              </div>
-            </motion.div>
+            </div>
           )}
 
           {state === "done" && (
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className="absolute bottom-3 left-3 right-3 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 rounded-xl p-2.5 flex items-center gap-2">
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-emerald-400/80 font-medium">Export ready — tap Save</span>
+              className="absolute bottom-3 left-3 right-3 rounded-xl p-2.5 flex items-center gap-2"
+              style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+              <Check className="w-4 h-4" style={{ color: "#22c55e" }} />
+              <span className="text-xs font-medium" style={{ color: "#22c55e" }}>Export ready — tap Save</span>
             </motion.div>
           )}
         </div>
 
-        {/* ─── Timeline — Glass ─── */}
-        <div className="flex-shrink-0 bg-surface-0/80 backdrop-blur-xl border-t border-border/20">
+        {/* ─── Timeline ─── */}
+        <div className="flex-shrink-0" style={{ background: "#1a1a1a", borderTop: "1px solid #2a2a2a" }}>
           <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
-            <span className="text-[10px] text-gold/60 tabular-nums font-mono">{formatTimecode(currentTime)}</span>
+            <span className="text-[10px] font-mono" style={{ color: ACCENT }}>{formatTimecode(currentTime)}</span>
             <div className="flex items-center gap-3">
-              <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-full hover:bg-surface-2/30 transition-all">
-                <SkipBack className="w-4 h-4 text-muted-foreground/50" />
+              <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-full">
+                <SkipBack className="w-4 h-4" style={{ color: "#666" }} />
               </button>
-              <motion.button onClick={togglePlay} whileTap={{ scale: 0.9 }}
-                className="w-10 h-10 bg-gold/8 border border-gold/20 rounded-full flex items-center justify-center hover:bg-gold/12 transition-all shadow-[0_4px_16px_hsl(var(--gold)/0.08)]">
-                {playing ? <Pause className="w-4 h-4 text-gold" /> : <Play className="w-4 h-4 text-gold ml-0.5" />}
-              </motion.button>
-              <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-full hover:bg-surface-2/30 transition-all">
-                <SkipForward className="w-4 h-4 text-muted-foreground/50" />
+              <button onClick={togglePlay}
+                className="w-10 h-10 rounded-full flex items-center justify-center"
+                style={{ border: `1px solid ${ACCENT_BORDER}`, background: ACCENT_DIM }}>
+                {playing ? <Pause className="w-4 h-4" style={{ color: ACCENT }} /> : <Play className="w-4 h-4 ml-0.5" style={{ color: ACCENT }} />}
+              </button>
+              <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-full">
+                <SkipForward className="w-4 h-4" style={{ color: "#666" }} />
               </button>
             </div>
-            <span className="text-[10px] text-muted-foreground/30 tabular-nums font-mono">{formatTimecode(trimEnd - trimStart)}</span>
+            <span className="text-[10px] font-mono" style={{ color: "#444" }}>{formatTimecode(trimEnd - trimStart)}</span>
           </div>
 
           <div className="px-3 pb-2.5">
             <div ref={timelineRef} onClick={handleTimelineClick}
-              className="relative h-14 bg-black/30 border border-border/15 rounded-xl overflow-hidden cursor-pointer">
+              className="relative h-14 rounded-xl overflow-hidden cursor-pointer"
+              style={{ background: "#111", border: "1px solid #222" }}>
               <div className="absolute inset-0 flex">
                 {thumbnails.map((thumb, i) => (
                   <div key={i} className="flex-1 h-full overflow-hidden opacity-50">
                     <img src={thumb} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}
-                {thumbnails.length === 0 && <div className="flex-1 bg-surface-2/10" />}
+                {thumbnails.length === 0 && <div className="flex-1" style={{ background: "#151515" }} />}
               </div>
               {duration > 0 && (
                 <>
-                  <div className="absolute inset-y-0 left-0 bg-black/50 rounded-l-xl" style={{ width: `${(trimStart / duration) * 100}%` }} />
-                  <div className="absolute inset-y-0 right-0 bg-black/50 rounded-r-xl" style={{ width: `${((duration - trimEnd) / duration) * 100}%` }} />
-                  {/* Trim handles */}
-                  <div className="absolute inset-y-0 w-2 bg-gold/60 cursor-col-resize z-10 rounded-l-xl hover:bg-gold transition-all"
-                    style={{ left: `${(trimStart / duration) * 100}%` }}
+                  <div className="absolute inset-y-0 left-0 rounded-l-xl" style={{ width: `${(trimStart / duration) * 100}%`, background: "rgba(0,0,0,0.6)" }} />
+                  <div className="absolute inset-y-0 right-0 rounded-r-xl" style={{ width: `${((duration - trimEnd) / duration) * 100}%`, background: "rgba(0,0,0,0.6)" }} />
+                  <div className="absolute inset-y-0 w-2 cursor-col-resize z-10 rounded-l-xl transition-all"
+                    style={{ left: `${(trimStart / duration) * 100}%`, background: ACCENT }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
                       const rect = timelineRef.current!.getBoundingClientRect();
@@ -430,8 +431,8 @@ export default function QuickClipEditor() {
                       const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
                       window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
                     }} />
-                  <div className="absolute inset-y-0 w-2 bg-gold/60 cursor-col-resize z-10 rounded-r-xl hover:bg-gold transition-all"
-                    style={{ left: `calc(${(trimEnd / duration) * 100}% - 8px)` }}
+                  <div className="absolute inset-y-0 w-2 cursor-col-resize z-10 rounded-r-xl transition-all"
+                    style={{ left: `calc(${(trimEnd / duration) * 100}% - 8px)`, background: ACCENT }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
                       const rect = timelineRef.current!.getBoundingClientRect();
@@ -439,23 +440,22 @@ export default function QuickClipEditor() {
                       const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
                       window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
                     }} />
-                  {/* Playhead */}
-                  <div className="absolute top-0 bottom-0 w-0.5 bg-white/80 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%` }}>
-                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white rounded-full shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
+                  <div className="absolute top-0 bottom-0 w-0.5 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%`, background: "white" }}>
+                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full" style={{ background: "white", boxShadow: "0 0 4px rgba(255,255,255,0.5)" }} />
                   </div>
                 </>
               )}
               {audioName && (
-                <div className="absolute bottom-0 left-0 right-0 h-3 bg-purple-500/10 border-t border-purple-500/15 flex items-center px-1.5 rounded-b-xl">
-                  <Music className="w-2 h-2 text-purple-400/50 mr-0.5" />
-                  <span className="text-[7px] text-purple-400/50 truncate">{audioName}</span>
+                <div className="absolute bottom-0 left-0 right-0 h-3 flex items-center px-1.5 rounded-b-xl" style={{ background: "rgba(168,85,247,0.08)", borderTop: "1px solid rgba(168,85,247,0.15)" }}>
+                  <Music className="w-2 h-2 mr-0.5" style={{ color: "rgba(168,85,247,0.4)" }} />
+                  <span className="text-[7px] truncate" style={{ color: "rgba(168,85,247,0.4)" }}>{audioName}</span>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* ─── Tool Panel — Glass, smooth spring ─── */}
+        {/* ─── Tool Panel ─── */}
         <AnimatePresence>
           {activeTool && state === "idle" && (
             <motion.div
@@ -463,119 +463,138 @@ export default function QuickClipEditor() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 35 }}
-              className="flex-shrink-0 bg-surface-0/90 backdrop-blur-xl border-t border-border/20 overflow-hidden"
+              className="flex-shrink-0 overflow-hidden"
+              style={{ background: "#1a1a1a", borderTop: "1px solid #2a2a2a" }}
             >
-              <div className="p-4 max-h-[35vh] overflow-y-auto scrollbar-hide">
+              <div className="p-4 max-h-[35vh] overflow-y-auto" style={{ scrollbarWidth: "none" }}>
 
-                {/* Filters */}
                 {activeTool === "filters" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Filters</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Filters</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
-                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+                    <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                       {["all", "basic", "cinema", "mood", "film"].map(cat => (
                         <button key={cat} onClick={() => setFilterTab(cat)}
-                          className={`px-2.5 py-1 text-[8px] font-bold uppercase rounded-full border flex-shrink-0 transition-all ${filterTab === cat ? "border-gold/40 bg-gold/8 text-gold" : "border-border/20 text-muted-foreground/50"}`}>
+                          className="px-2.5 py-1 text-[8px] font-semibold rounded-md flex-shrink-0 transition-all capitalize"
+                          style={{
+                            background: filterTab === cat ? ACCENT_DIM : "transparent",
+                            color: filterTab === cat ? ACCENT : "#555",
+                            border: filterTab === cat ? `1px solid ${ACCENT_BORDER}` : "1px solid transparent",
+                          }}>
                           {cat}
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
+                    <div className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                       {filteredFilters.map((preset) => (
-                        <motion.button key={preset.name} whileTap={{ scale: 0.9 }}
-                          onClick={() => setActiveFilter(preset)} className="flex-shrink-0 flex flex-col items-center gap-1.5">
-                          <div className={`w-14 h-14 border-2 rounded-xl transition-all ${activeFilter.name === preset.name ? "border-gold/50 shadow-[0_0_12px_hsl(var(--gold)/0.15)]" : "border-border/20"}`}
-                            style={{ backgroundColor: preset.color }} />
-                          <span className={`text-[9px] font-semibold ${activeFilter.name === preset.name ? "text-gold" : "text-muted-foreground/50"}`}>{preset.label}</span>
-                        </motion.button>
+                        <button key={preset.name} onClick={() => setActiveFilter(preset)} className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                          <div className="w-14 h-14 rounded-lg transition-all"
+                            style={{
+                              backgroundColor: preset.color,
+                              border: activeFilter.name === preset.name ? `2px solid ${ACCENT}` : "2px solid #2a2a2a",
+                            }} />
+                          <span className="text-[9px] font-medium" style={{ color: activeFilter.name === preset.name ? ACCENT : "#666" }}>{preset.label}</span>
+                        </button>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Effects */}
                 {activeTool === "effects" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Effects</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Effects</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-4 gap-1.5">
                       {EFFECTS.map((effect) => {
                         const isActive = activeEffects.includes(effect.id);
                         return (
-                          <motion.button key={effect.id} whileTap={{ scale: 0.9 }}
-                            onClick={() => toggleEffect(effect.id)}
-                            className={`py-3 rounded-xl flex flex-col items-center gap-1.5 border transition-all ${isActive ? "border-gold/40 bg-gold/8" : "border-border/15 bg-surface-1/20"}`}>
+                          <button key={effect.id} onClick={() => toggleEffect(effect.id)}
+                            className="py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all"
+                            style={{
+                              background: isActive ? ACCENT_DIM : "#151515",
+                              border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                            }}>
                             <span className="text-base">{effect.icon}</span>
-                            <span className={`text-[8px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground/50"}`}>{effect.label}</span>
-                          </motion.button>
+                            <span className="text-[8px] font-medium" style={{ color: isActive ? ACCENT : "#666" }}>{effect.label}</span>
+                          </button>
                         );
                       })}
                     </div>
                     {activeEffects.length > 0 && (
                       <button onClick={() => setActiveEffects([])}
-                        className="w-full py-2 text-[10px] text-destructive/70 font-semibold border border-destructive/15 rounded-xl hover:bg-destructive/5">
+                        className="w-full py-2 text-[10px] font-medium rounded-lg"
+                        style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
                         Clear All ({activeEffects.length})
                       </button>
                     )}
                   </div>
                 )}
 
-                {/* Transitions */}
                 {activeTool === "transitions" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Transitions</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Transitions</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5">
                       {TRANSITIONS.map((trans) => {
                         const isActive = activeTransition === trans.id;
                         return (
-                          <motion.button key={trans.id} whileTap={{ scale: 0.9 }}
-                            onClick={() => setActiveTransition(isActive ? null : trans.id)}
-                            className={`py-3 rounded-xl flex flex-col items-center gap-1.5 border transition-all ${isActive ? "border-gold/40 bg-gold/8" : "border-border/15 bg-surface-1/20"}`}>
+                          <button key={trans.id} onClick={() => setActiveTransition(isActive ? null : trans.id)}
+                            className="py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all"
+                            style={{
+                              background: isActive ? ACCENT_DIM : "#151515",
+                              border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                            }}>
                             <span className="text-base">{trans.icon}</span>
-                            <span className={`text-[8px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground/50"}`}>{trans.label}</span>
-                          </motion.button>
+                            <span className="text-[8px] font-medium" style={{ color: isActive ? ACCENT : "#666" }}>{trans.label}</span>
+                          </button>
                         );
                       })}
                     </div>
                   </div>
                 )}
 
-                {/* Text */}
                 {activeTool === "text" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Text</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Text</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
                     <input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Type your text..."
-                      className="w-full bg-surface-1/40 border border-border/20 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-gold/30 transition-all" autoFocus />
-                    <div className="grid grid-cols-3 gap-1.5">
+                      className="w-full rounded-lg px-4 py-3 text-sm focus:outline-none transition-all"
+                      style={{ background: "#151515", border: "1px solid #2a2a2a", color: "#e0e0e0" }}
+                      autoFocus />
+                    <div className="grid grid-cols-3 gap-1">
                       {(Object.entries(TEXT_STYLES) as [TextStyleKey, typeof TEXT_STYLES[TextStyleKey]][]).map(([key, s]) => (
                         <button key={key} onClick={() => setTextStyle(key)}
-                          className={`py-2 text-[9px] font-bold uppercase border rounded-xl transition-all ${textStyle === key ? "border-gold/40 bg-gold/8 text-gold" : "border-border/15 text-muted-foreground/50"}`}>
+                          className="py-2 text-[9px] font-semibold rounded-md transition-all capitalize"
+                          style={{
+                            background: textStyle === key ? ACCENT_DIM : "#151515",
+                            color: textStyle === key ? ACCENT : "#555",
+                            border: textStyle === key ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                          }}>
                           {s.label}
                         </button>
                       ))}
                     </div>
-                    <Button onClick={addTextOverlay} disabled={!textInput.trim()}
-                      className="w-full h-10 bg-gold text-primary-foreground hover:bg-gold/90 text-xs font-bold rounded-xl disabled:opacity-30">
+                    <button onClick={addTextOverlay} disabled={!textInput.trim()}
+                      className="w-full h-10 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
+                      style={{ background: ACCENT, color: "#000" }}>
                       Add Text
-                    </Button>
+                    </button>
                     {textOverlays.length > 0 && (
                       <div className="space-y-1.5">
                         {textOverlays.map(t => (
-                          <div key={t.id} className="flex items-center gap-2 bg-surface-1/20 border border-border/15 rounded-lg px-3 py-2">
-                            <Type className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />
-                            <span className="text-[11px] text-foreground/70 truncate flex-1">{t.text}</span>
-                            <button onClick={() => setTextOverlays(prev => prev.filter(x => x.id !== t.id))} className="text-muted-foreground/30 hover:text-destructive">
-                              <X className="w-3 h-3" />
+                          <div key={t.id} className="flex items-center gap-2 rounded-md px-3 py-2" style={{ background: "#151515", border: "1px solid #222" }}>
+                            <Type className="w-3 h-3 flex-shrink-0" style={{ color: "#555" }} />
+                            <span className="text-[11px] truncate flex-1" style={{ color: "#aaa" }}>{t.text}</span>
+                            <button onClick={() => setTextOverlays(prev => prev.filter(x => x.id !== t.id))}>
+                              <X className="w-3 h-3" style={{ color: "#555" }} />
                             </button>
                           </div>
                         ))}
@@ -584,88 +603,85 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
-                {/* Audio */}
                 {activeTool === "audio" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Audio</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Audio</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
                     {audioName ? (
-                      <div className="flex items-center gap-3 bg-surface-1/20 border border-purple-500/15 rounded-xl p-3">
-                        <div className="w-9 h-9 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                          <Music className="w-4 h-4 text-purple-400/70" />
-                        </div>
-                        <span className="text-xs text-foreground/70 truncate flex-1">{audioName}</span>
-                        <button onClick={() => { setAudioFile(null); setAudioName(""); }} className="text-[10px] text-destructive/60 font-semibold">Remove</button>
+                      <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: "#151515", border: "1px solid rgba(168,85,247,0.2)" }}>
+                        <Music className="w-4 h-4" style={{ color: "#a855f7" }} />
+                        <span className="text-xs truncate flex-1" style={{ color: "#ccc" }}>{audioName}</span>
+                        <button onClick={() => { setAudioFile(null); setAudioName(""); }} className="text-[10px] font-medium" style={{ color: "#ef4444" }}>Remove</button>
                       </div>
                     ) : (
-                      <motion.button whileTap={{ scale: 0.97 }}
-                        onClick={() => audioInputRef.current?.click()}
-                        className="w-full py-8 border border-dashed border-purple-400/15 bg-purple-500/3 hover:bg-purple-500/6 transition-all flex flex-col items-center gap-3 rounded-xl">
-                        <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
-                          <Music className="w-5 h-5 text-purple-400/60" />
-                        </div>
-                        <span className="text-xs text-purple-400/70 font-semibold">Add Music Track</span>
-                      </motion.button>
+                      <button onClick={() => audioInputRef.current?.click()}
+                        className="w-full py-8 rounded-lg flex flex-col items-center gap-3 transition-all"
+                        style={{ border: "1px dashed #333", background: "#151515" }}>
+                        <Music className="w-5 h-5" style={{ color: "#555" }} />
+                        <span className="text-xs" style={{ color: "#888" }}>Add Music Track</span>
+                      </button>
                     )}
                     <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
                   </div>
                 )}
 
-                {/* Speed */}
                 {activeTool === "speed" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Speed</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Speed</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-1.5 flex-wrap">
                       {SPEED_OPTIONS.map((s) => (
-                        <motion.button key={s} whileTap={{ scale: 0.9 }}
-                          onClick={() => setSpeed(s)}
-                          className={`px-3.5 py-2 text-xs font-bold border rounded-xl transition-all ${speed === s ? "border-gold/40 bg-gold/8 text-gold" : "border-border/15 text-muted-foreground/50"}`}>
+                        <button key={s} onClick={() => setSpeed(s)}
+                          className="px-3.5 py-2 text-xs font-semibold rounded-lg transition-all"
+                          style={{
+                            background: speed === s ? ACCENT_DIM : "#151515",
+                            color: speed === s ? ACCENT : "#666",
+                            border: speed === s ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                          }}>
                           {s}x
-                        </motion.button>
+                        </button>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Trim */}
                 {activeTool === "trim" && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Trim</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Trim</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="flex-1 space-y-2">
-                        <label className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">Start</label>
+                        <label className="text-[9px] uppercase tracking-wider" style={{ color: "#555" }}>Start</label>
                         <Slider value={[trimStart]} onValueChange={(v) => setTrimStart(Math.min(v[0], trimEnd - 0.5))} min={0} max={duration} step={0.1} />
-                        <span className="text-[10px] text-gold/60 tabular-nums font-mono">{formatTimecode(trimStart)}</span>
+                        <span className="text-[10px] font-mono" style={{ color: ACCENT }}>{formatTimecode(trimStart)}</span>
                       </div>
                       <div className="flex-1 space-y-2">
-                        <label className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">End</label>
+                        <label className="text-[9px] uppercase tracking-wider" style={{ color: "#555" }}>End</label>
                         <Slider value={[trimEnd]} onValueChange={(v) => setTrimEnd(Math.max(v[0], trimStart + 0.5))} min={0} max={duration} step={0.1} />
-                        <span className="text-[10px] text-gold/60 tabular-nums font-mono">{formatTimecode(trimEnd)}</span>
+                        <span className="text-[10px] font-mono" style={{ color: ACCENT }}>{formatTimecode(trimEnd)}</span>
                       </div>
                     </div>
-                    <Button onClick={() => { setTrimStart(0); setTrimEnd(duration); }} variant="outline" size="sm"
-                      className="text-[10px] h-8 border-border/20 gap-1.5 rounded-xl">
+                    <button onClick={() => { setTrimStart(0); setTrimEnd(duration); }}
+                      className="text-[10px] h-8 px-3 rounded-lg flex items-center gap-1.5 transition-all"
+                      style={{ border: "1px solid #2a2a2a", color: "#888" }}>
                       <RotateCcw className="w-3 h-3" /> Reset
-                    </Button>
+                    </button>
                   </div>
                 )}
 
-                {/* Adjust */}
                 {activeTool === "adjust" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Adjust</span>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Adjust</span>
                       <div className="flex gap-3">
-                        <button onClick={resetColorGrading} className="text-[10px] text-gold/60 font-semibold hover:text-gold">Reset</button>
-                        <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                        <button onClick={resetColorGrading} className="text-[10px] font-medium" style={{ color: ACCENT }}>Reset</button>
+                        <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                       </div>
                     </div>
                     {[
@@ -676,8 +692,8 @@ export default function QuickClipEditor() {
                     ].map(({ label, value, set, min, max }) => (
                       <div key={label} className="space-y-1.5">
                         <div className="flex justify-between">
-                          <span className="text-[10px] text-foreground/70">{label}</span>
-                          <span className="text-[10px] text-gold/50 font-mono tabular-nums">{value}</span>
+                          <span className="text-[10px]" style={{ color: "#aaa" }}>{label}</span>
+                          <span className="text-[10px] font-mono" style={{ color: "#555" }}>{value}</span>
                         </div>
                         <Slider value={[value]} onValueChange={(v) => set(v[0])} min={min} max={max} step={1} />
                       </div>
@@ -685,21 +701,23 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
-                {/* Export Settings */}
                 {activeTool === "export" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Export Quality</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Export Quality</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
                     <div className="space-y-1.5">
                       {EXPORT_QUALITIES.map((q) => (
-                        <motion.button key={q.id} whileTap={{ scale: 0.97 }}
-                          onClick={() => setExportQuality(q.id)}
-                          className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${exportQuality === q.id ? "border-gold/40 bg-gold/6" : "border-border/15 bg-surface-1/15"}`}>
-                          <span className={`text-xs font-bold ${exportQuality === q.id ? "text-gold" : "text-foreground/70"}`}>{q.label}</span>
-                          <span className="text-[9px] text-muted-foreground/40 ml-2">{q.fps}fps • {(q.bitrate / 1_000_000).toFixed(0)}Mbps</span>
-                        </motion.button>
+                        <button key={q.id} onClick={() => setExportQuality(q.id)}
+                          className="w-full text-left px-4 py-3 rounded-lg transition-all"
+                          style={{
+                            background: exportQuality === q.id ? ACCENT_DIM : "#151515",
+                            border: exportQuality === q.id ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                          }}>
+                          <span className="text-xs font-semibold" style={{ color: exportQuality === q.id ? ACCENT : "#ccc" }}>{q.label}</span>
+                          <span className="text-[9px] ml-2" style={{ color: "#555" }}>{q.fps}fps • {(q.bitrate / 1_000_000).toFixed(0)}Mbps</span>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -709,10 +727,10 @@ export default function QuickClipEditor() {
           )}
         </AnimatePresence>
 
-        {/* ─── Bottom Toolbar — Pill bar ─── */}
-        <div className="flex-shrink-0 bg-surface-0/80 backdrop-blur-xl border-t border-border/15">
+        {/* ─── Bottom Toolbar ─── */}
+        <div className="flex-shrink-0" style={{ background: "#1a1a1a", borderTop: "1px solid #2a2a2a" }}>
           <div className="flex items-center justify-center py-1.5 px-2">
-            <div className="flex items-center gap-0.5 bg-surface-2/20 rounded-full p-0.5 overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-0.5 rounded-full p-0.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {([
                 { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
                 { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
@@ -724,12 +742,16 @@ export default function QuickClipEditor() {
                 { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
                 { id: "export" as EditorTool, icon: Settings, label: "Quality" },
               ]).map(({ id, icon: Icon, label }) => (
-                <motion.button key={id} whileTap={{ scale: 0.9 }}
+                <button key={id}
                   onClick={() => setActiveTool(activeTool === id ? null : id)}
-                  className={`flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-full transition-all duration-200 ${activeTool === id ? "bg-gold/10 text-gold" : "text-muted-foreground/40"}`}>
-                  <Icon className="w-4.5 h-4.5" />
+                  className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-150"
+                  style={{
+                    color: activeTool === id ? ACCENT : "#666",
+                    background: activeTool === id ? ACCENT_DIM : "transparent",
+                  }}>
+                  <Icon className="w-[18px] h-[18px]" />
                   <span className="text-[7px] font-semibold tracking-wider uppercase">{label}</span>
-                </motion.button>
+                </button>
               ))}
             </div>
           </div>
