@@ -286,7 +286,7 @@ export default function App() {
               <Route path="/rankings" element={<RankingsPage />} />
               <Route path="/class" element={<ClassPage />} />
               <Route path="/league" element={<LeaguePage />} />
-              <Route path="/events" element={<HomePage />} />
+              <Route path="/events" element={<Navigate to="/arena" replace />} />
               <Route path="/event/:id" element={<EventDetailPage />} />
               <Route path="/feed" element={<FeedPage />} />
               <Route path="/gqt" element={<GQTPage />} />

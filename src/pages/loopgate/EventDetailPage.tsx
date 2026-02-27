@@ -83,7 +83,7 @@ export default function EventDetailPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="px-4 py-3 flex items-center gap-3">
-          <Link to="/events" className="p-1 -ml-1">
+          <Link to="/arena" className="p-1 -ml-1">
             <ArrowLeft size={20} />
           </Link>
           <div className="flex-1">
