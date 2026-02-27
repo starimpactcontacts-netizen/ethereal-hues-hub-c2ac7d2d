@@ -323,57 +323,91 @@ export default function FeaturedDropDetailPage() {
             {/* ═══ QUEUE — when all rounds full, editors can still submit ═══ */}
             {allRoundsFull && isLive && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-surface-1 border-2 border-gold/20 p-4 space-y-3"
+                transition={{ duration: 0.4 }}
+                className="relative bg-gradient-to-b from-gold/[0.08] to-surface-1 border-2 border-gold/30 p-5 space-y-4 overflow-hidden"
               >
-                <div className="flex items-center justify-between">
+                {/* Animated glow */}
+                <motion.div
+                  className="absolute -top-20 -right-20 w-40 h-40 bg-gold/10 rounded-full blur-3xl pointer-events-none"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+
+                <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <h3 className="font-display text-base text-foreground tracking-wide flex items-center gap-2">
-                      <ListOrdered className="w-4 h-4 text-gold" />
-                      NEXT ROUND QUEUE
+                    <h3 className="font-display text-lg text-foreground tracking-wide flex items-center gap-2">
+                      <motion.div
+                        animate={{ rotate: [0, -10, 10, 0] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Zap className="w-5 h-5 text-gold" />
+                      </motion.div>
+                      NEXT ROUND LOBBY
                     </h3>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      Round full — submit here to queue for next round
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      🔥 Round full — drop your edit here to secure your spot
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className={`font-display text-2xl tabular-nums ${queueCount >= 100 ? 'text-destructive' : 'text-gold'}`}>
+                    <motion.span
+                      key={queueCount}
+                      initial={{ scale: 1.4, color: 'hsl(var(--gold))' }}
+                      animate={{ scale: 1, color: queueCount >= 100 ? 'hsl(var(--destructive))' : 'hsl(var(--gold))' }}
+                      className="font-display text-3xl tabular-nums block"
+                    >
                       {queueCount}
-                    </span>
-                    <span className="text-xs text-muted-foreground font-bold">/100</span>
+                    </motion.span>
+                    <span className="text-[10px] text-muted-foreground font-bold">/100 queued</span>
                   </div>
                 </div>
 
                 {/* Queue progress bar */}
-                <div className="w-full h-2 bg-surface-2 border border-border overflow-hidden">
+                <div className="w-full h-3 bg-surface-2 border border-border overflow-hidden relative z-10">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min((queueCount / 100) * 100, 100)}%` }}
-                    className="h-full bg-gradient-to-r from-gold/60 to-gold"
-                    transition={{ duration: 0.6 }}
-                  />
+                    className="h-full bg-gradient-to-r from-gold/50 via-gold to-gold/80 relative"
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                  >
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      animate={{ x: ['-100%', '200%'] }}
+                      transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                    />
+                  </motion.div>
                 </div>
 
-                {/* Queue avatars */}
+                {/* Queue avatars with live pulse */}
                 {queue.length > 0 && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 relative z-10">
                     <div className="flex -space-x-2">
-                      {queue.slice(0, 12).map((q) => (
-                        <Avatar key={q.id} className="w-6 h-6 border-2 border-background ring-1 ring-border">
-                          <AvatarImage src={q.avatar_url || ''} />
-                          <AvatarFallback className="bg-surface-2 text-[7px] font-bold text-foreground">
-                            {q.username?.[0]?.toUpperCase() || '?'}
-                          </AvatarFallback>
-                        </Avatar>
+                      {queue.slice(0, 8).map((q, i) => (
+                        <motion.div
+                          key={q.id}
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: i * 0.05 }}
+                        >
+                          <Avatar className="w-7 h-7 border-2 border-background ring-1 ring-gold/20">
+                            <AvatarImage src={q.avatar_url || ''} />
+                            <AvatarFallback className="bg-gold/10 text-[7px] font-bold text-gold">
+                              {q.username?.[0]?.toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </motion.div>
                       ))}
-                      {queueCount > 12 && (
-                        <div className="w-6 h-6 rounded-full bg-surface-2 border-2 border-background ring-1 ring-border flex items-center justify-center">
-                          <span className="text-[7px] font-bold text-muted-foreground">+{queueCount - 12}</span>
+                      {queueCount > 8 && (
+                        <div className="w-7 h-7 rounded-full bg-gold/10 border-2 border-background ring-1 ring-gold/20 flex items-center justify-center">
+                          <span className="text-[8px] font-black text-gold">+{queueCount - 8}</span>
                         </div>
                       )}
                     </div>
-                    <span className="text-[9px] text-muted-foreground">{queueCount} queued</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Filling fast</span>
+                    </div>
                   </div>
                 )}
 
@@ -381,18 +415,22 @@ export default function FeaturedDropDetailPage() {
                 {canQueueSubmit && (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
+                    whileHover={{ scale: 1.01 }}
                     onClick={() => profile ? setShowSubmit(true) : navigate('/start')}
-                    className="w-full py-3.5 bg-gradient-to-r from-gold/90 to-gold/70 text-background font-display text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                    className="w-full py-4 bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
                   >
-                    <ListOrdered className="w-4 h-4" />
-                    Join Queue for Next Round
-                    <ChevronRight className="w-4 h-4" />
+                    <Flame className="w-5 h-5" />
+                    Join the Queue
+                    <ChevronRight className="w-5 h-5" />
                   </motion.button>
                 )}
                 {queueCount >= 100 && (
-                  <p className="text-[10px] font-black text-destructive uppercase tracking-widest text-center">
-                    🔒 QUEUE FULL
-                  </p>
+                  <div className="text-center relative z-10 space-y-1">
+                    <p className="text-[11px] font-black text-destructive uppercase tracking-widest">
+                      🔒 QUEUE FULL — 100/100
+                    </p>
+                    <p className="text-[9px] text-muted-foreground">Next round drops soon. Stay locked in.</p>
+                  </div>
                 )}
               </motion.div>
             )}
