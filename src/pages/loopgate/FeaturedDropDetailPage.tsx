@@ -102,6 +102,25 @@ export default function FeaturedDropDetailPage() {
   // Clean slug-based link for bios
   const cleanLink = `${window.location.origin}/drop/${(drop as any).slug || dropId}`;
 
+  const downloadAudio = async (url: string, filename: string) => {
+    try {
+      toast.info('Starting download…');
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+      toast.success('Download complete — check your files!');
+    } catch {
+      toast.error('Download failed — try again');
+    }
+  };
+
   const handleShare = async () => {
     try {
       if (navigator.share) {
@@ -450,16 +469,7 @@ export default function FeaturedDropDetailPage() {
                 </DropdownMenuItem>
                 {drop.song_preview_url && (
                   <DropdownMenuItem
-                    onClick={() => {
-                      const a = document.createElement('a');
-                      a.href = drop.song_preview_url!;
-                      a.download = `${drop.song_name || 'preview'}.m4a`;
-                      a.target = '_blank';
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      toast.success('Downloading audio preview…');
-                    }}
+                    onClick={() => downloadAudio(drop.song_preview_url!, `${drop.song_name || 'preview'}.m4a`)}
                     className="flex items-center gap-2 text-xs"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -483,16 +493,7 @@ export default function FeaturedDropDetailPage() {
                 <p className="text-[9px] text-muted-foreground truncate">{drop.song_name}</p>
               </div>
               <button
-                onClick={() => {
-                  const a = document.createElement('a');
-                  a.href = drop.song_preview_url!;
-                  a.download = `${drop.song_name || 'preview'}.m4a`;
-                  a.target = '_blank';
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  toast.success('Downloading…');
-                }}
+                onClick={() => downloadAudio(drop.song_preview_url!, `${drop.song_name || 'preview'}.m4a`)}
                 className="flex items-center gap-1.5 bg-surface-2 border border-border hover:border-destructive/30 px-2 py-1 transition-colors"
                 title="Download audio"
               >
