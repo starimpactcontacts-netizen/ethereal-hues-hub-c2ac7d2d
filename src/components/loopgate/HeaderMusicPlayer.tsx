@@ -172,39 +172,66 @@ export default function HeaderMusicPlayer() {
         <button
           className="relative flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:bg-accent"
         >
-          {/* Pulsing green ring when playing */}
-          <AnimatePresence>
-            {isPlaying && (
-              <>
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute inset-0 rounded-full border-2 border-emerald-500"
-                />
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-                  className="absolute inset-0 rounded-full border border-emerald-500/50"
-                />
-              </>
-            )}
-          </AnimatePresence>
-          {isPlaying ? (
-            <div className="flex gap-[3px] items-end h-5">
-              {[0, 1, 2, 3, 4].map(b => (
-                <motion.div
-                  key={b}
-                  className="w-[3px] bg-emerald-500 rounded-full"
-                  animate={{ height: ['4px', '18px', '6px', '14px', '4px'] }}
-                  transition={{ duration: 0.8, repeat: Infinity, delay: b * 0.1, ease: 'easeInOut' }}
-                />
-              ))}
-            </div>
-          ) : (
-            <Radio className="h-6 w-6 text-muted-foreground" />
-          )}
+          {/* Custom Radio icon with animated waves */}
+          <svg
+            width="26"
+            height="26"
+            viewBox="0 0 24 24"
+            fill="none"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {/* Center dot - always visible */}
+            <circle
+              cx="12"
+              cy="12"
+              r="2"
+              className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+            />
+            {/* Inner wave arcs */}
+            <motion.path
+              d="M16.24 7.76a6 6 0 0 1 0 8.49"
+              className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+              animate={isPlaying ? {
+                opacity: [0.4, 1, 0.4],
+                scale: [1, 1.05, 1],
+              } : { opacity: 1, scale: 1 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ transformOrigin: 'center' }}
+            />
+            <motion.path
+              d="M7.76 16.24a6 6 0 0 1 0-8.49"
+              className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+              animate={isPlaying ? {
+                opacity: [0.4, 1, 0.4],
+                scale: [1, 1.05, 1],
+              } : { opacity: 1, scale: 1 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ transformOrigin: 'center' }}
+            />
+            {/* Outer wave arcs - throb outward when playing */}
+            <motion.path
+              d="M19.07 4.93a10 10 0 0 1 0 14.14"
+              className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+              animate={isPlaying ? {
+                opacity: [0.2, 0.8, 0.2],
+                scale: [1, 1.12, 1],
+              } : { opacity: 1, scale: 1 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+              style={{ transformOrigin: 'center' }}
+            />
+            <motion.path
+              d="M4.93 19.07a10 10 0 0 1 0-14.14"
+              className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+              animate={isPlaying ? {
+                opacity: [0.2, 0.8, 0.2],
+                scale: [1, 1.12, 1],
+              } : { opacity: 1, scale: 1 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+              style={{ transformOrigin: 'center' }}
+            />
+          </svg>
         </button>
       </PopoverTrigger>
       <PopoverContent
