@@ -3,7 +3,7 @@ import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, Check, SkipBack, SkipForward, Scissors, RotateCcw,
   ChevronLeft, Sparkles, Volume2, VolumeX, Gauge, Layers,
-  Wand2, SlidersHorizontal, Settings
+  Wand2, SlidersHorizontal, Settings, ArrowUpCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
@@ -16,7 +16,7 @@ import {
 } from "@/lib/studioEffects";
 
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
-type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export";
+type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale";
 
 // Adobe Pro accent — Premiere/AE blue-purple
 const ACCENT = "#9999FF";
@@ -60,6 +60,16 @@ export default function QuickClipEditor() {
   const [hueRotate, setHueRotate] = useState(0);
   const [exportQuality, setExportQuality] = useState<ExportQuality>("standard");
   const [filterTab, setFilterTab] = useState<string>("all");
+
+  // Upscale state
+  const upscaleInputRef = useRef<HTMLInputElement>(null);
+  const [upscaleFile, setUpscaleFile] = useState<File | null>(null);
+  const [upscaleUrl, setUpscaleUrl] = useState<string | null>(null);
+  const [upscaleMode, setUpscaleMode] = useState<"2x" | "4x">("2x");
+  const [upscaleState, setUpscaleState] = useState<"idle" | "processing" | "done">("idle");
+  const [upscaleProgress, setUpscaleProgress] = useState(0);
+  const [upscaleResultUrl, setUpscaleResultUrl] = useState<string | null>(null);
+  const [upscaleDims, setUpscaleDims] = useState<{ w: number; h: number } | null>(null);
 
   const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
 
@@ -253,6 +263,61 @@ export default function QuickClipEditor() {
   };
 
   const filteredFilters = useMemo(() => filterTab === "all" ? FILTER_PRESETS : FILTER_PRESETS.filter(f => f.category === filterTab), [filterTab]);
+
+  // ─── Upscaler ───
+  const handleUpscaleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f2 = e.target.files?.[0];
+    if (!f2 || !f2.type.startsWith("video/")) { toast.error("Select a video file"); return; }
+    if (f2.size > 500 * 1024 * 1024) { toast.error("Max 500MB"); return; }
+    setUpscaleFile(f2); setUpscaleUrl(URL.createObjectURL(f2));
+    setUpscaleResultUrl(null); setUpscaleState("idle"); setUpscaleProgress(0);
+    e.target.value = "";
+  };
+  const startUpscale = useCallback(async () => {
+    if (!upscaleUrl || !upscaleFile) return;
+    setUpscaleState("processing"); setUpscaleProgress(0);
+    const video = document.createElement("video");
+    video.src = upscaleUrl; video.muted = true; video.playsInline = true;
+    await new Promise<void>((res, rej) => { video.onloadedmetadata = () => res(); video.onerror = () => rej(); });
+    const origW = video.videoWidth, origH = video.videoHeight;
+    setUpscaleDims({ w: origW, h: origH });
+    const scale = upscaleMode === "2x" ? 2 : 4;
+    let finalW = origW * scale, finalH = origH * scale;
+    if (finalW > 3840 || finalH > 3840) { const r = Math.min(3840 / finalW, 3840 / finalH); finalW = Math.round(finalW * r); finalH = Math.round(finalH * r); }
+    finalW = finalW % 2 === 0 ? finalW : finalW + 1; finalH = finalH % 2 === 0 ? finalH : finalH + 1;
+    const cvs = document.createElement("canvas"); cvs.width = finalW; cvs.height = finalH;
+    const ctx2 = cvs.getContext("2d")!; ctx2.imageSmoothingEnabled = true; ctx2.imageSmoothingQuality = "high";
+    const stream = cvs.captureStream(30);
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: Math.min(finalW * finalH * 8, 40_000_000) });
+    const chunks: Blob[] = [];
+    recorder.ondataavailable = (ev) => { if (ev.data.size > 0) chunks.push(ev.data); };
+    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
+    recorder.start(100); video.currentTime = 0; await video.play();
+    const dur = video.duration;
+    const drawLoop = () => {
+      if (video.ended || video.paused) { recorder.stop(); return; }
+      ctx2.drawImage(video, 0, 0, finalW, finalH);
+      setUpscaleProgress(Math.min(99, Math.round((video.currentTime / dur) * 100)));
+      requestAnimationFrame(drawLoop);
+    };
+    drawLoop(); video.onended = () => recorder.stop();
+    const blob = await resultPromise;
+    setUpscaleResultUrl(URL.createObjectURL(blob)); setUpscaleProgress(100); setUpscaleState("done");
+    toast.success("Video upscaled!"); video.pause(); video.src = "";
+  }, [upscaleUrl, upscaleFile, upscaleMode]);
+  const handleUpscaleDownload = () => {
+    if (!upscaleResultUrl || !upscaleFile) return;
+    const a = document.createElement("a"); a.href = upscaleResultUrl;
+    a.download = `${upscaleFile.name.replace(/\.[^/.]+$/, "")}_${upscaleMode}_upscaled.webm`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  };
+  const clearUpscale = () => {
+    if (upscaleUrl) URL.revokeObjectURL(upscaleUrl);
+    if (upscaleResultUrl) URL.revokeObjectURL(upscaleResultUrl);
+    setUpscaleFile(null); setUpscaleUrl(null); setUpscaleResultUrl(null);
+    setUpscaleState("idle"); setUpscaleProgress(0); setUpscaleDims(null);
+  };
 
   // ─── Upload Screen ───
   if (!file) {
@@ -723,6 +788,83 @@ export default function QuickClipEditor() {
                     </div>
                   </div>
                 )}
+
+                {activeTool === "upscale" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Upscale</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
+                    </div>
+                    {!upscaleFile ? (
+                      <button onClick={() => upscaleInputRef.current?.click()}
+                        className="w-full py-8 rounded-lg flex flex-col items-center gap-3 transition-all"
+                        style={{ border: "1px dashed #333", background: "#151515" }}>
+                        <ArrowUpCircle className="w-6 h-6" style={{ color: ACCENT }} />
+                        <span className="text-xs" style={{ color: "#888" }}>Upload Video to Upscale</span>
+                      </button>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 rounded-lg p-2.5" style={{ background: "#151515", border: "1px solid #2a2a2a" }}>
+                          <Film className="w-4 h-4" style={{ color: "#666" }} />
+                          <span className="text-[10px] truncate flex-1" style={{ color: "#ccc" }}>{upscaleFile.name}</span>
+                          <button onClick={clearUpscale}><X className="w-3 h-3" style={{ color: "#555" }} /></button>
+                        </div>
+                        {upscaleState === "idle" && (
+                          <>
+                            <div className="flex gap-1.5">
+                              {(["2x", "4x"] as const).map((m) => (
+                                <button key={m} onClick={() => setUpscaleMode(m)}
+                                  className="flex-1 py-3 rounded-lg text-sm font-semibold transition-all"
+                                  style={{
+                                    background: upscaleMode === m ? ACCENT_DIM : "#151515",
+                                    color: upscaleMode === m ? ACCENT : "#666",
+                                    border: upscaleMode === m ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                                  }}>
+                                  {m}
+                                </button>
+                              ))}
+                            </div>
+                            <button onClick={startUpscale}
+                              className="w-full h-10 rounded-lg text-xs font-semibold transition-all"
+                              style={{ background: ACCENT, color: "#000" }}>
+                              Upscale {upscaleMode}
+                            </button>
+                          </>
+                        )}
+                        {upscaleState === "processing" && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: ACCENT }} />
+                              <span className="text-[10px]" style={{ color: "#ccc" }}>Upscaling {upscaleMode}... {upscaleProgress}%</span>
+                            </div>
+                            <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: "#2a2a2a" }}>
+                              <div className="h-full rounded-full transition-all" style={{ width: `${upscaleProgress}%`, background: ACCENT }} />
+                            </div>
+                          </div>
+                        )}
+                        {upscaleState === "done" && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 rounded-lg p-2.5" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                              <Check className="w-3.5 h-3.5" style={{ color: "#22c55e" }} />
+                              <span className="text-[10px] font-medium" style={{ color: "#22c55e" }}>Upscale complete!</span>
+                            </div>
+                            <button onClick={handleUpscaleDownload}
+                              className="w-full h-10 rounded-lg text-xs font-semibold transition-all"
+                              style={{ background: ACCENT, color: "#000" }}>
+                              <Download className="w-3.5 h-3.5 inline mr-1.5" /> Download
+                            </button>
+                            <button onClick={clearUpscale}
+                              className="w-full py-2 text-[10px] rounded-lg"
+                              style={{ color: "#888", border: "1px solid #2a2a2a" }}>
+                              Upscale Another
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    <input ref={upscaleInputRef} type="file" accept="video/*" onChange={handleUpscaleFile} className="hidden" />
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -741,6 +883,7 @@ export default function QuickClipEditor() {
                 { id: "audio" as EditorTool, icon: Music, label: "Audio" },
                 { id: "speed" as EditorTool, icon: Gauge, label: "Speed" },
                 { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
+                { id: "upscale" as EditorTool, icon: ArrowUpCircle, label: "4K" },
                 { id: "export" as EditorTool, icon: Settings, label: "Quality" },
               ]).map(({ id, icon: Icon, label }) => (
                 <button key={id}
