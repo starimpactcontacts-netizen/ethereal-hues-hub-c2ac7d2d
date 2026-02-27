@@ -7,7 +7,7 @@ import { FeedPostItem } from "@/hooks/useFeedPosts";
 import VerifiedBadge from "./VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
 import RichMessageContent from "./RichMessageContent";
-import { useState } from "react";
+import { useState, memo } from "react";
 
 interface FeedPostCardProps {
   post: FeedPostItem;
@@ -33,7 +33,7 @@ function getPostTypeIndicator(type: string) {
   }
 }
 
-export default function FeedPostCard({ post, isLiked, isBookmarked, onLike, onBookmark, onDelete }: FeedPostCardProps) {
+const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, onLike, onBookmark, onDelete }: FeedPostCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
@@ -204,4 +204,6 @@ export default function FeedPostCard({ post, isLiked, isBookmarked, onLike, onBo
       </div>
     </motion.article>
   );
-}
+});
+
+export default FeedPostCard;

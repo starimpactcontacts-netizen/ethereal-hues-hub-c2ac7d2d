@@ -122,7 +122,7 @@ export default function HostedCompLeaderboard({
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-8 h-8 rounded-full bg-surface-2 overflow-hidden">
                     {sub.avatar_url ? (
-                      <img src={sub.avatar_url} alt="" className="w-full h-full object-cover" />
+                      <img src={sub.avatar_url} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
                         {sub.username.charAt(0).toUpperCase()}

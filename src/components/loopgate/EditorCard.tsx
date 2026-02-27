@@ -78,6 +78,8 @@ export default function EditorCard({ editor }: EditorCardProps) {
             src={editor.avatar_url} 
             alt={editor.display_name || editor.username}
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
