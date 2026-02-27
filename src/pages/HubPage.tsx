@@ -1135,32 +1135,7 @@ export default function HubPage() {
       ═══════════════════════════════════════════════════════════════════ */}
       <EditoriumCarousel />
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          GLOBAL PULSE - Stats Strip (minimal)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="px-4 mt-2"
-      >
-        <div className="bg-surface-1/30 border border-border/20 p-3">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="font-display text-lg text-foreground">{stats.entries24h}</p>
-              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Entries {stats.entriesLabel}</p>
-            </div>
-            <div>
-              <p className="font-display text-lg text-foreground">{stats.activeUsers}</p>
-              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Active Now</p>
-            </div>
-            <div>
-              <p className="font-display text-lg text-foreground">{stats.totalCompeting || 0}</p>
-              <p className="text-[7px] text-muted-foreground uppercase tracking-widest">Competing</p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+
 
       {/* ═══════════════════════════════════════════════════════════════════
           ACTIVITY SECTION - Unified container for Feed + Reviews
