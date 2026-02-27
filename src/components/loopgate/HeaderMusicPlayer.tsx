@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUserRadio, UserRadioTrack } from '@/hooks/useUserRadio';
+import MyRadioTab from './MyRadioTab';
 
 interface Track {
   id: string;
@@ -12,6 +14,8 @@ interface Track {
   title: string;
   poster_url: string | null;
 }
+
+type RadioMode = 'loopgate' | 'myradio';
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -97,8 +101,22 @@ export default function HeaderMusicPlayer() {
   const [progress, setProgress] = useState(0);
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const [introPlayed, setIntroPlayed] = useState(false);
+  const [radioMode, setRadioMode] = useState<RadioMode>('loopgate');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [myRadioIndex, setMyRadioIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const { myTracks, loading: myLoading, uploading, uploadTrack, deleteTrack, togglePublic } = useUserRadio(userId);
+
+  // Get current user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUserId(session?.user?.id ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const isMuted = volume === 0;
 
@@ -157,6 +175,30 @@ export default function HeaderMusicPlayer() {
       startProgressTracking();
     }).catch(() => {});
   }, [volume, tracks.length, startProgressTracking, stopProgressTracking]);
+  const playMyTrack = useCallback((track: UserRadioTrack) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    stopProgressTracking();
+    setRadioMode('myradio');
+    const a = new Audio(track.audio_url);
+    a.volume = volume;
+    audioRef.current = a;
+    a.addEventListener('ended', () => {
+      setMyRadioIndex(i => {
+        const next = (i + 1) % myTracks.length;
+        if (myTracks[next]) {
+          setTimeout(() => playMyTrack(myTracks[next]), 50);
+        }
+        return next;
+      });
+    });
+    a.play().then(() => {
+      setIsPlaying(true);
+      startProgressTracking();
+    }).catch(() => {});
+  }, [volume, myTracks, startProgressTracking, stopProgressTracking]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
@@ -167,6 +209,15 @@ export default function HeaderMusicPlayer() {
   const togglePlay = useCallback(() => {
     if (isPlaying) {
       pause();
+    } else if (radioMode === 'myradio' && myTracks[myRadioIndex]) {
+      if (audioRef.current && audioRef.current.src) {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+          startProgressTracking();
+        }).catch(() => {});
+      } else {
+        playMyTrack(myTracks[myRadioIndex]);
+      }
     } else if (current) {
       if (audioRef.current && audioRef.current.src) {
         audioRef.current.play().then(() => {
@@ -177,7 +228,7 @@ export default function HeaderMusicPlayer() {
         playTrack(current);
       }
     }
-  }, [isPlaying, pause, current, playTrack, startProgressTracking]);
+  }, [isPlaying, pause, current, playTrack, playMyTrack, startProgressTracking, radioMode, myTracks, myRadioIndex]);
 
   const skip = useCallback(() => {
     setProgress(0);
@@ -325,9 +376,29 @@ export default function HeaderMusicPlayer() {
         align="start"
         className="w-72 bg-surface-0 border-border p-0 overflow-hidden"
       >
+        {/* Tab Switcher */}
+        <div className="flex border-b border-border">
+          <button
+            onClick={() => setRadioMode('loopgate')}
+            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              radioMode === 'loopgate' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Radio size={12} className="inline mr-1 -mt-0.5" /> LOOPGATE
+          </button>
+          <button
+            onClick={() => setRadioMode('myradio')}
+            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              radioMode === 'myradio' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Music size={12} className="inline mr-1 -mt-0.5" /> MY RADIO
+          </button>
+        </div>
+
         {/* Now Playing Hero */}
         <div className="relative">
-          {current?.poster_url && (
+          {radioMode === 'loopgate' && current?.poster_url && (
             <div className="absolute inset-0 overflow-hidden">
               <img
                 src={current.poster_url}
@@ -356,11 +427,19 @@ export default function HeaderMusicPlayer() {
                 )}
               </div>
               <span className="text-[9px] uppercase tracking-[0.2em] text-emerald-500 font-bold">
-                LOOPGATE Radio
+                {radioMode === 'loopgate' ? 'LOOPGATE Radio' : 'My Radio'}
               </span>
             </div>
-            <p className="text-sm font-display text-foreground truncate">{current?.song_name}</p>
-            <p className="text-[10px] text-muted-foreground truncate mt-0.5">{current?.title}</p>
+            <p className="text-sm font-display text-foreground truncate">
+              {radioMode === 'loopgate'
+                ? current?.song_name
+                : (myTracks[myRadioIndex]?.track_name || 'No tracks yet')}
+            </p>
+            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+              {radioMode === 'loopgate'
+                ? current?.title
+                : (myTracks[myRadioIndex]?.artist_name || '')}
+            </p>
           </div>
         </div>
 
@@ -385,7 +464,16 @@ export default function HeaderMusicPlayer() {
           </button>
           <div className="flex items-center gap-2">
             <button
-              onClick={prev}
+              onClick={() => {
+                if (radioMode === 'myradio' && myTracks.length > 0) {
+                  setProgress(0);
+                  const newIdx = (myRadioIndex - 1 + myTracks.length) % myTracks.length;
+                  setMyRadioIndex(newIdx);
+                  playMyTrack(myTracks[newIdx]);
+                } else {
+                  prev();
+                }
+              }}
               className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <SkipBack size={16} />
@@ -397,7 +485,16 @@ export default function HeaderMusicPlayer() {
               {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
             </button>
             <button
-              onClick={skip}
+              onClick={() => {
+                if (radioMode === 'myradio' && myTracks.length > 0) {
+                  setProgress(0);
+                  const newIdx = (myRadioIndex + 1) % myTracks.length;
+                  setMyRadioIndex(newIdx);
+                  playMyTrack(myTracks[newIdx]);
+                } else {
+                  skip();
+                }
+              }}
               className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <SkipForward size={16} />
@@ -424,50 +521,71 @@ export default function HeaderMusicPlayer() {
           <Volume2 size={12} className="text-muted-foreground shrink-0" />
         </div>
 
-        {/* Track List */}
-        <div className="max-h-48 overflow-y-auto border-t border-border">
-          {tracks.slice(0, 12).map((track, i) => (
-            <button
-              key={track.id}
-              onClick={() => {
-                setProgress(0);
-                setCurrentIndex(i);
-                if (!isPlaying) {
-                  setTimeout(() => playTrack(track), 50);
-                }
-              }}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                i === currentIndex ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
-              }`}
-            >
-              <div className="w-8 h-8 rounded-sm bg-surface-1 overflow-hidden shrink-0">
-                {track.poster_url ? (
-                  <img src={track.poster_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Radio size={12} className="text-muted-foreground/50" />
+        {/* Track Lists */}
+        {radioMode === 'loopgate' ? (
+          <div className="max-h-48 overflow-y-auto border-t border-border">
+            {tracks.slice(0, 12).map((track, i) => (
+              <button
+                key={track.id}
+                onClick={() => {
+                  setRadioMode('loopgate');
+                  setProgress(0);
+                  setCurrentIndex(i);
+                  if (!isPlaying) {
+                    setTimeout(() => playTrack(track), 50);
+                  }
+                }}
+                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                  i === currentIndex && radioMode === 'loopgate' ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
+                }`}
+              >
+                <div className="w-8 h-8 rounded-sm bg-surface-1 overflow-hidden shrink-0">
+                  {track.poster_url ? (
+                    <img src={track.poster_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Radio size={12} className="text-muted-foreground/50" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{track.song_name}</p>
+                  <p className="text-[9px] text-muted-foreground truncate">{track.title}</p>
+                </div>
+                {i === currentIndex && radioMode === 'loopgate' && isPlaying && (
+                  <div className="flex gap-[2px] items-end h-3 shrink-0">
+                    {[0, 1, 2].map(b => (
+                      <motion.div
+                        key={b}
+                        className="w-[2px] bg-emerald-500 rounded-full"
+                        animate={{ height: ['4px', '12px', '4px'] }}
+                        transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }}
+                      />
+                    ))}
                   </div>
                 )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">{track.song_name}</p>
-                <p className="text-[9px] text-muted-foreground truncate">{track.title}</p>
-              </div>
-              {i === currentIndex && isPlaying && (
-                <div className="flex gap-[2px] items-end h-3 shrink-0">
-                  {[0, 1, 2].map(b => (
-                    <motion.div
-                      key={b}
-                      className="w-[2px] bg-emerald-500 rounded-full"
-                      animate={{ height: ['4px', '12px', '4px'] }}
-                      transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }}
-                    />
-                  ))}
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <MyRadioTab
+            tracks={myTracks}
+            loading={myLoading}
+            uploading={uploading}
+            currentTrackId={radioMode === 'myradio' ? myTracks[myRadioIndex]?.id ?? null : null}
+            isPlaying={isPlaying && radioMode === 'myradio'}
+            isLoggedIn={!!userId}
+            onUpload={uploadTrack}
+            onPlay={(track, idx) => {
+              setRadioMode('myradio');
+              setMyRadioIndex(idx);
+              setProgress(0);
+              playMyTrack(track);
+            }}
+            onDelete={deleteTrack}
+            onTogglePublic={togglePublic}
+          />
+        )}
       </PopoverContent>
     </Popover>
   );

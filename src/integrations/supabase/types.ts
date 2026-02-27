@@ -5754,6 +5754,50 @@ export type Database = {
           },
         ]
       }
+      user_radio_tracks: {
+        Row: {
+          artist_name: string | null
+          audio_url: string
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          is_public: boolean
+          track_name: string
+          track_order: number
+          user_id: string
+        }
+        Insert: {
+          artist_name?: string | null
+          audio_url: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          is_public?: boolean
+          track_name: string
+          track_order?: number
+          user_id: string
+        }
+        Update: {
+          artist_name?: string | null
+          audio_url?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          is_public?: boolean
+          track_name?: string
+          track_order?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_radio_tracks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
