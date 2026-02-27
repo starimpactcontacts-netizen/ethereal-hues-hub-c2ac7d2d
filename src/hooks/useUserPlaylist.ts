@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export interface UserRadioTrack {
+export interface UserPlaylistTrack {
   id: string;
   user_id: string;
   track_name: string;
@@ -14,8 +14,8 @@ export interface UserRadioTrack {
   created_at: string;
 }
 
-export function useUserRadio(userId: string | null) {
-  const [myTracks, setMyTracks] = useState<UserRadioTrack[]>([]);
+export function useUserPlaylist(userId: string | null) {
+  const [myTracks, setMyTracks] = useState<UserPlaylistTrack[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -27,7 +27,7 @@ export function useUserRadio(userId: string | null) {
       .select('*')
       .eq('user_id', userId)
       .order('track_order', { ascending: true });
-    setMyTracks((data as UserRadioTrack[]) || []);
+    setMyTracks((data as UserPlaylistTrack[]) || []);
     setLoading(false);
   }, [userId]);
 
@@ -73,14 +73,13 @@ export function useUserRadio(userId: string | null) {
     if (insertErr) {
       toast.error(insertErr.message.includes('25') ? 'Max 25 tracks reached' : 'Failed to save track');
     } else {
-      toast.success('Track added to My Radio');
+      toast.success('Track added to My Playlist');
       fetchTracks();
     }
     setUploading(false);
   }, [userId, myTracks.length, fetchTracks]);
 
   const deleteTrack = useCallback(async (trackId: string, audioUrl: string) => {
-    // Extract path from URL
     const urlParts = audioUrl.split('/user-radio/');
     if (urlParts[1]) {
       await supabase.storage.from('user-radio').remove([urlParts[1]]);
@@ -99,4 +98,60 @@ export function useUserRadio(userId: string | null) {
   }, [fetchTracks]);
 
   return { myTracks, loading, uploading, uploadTrack, deleteTrack, togglePublic, refetch: fetchTracks };
+}
+
+/** Fetch public playlists from other users */
+export function useCuratedPlaylists() {
+  const [playlists, setPlaylists] = useState<{ user_id: string; username: string; avatar_url: string | null; tracks: UserPlaylistTrack[] }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      // Get all public tracks grouped by user
+      const { data: tracks } = await supabase
+        .from('user_radio_tracks')
+        .select('*')
+        .eq('is_public', true)
+        .order('track_order', { ascending: true })
+        .limit(200);
+
+      if (!tracks || tracks.length === 0) {
+        setPlaylists([]);
+        setLoading(false);
+        return;
+      }
+
+      // Group by user_id
+      const grouped: Record<string, UserPlaylistTrack[]> = {};
+      for (const t of tracks as UserPlaylistTrack[]) {
+        if (!grouped[t.user_id]) grouped[t.user_id] = [];
+        grouped[t.user_id].push(t);
+      }
+
+      // Fetch usernames
+      const userIds = Object.keys(grouped);
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .in('id', userIds);
+
+      const profileMap: Record<string, { username: string; avatar_url: string | null }> = {};
+      for (const p of profiles || []) {
+        profileMap[p.id] = { username: p.username, avatar_url: p.avatar_url };
+      }
+
+      const result = userIds.map(uid => ({
+        user_id: uid,
+        username: profileMap[uid]?.username || 'Unknown',
+        avatar_url: profileMap[uid]?.avatar_url || null,
+        tracks: grouped[uid],
+      }));
+
+      setPlaylists(result);
+      setLoading(false);
+    };
+    fetch();
+  }, []);
+
+  return { playlists, loading };
 }
