@@ -1,70 +1,122 @@
 
 
-# Loopgate Studio — Quick Edit Toolkit + Software Launcher
+# Solo Edit Detail View — "Gladiator Mode"
 
-## The Problem
-Editors leave Loopgate to go edit, and often don't come back to submit. The goal isn't to build a full NLE (that would take years) — it's to keep editors inside the ecosystem and make submitting as frictionless as possible.
+## Overview
+Build a full-screen, AAA-grade detail view for solo submissions where users can watch edits, upvote/downvote, comment, and add custom thumbnails. Each solo card in the Arena becomes tappable, opening a cinematic detail page.
 
-## The Solution: `/studio` — A Creative Toolkit Page
-A single page at `/studio` that combines three things:
+---
 
-### 1. Quick Clip Editor (Browser-Based)
-A lightweight tool for fast edits directly in the browser:
-- **Upload a clip** (or use a battle/competition's provided source material)
-- **Trim** start/end points with a visual waveform scrubber
-- **Add text overlays** (title cards, captions) with preset styles matching Loopgate aesthetic
-- **Apply filters** (contrast, saturation, color grading presets like "Cinematic", "Phonk", "Noir")
-- **Add music** from a small built-in library or upload their own (using the existing audio trimmer)
-- **Export as WebM** and directly submit to an active competition/battle from the export screen
+## Database Changes
 
-This uses the Web Audio API + Canvas + MediaRecorder pattern already proven in the Upscaler page.
+### 1. New table: `solo_submission_votes`
+- `id` (uuid, PK)
+- `submission_id` (uuid, FK to solo_submissions)
+- `user_id` (uuid)
+- `vote_type` (text: 'up' or 'down')
+- `created_at` (timestamptz)
+- Unique constraint on `(submission_id, user_id)` — one vote per user per submission
 
-### 2. Software Quick-Launch Cards
-Beautiful cards for popular editing software with deep links:
-- **CapCut** — opens CapCut app or web editor
-- **DaVinci Resolve** — link to download (free)
-- **Adobe Premiere Pro** — link to Adobe Creative Cloud
-- **After Effects** — link to Adobe
-- **Final Cut Pro** — App Store link
-- **VN Video Editor** — mobile app stores
+### 2. New columns on `solo_submissions`
+- `upvotes` (int, default 0)
+- `downvotes` (int, default 0)
+- `comment_count` (int, default 0)
 
-Each card shows: logo, "Free" or "Paid" badge, platforms (iOS/Android/Desktop), and a "Start Editing" button. On mobile, these deep-link directly into the apps.
+### 3. Triggers
+- **Sync vote counts**: On insert/delete/update of `solo_submission_votes`, recalculate `upvotes` and `downvotes` on the parent `solo_submissions` row (same pattern as `featured_submission_votes`)
 
-### 3. Submit Shortcut
-A prominent "Ready to Submit?" section at the top that shows:
-- Active competitions/battles the user can submit to
-- Direct upload button that routes to the submission flow
-- Links to the user's draft submissions if any exist
+### 4. Extend `feed_comments`
+- Add `'solo'` as a valid `submission_type` value — no schema change needed since the column is text. The `FeedInlineComments` component's TypeScript type just needs updating.
 
-## Technical Plan
+### 5. RLS Policies
+- `solo_submission_votes`: Anyone authenticated can insert/delete their own votes. Anyone can read.
+- Existing `solo_submissions` policies remain; new columns are just counters.
 
-### New Files
-1. **`src/pages/loopgate/StudioPage.tsx`** — Main page with three sections:
-   - Submit shortcut bar (active comps)
-   - Quick Clip Editor (canvas-based trim + filters + text)
-   - Software launcher cards grid
+### 6. Enable realtime on `solo_submission_votes`
 
-2. **`src/components/loopgate/QuickClipEditor.tsx`** — The browser-based editor component:
-   - Video upload + canvas preview
-   - Trim handles (start/end markers on a timeline bar)
-   - Filter selector (CSS filter presets applied via canvas)
-   - Text overlay input (positioned via drag on canvas)
-   - Export button using MediaRecorder (same pattern as UpscalerPage)
+---
 
-3. **`src/components/loopgate/SoftwareLauncherGrid.tsx`** — Grid of editing software cards with icons, badges, and deep links
+## Frontend Changes
 
-### Modified Files
-4. **`src/App.tsx`** — Add route: `/studio` pointing to StudioPage
-5. **`src/pages/loopgate/HomePage.tsx`** or Hub — Add a "Studio" entry point card
+### 1. New route: `/solo/:id`
+Register in `App.tsx`.
 
-### No Database Changes Required
-This is entirely client-side. No new tables, no storage buckets, no edge functions. The export flow reuses the existing submission modal/flow.
+### 2. New page: `SoloDetailPage.tsx`
+A cinematic "gladiator mode" detail view:
 
-### Key UX Details
-- The Quick Clip Editor is intentionally simple — trim, filter, text, export. No multi-track timeline, no keyframes. Think "Instagram Reels editor" level.
-- Export outputs WebM via MediaRecorder (same as Upscaler)
-- After export, a "Submit to Competition" button appears showing active events
-- Software launcher cards detect mobile vs desktop and show appropriate download links
-- Sharp-corner design language throughout (no rounded corners)
-- Gold accent colors consistent with the rest of Loopgate
+**Header Section**
+- Large 16:9 thumbnail/video area with the theme overlaid as a cinematic title
+- "Watch Edit" button linking to the submission URL
+- Status badge (EDITING / SUBMITTED / SCORED) with QOI score display
+
+**Editor Profile Bar**
+- Avatar, username, song name, artist, theme badge
+- Timestamp
+
+**Voting Section**
+- Large upvote/downvote buttons with counts, styled with gold accents
+- Animated vote feedback (scale + glow)
+
+**Thumbnail Upload**
+- If the submission belongs to the current user AND `thumbnail_url` is null, show an upload prompt
+- Use Supabase Storage bucket for solo thumbnails
+- Update `solo_submissions.thumbnail_url` on upload
+
+**Comments Section**
+- Reuse existing `FeedInlineComments` component with `submissionType: 'solo'`
+- Shows below the vote section
+
+**Score Breakdown** (if scored)
+- Quality / Originality / Impact pillar bars
+- Total QOI score with Index awarded
+
+### 3. Update `SoloShowcase.tsx`
+- Make each `SoloCard` clickable — wrap in `Link to={/solo/${solo.id}}`
+- Show upvote/downvote counts on the card (small icons)
+- Show comment count badge
+
+### 4. Update `FeedInlineComments.tsx`
+- Add `'solo'` to the `submissionType` union type
+
+### 5. Thumbnail Upload Component
+- Small inline component on the detail page
+- Uses camera icon + file input
+- Uploads to `solo-thumbnails` storage bucket
+- Updates the `thumbnail_url` column on the submission
+
+---
+
+## Technical Details
+
+```text
+Route: /solo/:id
+  +--------------------------------------------------+
+  |  [16:9 Thumbnail / Theme Visual]                 |
+  |   RAGE EDIT                                      |
+  |                           [Watch Edit ->]        |
+  +--------------------------------------------------+
+  |  [Avatar] @username  |  Song Name  |  7h ago     |
+  +--------------------------------------------------+
+  |  [Upload Thumbnail] (owner only, if missing)     |
+  +--------------------------------------------------+
+  |     [Upvote]  42   |   [Downvote]  3             |
+  +--------------------------------------------------+
+  |  QOI: 87/100                                     |
+  |  Quality [====---] 25/30                         |
+  |  Originality [=====--] 30/35                     |
+  |  Impact [======-] 32/35                          |
+  +--------------------------------------------------+
+  |  Comments (12)                                   |
+  |  [Existing FeedInlineComments component]         |
+  +--------------------------------------------------+
+```
+
+### Storage
+- Create `solo-thumbnails` bucket (public read, auth write)
+- File path: `{user_id}/{solo_id}.webp`
+
+### Vote Hook: `useSoloVote(submissionId)`
+- Fetches current user's vote and total counts
+- `vote(type)` — upserts or removes vote
+- Real-time subscription for live count updates
 
