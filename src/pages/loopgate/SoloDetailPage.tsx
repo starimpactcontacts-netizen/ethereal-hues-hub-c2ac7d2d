@@ -211,11 +211,17 @@ export default function SoloDetailPage() {
             {solo.artist_name && <span className="text-muted-foreground/50">· {solo.artist_name}</span>}
           </div>
         </div>
-        {solo.index_awarded > 0 && (
-          <div className="bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 flex items-center gap-1">
-            <Zap className="w-3 h-3 text-emerald-400" />
-            <span className="text-[11px] font-bold text-emerald-400">+{solo.index_awarded} IDX</span>
-          </div>
+      {solo.status === 'scored' && (
+          (solo as any).is_disqualified ? (
+            <div className="bg-red-500/10 border border-red-500/30 px-2.5 py-1 flex items-center gap-1">
+              <span className="text-[11px] font-bold text-red-400">DISQUALIFIED</span>
+            </div>
+          ) : solo.index_awarded > 0 ? (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 flex items-center gap-1">
+              <Zap className="w-3 h-3 text-emerald-400" />
+              <span className="text-[11px] font-bold text-emerald-400">+{solo.index_awarded} IDX</span>
+            </div>
+          ) : null
         )}
       </div>
 
@@ -300,6 +306,25 @@ export default function SoloDetailPage() {
               </div>
             ))}
           </div>
+
+          {/* DQ Banner */}
+          {(solo as any).is_disqualified && (
+            <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30">
+              <span className="text-[10px] text-red-400 uppercase tracking-wider font-bold">⛔ Disqualified</span>
+              {(solo as any).disqualify_reason && (
+                <p className="text-xs text-red-300 mt-1">{(solo as any).disqualify_reason}</p>
+              )}
+              <p className="text-[10px] text-red-400/60 mt-1">Your edit was rated but did not earn Index this time.</p>
+            </div>
+          )}
+
+          {/* Accepted Badge */}
+          {solo.status === 'scored' && !(solo as any).is_disqualified && (
+            <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2">
+              <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-bold">✓ Accepted</span>
+              <span className="text-[10px] text-emerald-400/60 ml-auto">+{solo.index_awarded} Index earned</span>
+            </div>
+          )}
 
           {solo.judge_notes && (
             <div className="mt-3 p-3 bg-surface-1 border border-border">

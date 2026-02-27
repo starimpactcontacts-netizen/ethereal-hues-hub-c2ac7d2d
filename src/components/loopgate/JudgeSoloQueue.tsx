@@ -113,6 +113,8 @@ function SoloScoringModal({ entry, onClose, onComplete }: { entry: SoloEntry; on
   const [scores, setScores] = useState({ quality: 20, originality: 20, impact: 20 });
   const [comment, setComment] = useState('');
   const [saving, setSaving] = useState(false);
+  const [isDisqualified, setIsDisqualified] = useState(false);
+  const [dqReason, setDqReason] = useState('');
 
   const totalScore = scores.quality + scores.originality + scores.impact;
 
@@ -133,6 +135,8 @@ function SoloScoringModal({ entry, onClose, onComplete }: { entry: SoloEntry; on
           judge_notes: comment || null,
           judged_at: new Date().toISOString(),
           status: 'scored',
+          is_disqualified: isDisqualified,
+          disqualify_reason: isDisqualified ? (dqReason || null) : null,
         })
         .eq('id', entry.id)
         .select('id')
@@ -166,7 +170,9 @@ function SoloScoringModal({ entry, onClose, onComplete }: { entry: SoloEntry; on
         data: { solo_id: entry.id, score: totalScore, theme: entry.theme },
       });
 
-      toast.success(`Scored! ${entry.username} earned ${totalScore} Index`);
+      toast.success(isDisqualified 
+        ? `Scored ${totalScore}/100 — DISQUALIFIED (no Index awarded)` 
+        : `Scored! ${entry.username} earned ${totalScore} Index`);
       onComplete();
     } catch (err: any) {
       toast.error('Failed to submit score');
@@ -275,17 +281,58 @@ function SoloScoringModal({ entry, onClose, onComplete }: { entry: SoloEntry; on
             className="bg-zinc-900 border-zinc-700 text-sm min-h-[60px]"
           />
 
+          {/* DQ / Accept Toggle */}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsDisqualified(false)}
+                className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider border transition-all ${
+                  !isDisqualified
+                    ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400'
+                    : 'bg-zinc-900 border-zinc-700 text-zinc-500 hover:border-zinc-600'
+                }`}
+              >
+                ✓ ACCEPTED
+              </button>
+              <button
+                onClick={() => setIsDisqualified(true)}
+                className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider border transition-all ${
+                  isDisqualified
+                    ? 'bg-red-600/20 border-red-500 text-red-400'
+                    : 'bg-zinc-900 border-zinc-700 text-zinc-500 hover:border-zinc-600'
+                }`}
+              >
+                ✗ DISQUALIFIED
+              </button>
+            </div>
+            {isDisqualified && (
+              <Textarea
+                placeholder="Reason for disqualification (e.g. wrong song used, reposted edit)..."
+                value={dqReason}
+                onChange={e => setDqReason(e.target.value)}
+                className="bg-red-950/30 border-red-500/30 text-sm min-h-[50px] placeholder:text-red-400/40"
+              />
+            )}
+            {isDisqualified && (
+              <p className="text-[10px] text-red-400/70">
+                Edit still receives its QOI rating, but earns 0 Index. The editor will see why.
+              </p>
+            )}
+          </div>
+
           <Button
             onClick={handleSubmit}
-            disabled={saving}
-            className="w-full bg-red-600 hover:bg-red-500 text-white h-12"
+            disabled={saving || (isDisqualified && !dqReason.trim())}
+            className={`w-full h-12 ${isDisqualified ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'} text-white`}
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-            Submit Score — {totalScore}/100
+            {isDisqualified ? `Submit Score — DQ'd (${totalScore}/100)` : `Submit Score — ${totalScore}/100`}
           </Button>
 
           <p className="text-[10px] text-zinc-500 text-center">
-            Editor will earn up to {totalScore}+ Index points
+            {isDisqualified 
+              ? 'Editor gets rated but earns 0 Index this time'
+              : `Editor will earn up to ${totalScore}+ Index points`}
           </p>
         </div>
       </motion.div>
