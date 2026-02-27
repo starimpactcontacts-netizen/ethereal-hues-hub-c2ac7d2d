@@ -563,7 +563,7 @@ export default function HubPage() {
           {/* Fortnite-style skewed container */}
           <div 
             className="flex gap-0 overflow-hidden"
-            style={{ clipPath: 'polygon(2% 0, 98% 0, 100% 100%, 0% 100%)' }}
+            style={{ clipPath: 'polygon(2% 0, 100% 0, 98% 100%, 0% 100%)' }}
           >
             <motion.button
               whileTap={{ scale: 0.97 }}
@@ -580,7 +580,7 @@ export default function HubPage() {
                   }
                 }
               }}
-              className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-4.5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
+              className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
             >
               <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
               {quickAction === 'solo' ? (
@@ -625,7 +625,7 @@ export default function HubPage() {
             {/* Dropdown toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative overflow-hidden flex items-center justify-center px-4 py-4.5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/50">
+                <button className="relative overflow-hidden flex items-center justify-center px-4 py-5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/50">
                   <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                   <ChevronDown className="w-5 h-5 text-white/70 relative z-10" />
                 </button>
