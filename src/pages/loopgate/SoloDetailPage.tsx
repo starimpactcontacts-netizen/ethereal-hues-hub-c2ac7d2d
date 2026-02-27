@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, ExternalLink, ThumbsUp, ThumbsDown, Camera, Music,
-  Trophy, Zap, Clock, UserRound, MessageCircle, Upload, Play
+  Trophy, Zap, Clock, MessageCircle, Upload, Play
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -107,61 +107,90 @@ export default function SoloDetailPage() {
   const isOwner = user?.id === solo.user_id;
   const timeAgo = formatDistanceToNow(new Date(solo.created_at), { addSuffix: true });
 
+  // Build embed URL for inline preview
+  const getEmbedUrl = (url: string, platform: string) => {
+    if (platform === 'youtube' || url.includes('youtube.com') || url.includes('youtu.be')) {
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&\s]+)/);
+      return match ? `https://www.youtube.com/embed/${match[1]}?rel=0&modestbranding=1` : null;
+    }
+    return null;
+  };
+
+  const embedUrl = solo.submission_url ? getEmbedUrl(solo.submission_url, solo.submission_platform || '') : null;
+
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Back button */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-md border-b border-border px-4 py-3 flex items-center gap-3">
+      {/* Header */}
+      <div className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <span className="text-sm font-bold text-foreground">Solo Edit</span>
-        <div className={`ml-auto px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider ${s.color} ${s.bg}`}>
+        <h1 className="text-sm font-black text-foreground uppercase tracking-wide truncate flex-1" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+          "{solo.theme}"
+        </h1>
+        <div className={`shrink-0 px-2 py-0.5 border text-[10px] font-bold uppercase tracking-wider ${s.color} ${s.bg}`}>
           {s.label}
         </div>
       </div>
 
-      {/* Hero thumbnail / theme visual */}
-      <button
-        onClick={() => solo.submission_url && setShowPlayer(true)}
-        className="relative aspect-video bg-gradient-to-br from-gold/5 via-surface-1 to-purple-500/10 overflow-hidden cursor-pointer group"
-      >
-        {solo.thumbnail_url ? (
-          <img src={solo.thumbnail_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-center">
-              <UserRound className="w-10 h-10 text-gold/20 mx-auto mb-2" />
-              <span className="text-gold/30 text-xs uppercase tracking-widest">Solo Edit</span>
+      {/* Video / Thumbnail Hero */}
+      {embedUrl ? (
+        <div className="w-full aspect-video bg-black">
+          <iframe
+            src={embedUrl}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title="Solo edit"
+          />
+        </div>
+      ) : solo.submission_url ? (
+        <button
+          onClick={() => setShowPlayer(true)}
+          className="relative w-full aspect-video bg-black overflow-hidden group"
+        >
+          {solo.thumbnail_url ? (
+            <img src={solo.thumbnail_url} alt="" className="w-full h-full object-cover group-active:scale-105 transition-transform duration-300" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-surface-1 to-black flex items-center justify-center">
+              <ExternalLink className="w-8 h-8 text-muted-foreground/40" />
             </div>
-          </div>
-        )}
-
-        {/* Play overlay */}
-        {solo.submission_url && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-colors">
-            <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
+          )}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-lg">
               <Play className="w-6 h-6 text-background ml-0.5" />
             </div>
           </div>
-        )}
-
-        {/* Theme overlay */}
-        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-background via-background/80 to-transparent p-4 pt-12">
-          <h1 className="text-2xl font-black text-foreground uppercase tracking-tight text-left" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-            "{solo.theme}"
-          </h1>
-        </div>
-
-        {/* QOI badge */}
-        {solo.qoi_score != null && (
-          <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1.5 border border-gold/30">
-            <span className="text-xl font-black text-gold">{Math.round(solo.qoi_score)}</span>
-            <span className="text-[9px] text-gold/60 ml-1 uppercase">QOI</span>
+          {solo.qoi_score != null && (
+            <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-sm px-2.5 py-1 border border-gold/40">
+              <span className="text-lg font-black text-gold">{Math.round(solo.qoi_score)}</span>
+              <span className="text-[8px] text-gold/60 ml-0.5 uppercase">QOI</span>
+            </div>
+          )}
+        </button>
+      ) : (
+        <div className="w-full aspect-[2/1] bg-gradient-to-br from-surface-1 via-background to-surface-1 flex items-center justify-center">
+          <div className="text-center">
+            <Upload className="w-8 h-8 text-muted-foreground/30 mx-auto mb-1.5" />
+            <span className="text-muted-foreground/40 text-xs uppercase tracking-widest">No submission yet</span>
           </div>
-        )}
-      </button>
+        </div>
+      )}
 
-      {/* Editor profile bar */}
+      {/* Open in platform link */}
+      {solo.submission_url && (
+        <a
+          href={solo.submission_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 py-2 bg-surface-1 border-b border-border text-xs text-muted-foreground hover:text-gold transition-colors"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Open on {solo.submission_platform || 'platform'}
+        </a>
+      )}
+
+      {/* Editor profile + song info */}
       <div className="px-4 py-3 border-b border-border flex items-center gap-3">
         <button onClick={() => navigate(`/editor/${solo.user_id}`)} className="shrink-0">
           <Avatar className="w-9 h-9 border border-border">
@@ -192,13 +221,13 @@ export default function SoloDetailPage() {
 
       {/* Thumbnail upload (owner only) */}
       {isOwner && !solo.thumbnail_url && (
-        <div className="px-4 py-3 border-b border-border">
+        <div className="px-4 py-2.5 border-b border-border">
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailUpload} />
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="w-full py-3 border border-dashed border-gold/30 bg-gold/5 flex items-center justify-center gap-2 text-sm font-semibold text-gold hover:bg-gold/10 transition-colors disabled:opacity-50"
+            className="w-full py-2.5 border border-dashed border-gold/30 bg-gold/5 flex items-center justify-center gap-2 text-sm font-semibold text-gold hover:bg-gold/10 transition-colors disabled:opacity-50"
           >
             {uploading ? (
               <><Clock className="w-4 h-4 animate-spin" /> Uploading...</>
@@ -209,15 +238,15 @@ export default function SoloDetailPage() {
         </div>
       )}
 
-      {/* Voting section */}
-      <div className="px-4 py-4 border-b border-border">
-        <div className="flex items-center justify-center gap-6">
+      {/* Voting */}
+      <div className="px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-center gap-4">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => vote('up')}
-            className={`flex items-center gap-2.5 px-5 py-3 border transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 border transition-all ${
               myVote === 'up'
-                ? 'border-gold bg-gold/10 text-gold shadow-[0_0_15px_-3px] shadow-gold/30'
+                ? 'border-gold bg-gold/10 text-gold shadow-[0_0_12px_-3px] shadow-gold/30'
                 : 'border-border bg-surface-1 text-muted-foreground hover:border-gold/40 hover:text-gold'
             }`}
           >
@@ -228,9 +257,9 @@ export default function SoloDetailPage() {
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => vote('down')}
-            className={`flex items-center gap-2.5 px-5 py-3 border transition-all ${
+            className={`flex items-center gap-2 px-5 py-2.5 border transition-all ${
               myVote === 'down'
-                ? 'border-red-500 bg-red-500/10 text-red-400 shadow-[0_0_15px_-3px] shadow-red-500/30'
+                ? 'border-red-500 bg-red-500/10 text-red-400 shadow-[0_0_12px_-3px] shadow-red-500/30'
                 : 'border-border bg-surface-1 text-muted-foreground hover:border-red-500/40 hover:text-red-400'
             }`}
           >
