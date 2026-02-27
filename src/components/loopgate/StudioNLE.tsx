@@ -87,15 +87,14 @@ export default function StudioNLE() {
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
-    { id: "v1", name: "Video 1", type: "video", visible: true, locked: false },
-    { id: "a1", name: "Audio 1", type: "audio", visible: true, locked: false },
+    { id: "v1", name: "Video", type: "video", visible: true, locked: false },
+    { id: "a1", name: "Audio", type: "audio", visible: true, locked: false },
     { id: "t1", name: "Text", type: "text", visible: true, locked: false },
-    { id: "e1", name: "Effects", type: "effect", visible: true, locked: false },
+    { id: "e1", name: "FX", type: "effect", visible: true, locked: false },
   ]);
 
   const videoUrl = activeMedia?.url ?? null;
   const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
-
   const filteredFilters = useMemo(() => filterCategory === "all" ? FILTER_PRESETS : FILTER_PRESETS.filter(f => f.category === filterCategory), [filterCategory]);
   const filteredEffects = useMemo(() => effectCategory === "all" ? EFFECTS : EFFECTS.filter(e => e.category === effectCategory), [effectCategory]);
 
@@ -183,6 +182,7 @@ export default function StudioNLE() {
         };
       } else {
         setMediaItems((prev) => [...prev, { id, file: f, url, thumbnail: "", duration: 0, name: f.name, type }]);
+        if (!activeMediaId && type === "image") setActiveMediaId(id);
       }
     });
     e.target.value = "";
@@ -233,48 +233,61 @@ export default function StudioNLE() {
     return () => { vid.removeEventListener("loadedmetadata", onMeta); vid.removeEventListener("timeupdate", onTime); };
   }, [videoUrl]);
 
-  // ─── Canvas Render Loop with Effects ───
+  // ─── Canvas Render Loop ───
   useEffect(() => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !videoUrl) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
+    let running = true;
     const draw = () => {
+      if (!running) return;
       if (vid.videoWidth && vid.videoHeight) {
-        canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+        if (canvas.width !== vid.videoWidth || canvas.height !== vid.videoHeight) {
+          canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+        }
         ctx.filter = computedFilter;
         ctx.drawImage(vid, 0, 0);
         ctx.filter = "none";
-        activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
+        activeEffects.forEach(effectId => {
+          try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* graceful */ }
+        });
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-            renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+            try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* graceful */ }
           }
         });
       }
       animRef.current = requestAnimationFrame(draw);
     };
     draw();
-    return () => cancelAnimationFrame(animRef.current);
+    return () => { running = false; cancelAnimationFrame(animRef.current); };
   }, [videoUrl, computedFilter, textOverlays, activeEffects]);
 
   // ─── Playback Controls ───
   const togglePlay = useCallback(() => {
-    const vid = videoRef.current; if (!vid) return;
-    if (vid.paused) { vid.currentTime = Math.max(vid.currentTime, trimStart); vid.playbackRate = speed; vid.play(); setPlaying(true); }
-    else { vid.pause(); setPlaying(false); }
-  }, [trimStart, speed]);
+    const vid = videoRef.current; if (!vid || !videoUrl) return;
+    if (vid.paused) {
+      if (vid.currentTime < trimStart || vid.currentTime >= trimEnd) vid.currentTime = trimStart;
+      vid.playbackRate = speed; vid.play().catch(() => {}); setPlaying(true);
+    } else { vid.pause(); setPlaying(false); }
+  }, [trimStart, trimEnd, speed, videoUrl]);
 
   useEffect(() => {
     const vid = videoRef.current; if (!vid || !playing) return;
     const check = () => { if (vid.currentTime >= trimEnd) { vid.pause(); vid.currentTime = trimStart; setPlaying(false); } };
-    const id = setInterval(check, 100);
+    const id = setInterval(check, 50);
     return () => clearInterval(id);
   }, [playing, trimEnd, trimStart]);
 
   useEffect(() => { if (videoRef.current) videoRef.current.playbackRate = speed; }, [speed]);
   useEffect(() => { if (videoRef.current) videoRef.current.muted = muted; }, [muted]);
 
-  const seekTo = useCallback((time: number) => { if (videoRef.current) { videoRef.current.currentTime = time; setCurrentTime(time); } }, []);
+  const seekTo = useCallback((time: number) => {
+    const vid = videoRef.current; if (!vid) return;
+    const clamped = Math.max(0, Math.min(duration, time));
+    vid.currentTime = clamped; setCurrentTime(clamped);
+  }, [duration]);
+
   const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!timelineRef.current || !duration) return;
     const rect = timelineRef.current.getBoundingClientRect();
@@ -293,8 +306,7 @@ export default function StudioNLE() {
 
   const splitAtPlayhead = () => {
     if (!activeMedia || currentTime <= trimStart || currentTime >= trimEnd) return;
-    pushHistory();
-    toast.success(`Split at ${formatTimecode(currentTime, true)}`);
+    pushHistory(); toast.success(`Split at ${formatTimecode(currentTime, true)}`);
   };
 
   const resetColorGrading = () => { pushHistory(); setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); };
@@ -306,8 +318,9 @@ export default function StudioNLE() {
     setState("processing"); setProgress(0);
     const quality = EXPORT_QUALITIES.find(q => q.id === exportQuality) ?? EXPORT_QUALITIES[2];
     const ctx = canvas.getContext("2d")!;
-    canvas.width = Math.round(vid.videoWidth * quality.resolution);
-    canvas.height = Math.round(vid.videoHeight * quality.resolution);
+    const exportW = Math.round(vid.videoWidth * quality.resolution);
+    const exportH = Math.round(vid.videoHeight * quality.resolution);
+    canvas.width = exportW; canvas.height = exportH;
     const stream = canvas.captureStream(quality.fps);
     if (audioFile) {
       try {
@@ -329,17 +342,17 @@ export default function StudioNLE() {
     const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
     recorder.start(100);
     vid.currentTime = trimStart; vid.muted = true; vid.playbackRate = 1;
-    await vid.play();
+    await vid.play().catch(() => {});
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
       ctx.filter = computedFilter;
-      ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(vid, 0, 0, exportW, exportH);
       ctx.filter = "none";
-      activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
+      activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
       textOverlays.forEach((overlay) => {
         if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-          renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+          try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
         }
       });
       setProgress(Math.min(99, Math.round(((vid.currentTime - trimStart) / exportDuration) * 100)));
@@ -360,48 +373,55 @@ export default function StudioNLE() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
 
+  // ─── Glass Panel Component ───
+  const GlassPanel = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-surface-0/80 backdrop-blur-xl border border-border/50 ${className}`}>{children}</div>
+  );
+
   // ─── RENDER ───
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden select-none">
-      {/* ═══ TOP BAR ═══ */}
-      <div className="h-11 flex items-center bg-surface-1 border-b border-border px-3 gap-2 flex-shrink-0">
-        <span className="font-display text-sm text-foreground tracking-wider">STUDIO</span>
-        <span className="text-[9px] text-muted-foreground bg-gold/10 text-gold px-1.5 py-0.5 rounded-sm font-bold">PRO</span>
+    <div className="h-full flex flex-col bg-black overflow-hidden select-none">
+      {/* ═══ TOP BAR — Glassmorphism ═══ */}
+      <GlassPanel className="h-12 flex items-center px-4 gap-3 flex-shrink-0 z-20 rounded-none border-x-0 border-t-0">
+        <div className="flex items-center gap-2">
+          <span className="font-display text-sm text-foreground tracking-[0.15em]">STUDIO</span>
+          <span className="text-[8px] text-gold/90 bg-gold/8 border border-gold/20 px-1.5 py-[1px] rounded-full font-bold tracking-[0.2em]">PRO</span>
+        </div>
         <div className="flex-1" />
 
-        {/* Undo/Redo */}
-        <div className="flex items-center gap-0.5">
-          <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors" title="Undo (Ctrl+Z)">
+        {/* Undo/Redo — minimal pill */}
+        <div className="flex items-center bg-surface-2/60 rounded-full p-0.5 gap-0.5">
+          <button onClick={undo} disabled={historyIndex <= 0} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-20 transition-all rounded-full hover:bg-surface-3/50" title="Undo">
             <Undo className="w-3.5 h-3.5" />
           </button>
-          <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors" title="Redo (Ctrl+Shift+Z)">
+          <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-20 transition-all rounded-full hover:bg-surface-3/50" title="Redo">
             <Redo className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="w-px h-5 bg-border" />
 
-        <button onClick={() => setShowShortcuts(prev => !prev)} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors" title="Keyboard Shortcuts (?)">
+        <button onClick={() => setShowShortcuts(prev => !prev)} className="p-2 text-muted-foreground hover:text-foreground transition-all rounded-full hover:bg-surface-2/50" title="Shortcuts (?)">
           <Keyboard className="w-3.5 h-3.5" />
         </button>
 
         <button onClick={() => { pushHistory(); setTrimStart(0); setTrimEnd(duration); resetColorGrading(); setActiveFilter(FILTER_PRESETS[0]); setActiveEffects([]); }}
-          className="p-1.5 text-muted-foreground hover:text-foreground transition-colors" title="Reset All">
+          className="p-2 text-muted-foreground hover:text-foreground transition-all rounded-full hover:bg-surface-2/50" title="Reset All">
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
-        <div className="w-px h-5 bg-border" />
+
+        <div className="w-px h-6 bg-border/30" />
 
         {state === "done" ? (
-          <Button onClick={handleDownload} size="sm" className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5">
+          <Button onClick={handleDownload} size="sm" className="h-9 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5 rounded-full px-5 shadow-[0_0_20px_hsl(var(--gold)/0.2)]">
             <Download className="w-3.5 h-3.5" /> Download
           </Button>
         ) : (
           <Button onClick={startExport} size="sm" disabled={state === "processing" || !activeMedia}
-            className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5 disabled:opacity-40">
+            className="h-9 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5 rounded-full px-5 disabled:opacity-30 shadow-[0_0_20px_hsl(var(--gold)/0.15)]">
             {state === "processing" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Film className="w-3.5 h-3.5" />}
             {state === "processing" ? `${progress}%` : "Export"}
           </Button>
         )}
-      </div>
+      </GlassPanel>
 
       {/* ═══ MAIN AREA ═══ */}
       <div className="flex-1 flex min-h-0">
@@ -410,94 +430,106 @@ export default function StudioNLE() {
           <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden min-h-0">
             {videoUrl ? (
               <>
-                <video ref={videoRef} src={videoUrl} className="hidden" playsInline />
-                <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
+                <video ref={videoRef} src={videoUrl} className="hidden" playsInline preload="auto" />
+                <canvas ref={canvasRef} className="max-w-full max-h-full object-contain rounded-sm" />
 
-                {!playing && (
-                  <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/20 transition-colors">
-                    <div className="w-14 h-14 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10 hover:bg-black/60 transition-colors">
-                      <Play className="w-6 h-6 text-white ml-0.5" />
-                    </div>
-                  </button>
-                )}
+                {/* Play overlay */}
+                <AnimatePresence>
+                  {!playing && (
+                    <motion.button
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                      onClick={togglePlay}
+                      className="absolute inset-0 flex items-center justify-center"
+                    >
+                      <motion.div
+                        whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
+                        className="w-16 h-16 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                      >
+                        <Play className="w-7 h-7 text-white ml-1" />
+                      </motion.div>
+                    </motion.button>
+                  )}
+                </AnimatePresence>
                 {playing && <button onClick={togglePlay} className="absolute inset-0" />}
 
-                {/* Active effects badges */}
+                {/* Effect badges — glass */}
                 {activeEffects.length > 0 && (
-                  <div className="absolute top-3 left-3 flex flex-wrap gap-1">
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                     {activeEffects.map(eff => (
-                      <div key={eff} className="bg-black/60 backdrop-blur-sm px-2 py-0.5 border border-gold/30 rounded-sm">
-                        <span className="text-[9px] text-gold font-bold uppercase">{EFFECTS.find(e => e.id === eff)?.label}</span>
-                      </div>
+                      <motion.div key={eff} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                        className="bg-black/50 backdrop-blur-md px-2.5 py-1 border border-gold/20 rounded-full">
+                        <span className="text-[9px] text-gold font-semibold tracking-wide">{EFFECTS.find(e => e.id === eff)?.label}</span>
+                      </motion.div>
                     ))}
                   </div>
                 )}
 
-                {/* Speed & filter badges */}
-                <div className="absolute top-3 right-3 flex gap-1">
+                {/* Speed + filter badges */}
+                <div className="absolute top-3 right-3 flex gap-1.5">
                   {speed !== 1 && (
-                    <div className="bg-black/60 backdrop-blur-sm px-2 py-0.5 border border-gold/30 rounded-sm">
+                    <div className="bg-black/50 backdrop-blur-md px-2.5 py-1 border border-gold/20 rounded-full">
                       <span className="text-[10px] text-gold font-bold">{speed}x</span>
                     </div>
                   )}
                   {activeFilter.name !== "none" && (
-                    <div className="bg-black/60 backdrop-blur-sm px-2 py-0.5 border border-white/10 rounded-sm">
-                      <span className="text-[10px] text-white/70">{activeFilter.label}</span>
+                    <div className="bg-black/50 backdrop-blur-md px-2.5 py-1 border border-white/10 rounded-full">
+                      <span className="text-[10px] text-white/80 font-medium">{activeFilter.label}</span>
                     </div>
                   )}
                 </div>
 
+                {/* Export overlay */}
                 {state === "processing" && (
-                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3">
-                    <Loader2 className="w-8 h-8 text-gold animate-spin" />
-                    <p className="text-sm font-semibold text-foreground">Exporting... {progress}%</p>
-                    <div className="w-48 h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                      <motion.div className="h-full bg-gold rounded-full" animate={{ width: `${progress}%` }} />
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+                    <div className="relative">
+                      <Loader2 className="w-10 h-10 text-gold animate-spin" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[10px] text-gold font-bold">{progress}%</span>
+                      </div>
                     </div>
-                  </div>
+                    <p className="text-sm font-medium text-foreground/80">Exporting</p>
+                    <div className="w-56 h-1 bg-surface-2 rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-gradient-to-r from-gold to-gold/70 rounded-full" animate={{ width: `${progress}%` }} transition={{ ease: "easeOut" }} />
+                    </div>
+                  </motion.div>
                 )}
               </>
             ) : (
-              <button onClick={() => fileInputRef.current?.click()} className="text-center space-y-4 group cursor-pointer">
-                <div className="w-20 h-20 mx-auto bg-surface-2 rounded-xl flex items-center justify-center group-hover:bg-surface-2/80 transition-colors">
-                  <Plus className="w-8 h-8 text-muted-foreground group-hover:text-gold transition-colors" />
+              <motion.button
+                onClick={() => fileInputRef.current?.click()}
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="text-center space-y-5 group cursor-pointer p-12"
+              >
+                <div className="w-20 h-20 mx-auto bg-surface-1/60 backdrop-blur-md rounded-2xl flex items-center justify-center border border-border/30 group-hover:border-gold/30 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                  <Plus className="w-8 h-8 text-muted-foreground group-hover:text-gold transition-colors duration-300" />
                 </div>
                 <div>
-                  <p className="text-sm font-display text-foreground">Import Media</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">Video, Image, Audio • Max 500MB</p>
-                  <p className="text-[10px] text-muted-foreground/60 mt-0.5">or press Ctrl+I</p>
+                  <p className="text-base font-display text-foreground tracking-wider">IMPORT MEDIA</p>
+                  <p className="text-[11px] text-muted-foreground mt-1.5">Video, Image, Audio • Max 500MB</p>
                 </div>
-              </button>
+              </motion.button>
             )}
 
-            {/* Keyboard shortcuts overlay */}
+            {/* Shortcuts overlay */}
             <AnimatePresence>
               {showShortcuts && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-black/90 backdrop-blur-sm z-30 flex items-center justify-center p-8">
-                  <div className="max-w-lg w-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-display text-foreground tracking-wider">KEYBOARD SHORTCUTS</h3>
-                      <button onClick={() => setShowShortcuts(false)} className="p-1 text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
+                  className="absolute inset-0 bg-black/90 backdrop-blur-xl z-30 flex items-center justify-center p-8">
+                  <div className="max-w-lg w-full bg-surface-1/50 backdrop-blur-md rounded-2xl border border-border/30 p-6">
+                    <div className="flex items-center justify-between mb-5">
+                      <h3 className="text-sm font-display text-foreground tracking-[0.15em]">KEYBOARD SHORTCUTS</h3>
+                      <button onClick={() => setShowShortcuts(false)} className="p-1.5 text-muted-foreground hover:text-foreground rounded-full hover:bg-surface-2/50 transition-all"><X className="w-4 h-4" /></button>
                     </div>
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[11px]">
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[11px]">
                       {[
-                        ["Space", "Play / Pause"],
-                        ["← →", "Seek ±1s"],
-                        ["Shift+← →", "Seek ±5s"],
-                        ["J / K / L", "Back / Play / Forward"],
-                        ["I", "Set In Point"],
-                        ["O", "Set Out Point"],
-                        ["M", "Toggle Mute"],
-                        ["[ ]", "Speed Down / Up"],
-                        ["Ctrl+Z", "Undo"],
-                        ["Ctrl+Shift+Z", "Redo"],
-                        ["Ctrl+S", "Export"],
-                        ["Home / End", "Go to In / Out"],
-                        ["?", "Toggle Shortcuts"],
+                        ["Space", "Play / Pause"], ["← →", "Seek ±1s"], ["Shift+← →", "Seek ±5s"],
+                        ["J / K / L", "Back / Play / Fwd"], ["I", "Set In Point"], ["O", "Set Out Point"],
+                        ["M", "Toggle Mute"], ["[ ]", "Speed ↓ / ↑"], ["⌘Z", "Undo"],
+                        ["⌘⇧Z", "Redo"], ["⌘S", "Export"], ["Home / End", "Go to In / Out"],
                       ].map(([key, desc]) => (
-                        <div key={key} className="flex items-center gap-2">
-                          <kbd className="bg-surface-2 border border-border rounded px-1.5 py-0.5 font-mono text-[10px] text-gold min-w-[40px] text-center">{key}</kbd>
+                        <div key={key} className="flex items-center gap-3">
+                          <kbd className="bg-surface-2/80 border border-border/30 rounded-md px-2 py-0.5 font-mono text-[10px] text-gold/80 min-w-[44px] text-center">{key}</kbd>
                           <span className="text-muted-foreground">{desc}</span>
                         </div>
                       ))}
@@ -508,81 +540,91 @@ export default function StudioNLE() {
             </AnimatePresence>
           </div>
 
-          {/* ─── Player Controls ─── */}
-          <div className="h-12 bg-surface-1 border-t border-border flex items-center px-4 gap-3 flex-shrink-0">
-            <span className="text-[11px] text-gold tabular-nums font-mono w-24">{formatTimecode(currentTime, true)}</span>
-            <div className="flex items-center gap-1.5">
-              <button onClick={() => seekTo(trimStart)} className="p-1.5 text-muted-foreground hover:text-foreground"><SkipBack className="w-4 h-4" /></button>
-              <button onClick={togglePlay} className="w-10 h-10 bg-gold/10 border border-gold/30 rounded-full flex items-center justify-center hover:bg-gold/20 transition-colors">
-                {playing ? <Pause className="w-5 h-5 text-gold" /> : <Play className="w-5 h-5 text-gold ml-0.5" />}
+          {/* ─── Player Controls — Glass ─── */}
+          <GlassPanel className="h-14 flex items-center px-5 gap-4 flex-shrink-0 rounded-none border-x-0">
+            <span className="text-[11px] text-gold/80 tabular-nums font-mono w-[85px]">{formatTimecode(currentTime, true)}</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => seekTo(trimStart)} className="p-1.5 text-muted-foreground hover:text-foreground transition-all rounded-full hover:bg-surface-2/50">
+                <SkipBack className="w-4 h-4" />
               </button>
-              <button onClick={() => seekTo(trimEnd)} className="p-1.5 text-muted-foreground hover:text-foreground"><SkipForward className="w-4 h-4" /></button>
+              <motion.button
+                onClick={togglePlay} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                className="w-11 h-11 bg-gold/10 border border-gold/25 rounded-full flex items-center justify-center hover:bg-gold/15 transition-all"
+              >
+                {playing ? <Pause className="w-5 h-5 text-gold" /> : <Play className="w-5 h-5 text-gold ml-0.5" />}
+              </motion.button>
+              <button onClick={() => seekTo(trimEnd)} className="p-1.5 text-muted-foreground hover:text-foreground transition-all rounded-full hover:bg-surface-2/50">
+                <SkipForward className="w-4 h-4" />
+              </button>
             </div>
-            <span className="text-[11px] text-muted-foreground tabular-nums font-mono w-24">/ {formatTimecode(duration, true)}</span>
+            <span className="text-[11px] text-muted-foreground/60 tabular-nums font-mono w-[85px]">{formatTimecode(duration, true)}</span>
             <div className="flex-1" />
 
-            <button onClick={splitAtPlayhead} className="p-1.5 text-muted-foreground hover:text-gold transition-colors" title="Split at Playhead">
+            <button onClick={splitAtPlayhead} className="p-2 text-muted-foreground hover:text-gold transition-all rounded-full hover:bg-surface-2/50" title="Split">
               <Scissors className="w-4 h-4" />
             </button>
             <button onClick={() => setSpeed(SPEED_OPTIONS[(SPEED_OPTIONS.indexOf(speed) + 1) % SPEED_OPTIONS.length])}
-              className="px-2 py-1 text-[10px] font-bold text-muted-foreground hover:text-gold border border-border rounded-sm transition-colors">
+              className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground hover:text-gold border border-border/30 rounded-full transition-all hover:border-gold/30 hover:bg-gold/5">
               {speed}x
             </button>
-            <button onClick={() => setMuted(!muted)} className="p-1.5 text-muted-foreground hover:text-foreground">
+            <button onClick={() => setMuted(!muted)} className="p-2 text-muted-foreground hover:text-foreground transition-all rounded-full hover:bg-surface-2/50">
               {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
-          </div>
+          </GlassPanel>
         </div>
 
-        {/* ─── SIDE PANEL ─── */}
-        <AnimatePresence>
+        {/* ─── SIDE PANEL — Glass, smooth animation ─── */}
+        <AnimatePresence mode="wait">
           {activeToolTab && (
             <motion.div
+              key={activeToolTab}
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 320, opacity: 1 }}
+              animate={{ width: 300, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex-shrink-0 bg-surface-1 border-l border-border overflow-hidden flex flex-col"
+              transition={{ type: "spring", stiffness: 400, damping: 35 }}
+              className="flex-shrink-0 bg-surface-0/90 backdrop-blur-xl border-l border-border/30 overflow-hidden flex flex-col"
             >
-              <div className="flex items-center justify-between px-3 h-10 border-b border-border flex-shrink-0">
-                <span className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+              <div className="flex items-center justify-between px-4 h-12 border-b border-border/20 flex-shrink-0">
+                <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">
                   {TOOL_TABS.find(t => t.id === activeToolTab)?.label}
                 </span>
-                <button onClick={() => setActiveToolTab(null)} className="p-1 text-muted-foreground hover:text-foreground">
-                  <X className="w-4 h-4" />
+                <button onClick={() => setActiveToolTab(null)} className="p-1.5 text-muted-foreground hover:text-foreground rounded-full hover:bg-surface-2/50 transition-all">
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-3">
+              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4">
                 {/* MEDIA */}
                 {activeToolTab === "media" && (
                   <>
-                    <button onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-4 border border-dashed border-border hover:border-gold/50 bg-surface-0 transition-all flex items-center justify-center gap-2 group rounded-lg">
-                      <Plus className="w-5 h-5 text-gold" />
-                      <span className="text-xs font-semibold text-gold">Import Media</span>
-                    </button>
+                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full py-5 border border-dashed border-border/40 hover:border-gold/40 bg-surface-1/40 hover:bg-surface-1/60 transition-all flex items-center justify-center gap-2.5 rounded-xl">
+                      <Plus className="w-5 h-5 text-gold/70" />
+                      <span className="text-xs font-semibold text-gold/80">Import Media</span>
+                    </motion.button>
                     {mediaItems.length > 0 && (
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="grid grid-cols-2 gap-2">
                         {mediaItems.map((item) => (
-                          <div key={item.id} onClick={() => setActiveMediaId(item.id)}
-                            className={`relative group cursor-pointer border rounded-md overflow-hidden transition-all ${activeMediaId === item.id ? "border-gold" : "border-border hover:border-foreground/20"}`}>
+                          <motion.div key={item.id} whileHover={{ scale: 1.02 }}
+                            onClick={() => setActiveMediaId(item.id)}
+                            className={`relative group cursor-pointer border rounded-xl overflow-hidden transition-all ${activeMediaId === item.id ? "border-gold/50 shadow-[0_0_12px_hsl(var(--gold)/0.1)]" : "border-border/30 hover:border-foreground/15"}`}>
                             {item.thumbnail ? (
                               <img src={item.thumbnail} alt={item.name} className="w-full aspect-video object-cover" loading="lazy" />
                             ) : (
-                              <div className="w-full aspect-video bg-surface-2 flex items-center justify-center">
-                                {item.type === "audio" ? <Music className="w-5 h-5 text-muted-foreground" /> : <Image className="w-5 h-5 text-muted-foreground" />}
+                              <div className="w-full aspect-video bg-surface-2/50 flex items-center justify-center">
+                                {item.type === "audio" ? <Music className="w-5 h-5 text-muted-foreground/50" /> : <Image className="w-5 h-5 text-muted-foreground/50" />}
                               </div>
                             )}
-                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1.5">
-                              <p className="text-[8px] text-white/80 truncate">{item.name}</p>
-                              {item.duration > 0 && <p className="text-[7px] text-white/50">{formatTimecode(item.duration)}</p>}
+                            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                              <p className="text-[9px] text-white/80 truncate font-medium">{item.name}</p>
+                              {item.duration > 0 && <p className="text-[7px] text-white/40">{formatTimecode(item.duration)}</p>}
                             </div>
                             <button onClick={(e) => { e.stopPropagation(); removeMedia(item.id); }}
-                              className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full items-center justify-center hidden group-hover:flex">
+                              className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/50 backdrop-blur-sm rounded-full items-center justify-center hidden group-hover:flex transition-all border border-white/10">
                               <X className="w-3 h-3 text-white/70" />
                             </button>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
                     )}
@@ -592,10 +634,10 @@ export default function StudioNLE() {
                 {/* EFFECTS */}
                 {activeToolTab === "effects" && (
                   <>
-                    <div className="flex gap-1 flex-wrap">
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                       {["all", "distort", "color", "style", "light"].map(cat => (
                         <button key={cat} onClick={() => setEffectCategory(cat)}
-                          className={`px-2 py-1 text-[9px] font-bold uppercase rounded-md border transition-all ${effectCategory === cat ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                          className={`px-3 py-1.5 text-[9px] font-bold uppercase rounded-full border transition-all flex-shrink-0 ${effectCategory === cat ? "border-gold/40 bg-gold/8 text-gold" : "border-border/30 text-muted-foreground hover:text-foreground hover:border-border/50"}`}>
                           {cat}
                         </button>
                       ))}
@@ -604,17 +646,18 @@ export default function StudioNLE() {
                       {filteredEffects.map((effect) => {
                         const isActive = activeEffects.includes(effect.id);
                         return (
-                          <button key={effect.id} onClick={() => toggleEffect(effect.id)}
-                            className={`py-3 rounded-lg flex flex-col items-center gap-1.5 border transition-all ${isActive ? "border-gold bg-gold/10 shadow-[0_0_12px_rgba(var(--gold),0.15)]" : "border-border bg-surface-2 hover:border-foreground/20"}`}>
+                          <motion.button key={effect.id} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}
+                            onClick={() => toggleEffect(effect.id)}
+                            className={`py-3.5 rounded-xl flex flex-col items-center gap-2 border transition-all ${isActive ? "border-gold/40 bg-gold/8 shadow-[0_0_16px_hsl(var(--gold)/0.1)]" : "border-border/20 bg-surface-1/30 hover:border-border/40 hover:bg-surface-1/50"}`}>
                             <span className="text-lg">{effect.icon}</span>
                             <span className={`text-[9px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground"}`}>{effect.label}</span>
-                            {isActive && <span className="w-1.5 h-1.5 rounded-full bg-gold" />}
-                          </button>
+                          </motion.button>
                         );
                       })}
                     </div>
                     {activeEffects.length > 0 && (
-                      <button onClick={() => { pushHistory(); setActiveEffects([]); }} className="w-full py-2 text-[10px] text-destructive font-semibold border border-destructive/20 rounded-md hover:bg-destructive/5">
+                      <button onClick={() => { pushHistory(); setActiveEffects([]); }}
+                        className="w-full py-2.5 text-[10px] text-destructive/80 font-semibold border border-destructive/15 rounded-xl hover:bg-destructive/5 transition-all">
                         Clear All Effects ({activeEffects.length})
                       </button>
                     )}
@@ -624,16 +667,17 @@ export default function StudioNLE() {
                 {/* TRANSITIONS */}
                 {activeToolTab === "transitions" && (
                   <>
-                    <p className="text-[10px] text-muted-foreground">Select transition style between clips</p>
+                    <p className="text-[10px] text-muted-foreground/60">Select transition between clips</p>
                     <div className="grid grid-cols-3 gap-2">
                       {TRANSITIONS.map((trans) => {
                         const isActive = activeTransition === trans.id;
                         return (
-                          <button key={trans.id} onClick={() => setActiveTransition(isActive ? null : trans.id)}
-                            className={`py-3 rounded-lg flex flex-col items-center gap-1.5 border transition-all ${isActive ? "border-gold bg-gold/10" : "border-border bg-surface-2 hover:border-foreground/20"}`}>
+                          <motion.button key={trans.id} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}
+                            onClick={() => setActiveTransition(isActive ? null : trans.id)}
+                            className={`py-3.5 rounded-xl flex flex-col items-center gap-2 border transition-all ${isActive ? "border-gold/40 bg-gold/8" : "border-border/20 bg-surface-1/30 hover:border-border/40"}`}>
                             <span className="text-lg">{trans.icon}</span>
                             <span className={`text-[9px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground"}`}>{trans.label}</span>
-                          </button>
+                          </motion.button>
                         );
                       })}
                     </div>
@@ -643,21 +687,23 @@ export default function StudioNLE() {
                 {/* FILTERS */}
                 {activeToolTab === "filters" && (
                   <>
-                    <div className="flex gap-1 flex-wrap">
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                       {["all", "basic", "cinema", "mood", "film"].map(cat => (
                         <button key={cat} onClick={() => setFilterCategory(cat)}
-                          className={`px-2 py-1 text-[9px] font-bold uppercase rounded-md border transition-all ${filterCategory === cat ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                          className={`px-3 py-1.5 text-[9px] font-bold uppercase rounded-full border transition-all flex-shrink-0 ${filterCategory === cat ? "border-gold/40 bg-gold/8 text-gold" : "border-border/30 text-muted-foreground hover:text-foreground"}`}>
                           {cat}
                         </button>
                       ))}
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       {filteredFilters.map((preset) => (
-                        <button key={preset.name} onClick={() => { pushHistory(); setActiveFilter(preset); }} className="flex flex-col items-center gap-1.5">
-                          <div className={`w-full aspect-square rounded-lg border-2 transition-all ${activeFilter.name === preset.name ? "border-gold shadow-[0_0_10px_rgba(var(--gold),0.2)]" : "border-border hover:border-foreground/20"}`}
+                        <motion.button key={preset.name} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}
+                          onClick={() => { pushHistory(); setActiveFilter(preset); }}
+                          className="flex flex-col items-center gap-2">
+                          <div className={`w-full aspect-square rounded-xl border-2 transition-all ${activeFilter.name === preset.name ? "border-gold/50 shadow-[0_0_12px_hsl(var(--gold)/0.15)]" : "border-border/20 hover:border-border/40"}`}
                             style={{ backgroundColor: preset.color }} />
                           <span className={`text-[9px] font-semibold ${activeFilter.name === preset.name ? "text-gold" : "text-muted-foreground"}`}>{preset.label}</span>
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
                   </>
@@ -667,28 +713,29 @@ export default function StudioNLE() {
                 {activeToolTab === "text" && (
                   <>
                     <input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Type your text..."
-                      className="w-full bg-surface-0 border border-border rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
+                      className="w-full bg-surface-1/50 border border-border/30 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-gold/30 focus:bg-surface-1/70 transition-all"
                       onKeyDown={(e) => e.key === "Enter" && addTextOverlay()} />
                     <div className="grid grid-cols-3 gap-1.5">
                       {(Object.entries(TEXT_STYLES) as [TextStyleKey, typeof TEXT_STYLES[TextStyleKey]][]).map(([key, s]) => (
                         <button key={key} onClick={() => setTextStyle(key)}
-                          className={`py-2 text-[9px] font-bold uppercase border rounded-md transition-all ${textStyle === key ? "border-gold bg-gold/8 text-gold" : "border-border text-muted-foreground hover:border-foreground/20"}`}>
+                          className={`py-2.5 text-[9px] font-bold uppercase border rounded-xl transition-all ${textStyle === key ? "border-gold/40 bg-gold/8 text-gold" : "border-border/20 text-muted-foreground hover:border-border/40"}`}>
                           {s.label}
                         </button>
                       ))}
                     </div>
-                    <Button onClick={addTextOverlay} disabled={!textInput.trim()} className="w-full h-9 bg-gold text-primary-foreground hover:bg-gold/90 text-xs font-bold rounded-md">
+                    <Button onClick={addTextOverlay} disabled={!textInput.trim()}
+                      className="w-full h-10 bg-gold text-primary-foreground hover:bg-gold/90 text-xs font-bold rounded-xl disabled:opacity-30">
                       Add Text
                     </Button>
                     {textOverlays.length > 0 && (
-                      <div className="space-y-1 pt-2 border-t border-border">
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Active ({textOverlays.length})</span>
+                      <div className="space-y-1.5 pt-3 border-t border-border/20">
+                        <span className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.15em]">Active ({textOverlays.length})</span>
                         {textOverlays.map((t) => (
-                          <div key={t.id} className="flex items-center gap-2 bg-surface-0 border border-border rounded-md px-2 py-1.5">
-                            <Type className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-[11px] text-foreground truncate flex-1">{t.text}</span>
-                            <span className="text-[8px] text-muted-foreground">{formatTimecode(t.startTime)}</span>
-                            <button onClick={() => removeTextOverlay(t.id)} className="text-muted-foreground hover:text-destructive"><X className="w-3 h-3" /></button>
+                          <div key={t.id} className="flex items-center gap-2 bg-surface-1/30 border border-border/20 rounded-lg px-3 py-2">
+                            <Type className="w-3 h-3 text-muted-foreground/50 flex-shrink-0" />
+                            <span className="text-[11px] text-foreground/80 truncate flex-1">{t.text}</span>
+                            <span className="text-[8px] text-muted-foreground/40">{formatTimecode(t.startTime)}</span>
+                            <button onClick={() => removeTextOverlay(t.id)} className="text-muted-foreground/40 hover:text-destructive transition-all"><X className="w-3 h-3" /></button>
                           </div>
                         ))}
                       </div>
@@ -700,20 +747,27 @@ export default function StudioNLE() {
                 {activeToolTab === "audio" && (
                   <>
                     {audioName ? (
-                      <div className="flex items-center gap-2 bg-surface-0 border border-border rounded-md p-3">
-                        <Music className="w-5 h-5 text-purple-400" />
-                        <span className="text-xs text-foreground truncate flex-1">{audioName}</span>
-                        <button onClick={() => { setAudioFile(null); setAudioName(""); }} className="text-destructive font-semibold text-xs">Remove</button>
+                      <div className="flex items-center gap-3 bg-surface-1/30 border border-purple-500/20 rounded-xl p-3.5">
+                        <div className="w-9 h-9 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                          <Music className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <span className="text-xs text-foreground/80 truncate flex-1">{audioName}</span>
+                        <button onClick={() => { setAudioFile(null); setAudioName(""); }} className="text-destructive/60 font-semibold text-[10px] hover:text-destructive transition-all">Remove</button>
                       </div>
                     ) : (
-                      <button onClick={() => audioInputRef.current?.click()}
-                        className="w-full py-8 border border-dashed border-purple-400/30 bg-purple-500/5 hover:bg-purple-500/10 transition-all flex flex-col items-center gap-2 rounded-lg">
-                        <Music className="w-6 h-6 text-purple-400" />
-                        <span className="text-xs text-purple-400 font-semibold">Add Music Track</span>
-                        <span className="text-[10px] text-muted-foreground">MP3, WAV, AAC</span>
-                      </button>
+                      <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
+                        onClick={() => audioInputRef.current?.click()}
+                        className="w-full py-10 border border-dashed border-purple-400/20 bg-purple-500/3 hover:bg-purple-500/6 transition-all flex flex-col items-center gap-3 rounded-xl">
+                        <div className="w-11 h-11 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                          <Music className="w-5 h-5 text-purple-400/70" />
+                        </div>
+                        <div className="text-center">
+                          <span className="text-xs text-purple-400/80 font-semibold block">Add Music Track</span>
+                          <span className="text-[9px] text-muted-foreground/40 mt-0.5 block">MP3, WAV, AAC</span>
+                        </div>
+                      </motion.button>
                     )}
-                    <p className="text-[10px] text-muted-foreground">Replaces original audio in export</p>
+                    <p className="text-[10px] text-muted-foreground/40">Replaces original audio in export</p>
                   </>
                 )}
 
@@ -721,8 +775,8 @@ export default function StudioNLE() {
                 {activeToolTab === "adjust" && (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Color Grading</span>
-                      <button onClick={resetColorGrading} className="text-[10px] text-gold font-semibold">Reset</button>
+                      <span className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.15em]">Color Grading</span>
+                      <button onClick={resetColorGrading} className="text-[10px] text-gold/70 font-semibold hover:text-gold transition-all">Reset</button>
                     </div>
                     {[
                       { label: "Brightness", value: brightness, set: setBrightness, min: 0, max: 200 },
@@ -730,10 +784,10 @@ export default function StudioNLE() {
                       { label: "Saturation", value: saturation, set: setSaturation, min: 0, max: 200 },
                       { label: "Hue Rotate", value: hueRotate, set: setHueRotate, min: -180, max: 180 },
                     ].map(({ label, value, set, min, max }) => (
-                      <div key={label} className="space-y-1.5">
+                      <div key={label} className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-foreground">{label}</span>
-                          <span className="text-[10px] text-gold tabular-nums font-mono">{value}{label === "Hue Rotate" ? "°" : "%"}</span>
+                          <span className="text-[10px] text-foreground/70">{label}</span>
+                          <span className="text-[10px] text-gold/60 tabular-nums font-mono">{value}{label === "Hue Rotate" ? "°" : "%"}</span>
                         </div>
                         <Slider value={[value]} onValueChange={(v) => set(v[0])} min={min} max={max} step={1} className="w-full" />
                       </div>
@@ -744,27 +798,28 @@ export default function StudioNLE() {
                 {/* EXPORT SETTINGS */}
                 {activeToolTab === "export" && (
                   <>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Export Quality</p>
+                    <p className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.15em]">Export Quality</p>
                     <div className="space-y-2">
                       {EXPORT_QUALITIES.map((q) => (
-                        <button key={q.id} onClick={() => setExportQuality(q.id)}
-                          className={`w-full text-left px-3 py-3 rounded-lg border transition-all ${exportQuality === q.id ? "border-gold bg-gold/10" : "border-border bg-surface-2 hover:border-foreground/20"}`}>
+                        <motion.button key={q.id} whileHover={{ scale: 1.01 }}
+                          onClick={() => setExportQuality(q.id)}
+                          className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all ${exportQuality === q.id ? "border-gold/40 bg-gold/6 shadow-[0_0_12px_hsl(var(--gold)/0.08)]" : "border-border/20 bg-surface-1/20 hover:border-border/40"}`}>
                           <div className="flex items-center justify-between">
-                            <span className={`text-xs font-bold ${exportQuality === q.id ? "text-gold" : "text-foreground"}`}>{q.label}</span>
-                            <span className="text-[9px] text-muted-foreground">{q.fps}fps</span>
+                            <span className={`text-xs font-bold ${exportQuality === q.id ? "text-gold" : "text-foreground/80"}`}>{q.label}</span>
+                            <span className="text-[9px] text-muted-foreground/50">{q.fps}fps</span>
                           </div>
-                          <p className="text-[9px] text-muted-foreground mt-0.5">
+                          <p className="text-[9px] text-muted-foreground/40 mt-0.5">
                             {Math.round(q.resolution * 100)}% resolution • {(q.bitrate / 1_000_000).toFixed(0)}Mbps
                           </p>
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
-                    <div className="pt-2 border-t border-border space-y-2">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Speed</p>
+                    <div className="pt-3 border-t border-border/20 space-y-3">
+                      <p className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.15em]">Playback Speed</p>
                       <div className="flex flex-wrap gap-1.5">
                         {SPEED_OPTIONS.map((s) => (
                           <button key={s} onClick={() => { pushHistory(); setSpeed(s); }}
-                            className={`px-2.5 py-1.5 text-[10px] font-bold border rounded-md transition-all ${speed === s ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                            className={`px-3 py-1.5 text-[10px] font-bold border rounded-full transition-all ${speed === s ? "border-gold/40 bg-gold/8 text-gold" : "border-border/20 text-muted-foreground hover:border-border/40"}`}>
                             {s}x
                           </button>
                         ))}
@@ -778,119 +833,131 @@ export default function StudioNLE() {
         </AnimatePresence>
       </div>
 
-      {/* ═══ TIMELINE ═══ */}
-      <div className="h-[180px] flex-shrink-0 bg-surface-1 border-t border-border flex flex-col">
-        <div className="h-8 flex items-center px-3 gap-2 border-b border-border flex-shrink-0">
-          <button onClick={splitAtPlayhead} className="p-1 text-muted-foreground hover:text-gold transition-colors" title="Split at Playhead"><Scissors className="w-3.5 h-3.5" /></button>
-          <button className="p-1 text-muted-foreground hover:text-foreground"><Trash2 className="w-3.5 h-3.5" /></button>
-          <button className="p-1 text-muted-foreground hover:text-foreground"><Copy className="w-3.5 h-3.5" /></button>
-          <div className="w-px h-4 bg-border" />
-          <span className="text-[10px] text-gold font-mono tabular-nums">{formatTimecode(currentTime, true)}</span>
+      {/* ═══ TIMELINE — Refined ═══ */}
+      <GlassPanel className="h-[170px] flex-shrink-0 flex flex-col rounded-none border-x-0 border-b-0">
+        <div className="h-8 flex items-center px-3 gap-2 border-b border-border/20 flex-shrink-0">
+          <button onClick={splitAtPlayhead} className="p-1 text-muted-foreground hover:text-gold transition-all rounded-md hover:bg-surface-2/30" title="Split"><Scissors className="w-3.5 h-3.5" /></button>
+          <button className="p-1 text-muted-foreground hover:text-foreground rounded-md hover:bg-surface-2/30"><Trash2 className="w-3.5 h-3.5" /></button>
+          <button className="p-1 text-muted-foreground hover:text-foreground rounded-md hover:bg-surface-2/30"><Copy className="w-3.5 h-3.5" /></button>
+          <div className="w-px h-4 bg-border/20" />
+          <span className="text-[10px] text-gold/70 font-mono tabular-nums">{formatTimecode(currentTime, true)}</span>
           <div className="flex-1" />
-          <span className="text-[9px] text-muted-foreground">Trim: {formatTimecode(trimStart)} — {formatTimecode(trimEnd)}</span>
-          <div className="w-px h-4 bg-border" />
-          <button onClick={() => setTimelineZoom(Math.max(0.5, timelineZoom - 0.25))} className="p-1 text-muted-foreground hover:text-foreground">
-            <ZoomOut className="w-3.5 h-3.5" />
-          </button>
-          <span className="text-[9px] text-muted-foreground w-8 text-center">{Math.round(timelineZoom * 100)}%</span>
-          <button onClick={() => setTimelineZoom(Math.min(4, timelineZoom + 0.25))} className="p-1 text-muted-foreground hover:text-foreground">
-            <ZoomIn className="w-3.5 h-3.5" />
-          </button>
+          <span className="text-[9px] text-muted-foreground/40">Trim: {formatTimecode(trimStart)} — {formatTimecode(trimEnd)}</span>
+          <div className="w-px h-4 bg-border/20" />
+          <div className="flex items-center bg-surface-2/40 rounded-full p-0.5">
+            <button onClick={() => setTimelineZoom(Math.max(0.5, timelineZoom - 0.25))} className="p-1 text-muted-foreground hover:text-foreground rounded-full">
+              <ZoomOut className="w-3 h-3" />
+            </button>
+            <span className="text-[8px] text-muted-foreground/50 w-7 text-center">{Math.round(timelineZoom * 100)}%</span>
+            <button onClick={() => setTimelineZoom(Math.min(4, timelineZoom + 0.25))} className="p-1 text-muted-foreground hover:text-foreground rounded-full">
+              <ZoomIn className="w-3 h-3" />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 flex min-h-0">
-          <div className="w-[90px] flex-shrink-0 border-r border-border">
+          <div className="w-[80px] flex-shrink-0 border-r border-border/15">
             {tracks.map((track) => (
-              <div key={track.id} className="h-[36px] flex items-center px-2 gap-1 border-b border-border/50">
-                <button className="p-0.5 text-muted-foreground hover:text-foreground">
-                  {track.visible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+              <div key={track.id} className="h-[33px] flex items-center px-2 gap-1.5 border-b border-border/10">
+                <button className="p-0.5 text-muted-foreground/40 hover:text-foreground transition-all">
+                  {track.visible ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
                 </button>
-                <span className="text-[8px] text-muted-foreground truncate">{track.name}</span>
+                <span className="text-[8px] text-muted-foreground/50 truncate font-medium">{track.name}</span>
               </div>
             ))}
           </div>
 
           <div className="flex-1 overflow-x-auto overflow-y-hidden relative">
-            <div className="h-4 border-b border-border/50 flex items-end px-0 sticky top-0 bg-surface-1 z-10">
+            {/* Time ruler */}
+            <div className="h-4 border-b border-border/10 flex items-end sticky top-0 bg-surface-0/80 backdrop-blur-sm z-10">
               {duration > 0 && Array.from({ length: Math.ceil(duration) + 1 }).map((_, i) => (
                 <div key={i} className="flex-shrink-0 relative" style={{ width: `${60 * timelineZoom}px` }}>
-                  <div className="absolute bottom-0 left-0 w-px h-2 bg-border" />
-                  <span className="absolute bottom-0.5 left-1 text-[6px] text-muted-foreground/60 font-mono">
+                  <div className="absolute bottom-0 left-0 w-px h-2 bg-border/20" />
+                  <span className="absolute bottom-0.5 left-1 text-[6px] text-muted-foreground/30 font-mono">
                     {Math.floor(i / 60)}:{(i % 60).toString().padStart(2, "0")}
                   </span>
                 </div>
               ))}
             </div>
 
-            <div ref={timelineRef} onClick={handleTimelineClick} className="h-[36px] border-b border-border/50 relative cursor-pointer">
+            {/* Video track */}
+            <div ref={timelineRef} onClick={handleTimelineClick} className="h-[33px] border-b border-border/10 relative cursor-pointer">
               {activeMedia && duration > 0 && (
-                <div className="absolute top-0.5 bottom-0.5 bg-gold/15 border border-gold/30 rounded-sm overflow-hidden flex"
+                <div className="absolute top-1 bottom-1 bg-gold/10 border border-gold/20 rounded-lg overflow-hidden flex"
                   style={{ left: `${(trimStart / duration) * duration * 60 * timelineZoom}px`, width: `${((trimEnd - trimStart) / duration) * duration * 60 * timelineZoom}px` }}>
                   {thumbnails.map((thumb, i) => (
-                    <div key={i} className="flex-1 h-full overflow-hidden opacity-70">
+                    <div key={i} className="flex-1 h-full overflow-hidden opacity-60">
                       <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     </div>
                   ))}
-                  <div className="absolute inset-y-0 left-0 w-1 bg-gold cursor-col-resize hover:w-1.5 transition-all rounded-l-sm" />
-                  <div className="absolute inset-y-0 right-0 w-1 bg-gold cursor-col-resize hover:w-1.5 transition-all rounded-r-sm" />
+                  <div className="absolute inset-y-0 left-0 w-1 bg-gold/60 cursor-col-resize hover:bg-gold transition-all rounded-l-lg" />
+                  <div className="absolute inset-y-0 right-0 w-1 bg-gold/60 cursor-col-resize hover:bg-gold transition-all rounded-r-lg" />
                 </div>
               )}
-              {!activeMedia && <div className="absolute inset-0 flex items-center justify-center"><span className="text-[9px] text-muted-foreground/40">Import media to start editing</span></div>}
+              {!activeMedia && <div className="absolute inset-0 flex items-center justify-center"><span className="text-[8px] text-muted-foreground/20">Import media to start</span></div>}
             </div>
 
-            <div className="h-[36px] border-b border-border/50 relative">
+            {/* Audio track */}
+            <div className="h-[33px] border-b border-border/10 relative">
               {audioName && duration > 0 && (
-                <div className="absolute top-0.5 bottom-0.5 left-0 bg-purple-500/15 border border-purple-500/30 rounded-sm flex items-center px-2 gap-1"
+                <div className="absolute top-1 bottom-1 left-0 bg-purple-500/8 border border-purple-500/20 rounded-lg flex items-center px-2 gap-1"
                   style={{ width: `${duration * 60 * timelineZoom}px` }}>
-                  <Music className="w-3 h-3 text-purple-400 flex-shrink-0" />
-                  <span className="text-[7px] text-purple-400 truncate">{audioName}</span>
+                  <Music className="w-3 h-3 text-purple-400/60 flex-shrink-0" />
+                  <span className="text-[7px] text-purple-400/60 truncate">{audioName}</span>
                 </div>
               )}
             </div>
 
-            <div className="h-[36px] border-b border-border/50 relative">
-              {textOverlays.map((t, i) => (
-                <div key={t.id} className="absolute top-0.5 bottom-0.5 bg-emerald-500/15 border border-emerald-500/30 rounded-sm flex items-center px-2"
+            {/* Text track */}
+            <div className="h-[33px] border-b border-border/10 relative">
+              {textOverlays.map((t) => (
+                <div key={t.id} className="absolute top-1 bottom-1 bg-emerald-500/8 border border-emerald-500/20 rounded-lg flex items-center px-2"
                   style={{ left: `${t.startTime * 60 * timelineZoom}px`, width: `${Math.max(60, (t.endTime - t.startTime) * 60 * timelineZoom)}px` }}>
-                  <Type className="w-3 h-3 text-emerald-400 mr-1 flex-shrink-0" />
-                  <span className="text-[7px] text-emerald-400 truncate">{t.text}</span>
+                  <Type className="w-3 h-3 text-emerald-400/60 mr-1 flex-shrink-0" />
+                  <span className="text-[7px] text-emerald-400/60 truncate">{t.text}</span>
                 </div>
               ))}
             </div>
 
-            <div className="h-[36px] border-b border-border/50 relative">
+            {/* Effects track */}
+            <div className="h-[33px] border-b border-border/10 relative">
               {activeEffects.length > 0 && duration > 0 && (
-                <div className="absolute top-0.5 bottom-0.5 left-0 bg-amber-500/15 border border-amber-500/30 rounded-sm flex items-center px-2 gap-1"
+                <div className="absolute top-1 bottom-1 left-0 bg-amber-500/8 border border-amber-500/20 rounded-lg flex items-center px-2 gap-1"
                   style={{ width: `${duration * 60 * timelineZoom}px` }}>
-                  <Sparkles className="w-3 h-3 text-amber-400 flex-shrink-0" />
-                  <span className="text-[7px] text-amber-400 truncate">{activeEffects.map(e => EFFECTS.find(ef => ef.id === e)?.label).join(", ")}</span>
+                  <Sparkles className="w-3 h-3 text-amber-400/60 flex-shrink-0" />
+                  <span className="text-[7px] text-amber-400/60 truncate">{activeEffects.map(e => EFFECTS.find(ef => ef.id === e)?.label).join(", ")}</span>
                 </div>
               )}
             </div>
 
+            {/* Playhead */}
             {duration > 0 && (
-              <div className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none"
+              <div className="absolute top-0 bottom-0 w-0.5 bg-red-500/80 z-20 pointer-events-none"
                 style={{ left: `${(currentTime / duration) * duration * 60 * timelineZoom}px` }}>
-                <div className="absolute -top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                <div className="absolute -top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full shadow-[0_0_6px_rgba(239,68,68,0.5)]" />
               </div>
             )}
           </div>
         </div>
-      </div>
+      </GlassPanel>
 
-      {/* ═══ BOTTOM TOOL BAR ═══ */}
-      <div className="h-14 bg-surface-1 border-t border-border flex items-center justify-around px-2 flex-shrink-0">
-        {TOOL_TABS.map((tab) => {
-          const isActive = activeToolTab === tab.id;
-          return (
-            <button key={tab.id} onClick={() => setActiveToolTab(isActive ? null : tab.id)}
-              className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg transition-all ${isActive ? "text-gold" : "text-muted-foreground hover:text-foreground"}`}>
-              <tab.icon className={`w-5 h-5 ${isActive ? "text-gold" : ""}`} />
-              <span className={`text-[9px] font-semibold ${isActive ? "text-gold" : ""}`}>{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* ═══ BOTTOM TOOL BAR — Pill-style ═══ */}
+      <GlassPanel className="h-[52px] flex items-center justify-center px-4 flex-shrink-0 rounded-none border-x-0 border-b-0">
+        <div className="flex items-center gap-1 bg-surface-2/30 rounded-full p-1">
+          {TOOL_TABS.map((tab) => {
+            const isActive = activeToolTab === tab.id;
+            return (
+              <motion.button key={tab.id}
+                onClick={() => setActiveToolTab(isActive ? null : tab.id)}
+                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}
+                className={`flex flex-col items-center gap-0.5 py-1.5 px-3.5 rounded-full transition-all duration-200 ${isActive ? "bg-gold/10 text-gold" : "text-muted-foreground/60 hover:text-foreground/80"}`}>
+                <tab.icon className="w-4 h-4" />
+                <span className="text-[8px] font-semibold tracking-wide">{tab.label}</span>
+              </motion.button>
+            );
+          })}
+        </div>
+      </GlassPanel>
 
       <input ref={fileInputRef} type="file" accept="video/*,image/*,audio/*" multiple onChange={handleFileSelect} className="hidden" />
       <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />

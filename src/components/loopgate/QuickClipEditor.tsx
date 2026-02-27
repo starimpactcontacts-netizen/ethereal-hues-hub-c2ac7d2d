@@ -16,7 +16,6 @@ import {
   type FilterPreset, type TextStyleKey, type ExportQuality,
 } from "@/lib/studioEffects";
 
-// ─── Types ───
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
 type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export";
 
@@ -81,8 +80,10 @@ export default function QuickClipEditor() {
     const f = e.target.files?.[0];
     if (!f || !f.type.startsWith("audio/")) { toast.error("Please select an audio file"); return; }
     setAudioFile(f); setAudioName(f.name); toast.success("Audio track added");
+    e.target.value = "";
   };
 
+  // Thumbnails
   useEffect(() => {
     if (!videoUrl) return;
     const vid = document.createElement("video");
@@ -100,6 +101,7 @@ export default function QuickClipEditor() {
     };
   }, [videoUrl]);
 
+  // Video events
   useEffect(() => {
     const vid = videoRef.current; if (!vid) return;
     const onMeta = () => { setDuration(vid.duration); setTrimEnd(vid.duration); };
@@ -109,39 +111,46 @@ export default function QuickClipEditor() {
     return () => { vid.removeEventListener("loadedmetadata", onMeta); vid.removeEventListener("timeupdate", onTime); };
   }, [videoUrl]);
 
+  // Canvas render loop
   useEffect(() => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !videoUrl) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
+    let running = true;
     const draw = () => {
+      if (!running) return;
       if (vid.videoWidth && vid.videoHeight) {
-        canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+        if (canvas.width !== vid.videoWidth || canvas.height !== vid.videoHeight) {
+          canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+        }
         ctx.filter = computedFilter;
         ctx.drawImage(vid, 0, 0);
         ctx.filter = "none";
-        activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
+        activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-            renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+            try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
           }
         });
       }
       animRef.current = requestAnimationFrame(draw);
     };
     draw();
-    return () => cancelAnimationFrame(animRef.current);
+    return () => { running = false; cancelAnimationFrame(animRef.current); };
   }, [videoUrl, computedFilter, textOverlays, activeEffects]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
-    if (vid.paused) { vid.currentTime = Math.max(vid.currentTime, trimStart); vid.playbackRate = speed; vid.play(); setPlaying(true); }
-    else { vid.pause(); setPlaying(false); }
+    if (vid.paused) {
+      if (vid.currentTime < trimStart || vid.currentTime >= trimEnd) vid.currentTime = trimStart;
+      vid.playbackRate = speed; vid.play().catch(() => {}); setPlaying(true);
+    } else { vid.pause(); setPlaying(false); }
   };
 
   useEffect(() => {
     const vid = videoRef.current; if (!vid || !playing) return;
     const check = () => { if (vid.currentTime >= trimEnd) { vid.pause(); vid.currentTime = trimStart; setPlaying(false); } };
-    const id = setInterval(check, 100);
+    const id = setInterval(check, 50);
     return () => clearInterval(id);
   }, [playing, trimEnd, trimStart]);
 
@@ -164,7 +173,11 @@ export default function QuickClipEditor() {
     setActiveEffects([]); setActiveTransition(null); resetColorGrading();
   };
 
-  const seekTo = (time: number) => { if (videoRef.current) { videoRef.current.currentTime = time; setCurrentTime(time); } };
+  const seekTo = (time: number) => {
+    const vid = videoRef.current; if (!vid) return;
+    const clamped = Math.max(0, Math.min(duration, time));
+    vid.currentTime = clamped; setCurrentTime(clamped);
+  };
 
   const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!timelineRef.current || !duration) return;
@@ -180,8 +193,9 @@ export default function QuickClipEditor() {
     setState("processing"); setProgress(0);
     const quality = EXPORT_QUALITIES.find(q => q.id === exportQuality) ?? EXPORT_QUALITIES[1];
     const ctx = canvas.getContext("2d")!;
-    canvas.width = Math.round(vid.videoWidth * quality.resolution);
-    canvas.height = Math.round(vid.videoHeight * quality.resolution);
+    const exportW = Math.round(vid.videoWidth * quality.resolution);
+    const exportH = Math.round(vid.videoHeight * quality.resolution);
+    canvas.width = exportW; canvas.height = exportH;
     const stream = canvas.captureStream(quality.fps);
     if (audioFile) {
       try {
@@ -203,17 +217,17 @@ export default function QuickClipEditor() {
     const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
     recorder.start(100);
     vid.currentTime = trimStart; vid.muted = true; vid.playbackRate = 1;
-    await vid.play();
+    await vid.play().catch(() => {});
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
       ctx.filter = computedFilter;
-      ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(vid, 0, 0, exportW, exportH);
       ctx.filter = "none";
-      activeEffects.forEach(effectId => applyEffect(ctx, canvas, effectId, vid.currentTime));
+      activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
       textOverlays.forEach((overlay) => {
         if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-          renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style);
+          try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
         }
       });
       setProgress(Math.min(99, Math.round(((vid.currentTime - trimStart) / exportDuration) * 100)));
@@ -239,29 +253,31 @@ export default function QuickClipEditor() {
   // ─── Upload Screen ───
   if (!file) {
     return (
-      <div className="space-y-4">
-        <button onClick={() => fileInputRef.current?.click()}
-          className="w-full aspect-[9/16] max-h-[50vh] border border-border bg-surface-1 hover:bg-surface-1/80 transition-all flex flex-col items-center justify-center gap-4 group rounded-xl">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            className="w-16 h-16 bg-gold/15 rounded-xl flex items-center justify-center border border-gold/30 group-hover:bg-gold/25 transition-colors">
-            <Upload className="w-7 h-7 text-gold" />
-          </motion.div>
-          <div className="text-center space-y-1">
-            <p className="font-display text-base text-gold">Start Editing</p>
-            <p className="text-[11px] text-muted-foreground">Tap to upload a clip</p>
-            <p className="text-[10px] text-muted-foreground/60">MP4, MOV, WEBM • Max 500MB</p>
+      <div className="space-y-5">
+        <motion.button
+          onClick={() => fileInputRef.current?.click()}
+          whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.97 }}
+          className="w-full aspect-[9/16] max-h-[55vh] border border-border/30 bg-surface-1/40 backdrop-blur-sm hover:bg-surface-1/60 transition-all flex flex-col items-center justify-center gap-5 rounded-2xl"
+        >
+          <div className="w-16 h-16 bg-gold/8 backdrop-blur-md rounded-2xl flex items-center justify-center border border-gold/20 shadow-[0_8px_32px_hsl(var(--gold)/0.08)]">
+            <Upload className="w-7 h-7 text-gold/70" />
           </div>
-        </button>
-        <div className="grid grid-cols-4 gap-2">
+          <div className="text-center space-y-1.5">
+            <p className="font-display text-lg text-gold/90 tracking-wider">START EDITING</p>
+            <p className="text-[11px] text-muted-foreground/60">Tap to upload a clip</p>
+            <p className="text-[10px] text-muted-foreground/30">MP4, MOV, WEBM • Max 500MB</p>
+          </div>
+        </motion.button>
+        <div className="grid grid-cols-4 gap-2.5">
           {[
             { icon: Scissors, label: "Trim" },
             { icon: Sparkles, label: "18 Effects" },
             { icon: Type, label: "9 Styles" },
             { icon: Wand2, label: "24 Filters" },
           ].map(({ icon: Icon, label }) => (
-            <div key={label} className="bg-surface-1 border border-border rounded-lg p-3 flex flex-col items-center gap-1.5">
-              <Icon className="w-4 h-4 text-gold/60" />
-              <span className="text-[9px] text-muted-foreground">{label}</span>
+            <div key={label} className="bg-surface-1/30 backdrop-blur-sm border border-border/20 rounded-xl p-3.5 flex flex-col items-center gap-2">
+              <Icon className="w-4 h-4 text-gold/40" />
+              <span className="text-[9px] text-muted-foreground/50 font-medium">{label}</span>
             </div>
           ))}
         </div>
@@ -274,25 +290,28 @@ export default function QuickClipEditor() {
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className={`flex flex-col bg-background ${isFullscreen ? "fixed inset-0 z-50" : "relative"}`}
+        className={`flex flex-col bg-black ${isFullscreen ? "fixed inset-0 z-50" : "relative"}`}
         style={{ height: isFullscreen ? "100dvh" : "auto" }}>
 
-        {/* ─── Top Bar ─── */}
-        <div className="flex items-center gap-3 px-3 py-2 bg-background border-b border-border flex-shrink-0">
-          <button onClick={() => { if (isFullscreen) setIsFullscreen(false); else clearFile(); }} className="p-1.5 hover:bg-surface-1 transition-colors rounded-md">
-            <ChevronLeft className="w-5 h-5 text-foreground" />
+        {/* ─── Top Bar — Glass ─── */}
+        <div className="flex items-center gap-3 px-3 py-2.5 bg-surface-0/80 backdrop-blur-xl border-b border-border/20 flex-shrink-0 safe-top">
+          <button onClick={() => { if (isFullscreen) setIsFullscreen(false); else clearFile(); }}
+            className="p-2 hover:bg-surface-2/40 transition-all rounded-full">
+            <ChevronLeft className="w-5 h-5 text-foreground/80" />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold truncate text-foreground">{file.name}</p>
-            <p className="text-[10px] text-muted-foreground">{formatTimecode(trimEnd - trimStart)} clip</p>
+            <p className="text-xs font-semibold truncate text-foreground/90">{file.name}</p>
+            <p className="text-[10px] text-muted-foreground/40">{formatTimecode(trimEnd - trimStart)} clip</p>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {state === "done" ? (
-              <Button onClick={handleDownload} size="sm" className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1 rounded-md">
+              <Button onClick={handleDownload} size="sm"
+                className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5 rounded-full px-4 shadow-[0_0_16px_hsl(var(--gold)/0.2)]">
                 <Download className="w-3.5 h-3.5" /> Save
               </Button>
             ) : (
-              <Button onClick={startExport} size="sm" disabled={state === "processing"} className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1 rounded-md">
+              <Button onClick={startExport} size="sm" disabled={state === "processing"}
+                className="h-8 bg-gold text-primary-foreground hover:bg-gold/90 text-[11px] font-bold gap-1.5 rounded-full px-4 shadow-[0_0_16px_hsl(var(--gold)/0.15)]">
                 {state === "processing" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Film className="w-3.5 h-3.5" />}
                 {state === "processing" ? `${progress}%` : "Export"}
               </Button>
@@ -302,22 +321,28 @@ export default function QuickClipEditor() {
 
         {/* ─── Video Preview ─── */}
         <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden min-h-0">
-          <video ref={videoRef} src={videoUrl!} className="hidden" playsInline />
+          <video ref={videoRef} src={videoUrl!} className="hidden" playsInline preload="auto" />
           <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
 
-          {!playing && (
-            <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center bg-black/20 transition-colors">
-              <div className="w-14 h-14 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
-                <Play className="w-6 h-6 text-white ml-0.5" />
-              </div>
-            </button>
-          )}
+          {/* Play overlay */}
+          <AnimatePresence>
+            {!playing && (
+              <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={togglePlay} className="absolute inset-0 flex items-center justify-center">
+                <motion.div whileTap={{ scale: 0.9 }}
+                  className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                  <Play className="w-6 h-6 text-white ml-0.5" />
+                </motion.div>
+              </motion.button>
+            )}
+          </AnimatePresence>
           {playing && <button onClick={togglePlay} className="absolute inset-0" />}
 
+          {/* Effect badges */}
           {activeEffects.length > 0 && (
             <div className="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[60%]">
               {activeEffects.map(eff => (
-                <span key={eff} className="bg-black/60 backdrop-blur-sm px-1.5 py-0.5 border border-gold/30 rounded-sm text-[8px] text-gold font-bold uppercase">
+                <span key={eff} className="bg-black/50 backdrop-blur-md px-2 py-0.5 border border-gold/20 rounded-full text-[8px] text-gold/80 font-semibold tracking-wide">
                   {EFFECTS.find(e => e.id === eff)?.label}
                 </span>
               ))}
@@ -325,124 +350,146 @@ export default function QuickClipEditor() {
           )}
 
           {speed !== 1 && (
-            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 border border-gold/30 rounded-sm">
-              <span className="text-[10px] text-gold font-bold">{speed}x</span>
+            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-md px-2 py-0.5 border border-gold/20 rounded-full">
+              <span className="text-[10px] text-gold/80 font-bold">{speed}x</span>
             </div>
           )}
 
-          <button onClick={() => setMuted(!muted)} className="absolute bottom-2 right-2 w-8 h-8 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/10">
-            {muted ? <VolumeX className="w-4 h-4 text-white/70" /> : <Volume2 className="w-4 h-4 text-white/70" />}
+          <button onClick={() => setMuted(!muted)}
+            className="absolute bottom-2 right-2 w-8 h-8 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center border border-white/10">
+            {muted ? <VolumeX className="w-4 h-4 text-white/50" /> : <Volume2 className="w-4 h-4 text-white/50" />}
           </button>
 
+          {/* Export overlay */}
           {state === "processing" && (
-            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-8 h-8 text-gold animate-spin" />
-              <p className="text-sm font-semibold text-foreground">Exporting... {progress}%</p>
-              <div className="w-48 h-1.5 bg-muted/30 rounded-full overflow-hidden">
-                <motion.div className="h-full bg-gold rounded-full" animate={{ width: `${progress}%` }} />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+              <div className="relative">
+                <Loader2 className="w-10 h-10 text-gold animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[10px] text-gold font-bold">{progress}%</span>
+                </div>
               </div>
-            </div>
+              <p className="text-sm font-medium text-foreground/80">Exporting</p>
+              <div className="w-48 h-1 bg-surface-2 rounded-full overflow-hidden">
+                <motion.div className="h-full bg-gradient-to-r from-gold to-gold/70 rounded-full" animate={{ width: `${progress}%` }} />
+              </div>
+            </motion.div>
           )}
 
           {state === "done" && (
-            <div className="absolute bottom-3 left-3 right-3 bg-emerald-500/15 border border-emerald-500/30 rounded-lg p-2 flex items-center gap-2">
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              className="absolute bottom-3 left-3 right-3 bg-emerald-500/10 backdrop-blur-md border border-emerald-500/20 rounded-xl p-2.5 flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs text-emerald-400 font-semibold">Export ready — tap Save</span>
-            </div>
+              <span className="text-xs text-emerald-400/80 font-medium">Export ready — tap Save</span>
+            </motion.div>
           )}
         </div>
 
-        {/* ─── Timeline ─── */}
-        <div className="flex-shrink-0 bg-surface-1 border-t border-border">
-          <div className="flex items-center justify-between px-3 pt-2 pb-1">
-            <span className="text-[10px] text-gold tabular-nums font-mono">{formatTimecode(currentTime)}</span>
+        {/* ─── Timeline — Glass ─── */}
+        <div className="flex-shrink-0 bg-surface-0/80 backdrop-blur-xl border-t border-border/20">
+          <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
+            <span className="text-[10px] text-gold/60 tabular-nums font-mono">{formatTimecode(currentTime)}</span>
             <div className="flex items-center gap-3">
-              <button onClick={() => seekTo(trimStart)} className="p-1"><SkipBack className="w-4 h-4 text-muted-foreground" /></button>
-              <button onClick={togglePlay} className="w-9 h-9 bg-gold/10 border border-gold/30 rounded-full flex items-center justify-center hover:bg-gold/20 transition-colors">
-                {playing ? <Pause className="w-4 h-4 text-gold" /> : <Play className="w-4 h-4 text-gold ml-0.5" />}
+              <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-full hover:bg-surface-2/30 transition-all">
+                <SkipBack className="w-4 h-4 text-muted-foreground/50" />
               </button>
-              <button onClick={() => seekTo(trimEnd)} className="p-1"><SkipForward className="w-4 h-4 text-muted-foreground" /></button>
+              <motion.button onClick={togglePlay} whileTap={{ scale: 0.9 }}
+                className="w-10 h-10 bg-gold/8 border border-gold/20 rounded-full flex items-center justify-center hover:bg-gold/12 transition-all shadow-[0_4px_16px_hsl(var(--gold)/0.08)]">
+                {playing ? <Pause className="w-4 h-4 text-gold" /> : <Play className="w-4 h-4 text-gold ml-0.5" />}
+              </motion.button>
+              <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-full hover:bg-surface-2/30 transition-all">
+                <SkipForward className="w-4 h-4 text-muted-foreground/50" />
+              </button>
             </div>
-            <span className="text-[10px] text-muted-foreground tabular-nums font-mono">{formatTimecode(trimEnd - trimStart)}</span>
+            <span className="text-[10px] text-muted-foreground/30 tabular-nums font-mono">{formatTimecode(trimEnd - trimStart)}</span>
           </div>
 
-          <div className="px-3 pb-2">
+          <div className="px-3 pb-2.5">
             <div ref={timelineRef} onClick={handleTimelineClick}
-              className="relative h-12 bg-black/40 border border-border rounded-md overflow-hidden cursor-pointer">
+              className="relative h-14 bg-black/30 border border-border/15 rounded-xl overflow-hidden cursor-pointer">
               <div className="absolute inset-0 flex">
                 {thumbnails.map((thumb, i) => (
-                  <div key={i} className="flex-1 h-full overflow-hidden opacity-70">
+                  <div key={i} className="flex-1 h-full overflow-hidden opacity-50">
                     <img src={thumb} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}
-                {thumbnails.length === 0 && <div className="flex-1 bg-muted/10" />}
+                {thumbnails.length === 0 && <div className="flex-1 bg-surface-2/10" />}
               </div>
               {duration > 0 && (
                 <>
-                  <div className="absolute inset-y-0 left-0 bg-black/60 rounded-l-md" style={{ width: `${(trimStart / duration) * 100}%` }} />
-                  <div className="absolute inset-y-0 right-0 bg-black/60 rounded-r-md" style={{ width: `${((duration - trimEnd) / duration) * 100}%` }} />
-                  <div className="absolute inset-y-0 w-1.5 bg-gold cursor-col-resize z-10 rounded-l-sm"
+                  <div className="absolute inset-y-0 left-0 bg-black/50 rounded-l-xl" style={{ width: `${(trimStart / duration) * 100}%` }} />
+                  <div className="absolute inset-y-0 right-0 bg-black/50 rounded-r-xl" style={{ width: `${((duration - trimEnd) / duration) * 100}%` }} />
+                  {/* Trim handles */}
+                  <div className="absolute inset-y-0 w-2 bg-gold/60 cursor-col-resize z-10 rounded-l-xl hover:bg-gold transition-all"
                     style={{ left: `${(trimStart / duration) * 100}%` }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
                       const rect = timelineRef.current!.getBoundingClientRect();
                       const onMove = (ev: TouchEvent) => { const pct = Math.max(0, Math.min((trimEnd - 0.5) / duration, (ev.touches[0].clientX - rect.left) / rect.width)); setTrimStart(pct * duration); };
                       const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
-                      window.addEventListener("touchmove", onMove); window.addEventListener("touchend", onEnd);
+                      window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
                     }} />
-                  <div className="absolute inset-y-0 w-1.5 bg-gold cursor-col-resize z-10 rounded-r-sm"
-                    style={{ left: `${(trimEnd / duration) * 100}%` }}
+                  <div className="absolute inset-y-0 w-2 bg-gold/60 cursor-col-resize z-10 rounded-r-xl hover:bg-gold transition-all"
+                    style={{ left: `calc(${(trimEnd / duration) * 100}% - 8px)` }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
                       const rect = timelineRef.current!.getBoundingClientRect();
                       const onMove = (ev: TouchEvent) => { const pct = Math.max((trimStart + 0.5) / duration, Math.min(1, (ev.touches[0].clientX - rect.left) / rect.width)); setTrimEnd(pct * duration); };
                       const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
-                      window.addEventListener("touchmove", onMove); window.addEventListener("touchend", onEnd);
+                      window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
                     }} />
-                  <div className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%` }}>
-                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                  {/* Playhead */}
+                  <div className="absolute top-0 bottom-0 w-0.5 bg-white/80 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%` }}>
+                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white rounded-full shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
                   </div>
                 </>
               )}
               {audioName && (
-                <div className="absolute bottom-0 left-0 right-0 h-3 bg-purple-500/20 border-t border-purple-500/30 flex items-center px-1 rounded-b-md">
-                  <Music className="w-2 h-2 text-purple-400 mr-0.5" />
-                  <span className="text-[7px] text-purple-400 truncate">{audioName}</span>
+                <div className="absolute bottom-0 left-0 right-0 h-3 bg-purple-500/10 border-t border-purple-500/15 flex items-center px-1.5 rounded-b-xl">
+                  <Music className="w-2 h-2 text-purple-400/50 mr-0.5" />
+                  <span className="text-[7px] text-purple-400/50 truncate">{audioName}</span>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* ─── Tool Panel ─── */}
+        {/* ─── Tool Panel — Glass, smooth spring ─── */}
         <AnimatePresence>
           {activeTool && state === "idle" && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }} className="flex-shrink-0 bg-surface-1 border-t border-border overflow-hidden">
-              <div className="p-3 max-h-[35vh] overflow-y-auto scrollbar-hide">
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 35 }}
+              className="flex-shrink-0 bg-surface-0/90 backdrop-blur-xl border-t border-border/20 overflow-hidden"
+            >
+              <div className="p-4 max-h-[35vh] overflow-y-auto scrollbar-hide">
 
                 {/* Filters */}
                 {activeTool === "filters" && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Filters</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Filters</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
                     <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
                       {["all", "basic", "cinema", "mood", "film"].map(cat => (
                         <button key={cat} onClick={() => setFilterTab(cat)}
-                          className={`px-2 py-0.5 text-[8px] font-bold uppercase rounded-sm border flex-shrink-0 transition-all ${filterTab === cat ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                          className={`px-2.5 py-1 text-[8px] font-bold uppercase rounded-full border flex-shrink-0 transition-all ${filterTab === cat ? "border-gold/40 bg-gold/8 text-gold" : "border-border/20 text-muted-foreground/50"}`}>
                           {cat}
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
                       {filteredFilters.map((preset) => (
-                        <button key={preset.name} onClick={() => setActiveFilter(preset)} className="flex-shrink-0 flex flex-col items-center gap-1">
-                          <div className={`w-14 h-14 border-2 rounded-lg transition-all ${activeFilter.name === preset.name ? "border-gold" : "border-border"}`}
+                        <motion.button key={preset.name} whileTap={{ scale: 0.9 }}
+                          onClick={() => setActiveFilter(preset)} className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                          <div className={`w-14 h-14 border-2 rounded-xl transition-all ${activeFilter.name === preset.name ? "border-gold/50 shadow-[0_0_12px_hsl(var(--gold)/0.15)]" : "border-border/20"}`}
                             style={{ backgroundColor: preset.color }} />
-                          <span className={`text-[9px] font-semibold ${activeFilter.name === preset.name ? "text-gold" : "text-muted-foreground"}`}>{preset.label}</span>
-                        </button>
+                          <span className={`text-[9px] font-semibold ${activeFilter.name === preset.name ? "text-gold" : "text-muted-foreground/50"}`}>{preset.label}</span>
+                        </motion.button>
                       ))}
                     </div>
                   </div>
@@ -450,25 +497,27 @@ export default function QuickClipEditor() {
 
                 {/* Effects */}
                 {activeTool === "effects" && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Effects</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Effects</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       {EFFECTS.map((effect) => {
                         const isActive = activeEffects.includes(effect.id);
                         return (
-                          <button key={effect.id} onClick={() => toggleEffect(effect.id)}
-                            className={`py-2.5 rounded-lg flex flex-col items-center gap-1 border transition-all ${isActive ? "border-gold bg-gold/10" : "border-border bg-surface-2"}`}>
+                          <motion.button key={effect.id} whileTap={{ scale: 0.9 }}
+                            onClick={() => toggleEffect(effect.id)}
+                            className={`py-3 rounded-xl flex flex-col items-center gap-1.5 border transition-all ${isActive ? "border-gold/40 bg-gold/8" : "border-border/15 bg-surface-1/20"}`}>
                             <span className="text-base">{effect.icon}</span>
-                            <span className={`text-[8px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground"}`}>{effect.label}</span>
-                          </button>
+                            <span className={`text-[8px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground/50"}`}>{effect.label}</span>
+                          </motion.button>
                         );
                       })}
                     </div>
                     {activeEffects.length > 0 && (
-                      <button onClick={() => setActiveEffects([])} className="w-full py-1.5 text-[10px] text-destructive font-semibold border border-destructive/20 rounded-md">
+                      <button onClick={() => setActiveEffects([])}
+                        className="w-full py-2 text-[10px] text-destructive/70 font-semibold border border-destructive/15 rounded-xl hover:bg-destructive/5">
                         Clear All ({activeEffects.length})
                       </button>
                     )}
@@ -477,20 +526,21 @@ export default function QuickClipEditor() {
 
                 {/* Transitions */}
                 {activeTool === "transitions" && (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Transitions</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Transitions</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       {TRANSITIONS.map((trans) => {
                         const isActive = activeTransition === trans.id;
                         return (
-                          <button key={trans.id} onClick={() => setActiveTransition(isActive ? null : trans.id)}
-                            className={`py-2.5 rounded-lg flex flex-col items-center gap-1 border transition-all ${isActive ? "border-gold bg-gold/10" : "border-border bg-surface-2"}`}>
+                          <motion.button key={trans.id} whileTap={{ scale: 0.9 }}
+                            onClick={() => setActiveTransition(isActive ? null : trans.id)}
+                            className={`py-3 rounded-xl flex flex-col items-center gap-1.5 border transition-all ${isActive ? "border-gold/40 bg-gold/8" : "border-border/15 bg-surface-1/20"}`}>
                             <span className="text-base">{trans.icon}</span>
-                            <span className={`text-[8px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground"}`}>{trans.label}</span>
-                          </button>
+                            <span className={`text-[8px] font-semibold ${isActive ? "text-gold" : "text-muted-foreground/50"}`}>{trans.label}</span>
+                          </motion.button>
                         );
                       })}
                     </div>
@@ -501,29 +551,30 @@ export default function QuickClipEditor() {
                 {activeTool === "text" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Text</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Text</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
                     <input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Type your text..."
-                      className="w-full bg-background border border-border rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" autoFocus />
-                    <div className="grid grid-cols-3 gap-1">
+                      className="w-full bg-surface-1/40 border border-border/20 rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-gold/30 transition-all" autoFocus />
+                    <div className="grid grid-cols-3 gap-1.5">
                       {(Object.entries(TEXT_STYLES) as [TextStyleKey, typeof TEXT_STYLES[TextStyleKey]][]).map(([key, s]) => (
                         <button key={key} onClick={() => setTextStyle(key)}
-                          className={`py-1.5 text-[9px] font-bold uppercase border rounded-md transition-all ${textStyle === key ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                          className={`py-2 text-[9px] font-bold uppercase border rounded-xl transition-all ${textStyle === key ? "border-gold/40 bg-gold/8 text-gold" : "border-border/15 text-muted-foreground/50"}`}>
                           {s.label}
                         </button>
                       ))}
                     </div>
-                    <Button onClick={addTextOverlay} className="w-full h-9 bg-gold text-primary-foreground hover:bg-gold/90 text-xs font-bold rounded-md">
+                    <Button onClick={addTextOverlay} disabled={!textInput.trim()}
+                      className="w-full h-10 bg-gold text-primary-foreground hover:bg-gold/90 text-xs font-bold rounded-xl disabled:opacity-30">
                       Add Text
                     </Button>
                     {textOverlays.length > 0 && (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         {textOverlays.map(t => (
-                          <div key={t.id} className="flex items-center gap-2 bg-background border border-border rounded-md px-2 py-1.5">
-                            <Type className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                            <span className="text-[11px] text-foreground truncate flex-1">{t.text}</span>
-                            <button onClick={() => setTextOverlays(prev => prev.filter(x => x.id !== t.id))} className="text-muted-foreground hover:text-destructive">
+                          <div key={t.id} className="flex items-center gap-2 bg-surface-1/20 border border-border/15 rounded-lg px-3 py-2">
+                            <Type className="w-3 h-3 text-muted-foreground/40 flex-shrink-0" />
+                            <span className="text-[11px] text-foreground/70 truncate flex-1">{t.text}</span>
+                            <button onClick={() => setTextOverlays(prev => prev.filter(x => x.id !== t.id))} className="text-muted-foreground/30 hover:text-destructive">
                               <X className="w-3 h-3" />
                             </button>
                           </div>
@@ -537,21 +588,26 @@ export default function QuickClipEditor() {
                 {activeTool === "audio" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Audio</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Audio</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
                     {audioName ? (
-                      <div className="flex items-center gap-2 bg-background border border-border rounded-md p-2.5">
-                        <Music className="w-4 h-4 text-purple-400" />
-                        <span className="text-xs text-foreground truncate flex-1">{audioName}</span>
-                        <button onClick={() => { setAudioFile(null); setAudioName(""); }} className="text-[10px] text-destructive font-semibold">Remove</button>
+                      <div className="flex items-center gap-3 bg-surface-1/20 border border-purple-500/15 rounded-xl p-3">
+                        <div className="w-9 h-9 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                          <Music className="w-4 h-4 text-purple-400/70" />
+                        </div>
+                        <span className="text-xs text-foreground/70 truncate flex-1">{audioName}</span>
+                        <button onClick={() => { setAudioFile(null); setAudioName(""); }} className="text-[10px] text-destructive/60 font-semibold">Remove</button>
                       </div>
                     ) : (
-                      <button onClick={() => audioInputRef.current?.click()}
-                        className="w-full py-6 border border-dashed border-purple-400/30 bg-purple-500/5 hover:bg-purple-500/10 transition-all flex flex-col items-center gap-2 rounded-lg">
-                        <Music className="w-5 h-5 text-purple-400" />
-                        <span className="text-xs text-purple-400 font-semibold">Add Music Track</span>
-                      </button>
+                      <motion.button whileTap={{ scale: 0.97 }}
+                        onClick={() => audioInputRef.current?.click()}
+                        className="w-full py-8 border border-dashed border-purple-400/15 bg-purple-500/3 hover:bg-purple-500/6 transition-all flex flex-col items-center gap-3 rounded-xl">
+                        <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
+                          <Music className="w-5 h-5 text-purple-400/60" />
+                        </div>
+                        <span className="text-xs text-purple-400/70 font-semibold">Add Music Track</span>
+                      </motion.button>
                     )}
                     <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
                   </div>
@@ -561,15 +617,16 @@ export default function QuickClipEditor() {
                 {activeTool === "speed" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Speed</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Speed</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-2 flex-wrap">
                       {SPEED_OPTIONS.map((s) => (
-                        <button key={s} onClick={() => setSpeed(s)}
-                          className={`px-3 py-2 text-xs font-bold border rounded-md transition-all ${speed === s ? "border-gold bg-gold/10 text-gold" : "border-border text-muted-foreground"}`}>
+                        <motion.button key={s} whileTap={{ scale: 0.9 }}
+                          onClick={() => setSpeed(s)}
+                          className={`px-3.5 py-2 text-xs font-bold border rounded-xl transition-all ${speed === s ? "border-gold/40 bg-gold/8 text-gold" : "border-border/15 text-muted-foreground/50"}`}>
                           {s}x
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
                   </div>
@@ -577,28 +634,25 @@ export default function QuickClipEditor() {
 
                 {/* Trim */}
                 {activeTool === "trim" && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Trim</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Trim</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 space-y-1">
-                        <label className="text-[9px] text-muted-foreground uppercase">Start</label>
-                        <input type="range" min={0} max={duration} step={0.1} value={trimStart}
-                          onChange={(e) => setTrimStart(Math.min(Number(e.target.value), trimEnd - 0.5))}
-                          className="w-full accent-[hsl(var(--gold))] h-1" />
-                        <span className="text-[10px] text-gold tabular-nums font-mono">{formatTimecode(trimStart)}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 space-y-2">
+                        <label className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">Start</label>
+                        <Slider value={[trimStart]} onValueChange={(v) => setTrimStart(Math.min(v[0], trimEnd - 0.5))} min={0} max={duration} step={0.1} />
+                        <span className="text-[10px] text-gold/60 tabular-nums font-mono">{formatTimecode(trimStart)}</span>
                       </div>
-                      <div className="flex-1 space-y-1">
-                        <label className="text-[9px] text-muted-foreground uppercase">End</label>
-                        <input type="range" min={0} max={duration} step={0.1} value={trimEnd}
-                          onChange={(e) => setTrimEnd(Math.max(Number(e.target.value), trimStart + 0.5))}
-                          className="w-full accent-[hsl(var(--gold))] h-1" />
-                        <span className="text-[10px] text-gold tabular-nums font-mono">{formatTimecode(trimEnd)}</span>
+                      <div className="flex-1 space-y-2">
+                        <label className="text-[9px] text-muted-foreground/40 uppercase tracking-wider">End</label>
+                        <Slider value={[trimEnd]} onValueChange={(v) => setTrimEnd(Math.max(v[0], trimStart + 0.5))} min={0} max={duration} step={0.1} />
+                        <span className="text-[10px] text-gold/60 tabular-nums font-mono">{formatTimecode(trimEnd)}</span>
                       </div>
                     </div>
-                    <Button onClick={() => { setTrimStart(0); setTrimEnd(duration); }} variant="outline" size="sm" className="text-[10px] h-7 border-border gap-1 rounded-md">
+                    <Button onClick={() => { setTrimStart(0); setTrimEnd(duration); }} variant="outline" size="sm"
+                      className="text-[10px] h-8 border-border/20 gap-1.5 rounded-xl">
                       <RotateCcw className="w-3 h-3" /> Reset
                     </Button>
                   </div>
@@ -608,10 +662,10 @@ export default function QuickClipEditor() {
                 {activeTool === "adjust" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Adjust</span>
-                      <div className="flex gap-2">
-                        <button onClick={resetColorGrading} className="text-[10px] text-gold font-semibold">Reset</button>
-                        <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Adjust</span>
+                      <div className="flex gap-3">
+                        <button onClick={resetColorGrading} className="text-[10px] text-gold/60 font-semibold hover:text-gold">Reset</button>
+                        <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                       </div>
                     </div>
                     {[
@@ -620,10 +674,10 @@ export default function QuickClipEditor() {
                       { label: "Saturation", value: saturation, set: setSaturation, min: 0, max: 200 },
                       { label: "Hue", value: hueRotate, set: setHueRotate, min: -180, max: 180 },
                     ].map(({ label, value, set, min, max }) => (
-                      <div key={label} className="space-y-1">
+                      <div key={label} className="space-y-1.5">
                         <div className="flex justify-between">
-                          <span className="text-[10px] text-foreground">{label}</span>
-                          <span className="text-[10px] text-gold font-mono tabular-nums">{value}</span>
+                          <span className="text-[10px] text-foreground/70">{label}</span>
+                          <span className="text-[10px] text-gold/50 font-mono tabular-nums">{value}</span>
                         </div>
                         <Slider value={[value]} onValueChange={(v) => set(v[0])} min={min} max={max} step={1} />
                       </div>
@@ -635,16 +689,17 @@ export default function QuickClipEditor() {
                 {activeTool === "export" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Export Quality</span>
-                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground">Done</button>
+                      <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-[0.15em]">Export Quality</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px] text-muted-foreground/50">Done</button>
                     </div>
                     <div className="space-y-1.5">
                       {EXPORT_QUALITIES.map((q) => (
-                        <button key={q.id} onClick={() => setExportQuality(q.id)}
-                          className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${exportQuality === q.id ? "border-gold bg-gold/10" : "border-border bg-surface-2"}`}>
-                          <span className={`text-xs font-bold ${exportQuality === q.id ? "text-gold" : "text-foreground"}`}>{q.label}</span>
-                          <span className="text-[9px] text-muted-foreground ml-2">{q.fps}fps • {(q.bitrate / 1_000_000).toFixed(0)}Mbps</span>
-                        </button>
+                        <motion.button key={q.id} whileTap={{ scale: 0.97 }}
+                          onClick={() => setExportQuality(q.id)}
+                          className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${exportQuality === q.id ? "border-gold/40 bg-gold/6" : "border-border/15 bg-surface-1/15"}`}>
+                          <span className={`text-xs font-bold ${exportQuality === q.id ? "text-gold" : "text-foreground/70"}`}>{q.label}</span>
+                          <span className="text-[9px] text-muted-foreground/40 ml-2">{q.fps}fps • {(q.bitrate / 1_000_000).toFixed(0)}Mbps</span>
+                        </motion.button>
                       ))}
                     </div>
                   </div>
@@ -654,28 +709,31 @@ export default function QuickClipEditor() {
           )}
         </AnimatePresence>
 
-        {/* ─── Bottom Toolbar ─── */}
-        <div className="flex-shrink-0 bg-background border-t border-border">
-          <div className="flex items-stretch overflow-x-auto scrollbar-hide">
-            {([
-              { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
-              { id: "effects" as EditorTool, icon: Sparkles, label: "Effects" },
-              { id: "transitions" as EditorTool, icon: Layers, label: "Trans" },
-              { id: "filters" as EditorTool, icon: Wand2, label: "Filters" },
-              { id: "text" as EditorTool, icon: Type, label: "Text" },
-              { id: "audio" as EditorTool, icon: Music, label: "Audio" },
-              { id: "speed" as EditorTool, icon: Gauge, label: "Speed" },
-              { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
-              { id: "export" as EditorTool, icon: Settings, label: "Quality" },
-            ]).map(({ id, icon: Icon, label }) => (
-              <button key={id} onClick={() => setActiveTool(activeTool === id ? null : id)}
-                className={`flex-1 min-w-[48px] py-3 flex flex-col items-center gap-0.5 transition-colors ${activeTool === id ? "text-gold bg-gold/5" : "text-muted-foreground"}`}>
-                <Icon className="w-5 h-5" />
-                <span className="text-[8px] font-semibold uppercase tracking-wider">{label}</span>
-              </button>
-            ))}
+        {/* ─── Bottom Toolbar — Pill bar ─── */}
+        <div className="flex-shrink-0 bg-surface-0/80 backdrop-blur-xl border-t border-border/15">
+          <div className="flex items-center justify-center py-1.5 px-2">
+            <div className="flex items-center gap-0.5 bg-surface-2/20 rounded-full p-0.5 overflow-x-auto scrollbar-hide">
+              {([
+                { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
+                { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
+                { id: "transitions" as EditorTool, icon: Layers, label: "Trans" },
+                { id: "filters" as EditorTool, icon: Wand2, label: "Filters" },
+                { id: "text" as EditorTool, icon: Type, label: "Text" },
+                { id: "audio" as EditorTool, icon: Music, label: "Audio" },
+                { id: "speed" as EditorTool, icon: Gauge, label: "Speed" },
+                { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
+                { id: "export" as EditorTool, icon: Settings, label: "Quality" },
+              ]).map(({ id, icon: Icon, label }) => (
+                <motion.button key={id} whileTap={{ scale: 0.9 }}
+                  onClick={() => setActiveTool(activeTool === id ? null : id)}
+                  className={`flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-full transition-all duration-200 ${activeTool === id ? "bg-gold/10 text-gold" : "text-muted-foreground/40"}`}>
+                  <Icon className="w-4.5 h-4.5" />
+                  <span className="text-[7px] font-semibold tracking-wider uppercase">{label}</span>
+                </motion.button>
+              ))}
+            </div>
           </div>
-          <div className="h-safe-bottom" />
+          <div className="safe-bottom" />
         </div>
 
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
