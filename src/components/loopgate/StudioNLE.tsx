@@ -6,25 +6,48 @@ import {
   Layers, Eye, EyeOff,
   Trash2, Copy, ZoomIn, ZoomOut, Undo, Redo,
   FileVideo, Wand2, SlidersHorizontal, Keyboard, Settings,
-  Mic, ArrowUpCircle, Check
+  Mic, ArrowUpCircle, Check, ChevronDown, Palette, Move,
+  AlignCenter, AlignLeft, AlignRight, Bold as BoldIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
-  FILTER_PRESETS, TEXT_STYLES, EFFECTS, TRANSITIONS, SPEED_OPTIONS,
+  FILTER_PRESETS, EFFECTS, TRANSITIONS, SPEED_OPTIONS,
   EXPORT_QUALITIES,
-  applyEffect, renderTextOverlay, buildComputedFilter, formatTimecode,
-  type FilterPreset, type TextStyleKey, type ExportQuality,
+  applyEffect, buildComputedFilter, formatTimecode,
+  type FilterPreset, type ExportQuality,
 } from "@/lib/studioEffects";
+import {
+  STUDIO_FONTS, TEXT_ANIMATIONS, TEXT_COLORS, FONT_CATEGORIES,
+  loadAllFonts, preconnectGoogleFonts,
+  type StudioFont, type FontCategory, type TextAnimation,
+} from "@/lib/studioFonts";
 
 // ─── Types ───
-type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
+type TextOverlay = {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  font: StudioFont;
+  fontSize: number;
+  fontWeight: number;
+  color: string;
+  strokeColor: string;
+  strokeWidth: number;
+  shadow: boolean;
+  glow: boolean;
+  animation: string;
+  align: "left" | "center" | "right";
+  startTime: number;
+  endTime: number;
+};
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
 type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale";
-type HistoryEntry = { filter: FilterPreset; effects: string[]; brightness: number; contrast: number; saturation: number; hueRotate: number; speed: number; trimStart: number; trimEnd: number; textOverlays: TextOverlay[] };
+type EffectIntensity = Record<string, number>;
 
 // Adobe Pro accent — Premiere/AE blue-purple
 const ACCENT = "#9999FF";
@@ -38,7 +61,7 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "effects", icon: Sparkles, label: "Effects" },
   { id: "transitions", icon: Layers, label: "Transitions" },
   { id: "filters", icon: Wand2, label: "Filters" },
-  { id: "adjust", icon: SlidersHorizontal, label: "Adjustment" },
+  { id: "adjust", icon: SlidersHorizontal, label: "Adjust" },
   { id: "upscale", icon: ArrowUpCircle, label: "Upscale" },
   { id: "export", icon: Settings, label: "Export" },
 ];
@@ -61,8 +84,6 @@ export default function StudioNLE() {
   const [trimEnd, setTrimEnd] = useState(0);
   const [activeFilter, setActiveFilter] = useState<FilterPreset>(FILTER_PRESETS[0]);
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
-  const [textInput, setTextInput] = useState("");
-  const [textStyle, setTextStyle] = useState<TextStyleKey>("bold");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioName, setAudioName] = useState("");
   const [speed, setSpeed] = useState(1);
@@ -72,7 +93,27 @@ export default function StudioNLE() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [activeEffects, setActiveEffects] = useState<string[]>([]);
+  const [effectIntensities, setEffectIntensities] = useState<EffectIntensity>({});
   const [activeTransition, setActiveTransition] = useState<string | null>(null);
+  const [transitionDuration, setTransitionDuration] = useState(0.5);
+
+  // Text editor state
+  const [textInput, setTextInput] = useState("");
+  const [textFont, setTextFont] = useState<StudioFont>(STUDIO_FONTS[0]);
+  const [textFontSize, setTextFontSize] = useState(48);
+  const [textFontWeight, setTextFontWeight] = useState(700);
+  const [textColor, setTextColor] = useState("#FFFFFF");
+  const [textStrokeColor, setTextStrokeColor] = useState("#000000");
+  const [textStrokeWidth, setTextStrokeWidth] = useState(3);
+  const [textShadow, setTextShadow] = useState(false);
+  const [textGlow, setTextGlow] = useState(false);
+  const [textAnimation, setTextAnimation] = useState("none");
+  const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("center");
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [fontCategory, setFontCategory] = useState<FontCategory | "all">("all");
+  const [fontSearch, setFontSearch] = useState("");
+  const [showFontPicker, setShowFontPicker] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   // UI state
   const [activeToolTab, setActiveToolTab] = useState<ToolTab | null>("media");
@@ -98,9 +139,9 @@ export default function StudioNLE() {
   const [saturation, setSaturation] = useState(100);
   const [hueRotate, setHueRotate] = useState(0);
 
-  // Undo/Redo
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  // Undo/Redo (simplified — just track key states)
+  const [undoStack, setUndoStack] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
@@ -115,34 +156,20 @@ export default function StudioNLE() {
   const filteredFilters = useMemo(() => filterCategory === "all" ? FILTER_PRESETS : FILTER_PRESETS.filter(f => f.category === filterCategory), [filterCategory]);
   const filteredEffects = useMemo(() => effectCategory === "all" ? EFFECTS : EFFECTS.filter(e => e.category === effectCategory), [effectCategory]);
 
-  // ─── Undo/Redo ───
-  const pushHistory = useCallback(() => {
-    const entry: HistoryEntry = { filter: activeFilter, effects: [...activeEffects], brightness, contrast, saturation, hueRotate, speed, trimStart, trimEnd, textOverlays: [...textOverlays] };
-    setHistory(prev => [...prev.slice(0, historyIndex + 1), entry]);
-    setHistoryIndex(prev => prev + 1);
-  }, [activeFilter, activeEffects, brightness, contrast, saturation, hueRotate, speed, trimStart, trimEnd, textOverlays, historyIndex]);
+  const filteredFonts = useMemo(() => {
+    let fonts = fontCategory === "all" ? STUDIO_FONTS : STUDIO_FONTS.filter(f => f.category === fontCategory);
+    if (fontSearch.trim()) {
+      const q = fontSearch.toLowerCase();
+      fonts = fonts.filter(f => f.label.toLowerCase().includes(q));
+    }
+    return fonts;
+  }, [fontCategory, fontSearch]);
 
-  const undo = useCallback(() => {
-    if (historyIndex <= 0) return;
-    const entry = history[historyIndex - 1];
-    setActiveFilter(entry.filter); setActiveEffects(entry.effects);
-    setBrightness(entry.brightness); setContrast(entry.contrast);
-    setSaturation(entry.saturation); setHueRotate(entry.hueRotate);
-    setSpeed(entry.speed); setTrimStart(entry.trimStart); setTrimEnd(entry.trimEnd);
-    setTextOverlays(entry.textOverlays);
-    setHistoryIndex(prev => prev - 1);
-  }, [history, historyIndex]);
-
-  const redo = useCallback(() => {
-    if (historyIndex >= history.length - 1) return;
-    const entry = history[historyIndex + 1];
-    setActiveFilter(entry.filter); setActiveEffects(entry.effects);
-    setBrightness(entry.brightness); setContrast(entry.contrast);
-    setSaturation(entry.saturation); setHueRotate(entry.hueRotate);
-    setSpeed(entry.speed); setTrimStart(entry.trimStart); setTrimEnd(entry.trimEnd);
-    setTextOverlays(entry.textOverlays);
-    setHistoryIndex(prev => prev + 1);
-  }, [history, historyIndex]);
+  // ─── Load Fonts ───
+  useEffect(() => {
+    preconnectGoogleFonts();
+    loadAllFonts();
+  }, []);
 
   // ─── Keyboard Shortcuts ───
   useEffect(() => {
@@ -155,10 +182,9 @@ export default function StudioNLE() {
         case "j": seekTo(Math.max(0, currentTime - 5)); break;
         case "k": togglePlay(); break;
         case "l": seekTo(Math.min(duration, currentTime + 5)); break;
-        case "i": setTrimStart(currentTime); pushHistory(); toast.success("In point set"); break;
-        case "o": setTrimEnd(currentTime); pushHistory(); toast.success("Out point set"); break;
+        case "i": setTrimStart(currentTime); toast.success("In point set"); break;
+        case "o": setTrimEnd(currentTime); toast.success("Out point set"); break;
         case "s": if (e.ctrlKey || e.metaKey) { e.preventDefault(); startExport(); } break;
-        case "z": if (e.ctrlKey || e.metaKey) { e.preventDefault(); if (e.shiftKey) redo(); else undo(); } break;
         case "m": setMuted(prev => !prev); break;
         case "[": setSpeed(prev => SPEED_OPTIONS[Math.max(0, SPEED_OPTIONS.indexOf(prev) - 1)]); break;
         case "]": setSpeed(prev => SPEED_OPTIONS[Math.min(SPEED_OPTIONS.length - 1, SPEED_OPTIONS.indexOf(prev) + 1)]); break;
@@ -218,8 +244,17 @@ export default function StudioNLE() {
   };
 
   const toggleEffect = (effectId: string) => {
-    pushHistory();
-    setActiveEffects(prev => prev.includes(effectId) ? prev.filter(e => e !== effectId) : [...prev, effectId]);
+    setActiveEffects(prev => {
+      if (prev.includes(effectId)) return prev.filter(e => e !== effectId);
+      return [...prev, effectId];
+    });
+    if (!effectIntensities[effectId]) {
+      setEffectIntensities(prev => ({ ...prev, [effectId]: 0.7 }));
+    }
+  };
+
+  const setEffectIntensity = (effectId: string, value: number) => {
+    setEffectIntensities(prev => ({ ...prev, [effectId]: value }));
   };
 
   // ─── Timeline Thumbnails ───
@@ -265,12 +300,22 @@ export default function StudioNLE() {
         ctx.filter = computedFilter;
         ctx.drawImage(vid, 0, 0);
         ctx.filter = "none";
+
+        // Apply effects with per-effect intensity
         activeEffects.forEach(effectId => {
-          try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* graceful */ }
+          const intensity = effectIntensities[effectId] ?? 0.7;
+          try { applyEffect(ctx, canvas, effectId, vid.currentTime, intensity); } catch { /* graceful */ }
         });
+
+        // Apply transitions
+        if (activeTransition && duration > 0) {
+          applyTransitionToCanvas(ctx, canvas, activeTransition, vid.currentTime, duration, transitionDuration);
+        }
+
+        // Render text overlays with full styling
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-            try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* graceful */ }
+            renderFullTextOverlay(ctx, canvas, overlay, vid.currentTime);
           }
         });
       }
@@ -278,7 +323,223 @@ export default function StudioNLE() {
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration]);
+
+  // ─── Text Rendering Engine ───
+  const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
+    const { text, x, y, font, fontSize, fontWeight, color, strokeColor, strokeWidth, shadow, glow, animation, align } = overlay;
+    const w = canvas.width, h = canvas.height;
+
+    // Calculate animation progress
+    const elapsed = time - overlay.startTime;
+    const totalDur = overlay.endTime - overlay.startTime;
+    let animProgress = 1;
+    let offsetX = 0, offsetY = 0, scale = 1, alpha = 1, blur = 0;
+
+    if (animation !== "none" && elapsed < 0.5) {
+      animProgress = Math.min(1, elapsed / 0.5);
+      const ease = 1 - Math.pow(1 - animProgress, 3); // ease-out cubic
+      switch (animation) {
+        case "fade_in": alpha = ease; break;
+        case "slide_up": offsetY = (1 - ease) * 60; alpha = ease; break;
+        case "slide_down": offsetY = -(1 - ease) * 60; alpha = ease; break;
+        case "scale_in": scale = 0.3 + ease * 0.7; alpha = ease; break;
+        case "bounce": scale = ease < 0.6 ? ease / 0.6 * 1.2 : 1.2 - (ease - 0.6) / 0.4 * 0.2; alpha = Math.min(1, ease * 2); break;
+        case "rotate_in": scale = ease; alpha = ease; break;
+        case "blur_in": blur = (1 - ease) * 10; alpha = ease; break;
+        case "typewriter": break; // handled below
+        case "shake":
+          if (ease < 1) { offsetX = Math.sin(elapsed * 40) * 5 * (1 - ease); offsetY = Math.cos(elapsed * 35) * 3 * (1 - ease); }
+          alpha = Math.min(1, ease * 3);
+          break;
+        case "glitch":
+          if (ease < 1) { offsetX = (Math.random() - 0.5) * 20 * (1 - ease); offsetY = (Math.random() - 0.5) * 10 * (1 - ease); }
+          alpha = Math.min(1, ease * 2);
+          break;
+        case "wave": offsetY = Math.sin(elapsed * 8) * 10 * (1 - ease); alpha = ease; break;
+      }
+    }
+
+    // Typewriter: only show partial text
+    let displayText = text;
+    if (animation === "typewriter" && elapsed < text.length * 0.06) {
+      const charsToShow = Math.floor(elapsed / 0.06);
+      displayText = text.substring(0, Math.max(1, charsToShow));
+    }
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    if (blur > 0) ctx.filter = `blur(${blur}px)`;
+
+    const scaledSize = Math.round(fontSize * (w / 1920)); // Scale to video resolution
+    ctx.font = `${fontWeight} ${scaledSize}px ${font.family}, sans-serif`;
+    ctx.textAlign = align;
+    ctx.textBaseline = "middle";
+
+    const px = w * x + offsetX;
+    const py = h * y + offsetY;
+
+    if (scale !== 1) {
+      ctx.translate(px, py);
+      ctx.scale(scale, scale);
+      ctx.translate(-px, -py);
+    }
+
+    // Shadow
+    if (shadow) {
+      ctx.shadowColor = "rgba(0,0,0,0.7)";
+      ctx.shadowBlur = scaledSize * 0.15;
+      ctx.shadowOffsetX = scaledSize * 0.04;
+      ctx.shadowOffsetY = scaledSize * 0.04;
+    }
+
+    // Glow
+    if (glow) {
+      ctx.shadowColor = color;
+      ctx.shadowBlur = scaledSize * 0.4;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    }
+
+    // Stroke
+    if (strokeWidth > 0 && strokeColor !== "transparent") {
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = strokeWidth * (w / 1920);
+      ctx.lineJoin = "round";
+      ctx.strokeText(displayText, px, py);
+    }
+
+    // Fill
+    ctx.fillStyle = color;
+    ctx.fillText(displayText, px, py);
+
+    ctx.restore();
+  };
+
+  // ─── Transition Engine ───
+  const applyTransitionToCanvas = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, transId: string, time: number, dur: number, transDur: number) => {
+    const w = canvas.width, h = canvas.height;
+    // Intro transition (first transDur seconds)
+    const introProgress = Math.min(1, time / transDur);
+    // Outro transition (last transDur seconds)
+    const outroStart = dur - transDur;
+    const outroProgress = time > outroStart ? Math.min(1, (time - outroStart) / transDur) : -1;
+
+    const applyTrans = (progress: number, isOutro: boolean) => {
+      const p = isOutro ? progress : 1 - progress;
+      if (p <= 0) return;
+
+      switch (transId) {
+        case "fade": {
+          ctx.fillStyle = `rgba(0,0,0,${p})`;
+          ctx.fillRect(0, 0, w, h);
+          break;
+        }
+        case "dissolve": {
+          ctx.globalAlpha = p * 0.8;
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, w, h);
+          ctx.globalAlpha = 1;
+          break;
+        }
+        case "slide_left": {
+          const imgData = ctx.getImageData(0, 0, w, h);
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
+          ctx.putImageData(imgData, isOutro ? -w * p : w * p, 0);
+          break;
+        }
+        case "slide_right": {
+          const imgData = ctx.getImageData(0, 0, w, h);
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
+          ctx.putImageData(imgData, isOutro ? w * p : -w * p, 0);
+          break;
+        }
+        case "slide_up": {
+          const imgData = ctx.getImageData(0, 0, w, h);
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
+          ctx.putImageData(imgData, 0, isOutro ? -h * p : h * p);
+          break;
+        }
+        case "wipe": {
+          const wipeX = isOutro ? w * (1 - p) : w * p;
+          ctx.fillStyle = "#000";
+          if (isOutro) ctx.fillRect(wipeX, 0, w - wipeX, h);
+          else ctx.fillRect(0, 0, w - wipeX, h);
+          break;
+        }
+        case "zoom_in": {
+          const scale = isOutro ? 1 + p * 2 : 3 - p * 2;
+          const imgData = ctx.getImageData(0, 0, w, h);
+          ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
+          ctx.save();
+          ctx.translate(w / 2, h / 2);
+          ctx.scale(scale, scale);
+          ctx.globalAlpha = isOutro ? 1 - p : p;
+          ctx.translate(-w / 2, -h / 2);
+          ctx.putImageData(imgData, 0, 0);
+          ctx.restore();
+          ctx.globalAlpha = 1;
+          break;
+        }
+        case "zoom_out": {
+          const s = isOutro ? 1 - p * 0.5 : 0.5 + p * 0.5;
+          ctx.globalAlpha = isOutro ? 1 - p : p;
+          ctx.save();
+          ctx.translate(w / 2, h / 2);
+          ctx.scale(s, s);
+          ctx.translate(-w / 2, -h / 2);
+          ctx.restore();
+          ctx.globalAlpha = 1;
+          break;
+        }
+        case "spin": {
+          const angle = p * Math.PI * 0.5;
+          ctx.save();
+          ctx.translate(w / 2, h / 2);
+          ctx.rotate(isOutro ? angle : -angle);
+          ctx.globalAlpha = 1 - p * 0.5;
+          ctx.translate(-w / 2, -h / 2);
+          ctx.restore();
+          ctx.globalAlpha = 1;
+          break;
+        }
+        case "blur_trans": {
+          ctx.globalAlpha = p;
+          ctx.filter = `blur(${p * 20}px)`;
+          const imgData = ctx.getImageData(0, 0, w, h);
+          ctx.putImageData(imgData, 0, 0);
+          ctx.filter = "none";
+          ctx.globalAlpha = 1;
+          break;
+        }
+        case "glitch_trans": {
+          if (p > 0.1) {
+            const slices = Math.round(p * 15);
+            for (let i = 0; i < slices; i++) {
+              const sy = Math.random() * h;
+              const sh = 2 + Math.random() * 20;
+              const ox = (Math.random() - 0.5) * w * p * 0.3;
+              try {
+                const slice = ctx.getImageData(0, Math.floor(sy), w, Math.min(Math.ceil(sh), h - Math.floor(sy)));
+                ctx.putImageData(slice, ox, Math.floor(sy));
+              } catch { /* */ }
+            }
+            ctx.fillStyle = `rgba(0,0,0,${p * 0.3})`;
+            ctx.fillRect(0, 0, w, h);
+          }
+          break;
+        }
+        case "flash_trans": {
+          ctx.fillStyle = `rgba(255,255,255,${p})`;
+          ctx.fillRect(0, 0, w, h);
+          break;
+        }
+      }
+    };
+
+    if (introProgress < 1) applyTrans(introProgress, false);
+    if (outroProgress >= 0) applyTrans(outroProgress, true);
+  };
 
   // ─── Playback Controls ───
   const togglePlay = useCallback(() => {
@@ -314,19 +575,42 @@ export default function StudioNLE() {
 
   const addTextOverlay = () => {
     if (!textInput.trim()) return;
-    pushHistory();
-    setTextOverlays((prev) => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle, startTime: trimStart, endTime: trimEnd }]);
+    const overlay: TextOverlay = {
+      id: crypto.randomUUID(),
+      text: textInput,
+      x: 0.5, y: 0.5,
+      font: textFont,
+      fontSize: textFontSize,
+      fontWeight: textFontWeight,
+      color: textColor,
+      strokeColor: textStrokeColor,
+      strokeWidth: textStrokeWidth,
+      shadow: textShadow,
+      glow: textGlow,
+      animation: textAnimation,
+      align: textAlign,
+      startTime: trimStart,
+      endTime: trimEnd,
+    };
+    setTextOverlays((prev) => [...prev, overlay]);
     setTextInput(""); toast.success("Text overlay added");
   };
 
-  const removeTextOverlay = (id: string) => { pushHistory(); setTextOverlays((prev) => prev.filter((t) => t.id !== id)); };
+  const updateTextOverlay = (id: string, updates: Partial<TextOverlay>) => {
+    setTextOverlays(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const removeTextOverlay = (id: string) => {
+    setTextOverlays((prev) => prev.filter((t) => t.id !== id));
+    if (editingTextId === id) setEditingTextId(null);
+  };
 
   const splitAtPlayhead = () => {
     if (!activeMedia || currentTime <= trimStart || currentTime >= trimEnd) return;
-    pushHistory(); toast.success(`Split at ${formatTimecode(currentTime, true)}`);
+    toast.success(`Split at ${formatTimecode(currentTime, true)}`);
   };
 
-  const resetColorGrading = () => { pushHistory(); setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); };
+  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); };
 
   // ─── Upscaler ───
   const handleUpscaleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -425,10 +709,16 @@ export default function StudioNLE() {
       ctx.filter = computedFilter;
       ctx.drawImage(vid, 0, 0, exportW, exportH);
       ctx.filter = "none";
-      activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
+      activeEffects.forEach(effectId => {
+        const intensity = effectIntensities[effectId] ?? 0.7;
+        try { applyEffect(ctx, canvas, effectId, vid.currentTime, intensity); } catch { /* */ }
+      });
+      if (activeTransition) {
+        applyTransitionToCanvas(ctx, canvas, activeTransition, vid.currentTime - trimStart, exportDuration, transitionDuration);
+      }
       textOverlays.forEach((overlay) => {
         if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-          try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
+          renderFullTextOverlay(ctx, canvas, overlay, vid.currentTime);
         }
       });
       setProgress(Math.min(99, Math.round(((vid.currentTime - trimStart) / exportDuration) * 100)));
@@ -440,7 +730,7 @@ export default function StudioNLE() {
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, exportQuality]);
+  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration]);
 
   const handleDownload = () => {
     if (!resultUrl || !activeMedia) return;
@@ -453,7 +743,7 @@ export default function StudioNLE() {
   return (
     <div className="h-full flex flex-col overflow-hidden select-none" style={{ background: "#0a0a0a" }}>
 
-      {/* ═══ TOP TOOLBAR — CapCut style ═══ */}
+      {/* ═══ TOP TOOLBAR ═══ */}
       <div className="h-11 flex items-center px-2 gap-1 flex-shrink-0 z-20" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
         {TOOL_TABS.map((tab) => {
           const isActive = activeToolTab === tab.id;
@@ -470,21 +760,8 @@ export default function StudioNLE() {
             </button>
           );
         })}
-
         <div className="flex-1" />
-
-        {/* Undo/Redo */}
-        <div className="flex items-center gap-0.5">
-          <button onClick={undo} disabled={historyIndex <= 0}
-            className="p-1.5 rounded-md transition-all disabled:opacity-20 hover:bg-white/5"
-            style={{ color: "#8a8a8a" }}><Undo className="w-4 h-4" /></button>
-          <button onClick={redo} disabled={historyIndex >= history.length - 1}
-            className="p-1.5 rounded-md transition-all disabled:opacity-20 hover:bg-white/5"
-            style={{ color: "#8a8a8a" }}><Redo className="w-4 h-4" /></button>
-        </div>
-
         <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
-
         {state === "done" ? (
           <button onClick={handleDownload}
             className="h-8 px-5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-90"
@@ -501,7 +778,7 @@ export default function StudioNLE() {
         )}
       </div>
 
-      {/* ═══ MAIN AREA — 3-column ═══ */}
+      {/* ═══ MAIN AREA ═══ */}
       <div className="flex-1 flex min-h-0">
 
         {/* ─── LEFT PANEL ─── */}
@@ -510,13 +787,12 @@ export default function StudioNLE() {
             <motion.div
               key={activeToolTab}
               initial={{ width: 0, opacity: 0 }}
-              animate={{ width: 280, opacity: 1 }}
+              animate={{ width: 300, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
               className="flex-shrink-0 overflow-hidden flex flex-col"
               style={{ background: "#1a1a1a", borderRight: "1px solid #2a2a2a" }}
             >
-              {/* Panel sidebar nav */}
               <div className="flex items-center h-9 px-3 flex-shrink-0" style={{ borderBottom: "1px solid #222" }}>
                 <span className="text-xs font-semibold" style={{ color: "#e0e0e0" }}>
                   {TOOL_TABS.find(t => t.id === activeToolTab)?.label}
@@ -527,11 +803,11 @@ export default function StudioNLE() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "none" }}>
-                {/* MEDIA */}
+              <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+
+                {/* ════════ MEDIA ════════ */}
                 {activeToolTab === "media" && (
                   <>
-                    {/* Import drop zone */}
                     <button onClick={() => fileInputRef.current?.click()}
                       className="w-full py-8 rounded-lg flex flex-col items-center gap-3 transition-all hover:bg-white/5"
                       style={{ border: `1px dashed #333`, background: "#151515" }}>
@@ -540,12 +816,9 @@ export default function StudioNLE() {
                       </div>
                       <div className="text-center">
                         <p className="text-xs font-medium" style={{ color: ACCENT }}>Import</p>
-                        <p className="text-[10px] mt-0.5" style={{ color: "#555" }}>Drag and drop videos, photos, and audio files here</p>
+                        <p className="text-[10px] mt-0.5" style={{ color: "#555" }}>Videos, photos, and audio</p>
                       </div>
                     </button>
-
-                    <p className="text-[10px] text-center" style={{ color: "#444" }}>Import your clips to get started</p>
-
                     {mediaItems.length > 0 && (
                       <div className="grid grid-cols-2 gap-1.5 pt-2">
                         {mediaItems.map((item) => (
@@ -575,7 +848,207 @@ export default function StudioNLE() {
                   </>
                 )}
 
-                {/* EFFECTS */}
+                {/* ════════ TEXT — Full Editor ════════ */}
+                {activeToolTab === "text" && (
+                  <>
+                    {/* Text input */}
+                    <input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Type your text..."
+                      className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-all"
+                      style={{ background: "#151515", border: `1px solid #2a2a2a`, color: "#e0e0e0" }}
+                      onFocus={(e) => e.currentTarget.style.borderColor = ACCENT}
+                      onBlur={(e) => e.currentTarget.style.borderColor = "#2a2a2a"}
+                      onKeyDown={(e) => e.key === "Enter" && addTextOverlay()} />
+
+                    {/* Font picker */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-medium" style={{ color: "#888" }}>Font</span>
+                      <button onClick={() => setShowFontPicker(!showFontPicker)}
+                        className="w-full flex items-center justify-between rounded-lg px-3 py-2 transition-all hover:bg-white/3"
+                        style={{ background: "#151515", border: "1px solid #2a2a2a" }}>
+                        <span className="text-xs truncate" style={{ color: "#ccc", fontFamily: textFont.family }}>{textFont.label}</span>
+                        <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#555", transform: showFontPicker ? "rotate(180deg)" : "" }} />
+                      </button>
+
+                      <AnimatePresence>
+                        {showFontPicker && (
+                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden rounded-lg" style={{ border: "1px solid #2a2a2a", background: "#111" }}>
+                            {/* Font search */}
+                            <input value={fontSearch} onChange={e => setFontSearch(e.target.value)} placeholder="Search fonts..."
+                              className="w-full px-3 py-2 text-[11px] focus:outline-none" style={{ background: "transparent", color: "#ccc", borderBottom: "1px solid #222" }} />
+                            {/* Font category tabs */}
+                            <div className="flex gap-0.5 p-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+                              {FONT_CATEGORIES.map(cat => (
+                                <button key={cat.id} onClick={() => setFontCategory(cat.id)}
+                                  className="px-2 py-0.5 text-[8px] font-semibold rounded flex-shrink-0 transition-all"
+                                  style={{
+                                    background: fontCategory === cat.id ? ACCENT_DIM : "transparent",
+                                    color: fontCategory === cat.id ? ACCENT : "#555",
+                                  }}>{cat.label}</button>
+                              ))}
+                            </div>
+                            {/* Font list */}
+                            <div className="max-h-[200px] overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+                              {filteredFonts.map(font => (
+                                <button key={font.label} onClick={() => { setTextFont(font); setShowFontPicker(false); setFontSearch(""); }}
+                                  className="w-full text-left px-3 py-1.5 hover:bg-white/5 transition-all flex items-center justify-between"
+                                  style={{ borderBottom: "1px solid #1a1a1a" }}>
+                                  <span className="text-xs truncate" style={{ color: textFont.label === font.label ? ACCENT : "#ccc", fontFamily: font.family }}>
+                                    {font.label}
+                                  </span>
+                                  <span className="text-[8px] capitalize flex-shrink-0 ml-2" style={{ color: "#444" }}>{font.category}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Font size & weight */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-[10px]" style={{ color: "#888" }}>Size</span>
+                          <span className="text-[10px] font-mono" style={{ color: "#555" }}>{textFontSize}px</span>
+                        </div>
+                        <Slider value={[textFontSize]} onValueChange={v => setTextFontSize(v[0])} min={12} max={200} step={1} />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-[10px]" style={{ color: "#888" }}>Weight</span>
+                          <span className="text-[10px] font-mono" style={{ color: "#555" }}>{textFontWeight}</span>
+                        </div>
+                        <Slider value={[textFontWeight]} onValueChange={v => setTextFontWeight(v[0])} min={300} max={900} step={100} />
+                      </div>
+                    </div>
+
+                    {/* Color pickers */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-medium" style={{ color: "#888" }}>Color</span>
+                      <div className="flex flex-wrap gap-1">
+                        {TEXT_COLORS.map(c => (
+                          <button key={c} onClick={() => setTextColor(c)}
+                            className="w-5 h-5 rounded-full transition-all"
+                            style={{
+                              background: c,
+                              border: textColor === c ? `2px solid ${ACCENT}` : "2px solid #333",
+                              boxShadow: textColor === c ? `0 0 6px ${c}44` : "none",
+                            }} />
+                        ))}
+                        <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)}
+                          className="w-5 h-5 rounded-full cursor-pointer" style={{ border: "2px solid #333" }} />
+                      </div>
+                    </div>
+
+                    {/* Stroke */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between">
+                        <span className="text-[10px]" style={{ color: "#888" }}>Stroke</span>
+                        <span className="text-[10px] font-mono" style={{ color: "#555" }}>{textStrokeWidth}px</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="color" value={textStrokeColor} onChange={e => setTextStrokeColor(e.target.value)}
+                          className="w-6 h-6 rounded cursor-pointer flex-shrink-0" style={{ border: "1px solid #333" }} />
+                        <Slider value={[textStrokeWidth]} onValueChange={v => setTextStrokeWidth(v[0])} min={0} max={10} step={1} className="flex-1" />
+                      </div>
+                    </div>
+
+                    {/* Alignment */}
+                    <div className="flex gap-1">
+                      {([
+                        { id: "left", icon: AlignLeft },
+                        { id: "center", icon: AlignCenter },
+                        { id: "right", icon: AlignRight },
+                      ] as const).map(({ id, icon: Icon }) => (
+                        <button key={id} onClick={() => setTextAlign(id)}
+                          className="flex-1 py-1.5 rounded-md flex items-center justify-center transition-all"
+                          style={{
+                            background: textAlign === id ? ACCENT_DIM : "#151515",
+                            border: textAlign === id ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                            color: textAlign === id ? ACCENT : "#666",
+                          }}>
+                          <Icon className="w-3.5 h-3.5" />
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Style toggles */}
+                    <div className="flex gap-1.5">
+                      <button onClick={() => setTextShadow(!textShadow)}
+                        className="flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all"
+                        style={{
+                          background: textShadow ? ACCENT_DIM : "#151515",
+                          border: textShadow ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                          color: textShadow ? ACCENT : "#666",
+                        }}>Shadow</button>
+                      <button onClick={() => setTextGlow(!textGlow)}
+                        className="flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all"
+                        style={{
+                          background: textGlow ? ACCENT_DIM : "#151515",
+                          border: textGlow ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                          color: textGlow ? ACCENT : "#666",
+                        }}>Glow</button>
+                    </div>
+
+                    {/* Animation */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-medium" style={{ color: "#888" }}>Animation</span>
+                      <div className="grid grid-cols-4 gap-1">
+                        {TEXT_ANIMATIONS.map(anim => (
+                          <button key={anim.id} onClick={() => setTextAnimation(anim.id)}
+                            className="py-2 rounded-md flex flex-col items-center gap-0.5 transition-all"
+                            style={{
+                              background: textAnimation === anim.id ? ACCENT_DIM : "#151515",
+                              border: textAnimation === anim.id ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                            }}>
+                            <span className="text-sm">{anim.icon}</span>
+                            <span className="text-[7px]" style={{ color: textAnimation === anim.id ? ACCENT : "#666" }}>{anim.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    <div className="rounded-lg p-4 flex items-center justify-center" style={{ background: "#0a0a0a", border: "1px solid #222", minHeight: 60 }}>
+                      <span style={{
+                        fontFamily: textFont.family,
+                        fontSize: Math.min(textFontSize, 36),
+                        fontWeight: textFontWeight,
+                        color: textColor,
+                        WebkitTextStroke: textStrokeWidth > 0 ? `${Math.min(textStrokeWidth, 2)}px ${textStrokeColor}` : undefined,
+                        textShadow: textShadow ? "2px 2px 6px rgba(0,0,0,0.7)" : textGlow ? `0 0 12px ${textColor}` : undefined,
+                        textAlign: textAlign,
+                      }}>
+                        {textInput || "Preview"}
+                      </span>
+                    </div>
+
+                    {/* Add button */}
+                    <button onClick={addTextOverlay} disabled={!textInput.trim()}
+                      className="w-full h-9 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
+                      style={{ background: ACCENT, color: "#000" }}>
+                      Add Text
+                    </button>
+
+                    {/* Existing text overlays */}
+                    {textOverlays.length > 0 && (
+                      <div className="space-y-1 pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <span className="text-[10px] font-medium" style={{ color: "#888" }}>Active Overlays</span>
+                        {textOverlays.map((t) => (
+                          <div key={t.id} className="flex items-center gap-2 rounded-md px-2.5 py-2 group" style={{ background: "#151515", border: "1px solid #222" }}>
+                            <Type className="w-3 h-3 flex-shrink-0" style={{ color: "#555" }} />
+                            <span className="text-[10px] truncate flex-1" style={{ color: "#aaa", fontFamily: t.font.family }}>{t.text}</span>
+                            <span className="text-[8px] flex-shrink-0" style={{ color: "#444" }}>{t.font.label}</span>
+                            <button onClick={() => removeTextOverlay(t.id)} className="hover:opacity-70"><X className="w-3 h-3" style={{ color: "#555" }} /></button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* ════════ EFFECTS with Intensity ════════ */}
                 {activeToolTab === "effects" && (
                   <>
                     <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
@@ -591,25 +1064,36 @@ export default function StudioNLE() {
                         </button>
                       ))}
                     </div>
-                    <div className="grid grid-cols-3 gap-1.5">
+                    <div className="space-y-1">
                       {filteredEffects.map((effect) => {
                         const isActive = activeEffects.includes(effect.id);
+                        const intensity = effectIntensities[effect.id] ?? 0.7;
                         return (
-                          <button key={effect.id}
-                            onClick={() => toggleEffect(effect.id)}
-                            className="py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all"
+                          <div key={effect.id} className="rounded-lg overflow-hidden transition-all"
                             style={{
                               background: isActive ? ACCENT_DIM : "#151515",
                               border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
                             }}>
-                            <span className="text-base">{effect.icon}</span>
-                            <span className="text-[8px] font-medium" style={{ color: isActive ? ACCENT : "#888" }}>{effect.label}</span>
-                          </button>
+                            <button
+                              onClick={() => toggleEffect(effect.id)}
+                              className="w-full flex items-center gap-3 px-3 py-2.5 transition-all">
+                              <span className="text-base w-6 text-center">{effect.icon}</span>
+                              <span className="text-[11px] font-medium flex-1 text-left" style={{ color: isActive ? ACCENT : "#888" }}>{effect.label}</span>
+                              {isActive && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: ACCENT }} />}
+                            </button>
+                            {isActive && (
+                              <div className="px-3 pb-2.5 flex items-center gap-2">
+                                <span className="text-[9px] flex-shrink-0 w-12" style={{ color: "#555" }}>Intensity</span>
+                                <Slider value={[intensity * 100]} onValueChange={v => setEffectIntensity(effect.id, v[0] / 100)} min={10} max={100} step={5} className="flex-1" />
+                                <span className="text-[9px] font-mono w-8 text-right" style={{ color: "#555" }}>{Math.round(intensity * 100)}%</span>
+                              </div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
                     {activeEffects.length > 0 && (
-                      <button onClick={() => { pushHistory(); setActiveEffects([]); }}
+                      <button onClick={() => setActiveEffects([])}
                         className="w-full py-2 text-[10px] font-medium rounded-lg transition-all hover:bg-red-500/10"
                         style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
                         Clear All ({activeEffects.length})
@@ -618,28 +1102,46 @@ export default function StudioNLE() {
                   </>
                 )}
 
-                {/* TRANSITIONS */}
+                {/* ════════ TRANSITIONS with Duration ════════ */}
                 {activeToolTab === "transitions" && (
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {TRANSITIONS.map((trans) => {
-                      const isActive = activeTransition === trans.id;
-                      return (
-                        <button key={trans.id}
-                          onClick={() => setActiveTransition(isActive ? null : trans.id)}
-                          className="py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all"
-                          style={{
-                            background: isActive ? ACCENT_DIM : "#151515",
-                            border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
-                          }}>
-                          <span className="text-base">{trans.icon}</span>
-                          <span className="text-[8px] font-medium" style={{ color: isActive ? ACCENT : "#888" }}>{trans.label}</span>
+                  <>
+                    <p className="text-[10px]" style={{ color: "#666" }}>Applied at the start and end of your clip.</p>
+                    <div className="space-y-1">
+                      {TRANSITIONS.map((trans) => {
+                        const isActive = activeTransition === trans.id;
+                        return (
+                          <button key={trans.id}
+                            onClick={() => setActiveTransition(isActive ? null : trans.id)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all"
+                            style={{
+                              background: isActive ? ACCENT_DIM : "#151515",
+                              border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                            }}>
+                            <span className="text-base w-6 text-center">{trans.icon}</span>
+                            <span className="text-[11px] font-medium flex-1 text-left" style={{ color: isActive ? ACCENT : "#888" }}>{trans.label}</span>
+                            {isActive && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: ACCENT }} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {activeTransition && (
+                      <div className="space-y-1.5 pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <div className="flex justify-between">
+                          <span className="text-[10px]" style={{ color: "#888" }}>Duration</span>
+                          <span className="text-[10px] font-mono" style={{ color: "#555" }}>{transitionDuration.toFixed(1)}s</span>
+                        </div>
+                        <Slider value={[transitionDuration * 10]} onValueChange={v => setTransitionDuration(v[0] / 10)} min={1} max={30} step={1} />
+                        <button onClick={() => setActiveTransition(null)}
+                          className="w-full py-2 text-[10px] font-medium rounded-lg transition-all hover:bg-red-500/10"
+                          style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
+                          Remove Transition
                         </button>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
-                {/* FILTERS */}
+                {/* ════════ FILTERS ════════ */}
                 {activeToolTab === "filters" && (
                   <>
                     <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
@@ -658,14 +1160,17 @@ export default function StudioNLE() {
                     <div className="grid grid-cols-3 gap-1.5">
                       {filteredFilters.map((preset) => (
                         <button key={preset.name}
-                          onClick={() => { pushHistory(); setActiveFilter(preset); }}
+                          onClick={() => setActiveFilter(preset)}
                           className="flex flex-col items-center gap-1.5">
-                          <div className="w-full aspect-square rounded-lg transition-all"
+                          <div className="w-full aspect-square rounded-lg transition-all relative overflow-hidden"
                             style={{
                               backgroundColor: preset.color,
                               border: activeFilter.name === preset.name ? `2px solid ${ACCENT}` : "2px solid #2a2a2a",
                               boxShadow: activeFilter.name === preset.name ? `0 0 10px ${ACCENT}33` : "none",
-                            }} />
+                            }}>
+                            {/* Filter name inside swatch */}
+                            <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/60">{preset.label.substring(0, 3)}</span>
+                          </div>
                           <span className="text-[8px] font-medium" style={{ color: activeFilter.name === preset.name ? ACCENT : "#888" }}>{preset.label}</span>
                         </button>
                       ))}
@@ -673,48 +1178,7 @@ export default function StudioNLE() {
                   </>
                 )}
 
-                {/* TEXT */}
-                {activeToolTab === "text" && (
-                  <>
-                    <input value={textInput} onChange={(e) => setTextInput(e.target.value)} placeholder="Type your text..."
-                      className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-all"
-                      style={{ background: "#151515", border: `1px solid #2a2a2a`, color: "#e0e0e0" }}
-                      onFocus={(e) => e.currentTarget.style.borderColor = ACCENT}
-                      onBlur={(e) => e.currentTarget.style.borderColor = "#2a2a2a"}
-                      onKeyDown={(e) => e.key === "Enter" && addTextOverlay()} />
-                    <div className="grid grid-cols-3 gap-1">
-                      {(Object.entries(TEXT_STYLES) as [TextStyleKey, typeof TEXT_STYLES[TextStyleKey]][]).map(([key, s]) => (
-                        <button key={key} onClick={() => setTextStyle(key)}
-                          className="py-2 text-[9px] font-semibold rounded-md transition-all capitalize"
-                          style={{
-                            background: textStyle === key ? ACCENT_DIM : "#151515",
-                            color: textStyle === key ? ACCENT : "#666",
-                            border: textStyle === key ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
-                          }}>
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
-                    <button onClick={addTextOverlay} disabled={!textInput.trim()}
-                      className="w-full h-9 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
-                      style={{ background: ACCENT, color: "#000" }}>
-                      Add Text
-                    </button>
-                    {textOverlays.length > 0 && (
-                      <div className="space-y-1 pt-2" style={{ borderTop: "1px solid #222" }}>
-                        {textOverlays.map((t) => (
-                          <div key={t.id} className="flex items-center gap-2 rounded-md px-2.5 py-2" style={{ background: "#151515", border: "1px solid #222" }}>
-                            <Type className="w-3 h-3 flex-shrink-0" style={{ color: "#555" }} />
-                            <span className="text-[10px] truncate flex-1" style={{ color: "#aaa" }}>{t.text}</span>
-                            <button onClick={() => removeTextOverlay(t.id)} className="hover:opacity-70"><X className="w-3 h-3" style={{ color: "#555" }} /></button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* AUDIO */}
+                {/* ════════ AUDIO ════════ */}
                 {activeToolTab === "audio" && (
                   <>
                     {audioName ? (
@@ -737,7 +1201,7 @@ export default function StudioNLE() {
                   </>
                 )}
 
-                {/* ADJUST */}
+                {/* ════════ ADJUST ════════ */}
                 {activeToolTab === "adjust" && (
                   <>
                     <div className="flex items-center justify-between">
@@ -761,7 +1225,7 @@ export default function StudioNLE() {
                   </>
                 )}
 
-                {/* EXPORT */}
+                {/* ════════ EXPORT ════════ */}
                 {activeToolTab === "export" && (
                   <>
                     <div className="space-y-1.5">
@@ -787,7 +1251,7 @@ export default function StudioNLE() {
                       <span className="text-[10px] font-medium" style={{ color: "#666" }}>Speed</span>
                       <div className="flex flex-wrap gap-1">
                         {SPEED_OPTIONS.map((s) => (
-                          <button key={s} onClick={() => { pushHistory(); setSpeed(s); }}
+                          <button key={s} onClick={() => setSpeed(s)}
                             className="px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all"
                             style={{
                               background: speed === s ? ACCENT_DIM : "#151515",
@@ -802,7 +1266,7 @@ export default function StudioNLE() {
                   </>
                 )}
 
-                {/* UPSCALE */}
+                {/* ════════ UPSCALE ════════ */}
                 {activeToolTab === "upscale" && (
                   <>
                     {!upscaleFile ? (
@@ -814,7 +1278,7 @@ export default function StudioNLE() {
                         </div>
                         <div className="text-center">
                           <p className="text-xs font-medium" style={{ color: ACCENT }}>Upload Video to Upscale</p>
-                          <p className="text-[10px] mt-0.5" style={{ color: "#555" }}>MP4, MOV, WEBM • Max 500MB</p>
+                          <p className="text-[10px] mt-0.5" style={{ color: "#555" }}>MP4, MOV, WEBM • Max 2GB</p>
                         </div>
                       </button>
                     ) : (
@@ -824,7 +1288,6 @@ export default function StudioNLE() {
                           <span className="text-[10px] truncate flex-1" style={{ color: "#ccc" }}>{upscaleFile.name}</span>
                           <button onClick={clearUpscale} className="hover:opacity-70"><X className="w-3 h-3" style={{ color: "#555" }} /></button>
                         </div>
-
                         {upscaleState === "idle" && (
                           <>
                             <div className="flex gap-1.5">
@@ -851,7 +1314,6 @@ export default function StudioNLE() {
                             </button>
                           </>
                         )}
-
                         {upscaleState === "processing" && (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2">
@@ -862,14 +1324,8 @@ export default function StudioNLE() {
                             <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: "#2a2a2a" }}>
                               <div className="h-full rounded-full transition-all" style={{ width: `${upscaleProgress}%`, background: ACCENT }} />
                             </div>
-                            {upscaleDims && (
-                              <p className="text-[9px] text-center" style={{ color: "#555" }}>
-                                {upscaleDims.w}×{upscaleDims.h} → {Math.min(upscaleDims.w * (upscaleMode === "2x" ? 2 : 4), 3840)}×{Math.min(upscaleDims.h * (upscaleMode === "2x" ? 2 : 4), 3840)}
-                              </p>
-                            )}
                           </div>
                         )}
-
                         {upscaleState === "done" && (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 rounded-lg p-2.5" style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)" }}>
@@ -879,8 +1335,7 @@ export default function StudioNLE() {
                             <button onClick={handleUpscaleDownload}
                               className="w-full h-9 rounded-lg text-xs font-semibold transition-all"
                               style={{ background: ACCENT, color: "#000" }}>
-                              <Download className="w-3.5 h-3.5 inline mr-1.5" />
-                              Download
+                              <Download className="w-3.5 h-3.5 inline mr-1.5" /> Download
                             </button>
                             <button onClick={clearUpscale}
                               className="w-full py-2 text-[10px] rounded-lg transition-all hover:bg-white/5"
@@ -901,9 +1356,16 @@ export default function StudioNLE() {
 
         {/* ─── CENTER: Player ─── */}
         <div className="flex-1 flex flex-col min-w-0" style={{ background: "#0a0a0a" }}>
-          {/* Player label */}
           <div className="h-8 flex items-center px-3 flex-shrink-0" style={{ background: "#141414", borderBottom: "1px solid #1e1e1e" }}>
             <span className="text-[11px] font-medium" style={{ color: "#888" }}>Player</span>
+            {activeFilter.name !== "none" && (
+              <span className="ml-2 px-1.5 py-0.5 rounded text-[8px] font-medium" style={{ background: ACCENT_DIM, color: ACCENT }}>{activeFilter.label}</span>
+            )}
+            {activeTransition && (
+              <span className="ml-1 px-1.5 py-0.5 rounded text-[8px] font-medium" style={{ background: "rgba(251,191,36,0.1)", color: "#fbbf24" }}>
+                {TRANSITIONS.find(t => t.id === activeTransition)?.label}
+              </span>
+            )}
           </div>
 
           <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0" style={{ background: "#0a0a0a" }}>
@@ -929,7 +1391,7 @@ export default function StudioNLE() {
                     {activeEffects.map(eff => (
                       <span key={eff} className="px-2 py-0.5 rounded text-[8px] font-medium"
                         style={{ background: "rgba(0,0,0,0.6)", color: ACCENT, border: `1px solid ${ACCENT_BORDER}` }}>
-                        {EFFECTS.find(e => e.id === eff)?.label}
+                        {EFFECTS.find(e => e.id === eff)?.label} {Math.round((effectIntensities[eff] ?? 0.7) * 100)}%
                       </span>
                     ))}
                   </div>
@@ -972,8 +1434,8 @@ export default function StudioNLE() {
                       {[
                         ["Space", "Play / Pause"], ["← →", "Seek ±1s"], ["Shift+← →", "Seek ±5s"],
                         ["J / K / L", "Back / Play / Fwd"], ["I", "Set In Point"], ["O", "Set Out Point"],
-                        ["M", "Toggle Mute"], ["[ ]", "Speed ↓ / ↑"], ["⌘Z", "Undo"],
-                        ["⌘⇧Z", "Redo"], ["⌘S", "Export"], ["?", "Shortcuts"],
+                        ["M", "Toggle Mute"], ["[ ]", "Speed ↓ / ↑"], ["⌘S", "Export"],
+                        ["?", "Shortcuts"],
                       ].map(([key, desc]) => (
                         <div key={key} className="flex items-center gap-3">
                           <kbd className="px-2 py-0.5 rounded font-mono text-[10px] min-w-[44px] text-center" style={{ background: "#222", border: "1px solid #333", color: ACCENT }}>{key}</kbd>
@@ -1017,26 +1479,26 @@ export default function StudioNLE() {
           <div className="h-8 flex items-center px-3" style={{ borderBottom: "1px solid #222" }}>
             <span className="text-[11px] font-medium" style={{ color: ACCENT }}>Details</span>
           </div>
-          <div className="flex-1 p-3 space-y-3 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+          <div className="flex-1 p-3 space-y-3 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
             {activeMedia ? (
-              <>
-                <div className="space-y-2.5">
-                  {[
-                    ["Name", activeMedia.name],
-                    ["Duration", formatTimecode(activeMedia.duration)],
-                    ["Type", activeMedia.type.toUpperCase()],
-                    ["Trim", `${formatTimecode(trimStart)} — ${formatTimecode(trimEnd)}`],
-                    ["Speed", `${speed}x`],
-                    ["Filter", activeFilter.label],
-                    ["Effects", activeEffects.length > 0 ? `${activeEffects.length} active` : "None"],
-                  ].map(([label, val]) => (
-                    <div key={label} className="flex justify-between items-start">
-                      <span className="text-[10px]" style={{ color: "#666" }}>{label}:</span>
-                      <span className="text-[10px] font-medium text-right max-w-[140px] truncate" style={{ color: "#ccc" }}>{val}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
+              <div className="space-y-2.5">
+                {[
+                  ["Name", activeMedia.name],
+                  ["Duration", formatTimecode(activeMedia.duration)],
+                  ["Type", activeMedia.type.toUpperCase()],
+                  ["Trim", `${formatTimecode(trimStart)} — ${formatTimecode(trimEnd)}`],
+                  ["Speed", `${speed}x`],
+                  ["Filter", activeFilter.label],
+                  ["Effects", activeEffects.length > 0 ? `${activeEffects.length} active` : "None"],
+                  ["Transition", activeTransition ? TRANSITIONS.find(t => t.id === activeTransition)?.label ?? "None" : "None"],
+                  ["Text Layers", textOverlays.length > 0 ? `${textOverlays.length}` : "None"],
+                ].map(([label, val]) => (
+                  <div key={label} className="flex justify-between items-start">
+                    <span className="text-[10px]" style={{ color: "#666" }}>{label}:</span>
+                    <span className="text-[10px] font-medium text-right max-w-[140px] truncate" style={{ color: "#ccc" }}>{val}</span>
+                  </div>
+                ))}
+              </div>
             ) : (
               <p className="text-[10px] text-center pt-8" style={{ color: "#444" }}>No media selected</p>
             )}
@@ -1044,9 +1506,8 @@ export default function StudioNLE() {
         </div>
       </div>
 
-      {/* ═══ TIMELINE — Bottom ═══ */}
+      {/* ═══ TIMELINE ═══ */}
       <div className="flex-shrink-0 flex flex-col" style={{ height: 170, background: "#141414", borderTop: "1px solid #2a2a2a" }}>
-        {/* Timeline toolbar */}
         <div className="h-7 flex items-center px-3 gap-1.5 flex-shrink-0" style={{ borderBottom: "1px solid #1e1e1e" }}>
           <button onClick={splitAtPlayhead} className="p-1 rounded hover:bg-white/5"><Scissors className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
           <button className="p-1 rounded hover:bg-white/5"><Trash2 className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
@@ -1107,7 +1568,7 @@ export default function StudioNLE() {
                   style={{
                     left: `${(trimStart / duration) * duration * 60 * timelineZoom}px`,
                     width: `${((trimEnd - trimStart) / duration) * duration * 60 * timelineZoom}px`,
-                    background: "rgba(0,209,193,0.08)",
+                    background: ACCENT_DIM,
                     border: `1px solid ${ACCENT_BORDER}`,
                   }}>
                   {thumbnails.map((thumb, i) => (
@@ -1115,7 +1576,6 @@ export default function StudioNLE() {
                       <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     </div>
                   ))}
-                  {/* Trim handles */}
                   <div className="absolute inset-y-0 left-0 w-1 cursor-col-resize rounded-l transition-all" style={{ background: ACCENT }} />
                   <div className="absolute inset-y-0 right-0 w-1 cursor-col-resize rounded-r transition-all" style={{ background: ACCENT }} />
                 </div>
