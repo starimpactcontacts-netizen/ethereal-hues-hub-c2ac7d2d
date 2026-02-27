@@ -22,6 +22,72 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
+// Iconic LOOPGATE intro chime using Web Audio API
+function playIntroChime(vol: number): Promise<void> {
+  return new Promise((resolve) => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const master = ctx.createGain();
+      master.gain.value = vol * 0.6;
+      master.connect(ctx.destination);
+
+      // Deep sub hit
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(55, ctx.currentTime);
+      sub.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.4);
+      subGain.gain.setValueAtTime(0.7, ctx.currentTime);
+      subGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      sub.connect(subGain).connect(master);
+      sub.start(ctx.currentTime);
+      sub.stop(ctx.currentTime + 0.5);
+
+      // Rising shimmer tone
+      const shimmer = ctx.createOscillator();
+      const shimmerGain = ctx.createGain();
+      shimmer.type = 'sine';
+      shimmer.frequency.setValueAtTime(600, ctx.currentTime + 0.05);
+      shimmer.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.3);
+      shimmerGain.gain.setValueAtTime(0, ctx.currentTime);
+      shimmerGain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      shimmer.connect(shimmerGain).connect(master);
+      shimmer.start(ctx.currentTime + 0.05);
+      shimmer.stop(ctx.currentTime + 0.6);
+
+      // Bright chime hit
+      const chime = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chime.type = 'triangle';
+      chime.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+      chimeGain.gain.setValueAtTime(0.4, ctx.currentTime + 0.1);
+      chimeGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+      chime.connect(chimeGain).connect(master);
+      chime.start(ctx.currentTime + 0.1);
+      chime.stop(ctx.currentTime + 0.8);
+
+      // Second harmonic ping
+      const ping = ctx.createOscillator();
+      const pingGain = ctx.createGain();
+      ping.type = 'sine';
+      ping.frequency.setValueAtTime(1320, ctx.currentTime + 0.2);
+      pingGain.gain.setValueAtTime(0.25, ctx.currentTime + 0.2);
+      pingGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.9);
+      ping.connect(pingGain).connect(master);
+      ping.start(ctx.currentTime + 0.2);
+      ping.stop(ctx.currentTime + 0.9);
+
+      setTimeout(() => {
+        ctx.close();
+        resolve();
+      }, 900);
+    } catch {
+      resolve();
+    }
+  });
+}
+
 export default function HeaderMusicPlayer() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -30,6 +96,7 @@ export default function HeaderMusicPlayer() {
   const [shuffled, setShuffled] = useState(true);
   const [progress, setProgress] = useState(0);
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
+  const [introPlayed, setIntroPlayed] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -122,11 +189,30 @@ export default function HeaderMusicPlayer() {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length]);
 
-  // Auto-play on first load
+  // Auto-play on first load — intro chime then music
   useEffect(() => {
     if (tracks.length > 0 && !hasAutoPlayed && current) {
       setHasAutoPlayed(true);
-      playTrack(current);
+      const startPlayback = async () => {
+        if (!introPlayed) {
+          setIntroPlayed(true);
+          await playIntroChime(volume);
+        }
+        playTrack(current);
+      };
+      // Try immediately
+      startPlayback().catch(() => {
+        // Browser blocked autoplay — start on first user interaction
+        const unlock = () => {
+          startPlayback();
+          window.removeEventListener('click', unlock);
+          window.removeEventListener('touchstart', unlock);
+          window.removeEventListener('keydown', unlock);
+        };
+        window.addEventListener('click', unlock, { once: true });
+        window.addEventListener('touchstart', unlock, { once: true });
+        window.addEventListener('keydown', unlock, { once: true });
+      });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tracks]);
