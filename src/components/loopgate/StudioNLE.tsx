@@ -26,10 +26,10 @@ type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text
 type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export";
 type HistoryEntry = { filter: FilterPreset; effects: string[]; brightness: number; contrast: number; saturation: number; hueRotate: number; speed: number; trimStart: number; trimEnd: number; textOverlays: TextOverlay[] };
 
-// CapCut-style accent
-const ACCENT = "#00D1C1";
-const ACCENT_DIM = "rgba(0,209,193,0.12)";
-const ACCENT_BORDER = "rgba(0,209,193,0.25)";
+// Adobe Pro accent — Premiere/AE blue-purple
+const ACCENT = "#9999FF";
+const ACCENT_DIM = "rgba(153,153,255,0.10)";
+const ACCENT_BORDER = "rgba(153,153,255,0.22)";
 
 const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "media", icon: FileVideo, label: "Media" },
