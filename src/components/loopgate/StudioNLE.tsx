@@ -7,7 +7,13 @@ import {
   Trash2, Copy, ZoomIn, ZoomOut, Undo, Redo,
   FileVideo, Wand2, SlidersHorizontal, Keyboard, Settings,
   Mic, ArrowUpCircle, Check, ChevronDown, Palette, Move,
-  AlignCenter, AlignLeft, AlignRight, Bold as BoldIcon
+  AlignCenter, AlignLeft, AlignRight, Bold as BoldIcon,
+  Zap, Vibrate, Search, FlipHorizontal, Grid3x3, Waves,
+  Rainbow, RefreshCw, Paintbrush, Gem, LayoutGrid,
+  MonitorPlay, FilmIcon, Circle, Wind,
+  Sun, Lightbulb, Sunrise,
+  ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
+  RotateCw, Maximize, Minimize, Blend
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -65,6 +71,49 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "upscale", icon: ArrowUpCircle, label: "Upscale" },
   { id: "export", icon: Settings, label: "Export" },
 ];
+
+// ─── Effect / Transition Icon Maps (replace emoji) ───
+const EFFECT_ICONS: Record<string, typeof Zap> = {
+  glitch: Zap, shake: Vibrate, zoom_pulse: Search, mirror: FlipHorizontal,
+  pixelate: Grid3x3, wave: Waves, rgb_split: Rainbow, invert: RefreshCw,
+  duotone: Paintbrush, chromatic: Gem, posterize: LayoutGrid, vhs: MonitorPlay,
+  grain: FilmIcon, halftone: Circle, blur_pulse: Wind, flash: Sun,
+  light_leak: Sunrise, strobe: Lightbulb,
+};
+
+const TRANSITION_ICONS: Record<string, typeof Zap> = {
+  fade: Sunrise, dissolve: Sparkles, slide_left: ArrowLeft, slide_right: ArrowRight,
+  slide_up: ArrowUp, wipe: MoveHorizontal, zoom_in: Maximize, zoom_out: Minimize,
+  spin: RotateCw, blur_trans: Wind, glitch_trans: Zap, flash_trans: Sun,
+};
+
+// ─── Filter preview gradient backgrounds ───
+const FILTER_PREVIEWS: Record<string, string> = {
+  none: "linear-gradient(135deg, #444 0%, #666 100%)",
+  chrome: "linear-gradient(135deg, #8BA4B0 0%, #C0CDD4 50%, #7A9AAC 100%)",
+  fade: "linear-gradient(135deg, #A5B0C0 0%, #D5D0CA 50%, #B0A8A0 100%)",
+  bw: "linear-gradient(135deg, #222 0%, #888 50%, #444 100%)",
+  cinematic: "linear-gradient(135deg, #2A1F14 0%, #7A5B3E 50%, #3A2A1C 100%)",
+  noir: "linear-gradient(135deg, #0A0A0A 0%, #3A3A3A 50%, #1A1A1A 100%)",
+  blockbuster: "linear-gradient(135deg, #1A2540 0%, #3A5580 50%, #0E1830 100%)",
+  anamorphic: "linear-gradient(135deg, #1A3040 0%, #2A5A70 50%, #183848 100%)",
+  teal_orange: "linear-gradient(135deg, #1A5A5A 0%, #D4804A 50%, #186060 100%)",
+  phonk: "linear-gradient(135deg, #3A0020 0%, #8A1050 50%, #200010 100%)",
+  cold: "linear-gradient(135deg, #1A3050 0%, #4A7AAA 50%, #2A4060 100%)",
+  heat: "linear-gradient(135deg, #5A1A0A 0%, #D4602A 50%, #3A1005 100%)",
+  neon: "linear-gradient(135deg, #2A0050 0%, #AA30DD 50%, #5500AA 100%)",
+  dream: "linear-gradient(135deg, #3A2060 0%, #8A60B0 50%, #5A3A80 100%)",
+  lofi: "linear-gradient(135deg, #2A0A0A 0%, #6A2020 50%, #3A1010 100%)",
+  golden_hour: "linear-gradient(135deg, #5A3A10 0%, #D4A030 50%, #7A5020 100%)",
+  midnight: "linear-gradient(135deg, #0A0A2A 0%, #1A2050 50%, #050520 100%)",
+  toxic: "linear-gradient(135deg, #0A2A0A 0%, #30AA30 50%, #0A4A0A 100%)",
+  vintage: "linear-gradient(135deg, #4A3520 0%, #8A6A40 50%, #5A4030 100%)",
+  kodak: "linear-gradient(135deg, #5A4020 0%, #C49040 50%, #6A5030 100%)",
+  fuji: "linear-gradient(135deg, #1A4040 0%, #50A090 50%, #2A5050 100%)",
+  polaroid: "linear-gradient(135deg, #706050 0%, #C0B0A0 50%, #908070 100%)",
+  film_burn: "linear-gradient(135deg, #3A1005 0%, #AA4020 50%, #5A2010 100%)",
+  super8: "linear-gradient(135deg, #2A1A0A 0%, #6A4A20 50%, #3A2A10 100%)",
+};
 
 export default function StudioNLE() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1068,6 +1117,7 @@ export default function StudioNLE() {
                       {filteredEffects.map((effect) => {
                         const isActive = activeEffects.includes(effect.id);
                         const intensity = effectIntensities[effect.id] ?? 0.7;
+                        const IconComponent = EFFECT_ICONS[effect.id] || Sparkles;
                         return (
                           <div key={effect.id} className="rounded-lg overflow-hidden transition-all"
                             style={{
@@ -1077,8 +1127,11 @@ export default function StudioNLE() {
                             <button
                               onClick={() => toggleEffect(effect.id)}
                               className="w-full flex items-center gap-3 px-3 py-2.5 transition-all">
-                              <span className="text-base w-6 text-center">{effect.icon}</span>
-                              <span className="text-[11px] font-medium flex-1 text-left" style={{ color: isActive ? ACCENT : "#888" }}>{effect.label}</span>
+                              <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                                style={{ background: isActive ? `${ACCENT}22` : "#1e1e1e", border: `1px solid ${isActive ? ACCENT_BORDER : "#2a2a2a"}` }}>
+                                <IconComponent className="w-3.5 h-3.5" style={{ color: isActive ? ACCENT : "#777" }} />
+                              </div>
+                              <span className="text-[11px] font-medium flex-1 text-left" style={{ color: isActive ? ACCENT : "#aaa" }}>{effect.label}</span>
                               {isActive && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: ACCENT }} />}
                             </button>
                             {isActive && (
@@ -1109,6 +1162,7 @@ export default function StudioNLE() {
                     <div className="space-y-1">
                       {TRANSITIONS.map((trans) => {
                         const isActive = activeTransition === trans.id;
+                        const IconComponent = TRANSITION_ICONS[trans.id] || Layers;
                         return (
                           <button key={trans.id}
                             onClick={() => setActiveTransition(isActive ? null : trans.id)}
@@ -1117,8 +1171,11 @@ export default function StudioNLE() {
                               background: isActive ? ACCENT_DIM : "#151515",
                               border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
                             }}>
-                            <span className="text-base w-6 text-center">{trans.icon}</span>
-                            <span className="text-[11px] font-medium flex-1 text-left" style={{ color: isActive ? ACCENT : "#888" }}>{trans.label}</span>
+                            <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                              style={{ background: isActive ? `${ACCENT}22` : "#1e1e1e", border: `1px solid ${isActive ? ACCENT_BORDER : "#2a2a2a"}` }}>
+                              <IconComponent className="w-3.5 h-3.5" style={{ color: isActive ? ACCENT : "#777" }} />
+                            </div>
+                            <span className="text-[11px] font-medium flex-1 text-left" style={{ color: isActive ? ACCENT : "#aaa" }}>{trans.label}</span>
                             {isActive && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: ACCENT }} />}
                           </button>
                         );
@@ -1158,22 +1215,33 @@ export default function StudioNLE() {
                       ))}
                     </div>
                     <div className="grid grid-cols-3 gap-1.5">
-                      {filteredFilters.map((preset) => (
-                        <button key={preset.name}
-                          onClick={() => setActiveFilter(preset)}
-                          className="flex flex-col items-center gap-1.5">
-                          <div className="w-full aspect-square rounded-lg transition-all relative overflow-hidden"
-                            style={{
-                              backgroundColor: preset.color,
-                              border: activeFilter.name === preset.name ? `2px solid ${ACCENT}` : "2px solid #2a2a2a",
-                              boxShadow: activeFilter.name === preset.name ? `0 0 10px ${ACCENT}33` : "none",
-                            }}>
-                            {/* Filter name inside swatch */}
-                            <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white/60">{preset.label.substring(0, 3)}</span>
-                          </div>
-                          <span className="text-[8px] font-medium" style={{ color: activeFilter.name === preset.name ? ACCENT : "#888" }}>{preset.label}</span>
-                        </button>
-                      ))}
+                      {filteredFilters.map((preset) => {
+                        const isActive = activeFilter.name === preset.name;
+                        const bg = FILTER_PREVIEWS[preset.name] || `linear-gradient(135deg, ${preset.color}, ${preset.color})`;
+                        return (
+                          <button key={preset.name}
+                            onClick={() => setActiveFilter(preset)}
+                            className="flex flex-col items-center gap-1.5 group">
+                            <div className="w-full aspect-[4/3] rounded-lg transition-all relative overflow-hidden"
+                              style={{
+                                background: bg,
+                                border: isActive ? `2px solid ${ACCENT}` : "2px solid #2a2a2a",
+                                boxShadow: isActive ? `0 0 12px ${ACCENT}44` : "none",
+                              }}>
+                              {/* Simulated image bars for depth */}
+                              <div className="absolute inset-0 flex flex-col justify-end">
+                                <div className="h-[30%] w-full" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.5))" }} />
+                              </div>
+                              {isActive && (
+                                <div className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: ACCENT }}>
+                                  <Check className="w-2.5 h-2.5 text-black" />
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[9px] font-medium" style={{ color: isActive ? ACCENT : "#999" }}>{preset.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 )}
