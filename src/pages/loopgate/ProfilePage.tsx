@@ -307,7 +307,7 @@ export default function ProfilePage() {
 
       {/* ═══ QUICK NAV BUTTONS ═══ */}
       <div className="px-4 mb-2">
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-3 gap-1.5">
           <Link to="/profile/stats">
             <motion.div 
               whileTap={{ scale: 0.98 }}
