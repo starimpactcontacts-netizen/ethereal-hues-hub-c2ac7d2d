@@ -410,7 +410,7 @@ export default function ArenaPage() {
           </div>
 
           {/* ═══ ARENA / MY ARENA TAB TOGGLE ═══ */}
-          <div className="flex gap-0 mb-2.5 bg-surface-1 border border-border rounded-lg overflow-hidden">
+          <div className="flex gap-0 mb-2 bg-surface-1/50 border border-border overflow-hidden">
             <button
               onClick={() => setArenaView('arena')}
               className={`flex-1 py-2 text-[12px] font-bold transition-all relative ${
@@ -669,14 +669,14 @@ export default function ArenaPage() {
           <>
 
           {/* ═══ GLOBAL SEARCH ═══ */}
-          <div className="relative mb-2.5">
-            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="relative mb-1.5 border-b border-border/80">
+            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search battles, events, players..."
               value={quickSearch}
               onChange={(e) => setQuickSearch(e.target.value)}
-              className="w-full h-8 pl-9 pr-8 bg-surface-1 border border-border rounded-lg text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
+              className="w-full h-7 pl-8 pr-8 bg-transparent border-0 rounded-none text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-colors"
             />
             {quickSearch && (
               <button onClick={() => setQuickSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -687,7 +687,7 @@ export default function ArenaPage() {
 
           {/* ═══ STATS ROW ═══ */}
           {profile && userStats && (
-            <div className="mb-2.5 bg-surface-1 border border-border rounded-lg p-2.5 flex items-center gap-2.5">
+            <div className="mb-1.5 border-y border-border/80 px-1 py-1.5 flex items-center gap-2.5">
               <Avatar className="w-8 h-8 border border-border shrink-0">
                 <AvatarImage src={profile.avatar_url || ''} />
                 <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
@@ -718,9 +718,9 @@ export default function ArenaPage() {
           )}
 
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
-          <div className="mb-2.5">
+          <div className="mb-1.5">
             {/* Mode tabs */}
-            <div className="flex gap-0 mb-1 bg-surface-1 border border-border rounded-lg overflow-hidden">
+            <div className="flex gap-0 mb-1 bg-surface-1/50 border border-border overflow-hidden">
               {[
                 { key: 'quick' as const, icon: <Zap className="w-2.5 h-2.5" />, label: 'Quick 1v1', desc: 'Auto · 3hr' },
                 { key: 'battle' as const, icon: <Swords className="w-2.5 h-2.5" />, label: '1v1', desc: 'Invite' },
@@ -752,7 +752,7 @@ export default function ArenaPage() {
             {/* PLAY button — dual CTA for quick/solo, standard for others */}
             {(selectedMode === 'quick' || selectedMode === 'solo') ? (
               <div className="flex flex-col gap-0">
-                <div className="flex gap-0 overflow-hidden rounded-lg border border-red-500/30">
+                <div className="flex gap-0 overflow-hidden border border-border border-t-0">
                 {/* Quick Edit Battle */}
                 <motion.button
                   whileTap={isQfSearching ? undefined : { scale: 0.97 }}
@@ -821,7 +821,7 @@ export default function ArenaPage() {
               {isQfSearching && (
                 <button
                   onClick={handleCancelQueue}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 border border-border bg-surface-1 rounded-b-lg text-muted-foreground text-[11px] font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 border border-t-0 border-border bg-surface-1 text-muted-foreground text-[11px] font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation"
                 >
                   <X className="w-3 h-3" />
                   Cancel Search
@@ -832,10 +832,10 @@ export default function ArenaPage() {
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={modeActions[selectedMode]}
-                className="w-full relative overflow-hidden touch-manipulation group rounded-lg"
+                className="w-full relative overflow-hidden touch-manipulation group"
               >
-                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-1.5 flex items-center justify-center gap-1.5 rounded-lg">
-                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none rounded-t-lg" />
+                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-1.5 flex items-center justify-center gap-1.5">
+                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                   {selectedMode === 'battle' && <Swords className="w-3.5 h-3.5 text-white relative z-10" />}
                   {selectedMode === 'practice' && <Target className="w-3.5 h-3.5 text-white relative z-10" />}
                   <span className="text-[13px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
@@ -859,18 +859,18 @@ export default function ArenaPage() {
                 if (featuredFight.type === 'quick') navigate(`/fight/${featuredFight.data.id}`);
                 else navigate(`/battle/${featuredFight.data.id}`);
               }}
-              className="w-full mb-2.5 bg-surface-1 border border-border hover:border-red-500/30 p-2.5 flex items-center gap-2.5 touch-manipulation transition-all"
+              className="w-full mb-1.5 bg-surface-0/40 border-l-2 border-l-red-500 border-y border-r border-border hover:border-r-red-500/30 p-2 flex items-center gap-2 touch-manipulation transition-all"
             >
               {/* Avatars VS */}
               <div className="flex items-center gap-2 shrink-0">
-                <Avatar className="w-7 h-7 border border-red-500/40">
+                <Avatar className="w-6 h-6 border border-red-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_1_avatar_url : (featuredFight.data as any).challenger_avatar_url} />
                   <AvatarFallback className="bg-surface-2 text-foreground text-[10px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username)?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-[10px] font-black text-muted-foreground/40">VS</span>
-                <Avatar className="w-7 h-7 border border-blue-500/40">
+                <Avatar className="w-6 h-6 border border-blue-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_2_avatar_url : (featuredFight.data as any).opponent_avatar_url} />
                   <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_2_username : (featuredFight.data as any).opponent_username)?.[0]?.toUpperCase() || '?'}
@@ -880,18 +880,18 @@ export default function ArenaPage() {
 
               {/* Names + CTA */}
               <div className="flex-1 min-w-0 text-left">
-                <span className="text-[12px] font-bold text-foreground block truncate">
+                <span className="text-[11px] font-bold text-foreground block truncate">
                   {featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username}
                   {' vs '}
                   {featuredFight.type === 'quick' ? (featuredFight.data.player_2_username || '???') : ((featuredFight.data as any).opponent_username || '???')}
                 </span>
-                <span className="text-[11px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
+                <span className="text-[10px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
               </div>
 
               {/* Live indicator — seamless */}
               <div className="shrink-0 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[12px] font-bold text-emerald-400">LIVE</span>
+                <span className="text-[11px] font-bold text-emerald-400">LIVE</span>
               </div>
             </motion.button>
           )}
