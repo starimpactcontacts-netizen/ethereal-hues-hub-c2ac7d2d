@@ -394,38 +394,72 @@ export default function QuickClipEditor() {
     setUpscaleState("idle"); setUpscaleProgress(0); setUpscaleDims(null);
   };
 
-  // ─── Upload Screen ───
+  // ─── CapCut-style Import Screen ───
   if (!file) {
     return (
-      <div className="space-y-5">
-        <motion.button
-          onClick={() => fileInputRef.current?.click()}
-          whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.97 }}
-          className="w-full aspect-[9/16] max-h-[55vh] flex flex-col items-center justify-center gap-5 rounded-2xl transition-all"
-          style={{ border: "1px solid #2a2a2a", background: "#151515" }}>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: ACCENT_DIM, border: `1px solid ${ACCENT_BORDER}` }}>
-            <Upload className="w-7 h-7" style={{ color: ACCENT }} />
-          </div>
-          <div className="text-center space-y-1.5">
-            <p className="font-semibold text-base" style={{ color: ACCENT }}>Start Editing</p>
-            <p className="text-[11px]" style={{ color: "#666" }}>Tap to upload a clip</p>
-            <p className="text-[10px]" style={{ color: "#444" }}>MP4, MOV, WEBM • Max 2GB</p>
-          </div>
-        </motion.button>
-        <div className="grid grid-cols-4 gap-2.5">
-          {[
-            { icon: Scissors, label: "Trim" },
-            { icon: Sparkles, label: "18 Effects" },
-            { icon: Type, label: "9 Styles" },
-            { icon: Wand2, label: "24 Filters" },
-          ].map(({ icon: Icon, label }) => (
-            <div key={label} className="rounded-xl p-3.5 flex flex-col items-center gap-2"
-              style={{ background: "#151515", border: "1px solid #2a2a2a" }}>
-              <Icon className="w-4 h-4" style={{ color: "#555" }} />
-              <span className="text-[9px] font-medium" style={{ color: "#666" }}>{label}</span>
-            </div>
-          ))}
+      <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0a0a0a" }}>
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-4 pt-3 pb-2 safe-top" style={{ borderBottom: "1px solid #1a1a1a" }}>
+          <span className="text-[15px] font-semibold" style={{ color: "#fff" }}>New Project</span>
+          <button onClick={() => fileInputRef.current?.click()}
+            className="h-8 px-4 rounded-full text-[12px] font-semibold flex items-center gap-1.5"
+            style={{ background: ACCENT, color: "#000" }}>
+            <Upload className="w-3.5 h-3.5" /> Import
+          </button>
         </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 gap-8">
+          <motion.button
+            onClick={() => fileInputRef.current?.click()}
+            whileTap={{ scale: 0.97 }}
+            className="w-full max-w-xs aspect-square flex flex-col items-center justify-center gap-4 rounded-3xl"
+            style={{ background: "#111", border: "2px dashed #333" }}>
+            <motion.div
+              animate={{ y: [0, -4, 0] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              style={{ background: `${ACCENT}15`, border: `1px solid ${ACCENT}30` }}>
+              <Film className="w-8 h-8" style={{ color: ACCENT }} />
+            </motion.div>
+            <div className="text-center space-y-1">
+              <p className="text-[15px] font-semibold" style={{ color: "#fff" }}>Import Media</p>
+              <p className="text-[12px]" style={{ color: "#666" }}>Select a video to start editing</p>
+            </div>
+          </motion.button>
+
+          <div className="flex items-center gap-3">
+            {["MP4", "MOV", "WEBM"].map(fmt => (
+              <span key={fmt} className="px-3 py-1 rounded-full text-[10px] font-medium"
+                style={{ background: "#1a1a1a", color: "#555", border: "1px solid #222" }}>
+                {fmt}
+              </span>
+            ))}
+            <span className="text-[10px]" style={{ color: "#333" }}>•</span>
+            <span className="text-[10px] font-medium" style={{ color: "#444" }}>Up to 2GB</span>
+          </div>
+
+          <div className="w-full max-w-xs grid grid-cols-2 gap-2">
+            {[
+              { icon: Scissors, label: "Trim & Cut", sub: "Precision editing" },
+              { icon: Sparkles, label: "18+ Effects", sub: "Glitch, VHS, RGB..." },
+              { icon: Wand2, label: "24 Filters", sub: "Cinematic grading" },
+              { icon: SlidersHorizontal, label: "Color Grade", sub: "Pro adjustments" },
+              { icon: Type, label: "Text Styles", sub: "Animated titles" },
+              { icon: Gauge, label: "Speed Control", sub: "Slow-mo & fast" },
+            ].map(({ icon: Icon, label, sub }) => (
+              <div key={label} className="rounded-xl p-3 flex items-start gap-2.5"
+                style={{ background: "#111", border: "1px solid #1a1a1a" }}>
+                <Icon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: ACCENT }} />
+                <div>
+                  <p className="text-[11px] font-medium" style={{ color: "#ccc" }}>{label}</p>
+                  <p className="text-[9px]" style={{ color: "#444" }}>{sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </div>
     );
