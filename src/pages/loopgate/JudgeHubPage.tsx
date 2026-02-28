@@ -68,7 +68,7 @@ function JudgeRosterEntry({ judge, onSelect, index }: { judge: JudgeProfile; onS
         !isTrial ? 'border-l-2 border-l-red-600' : 'border-l-2 border-l-zinc-700'
       }`}>
         {/* Rank # */}
-        <span className="text-[10px] text-zinc-600 font-mono w-5 text-right shrink-0">
+        <span className="text-xs text-zinc-500 font-semibold tabular-nums w-5 text-right shrink-0">
           {String(index + 1).padStart(2, '0')}
         </span>
 
@@ -92,16 +92,16 @@ function JudgeRosterEntry({ judge, onSelect, index }: { judge: JudgeProfile; onS
         {/* Name + handle */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[13px] font-bold text-white truncate tracking-wide uppercase">
+            <span className="text-base font-semibold text-white truncate tracking-[0.02em]">
               {judge.display_name || judge.username}
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-500">@{judge.username}</span>
+            <span className="text-xs text-zinc-400">@{judge.username}</span>
             {!isTrial && <JudgeDivisionBadge jxp={judge.judge_xp} size="sm" />}
             {isTrial && (
-              <span className="text-[8px] px-1.5 py-0.5 bg-zinc-900 text-zinc-500 font-mono uppercase tracking-wider">
+              <span className="text-[10px] px-1.5 py-0.5 bg-zinc-900 text-zinc-400 font-semibold uppercase tracking-[0.08em]">
                 TRIAL
               </span>
             )}
@@ -111,8 +111,8 @@ function JudgeRosterEntry({ judge, onSelect, index }: { judge: JudgeProfile; onS
         {/* Stats column */}
         {!isTrial && (
           <div className="text-right shrink-0 mr-2">
-            <div className="text-sm font-display text-white">{judge.totalReviews}</div>
-            <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-mono">Reviews</div>
+            <div className="text-lg font-semibold text-white tabular-nums">{judge.totalReviews}</div>
+            <div className="text-[10px] text-zinc-500 uppercase tracking-[0.12em] font-medium">Reviews</div>
           </div>
         )}
 
@@ -123,7 +123,7 @@ function JudgeRosterEntry({ judge, onSelect, index }: { judge: JudgeProfile; onS
               e.stopPropagation();
               navigate(`/judge/${judge.username}`);
             }}
-            className="shrink-0 px-3 py-1.5 border border-red-700 text-red-400 text-[10px] font-bold uppercase tracking-wider hover:bg-red-950 transition-colors"
+            className="shrink-0 px-3 py-1.5 border border-red-700 text-red-400 text-xs font-semibold uppercase tracking-[0.08em] hover:bg-red-950 transition-colors"
           >
             View
           </button>
@@ -195,7 +195,7 @@ function JudgePreviewModal({
               <p className="text-xs text-zinc-500 mb-2">@{judge.username}</p>
               <div className="flex items-center gap-2">
                 <JudgeLevelBadge level={judge.judge_level} size="sm" />
-                <span className="text-[10px] text-zinc-500">{judge.judge_xp} JXP</span>
+                <span className="text-xs text-zinc-400 font-medium">{judge.judge_xp} JXP</span>
               </div>
             </div>
           </div>
@@ -207,30 +207,30 @@ function JudgePreviewModal({
           {/* Stats row */}
           <div className="grid grid-cols-3 gap-px bg-zinc-800 mb-5">
             <div className="bg-black p-3 text-center">
-              <div className="text-xl font-display text-white">{judge.totalReviews}</div>
-              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-mono">Reviews</div>
+              <div className="text-2xl font-semibold text-white tabular-nums">{judge.totalReviews}</div>
+              <div className="text-[10px] text-zinc-500 uppercase tracking-[0.12em] font-medium">Reviews</div>
             </div>
             <div className="bg-black p-3 text-center">
-              <div className="text-xl font-display text-white">{judge.avgScore.toFixed(0)}</div>
-              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-mono">Avg Score</div>
+              <div className="text-2xl font-semibold text-white tabular-nums">{judge.avgScore.toFixed(0)}</div>
+              <div className="text-[10px] text-zinc-500 uppercase tracking-[0.12em] font-medium">Avg Score</div>
             </div>
             <div className="bg-black p-3 text-center">
-              <div className="text-xl font-display text-red-400">{judge.thisWeek}</div>
-              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-mono">This Week</div>
+              <div className="text-2xl font-semibold text-red-400 tabular-nums">{judge.thisWeek}</div>
+              <div className="text-[10px] text-zinc-500 uppercase tracking-[0.12em] font-medium">This Week</div>
             </div>
           </div>
 
           <div className="flex gap-2">
             <button
               onClick={() => navigate(`/judge/${judge.username}`)}
-              className="flex-1 py-2.5 border border-zinc-700 text-sm font-display uppercase tracking-wider text-zinc-300 hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 border border-zinc-700 text-[13px] font-semibold uppercase tracking-[0.08em] text-zinc-300 hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLink size={14} />
               Dossier
             </button>
             <button
               onClick={() => onSubmit(judge.id)}
-              className="flex-1 py-2.5 bg-red-700 text-white text-sm font-display uppercase tracking-wider hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 bg-red-700 text-white text-[13px] font-semibold uppercase tracking-[0.08em] hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
             >
               <Send size={14} />
               Submit
@@ -258,20 +258,20 @@ function TrialJudgeBanner() {
           <AlertTriangle size={14} className="text-zinc-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-display text-xs uppercase tracking-wider mb-1">Complete Your Trial</h3>
-          <p className="text-[11px] text-zinc-500 leading-relaxed mb-3">
+          <h3 className="font-semibold text-sm uppercase tracking-[0.08em] mb-1">Complete Your Trial</h3>
+          <p className="text-xs text-zinc-400 leading-relaxed mb-3">
             Finish your trial reviews to unlock full Judge status and be listed in the Bureau.
           </p>
           <div className="flex gap-2">
             <Link
               to="/judges/apply"
-              className="px-4 py-2 bg-red-700 text-white text-[10px] font-display uppercase tracking-wider hover:bg-red-600 transition-colors"
+              className="px-4 py-2 bg-red-700 text-white text-xs font-semibold uppercase tracking-[0.08em] hover:bg-red-600 transition-colors"
             >
               Complete Trial →
             </Link>
             <button
               onClick={() => setDismissed(true)}
-              className="px-3 py-2 border border-zinc-800 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+              className="px-3 py-2 border border-zinc-800 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
             >
               Dismiss
             </button>
@@ -431,7 +431,7 @@ export default function JudgeHubPage() {
             >
               <div className="flex items-center justify-center gap-3 mb-2">
                 <div className="flex-1 h-px bg-zinc-800" />
-                <span className="text-[9px] text-zinc-600 uppercase tracking-[0.4em] font-mono">Est. 2025</span>
+                <span className="text-[10px] text-zinc-500 uppercase tracking-[0.32em] font-semibold">Est. 2025</span>
                 <div className="flex-1 h-px bg-zinc-800" />
               </div>
             </motion.div>
@@ -449,12 +449,12 @@ export default function JudgeHubPage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <p className="text-[10px] text-zinc-500 uppercase tracking-[0.35em] font-mono mb-3">
+              <p className="text-[11px] text-zinc-400 uppercase tracking-[0.24em] font-medium mb-3">
                 QOI Authority · Judge Division
               </p>
               <div className="flex items-center justify-center gap-3">
                 <div className="flex-1 h-px bg-zinc-800" />
-                <span className="text-[9px] text-zinc-600 font-mono">{todayDate.toUpperCase()}</span>
+                <span className="text-[10px] text-zinc-500 font-medium tracking-[0.08em]">{todayDate.toUpperCase()}</span>
                 <div className="flex-1 h-px bg-zinc-800" />
               </div>
             </motion.div>
@@ -507,7 +507,7 @@ export default function JudgeHubPage() {
         <div className="px-4 pt-3 pb-1">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
-            <span className="text-[9px] text-zinc-500 uppercase tracking-[0.3em] font-mono">Live Wire · Recent Verdicts</span>
+            <span className="text-[11px] text-zinc-400 uppercase tracking-[0.2em] font-medium">Live Wire · Recent Verdicts</span>
           </div>
         </div>
         <JudgeReviewsFeed />
@@ -525,14 +525,14 @@ export default function JudgeHubPage() {
                 <NexusStar className="text-zinc-400" size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-display text-xs uppercase tracking-wider text-white mb-0.5">Join the Bureau</h3>
-                <p className="text-[10px] text-zinc-500">
+                <h3 className="font-semibold text-sm uppercase tracking-[0.08em] text-white mb-0.5">Join the Bureau</h3>
+                <p className="text-xs text-zinc-400">
                   Apply to become an official QOI authority. Rate, rank, and shape the standard.
                 </p>
               </div>
               <Link
                 to="/judges/apply"
-                className="shrink-0 px-4 py-2 bg-white text-black text-[10px] font-display uppercase tracking-wider hover:bg-zinc-200 transition-colors"
+                className="shrink-0 px-4 py-2 bg-white text-black text-xs font-semibold uppercase tracking-[0.08em] hover:bg-zinc-200 transition-colors"
               >
                 Apply
               </Link>
@@ -547,9 +547,9 @@ export default function JudgeHubPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-1 h-4 bg-red-700" />
-              <h2 className="font-display text-sm tracking-[0.15em] text-white">OFFICIAL ROSTER</h2>
+              <h2 className="font-display text-base tracking-[0.12em] text-white">OFFICIAL ROSTER</h2>
             </div>
-            <span className="text-[10px] text-zinc-600 font-mono">
+            <span className="text-xs text-zinc-500 font-medium tracking-[0.08em]">
               {filteredJudges.length} REGISTERED
             </span>
           </div>
@@ -577,8 +577,8 @@ export default function JudgeHubPage() {
               <div className="w-12 h-12 mx-auto border border-zinc-800 flex items-center justify-center mb-3">
                 <AuthorityGavel className="text-zinc-600" size={20} />
               </div>
-              <p className="font-display text-xs tracking-wider text-zinc-400 mb-1">NO RECORDS FOUND</p>
-              <p className="text-[10px] text-zinc-600">
+              <p className="text-sm font-semibold uppercase tracking-[0.08em] text-zinc-300 mb-1">NO RECORDS FOUND</p>
+              <p className="text-xs text-zinc-500">
                 {searchQuery ? 'Adjust your query' : 'The Bureau is assembling'}
               </p>
             </div>
