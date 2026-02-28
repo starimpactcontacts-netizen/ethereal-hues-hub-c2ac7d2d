@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Play, Trophy, Swords, Gavel, Zap, Target } from "lucide-react";
+import loopgateLogo from "@/assets/loopgate-logo.png";
 import { useRecentSubmissions, RecentSubmission } from "@/hooks/useRecentSubmissions";
 import { useThumbnail } from "@/hooks/useThumbnail";
 import { motion } from "framer-motion";
@@ -70,17 +71,13 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
           )}
         </div>
 
-        {/* Center: Loopgate mark */}
+        {/* Center: Loopgate logo */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-1">
-            {/* LG monogram */}
-            <span className={cn(
-              "font-display font-black tracking-tighter opacity-[0.08]",
-              isLarge ? "text-5xl" : "text-2xl"
-            )}>
-              LG
-            </span>
-          </div>
+          <img
+            src={loopgateLogo}
+            alt="Loopgate"
+            className={cn("opacity-[0.07]", isLarge ? "h-10" : "h-5")}
+          />
         </div>
 
         {/* Bottom: user info + event */}
