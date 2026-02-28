@@ -74,6 +74,7 @@ export default function PublicProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
+  const [resolvedUserId, setResolvedUserId] = useState<string | null>(null);
   const [platforms, setPlatforms] = useState<ConnectedPlatform[]>([]);
   const [rank, setRank] = useState<number | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
@@ -91,15 +92,18 @@ export default function PublicProfilePage() {
     const fetchData = async () => {
       setLoading(true);
 
-      // Fetch profile
+      // Resolve by UUID or username
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+      
       const { data: profileData } = await supabase
         .from("profiles")
-         .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, connection_count, profile_bg_color, profile_bg_image_url")
-        .eq("id", userId)
+         .select("id, username, display_name, league, global_index_score, win_rate, total_events, total_wins, avatar_url, verification_status, activity_status, bio, email, discord, portfolio_url, created_at, crew_id, xp, level, archetype, software, best_gatekeeper_qoi, is_founding_member, connection_count, profile_bg_color, profile_bg_image_url")
+        .eq(isUUID ? "id" : "username", userId)
         .single();
 
       if (profileData) {
         setProfile(profileData as PublicProfile);
+        setResolvedUserId(profileData.id);
         
         // Fetch unit if user has one
         if (profileData.crew_id) {
@@ -116,7 +120,7 @@ export default function PublicProfilePage() {
       const { data: platformsData } = await supabase
         .from("connected_platforms")
         .select("id, platform, platform_username, platform_url")
-        .eq("user_id", userId);
+        .eq("user_id", profileData.id);
 
       if (platformsData) {
         setPlatforms(platformsData as ConnectedPlatform[]);
@@ -129,7 +133,7 @@ export default function PublicProfilePage() {
         .order("global_index_score", { ascending: false });
 
       if (rankings) {
-        const userRank = rankings.findIndex((r) => r.id === userId) + 1;
+        const userRank = rankings.findIndex((r) => r.id === profileData.id) + 1;
         setRank(userRank > 0 ? userRank : null);
       }
 
@@ -137,7 +141,7 @@ export default function PublicProfilePage() {
       const { data: rolesData } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId);
+        .eq("user_id", profileData.id);
 
       if (rolesData) {
         const userRoles = rolesData.map(r => r.role as AppRole);
@@ -150,64 +154,65 @@ export default function PublicProfilePage() {
           const { count: vidCount } = await supabase
             .from('judge_rating_videos')
             .select('*', { count: 'exact', head: true })
-            .eq('judge_id', userId);
+            .eq('judge_id', profileData.id);
           setVideoCount(vidCount || 0);
         }
       }
 
       // Fetch submission count and activity stats in parallel
+      const uid = profileData.id;
       const [eventParts, roundParts, hostedSubs, battlesData, friendlyTournaments, sanctionedTournaments, hostedWins, eventWins, friendlyWins, sanctionedWins] = await Promise.all([
         supabase
           .from("event_participations")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
+          .eq("user_id", uid),
         supabase
           .from("round_participations")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
+          .eq("user_id", uid),
         supabase
           .from("hosted_competition_submissions")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
+          .eq("user_id", uid),
         // Get all completed battles where user participated
         supabase
           .from("battles")
           .select("challenger_id, opponent_id, winner_id")
           .eq("status", "completed")
-          .or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`),
+          .or(`challenger_id.eq.${uid},opponent_id.eq.${uid}`),
         // Friendly tournaments
         supabase
           .from("friendly_tournament_participants")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
+          .eq("user_id", uid),
         // Sanctioned tournaments - THE KEY TABLE
         supabase
           .from("sanctioned_tournament_participants")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
+          .eq("user_id", uid),
         // Hosted comp wins (1st place)
         supabase
           .from("hosted_competition_submissions")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
+          .eq("user_id", uid)
           .eq("winner_place", 1),
         // Official event wins (final_rank = 1)
         supabase
           .from("event_participations")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
+          .eq("user_id", uid)
           .eq("final_rank", 1),
         // Friendly tournament wins
         supabase
           .from("friendly_tournament_participants")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
+          .eq("user_id", uid)
           .eq("final_rank", 1),
         // Sanctioned tournament wins (final_rank = 1)
         supabase
           .from("sanctioned_tournament_participants")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
+          .eq("user_id", uid)
           .eq("final_rank", 1),
       ]);
       
@@ -218,7 +223,7 @@ export default function PublicProfilePage() {
       const eventCount = (roundParts.count || 0) + (hostedSubs.count || 0) + (eventParts.count || 0) + (friendlyTournaments.count || 0) + (sanctionedTournaments.count || 0);
       const battles = battlesData.data || [];
       const battleCount = battles.length;
-      const battleWins = battles.filter(b => b.winner_id === userId).length;
+      const battleWins = battles.filter(b => b.winner_id === uid).length;
       
       // Total wins from ALL sources
       const totalWins = battleWins + (hostedWins.count || 0) + (eventWins.count || 0) + (friendlyWins.count || 0) + (sanctionedWins.count || 0);
@@ -264,10 +269,10 @@ export default function PublicProfilePage() {
   const editorClass = profile ? getEditorClass() : { letter: 'F', color: 'text-muted-foreground' };
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/editor/${userId}`;
+    const shareUrl = `${window.location.origin}/u/${profile?.username}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: `${profile?.username || 'Editor'} on LOOPGATE`, url: shareUrl });
+        await navigator.share({ title: `${profile?.display_name || profile?.username} on LOOPGATE`, url: shareUrl });
       } catch {
         // User cancelled or share failed
       }
@@ -387,10 +392,7 @@ export default function PublicProfilePage() {
               {profile.is_founding_member && <FoundingBadge size="sm" />}
             </div>
             
-            {profile.display_name && (
-              <p className="text-xs text-muted-foreground mb-3">@{profile.username}</p>
-            )}
-            {!profile.display_name && <div className="mb-2" />}
+            <p className="text-xs text-muted-foreground mb-3">@{profile.username}</p>
 
             {/* Stats Row - Properly sized */}
             <div className="flex items-center justify-center gap-6 mb-4">
@@ -431,18 +433,25 @@ export default function PublicProfilePage() {
             {/* Platform Links - Compact row */}
             {platforms.length > 0 && (
               <div className="flex items-center gap-2 mb-4 flex-wrap justify-center">
-                {platforms.map((p) => (
-                  <a
-                    key={p.id}
-                    href={p.platform_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border rounded-full text-xs text-muted-foreground hover:text-white hover:border-gold/50 transition-colors"
-                  >
-                    <ExternalLink size={12} />
-                    {platformLabels[p.platform] || p.platform}
-                  </a>
-                ))}
+                {platforms.map((p) => {
+                  const Icon = p.platform === 'tiktok' ? SiTiktok 
+                    : p.platform === 'instagram' ? SiInstagram 
+                    : p.platform === 'youtube' ? SiYoutube 
+                    : p.platform === 'x' ? SiX
+                    : ExternalLink;
+                  return (
+                    <a
+                      key={p.id}
+                      href={p.platform_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-1 border border-border rounded-full text-xs text-muted-foreground hover:text-white hover:border-gold/50 transition-colors"
+                    >
+                      <Icon size={12} />
+                      {platformLabels[p.platform] || p.platform}
+                    </a>
+                  );
+                })}
               </div>
             )}
 
@@ -516,9 +525,9 @@ export default function PublicProfilePage() {
 
       {/* Tab Content */}
       {activeTab === 'videos' && isJudge ? (
-        <PublicJudgeVideos userId={userId || ''} />
+        <PublicJudgeVideos userId={resolvedUserId || ''} />
       ) : activeTab === 'edits' ? (
-        <SubmissionGrid userId={userId || ''} />
+        <SubmissionGrid userId={resolvedUserId || ''} />
       ) : activeTab === 'links' ? (
         <div className="px-4 py-6 space-y-4">
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Connected Platforms</p>
@@ -584,44 +593,46 @@ export default function PublicProfilePage() {
       ) : (
         <div className="px-4 py-6 space-y-6">
           {/* League & Stats Grid */}
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className={`font-display text-xl uppercase ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
+              <p className={`font-display text-2xl uppercase ${leagueColors[league]?.split(' ')[0] || 'text-muted-foreground'}`}>
                 {league.charAt(0)}
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                 League
               </p>
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className={`font-display text-xl ${editorClass.color}`}>
+              <p className={`font-display text-2xl ${editorClass.color}`}>
                 {editorClass.letter}
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                 Class
               </p>
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className="font-display text-xl">
+              <p className="font-display text-2xl">
                 {Number(profile.global_index_score || 0).toFixed(1)}
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                 Index
               </p>
             </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className="font-display text-xl">
+              <p className="font-display text-2xl">
                 {realStats.winRate.toFixed(0)}%
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                 Win Rate
               </p>
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className="font-display text-xl">
+              <p className="font-display text-2xl">
                 {realStats.totalEvents}
               </p>
-              <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                 Events
               </p>
             </div>
