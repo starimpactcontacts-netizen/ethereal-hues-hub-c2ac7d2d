@@ -40,12 +40,13 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
-      className="w-[260px] shrink-0 bg-surface-1 border border-red-500/20 hover:border-red-500/50 transition-all cursor-pointer group overflow-hidden"
+      className="w-[280px] sm:w-[300px] shrink-0 bg-surface-1 border border-red-500/20 hover:border-red-500/50 transition-all cursor-pointer group overflow-hidden"
     >
       {/* Hero — VS Display */}
-      <div className="relative h-[120px] overflow-hidden">
-        {/* Red atmosphere */}
-        <div className="absolute inset-0 bg-gradient-to-b from-red-600/20 via-red-900/10 to-surface-1" />
+      <div className="relative h-[140px] overflow-hidden">
+        {/* Blue/Red atmosphere split */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 via-surface-1 to-red-900/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-1" />
         <div className="absolute inset-0 opacity-[0.03]" style={{
           backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 6px, currentColor 6px, currentColor 7px),
                             repeating-linear-gradient(-45deg, transparent, transparent 6px, currentColor 6px, currentColor 7px)`,
@@ -55,58 +56,58 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         {/* Status — seamless text */}
         <div className="absolute top-2.5 left-0 right-0 flex items-center justify-center gap-1.5">
           {isLive && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_6px_rgba(239,68,68,0.6)]" />}
-          <span className={`text-[10px] font-bold uppercase tracking-[0.15em] drop-shadow-sm ${statusColor}`} style={{ fontFamily: 'Teko, sans-serif' }}>
+          <span className={`text-[11px] font-bold uppercase tracking-[0.15em] drop-shadow-sm ${statusColor}`} style={{ fontFamily: 'Teko, sans-serif' }}>
             {statusText}
           </span>
         </div>
 
         {/* VS Display */}
-        <div className="absolute inset-0 flex items-center justify-center px-4 pt-3">
-          {/* Challenger */}
+        <div className="absolute inset-0 flex items-center justify-center px-5 pt-3">
+          {/* Challenger — Blue side */}
           <div className="flex-1 flex flex-col items-center">
-            <div className="p-[2px] bg-gradient-to-br from-red-500/50 to-red-900/50" style={{ borderRadius: '50%' }}>
-              <Avatar className="w-11 h-11 border-[1.5px] border-background" style={{ borderRadius: '50%' }}>
+            <div className="p-[2px] bg-gradient-to-br from-blue-500/60 to-blue-900/60" style={{ borderRadius: '50%' }}>
+              <Avatar className="w-14 h-14 border-[1.5px] border-background" style={{ borderRadius: '50%' }}>
                 <AvatarImage src={battle.challenger_avatar_url || ''} />
-                <AvatarFallback className="bg-red-500/20 text-red-400 text-sm font-bold">
+                <AvatarFallback className="bg-blue-500/20 text-blue-400 text-base font-bold">
                   {battle.challenger_username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
-            <span className="text-[10px] text-foreground font-bold mt-1.5 truncate max-w-[80px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+            <span className="text-[11px] text-foreground font-bold mt-1.5 truncate max-w-[90px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
               {battle.challenger_username}
             </span>
           </div>
 
           {/* VS Badge */}
           <div className="relative mx-2 shrink-0">
-            <div className="w-9 h-9 bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/30" style={{ borderRadius: '50%' }}>
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/30" style={{ borderRadius: '50%' }}>
               <Swords className="w-4 h-4 text-white" />
             </div>
             {isLive && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />}
           </div>
 
-          {/* Opponent */}
+          {/* Opponent — Red side */}
           <div className="flex-1 flex flex-col items-center">
             {battle.opponent_id ? (
               <>
-                <div className="p-[2px] bg-gradient-to-br from-red-500/50 to-red-900/50" style={{ borderRadius: '50%' }}>
-                  <Avatar className="w-11 h-11 border-[1.5px] border-background" style={{ borderRadius: '50%' }}>
+                <div className="p-[2px] bg-gradient-to-br from-red-500/60 to-red-900/60" style={{ borderRadius: '50%' }}>
+                  <Avatar className="w-14 h-14 border-[1.5px] border-background" style={{ borderRadius: '50%' }}>
                     <AvatarImage src={battle.opponent_avatar_url || ''} />
-                    <AvatarFallback className="bg-red-500/20 text-red-400 text-sm font-bold">
+                    <AvatarFallback className="bg-red-500/20 text-red-400 text-base font-bold">
                       {battle.opponent_username?.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                <span className="text-[10px] text-foreground font-bold mt-1.5 truncate max-w-[80px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                <span className="text-[11px] text-foreground font-bold mt-1.5 truncate max-w-[90px] uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
                   {battle.opponent_username}
                 </span>
               </>
             ) : (
               <>
-                <div className="w-11 h-11 border-[1.5px] border-dashed border-red-500/30 flex items-center justify-center bg-surface-2/50" style={{ borderRadius: '50%' }}>
-                  <span className="text-lg text-red-400/30 font-display">?</span>
+                <div className="w-14 h-14 border-[1.5px] border-dashed border-red-500/30 flex items-center justify-center bg-surface-2/50" style={{ borderRadius: '50%' }}>
+                  <span className="text-xl text-red-400/30 font-display">?</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
+                <span className="text-[11px] text-muted-foreground mt-1.5 uppercase tracking-wide" style={{ fontFamily: 'Teko, sans-serif' }}>
                   Open
                 </span>
               </>
@@ -115,14 +116,14 @@ export default function BattleCard({ battle, onClick }: BattleCardProps) {
         </div>
 
         {/* View count */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1">
+        <div className="absolute bottom-2 left-2.5 flex items-center gap-1">
           <Eye className="w-3 h-3 text-muted-foreground/60" />
           <span className="text-[9px] text-foreground/50 font-medium tabular-nums">{formatViews(battle.view_count)}</span>
         </div>
 
         {/* Rapid badge */}
         {isRapid && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-amber-500/20 border border-amber-500/30 px-1.5 py-0.5">
+          <div className="absolute bottom-2 right-2.5 flex items-center gap-1 bg-amber-500/20 border border-amber-500/30 px-1.5 py-0.5">
             <Zap className="w-2.5 h-2.5 text-amber-400" />
             <span className="text-[8px] font-bold text-amber-400 uppercase tracking-wider">RAPID</span>
           </div>
