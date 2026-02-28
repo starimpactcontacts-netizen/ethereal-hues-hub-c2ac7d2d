@@ -207,6 +207,7 @@ export default function ArenaPage() {
   const [showSoloMode, setShowSoloMode] = useState(() => searchParams.get('auto') === '1' && searchParams.get('mode') === 'solo');
   const [showCreateBattle, setShowCreateBattle] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice'>((searchParams.get('mode') as any) || 'quick');
   const [userStats, setUserStats] = useState<{ wins: number; losses: number; streak: number; events: number } | null>(null);
   const [qfSearching, setQfSearching] = useState(false);
@@ -386,57 +387,83 @@ export default function ArenaPage() {
 
       {/* ═══ HERO ═══ */}
       <div className="relative overflow-hidden">
-        {/* Ambient glow */}
         <div className="absolute inset-0 bg-gradient-to-b from-red-600/6 via-transparent to-transparent" />
 
-        <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-2 max-w-2xl mx-auto">
-          {/* Title row */}
-          <div className="flex items-center justify-between mb-2.5">
+        <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
+          {/* Title row — merged with stats */}
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-foreground flex items-center justify-center">
-                <InfinityIcon className="w-5.5 h-5.5 text-background" strokeWidth={2.5} />
+              <div className="w-8 h-8 bg-foreground flex items-center justify-center">
+                <InfinityIcon className="w-5 h-5 text-background" strokeWidth={2.5} />
               </div>
-              <div>
-                <h1 className="text-[24px] font-black text-foreground leading-none tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>Arena</h1>
-                <p className="hidden sm:block text-[11px] text-muted-foreground mt-0.5 font-medium">Compete. Win. Climb.</p>
-              </div>
+              <h1 className="text-[22px] font-black text-foreground leading-none tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>Arena</h1>
             </div>
-            {totalLive > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[13px] font-bold text-red-400 tabular-nums">{totalLive} Live</span>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Inline stats */}
+              {profile && userStats && (
+                <div className="flex items-center gap-2">
+                  <span className="text-[12px] font-bold text-emerald-400 tabular-nums">{userStats.wins}W</span>
+                  <span className="text-[12px] font-bold text-red-400 tabular-nums">{userStats.losses}L</span>
+                </div>
+              )}
+              {totalLive > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                  <span className="text-[11px] font-bold text-red-400 tabular-nums">{totalLive} Live</span>
+                </div>
+              )}
+              <button onClick={() => setShowSearch(s => !s)} className="p-1.5 hover:bg-surface-1 transition-colors">
+                <Search className="w-4 h-4 text-muted-foreground" />
+              </button>
+            </div>
           </div>
 
-          {/* ═══ ARENA / MY ARENA TAB TOGGLE ═══ */}
-          <div className="flex gap-0 mb-2 bg-surface-1/50 border border-border overflow-hidden">
+          {/* Search — collapsible */}
+          <AnimatePresence>
+            {showSearch && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <div className="relative mb-2">
+                  <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search battles, events, players..."
+                    value={quickSearch}
+                    onChange={(e) => setQuickSearch(e.target.value)}
+                    autoFocus
+                    className="w-full h-7 pl-8 pr-8 bg-surface-1 border border-border text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
+                  />
+                  {quickSearch && (
+                    <button onClick={() => setQuickSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <X className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Arena / My Arena toggle — minimal underline style */}
+          <div className="flex gap-4 mb-2 border-b border-border">
             <button
               onClick={() => setArenaView('arena')}
-              className={`flex-1 py-2 text-[12px] font-bold transition-all relative ${
-                arenaView === 'arena' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
+              className={`pb-1.5 text-[12px] font-bold transition-all relative ${
+                arenaView === 'arena' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {arenaView === 'arena' && <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500" />}
-              <div className="flex items-center justify-center gap-2">
-                <InfinityIcon className="w-3.5 h-3.5" />
-                Arena
-              </div>
+              {arenaView === 'arena' && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-500" />}
+              Arena
             </button>
             <button
               onClick={() => setArenaView('my')}
-              className={`flex-1 py-2 text-[12px] font-bold transition-all relative border-l border-border ${
-                arenaView === 'my' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
+              className={`pb-1.5 text-[12px] font-bold transition-all relative ${
+                arenaView === 'my' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {arenaView === 'my' && <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold" />}
-              <div className="flex items-center justify-center gap-2">
-                <UserRound className="w-3.5 h-3.5" />
-                My Arena
-                {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0) && (
-                  <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-                )}
-              </div>
+              {arenaView === 'my' && <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold" />}
+              My Arena
+              {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0) && (
+                <span className="ml-1.5 w-1.5 h-1.5 rounded-full bg-gold animate-pulse inline-block" />
+              )}
             </button>
           </div>
 
@@ -668,54 +695,8 @@ export default function ArenaPage() {
           ) : (
           <>
 
-          {/* ═══ GLOBAL SEARCH ═══ */}
-          <div className="relative mb-1.5 border-b border-border/80">
-            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search battles, events, players..."
-              value={quickSearch}
-              onChange={(e) => setQuickSearch(e.target.value)}
-              className="w-full h-7 pl-8 pr-8 bg-transparent border-0 rounded-none text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none transition-colors"
-            />
-            {quickSearch && (
-              <button onClick={() => setQuickSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
-                <X className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-            )}
-          </div>
 
-          {/* ═══ STATS ROW ═══ */}
-          {profile && userStats && (
-            <div className="mb-1.5 border-y border-border/80 px-1 py-1.5 flex items-center gap-2.5">
-              <Avatar className="w-8 h-8 border border-border shrink-0">
-                <AvatarImage src={profile.avatar_url || ''} />
-                <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <span className="text-[12px] font-bold text-foreground block leading-none truncate">{profile.username}</span>
-                <span className="text-[10px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                {[
-                  { val: userStats.wins, label: 'W', color: 'text-emerald-400' },
-                  { val: userStats.losses, label: 'L', color: 'text-red-400' },
-                  { val: userStats.events, label: 'Edits', color: 'text-foreground' },
-                ].map(s => (
-                  <div key={s.label} className="text-center">
-                    <span className={`text-[14px] font-black ${s.color} block leading-none tabular-nums`}>{s.val}</span>
-                    <span className="text-[10px] text-muted-foreground font-medium block">{s.label}</span>
-                  </div>
-                ))}
-                {userStats.streak > 1 && (
-                  <div className="text-center">
-                    <span className="text-[14px] font-black text-gold block leading-none">🔥{userStats.streak}</span>
-                    <span className="text-[10px] text-muted-foreground font-medium block">Streak</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+
 
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
           <div className="mb-1.5">
