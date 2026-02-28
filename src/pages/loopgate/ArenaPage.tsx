@@ -410,28 +410,28 @@ export default function ArenaPage() {
           </div>
 
           {/* ═══ ARENA / MY ARENA TAB TOGGLE ═══ */}
-          <div className="flex gap-0 mb-5 bg-surface-1 border border-border overflow-hidden">
+          <div className="flex gap-0 mb-4 bg-surface-1 border border-border rounded-lg overflow-hidden">
             <button
               onClick={() => setArenaView('arena')}
-              className={`flex-1 py-3 text-[13px] font-bold transition-all relative ${
+              className={`flex-1 py-2.5 text-[12px] font-bold transition-all relative ${
                 arenaView === 'arena' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {arenaView === 'arena' && <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500" />}
+              {arenaView === 'arena' && <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500" />}
               <div className="flex items-center justify-center gap-2">
-                <InfinityIcon className="w-4 h-4" />
+                <InfinityIcon className="w-3.5 h-3.5" />
                 Arena
               </div>
             </button>
             <button
               onClick={() => setArenaView('my')}
-              className={`flex-1 py-3 text-[13px] font-bold transition-all relative border-l border-border ${
+              className={`flex-1 py-2.5 text-[12px] font-bold transition-all relative border-l border-border ${
                 arenaView === 'my' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {arenaView === 'my' && <div className="absolute top-0 left-0 right-0 h-[3px] bg-gold" />}
+              {arenaView === 'my' && <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold" />}
               <div className="flex items-center justify-center gap-2">
-                <UserRound className="w-4 h-4" />
+                <UserRound className="w-3.5 h-3.5" />
                 My Arena
                 {(activeSolo || myBattles.length > 0 || myActiveQuickFights.length > 0) && (
                   <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
@@ -668,49 +668,49 @@ export default function ArenaPage() {
           ) : (
           <>
 
-          {/* ═══ GLOBAL SEARCH — top of Arena ═══ */}
-          <div className="relative mb-5">
-            <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          {/* ═══ GLOBAL SEARCH ═══ */}
+          <div className="relative mb-4">
+            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search battles, events, players..."
               value={quickSearch}
               onChange={(e) => setQuickSearch(e.target.value)}
-              className="w-full h-11 pl-10 pr-9 bg-surface-1 border border-border rounded-full text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
+              className="w-full h-9 pl-9 pr-8 bg-surface-1 border border-border rounded-lg text-[12px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
             />
             {quickSearch && (
-              <button onClick={() => setQuickSearch("")} className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4 text-muted-foreground" />
+              <button onClick={() => setQuickSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             )}
           </div>
 
           {/* ═══ STATS ROW ═══ */}
           {profile && userStats && (
-            <div className="mb-5 bg-surface-1 border border-border p-4 flex items-center gap-4">
-              <Avatar className="w-11 h-11 border-2 border-border shrink-0">
+            <div className="mb-4 bg-surface-1 border border-border rounded-lg p-3 flex items-center gap-3">
+              <Avatar className="w-9 h-9 border border-border shrink-0">
                 <AvatarImage src={profile.avatar_url || ''} />
-                <AvatarFallback className="bg-surface-2 text-foreground text-[12px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <span className="text-[14px] font-bold text-foreground block leading-none truncate">{profile.username}</span>
-                <span className="text-[12px] text-muted-foreground mt-1 block">Class {profile.league_tier || 'F'}</span>
+                <span className="text-[13px] font-bold text-foreground block leading-none truncate">{profile.username}</span>
+                <span className="text-[11px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
               </div>
-              <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4">
                 {[
                   { val: userStats.wins, label: 'W', color: 'text-emerald-400' },
                   { val: userStats.losses, label: 'L', color: 'text-red-400' },
                   { val: userStats.events, label: 'Edits', color: 'text-foreground' },
                 ].map(s => (
                   <div key={s.label} className="text-center">
-                    <span className={`text-[16px] font-black ${s.color} block leading-none tabular-nums`}>{s.val}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block">{s.label}</span>
+                    <span className={`text-[14px] font-black ${s.color} block leading-none tabular-nums`}>{s.val}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium block">{s.label}</span>
                   </div>
                 ))}
                 {userStats.streak > 1 && (
                   <div className="text-center">
-                    <span className="text-[16px] font-black text-gold block leading-none">🔥{userStats.streak}</span>
-                    <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block">Streak</span>
+                    <span className="text-[14px] font-black text-gold block leading-none">🔥{userStats.streak}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium block">Streak</span>
                   </div>
                 )}
               </div>
@@ -718,31 +718,30 @@ export default function ArenaPage() {
           )}
 
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
-          <div className="mb-5">
+          <div className="mb-4">
             {/* Mode tabs */}
-            <div className="flex gap-0 mb-3 bg-surface-1 border border-border overflow-hidden">
+            <div className="flex gap-0 mb-2 bg-surface-1 border border-border rounded-lg overflow-hidden">
               {[
-                { key: 'quick' as const, icon: <Zap className="w-4 h-4" />, label: 'Quick 1v1', desc: 'Auto-match · 3hr' },
-                { key: 'battle' as const, icon: <Swords className="w-4 h-4" />, label: '1v1 Battle', desc: 'Invite opponent' },
-                { key: 'solo' as const, icon: <UserRound className="w-4 h-4" />, label: 'Solo', desc: 'Pick · Edit · Score' },
-                { key: 'practice' as const, icon: <Target className="w-4 h-4" />, label: 'Practice', desc: 'No stakes' },
+                { key: 'quick' as const, icon: <Zap className="w-3.5 h-3.5" />, label: 'Quick 1v1', desc: 'Auto · 3hr' },
+                { key: 'battle' as const, icon: <Swords className="w-3.5 h-3.5" />, label: '1v1', desc: 'Invite' },
+                { key: 'solo' as const, icon: <UserRound className="w-3.5 h-3.5" />, label: 'Solo', desc: 'Pick · Score' },
+                { key: 'practice' as const, icon: <Target className="w-3.5 h-3.5" />, label: 'Practice', desc: 'No stakes' },
               ].map((mode, i) => {
                 const active = selectedMode === mode.key;
                 return (
                   <button
                     key={mode.key}
                     onClick={() => setSelectedMode(mode.key)}
-                    className={`flex-1 relative py-4 px-2 flex flex-col items-center gap-1.5 transition-all touch-manipulation ${
+                    className={`flex-1 relative py-2.5 px-1.5 flex flex-col items-center gap-1 transition-all touch-manipulation ${
                       active ? 'bg-surface-2' : 'hover:bg-surface-0'
                     } ${i > 0 ? 'border-l border-border' : ''}`}
                   >
-                    {/* Active indicator — top bar */}
-                    {active && <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500" />}
+                    {active && <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500" />}
                     <span className={`transition-colors ${active ? 'text-red-400' : 'text-muted-foreground'}`}>{mode.icon}</span>
-                    <span className={`text-[13px] font-bold leading-none transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    <span className={`text-[11px] sm:text-[12px] font-bold leading-none transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                       {mode.label}
                     </span>
-                    <span className={`text-[11px] leading-none transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
+                    <span className={`text-[9px] sm:text-[10px] leading-none transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
                       {mode.desc}
                     </span>
                   </button>
@@ -753,47 +752,46 @@ export default function ArenaPage() {
             {/* PLAY button — dual CTA for quick/solo, standard for others */}
             {(selectedMode === 'quick' || selectedMode === 'solo') ? (
               <div className="flex flex-col gap-0">
-                <div className="flex gap-0 overflow-hidden border border-red-500/30">
+                <div className="flex gap-0 overflow-hidden rounded-lg border border-red-500/30">
                 {/* Quick Edit Battle */}
                 <motion.button
                   whileTap={isQfSearching ? undefined : { scale: 0.97 }}
                   onClick={() => { setSelectedMode('quick'); if (!isQfSearching) modeActions.quick(); }}
                   disabled={isQfSearching}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-5 flex items-center justify-center gap-2 transition-all ${
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-3.5 flex items-center justify-center gap-2 transition-all ${
                     isQfSearching ? 'bg-red-600' : selectedMode === 'quick' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
                   }`}
                 >
                   {(selectedMode === 'quick' || isQfSearching) && (
                     <>
-                      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-                      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-900/50 pointer-events-none" />
+                      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                     </>
                   )}
                   {isQfSearching ? (
                     <>
-                      <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
-                      <span className="text-[16px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      <Loader2 className="w-4 h-4 text-white animate-spin relative z-10" />
+                      <span className="text-[14px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                         Searching...
                       </span>
-                      <span className="text-[11px] font-mono text-white/50 relative z-10 flex items-center gap-1">
+                      <span className="text-[10px] font-mono text-white/50 relative z-10 flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
                       </span>
                     </>
                   ) : qfActiveFight ? (
                     <>
-                      <Swords className="w-5 h-5 text-white relative z-10" />
-                      <span className="text-[16px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      <Swords className="w-4 h-4 text-white relative z-10" />
+                      <span className="text-[14px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                         Return to Fight
                       </span>
                     </>
                   ) : (
                     <>
-                      <Zap className={`w-5 h-5 relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-muted-foreground'}`} />
-                      <span className={`text-[16px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                        Quick Edit Battle
+                      <Zap className={`w-4 h-4 relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-muted-foreground'}`} />
+                      <span className={`text-[14px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        Quick Battle
                       </span>
-                      <span className={`text-[11px] font-bold relative z-10 ml-1 ${selectedMode === 'quick' ? 'text-white/40' : 'text-gold'}`}>+20 IDX</span>
+                      <span className={`text-[10px] font-bold relative z-10 ${selectedMode === 'quick' ? 'text-white/40' : 'text-gold'}`}>+20 IDX</span>
                     </>
                   )}
                 </motion.button>
@@ -805,32 +803,27 @@ export default function ArenaPage() {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => { setSelectedMode('solo'); modeActions.solo(); }}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-5 flex items-center justify-center gap-2 transition-all ${
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-3.5 flex items-center justify-center gap-2 transition-all ${
                     selectedMode === 'solo' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
                   }`}
                 >
                   {selectedMode === 'solo' && (
-                    <>
-                      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-                      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-900/50 pointer-events-none" />
-                    </>
+                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                   )}
-                  <UserRound className={`w-5 h-5 relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-muted-foreground'}`} />
-                  <div className="relative z-10 flex flex-col items-start">
-                    <span className={`text-[16px] font-black tracking-tight uppercase ${selectedMode === 'solo' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                      Solo Edit
-                    </span>
-                  </div>
-                  <span className={`text-[11px] font-bold relative z-10 ml-1 ${selectedMode === 'solo' ? 'text-white/40' : 'text-gold'}`}>100+ IDX</span>
+                  <UserRound className={`w-4 h-4 relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-muted-foreground'}`} />
+                  <span className={`text-[14px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    Solo Edit
+                  </span>
+                  <span className={`text-[10px] font-bold relative z-10 ${selectedMode === 'solo' ? 'text-white/40' : 'text-gold'}`}>100+ IDX</span>
                 </motion.button>
               </div>
               {/* Cancel queue button */}
               {isQfSearching && (
                 <button
                   onClick={handleCancelQueue}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 border border-border bg-surface-1 text-muted-foreground text-xs font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 border border-border bg-surface-1 rounded-b-lg text-muted-foreground text-[11px] font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
                   Cancel Search
                 </button>
               )}
@@ -839,18 +832,17 @@ export default function ArenaPage() {
               <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={modeActions[selectedMode]}
-                className="w-full relative overflow-hidden touch-manipulation group"
+                className="w-full relative overflow-hidden touch-manipulation group rounded-lg"
               >
-                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-5 flex items-center justify-center gap-3">
-                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-red-900/50 pointer-events-none" />
-                  {selectedMode === 'battle' && <Swords className="w-5 h-5 text-white relative z-10" />}
-                  {selectedMode === 'practice' && <Target className="w-5 h-5 text-white relative z-10" />}
-                  <span className="text-[22px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-3.5 flex items-center justify-center gap-2 rounded-lg">
+                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none rounded-t-lg" />
+                  {selectedMode === 'battle' && <Swords className="w-4 h-4 text-white relative z-10" />}
+                  {selectedMode === 'practice' && <Target className="w-4 h-4 text-white relative z-10" />}
+                  <span className="text-[18px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                     {selectedMode === 'practice' ? 'Start Practice' : 'Play'}
                   </span>
                   {selectedMode === 'battle' && (
-                    <span className="text-[12px] text-white/40 font-bold relative z-10 ml-1">+20 IDX</span>
+                    <span className="text-[11px] text-white/40 font-bold relative z-10">+20 IDX</span>
                   )}
                 </div>
               </motion.button>
