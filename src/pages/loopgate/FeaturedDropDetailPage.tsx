@@ -724,16 +724,39 @@ export default function FeaturedDropDetailPage() {
           </div>
         )}
 
-        {/* Round-based submissions display */}
+        {/* Round-based submissions — ranked leaderboard */}
         {hasRounds && activeRound && activeRoundSubs.length > 0 && (
           <div className="space-y-2">
-            <h3 className="font-display text-sm text-foreground uppercase tracking-wider flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-destructive" />
-              Round {activeRound.round_number} Entries
-            </h3>
-            {activeRoundSubs.map((sub) => (
-              <DropSubmissionCard key={sub.id} submission={sub} />
-            ))}
+            <div className="flex items-center justify-between border-b border-border pb-2">
+              <h3 className="font-display text-lg text-foreground uppercase tracking-wide flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-gold" />
+                Round {activeRound.round_number} Leaderboard
+              </h3>
+              <span className="text-[10px] text-muted-foreground font-bold tabular-nums">
+                {activeRoundSubs.length} {activeRoundSubs.length === 1 ? 'ENTRY' : 'ENTRIES'}
+              </span>
+            </div>
+            {(() => {
+              // Sort by score if scored, otherwise by upvotes (community ranking)
+              const sorted = [...activeRoundSubs].sort((a, b) => {
+                if (a.status === 'scored' && b.status === 'scored') {
+                  return (b.qoi_score || 0) - (a.qoi_score || 0);
+                }
+                return ((b.upvotes || 0) - (b.downvotes || 0)) - ((a.upvotes || 0) - (a.downvotes || 0));
+              });
+              const scored = sorted.filter(s => s.status === 'scored');
+              const pending = sorted.filter(s => s.status !== 'scored');
+              return (
+                <>
+                  {scored.map((sub, idx) => (
+                    <DropSubmissionCard key={sub.id} submission={sub} rank={idx + 1} isTopScorer={idx === 0} />
+                  ))}
+                  {pending.map((sub, idx) => (
+                    <DropSubmissionCard key={sub.id} submission={sub} rank={scored.length > 0 ? undefined : idx + 1} />
+                  ))}
+                </>
+              );
+            })()}
           </div>
         )}
 
