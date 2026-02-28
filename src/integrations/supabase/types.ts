@@ -4033,6 +4033,41 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          is_active: boolean
+          source: string
+          subscribed_at: string
+          user_id: string | null
+        }
+        Insert: {
+          email: string
+          id?: string
+          is_active?: boolean
+          source?: string
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          email?: string
+          id?: string
+          is_active?: boolean
+          source?: string
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_subscribers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
