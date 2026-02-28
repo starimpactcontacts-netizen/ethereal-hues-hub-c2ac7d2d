@@ -720,28 +720,28 @@ export default function ArenaPage() {
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
           <div className="mb-4">
             {/* Mode tabs */}
-            <div className="flex gap-0 mb-2 bg-surface-1 border border-border rounded-lg overflow-hidden">
+            <div className="flex gap-0 mb-1.5 bg-surface-1 border border-border rounded-lg overflow-hidden">
               {[
-                { key: 'quick' as const, icon: <Zap className="w-3.5 h-3.5" />, label: 'Quick 1v1', desc: 'Auto · 3hr' },
-                { key: 'battle' as const, icon: <Swords className="w-3.5 h-3.5" />, label: '1v1', desc: 'Invite' },
-                { key: 'solo' as const, icon: <UserRound className="w-3.5 h-3.5" />, label: 'Solo', desc: 'Pick · Score' },
-                { key: 'practice' as const, icon: <Target className="w-3.5 h-3.5" />, label: 'Practice', desc: 'No stakes' },
+                { key: 'quick' as const, icon: <Zap className="w-3 h-3" />, label: 'Quick 1v1', desc: 'Auto · 3hr' },
+                { key: 'battle' as const, icon: <Swords className="w-3 h-3" />, label: '1v1', desc: 'Invite' },
+                { key: 'solo' as const, icon: <UserRound className="w-3 h-3" />, label: 'Solo', desc: 'Pick · Score' },
+                { key: 'practice' as const, icon: <Target className="w-3 h-3" />, label: 'Practice', desc: 'No stakes' },
               ].map((mode, i) => {
                 const active = selectedMode === mode.key;
                 return (
                   <button
                     key={mode.key}
                     onClick={() => setSelectedMode(mode.key)}
-                    className={`flex-1 relative py-2.5 px-1.5 flex flex-col items-center gap-1 transition-all touch-manipulation ${
+                    className={`flex-1 relative py-1.5 px-1 flex flex-col items-center gap-0.5 transition-all touch-manipulation ${
                       active ? 'bg-surface-2' : 'hover:bg-surface-0'
                     } ${i > 0 ? 'border-l border-border' : ''}`}
                   >
                     {active && <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500" />}
                     <span className={`transition-colors ${active ? 'text-red-400' : 'text-muted-foreground'}`}>{mode.icon}</span>
-                    <span className={`text-[11px] sm:text-[12px] font-bold leading-none transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    <span className={`text-[10px] sm:text-[11px] font-bold leading-none transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                       {mode.label}
                     </span>
-                    <span className={`text-[9px] sm:text-[10px] leading-none transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
+                    <span className={`text-[8px] sm:text-[9px] leading-none transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
                       {mode.desc}
                     </span>
                   </button>
@@ -758,7 +758,7 @@ export default function ArenaPage() {
                   whileTap={isQfSearching ? undefined : { scale: 0.97 }}
                   onClick={() => { setSelectedMode('quick'); if (!isQfSearching) modeActions.quick(); }}
                   disabled={isQfSearching}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-3.5 flex items-center justify-center gap-2 transition-all ${
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-2.5 flex items-center justify-center gap-2 transition-all ${
                     isQfSearching ? 'bg-red-600' : selectedMode === 'quick' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
                   }`}
                 >
@@ -770,7 +770,7 @@ export default function ArenaPage() {
                   {isQfSearching ? (
                     <>
                       <Loader2 className="w-4 h-4 text-white animate-spin relative z-10" />
-                      <span className="text-[14px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      <span className="text-[13px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                         Searching...
                       </span>
                       <span className="text-[10px] font-mono text-white/50 relative z-10 flex items-center gap-1">
@@ -781,14 +781,14 @@ export default function ArenaPage() {
                   ) : qfActiveFight ? (
                     <>
                       <Swords className="w-4 h-4 text-white relative z-10" />
-                      <span className="text-[14px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      <span className="text-[13px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                         Return to Fight
                       </span>
                     </>
                   ) : (
                     <>
                       <Zap className={`w-4 h-4 relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-muted-foreground'}`} />
-                      <span className={`text-[14px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      <span className={`text-[13px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                         Quick Battle
                       </span>
                       <span className={`text-[10px] font-bold relative z-10 ${selectedMode === 'quick' ? 'text-white/40' : 'text-gold'}`}>+20 IDX</span>
@@ -803,7 +803,7 @@ export default function ArenaPage() {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => { setSelectedMode('solo'); modeActions.solo(); }}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-3.5 flex items-center justify-center gap-2 transition-all ${
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-2.5 flex items-center justify-center gap-2 transition-all ${
                     selectedMode === 'solo' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
                   }`}
                 >
@@ -811,7 +811,7 @@ export default function ArenaPage() {
                     <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                   )}
                   <UserRound className={`w-4 h-4 relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-muted-foreground'}`} />
-                  <span className={`text-[14px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                  <span className={`text-[13px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                     Solo Edit
                   </span>
                   <span className={`text-[10px] font-bold relative z-10 ${selectedMode === 'solo' ? 'text-white/40' : 'text-gold'}`}>100+ IDX</span>
@@ -834,11 +834,11 @@ export default function ArenaPage() {
                 onClick={modeActions[selectedMode]}
                 className="w-full relative overflow-hidden touch-manipulation group rounded-lg"
               >
-                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-3.5 flex items-center justify-center gap-2 rounded-lg">
+                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-2.5 flex items-center justify-center gap-2 rounded-lg">
                   <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none rounded-t-lg" />
-                  {selectedMode === 'battle' && <Swords className="w-4 h-4 text-white relative z-10" />}
-                  {selectedMode === 'practice' && <Target className="w-4 h-4 text-white relative z-10" />}
-                  <span className="text-[18px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                  {selectedMode === 'battle' && <Swords className="w-3.5 h-3.5 text-white relative z-10" />}
+                  {selectedMode === 'practice' && <Target className="w-3.5 h-3.5 text-white relative z-10" />}
+                  <span className="text-[15px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                     {selectedMode === 'practice' ? 'Start Practice' : 'Play'}
                   </span>
                   {selectedMode === 'battle' && (
