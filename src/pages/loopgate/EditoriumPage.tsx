@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone } from 'lucide-react';
+import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import SEO, { pageSEO } from '@/components/SEO';
 import editoriumLogo from '@/assets/editorium-logo.png';
+import EditoriumNewsletter from '@/components/loopgate/EditoriumNewsletter';
 
 interface Article {
   id: string;
@@ -32,6 +33,7 @@ interface Article {
 const CATEGORIES = ['All', 'Culture', 'Artists', 'Community', 'Games', 'Film', 'Music', 'Breaking'];
 
 export default function EditoriumPage() {
+  const navigate = useNavigate();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -208,15 +210,22 @@ export default function EditoriumPage() {
       {/* ═══ TOP BAR ═══ */}
       <div style={{ backgroundColor: '#111111' }} className="py-1.5">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
-          <span style={{ color: '#999', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
-            The Editor's World
-          </span>
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/hub')} className="flex items-center gap-1.5 hover:opacity-70 transition-opacity">
+              <ArrowLeft className="w-3.5 h-3.5" style={{ color: '#888' }} />
+              <span style={{ color: '#888', fontSize: '10px', fontWeight: 600 }}>Loopgate</span>
+            </button>
+            <span style={{ color: '#333', fontSize: '10px' }}>|</span>
+            <span style={{ color: '#999', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
+              The Editor's World
+            </span>
+          </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1" style={{ color: '#cc0000', fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
               Live
             </span>
-            <span style={{ color: '#666', fontSize: '10px' }}>Press · Culture · Community</span>
+            <span style={{ color: '#666', fontSize: '10px' }} className="hidden sm:inline">Press · Culture · Community</span>
           </div>
         </div>
       </div>
@@ -523,6 +532,9 @@ export default function EditoriumPage() {
                 </div>
               </div>
             )}
+
+            {/* ═══ NEWSLETTER SIGNUP (INLINE) ═══ */}
+            <EditoriumNewsletter variant="inline" />
 
             {/* ═══ FOOTER ═══ */}
             <div className="text-center py-8" style={{ borderTop: '2px solid #111' }}>

@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import SEO from '@/components/SEO';
 import editoriumLogo from '@/assets/editorium-logo.png';
+import EditoriumNewsletter from '@/components/loopgate/EditoriumNewsletter';
 
 interface Article {
   id: string;
@@ -327,7 +328,13 @@ export default function EditoriumArticlePage() {
             </div>
           </Link>
         )}
+
+        {/* ═══ NEWSLETTER SIGNUP (INLINE) ═══ */}
+        <EditoriumNewsletter variant="inline" />
       </motion.div>
+
+      {/* ═══ STICKY NEWSLETTER BANNER ═══ */}
+      <EditoriumNewsletter variant="sticky" />
     </div>
   );
 }

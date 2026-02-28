@@ -8,8 +8,8 @@ import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 
 export default function AuthenticatedLayout() {
   const location = useLocation();
-  const hideNavPaths = ['/admin', '/onboarding', '/studio'];
-  const hideHeaderPaths = ['/messages', '/studio'];
+  const hideNavPaths = ['/admin', '/onboarding', '/studio', '/editorium'];
+  const hideHeaderPaths = ['/messages', '/studio', '/editorium'];
   const hideNav = hideNavPaths.some(path => location.pathname.startsWith(path));
   const hideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path));
   const showNav = !hideNav;
