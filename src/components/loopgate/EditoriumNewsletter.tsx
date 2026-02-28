@@ -56,36 +56,53 @@ export default function EditoriumNewsletter({ variant }: EditoriumNewsletterProp
             className="fixed bottom-0 left-0 right-0 z-50 safe-bottom"
             style={{ background: "#111", borderTop: "2px solid #cc0000" }}
           >
-            <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
-              <Mail className="w-4 h-4 shrink-0" style={{ color: "#cc0000" }} />
-              <span style={{ fontSize: "12px", color: "#ccc", fontWeight: 500, whiteSpace: "nowrap" }}>
-                Daily editing news
-              </span>
-              <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-2">
+            <div className="max-w-2xl mx-auto px-4 py-3">
+              <div className="flex items-center gap-2 mb-2 sm:mb-0 sm:hidden">
+                <Mail className="w-4 h-4 shrink-0" style={{ color: "#cc0000" }} />
+                <span style={{ fontSize: "12px", color: "#ccc", fontWeight: 500 }}>
+                  Daily editing news — straight to your inbox
+                </span>
+              </div>
+              <div className="hidden sm:flex items-center gap-3">
+                <Mail className="w-4 h-4 shrink-0" style={{ color: "#cc0000" }} />
+                <span style={{ fontSize: "12px", color: "#ccc", fontWeight: 500, whiteSpace: "nowrap" }}>
+                  Daily editing news
+                </span>
+                <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    className="flex-1 h-8 px-3 rounded-none text-xs outline-none"
+                    style={{ background: "#222", border: "1px solid #333", color: "#fff", minWidth: 0 }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={state === "loading"}
+                    className="h-8 px-4 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                    style={{ background: "#cc0000", color: "#fff" }}
+                  >
+                    {state === "loading" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <>Subscribe <ArrowRight className="w-3 h-3" /></>}
+                  </button>
+                </form>
+              </div>
+              <form onSubmit={handleSubmit} className="flex sm:hidden items-center gap-2">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="flex-1 h-8 px-3 rounded-none text-xs outline-none"
-                  style={{
-                    background: "#222",
-                    border: "1px solid #333",
-                    color: "#fff",
-                    minWidth: 0,
-                  }}
+                  className="flex-1 h-9 px-3 rounded-none text-sm outline-none"
+                  style={{ background: "#222", border: "1px solid #333", color: "#fff", minWidth: 0 }}
                 />
                 <button
                   type="submit"
                   disabled={state === "loading"}
-                  className="h-8 px-4 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+                  className="h-9 px-4 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
                   style={{ background: "#cc0000", color: "#fff" }}
                 >
-                  {state === "loading" ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <>Subscribe <ArrowRight className="w-3 h-3" /></>
-                  )}
+                  {state === "loading" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <>Join <ArrowRight className="w-3 h-3" /></>}
                 </button>
               </form>
             </div>
@@ -127,36 +144,22 @@ export default function EditoriumNewsletter({ variant }: EditoriumNewsletterProp
           <span className="font-semibold text-sm">You're subscribed!</span>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="flex items-center gap-2 max-w-sm mx-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-sm mx-auto">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="flex-1 h-10 px-4 text-sm outline-none"
-            style={{
-              background: "#fff",
-              border: "1px solid #ddd",
-              color: "#111",
-              minWidth: 0,
-            }}
+            className="flex-1 h-11 sm:h-10 px-4 text-sm outline-none"
+            style={{ background: "#fff", border: "1px solid #ddd", color: "#111", minWidth: 0 }}
           />
           <button
             type="submit"
             disabled={state === "loading"}
-            className="h-10 px-5 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
-            style={{
-              background: "#111",
-              color: "#fff",
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-            }}
+            className="h-11 sm:h-10 px-5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50"
+            style={{ background: "#111", color: "#fff", letterSpacing: "0.05em", textTransform: "uppercase" }}
           >
-            {state === "loading" ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <>Subscribe</>
-            )}
+            {state === "loading" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <>Subscribe</>}
           </button>
         </form>
       )}
