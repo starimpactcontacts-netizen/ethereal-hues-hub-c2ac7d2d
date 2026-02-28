@@ -938,30 +938,34 @@ export default function HubPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + activeSanctioned.length + i) * 0.05 }}
-                  className="w-[240px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/50 transition-colors overflow-hidden group"
+                  className="w-[240px] sm:w-[260px] rounded-xl bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/40 transition-all duration-300 overflow-hidden group hover:shadow-[0_4px_24px_rgba(239,68,68,0.1)]"
                 >
-                  {/* VS Display Header */}
-                  <div className="h-24 overflow-hidden relative bg-gradient-to-br from-red-900/50 via-surface-2 to-surface-1">
+                  {/* VS Display Header — Blue vs Red split */}
+                  <div className="h-32 overflow-hidden relative">
+                    {/* Blue/Red gradient split */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 via-surface-2 to-red-900/60" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-transparent to-transparent" />
+                    
                     <div className="absolute inset-0 flex items-center justify-center px-4">
-                      {/* Challenger */}
+                      {/* Challenger — Blue side */}
                       <div className="flex-1 flex flex-col items-center">
-                        <div className="w-12 h-12 rounded-full border-2 border-red-500/50 bg-red-500/20 flex items-center justify-center overflow-hidden">
+                        <div className="w-14 h-14 rounded-full border-2 border-blue-500/60 bg-blue-500/20 flex items-center justify-center overflow-hidden shadow-lg shadow-blue-500/20">
                           {battle.challenger_avatar_url ? (
                             <img src={battle.challenger_avatar_url} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <span className="font-display text-sm text-red-400">
+                            <span className="font-display text-base text-blue-400">
                               {battle.challenger_username.charAt(0).toUpperCase()}
                             </span>
                           )}
                         </div>
-                        <span className="text-[8px] text-foreground mt-1 truncate max-w-[70px]">
+                        <span className="text-[9px] text-foreground mt-1.5 truncate max-w-[80px] font-semibold">
                           {battle.challenger_username}
                         </span>
                       </div>
                       
                       {/* VS Badge */}
                       <div className="relative mx-2">
-                        <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center shadow-lg shadow-red-500/40">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-red-500 flex items-center justify-center shadow-lg shadow-red-500/30">
                           <Swords className="w-4 h-4 text-white" />
                         </div>
                         {battle.status === 'active' && (
@@ -969,40 +973,40 @@ export default function HubPage() {
                         )}
                       </div>
                       
-                      {/* Opponent */}
+                      {/* Opponent — Red side */}
                       <div className="flex-1 flex flex-col items-center">
                         {battle.opponent_id ? (
                           <>
-                            <div className="w-12 h-12 rounded-full border-2 border-red-500/50 bg-red-500/20 flex items-center justify-center overflow-hidden">
+                            <div className="w-14 h-14 rounded-full border-2 border-red-500/60 bg-red-500/20 flex items-center justify-center overflow-hidden shadow-lg shadow-red-500/20">
                               {battle.opponent_avatar_url ? (
                                 <img src={battle.opponent_avatar_url} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <span className="font-display text-sm text-red-400">
+                                <span className="font-display text-base text-red-400">
                                   {battle.opponent_username?.charAt(0).toUpperCase()}
                                 </span>
                               )}
                             </div>
-                            <span className="text-[8px] text-foreground mt-1 truncate max-w-[70px]">
+                            <span className="text-[9px] text-foreground mt-1.5 truncate max-w-[80px] font-semibold">
                               {battle.opponent_username}
                             </span>
                           </>
                         ) : (
                           <>
-                            <div className="w-12 h-12 rounded-full border-2 border-dashed border-red-500/30 flex items-center justify-center bg-surface-2">
-                              <span className="text-lg text-red-400/50">?</span>
+                            <div className="w-14 h-14 rounded-full border-2 border-dashed border-red-500/30 flex items-center justify-center bg-surface-2">
+                              <span className="text-xl text-red-400/50">?</span>
                             </div>
-                            <span className="text-[8px] text-muted-foreground mt-1">Open</span>
+                            <span className="text-[9px] text-muted-foreground mt-1.5">Open</span>
                           </>
                         )}
                       </div>
                     </div>
                     
                     {/* Status badge */}
-                    <div className={`absolute top-1.5 left-1.5 flex items-center gap-1 px-1.5 py-0.5 rounded-sm ${
+                    <div className={`absolute top-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full ${
                       battle.status === 'active' ? 'bg-red-500/90' :
                       battle.status === 'judging' ? 'bg-purple-500/90' : 'bg-amber-500/90'
                     }`}>
-                      <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                       <span className="text-[7px] font-bold text-white uppercase tracking-wider">
                         {battle.status === 'pending' ? 'Open' : 
                          battle.status === 'active' ? 'Live' : 'Judging'}
@@ -1010,29 +1014,29 @@ export default function HubPage() {
                     </div>
                     
                     {/* 1v1 label */}
-                    <div className="absolute bottom-1.5 left-1.5 bg-red-500/90 px-1.5 py-0.5 rounded-sm">
+                    <div className="absolute bottom-2 left-2 bg-gradient-to-r from-blue-600 to-red-600 px-2 py-0.5 rounded-full">
                       <span className="text-[7px] font-bold text-white uppercase tracking-wider">1v1 Battle</span>
                     </div>
                     
                     {/* Prize */}
-                    <div className="absolute top-1.5 right-1.5 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-sm">
+                    <div className="absolute top-2 right-2 bg-background/80 border border-gold/50 px-1.5 py-0.5 rounded-full">
                       <span className="text-[8px] font-bold text-gold">+{battle.winner_index_awarded || 20} IDX</span>
                     </div>
                   </div>
                   
                   {/* Battle Info */}
-                  <div className="p-2.5">
-                    <p className="font-display text-xs text-foreground truncate">
+                  <div className="p-3">
+                    <p className="font-display text-sm text-foreground truncate">
                       {battle.challenger_username} vs {battle.opponent_username || '???'}
                     </p>
                     <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-[8px] text-red-400 uppercase tracking-wider">{battle.duration_hours}h Battle</span>
-                      <span className="text-[9px] text-muted-foreground uppercase">{battle.status}</span>
+                      <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">{battle.duration_hours}h Battle</span>
+                      <span className="text-[9px] text-muted-foreground uppercase font-medium">{battle.status}</span>
                     </div>
                     {/* Activity signal */}
-                    <div className="mt-1.5 flex items-center gap-1.5">
-                      <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
-                      <span className="text-[8px] text-red-400">
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                      <span className="text-[9px] text-red-400 font-medium">
                         {battle.status === 'pending' ? 'Waiting for opponent' :
                          battle.status === 'active' ? 'Edits in progress' : 'Awaiting judge verdict'}
                       </span>
