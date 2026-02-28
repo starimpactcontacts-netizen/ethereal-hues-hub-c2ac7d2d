@@ -1184,6 +1184,18 @@ export default function HubPage() {
         <div className="mx-4 overflow-hidden rounded-sm border border-border/30">
           <ExploreGrid limit={12} />
         </div>
+
+        {/* Live Activity Log */}
+        <div className="mx-4 mt-2 bg-surface-1/40 border border-border/30 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-3.5 h-3.5 text-gold" />
+              <span className="text-[9px] text-foreground font-semibold uppercase tracking-wider">Live Activity</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+          </div>
+          <HubLiveFeed />
+        </div>
       </motion.div>
 
       {/* ═══════════════════════════════════════════════════════════════════
