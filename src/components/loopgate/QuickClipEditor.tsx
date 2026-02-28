@@ -127,6 +127,8 @@ export default function QuickClipEditor() {
   const [upscaleResultUrl, setUpscaleResultUrl] = useState<string | null>(null);
   const [upscaleDims, setUpscaleDims] = useState<{ w: number; h: number } | null>(null);
 
+  const hasTriggeredPicker = useRef(false);
+
   const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
 
   const toggleEffect = (effectId: string) => {
@@ -142,6 +144,16 @@ export default function QuickClipEditor() {
   const toggleSection = (section: AdjustSection) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Auto-open file picker on mount — seamless like CapCut
+  useEffect(() => {
+    if (!file && !hasTriggeredPicker.current) {
+      hasTriggeredPicker.current = true;
+      // Small delay so DOM is ready
+      const t = setTimeout(() => fileInputRef.current?.click(), 300);
+      return () => clearTimeout(t);
+    }
+  }, [file]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -394,72 +406,36 @@ export default function QuickClipEditor() {
     setUpscaleState("idle"); setUpscaleProgress(0); setUpscaleDims(null);
   };
 
-  // ─── CapCut-style Import Screen ───
+  // ─── Seamless Import — auto-opens picker, minimal wait state ───
   if (!file) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#0a0a0a" }}>
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-2 safe-top" style={{ borderBottom: "1px solid #1a1a1a" }}>
-          <span className="text-[15px] font-semibold" style={{ color: "#fff" }}>New Project</span>
-          <button onClick={() => fileInputRef.current?.click()}
-            className="h-8 px-4 rounded-full text-[12px] font-semibold flex items-center gap-1.5"
-            style={{ background: ACCENT, color: "#000" }}>
-            <Upload className="w-3.5 h-3.5" /> Import
-          </button>
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 gap-8">
-          <motion.button
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center" style={{ background: "#0a0a0a" }}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col items-center gap-5"
+        >
+          <motion.div
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="w-16 h-16 rounded-2xl flex items-center justify-center"
+            style={{ background: `${ACCENT}12`, border: `1px solid ${ACCENT}20` }}
+          >
+            <Film className="w-7 h-7" style={{ color: ACCENT }} />
+          </motion.div>
+          <div className="text-center space-y-1.5">
+            <p className="text-[15px] font-semibold text-white">Select a video</p>
+            <p className="text-[11px]" style={{ color: "#555" }}>to start editing</p>
+          </div>
+          <button
             onClick={() => fileInputRef.current?.click()}
-            whileTap={{ scale: 0.97 }}
-            className="w-full max-w-xs aspect-square flex flex-col items-center justify-center gap-4 rounded-3xl"
-            style={{ background: "#111", border: "2px dashed #333" }}>
-            <motion.div
-              animate={{ y: [0, -4, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ background: `${ACCENT}15`, border: `1px solid ${ACCENT}30` }}>
-              <Film className="w-8 h-8" style={{ color: ACCENT }} />
-            </motion.div>
-            <div className="text-center space-y-1">
-              <p className="text-[15px] font-semibold" style={{ color: "#fff" }}>Import Media</p>
-              <p className="text-[12px]" style={{ color: "#666" }}>Select a video to start editing</p>
-            </div>
-          </motion.button>
-
-          <div className="flex items-center gap-3">
-            {["MP4", "MOV", "WEBM"].map(fmt => (
-              <span key={fmt} className="px-3 py-1 rounded-full text-[10px] font-medium"
-                style={{ background: "#1a1a1a", color: "#555", border: "1px solid #222" }}>
-                {fmt}
-              </span>
-            ))}
-            <span className="text-[10px]" style={{ color: "#333" }}>•</span>
-            <span className="text-[10px] font-medium" style={{ color: "#444" }}>Up to 2GB</span>
-          </div>
-
-          <div className="w-full max-w-xs grid grid-cols-2 gap-2">
-            {[
-              { icon: Scissors, label: "Trim & Cut", sub: "Precision editing" },
-              { icon: Sparkles, label: "18+ Effects", sub: "Glitch, VHS, RGB..." },
-              { icon: Wand2, label: "24 Filters", sub: "Cinematic grading" },
-              { icon: SlidersHorizontal, label: "Color Grade", sub: "Pro adjustments" },
-              { icon: Type, label: "Text Styles", sub: "Animated titles" },
-              { icon: Gauge, label: "Speed Control", sub: "Slow-mo & fast" },
-            ].map(({ icon: Icon, label, sub }) => (
-              <div key={label} className="rounded-xl p-3 flex items-start gap-2.5"
-                style={{ background: "#111", border: "1px solid #1a1a1a" }}>
-                <Icon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: ACCENT }} />
-                <div>
-                  <p className="text-[11px] font-medium" style={{ color: "#ccc" }}>{label}</p>
-                  <p className="text-[9px]" style={{ color: "#444" }}>{sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
+            className="mt-2 h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
+            style={{ background: ACCENT, color: "#000" }}
+          >
+            <Upload className="w-4 h-4" /> Choose Video
+          </button>
+        </motion.div>
         <input ref={fileInputRef} type="file" accept="video/*" onChange={handleFileSelect} className="hidden" />
       </div>
     );
