@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, SkipBack, SkipForward, Scissors, RotateCcw,
@@ -121,6 +122,7 @@ const FILTER_PREVIEWS: Record<string, string> = {
 };
 
 export default function StudioNLE() {
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -824,6 +826,10 @@ export default function StudioNLE() {
 
       {/* ═══ TOP TOOLBAR ═══ */}
       <div className="h-11 flex items-center px-2 gap-1 flex-shrink-0 z-20" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
+        <button onClick={() => navigate("/hub")} className="p-1.5 rounded-md transition-all hover:bg-white/5 mr-1" title="Back to Loopgate">
+          <ArrowLeft className="w-4 h-4" style={{ color: "#aaa" }} />
+        </button>
+        <div className="w-px h-5 mr-1" style={{ background: "#2a2a2a" }} />
         {TOOL_TABS.map((tab) => {
           const isActive = activeToolTab === tab.id;
           return (
