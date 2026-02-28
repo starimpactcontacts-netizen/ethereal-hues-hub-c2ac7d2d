@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Clock, Coins, Check, ChevronLeft, Sparkles, Crown, Star } from "lucide-react";
+import { Shield, Clock, Coins, Check, ChevronLeft, Sparkles, Crown, Star, Flame, Zap, Flower2, CircuitBoard, Ghost } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import loopgateLogo from "@/assets/loopgate-logo.png";
 
 interface ShopItem {
   id: string;
@@ -25,12 +24,22 @@ interface ShopItem {
 
 const CATEGORIES = [
   { key: "all", label: "All" },
-  { key: "badge", label: "Badges" },
-  { key: "avatar_frame", label: "Avatar Frames" },
-  { key: "profile_skin", label: "Profile Skins" },
+  { key: "avatar_decoration", label: "Avatar Decorations" },
+  { key: "profile_effect", label: "Profile Effects" },
   { key: "nameplate", label: "Nameplates" },
-  { key: "banner", label: "Banners" },
+  { key: "badge", label: "Badges" },
 ];
+
+// Cosmetic gradient themes for items without images
+const ITEM_THEMES: Record<string, { gradient: string; icon: React.ElementType; accent: string }> = {
+  "OG Claim": { gradient: "from-amber-900/60 via-yellow-900/40 to-amber-950/80", icon: Shield, accent: "text-gold" },
+  "Midnight Ember": { gradient: "from-red-950/80 via-orange-950/60 to-zinc-950", icon: Flame, accent: "text-red-400" },
+  "Neon Circuit": { gradient: "from-cyan-950/80 via-blue-950/60 to-indigo-950/80", icon: CircuitBoard, accent: "text-cyan-400" },
+  "Phantom Rose": { gradient: "from-purple-950/80 via-pink-950/60 to-zinc-950", icon: Flower2, accent: "text-purple-400" },
+  "Chrome Wave": { gradient: "from-slate-800/80 via-zinc-700/40 to-slate-900/80", icon: Zap, accent: "text-slate-300" },
+  "Sakura Drift": { gradient: "from-pink-950/60 via-rose-900/40 to-pink-950/80", icon: Flower2, accent: "text-pink-400" },
+  "Void Walker": { gradient: "from-indigo-950/80 via-violet-950/60 to-zinc-950", icon: Ghost, accent: "text-violet-400" },
+};
 
 function getTimeRemaining(until: string) {
   const diff = new Date(until).getTime() - Date.now();
@@ -83,8 +92,6 @@ export default function ShopPage() {
       toast.error("This item is no longer available");
       return;
     }
-
-    // Check balance for paid items
     if (item.price > 0 && spendableIndex < item.price) {
       toast.error("Not enough Index Points");
       return;
@@ -92,7 +99,6 @@ export default function ShopPage() {
 
     setClaiming(item.id);
 
-    // Deduct index if paid
     if (item.price > 0) {
       const { data: success } = await supabase.rpc("spend_index", {
         p_user_id: user.id,
@@ -124,8 +130,6 @@ export default function ShopPage() {
   };
 
   const filtered = activeCategory === "all" ? items : items.filter((i) => i.category === activeCategory);
-
-  // Sort: limited items first, then by price desc
   const sorted = [...filtered].sort((a, b) => {
     if (a.is_limited && !b.is_limited) return -1;
     if (!a.is_limited && b.is_limited) return 1;
@@ -134,38 +138,35 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-transparent" />
-        <div className="relative px-4 pt-6 pb-4">
-          <div className="flex items-center justify-between mb-6">
-            <button onClick={() => navigate("/hub")} className="flex items-center gap-1 text-muted-foreground text-sm">
-              <ChevronLeft className="w-4 h-4" />
-              Hub
-            </button>
-            <div className="flex items-center gap-2 bg-card/60 backdrop-blur-sm border border-border/50 rounded-full px-3 py-1.5">
-              <Coins className="w-3.5 h-3.5 text-gold" />
-              <span className="text-sm font-bold tabular-nums">{spendableIndex}</span>
-              <span className="text-[10px] text-muted-foreground uppercase">Index</span>
-            </div>
+      {/* Header */}
+      <div className="px-4 pt-6 pb-2">
+        <div className="flex items-center justify-between mb-5">
+          <button onClick={() => navigate("/hub")} className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground transition-colors">
+            <ChevronLeft className="w-4 h-4" />
+            Hub
+          </button>
+          <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-full px-3.5 py-1.5">
+            <Coins className="w-3.5 h-3.5 text-gold" />
+            <span className="text-sm font-bold tabular-nums text-foreground">{spendableIndex}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Index</span>
           </div>
-
-          <h1 className="text-2xl font-bold tracking-tight mb-1">Shop</h1>
-          <p className="text-sm text-muted-foreground">Spend your earned Index on exclusive cosmetics & badges</p>
         </div>
-      </div>
 
-      {/* Category Tabs */}
-      <div className="px-4 mb-4 overflow-x-auto scrollbar-hide">
-        <div className="flex gap-2">
+        <div className="mb-5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground mb-1">Shop</h1>
+          <p className="text-sm text-muted-foreground">Cosmetics, effects & collectibles — powered by Index</p>
+        </div>
+
+        {/* Category Nav */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {CATEGORIES.map((cat) => (
             <button
               key={cat.key}
               onClick={() => setActiveCategory(cat.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 activeCategory === cat.key
-                  ? "bg-gold text-black"
-                  : "bg-card/60 text-muted-foreground hover:text-foreground border border-border/50"
+                  ? "bg-foreground text-background"
+                  : "bg-surface-1 text-muted-foreground hover:text-foreground border border-border"
               }`}
             >
               {cat.label}
@@ -174,12 +175,21 @@ export default function ShopPage() {
         </div>
       </div>
 
+      {/* Batch Header */}
+      <div className="px-4 pt-4 pb-3">
+        <div className="flex items-center gap-2">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">Batch 001</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+
       {/* Items Grid */}
       <div className="px-4">
         {loading ? (
           <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="aspect-square bg-card/40 rounded-xl animate-pulse" />
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="aspect-[3/4] bg-surface-1 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : sorted.length === 0 ? (
@@ -190,7 +200,7 @@ export default function ShopPage() {
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <AnimatePresence mode="popLayout">
-              {sorted.map((item) => (
+              {sorted.map((item, i) => (
                 <ShopItemCard
                   key={item.id}
                   item={item}
@@ -198,6 +208,7 @@ export default function ShopPage() {
                   claiming={claiming === item.id}
                   onClaim={() => handleClaim(item)}
                   canAfford={item.price === 0 || spendableIndex >= item.price}
+                  index={i}
                 />
               ))}
             </AnimatePresence>
@@ -214,74 +225,87 @@ function ShopItemCard({
   claiming,
   onClaim,
   canAfford,
+  index,
 }: {
   item: ShopItem;
   owned: boolean;
   claiming: boolean;
   onClaim: () => void;
   canAfford: boolean;
+  index: number;
 }) {
   const isExpired = item.available_until && new Date(item.available_until) < new Date();
   const timeLeft = item.available_until ? getTimeRemaining(item.available_until) : null;
-  const isOG = item.name === "OG Claim";
+  const theme = ITEM_THEMES[item.name] || { gradient: "from-zinc-900/80 via-zinc-800/40 to-zinc-900/80", icon: Star, accent: "text-muted-foreground" };
+  const Icon = theme.icon;
+
+  const categoryLabel = CATEGORIES.find(c => c.key === item.category)?.label || item.category;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className={`relative rounded-xl border overflow-hidden transition-all ${
-        isOG
-          ? "border-gold/40 bg-gradient-to-b from-gold/10 via-card/80 to-card/60 shadow-[0_0_20px_-5px_hsl(var(--gold)/0.3)]"
-          : "border-border/50 bg-card/60"
-      } ${owned ? "opacity-80" : ""}`}
+      transition={{ delay: index * 0.05, duration: 0.3 }}
+      className={`group relative rounded-xl border overflow-hidden transition-all ${
+        item.is_limited
+          ? "border-gold/30 shadow-[0_0_24px_-8px_hsl(var(--gold)/0.2)]"
+          : "border-border/60 hover:border-border"
+      } ${owned ? "opacity-70" : ""}`}
     >
-      {/* Limited badge */}
-      {item.is_limited && !isExpired && (
-        <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-red-500/90 text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full">
-          <Clock className="w-2.5 h-2.5" />
-          Limited
+      {/* Visual Preview */}
+      <div className={`aspect-[4/3] relative bg-gradient-to-br ${theme.gradient} flex items-center justify-center overflow-hidden`}>
+        {/* Decorative particles */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-white/60 rounded-full" />
+          <div className="absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-white/40 rounded-full" />
+          <div className="absolute bottom-1/4 left-1/2 w-1.5 h-1.5 bg-white/30 rounded-full" />
+          <div className="absolute top-2/3 right-1/4 w-0.5 h-0.5 bg-white/50 rounded-full" />
         </div>
-      )}
 
-      {/* OG badge */}
-      {isOG && (
-        <div className="absolute top-2 right-2 z-10">
-          <Crown className="w-4 h-4 text-gold" />
-        </div>
-      )}
-
-      {/* Preview area */}
-      <div className="aspect-square relative flex items-center justify-center p-4">
         {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="w-full h-full object-contain rounded-lg" />
-        ) : isOG ? (
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gold/30 via-gold/10 to-transparent border-2 border-gold/40 flex items-center justify-center">
-            <Shield className="w-10 h-10 text-gold" />
-          </div>
+          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-20 h-20 rounded-xl bg-muted/20 flex items-center justify-center">
-            <Star className="w-8 h-8 text-muted-foreground/30" />
+          <div className="relative z-10 flex flex-col items-center gap-2">
+            <div className={`w-14 h-14 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center ${theme.accent}`}>
+              <Icon className="w-7 h-7" />
+            </div>
+          </div>
+        )}
+
+        {/* Limited tag */}
+        {item.is_limited && !isExpired && (
+          <div className="absolute top-2 left-2 flex items-center gap-1 bg-red-500/90 text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md">
+            <Clock className="w-2.5 h-2.5" />
+            Limited
+          </div>
+        )}
+
+        {/* Stock count for limited */}
+        {item.is_limited && item.stock && !isExpired && (
+          <div className="absolute top-2 right-2 text-[9px] font-semibold text-white/60 bg-black/40 backdrop-blur-sm px-1.5 py-0.5 rounded-md">
+            {item.stock - item.total_claimed} left
           </div>
         )}
 
         {/* Owned overlay */}
         {owned && (
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center">
-            <div className="flex items-center gap-1.5 bg-green-500/20 border border-green-500/40 text-green-400 rounded-full px-3 py-1 text-xs font-semibold">
-              <Check className="w-3 h-3" />
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-[3px] flex items-center justify-center">
+            <div className="flex items-center gap-1.5 bg-green-500/15 border border-green-500/30 text-green-400 rounded-lg px-3 py-1.5 text-xs font-semibold">
+              <Check className="w-3.5 h-3.5" />
               Owned
             </div>
           </div>
         )}
       </div>
 
-      {/* Info */}
-      <div className="px-3 pb-3">
-        <h3 className="text-sm font-bold truncate mb-0.5">{item.name}</h3>
+      {/* Info Section */}
+      <div className="p-3 bg-surface-0">
+        <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1 font-medium">{categoryLabel}</div>
+        <h3 className="text-sm font-bold text-foreground truncate mb-0.5">{item.name}</h3>
         {item.description && (
-          <p className="text-[10px] text-muted-foreground line-clamp-2 mb-2 leading-relaxed">{item.description}</p>
+          <p className="text-[10px] text-muted-foreground line-clamp-2 mb-2.5 leading-relaxed">{item.description}</p>
         )}
 
         {/* Time remaining */}
@@ -292,21 +316,21 @@ function ShopItemCard({
           </div>
         )}
 
-        {/* Price / Claim button */}
+        {/* Price / Action */}
         {owned ? (
-          <div className="text-[10px] text-muted-foreground">Claimed</div>
+          <div className="text-[10px] text-muted-foreground font-medium">In your collection</div>
         ) : isExpired ? (
-          <div className="text-[10px] text-muted-foreground">Expired</div>
+          <div className="text-[10px] text-muted-foreground font-medium">No longer available</div>
         ) : (
           <Button
             size="sm"
             onClick={onClaim}
             disabled={claiming || !canAfford}
-            className={`w-full h-8 text-xs font-semibold ${
+            className={`w-full h-8 text-xs font-semibold rounded-lg ${
               item.price === 0
                 ? "bg-gold hover:bg-gold/90 text-black"
                 : canAfford
-                ? "bg-foreground/10 hover:bg-foreground/20 text-foreground border border-border/50"
+                ? "bg-foreground/10 hover:bg-foreground/15 text-foreground border border-border"
                 : "bg-muted/20 text-muted-foreground cursor-not-allowed"
             }`}
           >
@@ -315,9 +339,9 @@ function ShopItemCard({
             ) : item.price === 0 ? (
               "Claim Free"
             ) : (
-              <span className="flex items-center gap-1">
-                <Coins className="w-3 h-3" />
-                {item.price}
+              <span className="flex items-center gap-1.5">
+                <Coins className="w-3 h-3 text-gold" />
+                {item.price} Index
               </span>
             )}
           </Button>
