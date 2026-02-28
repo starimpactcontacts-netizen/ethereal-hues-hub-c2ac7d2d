@@ -91,7 +91,12 @@ const FILTER_PREVIEWS: Record<string, string> = {
   super8: "linear-gradient(135deg, #2A1A0A 0%, #6A4A20 50%, #3A2A10 100%)",
 };
 
-export default function QuickClipEditor() {
+interface QuickClipEditorProps {
+  initialFile?: File | null;
+  onBack?: () => void;
+}
+
+export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditorProps) {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -100,8 +105,9 @@ export default function QuickClipEditor() {
   const timelineRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
 
-  const [file, setFile] = useState<File | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(initialFile ?? null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(initialFile ? URL.createObjectURL(initialFile) : null);
+  
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -120,7 +126,7 @@ export default function QuickClipEditor() {
   const [resultExt, setResultExt] = useState<"mp4" | "webm">("webm");
   const [speed, setSpeed] = useState(1);
   const [muted, setMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(!!initialFile);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [activeEffects, setActiveEffects] = useState<string[]>([]);
   const [activeTransition, setActiveTransition] = useState<string | null>(null);
@@ -172,11 +178,13 @@ export default function QuickClipEditor() {
   }, []);
 
   // Auto-open file picker + one-tap fallback for iOS/Android restrictions
+  // Skip if initialFile was provided (coming from StudioHome)
   useEffect(() => {
     if (file) {
       hasTriggeredPicker.current = false;
       return;
     }
+    if (initialFile) return; // Don't auto-trigger if we had an initial file
     if (hasTriggeredPicker.current) return;
 
     hasTriggeredPicker.current = true;
@@ -188,7 +196,7 @@ export default function QuickClipEditor() {
       clearTimeout(t);
       window.removeEventListener("pointerup", onFirstTap);
     };
-  }, [file, openVideoPicker]);
+  }, [file, openVideoPicker, initialFile]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -457,7 +465,7 @@ export default function QuickClipEditor() {
       >
         {/* Back to Loopgate */}
         <button
-          onClick={(e) => { e.stopPropagation(); navigate("/hub"); }}
+          onClick={(e) => { e.stopPropagation(); onBack ? onBack() : navigate("/hub"); }}
           className="absolute top-4 left-4 safe-top p-2 rounded-full transition-all active:scale-95"
           style={{ background: "rgba(255,255,255,0.06)" }}
         >
@@ -505,7 +513,7 @@ export default function QuickClipEditor() {
 
         {/* ─── Top Bar ─── */}
         <div className="flex items-center gap-3 px-3 py-2.5 flex-shrink-0 safe-top" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
-          <button onClick={() => navigate("/hub")}
+          <button onClick={() => onBack ? onBack() : navigate("/hub")}
             className="p-2 rounded-full transition-all hover:bg-white/5">
             <ChevronLeft className="w-5 h-5" style={{ color: "#aaa" }} />
           </button>
