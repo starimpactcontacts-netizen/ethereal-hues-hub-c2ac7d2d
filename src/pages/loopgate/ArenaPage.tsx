@@ -389,16 +389,16 @@ export default function ArenaPage() {
         {/* Ambient glow */}
         <div className="absolute inset-0 bg-gradient-to-b from-red-600/6 via-transparent to-transparent" />
 
-        <div className="relative px-4 sm:px-6 lg:px-8 pt-5 pb-5 max-w-2xl mx-auto">
+        <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-2 max-w-2xl mx-auto">
           {/* Title row */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2.5">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-foreground flex items-center justify-center">
+              <div className="w-9 h-9 bg-foreground flex items-center justify-center">
                 <InfinityIcon className="w-5.5 h-5.5 text-background" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-[28px] font-black text-foreground leading-none tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>Arena</h1>
-                <p className="text-[12px] text-muted-foreground mt-0.5 font-medium">Compete. Win. Climb.</p>
+                <h1 className="text-[24px] font-black text-foreground leading-none tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>Arena</h1>
+                <p className="hidden sm:block text-[11px] text-muted-foreground mt-0.5 font-medium">Compete. Win. Climb.</p>
               </div>
             </div>
             {totalLive > 0 && (
@@ -410,10 +410,10 @@ export default function ArenaPage() {
           </div>
 
           {/* ═══ ARENA / MY ARENA TAB TOGGLE ═══ */}
-          <div className="flex gap-0 mb-4 bg-surface-1 border border-border rounded-lg overflow-hidden">
+          <div className="flex gap-0 mb-2.5 bg-surface-1 border border-border rounded-lg overflow-hidden">
             <button
               onClick={() => setArenaView('arena')}
-              className={`flex-1 py-2.5 text-[12px] font-bold transition-all relative ${
+              className={`flex-1 py-2 text-[12px] font-bold transition-all relative ${
                 arenaView === 'arena' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -425,7 +425,7 @@ export default function ArenaPage() {
             </button>
             <button
               onClick={() => setArenaView('my')}
-              className={`flex-1 py-2.5 text-[12px] font-bold transition-all relative border-l border-border ${
+              className={`flex-1 py-2 text-[12px] font-bold transition-all relative border-l border-border ${
                 arenaView === 'my' ? 'text-foreground bg-surface-2' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -669,14 +669,14 @@ export default function ArenaPage() {
           <>
 
           {/* ═══ GLOBAL SEARCH ═══ */}
-          <div className="relative mb-4">
+          <div className="relative mb-2.5">
             <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder="Search battles, events, players..."
               value={quickSearch}
               onChange={(e) => setQuickSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-8 bg-surface-1 border border-border rounded-lg text-[12px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
+              className="w-full h-8 pl-9 pr-8 bg-surface-1 border border-border rounded-lg text-[11px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-foreground/30 transition-colors"
             />
             {quickSearch && (
               <button onClick={() => setQuickSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -687,16 +687,16 @@ export default function ArenaPage() {
 
           {/* ═══ STATS ROW ═══ */}
           {profile && userStats && (
-            <div className="mb-4 bg-surface-1 border border-border rounded-lg p-3 flex items-center gap-3">
-              <Avatar className="w-9 h-9 border border-border shrink-0">
+            <div className="mb-2.5 bg-surface-1 border border-border rounded-lg p-2.5 flex items-center gap-2.5">
+              <Avatar className="w-8 h-8 border border-border shrink-0">
                 <AvatarImage src={profile.avatar_url || ''} />
                 <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <span className="text-[13px] font-bold text-foreground block leading-none truncate">{profile.username}</span>
-                <span className="text-[11px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
+                <span className="text-[12px] font-bold text-foreground block leading-none truncate">{profile.username}</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5 block">Class {profile.league_tier || 'F'}</span>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 {[
                   { val: userStats.wins, label: 'W', color: 'text-emerald-400' },
                   { val: userStats.losses, label: 'L', color: 'text-red-400' },
@@ -718,7 +718,7 @@ export default function ArenaPage() {
           )}
 
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
-          <div className="mb-4">
+          <div className="mb-2.5">
             {/* Mode tabs */}
             <div className="flex gap-0 mb-1 bg-surface-1 border border-border rounded-lg overflow-hidden">
               {[
@@ -859,18 +859,18 @@ export default function ArenaPage() {
                 if (featuredFight.type === 'quick') navigate(`/fight/${featuredFight.data.id}`);
                 else navigate(`/battle/${featuredFight.data.id}`);
               }}
-              className="w-full mb-4 bg-surface-1 border border-border hover:border-red-500/30 p-3 flex items-center gap-3 touch-manipulation transition-all"
+              className="w-full mb-2.5 bg-surface-1 border border-border hover:border-red-500/30 p-2.5 flex items-center gap-2.5 touch-manipulation transition-all"
             >
               {/* Avatars VS */}
               <div className="flex items-center gap-2 shrink-0">
-                <Avatar className="w-8 h-8 border border-red-500/40">
+                <Avatar className="w-7 h-7 border border-red-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_1_avatar_url : (featuredFight.data as any).challenger_avatar_url} />
                   <AvatarFallback className="bg-surface-2 text-foreground text-[10px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username)?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-[10px] font-black text-muted-foreground/40">VS</span>
-                <Avatar className="w-8 h-8 border border-blue-500/40">
+                <Avatar className="w-7 h-7 border border-blue-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_2_avatar_url : (featuredFight.data as any).opponent_avatar_url} />
                   <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_2_username : (featuredFight.data as any).opponent_username)?.[0]?.toUpperCase() || '?'}
@@ -880,12 +880,12 @@ export default function ArenaPage() {
 
               {/* Names + CTA */}
               <div className="flex-1 min-w-0 text-left">
-                <span className="text-[13px] font-bold text-foreground block truncate">
+                <span className="text-[12px] font-bold text-foreground block truncate">
                   {featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username}
                   {' vs '}
                   {featuredFight.type === 'quick' ? (featuredFight.data.player_2_username || '???') : ((featuredFight.data as any).opponent_username || '???')}
                 </span>
-                <span className="text-[12px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
+                <span className="text-[11px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
               </div>
 
               {/* Live indicator — seamless */}
