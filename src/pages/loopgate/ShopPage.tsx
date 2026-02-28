@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Coins, Check, ChevronLeft, Lock, Crown, Search, ShoppingBag, Heart, ChevronRight } from "lucide-react";
+import { Clock, Coins, Check, ChevronLeft, Lock, Search, ShoppingBag, Heart, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -120,7 +120,7 @@ function HeroBanner({
             {ogOwned ? (
               <Check className="w-14 h-14 sm:w-16 sm:h-16 text-accent" />
             ) : (
-              <Crown className="w-14 h-14 sm:w-16 sm:h-16 text-foreground/70" />
+              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-foreground/5 border border-border/10" />
             )}
           </div>
         </div>
@@ -129,7 +129,7 @@ function HeroBanner({
         <div className="flex flex-col items-center sm:items-start gap-3 flex-1">
           <div>
             <h1 className="font-display text-3xl sm:text-5xl tracking-tight text-foreground leading-none">
-              OG CLAIM
+              OG
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-md leading-relaxed">
               {ogItem.description || "Exclusive badge for the earliest Loopgate members. Claim it before it's gone forever."}
@@ -277,10 +277,10 @@ export default function ShopPage() {
   const ogTimeLeft = ogItem?.available_until ? getTimeRemaining(ogItem.available_until) : null;
 
   const comingSoonItems = [
-    { label: "OG Badge", price: "Free" },
-    { label: "Neon Frame", price: "250" },
-    { label: "Ghost Skin", price: "500" },
-    { label: "Elite Plate", price: "1,000" },
+    { label: "???", price: "???" },
+    { label: "???", price: "???" },
+    { label: "???", price: "???" },
+    { label: "???", price: "???" },
   ];
 
   return (
