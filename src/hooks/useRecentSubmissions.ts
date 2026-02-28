@@ -16,7 +16,15 @@ export interface RecentSubmission {
   status: string;
   submitted_at: string;
   round_number: number | null;
-  type: 'round' | 'standard' | 'sanctioned';
+  type: 'round' | 'standard' | 'sanctioned' | 'battle';
+  // Battle-specific fields
+  opponent_username?: string | null;
+  opponent_avatar_url?: string | null;
+  battle_status?: string | null;
+  winner_id?: string | null;
+  challenger_score?: number | null;
+  opponent_score?: number | null;
+  battle_id?: string | null;
 }
 
 // Extract video thumbnail from URL
@@ -66,9 +74,66 @@ export function useRecentSubmissions(limit: number = 10) {
         .order('submitted_at', { ascending: false, nullsFirst: false })
         .limit(limit);
 
+      // Fetch recent 1v1 battles (with submissions)
+      const { data: battleData, error: battleError } = await supabase
+        .from('battles')
+        .select('id, challenger_id, opponent_id, challenger_username, opponent_username, challenger_avatar_url, opponent_avatar_url, challenger_submission_url, opponent_submission_url, challenger_submission_platform, opponent_submission_platform, challenger_score, opponent_score, status, winner_id, created_at, challenge_type')
+        .not('challenger_submission_url', 'is', null)
+        .in('status', ['completed', 'judging', 'submitted', 'active'])
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
       if (roundError) console.error('Round fetch error:', roundError);
       if (eventError) console.error('Event fetch error:', eventError);
       if (sanctionedError) console.error('Sanctioned fetch error:', sanctionedError);
+      if (battleError) console.error('Battle fetch error:', battleError);
+
+      // Convert battles into submission items (one per participant who submitted)
+      const battleItems: Array<any> = [];
+      for (const b of (battleData || [])) {
+        if (b.challenger_submission_url) {
+          battleItems.push({
+            id: `battle-c-${b.id}`,
+            user_id: b.challenger_id,
+            event_id: b.id,
+            submission_url: b.challenger_submission_url,
+            platform: b.challenger_submission_platform || 'tiktok',
+            qoi_score: b.challenger_score,
+            status: b.status,
+            submitted_at: b.created_at,
+            type: 'battle' as const,
+            round_number: null,
+            opponent_username: b.opponent_username,
+            opponent_avatar_url: b.opponent_avatar_url,
+            battle_status: b.status,
+            winner_id: b.winner_id,
+            challenger_score: b.challenger_score,
+            opponent_score: b.opponent_score,
+            battle_id: b.id,
+          });
+        }
+        if (b.opponent_submission_url && b.opponent_id) {
+          battleItems.push({
+            id: `battle-o-${b.id}`,
+            user_id: b.opponent_id,
+            event_id: b.id,
+            submission_url: b.opponent_submission_url,
+            platform: b.opponent_submission_platform || 'tiktok',
+            qoi_score: b.opponent_score,
+            status: b.status,
+            submitted_at: b.created_at,
+            type: 'battle' as const,
+            round_number: null,
+            opponent_username: b.challenger_username,
+            opponent_avatar_url: b.challenger_avatar_url,
+            battle_status: b.status,
+            winner_id: b.winner_id,
+            challenger_score: b.opponent_score,
+            opponent_score: b.challenger_score,
+            battle_id: b.id,
+          });
+        }
+      }
 
       const allData = [
         ...(roundData || []).map(d => ({ ...d, type: 'round' as const, round_number: d.round_number })),
@@ -85,6 +150,7 @@ export function useRecentSubmissions(limit: number = 10) {
           type: 'sanctioned' as const, 
           round_number: null 
         })),
+        ...battleItems,
       ];
 
       if (allData.length === 0) {
@@ -95,7 +161,7 @@ export function useRecentSubmissions(limit: number = 10) {
 
       // Get unique user and event IDs
       const userIds = [...new Set(allData.map(s => s.user_id))];
-      const eventIds = [...new Set(allData.filter(s => s.type !== 'sanctioned').map(s => s.event_id))];
+      const eventIds = [...new Set(allData.filter(s => s.type !== 'sanctioned' && s.type !== 'battle').map(s => s.event_id))];
       const tournamentIds = [...new Set(allData.filter(s => s.type === 'sanctioned').map(s => s.event_id))];
 
       // Fetch profiles, events, and tournaments in parallel
@@ -117,9 +183,11 @@ export function useRecentSubmissions(limit: number = 10) {
         avatar_url: profileMap.get(s.user_id)?.avatar_url || null,
         global_index_score: profileMap.get(s.user_id)?.global_index_score || 0,
         event_id: s.event_id,
-        event_title: s.type === 'sanctioned' 
-          ? tournamentMap.get(s.event_id)?.title || 'Sanctioned Tournament'
-          : eventMap.get(s.event_id)?.title || 'Event',
+        event_title: s.type === 'battle'
+          ? '1v1 Battle'
+          : s.type === 'sanctioned' 
+            ? tournamentMap.get(s.event_id)?.title || 'Sanctioned Tournament'
+            : eventMap.get(s.event_id)?.title || 'Event',
         submission_url: s.submission_url!,
         platform: s.platform || 'tiktok',
         qoi_score: s.qoi_score,
@@ -127,6 +195,14 @@ export function useRecentSubmissions(limit: number = 10) {
         submitted_at: s.submitted_at || new Date().toISOString(),
         round_number: s.round_number,
         type: s.type,
+        // Battle-specific
+        opponent_username: (s as any).opponent_username || null,
+        opponent_avatar_url: (s as any).opponent_avatar_url || null,
+        battle_status: (s as any).battle_status || null,
+        winner_id: (s as any).winner_id || null,
+        challenger_score: (s as any).challenger_score || null,
+        opponent_score: (s as any).opponent_score || null,
+        battle_id: (s as any).battle_id || null,
       }));
 
       // Sort by submitted_at and dedupe by submission_url
@@ -169,6 +245,11 @@ export function useRecentSubmissions(limit: number = 10) {
         event: '*', 
         schema: 'public', 
         table: 'sanctioned_tournament_participants'
+      }, () => fetchSubmissions())
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'battles'
       }, () => fetchSubmissions())
       .subscribe();
 
