@@ -392,28 +392,36 @@ export default function ArenaPage() {
         <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
           {/* Title row — merged with stats */}
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-foreground flex items-center justify-center">
                 <InfinityIcon className="w-5 h-5 text-background" strokeWidth={2.5} />
               </div>
               <h1 className="text-[22px] font-black text-foreground leading-none tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none' }}>Arena</h1>
+              {profile && (
+                <div className="flex items-center gap-1.5 ml-1">
+                  <Avatar className="w-5 h-5 border border-border">
+                    <AvatarImage src={profile.avatar_url || ''} />
+                    <AvatarFallback className="bg-surface-2 text-foreground text-[8px] font-bold">{profile.username?.[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-[11px] text-muted-foreground font-medium truncate max-w-[80px]">{profile.username}</span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-3">
-              {/* Inline stats */}
+            <div className="flex items-center gap-2.5">
               {profile && userStats && (
-                <div className="flex items-center gap-2">
-                  <span className="text-[12px] font-bold text-emerald-400 tabular-nums">{userStats.wins}W</span>
-                  <span className="text-[12px] font-bold text-red-400 tabular-nums">{userStats.losses}L</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold text-emerald-400 tabular-nums">{userStats.wins}W</span>
+                  <span className="text-[11px] font-bold text-red-400 tabular-nums">{userStats.losses}L</span>
                 </div>
               )}
               {totalLive > 0 && (
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-[11px] font-bold text-red-400 tabular-nums">{totalLive} Live</span>
+                  <span className="text-[10px] font-bold text-red-400 tabular-nums">{totalLive}</span>
                 </div>
               )}
-              <button onClick={() => setShowSearch(s => !s)} className="p-1.5 hover:bg-surface-1 transition-colors">
-                <Search className="w-4 h-4 text-muted-foreground" />
+              <button onClick={() => setShowSearch(s => !s)} className="p-1 hover:bg-surface-1 transition-colors">
+                <Search className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             </div>
           </div>
@@ -830,8 +838,35 @@ export default function ArenaPage() {
             )}
           </div>
 
-          {/* ═══ FEATURED MATCH ═══ */}
-          {featuredFight && (
+          {/* ═══ PROMOTED DROP / FEATURED MATCH ═══ */}
+          {liveDrops.length > 0 ? (
+            <Link
+              to={`/drop/${(liveDrops[0] as any).slug || liveDrops[0].id}`}
+              className="block w-full mb-1.5"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-brand/10 via-surface-0/60 to-surface-0/40 border-l-2 border-l-brand border-y border-r border-border hover:border-r-brand/30 p-2.5 flex items-center gap-3 transition-all"
+              >
+                {liveDrops[0].poster_url ? (
+                  <img src={liveDrops[0].poster_url} alt="" className="w-8 h-8 object-cover shrink-0" />
+                ) : (
+                  <div className="w-8 h-8 bg-brand/20 flex items-center justify-center shrink-0">
+                    <Music className="w-4 h-4 text-brand" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <span className="text-[11px] font-bold text-foreground block truncate">{liveDrops[0].title}</span>
+                  <span className="text-[10px] text-brand font-semibold block">Submit your edit · Earn IDX →</span>
+                </div>
+                <div className="shrink-0 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase">Live</span>
+                </div>
+              </motion.div>
+            </Link>
+          ) : featuredFight ? (
             <motion.button
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
@@ -842,7 +877,6 @@ export default function ArenaPage() {
               }}
               className="w-full mb-1.5 bg-surface-0/40 border-l-2 border-l-red-500 border-y border-r border-border hover:border-r-red-500/30 p-2 flex items-center gap-2 touch-manipulation transition-all"
             >
-              {/* Avatars VS */}
               <div className="flex items-center gap-2 shrink-0">
                 <Avatar className="w-6 h-6 border border-red-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_1_avatar_url : (featuredFight.data as any).challenger_avatar_url} />
@@ -858,8 +892,6 @@ export default function ArenaPage() {
                   </AvatarFallback>
                 </Avatar>
               </div>
-
-              {/* Names + CTA */}
               <div className="flex-1 min-w-0 text-left">
                 <span className="text-[11px] font-bold text-foreground block truncate">
                   {featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username}
@@ -868,14 +900,12 @@ export default function ArenaPage() {
                 </span>
                 <span className="text-[10px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
               </div>
-
-              {/* Live indicator — seamless */}
               <div className="shrink-0 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px] font-bold text-emerald-400">LIVE</span>
               </div>
             </motion.button>
-          )}
+          ) : null}
 
           {/* search bar moved to top */}
 
