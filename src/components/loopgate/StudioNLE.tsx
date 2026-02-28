@@ -121,7 +121,12 @@ const FILTER_PREVIEWS: Record<string, string> = {
   super8: "linear-gradient(135deg, #2A1A0A 0%, #6A4A20 50%, #3A2A10 100%)",
 };
 
-export default function StudioNLE() {
+interface StudioNLEProps {
+  initialFile?: File | null;
+  onBack?: () => void;
+}
+
+export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -230,6 +235,26 @@ export default function StudioNLE() {
     preconnectGoogleFonts();
     loadAllFonts();
   }, []);
+
+  // ─── Auto-load initial file from StudioHome ───
+  useEffect(() => {
+    if (!initialFile) return;
+    const url = URL.createObjectURL(initialFile);
+    const id = crypto.randomUUID();
+    const vid = document.createElement("video");
+    vid.src = url; vid.muted = true; vid.preload = "auto";
+    vid.onloadedmetadata = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 160; canvas.height = 90;
+      vid.currentTime = 1;
+      vid.onseeked = () => {
+        canvas.getContext("2d")!.drawImage(vid, 0, 0, 160, 90);
+        const thumb = canvas.toDataURL("image/jpeg", 0.6);
+        setMediaItems([{ id, file: initialFile, url, thumbnail: thumb, duration: vid.duration, name: initialFile.name, type: "video" }]);
+        setActiveMediaId(id);
+      };
+    };
+  }, []); // Only on mount
 
   // ─── Keyboard Shortcuts ───
   useEffect(() => {
@@ -826,7 +851,7 @@ export default function StudioNLE() {
 
       {/* ═══ TOP TOOLBAR ═══ */}
       <div className="h-11 flex items-center px-2 gap-1 flex-shrink-0 z-20" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
-        <button onClick={() => navigate("/hub")} className="p-1.5 rounded-md transition-all hover:bg-white/5 mr-1" title="Back to Loopgate">
+        <button onClick={() => onBack ? onBack() : navigate("/hub")} className="p-1.5 rounded-md transition-all hover:bg-white/5 mr-1" title="Back to Loopgate">
           <ArrowLeft className="w-4 h-4" style={{ color: "#aaa" }} />
         </button>
         <div className="w-px h-5 mr-1" style={{ background: "#2a2a2a" }} />
