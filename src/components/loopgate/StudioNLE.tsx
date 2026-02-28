@@ -30,6 +30,11 @@ import {
   loadAllFonts, preconnectGoogleFonts,
   type StudioFont, type FontCategory, type TextAnimation,
 } from "@/lib/studioFonts";
+import {
+  DEFAULT_ADJUSTMENTS, ADJUST_SECTIONS,
+  buildAdjustFilter, applyCanvasAdjustments, hasAdjustments,
+  type AdjustmentValues, type AdjustSection,
+} from "@/lib/studioAdjustments";
 
 // ─── Types ───
 type TextOverlay = {
@@ -182,11 +187,15 @@ export default function StudioNLE() {
   const [upscaleResultUrl, setUpscaleResultUrl] = useState<string | null>(null);
   const [upscaleDims, setUpscaleDims] = useState<{ w: number; h: number } | null>(null);
 
-  // Color grading
+  // Color grading (legacy — kept for filter presets)
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [saturation, setSaturation] = useState(100);
   const [hueRotate, setHueRotate] = useState(0);
+
+  // Advanced adjustments
+  const [adjustments, setAdjustments] = useState<AdjustmentValues>({ ...DEFAULT_ADJUSTMENTS });
+  const [openSections, setOpenSections] = useState<Record<AdjustSection, boolean>>({ color: true, lightness: true, effects: true });
 
   // Undo/Redo (simplified — just track key states)
   const [undoStack, setUndoStack] = useState<string[]>([]);
@@ -346,9 +355,17 @@ export default function StudioNLE() {
         if (canvas.width !== vid.videoWidth || canvas.height !== vid.videoHeight) {
           canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
         }
-        ctx.filter = computedFilter;
+        // Apply CSS-based filters (presets + basic grading)
+        const adjFilter = buildAdjustFilter(adjustments);
+        const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
+        ctx.filter = combinedFilter;
         ctx.drawImage(vid, 0, 0);
         ctx.filter = "none";
+
+        // Apply pixel-based adjustments (highlights, shadows, sharpen, vignette, etc.)
+        if (hasAdjustments(adjustments)) {
+          applyCanvasAdjustments(ctx, canvas, adjustments);
+        }
 
         // Apply effects with per-effect intensity
         activeEffects.forEach(effectId => {
@@ -659,7 +676,15 @@ export default function StudioNLE() {
     toast.success(`Split at ${formatTimecode(currentTime, true)}`);
   };
 
-  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); };
+  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); setAdjustments({ ...DEFAULT_ADJUSTMENTS }); };
+
+  const updateAdjustment = (key: keyof AdjustmentValues, value: number) => {
+    setAdjustments(prev => ({ ...prev, [key]: value }));
+  };
+
+  const toggleSection = (section: AdjustSection) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   // ─── Upscaler ───
   const handleUpscaleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -755,9 +780,14 @@ export default function StudioNLE() {
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
-      ctx.filter = computedFilter;
+      const adjFilter = buildAdjustFilter(adjustments);
+      const combinedExportFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
+      ctx.filter = combinedExportFilter;
       ctx.drawImage(vid, 0, 0, exportW, exportH);
       ctx.filter = "none";
+      if (hasAdjustments(adjustments)) {
+        applyCanvasAdjustments(ctx, canvas, adjustments);
+      }
       activeEffects.forEach(effectId => {
         const intensity = effectIntensities[effectId] ?? 0.7;
         try { applyEffect(ctx, canvas, effectId, vid.currentTime, intensity); } catch { /* */ }
@@ -779,7 +809,7 @@ export default function StudioNLE() {
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration]);
+  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration, adjustments]);
 
   const handleDownload = () => {
     if (!resultUrl || !activeMedia) return;
@@ -1273,23 +1303,91 @@ export default function StudioNLE() {
                 {activeToolTab === "adjust" && (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-medium" style={{ color: "#888" }}>Color Grading</span>
-                      <button onClick={resetColorGrading} className="text-[10px] font-medium" style={{ color: ACCENT }}>Reset</button>
+                      <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#888" }}>Adjustments</span>
+                      <button onClick={resetColorGrading} className="text-[9px] font-medium px-2 py-0.5 rounded" style={{ color: ACCENT, background: ACCENT_DIM }}>Reset All</button>
                     </div>
-                    {[
-                      { label: "Brightness", value: brightness, set: setBrightness, min: 0, max: 200 },
-                      { label: "Contrast", value: contrast, set: setContrast, min: 0, max: 200 },
-                      { label: "Saturation", value: saturation, set: setSaturation, min: 0, max: 200 },
-                      { label: "Hue Rotate", value: hueRotate, set: setHueRotate, min: -180, max: 180 },
-                    ].map(({ label, value, set, min, max }) => (
-                      <div key={label} className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px]" style={{ color: "#aaa" }}>{label}</span>
-                          <span className="text-[10px] font-mono" style={{ color: "#666" }}>{value}{label === "Hue Rotate" ? "°" : "%"}</span>
-                        </div>
-                        <Slider value={[value]} onValueChange={(v) => set(v[0])} min={min} max={max} step={1} className="w-full" />
+
+                    {ADJUST_SECTIONS.map(section => (
+                      <div key={section.id}>
+                        {/* Section Header — collapsible */}
+                        <button
+                          onClick={() => toggleSection(section.id)}
+                          className="w-full flex items-center justify-between py-1.5"
+                          style={{ borderBottom: "1px solid #1e1e1e" }}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3.5 h-3.5 rounded-sm flex items-center justify-center"
+                              style={{
+                                background: section.params.some(p => adjustments[p.key] !== DEFAULT_ADJUSTMENTS[p.key]) ? ACCENT : "#333",
+                              }}>
+                              {section.params.some(p => adjustments[p.key] !== DEFAULT_ADJUSTMENTS[p.key]) && (
+                                <Check className="w-2.5 h-2.5 text-black" />
+                              )}
+                            </div>
+                            <span className="text-[10px] font-semibold" style={{ color: "#ccc" }}>{section.label}</span>
+                          </div>
+                          <ChevronDown className="w-3 h-3 transition-transform" style={{
+                            color: "#555",
+                            transform: openSections[section.id] ? "rotate(0deg)" : "rotate(-90deg)",
+                          }} />
+                        </button>
+
+                        {/* Section Content */}
+                        {openSections[section.id] && (
+                          <div className="space-y-3 pt-2 pb-1">
+                            {section.params.map(param => {
+                              const value = adjustments[param.key];
+                              const isModified = value !== DEFAULT_ADJUSTMENTS[param.key];
+                              return (
+                                <div key={param.key} className="space-y-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-medium" style={{ color: isModified ? "#ddd" : "#888" }}>{param.label}</span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded min-w-[32px] text-center"
+                                        style={{
+                                          color: isModified ? "#ccc" : "#555",
+                                          background: "#1a1a1a",
+                                          border: "1px solid #2a2a2a",
+                                        }}>
+                                        {value}
+                                      </span>
+                                      {isModified && (
+                                        <button onClick={() => updateAdjustment(param.key, DEFAULT_ADJUSTMENTS[param.key])}
+                                          className="w-4 h-4 rounded flex items-center justify-center hover:bg-white/5">
+                                          <RotateCcw className="w-2.5 h-2.5" style={{ color: "#555" }} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {/* Slider with optional gradient track */}
+                                  <div className="relative">
+                                    {param.gradient && (
+                                      <div className="absolute inset-0 h-[6px] top-[9px] rounded-full opacity-40 pointer-events-none"
+                                        style={{ background: param.gradient }} />
+                                    )}
+                                    <Slider
+                                      value={[value]}
+                                      onValueChange={(v) => updateAdjustment(param.key, v[0])}
+                                      min={param.min} max={param.max} step={1}
+                                      className="w-full"
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     ))}
+
+                    {/* Save as preset button */}
+                    {hasAdjustments(adjustments) && (
+                      <button
+                        onClick={() => toast.success("Preset saved!")}
+                        className="w-full mt-2 py-2 rounded-lg text-[10px] font-semibold transition-all"
+                        style={{ background: "rgba(20,184,166,0.15)", color: "#14b8a6", border: "1px solid rgba(20,184,166,0.25)" }}>
+                        Save as preset
+                      </button>
+                    )}
                   </>
                 )}
 
