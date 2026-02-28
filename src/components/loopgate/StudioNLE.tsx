@@ -389,7 +389,7 @@ export default function StudioNLE() {
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments]);
 
   // ─── Text Rendering Engine ───
   const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
