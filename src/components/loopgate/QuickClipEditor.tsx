@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, Check, SkipBack, SkipForward, Scissors, RotateCcw,
@@ -91,6 +92,7 @@ const FILTER_PREVIEWS: Record<string, string> = {
 };
 
 export default function QuickClipEditor() {
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -449,10 +451,19 @@ export default function QuickClipEditor() {
   if (!file) {
     return (
       <div
-        className="fixed inset-0 z-[120] flex flex-col items-center justify-center px-6"
+        className="fixed inset-0 z-[120] flex flex-col items-center justify-center px-6 touch-none overflow-hidden"
         style={{ background: "#0a0a0a" }}
         onClick={openVideoPicker}
       >
+        {/* Back to Loopgate */}
+        <button
+          onClick={(e) => { e.stopPropagation(); navigate("/hub"); }}
+          className="absolute top-4 left-4 safe-top p-2 rounded-full transition-all active:scale-95"
+          style={{ background: "rgba(255,255,255,0.06)" }}
+        >
+          <ChevronLeft className="w-5 h-5" style={{ color: "#aaa" }} />
+        </button>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -489,12 +500,12 @@ export default function QuickClipEditor() {
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className={`flex flex-col ${isFullscreen ? "fixed inset-0 z-[120]" : "relative"}`}
+        className={`flex flex-col touch-none overflow-hidden ${isFullscreen ? "fixed inset-0 z-[120]" : "relative"}`}
         style={{ height: isFullscreen ? "100dvh" : "auto", background: "#0a0a0a" }}>
 
         {/* ─── Top Bar ─── */}
         <div className="flex items-center gap-3 px-3 py-2.5 flex-shrink-0 safe-top" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
-          <button onClick={() => { if (isFullscreen) setIsFullscreen(false); else clearFile(); }}
+          <button onClick={() => navigate("/hub")}
             className="p-2 rounded-full transition-all hover:bg-white/5">
             <ChevronLeft className="w-5 h-5" style={{ color: "#aaa" }} />
           </button>
