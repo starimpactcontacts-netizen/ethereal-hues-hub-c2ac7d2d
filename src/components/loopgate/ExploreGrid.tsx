@@ -77,7 +77,8 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
           <img
             src={loopgateLogo}
             alt="Loopgate"
-            className={cn("opacity-[0.07]", isLarge ? "h-12" : "h-6")}
+            className={cn("drop-shadow-lg", isLarge ? "h-14 opacity-[0.18]" : "h-7 opacity-[0.15]")}
+            style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}
           />
         </div>
 
