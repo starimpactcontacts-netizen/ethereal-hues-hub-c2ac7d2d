@@ -925,7 +925,7 @@ export default function ArenaPage() {
 
       {/* Loading */}
       {arenaView === 'arena' && loading && (
-        <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-4 max-w-2xl mx-auto">
+        <div className="px-4 py-6 space-y-4">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
             <Skeleton className="h-48 w-[200px] shrink-0" />
@@ -936,7 +936,7 @@ export default function ArenaPage() {
 
       {/* ═══ MAIN CONTENT ═══ */}
       {arenaView === 'arena' && !loading && (
-        <div className="mt-2 space-y-6 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mt-2 space-y-6">
 
           {/* ═══ SOLO MODE SHOWCASE — dominant section ═══ */}
           {(activeFilter === "all") && (
