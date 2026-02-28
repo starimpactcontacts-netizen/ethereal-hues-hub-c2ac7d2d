@@ -389,7 +389,7 @@ export default function ArenaPage() {
         {/* Ambient glow */}
         <div className="absolute inset-0 bg-gradient-to-b from-red-600/6 via-transparent to-transparent" />
 
-        <div className="relative px-4 pt-5 pb-5">
+        <div className="relative px-4 sm:px-6 lg:px-8 pt-5 pb-5 max-w-2xl mx-auto">
           {/* Title row */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -925,7 +925,7 @@ export default function ArenaPage() {
 
       {/* Loading */}
       {arenaView === 'arena' && loading && (
-        <div className="px-4 py-6 space-y-4">
+        <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-4 max-w-2xl mx-auto">
           <Skeleton className="h-8 w-40" />
           <div className="flex gap-3 overflow-hidden">
             <Skeleton className="h-48 w-[200px] shrink-0" />
@@ -936,7 +936,7 @@ export default function ArenaPage() {
 
       {/* ═══ MAIN CONTENT ═══ */}
       {arenaView === 'arena' && !loading && (
-        <div className="mt-2 space-y-6">
+        <div className="mt-2 space-y-6 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* ═══ SOLO MODE SHOWCASE — dominant section ═══ */}
           {(activeFilter === "all") && (
