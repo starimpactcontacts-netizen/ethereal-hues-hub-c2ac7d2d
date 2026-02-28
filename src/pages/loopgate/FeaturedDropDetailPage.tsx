@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
+import DropLeaderboardRow from "@/components/loopgate/DropLeaderboardRow";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
@@ -726,37 +727,76 @@ export default function FeaturedDropDetailPage() {
 
         {/* Round-based submissions — ranked leaderboard */}
         {hasRounds && activeRound && activeRoundSubs.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between border-b border-border pb-2">
-              <h3 className="font-display text-lg text-foreground uppercase tracking-wide flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-gold" />
-                Round {activeRound.round_number} Leaderboard
-              </h3>
-              <span className="text-[10px] text-muted-foreground font-bold tabular-nums">
-                {activeRoundSubs.length} {activeRoundSubs.length === 1 ? 'ENTRY' : 'ENTRIES'}
-              </span>
+          <div>
+            {/* Leaderboard header — cinematic */}
+            <div className="relative overflow-hidden border border-border/40 mb-px">
+              <div className="absolute inset-0 bg-gradient-to-r from-destructive/[0.06] via-transparent to-gold/[0.04]" />
+              <div className="relative px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-md bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                      <ListOrdered className="w-4 h-4 text-destructive" />
+                    </div>
+                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-destructive animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-base sm:text-lg text-foreground uppercase tracking-wider leading-none">
+                      Round {activeRound.round_number} Rankings
+                    </h3>
+                    <p className="text-[9px] text-muted-foreground/60 font-mono uppercase tracking-widest mt-0.5">
+                      Live Leaderboard • {activeRoundSubs.length}/{activeRound.max_submissions} slots
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-0.5">
+                  <span className="text-2xl font-display text-foreground tabular-nums leading-none">
+                    {activeRoundSubs.length}
+                  </span>
+                  <span className="text-[7px] text-muted-foreground/40 uppercase tracking-widest font-mono">entries</span>
+                </div>
+              </div>
             </div>
-            {(() => {
-              // Sort by score if scored, otherwise by upvotes (community ranking)
-              const sorted = [...activeRoundSubs].sort((a, b) => {
-                if (a.status === 'scored' && b.status === 'scored') {
-                  return (b.qoi_score || 0) - (a.qoi_score || 0);
-                }
-                return ((b.upvotes || 0) - (b.downvotes || 0)) - ((a.upvotes || 0) - (a.downvotes || 0));
-              });
-              const scored = sorted.filter(s => s.status === 'scored');
-              const pending = sorted.filter(s => s.status !== 'scored');
-              return (
-                <>
-                  {scored.map((sub, idx) => (
-                    <DropSubmissionCard key={sub.id} submission={sub} rank={idx + 1} isTopScorer={idx === 0} />
-                  ))}
-                  {pending.map((sub, idx) => (
-                    <DropSubmissionCard key={sub.id} submission={sub} rank={scored.length > 0 ? undefined : idx + 1} />
-                  ))}
-                </>
-              );
-            })()}
+
+            {/* Ranked entries */}
+            <div className="space-y-px">
+              {(() => {
+                const sorted = [...activeRoundSubs].sort((a, b) => {
+                  if (a.status === 'scored' && b.status === 'scored') {
+                    return (b.qoi_score || 0) - (a.qoi_score || 0);
+                  }
+                  return ((b.upvotes || 0) - (b.downvotes || 0)) - ((a.upvotes || 0) - (a.downvotes || 0));
+                });
+                return sorted.map((sub, idx) => (
+                  <DropLeaderboardRow
+                    key={sub.id}
+                    submission={sub}
+                    rank={idx + 1}
+                    totalEntries={sorted.length}
+                  />
+                ));
+              })()}
+            </div>
+
+            {/* Remaining slots teaser */}
+            {slotsLeft > 0 && (
+              <div className="border border-dashed border-border/30 mt-px">
+                <div className="flex items-center justify-center gap-2 py-6 sm:py-8">
+                  <div className="flex -space-x-1">
+                    {[...Array(Math.min(slotsLeft, 3))].map((_, i) => (
+                      <div key={i} className="w-6 h-6 rounded-full border-2 border-dashed border-muted-foreground/15 bg-surface-0/30" />
+                    ))}
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-display text-muted-foreground/30 uppercase tracking-wider">
+                      {slotsLeft} {slotsLeft === 1 ? 'slot' : 'slots'} remaining
+                    </p>
+                    <p className="text-[8px] text-muted-foreground/20 font-mono uppercase">
+                      Submit to claim your rank
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
