@@ -5261,42 +5261,83 @@ export type Database = {
       }
       shop_items: {
         Row: {
+          available_until: string | null
+          category: string
           created_at: string
           description: string | null
           id: string
           image_url: string | null
           is_active: boolean
+          is_limited: boolean
           item_type: Database["public"]["Enums"]["shop_item_type"]
           name: string
           price: number
           stock: number | null
+          total_claimed: number
           updated_at: string
         }
         Insert: {
+          available_until?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_limited?: boolean
           item_type?: Database["public"]["Enums"]["shop_item_type"]
           name: string
           price?: number
           stock?: number | null
+          total_claimed?: number
           updated_at?: string
         }
         Update: {
+          available_until?: string | null
+          category?: string
           created_at?: string
           description?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_limited?: boolean
           item_type?: Database["public"]["Enums"]["shop_item_type"]
           name?: string
           price?: number
           stock?: number | null
+          total_claimed?: number
           updated_at?: string
         }
         Relationships: []
+      }
+      shop_purchases: {
+        Row: {
+          id: string
+          item_id: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shop_purchases_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "shop_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       solo_submission_votes: {
         Row: {
