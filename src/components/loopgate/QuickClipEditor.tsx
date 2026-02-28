@@ -2,8 +2,14 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, Check, SkipBack, SkipForward, Scissors, RotateCcw,
-  ChevronLeft, Sparkles, Volume2, VolumeX, Gauge, Layers,
-  Wand2, SlidersHorizontal, Settings, ArrowUpCircle
+  ChevronLeft, ChevronDown, Sparkles, Volume2, VolumeX, Gauge, Layers,
+  Wand2, SlidersHorizontal, Settings, ArrowUpCircle,
+  Zap, Vibrate, Search, FlipHorizontal, Grid3x3, Waves,
+  Rainbow, RefreshCw, Paintbrush, Gem, LayoutGrid,
+  MonitorPlay, FilmIcon, Circle, Wind,
+  Sun, Lightbulb, Sunrise,
+  ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
+  RotateCw, Maximize, Minimize, Blend
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Slider } from "@/components/ui/slider";
@@ -14,14 +20,60 @@ import {
   applyEffect, renderTextOverlay, buildComputedFilter, formatTimecode,
   type FilterPreset, type TextStyleKey, type ExportQuality,
 } from "@/lib/studioEffects";
+import {
+  DEFAULT_ADJUSTMENTS, ADJUST_SECTIONS,
+  buildAdjustFilter, applyCanvasAdjustments, hasAdjustments,
+  type AdjustmentValues, type AdjustSection,
+} from "@/lib/studioAdjustments";
 
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
 type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale";
 
-// Adobe Pro accent — Premiere/AE blue-purple
 const ACCENT = "#9999FF";
 const ACCENT_DIM = "rgba(153,153,255,0.10)";
 const ACCENT_BORDER = "rgba(153,153,255,0.22)";
+
+// ─── Icon Maps (match desktop) ───
+const EFFECT_ICONS: Record<string, typeof Zap> = {
+  glitch: Zap, shake: Vibrate, zoom_pulse: Search, mirror: FlipHorizontal,
+  pixelate: Grid3x3, wave: Waves, rgb_split: Rainbow, invert: RefreshCw,
+  duotone: Paintbrush, chromatic: Gem, posterize: LayoutGrid, vhs: MonitorPlay,
+  grain: FilmIcon, halftone: Circle, blur_pulse: Wind, flash: Sun,
+  light_leak: Sunrise, strobe: Lightbulb,
+};
+
+const TRANSITION_ICONS: Record<string, typeof Zap> = {
+  fade: Sunrise, dissolve: Sparkles, slide_left: ArrowLeft, slide_right: ArrowRight,
+  slide_up: ArrowUp, wipe: MoveHorizontal, zoom_in: Maximize, zoom_out: Minimize,
+  spin: RotateCw, blur_trans: Wind, glitch_trans: Zap, flash_trans: Sun,
+};
+
+const FILTER_PREVIEWS: Record<string, string> = {
+  none: "linear-gradient(135deg, #444 0%, #666 100%)",
+  chrome: "linear-gradient(135deg, #8BA4B0 0%, #C0CDD4 50%, #7A9AAC 100%)",
+  fade: "linear-gradient(135deg, #A5B0C0 0%, #D5D0CA 50%, #B0A8A0 100%)",
+  bw: "linear-gradient(135deg, #222 0%, #888 50%, #444 100%)",
+  cinematic: "linear-gradient(135deg, #2A1F14 0%, #7A5B3E 50%, #3A2A1C 100%)",
+  noir: "linear-gradient(135deg, #0A0A0A 0%, #3A3A3A 50%, #1A1A1A 100%)",
+  blockbuster: "linear-gradient(135deg, #1A2540 0%, #3A5580 50%, #0E1830 100%)",
+  anamorphic: "linear-gradient(135deg, #1A3040 0%, #2A5A70 50%, #183848 100%)",
+  teal_orange: "linear-gradient(135deg, #1A5A5A 0%, #D4804A 50%, #186060 100%)",
+  phonk: "linear-gradient(135deg, #3A0020 0%, #8A1050 50%, #200010 100%)",
+  cold: "linear-gradient(135deg, #1A3050 0%, #4A7AAA 50%, #2A4060 100%)",
+  heat: "linear-gradient(135deg, #5A1A0A 0%, #D4602A 50%, #3A1005 100%)",
+  neon: "linear-gradient(135deg, #2A0050 0%, #AA30DD 50%, #5500AA 100%)",
+  dream: "linear-gradient(135deg, #3A2060 0%, #8A60B0 50%, #5A3A80 100%)",
+  lofi: "linear-gradient(135deg, #2A0A0A 0%, #6A2020 50%, #3A1010 100%)",
+  golden_hour: "linear-gradient(135deg, #5A3A10 0%, #D4A030 50%, #7A5020 100%)",
+  midnight: "linear-gradient(135deg, #0A0A2A 0%, #1A2050 50%, #050520 100%)",
+  toxic: "linear-gradient(135deg, #0A2A0A 0%, #30AA30 50%, #0A4A0A 100%)",
+  vintage: "linear-gradient(135deg, #4A3520 0%, #8A6A40 50%, #5A4030 100%)",
+  kodak: "linear-gradient(135deg, #5A4020 0%, #C49040 50%, #6A5030 100%)",
+  fuji: "linear-gradient(135deg, #1A4040 0%, #50A090 50%, #2A5050 100%)",
+  polaroid: "linear-gradient(135deg, #706050 0%, #C0B0A0 50%, #908070 100%)",
+  film_burn: "linear-gradient(135deg, #3A1005 0%, #AA4020 50%, #5A2010 100%)",
+  super8: "linear-gradient(135deg, #2A1A0A 0%, #6A4A20 50%, #3A2A10 100%)",
+};
 
 export default function QuickClipEditor() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +113,10 @@ export default function QuickClipEditor() {
   const [exportQuality, setExportQuality] = useState<ExportQuality>("standard");
   const [filterTab, setFilterTab] = useState<string>("all");
 
+  // Advanced adjustments
+  const [adjustments, setAdjustments] = useState<AdjustmentValues>({ ...DEFAULT_ADJUSTMENTS });
+  const [openSections, setOpenSections] = useState<Record<AdjustSection, boolean>>({ color: true, lightness: true, effects: false });
+
   // Upscale state
   const upscaleInputRef = useRef<HTMLInputElement>(null);
   const [upscaleFile, setUpscaleFile] = useState<File | null>(null);
@@ -77,7 +133,15 @@ export default function QuickClipEditor() {
     setActiveEffects(prev => prev.includes(effectId) ? prev.filter(e => e !== effectId) : [...prev, effectId]);
   };
 
-  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); };
+  const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); setAdjustments({ ...DEFAULT_ADJUSTMENTS }); };
+
+  const updateAdjustment = (key: keyof AdjustmentValues, value: number) => {
+    setAdjustments(prev => ({ ...prev, [key]: value }));
+  };
+
+  const toggleSection = (section: AdjustSection) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -125,7 +189,7 @@ export default function QuickClipEditor() {
     return () => { vid.removeEventListener("loadedmetadata", onMeta); vid.removeEventListener("timeupdate", onTime); };
   }, [videoUrl]);
 
-  // Canvas render loop
+  // Canvas render loop — with advanced adjustments
   useEffect(() => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !videoUrl) return;
@@ -137,9 +201,14 @@ export default function QuickClipEditor() {
         if (canvas.width !== vid.videoWidth || canvas.height !== vid.videoHeight) {
           canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
         }
-        ctx.filter = computedFilter;
+        const adjFilter = buildAdjustFilter(adjustments);
+        const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
+        ctx.filter = combinedFilter;
         ctx.drawImage(vid, 0, 0);
         ctx.filter = "none";
+        if (hasAdjustments(adjustments)) {
+          applyCanvasAdjustments(ctx, canvas, adjustments);
+        }
         activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
@@ -151,7 +220,7 @@ export default function QuickClipEditor() {
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
@@ -201,6 +270,7 @@ export default function QuickClipEditor() {
     seekTo(time);
   };
 
+  // Export — with advanced adjustments
   const startExport = useCallback(async () => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !file) return;
@@ -235,9 +305,14 @@ export default function QuickClipEditor() {
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
-      ctx.filter = computedFilter;
+      const adjFilter = buildAdjustFilter(adjustments);
+      const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
+      ctx.filter = combinedFilter;
       ctx.drawImage(vid, 0, 0, exportW, exportH);
       ctx.filter = "none";
+      if (hasAdjustments(adjustments)) {
+        applyCanvasAdjustments(ctx, canvas, adjustments);
+      }
       activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
       textOverlays.forEach((overlay) => {
         if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
@@ -253,7 +328,7 @@ export default function QuickClipEditor() {
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [file, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, exportQuality]);
+  }, [file, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, exportQuality, adjustments]);
 
   const handleDownload = () => {
     if (!resultUrl || !file) return;
@@ -534,6 +609,7 @@ export default function QuickClipEditor() {
             >
               <div className="p-4 max-h-[35vh] overflow-y-auto" style={{ scrollbarWidth: "none" }}>
 
+                {/* ════ FILTERS — gradient previews ════ */}
                 {activeTool === "filters" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -554,20 +630,35 @@ export default function QuickClipEditor() {
                       ))}
                     </div>
                     <div className="flex gap-2.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                      {filteredFilters.map((preset) => (
-                        <button key={preset.name} onClick={() => setActiveFilter(preset)} className="flex-shrink-0 flex flex-col items-center gap-1.5">
-                          <div className="w-14 h-14 rounded-lg transition-all"
-                            style={{
-                              backgroundColor: preset.color,
-                              border: activeFilter.name === preset.name ? `2px solid ${ACCENT}` : "2px solid #2a2a2a",
-                            }} />
-                          <span className="text-[9px] font-medium" style={{ color: activeFilter.name === preset.name ? ACCENT : "#666" }}>{preset.label}</span>
-                        </button>
-                      ))}
+                      {filteredFilters.map((preset) => {
+                        const isActive = activeFilter.name === preset.name;
+                        const bg = FILTER_PREVIEWS[preset.name] || `linear-gradient(135deg, ${preset.color}, ${preset.color})`;
+                        return (
+                          <button key={preset.name} onClick={() => setActiveFilter(preset)} className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                            <div className="w-14 h-14 rounded-lg transition-all relative overflow-hidden"
+                              style={{
+                                background: bg,
+                                border: isActive ? `2px solid ${ACCENT}` : "2px solid #2a2a2a",
+                                boxShadow: isActive ? `0 0 8px ${ACCENT}44` : "none",
+                              }}>
+                              <div className="absolute inset-0 flex flex-col justify-end">
+                                <div className="h-[30%] w-full" style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.4))" }} />
+                              </div>
+                              {isActive && (
+                                <div className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ background: ACCENT }}>
+                                  <Check className="w-2 h-2 text-black" />
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[9px] font-medium" style={{ color: isActive ? ACCENT : "#666" }}>{preset.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
+                {/* ════ EFFECTS — Lucide icons ════ */}
                 {activeTool === "effects" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -577,6 +668,7 @@ export default function QuickClipEditor() {
                     <div className="grid grid-cols-4 gap-1.5">
                       {EFFECTS.map((effect) => {
                         const isActive = activeEffects.includes(effect.id);
+                        const IconComp = EFFECT_ICONS[effect.id] || Sparkles;
                         return (
                           <button key={effect.id} onClick={() => toggleEffect(effect.id)}
                             className="py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all"
@@ -584,7 +676,7 @@ export default function QuickClipEditor() {
                               background: isActive ? ACCENT_DIM : "#151515",
                               border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
                             }}>
-                            <span className="text-base">{effect.icon}</span>
+                            <IconComp className="w-4 h-4" style={{ color: isActive ? ACCENT : "#666" }} />
                             <span className="text-[8px] font-medium" style={{ color: isActive ? ACCENT : "#666" }}>{effect.label}</span>
                           </button>
                         );
@@ -600,6 +692,7 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
+                {/* ════ TRANSITIONS — Lucide icons ════ */}
                 {activeTool === "transitions" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -609,6 +702,7 @@ export default function QuickClipEditor() {
                     <div className="grid grid-cols-3 gap-1.5">
                       {TRANSITIONS.map((trans) => {
                         const isActive = activeTransition === trans.id;
+                        const IconComp = TRANSITION_ICONS[trans.id] || Layers;
                         return (
                           <button key={trans.id} onClick={() => setActiveTransition(isActive ? null : trans.id)}
                             className="py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all"
@@ -616,7 +710,7 @@ export default function QuickClipEditor() {
                               background: isActive ? ACCENT_DIM : "#151515",
                               border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
                             }}>
-                            <span className="text-base">{trans.icon}</span>
+                            <IconComp className="w-4 h-4" style={{ color: isActive ? ACCENT : "#666" }} />
                             <span className="text-[8px] font-medium" style={{ color: isActive ? ACCENT : "#666" }}>{trans.label}</span>
                           </button>
                         );
@@ -625,6 +719,7 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
+                {/* ════ TEXT ════ */}
                 {activeTool === "text" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -669,6 +764,7 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
+                {/* ════ AUDIO ════ */}
                 {activeTool === "audio" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -693,6 +789,7 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
+                {/* ════ SPEED ════ */}
                 {activeTool === "speed" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -715,6 +812,7 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
+                {/* ════ TRIM ════ */}
                 {activeTool === "trim" && (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -741,32 +839,79 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
+                {/* ════ ADJUST — CapCut-level ════ */}
                 {activeTool === "adjust" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Adjust</span>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Adjustments</span>
                       <div className="flex gap-3">
-                        <button onClick={resetColorGrading} className="text-[10px] font-medium" style={{ color: ACCENT }}>Reset</button>
+                        <button onClick={resetColorGrading} className="text-[9px] font-medium px-2 py-0.5 rounded" style={{ color: ACCENT, background: ACCENT_DIM }}>Reset</button>
                         <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                       </div>
                     </div>
-                    {[
-                      { label: "Brightness", value: brightness, set: setBrightness, min: 0, max: 200 },
-                      { label: "Contrast", value: contrast, set: setContrast, min: 0, max: 200 },
-                      { label: "Saturation", value: saturation, set: setSaturation, min: 0, max: 200 },
-                      { label: "Hue", value: hueRotate, set: setHueRotate, min: -180, max: 180 },
-                    ].map(({ label, value, set, min, max }) => (
-                      <div key={label} className="space-y-1.5">
-                        <div className="flex justify-between">
-                          <span className="text-[10px]" style={{ color: "#aaa" }}>{label}</span>
-                          <span className="text-[10px] font-mono" style={{ color: "#555" }}>{value}</span>
-                        </div>
-                        <Slider value={[value]} onValueChange={(v) => set(v[0])} min={min} max={max} step={1} />
+
+                    {ADJUST_SECTIONS.map(section => (
+                      <div key={section.id}>
+                        <button onClick={() => toggleSection(section.id)}
+                          className="w-full flex items-center justify-between py-1.5"
+                          style={{ borderBottom: "1px solid #1e1e1e" }}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-sm flex items-center justify-center"
+                              style={{
+                                background: section.params.some(p => adjustments[p.key] !== DEFAULT_ADJUSTMENTS[p.key]) ? ACCENT : "#333",
+                              }}>
+                              {section.params.some(p => adjustments[p.key] !== DEFAULT_ADJUSTMENTS[p.key]) && (
+                                <Check className="w-2 h-2 text-black" />
+                              )}
+                            </div>
+                            <span className="text-[10px] font-semibold" style={{ color: "#ccc" }}>{section.label}</span>
+                          </div>
+                          <ChevronDown className="w-3 h-3 transition-transform" style={{
+                            color: "#555",
+                            transform: openSections[section.id] ? "rotate(0deg)" : "rotate(-90deg)",
+                          }} />
+                        </button>
+                        {openSections[section.id] && (
+                          <div className="space-y-3 pt-2 pb-1">
+                            {section.params.map(param => {
+                              const value = adjustments[param.key];
+                              const isModified = value !== DEFAULT_ADJUSTMENTS[param.key];
+                              return (
+                                <div key={param.key} className="space-y-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-medium" style={{ color: isModified ? "#ddd" : "#888" }}>{param.label}</span>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded min-w-[28px] text-center"
+                                        style={{ color: isModified ? "#ccc" : "#555", background: "#1a1a1a", border: "1px solid #2a2a2a" }}>
+                                        {value}
+                                      </span>
+                                      {isModified && (
+                                        <button onClick={() => updateAdjustment(param.key, DEFAULT_ADJUSTMENTS[param.key])}
+                                          className="w-4 h-4 rounded flex items-center justify-center">
+                                          <RotateCcw className="w-2.5 h-2.5" style={{ color: "#555" }} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="relative">
+                                    {param.gradient && (
+                                      <div className="absolute inset-0 h-[6px] top-[9px] rounded-full opacity-40 pointer-events-none"
+                                        style={{ background: param.gradient }} />
+                                    )}
+                                    <Slider value={[value]} onValueChange={(v) => updateAdjustment(param.key, v[0])}
+                                      min={param.min} max={param.max} step={1} className="w-full" />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
 
+                {/* ════ EXPORT ════ */}
                 {activeTool === "export" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -789,6 +934,7 @@ export default function QuickClipEditor() {
                   </div>
                 )}
 
+                {/* ════ UPSCALE ════ */}
                 {activeTool === "upscale" && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
