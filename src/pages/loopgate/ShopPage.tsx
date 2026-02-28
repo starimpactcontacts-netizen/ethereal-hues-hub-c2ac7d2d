@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Clock, Coins, Check, ChevronLeft, Crown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Clock, Coins, Check, ChevronLeft, Lock, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import ogClaimImg from "@/assets/shop/og-claim.jpg";
+import { cn } from "@/lib/utils";
 
 interface ShopItem {
   id: string;
@@ -31,6 +30,21 @@ function getTimeRemaining(until: string) {
   if (days > 0) return `${days}d ${hours}h`;
   const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   return `${hours}h ${mins}m`;
+}
+
+function EmptySlot({ label }: { label: string }) {
+  return (
+    <div className="flex-shrink-0 w-[140px] snap-start">
+      <div className="aspect-square rounded-2xl border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2">
+        <Lock className="w-4 h-4 text-muted-foreground/30" />
+        <span className="text-[10px] text-muted-foreground/30 font-medium">{label}</span>
+      </div>
+      <div className="mt-2 px-0.5">
+        <div className="h-2.5 w-16 bg-surface-1/40 rounded-full" />
+        <div className="h-2 w-10 bg-surface-1/30 rounded-full mt-1.5" />
+      </div>
+    </div>
+  );
 }
 
 export default function ShopPage() {
@@ -91,11 +105,13 @@ export default function ShopPage() {
   const ogExpired = ogItem?.available_until ? new Date(ogItem.available_until) < new Date() : false;
   const ogTimeLeft = ogItem?.available_until ? getTimeRemaining(ogItem.available_until) : null;
 
+  const upcomingSlots = ["Avatar Frame", "Profile Skin", "Nameplate", "Banner", "Effect"];
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <div className="px-4 pt-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="px-4 pt-6 pb-2">
+        <div className="flex items-center justify-between mb-5">
           <button onClick={() => navigate("/hub")} className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground transition-colors">
             <ChevronLeft className="w-4 h-4" />
             Hub
@@ -106,124 +122,126 @@ export default function ShopPage() {
           </div>
         </div>
 
-        <h1 className="font-display text-3xl tracking-wide text-foreground">SHOP</h1>
-        <p className="text-xs text-muted-foreground mt-0.5 mb-6">Exclusive cosmetics & collectibles</p>
+        <h1 className="font-display text-2xl tracking-wide text-foreground">Shop</h1>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Exclusive cosmetics & collectibles</p>
       </div>
 
-      {/* Content */}
-      <div className="px-4">
-        {loading ? (
-          <div className="space-y-4">
-            <div className="aspect-[3/4] bg-surface-1 rounded-2xl animate-pulse" />
-          </div>
-        ) : !ogItem ? (
-          <div className="text-center py-20 text-muted-foreground">
-            <p className="text-sm">Nothing available right now. Check back soon.</p>
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="space-y-6"
-          >
-            {/* Featured Item Card */}
-            <div className="relative rounded-2xl overflow-hidden border border-gold/25 shadow-[0_0_40px_-10px_hsl(var(--gold)/0.2)]">
-              {/* Image */}
-              <div className="aspect-square relative overflow-hidden">
-                <img
-                  src={ogClaimImg}
-                  alt="OG Claim"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+      {/* Featured / Limited section */}
+      <div className="mt-5">
+        <div className="px-4 flex items-center gap-2 mb-3">
+          <Sparkles className="w-3.5 h-3.5 text-gold" />
+          <span className="text-xs font-semibold uppercase tracking-widest text-foreground/70">Limited</span>
+          {ogTimeLeft && !ogOwned && !ogExpired && (
+            <span className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-red-400">
+              <Clock className="w-3 h-3" />
+              {ogTimeLeft}
+            </span>
+          )}
+        </div>
 
-                {/* Top badges */}
-                <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-                  <div className="flex items-center gap-1.5 bg-red-500/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase px-2 py-1 rounded-lg">
-                    <Clock className="w-3 h-3" />
-                    Limited
+        {/* Carousel */}
+        <div className="overflow-x-auto scrollbar-none">
+          <div className="flex gap-3 px-4 pb-2 snap-x snap-mandatory">
+            {loading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-[140px] snap-start">
+                  <div className="aspect-square rounded-2xl bg-surface-1 animate-pulse" />
+                  <div className="mt-2 px-0.5">
+                    <div className="h-2.5 w-16 bg-surface-1 rounded-full animate-pulse" />
                   </div>
-                  <Crown className="w-5 h-5 text-gold drop-shadow-lg" />
                 </div>
-
-                {/* Bottom overlay info */}
-                <div className="absolute bottom-0 inset-x-0 p-5">
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-gold/80 font-semibold mb-1">
-                    Exclusive Badge
-                  </div>
-                  <h2 className="font-display text-3xl tracking-wide text-white mb-1.5">
-                    OG CLAIM
-                  </h2>
-                  <p className="text-[13px] text-white/60 leading-relaxed max-w-[280px]">
-                    {ogItem.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Area */}
-              <div className="p-4 bg-surface-0 border-t border-border/40">
-                {/* Countdown */}
-                {ogTimeLeft && !ogOwned && !ogExpired && (
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Disappears in</span>
-                    <div className="flex items-center gap-1.5 text-sm font-bold text-red-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      {ogTimeLeft}
-                    </div>
-                  </div>
-                )}
-
-                {/* Claimed count */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">Claimed by</span>
-                  <span className="text-sm font-bold text-foreground tabular-nums">{ogItem.total_claimed} editors</span>
-                </div>
-
-                <div className="h-px bg-border/40 mb-3" />
-
-                {/* Price + CTA */}
-                {ogOwned ? (
-                  <div className="flex items-center justify-center gap-2 py-2.5 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 font-semibold text-sm">
-                    <Check className="w-4 h-4" />
-                    In Your Collection
-                  </div>
-                ) : ogExpired ? (
-                  <div className="text-center py-2.5 text-muted-foreground text-sm font-medium">
-                    No longer available
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <span className="text-muted-foreground font-medium">Price:</span>
-                      <span className="font-bold text-gold">FREE</span>
-                    </div>
-                    <Button
-                      onClick={() => handleClaim(ogItem)}
-                      disabled={claiming === ogItem.id}
-                      className="flex-1 bg-gold hover:bg-gold/90 text-black font-bold h-11 text-sm rounded-xl"
+              ))
+            ) : (
+              <>
+                {/* OG Claim Card */}
+                {ogItem && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex-shrink-0 w-[140px] snap-start"
+                  >
+                    <button
+                      onClick={() => !ogOwned && !ogExpired && handleClaim(ogItem)}
+                      disabled={ogOwned || ogExpired || claiming === ogItem?.id}
+                      className="w-full text-left group"
                     >
-                      {claiming === ogItem.id ? "Claiming..." : "Claim Now"}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
+                      <div className={cn(
+                        "aspect-square rounded-2xl border relative overflow-hidden flex items-center justify-center transition-all",
+                        ogOwned
+                          ? "border-green-500/30 bg-green-500/5"
+                          : ogExpired
+                            ? "border-border/20 bg-surface-1/30 opacity-50"
+                            : "border-gold/30 bg-gradient-to-br from-gold/5 via-transparent to-gold/10 group-hover:border-gold/50 group-hover:shadow-[0_0_20px_-6px_hsl(var(--gold)/0.3)]"
+                      )}>
+                        {/* Badge visual */}
+                        <div className={cn(
+                          "w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-display font-bold tracking-tight",
+                          ogOwned
+                            ? "bg-green-500/10 text-green-400"
+                            : "bg-gold/10 text-gold"
+                        )}>
+                          {ogOwned ? <Check className="w-7 h-7" /> : "OG"}
+                        </div>
 
-            {/* Coming Soon teaser */}
-            <div className="text-center py-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-px flex-1 bg-border/40" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40">Coming Soon</span>
-                <div className="h-px flex-1 bg-border/40" />
-              </div>
-              <p className="text-xs text-muted-foreground/50">
-                Avatar Decorations · Profile Effects · Nameplates
-              </p>
-            </div>
-          </motion.div>
-        )}
+                        {/* Limited tag */}
+                        {!ogOwned && !ogExpired && (
+                          <div className="absolute top-2 right-2 bg-red-500/90 text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md">
+                            Ltd
+                          </div>
+                        )}
+
+                        {/* Free tag */}
+                        {!ogOwned && !ogExpired && (
+                          <div className="absolute bottom-2 left-2 text-[9px] font-bold text-gold uppercase">
+                            Free
+                          </div>
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Label */}
+                    <div className="mt-2 px-0.5">
+                      <p className="text-[11px] font-semibold text-foreground truncate">OG Claim</p>
+                      <p className="text-[10px] text-muted-foreground truncate">
+                        {ogOwned ? "Owned" : ogExpired ? "Expired" : `${ogItem.total_claimed} claimed`}
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Empty slots */}
+                {upcomingSlots.map((label) => (
+                  <EmptySlot key={label} label={label} />
+                ))}
+              </>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Categories preview */}
+      {["Badges", "Avatar Frames", "Profile Effects"].map((cat) => (
+        <div key={cat} className="mt-8">
+          <div className="px-4 mb-3">
+            <span className="text-xs font-semibold uppercase tracking-widest text-foreground/40">{cat}</span>
+          </div>
+          <div className="overflow-x-auto scrollbar-none">
+            <div className="flex gap-3 px-4 pb-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-[140px]">
+                  <div className="aspect-square rounded-2xl border border-dashed border-border/20 bg-surface-1/20 flex items-center justify-center">
+                    <Lock className="w-4 h-4 text-muted-foreground/20" />
+                  </div>
+                  <div className="mt-2 px-0.5">
+                    <div className="h-2.5 w-14 bg-surface-1/30 rounded-full" />
+                    <div className="h-2 w-8 bg-surface-1/20 rounded-full mt-1.5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
