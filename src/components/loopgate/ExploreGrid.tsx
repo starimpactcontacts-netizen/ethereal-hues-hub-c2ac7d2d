@@ -81,19 +81,19 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
           />
         </div>
 
-        {/* Bottom: user info + event */}
+      {/* Bottom: user info + event */}
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             {submission.avatar_url ? (
-              <img src={submission.avatar_url} alt="" className={cn("rounded-full object-cover ring-1 ring-white/10", isLarge ? "w-6 h-6" : "w-4 h-4")} />
+              <img src={submission.avatar_url} alt="" className={cn("rounded-full object-cover ring-1 ring-white/10", isLarge ? "w-7 h-7" : "w-5 h-5")} />
             ) : (
-              <div className={cn("rounded-full flex items-center justify-center", palette.dot, isLarge ? "w-6 h-6" : "w-4 h-4")}>
-                <span className={cn("font-bold", palette.accent, isLarge ? "text-[9px]" : "text-[7px]")}>
+              <div className={cn("rounded-full flex items-center justify-center", palette.dot, isLarge ? "w-7 h-7" : "w-5 h-5")}>
+                <span className={cn("font-bold", palette.accent, isLarge ? "text-[10px]" : "text-[8px]")}>
                   {(submission.display_name || submission.username).charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <span className={cn("font-bold text-foreground truncate", isLarge ? "text-sm" : "text-[10px]")}>
+            <span className={cn("font-extrabold text-foreground truncate", isLarge ? "text-base" : "text-[11px]")}>
               {submission.display_name || submission.username}
             </span>
           </div>
@@ -111,7 +111,7 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
             </div>
           )}
 
-          <p className={cn("text-muted-foreground truncate", isLarge ? "text-[10px]" : "text-[8px]")}>
+          <p className={cn("text-muted-foreground truncate", isLarge ? "text-[11px]" : "text-[9px]")}>
             {submission.event_title}
           </p>
           {/* Platform pill */}
@@ -163,7 +163,7 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
                   <span className="font-display text-sm font-bold">{Math.round(submission.qoi_score!)}</span>
                 </div>
               )}
-              <span className="text-[8px] text-white/70 font-medium">{submission.display_name || submission.username}</span>
+              <span className="text-[10px] text-white/70 font-semibold">{submission.display_name || submission.username}</span>
             </div>
           </div>
           {/* Play icon */}
@@ -195,7 +195,7 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
                     </span>
                   </div>
                 )}
-                <span className="text-sm text-white font-bold truncate">
+                <span className="text-base text-white font-extrabold truncate">
                   {submission.display_name || submission.username}
                 </span>
               </div>
@@ -269,8 +269,8 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="grid grid-cols-3 gap-0.5 auto-rows-[minmax(0,1fr)]"
-      style={{ gridAutoRows: "calc((100vw - 2rem - 1px) / 3)" }}
+      className="grid grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
+      style={{ gridAutoRows: "calc((min(100vw, 100dvw) - 1px) / 3)" }}
     >
       {cells.map((cell, i) => (
         <GridCell key={cell.submission.id} submission={cell.submission} size={cell.size} index={i} />
