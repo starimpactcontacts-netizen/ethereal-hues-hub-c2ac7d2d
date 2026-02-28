@@ -938,10 +938,10 @@ export default function HubPage() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.15 + (liveEvents.length + premiumComps.length + activeSanctioned.length + i) * 0.05 }}
-                  className="w-[240px] sm:w-[260px] rounded-xl bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/40 transition-all duration-300 overflow-hidden group hover:shadow-[0_4px_24px_rgba(239,68,68,0.1)]"
+                  className="w-[280px] sm:w-[300px] bg-surface-1/80 backdrop-blur border border-border/50 hover:border-red-500/40 transition-all duration-300 overflow-hidden group hover:shadow-[0_4px_24px_rgba(239,68,68,0.1)]"
                 >
                   {/* VS Display Header — Blue vs Red split */}
-                  <div className="h-32 overflow-hidden relative">
+                  <div className="h-36 overflow-hidden relative">
                     {/* Blue/Red gradient split */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 via-surface-2 to-red-900/60" />
                     <div className="absolute inset-0 bg-gradient-to-t from-surface-1 via-transparent to-transparent" />
