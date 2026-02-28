@@ -16,6 +16,7 @@ const CELL_PALETTES = [
 ];
 
 function getTypeLabel(sub: RecentSubmission) {
+  if (sub.type === "battle") return { label: "1v1", icon: Swords, color: "text-red-400" };
   if (sub.type === "round") return { label: "DROP", icon: Target, color: "text-brand" };
   if (sub.type === "sanctioned") return { label: "ARENA", icon: Swords, color: "text-red-400" };
   if (sub.qoi_score !== null) return { label: "JUDGED", icon: Gavel, color: "text-purple-400" };
@@ -96,6 +97,20 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
               {submission.display_name || submission.username}
             </span>
           </div>
+
+          {/* Battle VS indicator */}
+          {submission.type === "battle" && submission.opponent_username && (
+            <div className="flex items-center gap-1 mb-0.5">
+              <span className={cn("font-display font-black text-red-500", isLarge ? "text-[10px]" : "text-[7px]")}>VS</span>
+              <span className={cn("text-muted-foreground truncate", isLarge ? "text-[10px]" : "text-[7px]")}>
+                {submission.opponent_username}
+              </span>
+              {submission.winner_id && (
+                <Trophy size={isLarge ? 9 : 7} className={submission.winner_id === submission.user_id ? "text-gold" : "text-muted-foreground/40"} />
+              )}
+            </div>
+          )}
+
           <p className={cn("text-muted-foreground truncate", isLarge ? "text-[9px]" : "text-[7px]")}>
             {submission.event_title}
           </p>
@@ -123,7 +138,7 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
 
   return (
     <Link
-      to={`/editor/${submission.user_id}`}
+      to={submission.type === 'battle' && submission.battle_id ? `/battle/${submission.battle_id}` : `/editor/${submission.user_id}`}
       className={cn(
         "relative block overflow-hidden group bg-black",
         size === "large" ? "row-span-2 col-span-2" : ""
