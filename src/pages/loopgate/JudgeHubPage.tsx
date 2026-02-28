@@ -92,8 +92,8 @@ function JudgeRosterEntry({ judge, onSelect, index }: { judge: JudgeProfile; onS
         {/* Name + handle */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="font-display text-[13px] text-white truncate">
-              {(judge.display_name || judge.username).toUpperCase()}
+            <span className="text-[13px] font-bold text-white truncate tracking-wide uppercase">
+              {judge.display_name || judge.username}
             </span>
             {judge.verification_status && <VerifiedBadge size="sm" />}
           </div>
@@ -189,7 +189,7 @@ function JudgePreviewModal({
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-display text-lg text-white">{(judge.display_name || judge.username).toUpperCase()}</h3>
+                <h3 className="font-bold text-lg text-white tracking-wide uppercase">{judge.display_name || judge.username}</h3>
                 {judge.verification_status && <VerifiedBadge />}
               </div>
               <p className="text-xs text-zinc-500 mb-2">@{judge.username}</p>
