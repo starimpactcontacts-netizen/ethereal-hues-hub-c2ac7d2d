@@ -1061,7 +1061,7 @@ export default function HubPage() {
         className="px-4 mt-2"
       >
         <Link to="/judges" className="block group">
-          <div className="relative overflow-hidden rounded-xl bg-background border border-white/[0.06] group-hover:border-white/15 transition-all duration-500">
+          <div className="relative overflow-hidden rounded-xl bg-background group-hover:bg-surface-1/50 transition-all duration-500">
             {/* Scanline sweep */}
             <motion.div
               animate={{ x: ['-100%', '200%'] }}
