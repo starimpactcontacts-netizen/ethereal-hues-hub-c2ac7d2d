@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, Coins, Check, ChevronLeft, Lock, Sparkles } from "lucide-react";
+import { Clock, Coins, Check, ChevronLeft, Lock, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -32,16 +32,12 @@ function getTimeRemaining(until: string) {
   return `${hours}h ${mins}m`;
 }
 
-function EmptySlot({ label }: { label: string }) {
+/* ── Locked placeholder slot ── */
+function LockedSlot() {
   return (
-    <div className="flex-shrink-0 w-[140px] snap-start">
-      <div className="aspect-square rounded-2xl border border-dashed border-border/30 bg-surface-1/30 flex flex-col items-center justify-center gap-2">
-        <Lock className="w-4 h-4 text-muted-foreground/30" />
-        <span className="text-[10px] text-muted-foreground/30 font-medium">{label}</span>
-      </div>
-      <div className="mt-2 px-0.5">
-        <div className="h-2.5 w-16 bg-surface-1/40 rounded-full" />
-        <div className="h-2 w-10 bg-surface-1/30 rounded-full mt-1.5" />
+    <div className="flex-shrink-0 w-[120px] snap-start select-none">
+      <div className="aspect-square rounded-xl bg-surface-1/40 border border-border/10 flex items-center justify-center">
+        <Lock className="w-3.5 h-3.5 text-muted-foreground/15" />
       </div>
     </div>
   );
@@ -105,143 +101,170 @@ export default function ShopPage() {
   const ogExpired = ogItem?.available_until ? new Date(ogItem.available_until) < new Date() : false;
   const ogTimeLeft = ogItem?.available_until ? getTimeRemaining(ogItem.available_until) : null;
 
-  const upcomingSlots = ["Avatar Frame", "Profile Skin", "Nameplate", "Banner", "Effect"];
-
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
-      <div className="px-4 pt-6 pb-2">
-        <div className="flex items-center justify-between mb-5">
-          <button onClick={() => navigate("/hub")} className="flex items-center gap-1 text-muted-foreground text-sm hover:text-foreground transition-colors">
+    <div className="min-h-screen bg-background pb-24">
+      {/* ── Sticky header ── */}
+      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/10">
+        <div className="flex items-center justify-between px-4 h-12">
+          <button onClick={() => navigate("/hub")} className="flex items-center gap-1 text-muted-foreground text-xs hover:text-foreground transition-colors">
             <ChevronLeft className="w-4 h-4" />
-            Hub
+            <span className="font-medium">Hub</span>
           </button>
-          <div className="flex items-center gap-2 bg-surface-1 border border-border rounded-full px-3.5 py-1.5">
-            <Coins className="w-3.5 h-3.5 text-gold" />
-            <span className="text-sm font-bold tabular-nums text-foreground">{spendableIndex}</span>
+          <span className="font-display text-base tracking-wide text-foreground absolute left-1/2 -translate-x-1/2">
+            SHOP
+          </span>
+          <div className="flex items-center gap-1.5 bg-surface-1/60 border border-border/20 rounded-full px-2.5 py-1">
+            <Coins className="w-3 h-3 text-gold" />
+            <span className="text-xs font-bold tabular-nums text-foreground">{spendableIndex}</span>
           </div>
         </div>
-
-        <h1 className="font-display text-2xl tracking-wide text-foreground">Shop</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Exclusive cosmetics & collectibles</p>
       </div>
 
-      {/* Featured / Limited section */}
-      <div className="mt-5">
-        <div className="px-4 flex items-center gap-2 mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-gold" />
-          <span className="text-xs font-semibold uppercase tracking-widest text-foreground/70">Limited</span>
-          {ogTimeLeft && !ogOwned && !ogExpired && (
-            <span className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-red-400">
-              <Clock className="w-3 h-3" />
-              {ogTimeLeft}
-            </span>
-          )}
-        </div>
-
-        {/* Carousel */}
-        <div className="overflow-x-auto scrollbar-none">
-          <div className="flex gap-3 px-4 pb-2 snap-x snap-mandatory">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[140px] snap-start">
-                  <div className="aspect-square rounded-2xl bg-surface-1 animate-pulse" />
-                  <div className="mt-2 px-0.5">
-                    <div className="h-2.5 w-16 bg-surface-1 rounded-full animate-pulse" />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <>
-                {/* OG Claim Card */}
-                {ogItem && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex-shrink-0 w-[140px] snap-start"
-                  >
-                    <button
-                      onClick={() => !ogOwned && !ogExpired && handleClaim(ogItem)}
-                      disabled={ogOwned || ogExpired || claiming === ogItem?.id}
-                      className="w-full text-left group"
-                    >
-                      <div className={cn(
-                        "aspect-square rounded-2xl border relative overflow-hidden flex items-center justify-center transition-all",
-                        ogOwned
-                          ? "border-green-500/30 bg-green-500/5"
-                          : ogExpired
-                            ? "border-border/20 bg-surface-1/30 opacity-50"
-                            : "border-gold/30 bg-gradient-to-br from-gold/5 via-transparent to-gold/10 group-hover:border-gold/50 group-hover:shadow-[0_0_20px_-6px_hsl(var(--gold)/0.3)]"
-                      )}>
-                        {/* Badge visual */}
-                        <div className={cn(
-                          "w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-display font-bold tracking-tight",
-                          ogOwned
-                            ? "bg-green-500/10 text-green-400"
-                            : "bg-gold/10 text-gold"
-                        )}>
-                          {ogOwned ? <Check className="w-7 h-7" /> : "OG"}
-                        </div>
-
-                        {/* Limited tag */}
-                        {!ogOwned && !ogExpired && (
-                          <div className="absolute top-2 right-2 bg-red-500/90 text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md">
-                            Ltd
-                          </div>
-                        )}
-
-                        {/* Free tag */}
-                        {!ogOwned && !ogExpired && (
-                          <div className="absolute bottom-2 left-2 text-[9px] font-bold text-gold uppercase">
-                            Free
-                          </div>
-                        )}
-                      </div>
-                    </button>
-
-                    {/* Label */}
-                    <div className="mt-2 px-0.5">
-                      <p className="text-[11px] font-semibold text-foreground truncate">OG Claim</p>
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        {ogOwned ? "Owned" : ogExpired ? "Expired" : `${ogItem.total_claimed} claimed`}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Empty slots */}
-                {upcomingSlots.map((label) => (
-                  <EmptySlot key={label} label={label} />
+      {loading ? (
+        <div className="px-4 pt-6 space-y-4">
+          {[1, 2].map(i => (
+            <div key={i} className="space-y-3">
+              <div className="h-3 w-20 bg-surface-1/50 rounded animate-pulse" />
+              <div className="flex gap-3">
+                {[1, 2, 3].map(j => (
+                  <div key={j} className="w-[120px] aspect-square bg-surface-1/40 rounded-xl animate-pulse flex-shrink-0" />
                 ))}
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      ) : (
+        <div className="pt-4 space-y-6">
 
-      {/* Categories preview */}
-      {["Badges", "Avatar Frames", "Profile Effects"].map((cat) => (
-        <div key={cat} className="mt-8">
-          <div className="px-4 mb-3">
-            <span className="text-xs font-semibold uppercase tracking-widest text-foreground/40">{cat}</span>
-          </div>
-          <div className="overflow-x-auto scrollbar-none">
-            <div className="flex gap-3 px-4 pb-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[140px]">
-                  <div className="aspect-square rounded-2xl border border-dashed border-border/20 bg-surface-1/20 flex items-center justify-center">
-                    <Lock className="w-4 h-4 text-muted-foreground/20" />
+          {/* ── FEATURED: OG Claim hero banner ── */}
+          {ogItem && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="px-4"
+            >
+              <button
+                onClick={() => !ogOwned && !ogExpired && handleClaim(ogItem)}
+                disabled={ogOwned || ogExpired || claiming === ogItem.id}
+                className={cn(
+                  "w-full rounded-2xl overflow-hidden relative group transition-all duration-300",
+                  !ogOwned && !ogExpired && "active:scale-[0.98]"
+                )}
+              >
+                {/* Background */}
+                <div className={cn(
+                  "absolute inset-0 transition-all duration-500",
+                  ogOwned
+                    ? "bg-gradient-to-br from-green-950/40 via-background to-green-950/20"
+                    : "bg-gradient-to-br from-gold/8 via-background to-gold/4 group-hover:from-gold/12 group-hover:to-gold/8"
+                )} />
+                <div className={cn(
+                  "absolute inset-0 rounded-2xl border transition-colors",
+                  ogOwned ? "border-green-500/20" : "border-gold/15 group-hover:border-gold/30"
+                )} />
+
+                {/* Content */}
+                <div className="relative flex items-center gap-4 p-4">
+                  {/* Badge icon */}
+                  <div className={cn(
+                    "w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300",
+                    !ogOwned && "group-hover:scale-105",
+                    ogOwned
+                      ? "bg-green-500/10 border border-green-500/20"
+                      : "bg-gold/10 border border-gold/20"
+                  )}>
+                    {ogOwned ? (
+                      <Check className="w-6 h-6 text-green-400" />
+                    ) : (
+                      <Crown className="w-6 h-6 text-gold" />
+                    )}
                   </div>
-                  <div className="mt-2 px-0.5">
-                    <div className="h-2.5 w-14 bg-surface-1/30 rounded-full" />
-                    <div className="h-2 w-8 bg-surface-1/20 rounded-full mt-1.5" />
+
+                  {/* Text */}
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <h3 className="font-display text-lg tracking-wide text-foreground">OG CLAIM</h3>
+                      {!ogOwned && !ogExpired && (
+                        <span className="bg-red-500/90 text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded">
+                          Limited
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">
+                      {ogItem.description || "Exclusive founder badge. Claim it before it's gone."}
+                    </p>
+                    <div className="flex items-center gap-3 mt-2">
+                      {ogOwned ? (
+                        <span className="text-[10px] font-semibold text-green-400 uppercase tracking-wider">Owned</span>
+                      ) : ogExpired ? (
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Expired</span>
+                      ) : (
+                        <>
+                          <span className="text-[10px] font-bold text-gold uppercase tracking-wider">Free</span>
+                          <span className="text-[10px] text-muted-foreground/60">·</span>
+                          <span className="text-[10px] text-muted-foreground tabular-nums">{ogItem.total_claimed} claimed</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right side: timer or action */}
+                  <div className="flex-shrink-0">
+                    {ogOwned ? (
+                      <div className="w-9 h-9 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <Check className="w-4 h-4 text-green-400" />
+                      </div>
+                    ) : ogExpired ? null : (
+                      <div className="text-right">
+                        {ogTimeLeft && (
+                          <div className="flex items-center gap-1 text-[10px] font-semibold text-red-400 mb-1">
+                            <Clock className="w-2.5 h-2.5" />
+                            {ogTimeLeft}
+                          </div>
+                        )}
+                        <div className={cn(
+                          "bg-gold text-black text-[10px] font-bold uppercase px-3 py-1.5 rounded-lg transition-all",
+                          claiming === ogItem.id ? "opacity-60" : "group-hover:bg-gold/90"
+                        )}>
+                          {claiming === ogItem.id ? "..." : "Claim"}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </button>
+            </motion.div>
+          )}
+
+          {/* ── Carousel sections ── */}
+          {[
+            { title: "Badges", delay: 0.1 },
+            { title: "Avatar Frames", delay: 0.15 },
+            { title: "Profile Effects", delay: 0.2 },
+            { title: "Nameplates", delay: 0.25 },
+          ].map(({ title, delay }) => (
+            <motion.div
+              key={title}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay, duration: 0.35 }}
+            >
+              <div className="flex items-center justify-between px-4 mb-2.5">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/50">{title}</span>
+                <span className="text-[10px] text-muted-foreground/25 font-medium">Soon</span>
+              </div>
+              <div className="overflow-x-auto scrollbar-hide">
+                <div className="flex gap-2.5 px-4 pb-1 snap-x snap-mandatory" style={{ paddingRight: 60 }}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <LockedSlot key={i} />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
