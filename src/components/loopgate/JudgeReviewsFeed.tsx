@@ -89,26 +89,24 @@ function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (revie
     ? { 'S': 95, 'A': 85, 'B': 75, 'C': 65, 'D': 55, 'F': 25 }[review.selected_tier] || 0
     : review.total_score || 0;
   
+  const gradientIdx = Math.abs(review.id.charCodeAt(0)) % CARD_GRADIENTS.length;
+  
   return (
     <motion.button
       onClick={() => onSelect(review)}
-      whileHover={{ scale: 1.03, y: -4 }}
+      whileHover={{ scale: 1.02, y: -3 }}
       whileTap={{ scale: 0.98 }}
-      className="flex-shrink-0 w-[120px] text-left group"
+      className="flex-shrink-0 w-[160px] sm:w-[180px] text-left group"
     >
-      <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-black ring-1 ring-border group-hover:ring-gold/60 transition-all shadow-lg group-hover:shadow-gold/20">
+      <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-black ring-1 ring-white/[0.06] group-hover:ring-gold/40 transition-all duration-300 shadow-xl shadow-black/40 group-hover:shadow-gold/10">
         {/* Thumbnail or Branded Fallback */}
         {loading ? (
-          <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-background animate-pulse">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <img src={loopgateLogo} alt="" className="w-8 h-8 opacity-20" />
-            </div>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-background animate-pulse" />
         ) : thumbnail ? (
           <img
             src={thumbnail}
             alt="Edit thumbnail"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
               (e.target as HTMLImageElement).parentElement?.querySelector('.fallback-bg')?.classList.remove('hidden');
@@ -116,73 +114,81 @@ function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (revie
           />
         ) : null}
         
-        {/* Branded fallback — always rendered behind, visible when no thumbnail */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${CARD_GRADIENTS[Math.abs(review.id.charCodeAt(0)) % CARD_GRADIENTS.length]} ${thumbnail && !loading ? 'hidden' : ''} fallback-bg`}>
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <img src={loopgateLogo} alt="" className="w-10 h-10 opacity-40 drop-shadow-lg" />
-            <div className="w-8 h-[1px] bg-white/10" />
+        {/* Branded fallback */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${CARD_GRADIENTS[gradientIdx]} ${thumbnail && !loading ? 'hidden' : ''} fallback-bg`}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+            <img src={loopgateLogo} alt="" className="w-12 h-12 opacity-30 drop-shadow-lg" />
+            <div className="w-10 h-[1px] bg-white/10" />
           </div>
-          {/* Subtle pattern overlay */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
+          <div className="absolute inset-0 opacity-[0.02]" style={{
             backgroundImage: 'radial-gradient(circle at 50% 50%, white 1px, transparent 1px)',
-            backgroundSize: '12px 12px'
+            backgroundSize: '14px 14px'
           }} />
         </div>
         
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-80" />
+        {/* Cinematic gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10" />
         
-        {/* Play indicator */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-            <Play size={16} className="text-white ml-0.5" fill="white" />
+        {/* Vignette edges */}
+        <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(0,0,0,0.4)]" />
+        
+        {/* Play indicator on hover */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="w-11 h-11 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10">
+            <Play size={18} className="text-white ml-0.5" fill="white" />
           </div>
         </div>
         
-        {/* Score badge - top right */}
+        {/* Grade badge — top right, bold & dominant */}
         {scoreClass && (
-          <div className={`absolute top-2 right-2 px-2 py-1 rounded-md border backdrop-blur-sm ${getScoreBg(scoreForColor)}`}>
-            <span className={`text-sm font-bold ${getScoreColor(scoreForColor)}`}>{scoreClass}</span>
+          <div className="absolute top-2.5 right-2.5">
+            <div className={`w-9 h-9 rounded-lg border flex items-center justify-center backdrop-blur-md ${getScoreBg(scoreForColor)}`}>
+              <span className={`text-base font-display font-bold leading-none ${getScoreColor(scoreForColor)}`}>{scoreClass}</span>
+            </div>
           </div>
         )}
         
-        {/* Judge avatar - top left */}
+        {/* Judge avatar — top left with glow */}
         {review.judge_avatar_url && (
-          <div className="absolute top-2 left-2">
-            <img
-              src={review.judge_avatar_url}
-              alt={review.judge_username || 'Judge'}
-              className="w-6 h-6 rounded-full border-2 border-gold/60 object-cover"
-            />
+          <div className="absolute top-2.5 left-2.5">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-lg bg-gold/20 blur-md" />
+              <img
+                src={review.judge_avatar_url}
+                alt={review.judge_username || 'Judge'}
+                className="relative w-7 h-7 rounded-lg border border-gold/40 object-cover"
+              />
+            </div>
           </div>
         )}
         
-        {/* Bottom info */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5">
-          <div className="flex items-center gap-1.5 mb-1">
+        {/* Bottom content */}
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          {/* Editor info */}
+          <div className="flex items-center gap-2 mb-2">
             {review.avatar_url ? (
               <img
                 src={review.avatar_url}
                 alt={review.username}
-                className="w-4 h-4 rounded-full object-cover ring-1 ring-white/30"
+                className="w-5 h-5 rounded-full object-cover ring-1 ring-white/20"
               />
             ) : (
-              <div className="w-4 h-4 rounded-full bg-gold/40 flex items-center justify-center">
-                <span className="text-[8px] font-bold text-gold">
+              <div className="w-5 h-5 rounded-full bg-gold/30 flex items-center justify-center">
+                <span className="text-[9px] font-bold text-gold">
                   {review.username.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <span className="text-[10px] font-medium truncate text-white/90">
+            <span className="text-[11px] font-semibold truncate text-white/90">
               @{review.username}
             </span>
           </div>
           
-          {/* Score number */}
+          {/* Score line */}
           {(review.total_score || review.selected_tier) && (
-            <div className="flex items-center gap-1">
-              <Star size={10} className="text-gold fill-gold" />
-              <span className={`text-xs font-bold ${getScoreColor(scoreForColor)}`}>
+            <div className="flex items-center gap-1.5">
+              <Star size={11} className="text-gold fill-gold shrink-0" />
+              <span className={`text-sm font-bold ${getScoreColor(scoreForColor)}`}>
                 {review.rating_mode === 'tier_only' && review.selected_tier
                   ? `${review.selected_tier} Class`
                   : `${review.total_score}/100`
@@ -193,8 +199,8 @@ function ReviewCard({ review, onSelect }: { review: ReviewItem; onSelect: (revie
         </div>
       </div>
       
-      {/* Time ago */}
-      <p className="text-[10px] text-muted-foreground text-center mt-1.5 truncate">
+      {/* Time ago — below card */}
+      <p className="text-[10px] text-muted-foreground/60 text-center mt-2 truncate">
         {review.reviewed_at ? formatDistanceToNow(new Date(review.reviewed_at), { addSuffix: true }) : 'Recently'}
       </p>
     </motion.button>
@@ -451,7 +457,7 @@ export default function JudgeReviewsFeed({ embedded = false }: JudgeReviewsFeedP
           {/* Scrollable container */}
           <div
             ref={scrollRef}
-            className={`flex gap-3 overflow-x-auto scrollbar-hide ${embedded ? '' : 'px-4'}`}
+            className={`flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory ${embedded ? '' : 'px-4'}`}
             onScroll={updateScrollButtons}
           >
             {reviews.map((review, index) => (
