@@ -33,6 +33,7 @@ import GlitchEdge from '@/components/loopgate/GlitchEdge';
 import InviteModal from '@/components/loopgate/InviteModal';
 import CountdownTimer from '@/components/loopgate/CountdownTimer';
 import JudgeReviewsFeed from '@/components/loopgate/JudgeReviewsFeed';
+import ExploreGrid from '@/components/loopgate/ExploreGrid';
 import JudgeClassBadge from '@/components/loopgate/JudgeClassBadge';
 import XPProgressBar from '@/components/loopgate/XPProgressBar';
 import { supabase } from '@/integrations/supabase/client';
@@ -1157,7 +1158,7 @@ export default function HubPage() {
 
 
       {/* ═══════════════════════════════════════════════════════════════════
-          ACTIVITY SECTION - Unified container for Feed + Reviews
+          EXPLORE GRID - IG-style visual collage
       ═══════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -1167,43 +1168,21 @@ export default function HubPage() {
       >
         {/* Section Header */}
         <div className="px-4 mb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-5 bg-gold rounded-full" />
-            <h2 className="font-display text-lg text-foreground">ACTIVITY</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-gold rounded-full" />
+              <h2 className="font-display text-lg text-foreground">EXPLORE</h2>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <Link to="/feed" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+              VIEW ALL <ArrowRight size={10} />
+            </Link>
           </div>
         </div>
 
-        {/* Unified container with shared border */}
-        <div className="mx-4 bg-surface-1/40 border border-border/30 overflow-hidden">
-          {/* Live Feed Section — Real-time aggregated */}
-          <div className="p-3 border-b border-border/20">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-gold" />
-                <span className="text-xs text-foreground font-medium uppercase tracking-wide">Live Feed</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              </div>
-              <Link to="/feed" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-                VIEW ALL <ArrowRight size={10} />
-              </Link>
-            </div>
-            <HubLiveFeed />
-          </div>
-
-          {/* Reviews Section */}
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Gavel className="w-4 h-4 text-purple-400" />
-                <span className="text-xs text-foreground font-medium uppercase tracking-wide">Reviews</span>
-              </div>
-              <Link to="/judges" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-                ALL JUDGES <ArrowRight size={10} />
-              </Link>
-            </div>
-            {/* Inline reviews carousel without external container styling */}
-            <JudgeReviewsFeed embedded />
-          </div>
+        {/* Grid */}
+        <div className="mx-4 overflow-hidden rounded-sm border border-border/30">
+          <ExploreGrid limit={12} />
         </div>
       </motion.div>
 
