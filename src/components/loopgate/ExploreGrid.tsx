@@ -55,17 +55,17 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
       <CellPattern color={palette.accent} />
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-between p-2 sm:p-3">
+      <div className="relative z-10 h-full flex flex-col justify-between p-2.5 sm:p-3.5">
         {/* Top: type badge */}
         <div className="flex items-center justify-between">
-          <div className={cn("flex items-center gap-1 text-[7px] sm:text-[8px] font-bold uppercase tracking-widest", typeInfo.color)}>
-            <TypeIcon size={isLarge ? 10 : 8} />
+          <div className={cn("flex items-center gap-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest", typeInfo.color)}>
+            <TypeIcon size={isLarge ? 12 : 10} />
             {typeInfo.label}
           </div>
           {hasScore && (
             <div className="flex items-center gap-0.5 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 rounded-sm">
-              <Trophy size={isLarge ? 10 : 7} className="text-gold" />
-              <span className={cn("font-display font-bold text-gold", isLarge ? "text-sm" : "text-[10px]")}>
+              <Trophy size={isLarge ? 12 : 9} className="text-gold" />
+              <span className={cn("font-display font-bold text-gold", isLarge ? "text-sm" : "text-[11px]")}>
                 {Math.round(submission.qoi_score!)}
               </span>
             </div>
@@ -77,23 +77,23 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
           <img
             src={loopgateLogo}
             alt="Loopgate"
-            className={cn("opacity-[0.07]", isLarge ? "h-10" : "h-5")}
+            className={cn("opacity-[0.07]", isLarge ? "h-12" : "h-6")}
           />
         </div>
 
         {/* Bottom: user info + event */}
         <div>
-          <div className="flex items-center gap-1.5 mb-0.5">
+          <div className="flex items-center gap-1.5 mb-1">
             {submission.avatar_url ? (
-              <img src={submission.avatar_url} alt="" className={cn("rounded-full object-cover ring-1 ring-white/10", isLarge ? "w-5 h-5" : "w-3.5 h-3.5")} />
+              <img src={submission.avatar_url} alt="" className={cn("rounded-full object-cover ring-1 ring-white/10", isLarge ? "w-6 h-6" : "w-4 h-4")} />
             ) : (
-              <div className={cn("rounded-full flex items-center justify-center", palette.dot, isLarge ? "w-5 h-5" : "w-3.5 h-3.5")}>
-                <span className={cn("font-bold", palette.accent, isLarge ? "text-[8px]" : "text-[6px]")}>
+              <div className={cn("rounded-full flex items-center justify-center", palette.dot, isLarge ? "w-6 h-6" : "w-4 h-4")}>
+                <span className={cn("font-bold", palette.accent, isLarge ? "text-[9px]" : "text-[7px]")}>
                   {(submission.display_name || submission.username).charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <span className={cn("font-semibold text-foreground truncate", isLarge ? "text-xs" : "text-[8px]")}>
+            <span className={cn("font-bold text-foreground truncate", isLarge ? "text-sm" : "text-[10px]")}>
               {submission.display_name || submission.username}
             </span>
           </div>
@@ -101,25 +101,25 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
           {/* Battle VS indicator */}
           {submission.type === "battle" && submission.opponent_username && (
             <div className="flex items-center gap-1 mb-0.5">
-              <span className={cn("font-display font-black text-red-500", isLarge ? "text-[10px]" : "text-[7px]")}>VS</span>
-              <span className={cn("text-muted-foreground truncate", isLarge ? "text-[10px]" : "text-[7px]")}>
+              <span className={cn("font-display font-black text-red-500", isLarge ? "text-[11px]" : "text-[8px]")}>VS</span>
+              <span className={cn("text-muted-foreground truncate", isLarge ? "text-[11px]" : "text-[8px]")}>
                 {submission.opponent_username}
               </span>
               {submission.winner_id && (
-                <Trophy size={isLarge ? 9 : 7} className={submission.winner_id === submission.user_id ? "text-gold" : "text-muted-foreground/40"} />
+                <Trophy size={isLarge ? 10 : 8} className={submission.winner_id === submission.user_id ? "text-gold" : "text-muted-foreground/40"} />
               )}
             </div>
           )}
 
-          <p className={cn("text-muted-foreground truncate", isLarge ? "text-[9px]" : "text-[7px]")}>
+          <p className={cn("text-muted-foreground truncate", isLarge ? "text-[10px]" : "text-[8px]")}>
             {submission.event_title}
           </p>
           {/* Platform pill */}
           <div className="mt-1">
             <span className={cn(
-              "uppercase font-bold tracking-wider bg-white/[0.05] px-1 py-0.5 rounded-sm",
+              "uppercase font-bold tracking-wider bg-white/[0.05] px-1.5 py-0.5 rounded-sm",
               palette.accent,
-              isLarge ? "text-[7px]" : "text-[6px]"
+              isLarge ? "text-[8px]" : "text-[7px]"
             )}>
               {submission.platform}
             </span>
@@ -184,21 +184,27 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
           )}
           {/* Bottom name strip for large */}
           {size === "large" && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-3.5">
               <div className="flex items-center gap-2">
                 {submission.avatar_url ? (
-                  <img src={submission.avatar_url} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-white/20" />
+                  <img src={submission.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover ring-1 ring-white/20" />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center">
-                    <span className="text-[8px] font-bold text-gold">
+                  <div className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center">
+                    <span className="text-[9px] font-bold text-gold">
                       {(submission.display_name || submission.username).charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
-                <span className="text-xs text-white font-semibold truncate">
+                <span className="text-sm text-white font-bold truncate">
                   {submission.display_name || submission.username}
                 </span>
               </div>
+              {submission.type === "battle" && submission.opponent_username && (
+                <div className="flex items-center gap-1 mt-0.5 ml-8">
+                  <span className="text-[10px] font-black text-red-500">VS</span>
+                  <span className="text-[10px] text-white/70 truncate">{submission.opponent_username}</span>
+                </div>
+              )}
             </div>
           )}
         </>
