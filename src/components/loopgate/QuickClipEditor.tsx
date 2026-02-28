@@ -33,6 +33,21 @@ const ACCENT = "#9999FF";
 const ACCENT_DIM = "rgba(153,153,255,0.10)";
 const ACCENT_BORDER = "rgba(153,153,255,0.22)";
 
+type ExportFormat = { mimeType: string; extension: "mp4" | "webm" };
+const EXPORT_FORMATS: ExportFormat[] = [
+  { mimeType: "video/mp4;codecs=h264", extension: "mp4" },
+  { mimeType: "video/mp4", extension: "mp4" },
+  { mimeType: "video/webm;codecs=vp9", extension: "webm" },
+  { mimeType: "video/webm", extension: "webm" },
+];
+
+function resolveExportFormat(): ExportFormat {
+  for (const format of EXPORT_FORMATS) {
+    if (MediaRecorder.isTypeSupported(format.mimeType)) return format;
+  }
+  return { mimeType: "video/webm", extension: "webm" };
+}
+
 // ─── Icon Maps (match desktop) ───
 const EFFECT_ICONS: Record<string, typeof Zap> = {
   glitch: Zap, shake: Vibrate, zoom_pulse: Search, mirror: FlipHorizontal,
@@ -100,6 +115,7 @@ export default function QuickClipEditor() {
   const [state, setState] = useState<"idle" | "processing" | "done">("idle");
   const [progress, setProgress] = useState(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [resultExt, setResultExt] = useState<"mp4" | "webm">("webm");
   const [speed, setSpeed] = useState(1);
   const [muted, setMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -125,6 +141,7 @@ export default function QuickClipEditor() {
   const [upscaleState, setUpscaleState] = useState<"idle" | "processing" | "done">("idle");
   const [upscaleProgress, setUpscaleProgress] = useState(0);
   const [upscaleResultUrl, setUpscaleResultUrl] = useState<string | null>(null);
+  const [upscaleResultExt, setUpscaleResultExt] = useState<"mp4" | "webm">("webm");
   const [upscaleDims, setUpscaleDims] = useState<{ w: number; h: number } | null>(null);
 
   const hasTriggeredPicker = useRef(false);
@@ -145,22 +162,38 @@ export default function QuickClipEditor() {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Auto-open file picker on mount — seamless like CapCut
+  const openVideoPicker = useCallback(() => {
+    const input = fileInputRef.current;
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }, []);
+
+  // Auto-open file picker + one-tap fallback for iOS/Android restrictions
   useEffect(() => {
-    if (!file && !hasTriggeredPicker.current) {
-      hasTriggeredPicker.current = true;
-      // Small delay so DOM is ready
-      const t = setTimeout(() => fileInputRef.current?.click(), 300);
-      return () => clearTimeout(t);
+    if (file) {
+      hasTriggeredPicker.current = false;
+      return;
     }
-  }, [file]);
+    if (hasTriggeredPicker.current) return;
+
+    hasTriggeredPicker.current = true;
+    const t = window.setTimeout(() => openVideoPicker(), 80);
+    const onFirstTap = () => openVideoPicker();
+    window.addEventListener("pointerup", onFirstTap, { once: true });
+
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("pointerup", onFirstTap);
+    };
+  }, [file, openVideoPicker]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
     if (f.size > 2 * 1024 * 1024 * 1024) { toast.error("Max 2GB"); return; }
-    setFile(f); setVideoUrl(URL.createObjectURL(f)); setResultUrl(null); setState("idle");
+    setFile(f); setVideoUrl(URL.createObjectURL(f)); setResultUrl(null); setResultExt("webm"); setState("idle");
     setProgress(0); setTextOverlays([]); setActiveFilter(FILTER_PRESETS[0]);
     setAudioFile(null); setAudioName(""); setSpeed(1); setIsFullscreen(true);
     setActiveEffects([]); setActiveTransition(null); resetColorGrading();
@@ -261,11 +294,12 @@ export default function QuickClipEditor() {
   const clearFile = () => {
     if (videoUrl) URL.revokeObjectURL(videoUrl);
     if (resultUrl) URL.revokeObjectURL(resultUrl);
-    setFile(null); setVideoUrl(null); setResultUrl(null); setState("idle");
+    setFile(null); setVideoUrl(null); setResultUrl(null); setResultExt("webm"); setState("idle");
     setProgress(0); setTextOverlays([]); setActiveFilter(FILTER_PRESETS[0]);
     setAudioFile(null); setAudioName(""); setTrimStart(0); setTrimEnd(0);
     setPlaying(false); setThumbnails([]); setSpeed(1); setIsFullscreen(false);
     setActiveEffects([]); setActiveTransition(null); resetColorGrading();
+    hasTriggeredPicker.current = false;
   };
 
   const seekTo = (time: number) => {
@@ -288,6 +322,7 @@ export default function QuickClipEditor() {
     if (!vid || !canvas || !file) return;
     setState("processing"); setProgress(0);
     const quality = EXPORT_QUALITIES.find(q => q.id === exportQuality) ?? EXPORT_QUALITIES[1];
+    const exportFormat = resolveExportFormat();
     const ctx = canvas.getContext("2d")!;
     const exportW = Math.round(vid.videoWidth * quality.resolution);
     const exportH = Math.round(vid.videoHeight * quality.resolution);
@@ -306,11 +341,11 @@ export default function QuickClipEditor() {
         source.start(0);
       } catch { /* continue without audio */ }
     }
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: quality.bitrate });
+    const recorderOptions: MediaRecorderOptions = { videoBitsPerSecond: quality.bitrate, mimeType: exportFormat.mimeType };
+    const recorder = new MediaRecorder(stream, recorderOptions);
     const chunks: Blob[] = [];
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
+    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: exportFormat.mimeType })); });
     recorder.start(100);
     vid.currentTime = trimStart; vid.muted = true; vid.playbackRate = 1;
     await vid.play().catch(() => {});
@@ -337,6 +372,7 @@ export default function QuickClipEditor() {
     drawLoop();
     const blob = await resultPromise;
     setResultUrl(URL.createObjectURL(blob));
+    setResultExt(exportFormat.extension);
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
@@ -345,7 +381,7 @@ export default function QuickClipEditor() {
   const handleDownload = () => {
     if (!resultUrl || !file) return;
     const a = document.createElement("a"); a.href = resultUrl;
-    a.download = `${file.name.replace(/\.[^/.]+$/, "")}_loopgate.webm`;
+    a.download = `${file.name.replace(/\.[^/.]+$/, "")}_loopgate.${resultExt}`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
 
@@ -357,7 +393,7 @@ export default function QuickClipEditor() {
     if (!f2 || !f2.type.startsWith("video/")) { toast.error("Select a video file"); return; }
     if (f2.size > 2 * 1024 * 1024 * 1024) { toast.error("Max 2GB"); return; }
     setUpscaleFile(f2); setUpscaleUrl(URL.createObjectURL(f2));
-    setUpscaleResultUrl(null); setUpscaleState("idle"); setUpscaleProgress(0);
+    setUpscaleResultUrl(null); setUpscaleResultExt("webm"); setUpscaleState("idle"); setUpscaleProgress(0);
     e.target.value = "";
   };
   const startUpscale = useCallback(async () => {
@@ -375,11 +411,14 @@ export default function QuickClipEditor() {
     const cvs = document.createElement("canvas"); cvs.width = finalW; cvs.height = finalH;
     const ctx2 = cvs.getContext("2d")!; ctx2.imageSmoothingEnabled = true; ctx2.imageSmoothingQuality = "high";
     const stream = cvs.captureStream(30);
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: Math.min(finalW * finalH * 8, 40_000_000) });
+    const exportFormat = resolveExportFormat();
+    const recorder = new MediaRecorder(stream, {
+      mimeType: exportFormat.mimeType,
+      videoBitsPerSecond: Math.min(finalW * finalH * 8, 40_000_000),
+    });
     const chunks: Blob[] = [];
     recorder.ondataavailable = (ev) => { if (ev.data.size > 0) chunks.push(ev.data); };
-    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
+    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: exportFormat.mimeType })); });
     recorder.start(100); video.currentTime = 0; await video.play();
     const dur = video.duration;
     const drawLoop = () => {
@@ -390,13 +429,13 @@ export default function QuickClipEditor() {
     };
     drawLoop(); video.onended = () => recorder.stop();
     const blob = await resultPromise;
-    setUpscaleResultUrl(URL.createObjectURL(blob)); setUpscaleProgress(100); setUpscaleState("done");
+    setUpscaleResultUrl(URL.createObjectURL(blob)); setUpscaleResultExt(exportFormat.extension); setUpscaleProgress(100); setUpscaleState("done");
     toast.success("Video upscaled!"); video.pause(); video.src = "";
   }, [upscaleUrl, upscaleFile, upscaleMode]);
   const handleUpscaleDownload = () => {
     if (!upscaleResultUrl || !upscaleFile) return;
     const a = document.createElement("a"); a.href = upscaleResultUrl;
-    a.download = `${upscaleFile.name.replace(/\.[^/.]+$/, "")}_${upscaleMode}_upscaled.webm`;
+    a.download = `${upscaleFile.name.replace(/\.[^/.]+$/, "")}_${upscaleMode}_upscaled.${upscaleResultExt}`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
   };
   const clearUpscale = () => {
@@ -409,12 +448,17 @@ export default function QuickClipEditor() {
   // ─── Seamless Import — auto-opens picker, minimal wait state ───
   if (!file) {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center" style={{ background: "#0a0a0a" }}>
+      <div
+        className="fixed inset-0 z-[120] flex flex-col items-center justify-center px-6"
+        style={{ background: "#0a0a0a" }}
+        onClick={openVideoPicker}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center gap-5"
+          onClick={(e) => e.stopPropagation()}
         >
           <motion.div
             animate={{ opacity: [0.4, 1, 0.4] }}
@@ -429,7 +473,7 @@ export default function QuickClipEditor() {
             <p className="text-[11px]" style={{ color: "#555" }}>to start editing</p>
           </div>
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={openVideoPicker}
             className="mt-2 h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
             style={{ background: ACCENT, color: "#000" }}
           >
@@ -445,7 +489,7 @@ export default function QuickClipEditor() {
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-        className={`flex flex-col ${isFullscreen ? "fixed inset-0 z-50" : "relative"}`}
+        className={`flex flex-col ${isFullscreen ? "fixed inset-0 z-[120]" : "relative"}`}
         style={{ height: isFullscreen ? "100dvh" : "auto", background: "#0a0a0a" }}>
 
         {/* ─── Top Bar ─── */}

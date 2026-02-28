@@ -3,7 +3,7 @@ import BottomNav from "./BottomNav";
 
 export default function MobileLayout() {
   const location = useLocation();
-  const hideNavPaths = ["/admin"];
+  const hideNavPaths = ["/admin", "/studio"];
   const showNav = !hideNavPaths.includes(location.pathname);
 
   return (
