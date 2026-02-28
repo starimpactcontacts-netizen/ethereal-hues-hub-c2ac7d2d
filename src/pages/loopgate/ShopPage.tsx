@@ -26,9 +26,10 @@ interface ShopItem {
 const CATEGORIES = [
   { key: "all", label: "All" },
   { key: "badge", label: "Badges" },
-  { key: "avatar_decoration", label: "Avatar Decorations" },
-  { key: "profile_effect", label: "Profile Effects" },
+  { key: "avatar_frame", label: "Avatar Frames" },
+  { key: "profile_skin", label: "Profile Skins" },
   { key: "nameplate", label: "Nameplates" },
+  { key: "banner", label: "Banners" },
 ];
 
 function getTimeRemaining(until: string) {
