@@ -51,8 +51,9 @@ export default function FeaturedDropCard({ drop }: Props) {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
       className={cn(
-        "relative w-[260px] shrink-0 snap-start overflow-hidden rounded-xl",
+        "relative w-[240px] sm:w-[260px] shrink-0 snap-start overflow-hidden rounded-xl",
         "bg-gradient-to-b from-surface-1 to-surface-0",
         "border transition-all duration-300 group",
         isPromoted
@@ -61,11 +62,12 @@ export default function FeaturedDropCard({ drop }: Props) {
       )}
     >
       {/* Poster */}
-      <div className="relative w-full h-36 overflow-hidden">
+      <div className="relative w-full h-40 sm:h-44 overflow-hidden">
         {drop.poster_url ? (
           <img
             src={drop.poster_url}
             alt={drop.title}
+            loading="lazy"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -73,57 +75,57 @@ export default function FeaturedDropCard({ drop }: Props) {
             <Music className="w-8 h-8 text-muted-foreground/15" />
           </div>
         )}
-        {/* Multi-layer gradient for depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent" />
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/10" />
 
-        {/* Artist chip — top-left */}
-        <Link
-          to={`/artist/${artist?.slug || ''}`}
-          className="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-black/60 backdrop-blur-md rounded-full pl-0.5 pr-2.5 py-1 border border-white/[0.08] hover:border-white/[0.15] transition-colors"
-        >
-          <Avatar className="w-5 h-5 border border-white/20">
-            <AvatarImage src={artist?.avatar_url || ''} />
-            <AvatarFallback className="bg-surface-2 text-[7px] font-bold">{artist?.name?.[0]?.toUpperCase() || '🎵'}</AvatarFallback>
-          </Avatar>
-          <span className="text-[10px] font-semibold text-white/90 truncate max-w-[90px]">{artist?.name || 'Artist'}</span>
-        </Link>
-
-        {/* Promoted badge */}
-        {isPromoted && (
-          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/70 backdrop-blur-md rounded-full px-2.5 py-1 border border-gold/30 z-10">
-            <Crown className="w-3 h-3 text-gold" />
-            <span className="text-[8px] font-bold text-gold uppercase tracking-wider">Campaign</span>
-          </div>
-        )}
-
-        {/* Status badges — top-right */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center justify-center w-7 h-7 bg-black/50 backdrop-blur-md rounded-full border border-white/[0.08] hover:border-white/[0.2] hover:bg-white/10 transition-all"
-            title="Copy link"
+        {/* Top row: Artist left, status right — single row, no overlap */}
+        <div className="absolute top-0 left-0 right-0 p-2.5 flex items-center justify-between gap-1.5">
+          {/* Artist chip */}
+          <Link
+            to={`/artist/${artist?.slug || ''}`}
+            className="flex items-center gap-1.5 bg-black/60 backdrop-blur-md rounded-full pl-0.5 pr-2 py-0.5 border border-white/[0.08] hover:border-white/[0.15] transition-colors min-w-0 shrink"
           >
-            {copied ? (
-              <Check className="w-3 h-3 text-emerald-400" />
-            ) : (
-              <Link2 className="w-3 h-3 text-white/60" />
+            <Avatar className="w-5 h-5 border border-white/20 shrink-0">
+              <AvatarImage src={artist?.avatar_url || ''} />
+              <AvatarFallback className="bg-surface-2 text-[7px] font-bold">{artist?.name?.[0]?.toUpperCase() || '🎵'}</AvatarFallback>
+            </Avatar>
+            <span className="text-[10px] font-semibold text-white/90 truncate">{artist?.name || 'Artist'}</span>
+          </Link>
+
+          {/* Right side badges */}
+          <div className="flex items-center gap-1 shrink-0">
+            {isPromoted && (
+              <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-1 border border-gold/25">
+                <Crown className="w-2.5 h-2.5 text-gold" />
+                <span className="text-[7px] font-bold text-gold uppercase tracking-wider hidden sm:inline">Campaign</span>
+              </div>
             )}
-          </button>
-          {isLive && (
-            <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-md rounded-full px-2.5 py-1 border border-emerald-500/25">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
-              <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
-            </div>
-          )}
+            <button
+              onClick={handleCopyLink}
+              className="flex items-center justify-center w-6 h-6 bg-black/50 backdrop-blur-md rounded-full border border-white/[0.08] hover:border-white/[0.2] hover:bg-white/10 transition-all"
+              title="Copy link"
+            >
+              {copied ? (
+                <Check className="w-2.5 h-2.5 text-emerald-400" />
+              ) : (
+                <Link2 className="w-2.5 h-2.5 text-white/60" />
+              )}
+            </button>
+            {isLive && (
+              <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md rounded-full px-2 py-1 border border-emerald-500/25">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
+                <span className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Title + Song — bottom overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-3.5 pb-3">
-          <h3 className="font-display text-sm text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg">
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
+          <h3 className="font-display text-[13px] sm:text-sm text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg">
             {drop.title}
           </h3>
-          <p className="text-[10px] text-white/50 mt-0.5 flex items-center gap-1 truncate">
+          <p className="text-[9px] sm:text-[10px] text-white/50 mt-0.5 flex items-center gap-1 truncate">
             <Music className="w-2.5 h-2.5 shrink-0" />
             {drop.song_name}
           </p>
@@ -131,12 +133,12 @@ export default function FeaturedDropCard({ drop }: Props) {
       </div>
 
       {/* Activity signal + Rewards */}
-      <div className="px-3.5 py-2.5 flex items-center gap-2 border-t border-white/[0.04]">
-        <ActivityIcon className={cn("w-3.5 h-3.5 shrink-0", activity.color)} />
-        <span className={cn("text-[10px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
+      <div className="px-3 py-2 flex items-center gap-1.5 border-t border-white/[0.04]">
+        <ActivityIcon className={cn("w-3 h-3 shrink-0", activity.color)} />
+        <span className={cn("text-[9px] sm:text-[10px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
           {activity.text}
         </span>
-        <div className="flex items-center gap-2.5 text-[10px] font-bold shrink-0">
+        <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-bold shrink-0">
           <span className="flex items-center gap-0.5 text-brand">
             <Zap className="w-3 h-3" />+{drop.xp_reward}
           </span>
@@ -148,7 +150,7 @@ export default function FeaturedDropCard({ drop }: Props) {
 
       {/* Winner / Pick chips */}
       {(drop.top_scorer_username || drop.random_pick_username) && (
-        <div className="px-3.5 pb-2 flex items-center gap-1.5 text-[9px] overflow-hidden">
+        <div className="px-3 pb-1.5 flex items-center gap-1.5 text-[9px] overflow-hidden">
           {drop.top_scorer_username && (
             <div className="flex items-center gap-1 bg-gold/8 border border-gold/15 rounded-full px-2 py-0.5 truncate">
               <Crown className="w-2.5 h-2.5 text-gold shrink-0" />
@@ -165,30 +167,28 @@ export default function FeaturedDropCard({ drop }: Props) {
       )}
 
       {/* CTA Buttons */}
-      <div className="px-3.5 pb-3.5 space-y-2 pt-1">
+      <div className="px-3 pb-3 space-y-1.5 pt-0.5">
         {isLive ? (
           <>
             <motion.button
-              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => {
                 if (profile) navigate(`/drop/${drop.id}`);
                 else navigate('/start');
               }}
               className={cn(
-                "w-full py-3.5 rounded-lg font-display text-sm uppercase tracking-widest",
+                "w-full py-3 sm:py-3.5 rounded-lg font-display text-sm uppercase tracking-widest",
                 "flex items-center justify-center gap-2",
                 "bg-emerald-500 text-white",
                 "shadow-[0_4px_16px_rgba(16,185,129,0.3)]",
                 "hover:bg-emerald-400 hover:shadow-[0_6px_24px_rgba(16,185,129,0.4)]",
                 "active:bg-emerald-600",
-                "transition-all duration-200"
+                "transition-all duration-200 touch-manipulation"
               )}
             >
               Join
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate(`/drop/${drop.id}`)}
               className={cn(
@@ -196,7 +196,7 @@ export default function FeaturedDropCard({ drop }: Props) {
                 "flex items-center justify-center gap-1.5",
                 "bg-white/[0.04] border border-white/[0.08] text-white/60",
                 "hover:bg-white/[0.08] hover:text-white/80 hover:border-white/[0.15]",
-                "transition-all duration-200"
+                "transition-all duration-200 touch-manipulation"
               )}
             >
               Enter Lobby
