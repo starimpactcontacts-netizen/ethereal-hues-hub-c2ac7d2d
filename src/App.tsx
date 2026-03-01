@@ -42,6 +42,7 @@ const CrewChatPage = lazy(() => import("./pages/loopgate/CrewChatPage"));
 const UnitChatPage = lazy(() => import("./pages/loopgate/UnitChatPage"));
 const CrewSettingsPage = lazy(() => import("./pages/loopgate/CrewSettingsPage"));
 const ShopPage = lazy(() => import("./pages/loopgate/ShopPage"));
+const InventoryPage = lazy(() => import("./pages/loopgate/InventoryPage"));
 const FeedPage = lazy(() => import("./pages/loopgate/FeedPage"));
 const GQTPage = lazy(() => import("./pages/loopgate/GQTPage"));
 const JoinCrewPage = lazy(() => import("./pages/loopgate/JoinCrewPage"));
@@ -334,6 +335,7 @@ export default function App() {
               <Route path="/connections" element={<ConnectionsPage />} />
               <Route path="/units/:crewId/settings" element={<CrewSettingsPage />} />
               <Route path="/shop" element={<ShopPage />} />
+              <Route path="/inventory" element={<InventoryPage />} />
               
               <Route path="/studio" element={<StudioPage />} />
               <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />

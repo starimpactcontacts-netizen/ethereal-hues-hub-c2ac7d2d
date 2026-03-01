@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users, Sparkles, ShoppingBag, Package } from "lucide-react";
+import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -28,7 +28,7 @@ import { getRankFromScore } from "@/data/gqtConfig";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
-import ProfileInventory from "@/components/loopgate/ProfileInventory";
+import ProfileInventoryLink from "@/components/loopgate/ProfileInventoryLink";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -366,7 +366,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ═══ MY ITEMS (INVENTORY) ═══ */}
-      <ProfileInventory userId={profile.id} navigate={navigate} />
+      <ProfileInventoryLink navigate={navigate} />
 
       {/* ═══ CONTENT TABS ═══ */}
       <div className="px-4 mb-2">
