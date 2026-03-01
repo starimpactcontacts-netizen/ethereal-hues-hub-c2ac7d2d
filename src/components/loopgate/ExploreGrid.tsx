@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Play, Trophy, Swords, Gavel, Zap, Target } from "lucide-react";
 import loopgateWordmark from "@/assets/loopgate-wordmark.png";
@@ -60,7 +61,7 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
         <img
           src={loopgateWordmark}
           alt=""
-          className={cn("w-auto object-contain object-center select-none", isLarge ? "h-20 opacity-[0.52]" : "h-10 opacity-[0.46]")}
+          className={cn("w-auto object-contain object-center select-none", isLarge ? "h-20 opacity-[0.66]" : "h-10 opacity-[0.6]")}
           style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.72))" }}
         />
       </div>
@@ -220,6 +221,25 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
 export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
   const { submissions, loading } = useRecentSubmissions(limit);
   const isMobile = useIsMobile();
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [gridWidth, setGridWidth] = useState(0);
+
+  useEffect(() => {
+    const updateGridWidth = () => {
+      if (gridRef.current) {
+        setGridWidth(gridRef.current.clientWidth);
+      }
+    };
+
+    updateGridWidth();
+    window.addEventListener("resize", updateGridWidth);
+    window.addEventListener("orientationchange", updateGridWidth);
+
+    return () => {
+      window.removeEventListener("resize", updateGridWidth);
+      window.removeEventListener("orientationchange", updateGridWidth);
+    };
+  }, [loading, submissions.length]);
 
   if (loading) {
     return (
@@ -273,13 +293,22 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
         return desktopCells;
       })();
 
+  const gridAutoRows = isMobile
+    ? gridWidth > 0
+      ? `${(gridWidth - 1) / 2}px`
+      : "calc((100vw - 33px) / 2)"
+    : gridWidth > 0
+      ? `${(gridWidth - 2) / 3}px`
+      : "calc((100vw - 34px) / 3)";
+
   return (
     <motion.div
+      ref={gridRef}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="grid grid-cols-2 md:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)]"
-      style={{ gridAutoRows: isMobile ? "calc((100% - 1px) / 2)" : "calc((100% - 2px) / 3)" }}
+      className="grid grid-cols-2 md:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] w-full"
+      style={{ gridAutoRows }}
     >
       {cells.map((cell, i) => (
         <GridCell key={cell.submission.id} submission={cell.submission} size={cell.size} index={i} />
