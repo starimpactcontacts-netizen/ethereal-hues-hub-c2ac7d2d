@@ -54,6 +54,16 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
     <div className={cn("absolute inset-0 bg-gradient-to-br", palette.bg)}>
       <CellPattern color={palette.accent} />
 
+      {/* Center: Loopgate logo — absolutely centered */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <img
+          src={loopgateLogo}
+          alt="Loopgate"
+          className={cn("drop-shadow-lg", isLarge ? "h-20 opacity-[0.25]" : "h-10 opacity-[0.22]")}
+          style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.6))" }}
+        />
+      </div>
+
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col justify-between p-2.5 sm:p-3.5">
         {/* Top: type badge */}
@@ -70,16 +80,6 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
               </span>
             </div>
           )}
-        </div>
-
-        {/* Center: Loopgate logo — bold presence */}
-        <div className="flex-1 flex items-center justify-center">
-          <img
-            src={loopgateLogo}
-            alt="Loopgate"
-            className={cn("drop-shadow-lg", isLarge ? "h-20 opacity-[0.25]" : "h-10 opacity-[0.22]")}
-            style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.6))" }}
-          />
         </div>
 
       {/* Bottom: user info + event */}
