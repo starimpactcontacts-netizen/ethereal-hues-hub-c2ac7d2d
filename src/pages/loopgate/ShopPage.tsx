@@ -269,6 +269,10 @@ export default function ShopPage() {
       else toast.error("Failed to claim");
       setClaiming(null); return;
     }
+    // If this is the OG Claim item, set founding member status
+    if (item.name === "OG Claim") {
+      await supabase.from("profiles").update({ is_founding_member: true } as any).eq("id", user.id);
+    }
     toast.success(`${item.name} claimed!`);
     setPurchases((prev) => new Set([...prev, item.id]));
     setSpendableIndex((prev) => prev - item.price);

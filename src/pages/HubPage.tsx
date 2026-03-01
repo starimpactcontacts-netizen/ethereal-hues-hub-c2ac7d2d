@@ -44,6 +44,7 @@ import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import GatePattern from '@/components/loopgate/GatePattern';
 import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
+import FoundingBadge from '@/components/loopgate/FoundingBadge';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -326,6 +327,22 @@ export default function HubPage() {
             className="relative z-10"
           >
             <div className="bg-surface-1 border border-border/50 overflow-hidden relative">
+               {/* OG Skin — founding member gold pattern overlay */}
+               {(profile as any)?.is_founding_member && (
+                 <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                   <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.03] via-transparent to-gold/[0.02]" />
+                   <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                     <defs>
+                       <pattern id="og-skin" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+                         <circle cx="12" cy="12" r="1" fill="hsl(var(--gold))" />
+                         <circle cx="12" cy="12" r="8" stroke="hsl(var(--gold))" strokeWidth="0.3" fill="none" />
+                       </pattern>
+                     </defs>
+                     <rect width="100%" height="100%" fill="url(#og-skin)" />
+                   </svg>
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-gold/[0.06] to-transparent" />
+                 </div>
+               )}
                {/* Top Row: Avatar + Identity + Earnings/Index */}
               <div className="p-4 pb-2">
                 <div className="flex items-start justify-between gap-2">
@@ -356,6 +373,9 @@ export default function HubPage() {
                         <h1 className="font-display text-xl sm:text-2xl text-foreground leading-none truncate max-w-[160px] sm:max-w-[200px]">
                           {displayUsername}
                         </h1>
+                        {(profile as any)?.is_founding_member && (
+                          <FoundingBadge size="sm" animate={false} />
+                        )}
                         {isJudge && (
                           <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
                         )}
