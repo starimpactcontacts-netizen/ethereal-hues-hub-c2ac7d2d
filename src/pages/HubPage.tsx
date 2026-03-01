@@ -327,21 +327,44 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-            <div className="bg-surface-1 border border-border/50 overflow-hidden relative">
-               {/* OG Skin — founding member gold pattern overlay */}
+             <div className={`overflow-hidden relative ${hasEquippedOG ? 'bg-[#0e0c06] border border-gold/20 shadow-[0_0_24px_-6px_hsl(var(--gold)/0.15)]' : 'bg-surface-1 border border-border/50'}`}>
+               {/* First Circle Skin — layered gold pattern overlay */}
                {hasEquippedOG && (
                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                   <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.03] via-transparent to-gold/[0.02]" />
-                   <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                   {/* Base warm gradient */}
+                   <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.06] via-transparent to-gold/[0.04]" />
+                   {/* Concentric ring pattern — echoes the coin badge */}
+                   <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
                      <defs>
-                       <pattern id="og-skin" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
-                         <circle cx="12" cy="12" r="1" fill="hsl(var(--gold))" />
-                         <circle cx="12" cy="12" r="8" stroke="hsl(var(--gold))" strokeWidth="0.3" fill="none" />
+                       <pattern id="fc-skin-grid" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse" patternTransform="rotate(15)">
+                         {/* Central dot */}
+                         <circle cx="24" cy="24" r="1.2" fill="hsl(var(--gold))" opacity="0.25" />
+                         {/* Inner ring */}
+                         <circle cx="24" cy="24" r="8" stroke="hsl(var(--gold))" strokeWidth="0.4" fill="none" opacity="0.12" />
+                         {/* Outer ring */}
+                         <circle cx="24" cy="24" r="18" stroke="hsl(var(--gold))" strokeWidth="0.3" fill="none" opacity="0.07" />
+                         {/* Cardinal ticks */}
+                         <line x1="24" y1="4" x2="24" y2="8" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
+                         <line x1="24" y1="40" x2="24" y2="44" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
+                         <line x1="4" y1="24" x2="8" y2="24" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
+                         <line x1="40" y1="24" x2="44" y2="24" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
+                         {/* Fine crosshair at corners */}
+                         <line x1="0" y1="0" x2="3" y2="0" stroke="hsl(var(--gold))" strokeWidth="0.3" opacity="0.08" />
+                         <line x1="0" y1="0" x2="0" y2="3" stroke="hsl(var(--gold))" strokeWidth="0.3" opacity="0.08" />
                        </pattern>
+                       <radialGradient id="fc-skin-vignette" cx="50%" cy="40%" r="70%">
+                         <stop offset="0%" stopColor="transparent" />
+                         <stop offset="100%" stopColor="#0e0c06" stopOpacity="0.7" />
+                       </radialGradient>
                      </defs>
-                     <rect width="100%" height="100%" fill="url(#og-skin)" />
+                     <rect width="100%" height="100%" fill="url(#fc-skin-grid)" />
+                     <rect width="100%" height="100%" fill="url(#fc-skin-vignette)" />
                    </svg>
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-gold/[0.06] to-transparent" />
+                   {/* Gold corner glow accents */}
+                   <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-gold/[0.05] blur-2xl" />
+                   <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-gold/[0.03] blur-2xl" />
+                   {/* Top gold accent line */}
+                   <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                  </div>
                )}
                {/* Top Row: Avatar + Identity + Earnings/Index */}
