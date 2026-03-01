@@ -7,7 +7,7 @@ import {
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
-  Clapperboard
+  Clapperboard, ChevronDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -726,167 +726,100 @@ export default function ArenaPage() {
 
 
 
-          {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
+          {/* ═══ GAME LOBBY — Dropdown + GO ═══ */}
           <div className="mb-1">
-            {/* Mode tabs */}
-            <div className="flex gap-0 bg-surface-1/50 border border-border overflow-hidden">
-              {[
-                { key: 'quick' as const, icon: <Zap className="w-2.5 h-2.5" />, label: 'Quick 1v1', desc: 'Auto · 3hr' },
-                { key: 'battle' as const, icon: <Swords className="w-2.5 h-2.5" />, label: '1v1', desc: 'Invite' },
-                { key: 'solo' as const, icon: <UserRound className="w-2.5 h-2.5" />, label: 'Solo', desc: 'Pick · Score' },
-                { key: 'practice' as const, icon: <Target className="w-2.5 h-2.5" />, label: 'Practice', desc: 'No stakes' },
-              ].map((mode, i) => {
-                const active = selectedMode === mode.key;
-                return (
-                  <button
-                    key={mode.key}
-                    onClick={() => setSelectedMode(mode.key)}
-                    className={`flex-1 relative py-0.5 px-1 flex flex-col items-center transition-all touch-manipulation ${
-                      active ? 'bg-surface-2' : 'hover:bg-surface-0'
-                    } ${i > 0 ? 'border-l border-border' : ''}`}
-                  >
-                    {active && <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500" />}
-                    <span className={`transition-colors ${active ? 'text-red-400' : 'text-muted-foreground'}`}>{mode.icon}</span>
-                    <span className={`text-[8px] sm:text-[9px] font-bold leading-tight transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-                      {mode.label}
+            <div className="flex gap-0 overflow-hidden border border-border">
+              {/* Mode Dropdown */}
+              <div className="flex-1 relative">
+                <select
+                  value={selectedMode}
+                  onChange={(e) => setSelectedMode(e.target.value as typeof selectedMode)}
+                  className="w-full appearance-none bg-surface-1 text-foreground text-[11px] font-black uppercase tracking-wider py-2.5 pl-3 pr-8 cursor-pointer focus:outline-none touch-manipulation"
+                  style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
+                >
+                  <option value="quick">⚡ Quick 1v1 — Auto · 3hr</option>
+                  <option value="battle">⚔️ 1v1 Battle — Invite</option>
+                  <option value="solo">👤 Solo Edit — Pick · Score</option>
+                  <option value="practice">🎯 Practice — No Stakes</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+              </div>
+
+              {/* GO Button */}
+              <motion.button
+                whileTap={isQfSearching ? undefined : { scale: 0.95 }}
+                onClick={() => {
+                  if (isQfSearching) return;
+                  if (selectedMode === 'quick' && qfActiveFight) {
+                    modeActions.quick();
+                  } else {
+                    modeActions[selectedMode]();
+                  }
+                }}
+                disabled={isQfSearching}
+                className="relative overflow-hidden touch-manipulation bg-red-600 hover:bg-red-500 transition-colors px-6 flex items-center justify-center gap-1.5"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                {isQfSearching ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin relative z-10" />
+                    <span className="text-[11px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
                     </span>
-                    <span className={`text-[6px] sm:text-[7px] leading-tight transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
-                      {mode.desc}
+                  </>
+                ) : qfActiveFight && selectedMode === 'quick' ? (
+                  <span className="text-[13px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    Return
+                  </span>
+                ) : (
+                  <>
+                    <span className="text-[14px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      GO
                     </span>
-                  </button>
-                );
-              })}
+                    {(selectedMode === 'quick' || selectedMode === 'battle') && (
+                      <span className="text-[9px] text-white/40 font-bold relative z-10">+20 IDX</span>
+                    )}
+                    {selectedMode === 'solo' && (
+                      <span className="text-[9px] text-white/40 font-bold relative z-10">100+ IDX</span>
+                    )}
+                  </>
+                )}
+              </motion.button>
             </div>
 
-            {/* PLAY button — dual CTA for quick/solo, standard for others */}
-            {(selectedMode === 'quick' || selectedMode === 'solo') ? (
-              <div className="flex flex-col gap-0">
-                <div className="flex gap-0 overflow-hidden border border-border border-t-0">
-                {/* Quick Edit Battle */}
-                <motion.button
-                  whileTap={isQfSearching ? undefined : { scale: 0.97 }}
-                  onClick={() => { setSelectedMode('quick'); if (!isQfSearching) modeActions.quick(); }}
-                  disabled={isQfSearching}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-1 flex items-center justify-center gap-1.5 transition-all ${
-                    isQfSearching ? 'bg-red-600' : selectedMode === 'quick' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
-                  }`}
-                >
-                  {(selectedMode === 'quick' || isQfSearching) && (
-                    <>
-                      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-                    </>
-                  )}
-                  {isQfSearching ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 text-white animate-spin relative z-10" />
-                      <span className="text-[11px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                        Searching...
-                      </span>
-                      <span className="text-[9px] font-mono text-white/50 relative z-10 flex items-center gap-1">
-                        <Clock className="w-2.5 h-2.5" />
-                        {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
-                      </span>
-                    </>
-                  ) : qfActiveFight ? (
-                    <>
-                      <Swords className="w-3.5 h-3.5 text-white relative z-10" />
-                      <span className="text-[11px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                        Return to Fight
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Zap className={`w-3.5 h-3.5 relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-muted-foreground'}`} />
-                      <span className={`text-[11px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'quick' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                        Quick Battle
-                      </span>
-                      <span className={`text-[9px] font-bold relative z-10 ${selectedMode === 'quick' ? 'text-white/40' : 'text-gold'}`}>+20 IDX</span>
-                    </>
-                  )}
-                </motion.button>
-
-                {/* Divider */}
-                <div className="w-[1px] bg-border shrink-0" />
-
-                {/* Solo Edit */}
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  onClick={() => { setSelectedMode('solo'); modeActions.solo(); }}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-1 flex items-center justify-center gap-1.5 transition-all ${
-                    selectedMode === 'solo' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
-                  }`}
-                >
-                  {selectedMode === 'solo' && (
-                    <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-                  )}
-                  <UserRound className={`w-3.5 h-3.5 relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-muted-foreground'}`} />
-                  <span className={`text-[11px] font-black tracking-tight uppercase relative z-10 ${selectedMode === 'solo' ? 'text-white' : 'text-foreground'}`} style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                    Solo Edit
-                  </span>
-                  <span className={`text-[9px] font-bold relative z-10 ${selectedMode === 'solo' ? 'text-white/40' : 'text-gold'}`}>100+ IDX</span>
-                </motion.button>
-              </div>
-              {/* Cancel queue button */}
-              {isQfSearching && (
-                <button
-                  onClick={handleCancelQueue}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2 border border-t-0 border-border bg-surface-1 text-muted-foreground text-[11px] font-bold uppercase tracking-wider hover:text-foreground hover:border-foreground/30 transition-colors touch-manipulation"
-                >
-                  <X className="w-3 h-3" />
-                  Cancel Search
-                </button>
-              )}
-              </div>
-            ) : (
-              <motion.button
-                whileTap={{ scale: 0.98 }}
-                onClick={modeActions[selectedMode]}
-                className="w-full relative overflow-hidden touch-manipulation group"
+            {/* Cancel queue */}
+            {isQfSearching && (
+              <button
+                onClick={handleCancelQueue}
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-1.5 border border-t-0 border-border bg-surface-1 text-muted-foreground text-[10px] font-bold uppercase tracking-wider hover:text-foreground transition-colors touch-manipulation"
               >
-                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-1 flex items-center justify-center gap-1.5">
-                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-                  {selectedMode === 'battle' && <Swords className="w-3.5 h-3.5 text-white relative z-10" />}
-                  {selectedMode === 'practice' && <Target className="w-3.5 h-3.5 text-white relative z-10" />}
-                  <span className="text-[13px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                    {selectedMode === 'practice' ? 'Start Practice' : 'Play'}
-                  </span>
-                  {selectedMode === 'battle' && (
-                    <span className="text-[11px] text-white/40 font-bold relative z-10">+20 IDX</span>
-                  )}
-                </div>
-              </motion.button>
+                <X className="w-3 h-3" />
+                Cancel Search
+              </button>
             )}
           </div>
 
-          {/* ═══ PROMOTED DROP / FEATURED MATCH ═══ */}
-          {liveDrops.length > 0 ? (
+          {/* ═══ PROMOTED DROP — inline, no box ═══ */}
+          {liveDrops.length > 0 && (
             <Link
               to={`/drop/${(liveDrops[0] as any).slug || liveDrops[0].id}`}
-              className="block w-full mb-1"
+              className="flex items-center gap-2 px-1 py-1.5 mb-1 group touch-manipulation"
             >
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-surface-0/40 border-l-2 border-l-brand border-y border-r border-border hover:border-r-brand/30 p-2 flex items-center gap-2.5 transition-all"
-              >
-                {liveDrops[0].poster_url ? (
-                  <img src={liveDrops[0].poster_url} alt="" className="w-7 h-7 object-cover shrink-0" />
-                ) : (
-                  <div className="w-7 h-7 bg-brand/20 flex items-center justify-center shrink-0">
-                    <Music className="w-3.5 h-3.5 text-brand" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-bold text-foreground block truncate">{liveDrops[0].title}</span>
-                  <span className="text-[9px] text-brand font-semibold block">Submit · Earn IDX →</span>
+              {liveDrops[0].poster_url ? (
+                <img src={liveDrops[0].poster_url} alt="" className="w-6 h-6 object-cover shrink-0 rounded-sm" />
+              ) : (
+                <div className="w-6 h-6 bg-brand/20 flex items-center justify-center shrink-0 rounded-sm">
+                  <Music className="w-3 h-3 text-brand" />
                 </div>
-                <div className="shrink-0 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[9px] font-bold text-emerald-400 uppercase">Live</span>
-                </div>
-              </motion.div>
+              )}
+              <span className="text-[10px] font-bold text-foreground truncate flex-1 group-hover:text-brand transition-colors">{liveDrops[0].title}</span>
+              <span className="text-[9px] text-brand font-semibold shrink-0">Submit · Earn IDX →</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             </Link>
-          ) : featuredFight ? (
+          )}
+
+          {/* Featured fight promo — inline, only if no live drops */}
+          {liveDrops.length === 0 && featuredFight && (
             <motion.button
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
@@ -895,37 +828,32 @@ export default function ArenaPage() {
                 if (featuredFight.type === 'quick') navigate(`/fight/${featuredFight.data.id}`);
                 else navigate(`/battle/${featuredFight.data.id}`);
               }}
-              className="w-full mb-1.5 bg-surface-0/40 border-l-2 border-l-red-500 border-y border-r border-border hover:border-r-red-500/30 p-2 flex items-center gap-2 touch-manipulation transition-all"
+              className="w-full flex items-center gap-2 px-1 py-1.5 mb-1 touch-manipulation group"
             >
-              <div className="flex items-center gap-2 shrink-0">
-                <Avatar className="w-6 h-6 border border-red-500/40">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Avatar className="w-5 h-5 border border-red-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_1_avatar_url : (featuredFight.data as any).challenger_avatar_url} />
-                  <AvatarFallback className="bg-surface-2 text-foreground text-[10px] font-bold">
+                  <AvatarFallback className="bg-surface-2 text-foreground text-[8px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username)?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-[10px] font-black text-muted-foreground/40">VS</span>
-                <Avatar className="w-6 h-6 border border-blue-500/40">
+                <span className="text-[8px] font-black text-muted-foreground/40">VS</span>
+                <Avatar className="w-5 h-5 border border-blue-500/40">
                   <AvatarImage src={featuredFight.type === 'quick' ? featuredFight.data.player_2_avatar_url : (featuredFight.data as any).opponent_avatar_url} />
-                  <AvatarFallback className="bg-surface-2 text-foreground text-[11px] font-bold">
+                  <AvatarFallback className="bg-surface-2 text-foreground text-[8px] font-bold">
                     {(featuredFight.type === 'quick' ? featuredFight.data.player_2_username : (featuredFight.data as any).opponent_username)?.[0]?.toUpperCase() || '?'}
                   </AvatarFallback>
                 </Avatar>
               </div>
-              <div className="flex-1 min-w-0 text-left">
-                <span className="text-[11px] font-bold text-foreground block truncate">
-                  {featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username}
-                  {' vs '}
-                  {featuredFight.type === 'quick' ? (featuredFight.data.player_2_username || '???') : ((featuredFight.data as any).opponent_username || '???')}
-                </span>
-                <span className="text-[10px] text-gold font-semibold mt-0.5 block">+20 IDX · Watch Now →</span>
-              </div>
-              <div className="shrink-0 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] font-bold text-emerald-400">LIVE</span>
-              </div>
+              <span className="text-[10px] font-bold text-foreground truncate flex-1 group-hover:text-red-400 transition-colors">
+                {featuredFight.type === 'quick' ? featuredFight.data.player_1_username : (featuredFight.data as any).challenger_username}
+                {' vs '}
+                {featuredFight.type === 'quick' ? (featuredFight.data.player_2_username || '???') : ((featuredFight.data as any).opponent_username || '???')}
+              </span>
+              <span className="text-[9px] text-gold font-semibold shrink-0">Watch →</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             </motion.button>
-          ) : null}
+          )}
 
           {/* search bar moved to top */}
 
