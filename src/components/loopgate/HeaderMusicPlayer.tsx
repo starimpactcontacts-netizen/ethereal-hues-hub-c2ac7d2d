@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge, Settings } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { useUserPlaylist, UserPlaylistTrack } from '@/hooks/useUserPlaylist';
+import { useRadioSettings } from '@/hooks/useRadioSettings';
 import MyPlaylistTab from './MyPlaylistTab';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,8 +14,11 @@ interface Track {
   id: string;
   song_name: string;
   song_preview_url: string;
+  artist_name?: string | null;
   title: string;
   poster_url: string | null;
+  is_priority?: boolean;
+  source: 'featured_drop' | 'radio_track';
 }
 
 type PlaylistMode = 'loopgate' | 'myplaylist';
@@ -99,12 +104,13 @@ export default function HeaderMusicPlayer() {
   const [playlistMode, setPlaylistMode] = useState<PlaylistMode>('loopgate');
   const [userId, setUserId] = useState<string | null>(null);
   const [myPlaylistIndex, setMyPlaylistIndex] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Track which mode the current audioRef belongs to, so we can detect stale sources
   const audioModeRef = useRef<PlaylistMode>('loopgate');
 
   const { myTracks, loading: myLoading, uploading, uploadTrack, deleteTrack, togglePublic, playlistName, renamePlaylist } = useUserPlaylist(userId);
+  const { settings, updateSetting } = useRadioSettings(userId);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
 
@@ -118,18 +124,53 @@ export default function HeaderMusicPlayer() {
 
   const isMuted = volume === 0;
 
+  // Fetch tracks from both featured_drops AND radio_tracks, priority first
   useEffect(() => {
     const fetchTracks = async () => {
-      const { data } = await supabase
+      // Fetch admin radio tracks
+      const { data: radioData } = await supabase
+        .from('radio_tracks')
+        .select('id, song_name, artist_name, audio_url, cover_url, is_priority, track_order')
+        .order('is_priority', { ascending: false })
+        .order('track_order', { ascending: true });
+
+      // Fetch featured drops
+      const { data: dropData } = await supabase
         .from('featured_drops')
         .select('id, song_name, song_preview_url, title, poster_url')
         .not('song_preview_url', 'is', null)
         .order('created_at', { ascending: false })
         .limit(50);
-      if (data) {
-        const valid = data.filter(t => t.song_preview_url) as Track[];
-        setTracks(shuffleArray(valid));
-        setCurrentIndex(Math.floor(Math.random() * valid.length));
+
+      const radioTracks: Track[] = (radioData || []).map(t => ({
+        id: t.id,
+        song_name: t.song_name,
+        song_preview_url: t.audio_url,
+        artist_name: t.artist_name,
+        title: t.artist_name || 'LOOPGATE Radio',
+        poster_url: t.cover_url,
+        is_priority: t.is_priority,
+        source: 'radio_track' as const,
+      }));
+
+      const dropTracks: Track[] = (dropData || []).filter(t => t.song_preview_url).map(t => ({
+        id: t.id,
+        song_name: t.song_name,
+        song_preview_url: t.song_preview_url!,
+        title: t.title,
+        poster_url: t.poster_url,
+        is_priority: false,
+        source: 'featured_drop' as const,
+      }));
+
+      // Priority tracks first, then shuffle the rest
+      const priority = radioTracks.filter(t => t.is_priority);
+      const nonPriority = shuffleArray([...radioTracks.filter(t => !t.is_priority), ...dropTracks]);
+      setTracks([...priority, ...nonPriority]);
+      if (priority.length > 0) {
+        setCurrentIndex(0);
+      } else {
+        setCurrentIndex(Math.floor(Math.random() * nonPriority.length));
       }
     };
     fetchTracks();
@@ -175,7 +216,7 @@ export default function HeaderMusicPlayer() {
       setIsPlaying(true);
       startProgressTracking();
     }).catch(() => {});
-  }, [volume, tracks.length, startProgressTracking, stopProgressTracking]);
+  }, [volume, tracks.length, startProgressTracking, stopProgressTracking, playbackRate, pitchSemitones]);
 
   const playMyTrack = useCallback((track: UserPlaylistTrack) => {
     if (audioRef.current) {
@@ -203,7 +244,7 @@ export default function HeaderMusicPlayer() {
       setIsPlaying(true);
       startProgressTracking();
     }).catch(() => {});
-  }, [volume, myTracks, startProgressTracking, stopProgressTracking]);
+  }, [volume, myTracks, startProgressTracking, stopProgressTracking, playbackRate, pitchSemitones]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
@@ -215,7 +256,6 @@ export default function HeaderMusicPlayer() {
     if (isPlaying) {
       pause();
     } else if (playlistMode === 'myplaylist' && myTracks[myPlaylistIndex]) {
-      // BUG FIX: if audio belongs to a different mode, start fresh
       if (audioRef.current && audioRef.current.src && audioModeRef.current === 'myplaylist') {
         audioRef.current.play().then(() => {
           setIsPlaying(true);
@@ -225,7 +265,6 @@ export default function HeaderMusicPlayer() {
         playMyTrack(myTracks[myPlaylistIndex]);
       }
     } else if (current) {
-      // BUG FIX: if audio belongs to a different mode, start fresh
       if (audioRef.current && audioRef.current.src && audioModeRef.current === 'loopgate') {
         audioRef.current.play().then(() => {
           setIsPlaying(true);
@@ -247,10 +286,28 @@ export default function HeaderMusicPlayer() {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length]);
 
-  // Auto-play on first load
+  // Auto-play on first load (respects user settings)
   useEffect(() => {
     if (tracks.length > 0 && !hasAutoPlayed && current) {
       setHasAutoPlayed(true);
+
+      // Check if autoplay is disabled
+      if (!settings.autoplay_enabled) return;
+
+      // Check if user wants their own playlist to play by default
+      if (settings.default_playlist === 'myplaylist' && myTracks.length > 0) {
+        setPlaylistMode('myplaylist');
+        const startMyPlayback = async () => {
+          if (!introPlayed) {
+            setIntroPlayed(true);
+            await playIntroChime(volume);
+          }
+          playMyTrack(myTracks[0]);
+        };
+        startMyPlayback().catch(() => {});
+        return;
+      }
+
       const startPlayback = async () => {
         if (!introPlayed) {
           setIntroPlayed(true);
@@ -271,7 +328,7 @@ export default function HeaderMusicPlayer() {
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tracks]);
+  }, [tracks, myTracks]);
 
   // When index changes and was playing, auto-play next
   useEffect(() => {
@@ -353,7 +410,36 @@ export default function HeaderMusicPlayer() {
           >
             <Music size={12} className="-mt-0.5" /> {playlistName?.toUpperCase() || 'MY PLAYLIST'}
           </button>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className={`px-3 py-2 transition-colors ${showSettings ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <Settings size={13} />
+          </button>
         </div>
+
+        {/* Settings Panel */}
+        {showSettings && userId && (
+          <div className="px-4 py-3 border-b border-border space-y-3 bg-surface-1/50">
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Radio Settings</p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">Autoplay on open</span>
+              <Switch
+                checked={settings.autoplay_enabled}
+                onCheckedChange={(v) => updateSetting('autoplay_enabled', v)}
+                className="scale-75"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground">Default to My Playlist</span>
+              <Switch
+                checked={settings.default_playlist === 'myplaylist'}
+                onCheckedChange={(v) => updateSetting('default_playlist', v ? 'myplaylist' : 'loopgate')}
+                className="scale-75"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Now Playing Hero */}
         <div className="relative">
@@ -407,7 +493,7 @@ export default function HeaderMusicPlayer() {
             </p>
             <p className="text-[10px] text-muted-foreground truncate mt-0.5">
               {playlistMode === 'loopgate'
-                ? current?.title
+                ? (current?.artist_name || current?.title)
                 : (myTracks[myPlaylistIndex]?.artist_name || '')}
             </p>
           </div>
@@ -470,11 +556,11 @@ export default function HeaderMusicPlayer() {
           </button>
         </div>
 
-        {/* Volume Slider */}
+        {/* Volume Slider — mobile-safe with touch-none */}
         <div className="px-4 pb-2 flex items-center gap-3">
           <VolumeX size={12} className="text-muted-foreground shrink-0" />
           <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
-            className="flex-1 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none" />
+            className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none [&_[role=slider]]:select-none" />
           <Volume2 size={12} className="text-muted-foreground shrink-0" />
         </div>
 
@@ -511,7 +597,7 @@ export default function HeaderMusicPlayer() {
           </div>
         </div>
 
-        {/* Pitcher — Real pitch shift in semitones */}
+        {/* Pitcher — Real pitch shift in semitones — mobile-safe */}
         <div className="px-4 pb-3">
           <div className="flex items-center gap-1 mb-1.5">
             <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
@@ -532,7 +618,7 @@ export default function HeaderMusicPlayer() {
               min={-8}
               max={8}
               step={1}
-              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500"
+              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none [&_[role=slider]]:select-none"
             />
             <span className="text-[9px] text-muted-foreground font-bold shrink-0">+8</span>
           </div>
@@ -541,7 +627,7 @@ export default function HeaderMusicPlayer() {
         {/* Track Lists */}
         {playlistMode === 'loopgate' ? (
           <div className="max-h-48 overflow-y-auto border-t border-border">
-            {tracks.slice(0, 12).map((track, i) => (
+            {tracks.slice(0, 15).map((track, i) => (
               <button key={track.id}
                 onClick={() => {
                   setPlaylistMode('loopgate');
@@ -563,8 +649,11 @@ export default function HeaderMusicPlayer() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium truncate">{track.song_name}</p>
-                  <p className="text-[9px] text-muted-foreground truncate">{track.title}</p>
+                  <p className="text-[9px] text-muted-foreground truncate">{track.artist_name || track.title}</p>
                 </div>
+                {track.is_priority && (
+                  <span className="text-[7px] font-bold text-emerald-500 bg-emerald-500/10 px-1 py-0.5 rounded-full shrink-0">⭐</span>
+                )}
                 {i === currentIndex && playlistMode === 'loopgate' && isPlaying && (
                   <div className="flex gap-[2px] items-end h-3 shrink-0">
                     {[0, 1, 2].map(b => (

@@ -4778,6 +4778,42 @@ export type Database = {
           },
         ]
       }
+      radio_tracks: {
+        Row: {
+          added_by: string | null
+          artist_name: string | null
+          audio_url: string
+          cover_url: string | null
+          created_at: string
+          id: string
+          is_priority: boolean
+          song_name: string
+          track_order: number
+        }
+        Insert: {
+          added_by?: string | null
+          artist_name?: string | null
+          audio_url: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          is_priority?: boolean
+          song_name: string
+          track_order?: number
+        }
+        Update: {
+          added_by?: string | null
+          artist_name?: string | null
+          audio_url?: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          is_priority?: boolean
+          song_name?: string
+          track_order?: number
+        }
+        Relationships: []
+      }
       redemptions: {
         Row: {
           admin_notes: string | null
@@ -5870,6 +5906,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_radio_settings: {
+        Row: {
+          autoplay_enabled: boolean
+          default_playlist: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autoplay_enabled?: boolean
+          default_playlist?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autoplay_enabled?: boolean
+          default_playlist?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_radio_tracks: {
         Row: {
