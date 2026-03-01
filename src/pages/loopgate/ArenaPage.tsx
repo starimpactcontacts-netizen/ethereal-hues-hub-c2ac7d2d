@@ -762,7 +762,7 @@ export default function ArenaPage() {
                   }
                 }}
                 disabled={isQfSearching}
-                className={`relative overflow-hidden touch-manipulation transition-colors px-6 flex items-center justify-center gap-1.5 ${
+                className={`relative overflow-hidden touch-manipulation transition-colors min-h-[46px] px-7 flex items-center justify-center gap-1.5 ${
                   selectedMode === 'drop' ? 'bg-brand hover:bg-brand/90' : 'bg-red-600 hover:bg-red-500'
                 }`}
               >
@@ -775,13 +775,13 @@ export default function ArenaPage() {
                     </span>
                   </>
                 ) : qfActiveFight && selectedMode === 'quick' ? (
-                  <span className="text-[13px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                  <span className="text-[14px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                     Return
                   </span>
                 ) : (
                   <>
-                    <span className="text-[14px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                      {selectedMode === 'drop' ? 'SUBMIT' : 'GO'}
+                    <span className="text-[16px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      GO
                     </span>
                     {(selectedMode === 'quick' || selectedMode === 'battle') && (
                       <span className="text-[9px] text-white/40 font-bold relative z-10">+20 IDX</span>
@@ -790,7 +790,7 @@ export default function ArenaPage() {
                       <span className="text-[9px] text-white/40 font-bold relative z-10">100+ IDX</span>
                     )}
                     {selectedMode === 'drop' && liveDrops.length > 0 && (
-                      <span className="text-[9px] font-bold relative z-10 text-emerald-300">
+                      <span className="text-[10px] font-bold relative z-10 text-emerald-300">
                         {(liveDrops[0] as any).prize_usd > 0 ? `$${(liveDrops[0] as any).prize_usd}` : 'Earn IDX'}
                       </span>
                     )}
@@ -810,18 +810,6 @@ export default function ArenaPage() {
               </button>
             )}
           </div>
-
-          {/* Prize callout inside lobby */}
-          {selectedMode === 'drop' && liveDrops.length > 0 && liveDrops[0].prize_usd > 0 && (
-            <button
-              onClick={() => navigate(`/drop/${(liveDrops[0] as any).slug || liveDrops[0].id}`)}
-              className="w-full flex items-center gap-2.5 px-3 py-2 border border-t-0 border-border bg-surface-1 touch-manipulation group hover:bg-surface-2 transition-colors"
-            >
-              <span className="font-display text-lg text-emerald-400 font-black drop-shadow-[0_2px_8px_rgba(16,185,129,0.5)]">${liveDrops[0].prize_usd}</span>
-              <span className="text-[10px] text-muted-foreground font-semibold flex-1 text-left">Cash prize · Best edit + random pick win</span>
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </button>
-          )}
 
           {/* Featured fight promo — inline, only if no live drops */}
           {liveDrops.length === 0 && featuredFight && (
