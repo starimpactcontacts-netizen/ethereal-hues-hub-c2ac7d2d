@@ -904,6 +904,44 @@ export default function ArenaPage() {
                 badge="New"
                 badgeColor="bg-brand/20 border-brand/40 text-brand"
               />
+
+              {/* Prize banner — loud callout if any drop has cash */}
+              {liveDrops.some(d => d.prize_usd > 0) && (() => {
+                const prizeDrop = liveDrops.find(d => d.prize_usd > 0)!;
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mx-4 mb-3 relative overflow-hidden rounded-lg border border-emerald-500/30"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 via-emerald-500/10 to-emerald-600/20" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent" />
+                    <button
+                      onClick={() => navigate(`/drop/${prizeDrop.slug || prizeDrop.id}`)}
+                      className="relative w-full flex items-center gap-3 px-4 py-3 touch-manipulation group"
+                    >
+                      <div className="flex items-center justify-center shrink-0">
+                        <div className="relative">
+                          <div className="absolute inset-0 rounded-full bg-emerald-500/40 blur-lg scale-150" />
+                          <div className="relative bg-emerald-500 rounded-full w-12 h-12 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.5)] border-2 border-emerald-300/50">
+                            <span className="font-display text-xl text-white font-black">${prizeDrop.prize_usd}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className="text-[13px] font-black text-emerald-400 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                          💰 CASH PRIZE — ${prizeDrop.prize_usd} UP FOR GRABS
+                        </p>
+                        <p className="text-[11px] text-white/60 font-medium truncate">
+                          Submit your edit on "{prizeDrop.title}" · Best edit + random pick win
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-emerald-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </motion.div>
+                );
+              })()}
+
               <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
                 {liveDrops.map(drop => (
                   <FeaturedDropCard key={drop.id} drop={drop} />
