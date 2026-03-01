@@ -94,6 +94,11 @@ export default function FeaturedDropCard({ drop }: Props) {
 
           {/* Right side badges */}
           <div className="flex items-center gap-1 shrink-0">
+            {drop.prize_usd > 0 && (
+              <div className="flex items-center gap-0.5 bg-emerald-500/90 backdrop-blur-md rounded-full px-2 py-1">
+                <span className="text-[8px] font-black text-white uppercase tracking-wider">${drop.prize_usd}</span>
+              </div>
+            )}
             {isPromoted && (
               <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-1 border border-gold/25">
                 <Crown className="w-2.5 h-2.5 text-gold" />
