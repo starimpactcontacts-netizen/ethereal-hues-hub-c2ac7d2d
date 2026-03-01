@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Plus, Trash2, Globe, Lock, Loader2, Music } from 'lucide-react';
+import { Plus, Trash2, Globe, Lock, Loader2, Music, Image } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { UserPlaylistTrack } from '@/hooks/useUserPlaylist';
 import {
@@ -24,15 +24,18 @@ interface MyPlaylistTabProps {
   onPlay: (track: UserPlaylistTrack, index: number) => void;
   onDelete: (trackId: string, audioUrl: string) => void;
   onTogglePublic: (trackId: string, isPublic: boolean) => void;
+  onUploadCover?: (trackId: string, file: File) => void;
   compact?: boolean;
 }
 
 export default function MyPlaylistTab({
   tracks, loading, uploading, currentTrackId, isPlaying, isLoggedIn,
-  onUpload, onPlay, onDelete, onTogglePublic, compact = true,
+  onUpload, onPlay, onDelete, onTogglePublic, onUploadCover, compact = true,
 }: MyPlaylistTabProps) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
   const [confirmTrack, setConfirmTrack] = useState<{ id: string; isPublic: boolean } | null>(null);
+  const [coverTrackId, setCoverTrackId] = useState<string | null>(null);
 
   if (!isLoggedIn) {
     return (
@@ -73,6 +76,22 @@ export default function MyPlaylistTab({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Hidden cover input */}
+      <input
+        ref={coverRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f && coverTrackId && onUploadCover) {
+            onUploadCover(coverTrackId, f);
+          }
+          setCoverTrackId(null);
+          e.target.value = '';
+        }}
+      />
 
       {/* Upload button */}
       <div className="px-3 py-2 border-b border-border">
@@ -119,13 +138,30 @@ export default function MyPlaylistTab({
                 currentTrackId === track.id ? 'bg-emerald-500/10' : 'hover:bg-surface-1'
               }`}
             >
+              {/* Cover art thumbnail — clickable to change */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onUploadCover) {
+                    setCoverTrackId(track.id);
+                    coverRef.current?.click();
+                  }
+                }}
+                className="w-8 h-8 rounded-sm bg-surface-1 overflow-hidden shrink-0 border border-border hover:border-emerald-500/40 transition-colors"
+                title="Click to set cover art"
+              >
+                {track.cover_url ? (
+                  <img src={track.cover_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Music size={12} className={currentTrackId === track.id ? 'text-emerald-500' : 'text-muted-foreground/50'} />
+                  </div>
+                )}
+              </button>
               <button
                 onClick={() => onPlay(track, i)}
                 className="flex-1 flex items-center gap-2 min-w-0 text-left"
               >
-                <div className="w-7 h-7 rounded-sm bg-surface-1 flex items-center justify-center shrink-0">
-                  <Music size={12} className={currentTrackId === track.id ? 'text-emerald-500' : 'text-muted-foreground/50'} />
-                </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-xs font-medium truncate ${currentTrackId === track.id ? 'text-emerald-400' : 'text-foreground'}`}>
                     {track.track_name}

@@ -109,7 +109,7 @@ export default function HeaderMusicPlayer() {
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioModeRef = useRef<PlaylistMode>('loopgate');
 
-  const { myTracks, loading: myLoading, uploading, uploadTrack, deleteTrack, togglePublic, playlistName, renamePlaylist } = useUserPlaylist(userId);
+  const { myTracks, loading: myLoading, uploading, uploadTrack, uploadCover, deleteTrack, togglePublic, playlistName, renamePlaylist } = useUserPlaylist(userId);
   const { settings, updateSetting } = useRadioSettings(userId);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
@@ -205,6 +205,7 @@ export default function HeaderMusicPlayer() {
     stopProgressTracking();
     audioModeRef.current = 'loopgate';
     const a = new Audio(track.song_preview_url);
+    a.preload = 'auto';
     a.volume = volume;
     a.preservesPitch = false;
     a.playbackRate = playbackRate * Math.pow(2, pitchSemitones / 12);
@@ -212,10 +213,18 @@ export default function HeaderMusicPlayer() {
     a.addEventListener('ended', () => {
       setCurrentIndex(i => (i + 1) % tracks.length);
     });
-    a.play().then(() => {
-      setIsPlaying(true);
-      startProgressTracking();
-    }).catch(() => {});
+    // Play as soon as enough data is buffered
+    const tryPlay = () => {
+      a.play().then(() => {
+        setIsPlaying(true);
+        startProgressTracking();
+      }).catch(() => {});
+    };
+    if (a.readyState >= 2) {
+      tryPlay();
+    } else {
+      a.addEventListener('canplay', tryPlay, { once: true });
+    }
   }, [volume, tracks.length, startProgressTracking, stopProgressTracking, playbackRate, pitchSemitones]);
 
   const playMyTrack = useCallback((track: UserPlaylistTrack) => {
@@ -227,6 +236,7 @@ export default function HeaderMusicPlayer() {
     setPlaylistMode('myplaylist');
     audioModeRef.current = 'myplaylist';
     const a = new Audio(track.audio_url);
+    a.preload = 'auto';
     a.volume = volume;
     a.preservesPitch = false;
     a.playbackRate = playbackRate * Math.pow(2, pitchSemitones / 12);
@@ -240,10 +250,17 @@ export default function HeaderMusicPlayer() {
         return next;
       });
     });
-    a.play().then(() => {
-      setIsPlaying(true);
-      startProgressTracking();
-    }).catch(() => {});
+    const tryPlay = () => {
+      a.play().then(() => {
+        setIsPlaying(true);
+        startProgressTracking();
+      }).catch(() => {});
+    };
+    if (a.readyState >= 2) {
+      tryPlay();
+    } else {
+      a.addEventListener('canplay', tryPlay, { once: true });
+    }
   }, [volume, myTracks, startProgressTracking, stopProgressTracking, playbackRate, pitchSemitones]);
 
   const pause = useCallback(() => {
@@ -443,12 +460,17 @@ export default function HeaderMusicPlayer() {
 
         {/* Now Playing Hero */}
         <div className="relative">
-          {playlistMode === 'loopgate' && current?.poster_url && (
-            <div className="absolute inset-0 overflow-hidden">
-              <img src={current.poster_url} alt="" className="w-full h-full object-cover opacity-20 blur-sm" />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-0" />
-            </div>
-          )}
+        {(() => {
+            const bgUrl = playlistMode === 'loopgate'
+              ? current?.poster_url
+              : myTracks[myPlaylistIndex]?.cover_url;
+            return bgUrl ? (
+              <div className="absolute inset-0 overflow-hidden">
+                <img src={bgUrl} alt="" className="w-full h-full object-cover opacity-20 blur-sm" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-0" />
+              </div>
+            ) : null;
+          })()}
           <div className="relative p-4 pb-3">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex gap-[2px] items-end h-3">
@@ -683,6 +705,7 @@ export default function HeaderMusicPlayer() {
             }}
             onDelete={deleteTrack}
             onTogglePublic={togglePublic}
+            onUploadCover={uploadCover}
           />
         )}
 

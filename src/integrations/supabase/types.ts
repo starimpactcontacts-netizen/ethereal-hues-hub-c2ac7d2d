@@ -5935,6 +5935,7 @@ export type Database = {
         Row: {
           artist_name: string | null
           audio_url: string
+          cover_url: string | null
           created_at: string
           duration_seconds: number | null
           id: string
@@ -5946,6 +5947,7 @@ export type Database = {
         Insert: {
           artist_name?: string | null
           audio_url: string
+          cover_url?: string | null
           created_at?: string
           duration_seconds?: number | null
           id?: string
@@ -5957,6 +5959,7 @@ export type Database = {
         Update: {
           artist_name?: string | null
           audio_url?: string
+          cover_url?: string | null
           created_at?: string
           duration_seconds?: number | null
           id?: string
