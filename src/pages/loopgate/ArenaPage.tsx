@@ -727,9 +727,9 @@ export default function ArenaPage() {
 
 
           {/* ═══ GAME LOBBY — Mode Select + Play ═══ */}
-          <div className="mb-1.5">
+          <div className="mb-1">
             {/* Mode tabs */}
-            <div className="flex gap-0 mb-1 bg-surface-1/50 border border-border overflow-hidden">
+            <div className="flex gap-0 bg-surface-1/50 border border-border overflow-hidden">
               {[
                 { key: 'quick' as const, icon: <Zap className="w-2.5 h-2.5" />, label: 'Quick 1v1', desc: 'Auto · 3hr' },
                 { key: 'battle' as const, icon: <Swords className="w-2.5 h-2.5" />, label: '1v1', desc: 'Invite' },
@@ -741,16 +741,16 @@ export default function ArenaPage() {
                   <button
                     key={mode.key}
                     onClick={() => setSelectedMode(mode.key)}
-                    className={`flex-1 relative py-1 px-1 flex flex-col items-center gap-0 transition-all touch-manipulation ${
+                    className={`flex-1 relative py-0.5 px-1 flex flex-col items-center transition-all touch-manipulation ${
                       active ? 'bg-surface-2' : 'hover:bg-surface-0'
                     } ${i > 0 ? 'border-l border-border' : ''}`}
                   >
                     {active && <div className="absolute top-0 left-0 right-0 h-[2px] bg-red-500" />}
                     <span className={`transition-colors ${active ? 'text-red-400' : 'text-muted-foreground'}`}>{mode.icon}</span>
-                    <span className={`text-[9px] sm:text-[10px] font-bold leading-tight transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+                    <span className={`text-[8px] sm:text-[9px] font-bold leading-tight transition-colors ${active ? 'text-foreground' : 'text-muted-foreground'}`} style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
                       {mode.label}
                     </span>
-                    <span className={`text-[7px] sm:text-[8px] leading-tight transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
+                    <span className={`text-[6px] sm:text-[7px] leading-tight transition-colors ${active ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
                       {mode.desc}
                     </span>
                   </button>
@@ -767,7 +767,7 @@ export default function ArenaPage() {
                   whileTap={isQfSearching ? undefined : { scale: 0.97 }}
                   onClick={() => { setSelectedMode('quick'); if (!isQfSearching) modeActions.quick(); }}
                   disabled={isQfSearching}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-1.5 flex items-center justify-center gap-1.5 transition-all ${
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-1 flex items-center justify-center gap-1.5 transition-all ${
                     isQfSearching ? 'bg-red-600' : selectedMode === 'quick' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
                   }`}
                 >
@@ -812,7 +812,7 @@ export default function ArenaPage() {
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   onClick={() => { setSelectedMode('solo'); modeActions.solo(); }}
-                  className={`flex-1 relative overflow-hidden touch-manipulation group py-1.5 flex items-center justify-center gap-1.5 transition-all ${
+                  className={`flex-1 relative overflow-hidden touch-manipulation group py-1 flex items-center justify-center gap-1.5 transition-all ${
                     selectedMode === 'solo' ? 'bg-red-600' : 'bg-surface-1 hover:bg-surface-2'
                   }`}
                 >
@@ -843,7 +843,7 @@ export default function ArenaPage() {
                 onClick={modeActions[selectedMode]}
                 className="w-full relative overflow-hidden touch-manipulation group"
               >
-                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-1.5 flex items-center justify-center gap-1.5">
+                <div className="relative bg-red-600 hover:bg-red-550 transition-colors py-1 flex items-center justify-center gap-1.5">
                   <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                   {selectedMode === 'battle' && <Swords className="w-3.5 h-3.5 text-white relative z-10" />}
                   {selectedMode === 'practice' && <Target className="w-3.5 h-3.5 text-white relative z-10" />}
@@ -862,27 +862,27 @@ export default function ArenaPage() {
           {liveDrops.length > 0 ? (
             <Link
               to={`/drop/${(liveDrops[0] as any).slug || liveDrops[0].id}`}
-              className="block w-full mb-1.5"
+              className="block w-full mb-1"
             >
               <motion.div
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r from-brand/10 via-surface-0/60 to-surface-0/40 border-l-2 border-l-brand border-y border-r border-border hover:border-r-brand/30 p-2.5 flex items-center gap-3 transition-all"
+                className="bg-surface-0/40 border-l-2 border-l-brand border-y border-r border-border hover:border-r-brand/30 p-2 flex items-center gap-2.5 transition-all"
               >
                 {liveDrops[0].poster_url ? (
-                  <img src={liveDrops[0].poster_url} alt="" className="w-8 h-8 object-cover shrink-0" />
+                  <img src={liveDrops[0].poster_url} alt="" className="w-7 h-7 object-cover shrink-0" />
                 ) : (
-                  <div className="w-8 h-8 bg-brand/20 flex items-center justify-center shrink-0">
-                    <Music className="w-4 h-4 text-brand" />
+                  <div className="w-7 h-7 bg-brand/20 flex items-center justify-center shrink-0">
+                    <Music className="w-3.5 h-3.5 text-brand" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <span className="text-[11px] font-bold text-foreground block truncate">{liveDrops[0].title}</span>
-                  <span className="text-[10px] text-brand font-semibold block">Submit your edit · Earn IDX →</span>
+                  <span className="text-[10px] font-bold text-foreground block truncate">{liveDrops[0].title}</span>
+                  <span className="text-[9px] text-brand font-semibold block">Submit · Earn IDX →</span>
                 </div>
-                <div className="shrink-0 flex items-center gap-1.5">
+                <div className="shrink-0 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase">Live</span>
+                  <span className="text-[9px] font-bold text-emerald-400 uppercase">Live</span>
                 </div>
               </motion.div>
             </Link>
@@ -930,14 +930,14 @@ export default function ArenaPage() {
           {/* search bar moved to top */}
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
+          <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
             {filters.map(f => {
               const active = activeFilter === f.key;
               return (
                 <button
                   key={f.key}
                   onClick={() => setActiveFilter(f.key)}
-                  className={`px-3 py-1.5 text-[11px] font-semibold rounded-full transition-all flex items-center gap-1 shrink-0 touch-manipulation ${
+                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-full transition-all flex items-center gap-1 shrink-0 touch-manipulation ${
                     active
                       ? "bg-foreground text-background"
                       : "bg-surface-1 text-muted-foreground hover:text-foreground"

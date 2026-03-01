@@ -150,42 +150,42 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
       className="relative"
     >
       {/* Section header */}
-      <div className="flex items-center justify-between px-4 mb-1">
+      <div className="flex items-center justify-between px-4 mb-0.5">
         <div className="flex items-center gap-2">
-          <UserRound className="w-4 h-4 text-gold" />
-          <span className="text-[15px] font-extrabold text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
+          <UserRound className="w-3.5 h-3.5 text-gold" />
+          <span className="text-[13px] font-extrabold text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
             Solo Mode
           </span>
           {stats.editing > 0 && (
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-400">
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-400">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              {stats.editing} Editing Now
+              {stats.editing} Editing
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
           <Trophy className="w-3 h-3 text-gold" />
           <span className="font-bold text-gold">100+ IDX</span>
         </div>
       </div>
 
       {/* Tagline */}
-      <p className="text-[12px] text-muted-foreground px-4 mb-3">
-        Pick a song · Get a theme · Edit · Get judged · Earn massive Index
+      <p className="text-[11px] text-muted-foreground px-4 mb-2">
+        Pick a song · Get a theme · Edit · Get judged · Earn Index
       </p>
 
       {/* Stats row */}
       {stats.total > 0 && (
-        <div className="flex items-center gap-4 px-4 mb-3">
+        <div className="flex items-center gap-3 px-4 mb-2">
           {[
-            { val: stats.total, label: 'Total Edits', icon: <Flame className="w-3 h-3" />, color: 'text-gold' },
-            { val: stats.submitted, label: 'Awaiting Judge', icon: <Clock className="w-3 h-3" />, color: 'text-sky-400' },
-            { val: stats.scored, label: 'Scored', icon: <User className="w-3 h-3" />, color: 'text-emerald-400' },
+            { val: stats.total, label: 'Total Edits', icon: <Flame className="w-2.5 h-2.5" />, color: 'text-gold' },
+            { val: stats.submitted, label: 'Awaiting Judge', icon: <Clock className="w-2.5 h-2.5" />, color: 'text-sky-400' },
+            { val: stats.scored, label: 'Scored', icon: <User className="w-2.5 h-2.5" />, color: 'text-emerald-400' },
           ].map(s => (
-            <div key={s.label} className="flex items-center gap-1.5">
+            <div key={s.label} className="flex items-center gap-1">
               <span className={s.color}>{s.icon}</span>
-              <span className={`text-[12px] font-bold ${s.color}`}>{s.val}</span>
-              <span className="text-[10px] text-muted-foreground">{s.label}</span>
+              <span className={`text-[11px] font-bold ${s.color}`}>{s.val}</span>
+              <span className="text-[9px] text-muted-foreground">{s.label}</span>
             </div>
           ))}
         </div>
@@ -194,36 +194,31 @@ export default function SoloShowcase({ onStartSolo }: { onStartSolo: () => void 
       {/* Live activity ticker */}
       <SoloActivityTicker submissions={submissions} />
 
-      {/* Big CTA — Fortnite x Roblox x Discord */}
-      <div className="px-4 mb-3">
+      {/* CTA */}
+      <div className="px-4 mb-2.5">
         <motion.button
-          whileTap={{ scale: 0.96 }}
-          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => profile ? onStartSolo() : navigate('/start')}
           className="w-full relative overflow-hidden touch-manipulation group"
         >
-          {/* Outer glow */}
           <div className="absolute -inset-[1px] bg-gradient-to-r from-red-500 via-gold to-red-500 opacity-80 group-hover:opacity-100 transition-opacity" />
           
-          <div className="relative bg-gradient-to-b from-[hsl(0,0%,12%)] to-[hsl(0,0%,8%)] py-5 flex items-center justify-center gap-3">
-            {/* Top gloss */}
+          <div className="relative bg-gradient-to-b from-[hsl(0,0%,12%)] to-[hsl(0,0%,8%)] py-3 flex items-center justify-center gap-2.5">
             <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-            {/* Bottom edge */}
             <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/60 pointer-events-none" />
             
-            {/* Icon */}
-            <div className="relative z-10 w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-gold flex items-center justify-center shadow-lg shadow-red-500/30">
-              <UserRound className="w-4.5 h-4.5 text-white" />
+            <div className="relative z-10 w-6 h-6 rounded-full bg-gradient-to-br from-red-500 to-gold flex items-center justify-center shadow-lg shadow-red-500/30">
+              <UserRound className="w-3.5 h-3.5 text-white" />
             </div>
             
             <div className="relative z-10 flex flex-col items-start">
-              <span className="text-[18px] font-black text-foreground tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+              <span className="text-[15px] font-black text-foreground tracking-tight uppercase leading-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                 Start Solo Edit
               </span>
-              <span className="text-[10px] text-gold font-bold -mt-1 tracking-wider uppercase">Earn up to 100+ IDX</span>
+              <span className="text-[9px] text-gold font-bold -mt-0.5 tracking-wider uppercase">100+ IDX</span>
             </div>
             
-            <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all relative z-10 ml-auto mr-2" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-all relative z-10 ml-auto mr-2" />
           </div>
         </motion.button>
       </div>
