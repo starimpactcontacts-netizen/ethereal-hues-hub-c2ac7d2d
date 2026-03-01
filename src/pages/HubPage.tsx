@@ -328,43 +328,76 @@ export default function HubPage() {
             className="relative z-10"
           >
              <div className={`overflow-hidden relative ${hasEquippedOG ? 'bg-[#0e0c06] border border-gold/20 shadow-[0_0_24px_-6px_hsl(var(--gold)/0.15)]' : 'bg-surface-1 border border-border/50'}`}>
-               {/* First Circle Skin — layered gold pattern overlay */}
+               {/* First Circle Skin — premium geometric pattern */}
                {hasEquippedOG && (
                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                   {/* Base warm gradient */}
-                   <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.06] via-transparent to-gold/[0.04]" />
-                   {/* Concentric ring pattern — echoes the coin badge */}
+                   {/* Dark gold-tinted base */}
+                   <div className="absolute inset-0 bg-gradient-to-b from-[#14110a] to-[#0e0c06]" />
+                   
                    <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
                      <defs>
-                       <pattern id="fc-skin-grid" x="0" y="0" width="48" height="48" patternUnits="userSpaceOnUse" patternTransform="rotate(15)">
-                         {/* Central dot */}
-                         <circle cx="24" cy="24" r="1.2" fill="hsl(var(--gold))" opacity="0.25" />
-                         {/* Inner ring */}
-                         <circle cx="24" cy="24" r="8" stroke="hsl(var(--gold))" strokeWidth="0.4" fill="none" opacity="0.12" />
-                         {/* Outer ring */}
-                         <circle cx="24" cy="24" r="18" stroke="hsl(var(--gold))" strokeWidth="0.3" fill="none" opacity="0.07" />
-                         {/* Cardinal ticks */}
-                         <line x1="24" y1="4" x2="24" y2="8" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
-                         <line x1="24" y1="40" x2="24" y2="44" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
-                         <line x1="4" y1="24" x2="8" y2="24" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
-                         <line x1="40" y1="24" x2="44" y2="24" stroke="hsl(var(--gold))" strokeWidth="0.5" opacity="0.1" />
-                         {/* Fine crosshair at corners */}
-                         <line x1="0" y1="0" x2="3" y2="0" stroke="hsl(var(--gold))" strokeWidth="0.3" opacity="0.08" />
-                         <line x1="0" y1="0" x2="0" y2="3" stroke="hsl(var(--gold))" strokeWidth="0.3" opacity="0.08" />
+                       {/* Dense geometric tile — interlocking diamonds + fine grid */}
+                       <pattern id="fc-tile" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                         {/* Diamond lattice */}
+                         <path d="M30 0 L60 30 L30 60 L0 30 Z" stroke="#C4A44A" strokeWidth="0.4" fill="none" opacity="0.1" />
+                         <path d="M30 10 L50 30 L30 50 L10 30 Z" stroke="#C4A44A" strokeWidth="0.3" fill="none" opacity="0.07" />
+                         {/* Inner circle at center */}
+                         <circle cx="30" cy="30" r="4" stroke="#C4A44A" strokeWidth="0.5" fill="none" opacity="0.12" />
+                         <circle cx="30" cy="30" r="1" fill="#C4A44A" opacity="0.15" />
+                         {/* Corner accent dots */}
+                         <circle cx="0" cy="0" r="0.8" fill="#C4A44A" opacity="0.1" />
+                         <circle cx="60" cy="0" r="0.8" fill="#C4A44A" opacity="0.1" />
+                         <circle cx="0" cy="60" r="0.8" fill="#C4A44A" opacity="0.1" />
+                         <circle cx="60" cy="60" r="0.8" fill="#C4A44A" opacity="0.1" />
+                         {/* Fine connecting lines */}
+                         <line x1="0" y1="0" x2="30" y2="30" stroke="#C4A44A" strokeWidth="0.15" opacity="0.06" />
+                         <line x1="60" y1="0" x2="30" y2="30" stroke="#C4A44A" strokeWidth="0.15" opacity="0.06" />
+                         <line x1="0" y1="60" x2="30" y2="30" stroke="#C4A44A" strokeWidth="0.15" opacity="0.06" />
+                         <line x1="60" y1="60" x2="30" y2="30" stroke="#C4A44A" strokeWidth="0.15" opacity="0.06" />
+                         {/* Horizontal + vertical hairlines */}
+                         <line x1="0" y1="30" x2="60" y2="30" stroke="#C4A44A" strokeWidth="0.15" opacity="0.04" />
+                         <line x1="30" y1="0" x2="30" y2="60" stroke="#C4A44A" strokeWidth="0.15" opacity="0.04" />
                        </pattern>
-                       <radialGradient id="fc-skin-vignette" cx="50%" cy="40%" r="70%">
+
+                       {/* Larger accent ring overlay */}
+                       <pattern id="fc-rings" x="0" y="0" width="180" height="180" patternUnits="userSpaceOnUse">
+                         <circle cx="90" cy="90" r="60" stroke="#C4A44A" strokeWidth="0.3" fill="none" opacity="0.05" />
+                         <circle cx="90" cy="90" r="40" stroke="#C4A44A" strokeWidth="0.25" fill="none" opacity="0.04" />
+                         <circle cx="90" cy="90" r="20" stroke="#C4A44A" strokeWidth="0.4" fill="none" opacity="0.06" />
+                         {/* Cardinal tick marks */}
+                         {[0, 90, 180, 270].map(deg => {
+                           const r = (deg * Math.PI) / 180;
+                           return (
+                             <line
+                               key={deg}
+                               x1={90 + 55 * Math.cos(r)} y1={90 + 55 * Math.sin(r)}
+                               x2={90 + 65 * Math.cos(r)} y2={90 + 65 * Math.sin(r)}
+                               stroke="#C4A44A" strokeWidth="0.5" opacity="0.08" strokeLinecap="round"
+                             />
+                           );
+                         })}
+                       </pattern>
+
+                       <radialGradient id="fc-vignette" cx="50%" cy="35%" r="75%">
                          <stop offset="0%" stopColor="transparent" />
-                         <stop offset="100%" stopColor="#0e0c06" stopOpacity="0.7" />
+                         <stop offset="100%" stopColor="#0a0904" stopOpacity="0.8" />
                        </radialGradient>
                      </defs>
-                     <rect width="100%" height="100%" fill="url(#fc-skin-grid)" />
-                     <rect width="100%" height="100%" fill="url(#fc-skin-vignette)" />
+
+                     {/* Layer 1: Dense diamond lattice */}
+                     <rect width="100%" height="100%" fill="url(#fc-tile)" />
+                     {/* Layer 2: Large concentric rings */}
+                     <rect width="100%" height="100%" fill="url(#fc-rings)" />
+                     {/* Layer 3: Vignette fade */}
+                     <rect width="100%" height="100%" fill="url(#fc-vignette)" />
                    </svg>
-                   {/* Gold corner glow accents */}
-                   <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-gold/[0.05] blur-2xl" />
-                   <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-gold/[0.03] blur-2xl" />
-                   {/* Top gold accent line */}
-                   <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+
+                   {/* Warm corner glows */}
+                   <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-[#C4A44A]/[0.04] blur-3xl" />
+                   <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-[#C4A44A]/[0.03] blur-3xl" />
+                   {/* Top + bottom gold accent lines */}
+                   <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent" />
+                   <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/10 to-transparent" />
                  </div>
                )}
                {/* Top Row: Avatar + Identity + Earnings/Index */}
