@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Clock, Film, Trash2, ChevronLeft, MoreVertical,
   Video, Layers, Import, Scissors, Type, Music,
-  Wand2, Zap, Monitor, Smartphone, Ratio, Keyboard
+  Wand2, Zap, Monitor, Smartphone, Ratio, Keyboard,
+  ExternalLink, Bug, Sparkles
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -208,6 +209,57 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
             </div>
           </div>
         </motion.button>
+
+        {/* ═══ EDITOR ALTERNATIVES ═══ */}
+        <div className="mt-6 rounded-xl p-4"
+          style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-3.5 h-3.5" style={{ color: ACCENT }} />
+            <h3 className="text-xs font-semibold text-white/50 uppercase tracking-[0.15em]">Pro Editors</h3>
+          </div>
+          <p className="text-[11px] text-white/30 mb-3">
+            Our built-in editor is experimental — use these industry tools for your best work 🔥
+          </p>
+          
+          <div className={`grid gap-2 ${isMobile ? "grid-cols-2" : "grid-cols-4"}`}>
+            {[
+              { name: "CapCut", url: "https://www.capcut.com", desc: "Free, mobile + desktop", color: "#00E5FF" },
+              { name: "DaVinci Resolve", url: "https://www.blackmagicdesign.com/products/davinciresolve", desc: "Pro-grade, free tier", color: "#FF6B35" },
+              { name: "Premiere Pro", url: "https://www.adobe.com/products/premiere.html", desc: "Industry standard", color: "#9999FF" },
+              { name: "After Effects", url: "https://www.adobe.com/products/aftereffects.html", desc: "Motion & VFX", color: "#CF96FD" },
+            ].map(editor => (
+              <a
+                key={editor.name}
+                href={editor.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 p-2.5 rounded-lg transition-all hover:scale-[1.02] group/link"
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+              >
+                <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${editor.color}15`, border: `1px solid ${editor.color}20` }}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" style={{ color: editor.color }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] font-medium text-white/70 group-hover/link:text-white/90 transition-colors">{editor.name}</p>
+                  <p className="text-[9px] text-white/25 truncate">{editor.desc}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {/* Bug report note */}
+          <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg"
+            style={{ background: "rgba(255,180,0,0.04)", border: "1px solid rgba(255,180,0,0.08)" }}
+          >
+            <Bug className="w-3.5 h-3.5 text-yellow-500/60 flex-shrink-0" />
+            <p className="text-[10px] text-white/35">
+              Found a bug in our editor? <span className="text-yellow-500/60 font-medium">Report it in your Unit chat or DMs</span> — we're actively improving it
+            </p>
+          </div>
+        </div>
 
         {/* ═══ RECENT PROJECTS ═══ */}
         {recentProjects.length > 0 && (
