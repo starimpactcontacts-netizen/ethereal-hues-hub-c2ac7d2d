@@ -99,27 +99,23 @@ export default function LoopyChat() {
               transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
               className="flex flex-col gap-6 items-end"
             >
-              {/* Top paw — gripping the edge */}
-              <svg width="28" height="32" viewBox="0 0 28 32" fill="none" className="drop-shadow-md -mr-1">
-                {/* Arm coming from right */}
-                <rect x="14" y="12" width="16" height="12" rx="6" fill="white" stroke="hsl(var(--border))" strokeWidth="1.2" />
-                {/* Paw shape */}
-                <ellipse cx="14" cy="18" rx="12" ry="10" fill="white" stroke="hsl(var(--border))" strokeWidth="1.2" />
-                {/* Main pad */}
-                <ellipse cx="14" cy="20" rx="6" ry="4.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.8" />
-                {/* Toe beans */}
-                <ellipse cx="7" cy="13" rx="3" ry="3.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.7" />
-                <ellipse cx="14" cy="10" rx="3" ry="3.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.7" />
-                <ellipse cx="21" cy="13" rx="3" ry="3.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.7" />
+              {/* Top paw */}
+              <svg width="30" height="34" viewBox="0 0 30 34" fill="none" className="drop-shadow-md -mr-2">
+                <rect x="16" y="13" width="16" height="11" rx="5.5" fill="#fff" stroke="#555" strokeWidth="0.8" />
+                <ellipse cx="15" cy="19" rx="13" ry="11" fill="#fff" stroke="#555" strokeWidth="0.8" />
+                <ellipse cx="15" cy="21" rx="6.5" ry="5" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.7" />
+                <ellipse cx="7.5" cy="13" rx="3.2" ry="3.8" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
+                <ellipse cx="15" cy="10" rx="3.2" ry="3.8" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
+                <ellipse cx="22.5" cy="13" rx="3.2" ry="3.8" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
               </svg>
               {/* Bottom paw */}
-              <svg width="28" height="32" viewBox="0 0 28 32" fill="none" className="drop-shadow-md -mr-1">
-                <rect x="14" y="12" width="16" height="12" rx="6" fill="white" stroke="hsl(var(--border))" strokeWidth="1.2" />
-                <ellipse cx="14" cy="18" rx="12" ry="10" fill="white" stroke="hsl(var(--border))" strokeWidth="1.2" />
-                <ellipse cx="14" cy="20" rx="6" ry="4.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.8" />
-                <ellipse cx="7" cy="13" rx="3" ry="3.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.7" />
-                <ellipse cx="14" cy="10" rx="3" ry="3.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.7" />
-                <ellipse cx="21" cy="13" rx="3" ry="3.5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.35)" strokeWidth="0.7" />
+              <svg width="30" height="34" viewBox="0 0 30 34" fill="none" className="drop-shadow-md -mr-2">
+                <rect x="16" y="13" width="16" height="11" rx="5.5" fill="#fff" stroke="#555" strokeWidth="0.8" />
+                <ellipse cx="15" cy="19" rx="13" ry="11" fill="#fff" stroke="#555" strokeWidth="0.8" />
+                <ellipse cx="15" cy="21" rx="6.5" ry="5" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.7" />
+                <ellipse cx="7.5" cy="13" rx="3.2" ry="3.8" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
+                <ellipse cx="15" cy="10" rx="3.2" ry="3.8" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
+                <ellipse cx="22.5" cy="13" rx="3.2" ry="3.8" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
               </svg>
             </motion.div>
           </motion.button>
