@@ -116,15 +116,15 @@ function HeroBanner({
         <div className="flex-shrink-0 flex items-center justify-center">
           <div className={cn(
             "w-28 h-28 sm:w-36 sm:h-36 rounded-3xl flex items-center justify-center",
-            ogOwned ? "bg-gold/5 border border-gold/20" : "bg-muted/10 border border-gold/10"
+            ogOwned ? "bg-gold/5" : "bg-transparent"
           )}>
             {ogOwned ? (
               <div className="flex flex-col items-center gap-2">
-                <FoundingBadge size="md" animate={false} />
-                <Check className="w-5 h-5 text-accent" />
+                <FoundingBadge size="lg" animate={false} />
+                <Check className="w-4 h-4 text-accent" />
               </div>
             ) : (
-              <FoundingBadge size="md" animate />
+              <FoundingBadge size="lg" animate />
             )}
           </div>
         </div>
