@@ -95,8 +95,8 @@ export default function FeaturedDropCard({ drop }: Props) {
           {/* Right side badges */}
           <div className="flex items-center gap-1 shrink-0">
             {drop.prize_usd > 0 && (
-              <div className="flex items-center gap-0.5 bg-emerald-500 rounded-full px-3 py-1.5 shadow-[0_0_16px_rgba(16,185,129,0.6),0_0_32px_rgba(16,185,129,0.3)]">
-                <span className="text-[11px] font-black text-white tracking-wider">${drop.prize_usd}</span>
+              <div className="flex items-center gap-0.5 bg-emerald-500 rounded-full px-2.5 py-0.5 shadow-[0_0_12px_rgba(16,185,129,0.5)]">
+                <span className="text-[9px] font-black text-white tracking-wider">${drop.prize_usd}</span>
               </div>
             )}
             {isPromoted && (
@@ -124,6 +124,18 @@ export default function FeaturedDropCard({ drop }: Props) {
             )}
           </div>
         </div>
+
+        {/* Prize overlay — dominant center badge */}
+        {drop.prize_usd > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-emerald-500/30 blur-2xl scale-[2.5]" />
+              <div className="relative bg-emerald-500 rounded-full px-5 py-2 shadow-[0_0_24px_rgba(16,185,129,0.6),0_0_48px_rgba(16,185,129,0.3)] border-2 border-emerald-300/50">
+                <span className="font-display text-2xl text-white font-black tracking-wider drop-shadow-lg">${drop.prize_usd}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Title + Song — bottom overlay */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
