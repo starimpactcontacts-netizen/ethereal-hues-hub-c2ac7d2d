@@ -15,6 +15,7 @@ import EditoriumPickCard, { type EditoriumArticle } from "@/components/loopgate/
 import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import loopgateLogo from "@/assets/loopgate-logo.png";
+import FeedSidebar from "@/components/loopgate/FeedSidebar";
 
 const BATCH_SIZE = 20;
 
@@ -252,16 +253,18 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-screen bg-background pb-16 overflow-y-auto" onScroll={handleScroll}>
-
+      <div className={`mx-auto flex ${isMobile ? '' : 'max-w-[920px]'}`}>
+      {/* Feed Column */}
+      <div className={`flex-1 ${isMobile ? '' : 'max-w-[600px] border-r border-border/10'}`}>
       {/* ─── Sticky Header ─── */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/20">
-        <div className="max-w-xl mx-auto">
+        <div className="mx-auto max-w-xl lg:max-w-none">
           {/* Top bar */}
           <div className="flex items-center justify-between px-4 h-11">
             <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-70" />
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors lg:hidden"
             >
               {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
             </button>
@@ -317,7 +320,7 @@ export default function FeedPage() {
 
       {/* ─── Trending Strip ─── */}
       {activeTab !== 'posts' && (trendingEditors.length > 0 || trendingUnits.length > 0) && (
-        <div className="max-w-xl mx-auto border-b border-border/15">
+        <div className="mx-auto max-w-xl lg:max-w-none border-b border-border/15">
           <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
             {trendingUnits.map(unit => (
               <motion.button
@@ -365,7 +368,7 @@ export default function FeedPage() {
       )}
 
       {/* ─── Feed Content ─── */}
-      <div className="max-w-xl mx-auto">
+      <div className="mx-auto max-w-xl lg:max-w-none">
         {/* Desktop inline composer */}
         {!isMobile && user && (
           <FeedPostComposer userProfile={userProfile} onPost={createPost} />
@@ -417,6 +420,20 @@ export default function FeedPage() {
           <p className="text-center text-xs text-muted-foreground/50 py-8">You've reached the end 🔥</p>
         )}
       </div>
+
+      </div>{/* end feed column */}
+
+      {/* ─── Desktop Sidebar ─── */}
+      {!isMobile && (
+        <FeedSidebar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          trendingEditors={trendingEditors}
+          trendingUnits={trendingUnits}
+        />
+      )}
+
+      </div>{/* end flex container */}
 
       {/* ─── Compose FAB (mobile only, X-style floating button) ─── */}
       {user && isMobile && (
