@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Clock, Coins, Check, ChevronLeft, Lock, Search, ShoppingBag, Heart, ChevronRight } from "lucide-react";
+import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -115,12 +116,15 @@ function HeroBanner({
         <div className="flex-shrink-0 flex items-center justify-center">
           <div className={cn(
             "w-28 h-28 sm:w-36 sm:h-36 rounded-3xl flex items-center justify-center",
-            ogOwned ? "bg-accent/8" : "bg-muted/15 border border-border/10"
+            ogOwned ? "bg-gold/5 border border-gold/20" : "bg-muted/10 border border-gold/10"
           )}>
             {ogOwned ? (
-              <Check className="w-14 h-14 sm:w-16 sm:h-16 text-accent" />
+              <div className="flex flex-col items-center gap-2">
+                <FoundingBadge size="md" animate={false} />
+                <Check className="w-5 h-5 text-accent" />
+              </div>
             ) : (
-              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-foreground/5 border border-border/10" />
+              <FoundingBadge size="md" animate />
             )}
           </div>
         </div>
@@ -129,10 +133,10 @@ function HeroBanner({
         <div className="flex flex-col items-center sm:items-start gap-3 flex-1">
           <div>
             <h1 className="font-display text-3xl sm:text-5xl tracking-tight text-foreground leading-none">
-              OG
+              First Circle
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-2 max-w-md leading-relaxed">
-              {ogItem.description || "Exclusive badge for the earliest Loopgate members. Claim it before it's gone forever."}
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2 max-w-md leading-relaxed">
+              {ogItem.description || "The OG badge. Only for the earliest Loopgate members. Claim it before it's gone forever."}
             </p>
           </div>
 
@@ -166,7 +170,7 @@ function HeroBanner({
               "mt-2 bg-foreground text-background text-sm font-bold px-7 py-2.5 rounded-full transition-all inline-block",
               claiming === ogItem.id ? "opacity-50" : "group-hover:opacity-90"
             )}>
-              {claiming === ogItem.id ? "Claiming..." : "Shop the Collection"}
+              {claiming === ogItem.id ? "Claiming..." : "Claim OG Badge"}
             </div>
           )}
         </div>
