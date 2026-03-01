@@ -367,23 +367,23 @@ export default function HubPage() {
                   </button>
 
                   {/* Earnings + Index — top right, compact */}
-                  <div className="flex flex-col gap-1 shrink-0">
+                  <div className="flex flex-col gap-1.5 shrink-0">
                     {/* Earnings */}
-                    <div className="relative flex items-center gap-1 bg-gradient-to-r from-emerald-950/40 to-emerald-950/20 border border-emerald-500/20 px-1.5 py-1 transition-all hover:border-emerald-400/40">
-                      <DollarSign className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
-                      <span className="font-display text-[11px] text-emerald-400 leading-none tabular-nums">
+                    <div className="relative flex items-center gap-1.5 bg-gradient-to-r from-emerald-950/40 to-emerald-950/20 border border-emerald-500/20 px-2 py-1.5 transition-all hover:border-emerald-400/40">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="font-display text-sm text-emerald-400 leading-none tabular-nums">
                         {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
                       </span>
                       <IndexEarnBadge size="sm" hideDollar />
                     </div>
                     {/* Index */}
                     <Link to="/shop" className="group">
-                      <div className="relative flex items-center gap-1 bg-background border border-border/50 hover:border-gold/40 px-1.5 py-1 transition-all">
-                        <Coins className="w-2.5 h-2.5 text-gold shrink-0" />
-                        <span className="font-display text-[11px] text-foreground leading-none tabular-nums">
+                      <div className="relative flex items-center gap-1.5 bg-background border border-border/50 hover:border-gold/40 px-2 py-1.5 transition-all">
+                        <Coins className="w-3.5 h-3.5 text-gold shrink-0" />
+                        <span className="font-display text-sm text-foreground leading-none tabular-nums">
                           {(profile as any)?.spendable_index || 0}
                         </span>
-                        <ShoppingBag className="w-2 h-2 text-gold/40 group-hover:text-gold transition-colors shrink-0" />
+                        <ShoppingBag className="w-3 h-3 text-gold/40 group-hover:text-gold transition-colors shrink-0" />
                       </div>
                     </Link>
                   </div>
