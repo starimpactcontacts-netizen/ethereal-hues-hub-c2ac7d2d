@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -24,6 +24,7 @@ import { useHostedCompetitions } from '@/hooks/useHostedCompetitions';
 import { useLiveActivity, type LiveActivityItem } from '@/hooks/useLiveActivity';
 import { useFeaturedDrops } from '@/hooks/useFeaturedDrops';
 import FeaturedDropCard from '@/components/loopgate/FeaturedDropCard';
+import FeaturedCarousel from '@/components/loopgate/FeaturedCarousel';
 import LoopMonster from '@/components/loopgate/LoopMonster';
 import QuickFightButton from '@/components/loopgate/QuickFightButton';
 import { findQuickFight, useMyQuickFights, leaveQueue } from '@/hooks/useQuickFight';
@@ -142,6 +143,16 @@ export default function HubPage() {
   const [qfTipIdx, setQfTipIdx] = useState(0);
   const qfTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { inQueue: qfInQueue, fights: qfFights } = useMyQuickFights();
+  const featuredScrollRef = useRef<HTMLDivElement>(null);
+  const [featuredActiveIdx, setFeaturedActiveIdx] = useState(0);
+  const featuredAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Stabilize shuffle — only re-shuffle when the actual drop IDs change
+  const shuffledDrops = useMemo(() => {
+    return [...liveDrops].sort(() => Math.random() - 0.5);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveDrops.map(d => d.id).join(',')]);
+
   const { open: openAccountPrompt } = useAccountPrompt();
   const qfActiveFight = qfFights.find(f => f.status === 'active' || f.status === 'judging');
   const qfIsSearching = qfSearching || qfInQueue;
@@ -369,21 +380,22 @@ export default function HubPage() {
                   {/* Earnings + Index — top right, compact */}
                   <div className="flex flex-col gap-1.5 shrink-0">
                     {/* Earnings */}
-                    <div className="relative flex items-center gap-1.5 bg-gradient-to-r from-emerald-950/40 to-emerald-950/20 border border-emerald-500/20 px-2 py-1.5 transition-all hover:border-emerald-400/40">
-                      <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span className="font-display text-sm text-emerald-400 leading-none tabular-nums">
+                    <div className="relative flex items-center gap-2 bg-gradient-to-r from-emerald-950/40 to-emerald-950/20 border border-emerald-500/20 rounded-md px-3 py-2 transition-all hover:border-emerald-400/40">
+                      <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="font-display text-base text-emerald-400 leading-none tabular-nums font-bold">
                         {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
                       </span>
-                      <IndexEarnBadge size="sm" hideDollar />
+                      <IndexEarnBadge size="md" hideDollar />
                     </div>
                     {/* Index */}
                     <Link to="/shop" className="group">
-                      <div className="relative flex items-center gap-1.5 bg-background border border-border/50 hover:border-gold/40 px-2 py-1.5 transition-all">
-                        <Coins className="w-3.5 h-3.5 text-gold shrink-0" />
-                        <span className="font-display text-sm text-foreground leading-none tabular-nums">
+                      <div className="relative flex items-center gap-2 bg-background border border-border/50 hover:border-gold/40 rounded-md px-3 py-2 transition-all">
+                        <Coins className="w-4 h-4 text-gold shrink-0" />
+                        <span className="font-display text-base text-foreground leading-none tabular-nums font-bold">
                           {(profile as any)?.spendable_index || 0}
                         </span>
-                        <ShoppingBag className="w-3 h-3 text-gold/40 group-hover:text-gold transition-colors shrink-0" />
+                        <span className="text-[10px] text-gold/60 font-bold tracking-wider">IDX</span>
+                        <ShoppingBag className="w-3.5 h-3.5 text-gold/40 group-hover:text-gold transition-colors shrink-0" />
                       </div>
                     </Link>
                   </div>
@@ -792,10 +804,15 @@ export default function HubPage() {
           </div>
           
           {/* Horizontal Carousel - Featured drops, Premium comps, Sanctioned, Battles */}
-          <div className="relative flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-1.5">
-            
-            {/* Featured Artist Drops - Shuffled on each mount */}
-            {[...liveDrops].sort(() => Math.random() - 0.5).map(drop => (
+          <FeaturedCarousel
+            scrollRef={featuredScrollRef}
+            activeIdx={featuredActiveIdx}
+            setActiveIdx={setFeaturedActiveIdx}
+            autoScrollRef={featuredAutoScrollRef}
+            totalFeatured={totalFeatured}
+          >
+            {/* Featured Artist Drops - Stable shuffle */}
+            {shuffledDrops.map(drop => (
               <FeaturedDropCard key={drop.id} drop={drop} />
             ))}
 
@@ -1058,7 +1075,7 @@ export default function HubPage() {
                 <p className="text-xs text-muted-foreground">No active events right now</p>
               </div>
             )}
-          </div>
+          </FeaturedCarousel>
         </motion.div>
       )}
 
