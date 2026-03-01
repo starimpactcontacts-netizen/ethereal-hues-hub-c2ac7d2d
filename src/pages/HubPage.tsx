@@ -367,12 +367,14 @@ export default function HubPage() {
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   {/* Earnings bracket */}
-                  <div className="relative flex items-center gap-1.5 bg-background border border-emerald-500/30 px-2.5 py-1.5 transition-all">
-                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-emerald-400/50" />
-                    <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-emerald-400/50" />
-                    <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-emerald-400/50" />
-                    <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-emerald-400/50" />
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                  <div className="relative flex items-center gap-2 bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-emerald-950/40 border border-emerald-500/25 px-3 py-1.5 transition-all hover:border-emerald-400/40 hover:shadow-[0_0_16px_rgba(16,185,129,0.12)]">
+                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-emerald-400/40" />
+                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-emerald-400/40" />
+                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-emerald-400/40" />
+                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-emerald-400/40" />
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                      <DollarSign className="w-3 h-3 text-emerald-400" />
+                    </div>
                     <span className="font-display text-base text-emerald-400 leading-none tabular-nums">
                       {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
                     </span>
@@ -390,7 +392,7 @@ export default function HubPage() {
                       <span className="font-display text-base text-foreground leading-none tabular-nums">
                         {(profile as any)?.spendable_index || 0}
                       </span>
-                      <span className="text-[7px] text-gold/60 uppercase tracking-[0.1em] font-semibold">IDX</span>
+                      <ShoppingBag className="w-3 h-3 text-gold/50 group-hover:text-gold transition-colors" />
                     </div>
                   </Link>
                 </div>

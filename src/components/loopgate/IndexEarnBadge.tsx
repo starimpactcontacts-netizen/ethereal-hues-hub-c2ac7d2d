@@ -46,7 +46,7 @@ export default function IndexEarnBadge({ size = 'sm', hideDollar = false }: Inde
               </p>
               <div className="mt-2 pt-2 border-t border-border/50">
                 <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
-                  The only editing game that pays you.
+                  Compete. Create. Get paid.
                 </p>
               </div>
             </motion.div>
