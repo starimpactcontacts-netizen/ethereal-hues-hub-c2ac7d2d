@@ -1,0 +1,1 @@
+ALTER TABLE public.featured_drops ADD COLUMN prize_usd numeric DEFAULT 0;
