@@ -52,7 +52,7 @@ export function useUserPlaylist(userId: string | null) {
   useEffect(() => { fetchTracks(); }, [fetchTracks]);
 
   const uploadCover = useCallback(async (trackId: string, file: File) => {
-    if (!userId) return;
+    if (!userId) { toast.error('Sign in to upload covers'); return; }
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file');
       return;
@@ -61,17 +61,34 @@ export function useUserPlaylist(userId: string | null) {
       toast.error('Cover must be under 5MB');
       return;
     }
-    const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from('track-covers').upload(path, file, { contentType: file.type });
-    if (error) {
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('track-covers')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (uploadError) {
+        console.error('Cover storage upload error:', uploadError);
+        toast.error('Cover upload failed: ' + uploadError.message);
+        return;
+      }
+      const { data: urlData } = supabase.storage.from('track-covers').getPublicUrl(path);
+      const { error: dbError } = await supabase
+        .from('user_radio_tracks')
+        .update({ cover_url: urlData.publicUrl } as any)
+        .eq('id', trackId)
+        .eq('user_id', userId);
+      if (dbError) {
+        console.error('Cover DB update error:', dbError);
+        toast.error('Failed to save cover');
+        return;
+      }
+      toast.success('Cover art updated');
+      fetchTracks();
+    } catch (err) {
+      console.error('Cover upload exception:', err);
       toast.error('Cover upload failed');
-      return;
     }
-    const { data: urlData } = supabase.storage.from('track-covers').getPublicUrl(path);
-    await supabase.from('user_radio_tracks').update({ cover_url: urlData.publicUrl }).eq('id', trackId);
-    toast.success('Cover art updated');
-    fetchTracks();
   }, [userId, fetchTracks]);
 
   const uploadTrack = useCallback(async (file: File) => {
