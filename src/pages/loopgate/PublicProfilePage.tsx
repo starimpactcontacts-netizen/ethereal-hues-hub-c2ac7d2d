@@ -20,6 +20,7 @@ import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-
 import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Users } from "lucide-react";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
+import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 
 interface PublicProfile {
   id: string;
@@ -86,6 +87,7 @@ export default function PublicProfilePage() {
    const [videoCount, setVideoCount] = useState(0);
    const [isJudge, setIsJudge] = useState(false);
    const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
+  const { hasEquippedOG } = useEquippedBadges(resolvedUserId || undefined);
 
   useEffect(() => {
     if (!userId) return;
@@ -390,7 +392,7 @@ export default function PublicProfilePage() {
               {profile.level > 1 && <LevelBadge level={profile.level} size="sm" />}
               {profile.verification_status && <VerifiedBadge size="md" />}
               {authorityRole && <AuthorityBadge role={authorityRole} size="md" />}
-              {profile.is_founding_member && <FoundingBadge size="sm" />}
+              {(hasEquippedOG || profile.is_founding_member) && <FoundingBadge size="sm" />}
             </div>
             
             <p className="text-xs text-muted-foreground mb-3">@{profile.username}</p>

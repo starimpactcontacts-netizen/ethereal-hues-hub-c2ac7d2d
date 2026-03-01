@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
 import ProfileInventoryLink from "@/components/loopgate/ProfileInventoryLink";
+import { useEquippedBadges } from "@/hooks/useEquippedBadges";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export default function ProfilePage() {
   
   const { primaryCrew } = useCrewMembership(profile?.id);
   const { isAnyJudge } = useUserRoles(profile?.id);
+  const { hasEquippedOG } = useEquippedBadges(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
   
@@ -236,7 +238,7 @@ export default function ProfilePage() {
                   {(profile as any).display_name || profile.username}
                 </h1>
                 {profile.verification_status && <VerifiedBadge size="sm" />}
-                {(profile as any).is_founding_member && <FoundingBadge size="sm" animate={false} />}
+                {(hasEquippedOG || (profile as any).is_founding_member) && <FoundingBadge size="sm" animate={false} />}
               </div>
               <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
             </div>
