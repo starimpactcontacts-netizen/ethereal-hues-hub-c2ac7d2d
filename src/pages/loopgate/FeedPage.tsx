@@ -13,7 +13,6 @@ import FeedPostComposer from "@/components/loopgate/FeedPostComposer";
 import FeedPostCard from "@/components/loopgate/FeedPostCard";
 import EditoriumPickCard, { type EditoriumArticle } from "@/components/loopgate/EditoriumPickCard";
 import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
-import { useIsMobile } from "@/hooks/use-mobile";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import FeedSidebar from "@/components/loopgate/FeedSidebar";
 
@@ -24,7 +23,6 @@ type FeedTab = 'foryou' | 'posts' | 'connections';
 export default function FeedPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isMobile = useIsMobile();
   const [feedItems, setFeedItems] = useState<LoopFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -252,195 +250,195 @@ export default function FeedPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-16 overflow-y-auto" onScroll={handleScroll}>
-      <div className={`mx-auto flex ${isMobile ? '' : 'max-w-[920px]'}`}>
-      {/* Feed Column */}
-      <div className={`flex-1 ${isMobile ? '' : 'max-w-[600px] border-r border-border/10'}`}>
-      {/* ─── Sticky Header ─── */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/20">
-        <div className="mx-auto max-w-xl lg:max-w-none">
-          {/* Top bar */}
-          <div className="flex items-center justify-between px-4 h-11">
-            <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-70" />
-            <button
-              onClick={() => setShowSearch(!showSearch)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors lg:hidden"
-            >
-              {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
-            </button>
-          </div>
+    <div className="min-h-screen bg-background pb-16 overflow-y-auto overscroll-y-contain" onScroll={handleScroll}>
+      <div className="mx-auto flex w-full lg:max-w-[920px]">
+        {/* Feed Column */}
+        <div className="w-full lg:max-w-[600px] lg:border-r lg:border-border/10">
+          {/* ─── Sticky Header ─── */}
+          <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/20">
+            <div className="mx-auto max-w-xl lg:max-w-none">
+              {/* Top bar */}
+              <div className="flex items-center justify-between px-4 h-11">
+                <img src={loopgateLogo} alt="Loopgate" className="h-4 opacity-70" />
+                <button
+                  onClick={() => setShowSearch(!showSearch)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors lg:hidden"
+                >
+                  {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                </button>
+              </div>
 
-          {/* Search */}
-          <AnimatePresence>
-            {showSearch && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.12 }}
-                className="overflow-hidden px-4"
-              >
-                <div className="relative pb-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
-                  <input
-                    value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
-                    placeholder="Search editors, events..."
-                    autoFocus
-                    className="w-full bg-muted/30 border border-border/20 rounded-full pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Tabs — X-style with underline indicator */}
-          <div className="flex">
-            {TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 text-center py-3 text-[13px] font-bold transition-colors relative ${
-                  activeTab === tab.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/60 hover:bg-muted/5'
-                }`}
-              >
-                {tab.label}
-                {activeTab === tab.key && (
+              {/* Search */}
+              <AnimatePresence>
+                {showSearch && (
                   <motion.div
-                    layoutId="loopTab"
-                    className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] bg-primary rounded-full"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Trending Strip ─── */}
-      {activeTab !== 'posts' && (trendingEditors.length > 0 || trendingUnits.length > 0) && (
-        <div className="mx-auto max-w-xl lg:max-w-none border-b border-border/15">
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
-            {trendingUnits.map(unit => (
-              <motion.button
-                key={`u-${unit.id}`}
-                whileTap={{ scale: 0.93 }}
-                onClick={() => navigate(`/units/${unit.id}`)}
-                className="flex flex-col items-center gap-1 shrink-0"
-              >
-                <div className="w-[50px] h-[50px] rounded-full p-[2px] bg-gradient-to-br from-primary/50 to-gold/30">
-                  <div className="w-full h-full rounded-full bg-background p-[2px]">
-                    <Avatar className="w-full h-full rounded-full">
-                      <AvatarImage src={unit.avatar_url || undefined} className="object-cover" />
-                      <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">{unit.emblem}</AvatarFallback>
-                    </Avatar>
-                  </div>
-                </div>
-                <span className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none">{unit.name}</span>
-              </motion.button>
-            ))}
-            {trendingEditors.map(editor => (
-              <motion.button
-                key={`e-${editor.id}`}
-                whileTap={{ scale: 0.93 }}
-                onClick={() => navigate(`/editor/${editor.id}`)}
-                className="flex flex-col items-center gap-1 shrink-0"
-              >
-                <div className="relative">
-                  <div className="w-[50px] h-[50px] rounded-full p-[2px] bg-gradient-to-br from-red-500/40 to-primary/30">
-                    <div className="w-full h-full rounded-full bg-background p-[2px]">
-                      <Avatar className="w-full h-full rounded-full">
-                        <AvatarImage src={editor.avatar_url || undefined} className="object-cover" />
-                        <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">{editor.username[0]?.toUpperCase()}</AvatarFallback>
-                      </Avatar>
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.12 }}
+                    className="overflow-hidden px-4"
+                  >
+                    <div className="relative pb-2">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
+                      <input
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        placeholder="Search editors, events..."
+                        autoFocus
+                        className="w-full bg-muted/30 border border-border/20 rounded-full pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
                     </div>
-                  </div>
-                  {editor.is_verified && (
-                    <div className="absolute -bottom-0.5 -right-0.5 z-10"><VerifiedBadge size="sm" /></div>
-                  )}
-                </div>
-                <span className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none">@{editor.username}</span>
-              </motion.button>
-            ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Tabs — X-style with underline indicator */}
+              <div className="flex">
+                {TABS.map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`flex-1 text-center py-3 text-[13px] font-bold transition-colors relative ${
+                      activeTab === tab.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/60 hover:bg-muted/5'
+                    }`}
+                  >
+                    {tab.label}
+                    {activeTab === tab.key && (
+                      <motion.div
+                        layoutId="loopTab"
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] bg-primary rounded-full"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* ─── Feed Content ─── */}
-      <div className="mx-auto max-w-xl lg:max-w-none">
-        {/* Desktop inline composer */}
-        {!isMobile && user && (
-          <FeedPostComposer userProfile={userProfile} onPost={createPost} />
-        )}
+          {/* ─── Trending Strip ─── */}
+          {activeTab !== 'posts' && (trendingEditors.length > 0 || trendingUnits.length > 0) && (
+            <div className="mx-auto max-w-xl lg:max-w-none border-b border-border/15">
+              <div className="flex gap-3 overflow-x-auto scrollbar-hide px-4 py-3">
+                {trendingUnits.map(unit => (
+                  <motion.button
+                    key={`u-${unit.id}`}
+                    whileTap={{ scale: 0.93 }}
+                    onClick={() => navigate(`/units/${unit.id}`)}
+                    className="flex flex-col items-center gap-1 shrink-0"
+                  >
+                    <div className="w-[50px] h-[50px] rounded-full p-[2px] bg-gradient-to-br from-primary/50 to-gold/30">
+                      <div className="w-full h-full rounded-full bg-background p-[2px]">
+                        <Avatar className="w-full h-full rounded-full">
+                          <AvatarImage src={unit.avatar_url || undefined} className="object-cover" />
+                          <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">{unit.emblem}</AvatarFallback>
+                        </Avatar>
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none">{unit.name}</span>
+                  </motion.button>
+                ))}
+                {trendingEditors.map(editor => (
+                  <motion.button
+                    key={`e-${editor.id}`}
+                    whileTap={{ scale: 0.93 }}
+                    onClick={() => navigate(`/editor/${editor.id}`)}
+                    className="flex flex-col items-center gap-1 shrink-0"
+                  >
+                    <div className="relative">
+                      <div className="w-[50px] h-[50px] rounded-full p-[2px] bg-gradient-to-br from-red-500/40 to-primary/30">
+                        <div className="w-full h-full rounded-full bg-background p-[2px]">
+                          <Avatar className="w-full h-full rounded-full">
+                            <AvatarImage src={editor.avatar_url || undefined} className="object-cover" />
+                            <AvatarFallback className="bg-muted text-foreground text-[9px] font-bold">{editor.username[0]?.toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                        </div>
+                      </div>
+                      {editor.is_verified && (
+                        <div className="absolute -bottom-0.5 -right-0.5 z-10"><VerifiedBadge size="sm" /></div>
+                      )}
+                    </div>
+                    <span className="text-[9px] text-muted-foreground/70 truncate max-w-[50px] leading-none">@{editor.username}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
 
-        {activeTab === 'posts' ? (
-          feedPosts.length === 0 ? (
-            <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No posts yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
-          ) : (
-            feedPosts.map(post => (
-              <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
-            ))
-          )
-        ) : activeTab === 'foryou' && interleavedFeed ? (
-          interleavedFeed.length === 0 ? (
-            <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Post something or submit an edit to get things moving" />
-          ) : (
-            interleavedFeed.map((entry, idx) => (
-              entry.kind === 'post' ? (
-                <FeedPostCard key={`post-${entry.item.id}`} post={entry.item as FeedPostItem} isLiked={likedPostIds.has(entry.item.id)} isBookmarked={bookmarkedPostIds.has(entry.item.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
-              ) : entry.kind === 'editorium' ? (
-                <EditoriumPickCard key={`ed-${entry.item.id}`} article={entry.item as EditoriumArticle} />
+          {/* ─── Feed Content ─── */}
+          <div className="mx-auto max-w-xl lg:max-w-none pb-24 lg:pb-0">
+            {/* Desktop inline composer */}
+            {user && (
+              <div className="hidden lg:block">
+                <FeedPostComposer userProfile={userProfile} onPost={createPost} />
+              </div>
+            )}
+
+            {activeTab === 'posts' ? (
+              feedPosts.length === 0 ? (
+                <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No posts yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
               ) : (
-                <LoopFeedCard key={(entry.item as LoopFeedItem).id} item={entry.item as LoopFeedItem} isExpanded={expandedId === (entry.item as LoopFeedItem).id} onToggleExpand={() => setExpandedId(prev => prev === (entry.item as LoopFeedItem).id ? null : (entry.item as LoopFeedItem).id)} onOpenPlayer={() => setPlayerItem(entry.item as LoopFeedItem)} />
+                feedPosts.map(post => (
+                  <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
+                ))
               )
-            ))
-          )
-        ) : (
-          filteredItems.length === 0 ? (
-            <EmptyState
-              icon={<Play className="w-6 h-6 text-muted-foreground/30" />}
-              title={searchQuery ? "No results" : "Nothing from connections yet"}
-              subtitle={searchQuery ? "Try a different search" : "Connect with editors to see their edits here"}
-            />
-          ) : (
-            filteredItems.map(item => (
-              <LoopFeedCard key={item.id} item={item} isExpanded={expandedId === item.id} onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)} onOpenPlayer={() => setPlayerItem(item)} />
-            ))
-          )
-        )}
+            ) : activeTab === 'foryou' && interleavedFeed ? (
+              interleavedFeed.length === 0 ? (
+                <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Post something or submit an edit to get things moving" />
+              ) : (
+                interleavedFeed.map((entry, idx) => (
+                  entry.kind === 'post' ? (
+                    <FeedPostCard key={`post-${entry.item.id}`} post={entry.item as FeedPostItem} isLiked={likedPostIds.has(entry.item.id)} isBookmarked={bookmarkedPostIds.has(entry.item.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
+                  ) : entry.kind === 'editorium' ? (
+                    <EditoriumPickCard key={`ed-${entry.item.id}`} article={entry.item as EditoriumArticle} />
+                  ) : (
+                    <LoopFeedCard key={(entry.item as LoopFeedItem).id} item={entry.item as LoopFeedItem} isExpanded={expandedId === (entry.item as LoopFeedItem).id} onToggleExpand={() => setExpandedId(prev => prev === (entry.item as LoopFeedItem).id ? null : (entry.item as LoopFeedItem).id)} onOpenPlayer={() => setPlayerItem(entry.item as LoopFeedItem)} />
+                  )
+                ))
+              )
+            ) : (
+              filteredItems.length === 0 ? (
+                <EmptyState
+                  icon={<Play className="w-6 h-6 text-muted-foreground/30" />}
+                  title={searchQuery ? "No results" : "Nothing from connections yet"}
+                  subtitle={searchQuery ? "Try a different search" : "Connect with editors to see their edits here"}
+                />
+              ) : (
+                filteredItems.map(item => (
+                  <LoopFeedCard key={item.id} item={item} isExpanded={expandedId === item.id} onToggleExpand={() => setExpandedId(prev => prev === item.id ? null : item.id)} onOpenPlayer={() => setPlayerItem(item)} />
+                ))
+              )
+            )}
 
-        {loadingMore && (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+            {loadingMore && (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+              </div>
+            )}
+
+            {!hasMore && filteredItems.length > 0 && activeTab !== 'posts' && (
+              <p className="text-center text-xs text-muted-foreground/50 py-8">You've reached the end 🔥</p>
+            )}
           </div>
-        )}
+        </div>{/* end feed column */}
 
-        {!hasMore && filteredItems.length > 0 && activeTab !== 'posts' && (
-          <p className="text-center text-xs text-muted-foreground/50 py-8">You've reached the end 🔥</p>
-        )}
-      </div>
-
-      </div>{/* end feed column */}
-
-      {/* ─── Desktop Sidebar ─── */}
-      {!isMobile && (
-        <FeedSidebar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          trendingEditors={trendingEditors}
-          trendingUnits={trendingUnits}
-        />
-      )}
-
+        {/* ─── Desktop Sidebar ─── */}
+        <div className="hidden lg:block">
+          <FeedSidebar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            trendingEditors={trendingEditors}
+            trendingUnits={trendingUnits}
+          />
+        </div>
       </div>{/* end flex container */}
 
       {/* ─── Compose FAB (mobile only, X-style floating button) ─── */}
-      {user && isMobile && (
+      {user && (
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setShowCompose(true)}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] right-4 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 flex items-center justify-center active:shadow-md transition-shadow"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] right-4 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 flex items-center justify-center active:shadow-md transition-shadow lg:hidden"
         >
           <Feather className="w-5 h-5" />
         </motion.button>
