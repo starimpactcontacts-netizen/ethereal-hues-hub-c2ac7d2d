@@ -315,9 +315,9 @@ export default function HubPage() {
             className="relative z-10"
           >
             <div className="bg-surface-1 border border-border/50 overflow-hidden relative">
-               {/* Top Row: Avatar + Identity */}
+               {/* Top Row: Avatar + Identity + Earnings/Index */}
               <div className="p-4 pb-2">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-2">
                   <button 
                     onClick={() => navigate('/profile')}
                     className="flex items-center gap-3 group text-left min-w-0"
@@ -365,45 +365,28 @@ export default function HubPage() {
                       </div>
                     </div>
                   </button>
-                </div>
 
-                {/* Earnings + Index brackets — stacked */}
-                <div className="grid grid-cols-2 gap-1.5 mt-2.5">
-                  {/* Earnings bracket */}
-                  <div className="relative flex items-center gap-1.5 bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-emerald-950/40 border border-emerald-500/25 px-2.5 py-2 transition-all hover:border-emerald-400/40">
-                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-emerald-400/40" />
-                    <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-emerald-400/40" />
-                    <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-emerald-400/40" />
-                    <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-emerald-400/40" />
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
-                      <DollarSign className="w-3 h-3 text-emerald-400" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="font-display text-base text-emerald-400 leading-none tabular-nums">
+                  {/* Earnings + Index — top right, compact */}
+                  <div className="flex flex-col gap-1 shrink-0">
+                    {/* Earnings */}
+                    <div className="relative flex items-center gap-1 bg-gradient-to-r from-emerald-950/40 to-emerald-950/20 border border-emerald-500/20 px-1.5 py-1 transition-all hover:border-emerald-400/40">
+                      <DollarSign className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+                      <span className="font-display text-[11px] text-emerald-400 leading-none tabular-nums">
                         {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
                       </span>
-                      <p className="text-[7px] text-emerald-400/50 uppercase tracking-wider mt-0.5">Earnings</p>
+                      <IndexEarnBadge size="sm" hideDollar />
                     </div>
-                    <IndexEarnBadge size="sm" hideDollar />
-                  </div>
-
-                  {/* Index bracket */}
-                  <Link to="/shop" className="group">
-                    <div className="relative flex items-center gap-1.5 bg-background border border-border/60 hover:border-gold/40 px-2.5 py-2 transition-all group-hover:shadow-[0_0_12px_rgba(212,175,55,0.15)] h-full">
-                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-gold/40" />
-                      <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-gold/40" />
-                      <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-gold/40" />
-                      <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-gold/40" />
-                      <Coins className="w-3.5 h-3.5 text-gold shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <span className="font-display text-base text-foreground leading-none tabular-nums">
+                    {/* Index */}
+                    <Link to="/shop" className="group">
+                      <div className="relative flex items-center gap-1 bg-background border border-border/50 hover:border-gold/40 px-1.5 py-1 transition-all">
+                        <Coins className="w-2.5 h-2.5 text-gold shrink-0" />
+                        <span className="font-display text-[11px] text-foreground leading-none tabular-nums">
                           {(profile as any)?.spendable_index || 0}
                         </span>
-                        <p className="text-[7px] text-gold/50 uppercase tracking-wider mt-0.5">Index</p>
+                        <ShoppingBag className="w-2 h-2 text-gold/40 group-hover:text-gold transition-colors shrink-0" />
                       </div>
-                      <ShoppingBag className="w-3 h-3 text-gold/40 group-hover:text-gold transition-colors shrink-0" />
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 </div>
               </div>
               {/* XP Progress Bar */}
