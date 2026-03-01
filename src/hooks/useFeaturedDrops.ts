@@ -40,7 +40,9 @@ export interface FeaturedDrop {
   top_scorer_username: string | null;
   random_pick_id: string | null;
   random_pick_username: string | null;
+  prize_usd: number;
   created_at: string;
+  slug: string | null;
   // Joined
   artist?: FeaturedArtist;
 }

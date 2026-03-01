@@ -738,7 +738,7 @@ export default function ArenaPage() {
                   style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
                 >
                   {liveDrops.length > 0 && (
-                    <option value="drop">🔥 {liveDrops[0].title} — Submit Now</option>
+                    <option value="drop">🔥 {liveDrops[0].title}{(liveDrops[0] as any).prize_usd > 0 ? ` — $${(liveDrops[0] as any).prize_usd} Prize` : ' — Submit Now'}</option>
                   )}
                   <option value="quick">⚡ Quick 1v1 — Auto · 3hr</option>
                   <option value="battle">⚔️ 1v1 Battle — Invite</option>
@@ -789,8 +789,10 @@ export default function ArenaPage() {
                     {selectedMode === 'solo' && (
                       <span className="text-[9px] text-white/40 font-bold relative z-10">100+ IDX</span>
                     )}
-                    {selectedMode === 'drop' && (
-                      <span className="text-[9px] text-white/40 font-bold relative z-10">Earn IDX</span>
+                    {selectedMode === 'drop' && liveDrops.length > 0 && (
+                      <span className="text-[9px] font-bold relative z-10 text-emerald-300">
+                        {(liveDrops[0] as any).prize_usd > 0 ? `$${(liveDrops[0] as any).prize_usd}` : 'Earn IDX'}
+                      </span>
                     )}
                   </>
                 )}
