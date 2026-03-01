@@ -209,7 +209,7 @@ export default function ArenaPage() {
   const [showCreateBattle, setShowCreateBattle] = useState(false);
   const [quickSearch, setQuickSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice'>((searchParams.get('mode') as any) || 'quick');
+  const [selectedMode, setSelectedMode] = useState<'quick' | 'battle' | 'solo' | 'practice' | 'drop'>((searchParams.get('mode') as any) || 'drop');
   const [userStats, setUserStats] = useState<{ wins: number; losses: number; streak: number; events: number } | null>(null);
   const [qfSearching, setQfSearching] = useState(false);
   const [qfElapsed, setQfElapsed] = useState(0);
@@ -737,6 +737,9 @@ export default function ArenaPage() {
                   className="w-full appearance-none bg-surface-1 text-foreground text-[11px] font-black uppercase tracking-wider py-2.5 pl-3 pr-8 cursor-pointer focus:outline-none touch-manipulation"
                   style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
                 >
+                  {liveDrops.length > 0 && (
+                    <option value="drop">🔥 {liveDrops[0].title} — Submit Now</option>
+                  )}
                   <option value="quick">⚡ Quick 1v1 — Auto · 3hr</option>
                   <option value="battle">⚔️ 1v1 Battle — Invite</option>
                   <option value="solo">👤 Solo Edit — Pick · Score</option>
@@ -750,14 +753,18 @@ export default function ArenaPage() {
                 whileTap={isQfSearching ? undefined : { scale: 0.95 }}
                 onClick={() => {
                   if (isQfSearching) return;
-                  if (selectedMode === 'quick' && qfActiveFight) {
+                  if (selectedMode === 'drop' && liveDrops.length > 0) {
+                    navigate(`/drop/${(liveDrops[0] as any).slug || liveDrops[0].id}`);
+                  } else if (selectedMode === 'quick' && qfActiveFight) {
                     modeActions.quick();
-                  } else {
+                  } else if (selectedMode !== 'drop') {
                     modeActions[selectedMode]();
                   }
                 }}
                 disabled={isQfSearching}
-                className="relative overflow-hidden touch-manipulation bg-red-600 hover:bg-red-500 transition-colors px-6 flex items-center justify-center gap-1.5"
+                className={`relative overflow-hidden touch-manipulation transition-colors px-6 flex items-center justify-center gap-1.5 ${
+                  selectedMode === 'drop' ? 'bg-brand hover:bg-brand/90' : 'bg-red-600 hover:bg-red-500'
+                }`}
               >
                 <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                 {isQfSearching ? (
@@ -774,13 +781,16 @@ export default function ArenaPage() {
                 ) : (
                   <>
                     <span className="text-[14px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                      GO
+                      {selectedMode === 'drop' ? 'SUBMIT' : 'GO'}
                     </span>
                     {(selectedMode === 'quick' || selectedMode === 'battle') && (
                       <span className="text-[9px] text-white/40 font-bold relative z-10">+20 IDX</span>
                     )}
                     {selectedMode === 'solo' && (
                       <span className="text-[9px] text-white/40 font-bold relative z-10">100+ IDX</span>
+                    )}
+                    {selectedMode === 'drop' && (
+                      <span className="text-[9px] text-white/40 font-bold relative z-10">Earn IDX</span>
                     )}
                   </>
                 )}
@@ -798,25 +808,6 @@ export default function ArenaPage() {
               </button>
             )}
           </div>
-
-          {/* ═══ PROMOTED DROP — inline, no box ═══ */}
-          {liveDrops.length > 0 && (
-            <Link
-              to={`/drop/${(liveDrops[0] as any).slug || liveDrops[0].id}`}
-              className="flex items-center gap-2 px-1 py-1.5 mb-1 group touch-manipulation"
-            >
-              {liveDrops[0].poster_url ? (
-                <img src={liveDrops[0].poster_url} alt="" className="w-6 h-6 object-cover shrink-0 rounded-sm" />
-              ) : (
-                <div className="w-6 h-6 bg-brand/20 flex items-center justify-center shrink-0 rounded-sm">
-                  <Music className="w-3 h-3 text-brand" />
-                </div>
-              )}
-              <span className="text-[10px] font-bold text-foreground truncate flex-1 group-hover:text-brand transition-colors">{liveDrops[0].title}</span>
-              <span className="text-[9px] text-brand font-semibold shrink-0">Submit · Earn IDX →</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            </Link>
-          )}
 
           {/* Featured fight promo — inline, only if no live drops */}
           {liveDrops.length === 0 && featuredFight && (
