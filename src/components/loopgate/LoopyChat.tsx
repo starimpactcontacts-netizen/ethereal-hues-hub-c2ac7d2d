@@ -100,7 +100,7 @@ export default function LoopyChat() {
               className="flex flex-col gap-6 items-end"
             >
               {/* Top paw */}
-              <svg width="30" height="34" viewBox="0 0 30 34" fill="none" className="drop-shadow-md -mr-2">
+              <svg width="34" height="30" viewBox="0 0 34 30" fill="none" className="drop-shadow-md -mr-3" style={{ transform: 'rotate(90deg)' }}>
                 <rect x="16" y="13" width="16" height="11" rx="5.5" fill="#fff" stroke="#555" strokeWidth="0.8" />
                 <ellipse cx="15" cy="19" rx="13" ry="11" fill="#fff" stroke="#555" strokeWidth="0.8" />
                 <ellipse cx="15" cy="21" rx="6.5" ry="5" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.7" />
@@ -109,7 +109,7 @@ export default function LoopyChat() {
                 <ellipse cx="22.5" cy="13" rx="3.2" ry="3.8" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
               </svg>
               {/* Bottom paw */}
-              <svg width="30" height="34" viewBox="0 0 30 34" fill="none" className="drop-shadow-md -mr-2">
+              <svg width="34" height="30" viewBox="0 0 34 30" fill="none" className="drop-shadow-md -mr-3" style={{ transform: 'rotate(90deg)' }}>
                 <rect x="16" y="13" width="16" height="11" rx="5.5" fill="#fff" stroke="#555" strokeWidth="0.8" />
                 <ellipse cx="15" cy="19" rx="13" ry="11" fill="#fff" stroke="#555" strokeWidth="0.8" />
                 <ellipse cx="15" cy="21" rx="6.5" ry="5" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.7" />
