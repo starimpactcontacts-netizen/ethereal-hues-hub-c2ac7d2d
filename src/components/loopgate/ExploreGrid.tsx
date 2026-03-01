@@ -55,13 +55,13 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
     <div className={cn("absolute inset-0 bg-gradient-to-br", palette.bg)}>
       <CellPattern color={palette.accent} />
 
-      {/* Center: Loopgate logo — absolutely centered */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* Center: Loopgate logo — mathematically centered */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-[1]">
         <img
           src={loopgateLogo}
-          alt="Loopgate"
-          className={cn("drop-shadow-lg", isLarge ? "h-20 opacity-[0.25]" : "h-10 opacity-[0.22]")}
-          style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.6))" }}
+          alt=""
+          className={cn("w-auto object-contain object-center select-none", isLarge ? "h-24 opacity-[0.32]" : "h-12 opacity-[0.28]")}
+          style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.72))" }}
         />
       </div>
 
@@ -224,7 +224,7 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-0.5 aspect-square">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-0.5 aspect-square">
         {Array.from({ length: 9 }).map((_, i) => (
           <div key={i} className="bg-surface-1 animate-pulse" />
         ))}
@@ -273,7 +273,7 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="grid grid-cols-2 sm:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
+      className="grid grid-cols-2 md:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
       style={{ gridAutoRows: `calc((min(100vw, 640px) - 2px) / ${cols})` }}
     >
       {cells.map((cell, i) => (
