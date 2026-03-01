@@ -45,6 +45,7 @@ import GatePattern from '@/components/loopgate/GatePattern';
 import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
+import { useEquippedBadges } from '@/hooks/useEquippedBadges';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -147,7 +148,7 @@ export default function HubPage() {
   const featuredScrollRef = useRef<HTMLDivElement>(null);
   const [featuredActiveIdx, setFeaturedActiveIdx] = useState(0);
   const featuredAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
+  const { hasEquippedOG } = useEquippedBadges(user?.id);
   // Stabilize shuffle — only re-shuffle when the actual drop IDs change
   const shuffledDrops = useMemo(() => {
     return [...liveDrops].sort(() => Math.random() - 0.5);
@@ -328,7 +329,7 @@ export default function HubPage() {
           >
             <div className="bg-surface-1 border border-border/50 overflow-hidden relative">
                {/* OG Skin — founding member gold pattern overlay */}
-               {(profile as any)?.is_founding_member && (
+               {hasEquippedOG && (
                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
                    <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.03] via-transparent to-gold/[0.02]" />
                    <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
@@ -373,7 +374,7 @@ export default function HubPage() {
                         <h1 className="font-display text-xl sm:text-2xl text-foreground leading-none truncate max-w-[160px] sm:max-w-[200px]">
                           {displayUsername}
                         </h1>
-                        {(profile as any)?.is_founding_member && (
+                        {hasEquippedOG && (
                           <FoundingBadge size="sm" animate={false} />
                         )}
                         {isJudge && (
