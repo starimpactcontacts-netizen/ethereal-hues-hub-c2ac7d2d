@@ -1,22 +1,21 @@
-import { Package, ChevronRight } from "lucide-react";
+import { Package } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
-export default function ProfileInventoryLink({ navigate }: { navigate: (p: string) => void }) {
+export default function ProfileInventoryLink() {
   return (
-    <div className="px-4 mb-2">
-      <button
-        onClick={() => navigate("/inventory")}
-        className="w-full bg-surface-1 border border-border rounded-md p-2.5 flex items-center gap-3 hover:border-foreground/30 transition-colors group"
+    <Link to="/inventory">
+      <motion.div 
+        whileTap={{ scale: 0.98 }}
+        className="bg-surface-1 border border-border rounded-md p-2 flex items-center gap-1.5 hover:border-foreground/30 transition-colors"
       >
-        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
-          <Package className="w-3.5 h-3.5 text-primary" />
+        <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center">
+          <Package className="w-3 h-3 text-primary" />
         </div>
-        <div className="flex-1 text-left">
-          <p className="text-[11px] font-semibold text-foreground">My Items</p>
-          <p className="text-[9px] text-muted-foreground">Equip badges, skins & cosmetics</p>
+        <div className="flex-1 min-w-0 hidden sm:block">
+          <p className="text-[10px] font-medium">Items</p>
         </div>
-        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
-      </button>
-    </div>
+      </motion.div>
+    </Link>
   );
 }
