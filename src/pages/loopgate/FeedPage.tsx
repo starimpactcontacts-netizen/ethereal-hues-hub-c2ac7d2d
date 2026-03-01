@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Play, Loader2, Search, X, PenSquare, Feather } from "lucide-react";
@@ -13,6 +13,7 @@ import FeedPostComposer from "@/components/loopgate/FeedPostComposer";
 import FeedPostCard from "@/components/loopgate/FeedPostCard";
 import EditoriumPickCard, { type EditoriumArticle } from "@/components/loopgate/EditoriumPickCard";
 import { useFeedPosts, type FeedPostItem } from "@/hooks/useFeedPosts";
+import { useLoopReactions } from "@/hooks/useLoopReactions";
 import loopgateLogo from "@/assets/loopgate-logo.png";
 import FeedSidebar from "@/components/loopgate/FeedSidebar";
 
@@ -43,6 +44,9 @@ export default function FeedPage() {
   const [editoriumPicks, setEditoriumPicks] = useState<EditoriumArticle[]>([]);
 
   const { posts: feedPosts, likedPostIds, bookmarkedPostIds, createPost, toggleLike, toggleBookmark, deletePost, loading: postsLoading } = useFeedPosts();
+
+  const postIds = useMemo(() => feedPosts.map(p => p.id), [feedPosts]);
+  const { reactions, toggleReaction } = useLoopReactions(postIds);
 
   // Fetch user profile
   useEffect(() => {
@@ -245,7 +249,7 @@ export default function FeedPage() {
 
   const TABS: { key: FeedTab; label: string }[] = [
     { key: 'foryou', label: 'For You' },
-    { key: 'posts', label: 'Posts' },
+    { key: 'posts', label: 'Loops' },
     { key: 'connections', label: 'Following' },
   ];
 
@@ -374,19 +378,19 @@ export default function FeedPage() {
 
             {activeTab === 'posts' ? (
               feedPosts.length === 0 ? (
-                <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No posts yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
+                <EmptyState icon={<PenSquare className="w-6 h-6 text-muted-foreground/30" />} title="No loops yet" subtitle="Be the first — share a flex, an edit, or just say what's on your mind." />
               ) : (
                 feedPosts.map(post => (
-                  <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
+                  <FeedPostCard key={post.id} post={post} isLiked={likedPostIds.has(post.id)} isBookmarked={bookmarkedPostIds.has(post.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[post.id] || []} onToggleReaction={toggleReaction} />
                 ))
               )
             ) : activeTab === 'foryou' && interleavedFeed ? (
               interleavedFeed.length === 0 ? (
-                <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Post something or submit an edit to get things moving" />
+                <EmptyState icon={<Play className="w-6 h-6 text-muted-foreground/30" />} title="The Loop is quiet" subtitle="Drop a loop or submit an edit to get things moving" />
               ) : (
                 interleavedFeed.map((entry, idx) => (
                   entry.kind === 'post' ? (
-                    <FeedPostCard key={`post-${entry.item.id}`} post={entry.item as FeedPostItem} isLiked={likedPostIds.has(entry.item.id)} isBookmarked={bookmarkedPostIds.has(entry.item.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} />
+                    <FeedPostCard key={`post-${entry.item.id}`} post={entry.item as FeedPostItem} isLiked={likedPostIds.has(entry.item.id)} isBookmarked={bookmarkedPostIds.has(entry.item.id)} onLike={toggleLike} onBookmark={toggleBookmark} onDelete={deletePost} reactions={reactions[entry.item.id] || []} onToggleReaction={toggleReaction} />
                   ) : entry.kind === 'editorium' ? (
                     <EditoriumPickCard key={`ed-${entry.item.id}`} article={entry.item as EditoriumArticle} />
                   ) : (

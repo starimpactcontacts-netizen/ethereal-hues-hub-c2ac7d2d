@@ -7,7 +7,9 @@ import { FeedPostItem } from "@/hooks/useFeedPosts";
 import VerifiedBadge from "./VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
 import RichMessageContent from "./RichMessageContent";
+import LoopReactions from "./LoopReactions";
 import { useState, memo } from "react";
+import { ReactionGroup } from "@/hooks/useLoopReactions";
 
 interface FeedPostCardProps {
   post: FeedPostItem;
@@ -16,6 +18,8 @@ interface FeedPostCardProps {
   onLike: (postId: string) => void;
   onBookmark: (postId: string) => void;
   onDelete: (postId: string) => void;
+  reactions?: ReactionGroup[];
+  onToggleReaction?: (postId: string, emoji: string) => void;
 }
 
 function getLeagueBadge(league?: string) {
@@ -33,7 +37,7 @@ function getPostTypeIndicator(type: string) {
   }
 }
 
-const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, onLike, onBookmark, onDelete }: FeedPostCardProps) {
+const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, onLike, onBookmark, onDelete, reactions, onToggleReaction }: FeedPostCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
@@ -51,8 +55,9 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
     navigator.share?.({ text: post.content, url: window.location.href });
   };
 
-  // Detect if content has a URL for link preview
   const urlMatch = post.media_url || post.content.match(/https?:\/\/[^\s]+/)?.[0];
+  const hasUploadedMedia = !!post.uploaded_media_url;
+  const isUploadedVideo = hasUploadedMedia && post.uploaded_media_type === 'video';
 
   return (
     <motion.article
@@ -140,8 +145,31 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
               <RichMessageContent content={post.content} showLinkPreviews={false} />
             </div>
 
+            {/* Uploaded media */}
+            {hasUploadedMedia && (
+              <div className="mt-2 rounded-xl overflow-hidden border border-border/20 max-w-full">
+                {isUploadedVideo ? (
+                  <video
+                    src={post.uploaded_media_url!}
+                    className="w-full max-h-[360px] object-cover"
+                    controls
+                    muted
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  <img
+                    src={post.uploaded_media_url!}
+                    alt="Loop media"
+                    className="w-full max-h-[360px] object-cover"
+                    loading="lazy"
+                  />
+                )}
+              </div>
+            )}
+
             {/* Media link preview */}
-            {post.media_url && (
+            {post.media_url && !hasUploadedMedia && (
               <a
                 href={post.media_url}
                 target="_blank"
@@ -153,6 +181,14 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                   <span className="text-[12px] text-primary truncate">{post.media_url}</span>
                 </div>
               </a>
+            )}
+
+            {/* Emoji Reactions */}
+            {reactions && reactions.length > 0 && onToggleReaction && (
+              <LoopReactions
+                reactions={reactions}
+                onToggle={(emoji) => onToggleReaction(post.id, emoji)}
+              />
             )}
 
             {/* Action bar */}
@@ -197,6 +233,16 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 >
                   <Swords className="w-[15px] h-[15px]" />
                 </button>
+              )}
+
+              {/* Add reaction */}
+              {onToggleReaction && (
+                <div className="relative">
+                  <LoopReactions
+                    reactions={[]}
+                    onToggle={(emoji) => onToggleReaction(post.id, emoji)}
+                  />
+                </div>
               )}
             </div>
           </div>
