@@ -133,7 +133,7 @@ export default function FeaturedDropCard({ drop }: Props) {
             </p>
           </div>
           {drop.prize_usd > 0 && (
-            <span className="font-display text-2xl sm:text-3xl text-white font-black leading-none drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] shrink-0">
+            <span className="font-display text-3xl sm:text-4xl text-emerald-400 font-black leading-none shrink-0 drop-shadow-[0_4px_24px_rgba(16,185,129,0.6)]" style={{ textShadow: '0 0 20px rgba(16,185,129,0.5), 0 8px 32px rgba(16,185,129,0.3)' }}>
               ${drop.prize_usd}
             </span>
           )}
