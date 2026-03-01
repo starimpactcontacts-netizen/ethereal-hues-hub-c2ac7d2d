@@ -46,7 +46,17 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
 
   const handleStartFight = () => {
     handleClose();
-    navigate("/hub");
+    navigate("/arena");
+  };
+
+  const handleJoinUnit = () => {
+    handleClose();
+    navigate("/units");
+  };
+
+  const handleEnterEvents = () => {
+    handleClose();
+    navigate("/events");
   };
 
   const toggleStep = (step: number) => {
@@ -130,9 +140,20 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                 )}
               </div>
               {expandedSteps.has(2) && (
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Team up. Unlock unit events.
-                </p>
+                <div className="mt-2 space-y-2">
+                  <p className="text-xs text-zinc-600 leading-relaxed">
+                    Team up. Unlock unit events.
+                  </p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleJoinUnit();
+                    }}
+                    className="w-full px-3 py-2 rounded-md border border-zinc-700 text-zinc-300 text-xs font-medium hover:border-zinc-500 hover:text-zinc-200 transition-colors"
+                  >
+                    Go to Units
+                  </button>
+                </div>
               )}
             </div>
 
@@ -155,9 +176,20 @@ export default function BeginnerGuideModal({ trigger, autoShow = false }: Beginn
                 )}
               </div>
               {expandedSteps.has(3) && (
-                <p className="text-xs text-zinc-600 mt-2 leading-relaxed">
-                  Compete. Climb the index.
-                </p>
+                <div className="mt-2 space-y-2">
+                  <p className="text-xs text-zinc-600 leading-relaxed">
+                    Compete. Climb the index.
+                  </p>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEnterEvents();
+                    }}
+                    className="w-full px-3 py-2 rounded-md border border-zinc-700 text-zinc-300 text-xs font-medium hover:border-zinc-500 hover:text-zinc-200 transition-colors"
+                  >
+                    View Events
+                  </button>
+                </div>
               )}
             </div>
           </div>
