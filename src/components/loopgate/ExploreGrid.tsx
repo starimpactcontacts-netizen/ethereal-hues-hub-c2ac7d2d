@@ -72,13 +72,13 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
           )}
         </div>
 
-        {/* Center: Loopgate logo */}
+        {/* Center: Loopgate logo — bold presence */}
         <div className="flex-1 flex items-center justify-center">
           <img
             src={loopgateLogo}
             alt="Loopgate"
-            className={cn("drop-shadow-lg", isLarge ? "h-14 opacity-[0.18]" : "h-7 opacity-[0.15]")}
-            style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}
+            className={cn("drop-shadow-lg", isLarge ? "h-20 opacity-[0.25]" : "h-10 opacity-[0.22]")}
+            style={{ filter: "drop-shadow(0 4px 16px rgba(0,0,0,0.6))" }}
           />
         </div>
 
@@ -271,7 +271,7 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
       className="grid grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
-      style={{ gridAutoRows: "calc((min(100vw, 100dvw) - 1px) / 3)" }}
+      style={{ gridAutoRows: "calc((min(100vw, 640px) - 2px) / 3)" }}
     >
       {cells.map((cell, i) => (
         <GridCell key={cell.submission.id} submission={cell.submission} size={cell.size} index={i} />
