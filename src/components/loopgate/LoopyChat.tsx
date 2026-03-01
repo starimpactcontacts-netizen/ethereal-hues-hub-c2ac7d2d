@@ -85,21 +85,34 @@ export default function LoopyChat() {
       <AnimatePresence>
         {!open && docked && (
           <motion.button
-            initial={{ x: 20, opacity: 0 }}
+            initial={{ x: 30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 20, opacity: 0 }}
+            exit={{ x: 30, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setDocked(false)}
-            className="fixed bottom-28 -right-5 z-50 w-12 h-12 rounded-full overflow-hidden border-2 border-primary bg-background shadow-lg hover:shadow-primary/30 transition-shadow cursor-pointer"
+            className="fixed bottom-24 -right-2 z-50 cursor-pointer group"
             aria-label="Open Loopy"
           >
-            <motion.img
-              src={loopyAvatar}
-              alt="Loopy peeking"
-              className="w-full h-full object-cover"
-              animate={{ x: [0, -2, 0] }}
-              transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
-            />
+            <motion.div
+              animate={{ x: [0, -4, 0] }}
+              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+            >
+              {/* Cat paw SVG — cute style inspired by references */}
+              <svg width="48" height="68" viewBox="0 0 48 68" fill="none" className="drop-shadow-lg group-hover:drop-shadow-xl transition-all">
+                {/* Arm */}
+                <rect x="12" y="28" width="24" height="42" rx="12" fill="white" stroke="hsl(var(--border))" strokeWidth="1.5" />
+                {/* Paw outline */}
+                <path d="M8 28 Q8 10, 24 8 Q40 10, 40 28 Q40 38, 24 40 Q8 38, 8 28Z" fill="white" stroke="hsl(var(--border))" strokeWidth="1.5" />
+                {/* Main pad */}
+                <path d="M14 28 Q14 20, 24 19 Q34 20, 34 28 Q34 34, 24 35 Q14 34, 14 28Z" fill="hsl(var(--primary) / 0.25)" stroke="hsl(var(--primary) / 0.4)" strokeWidth="1" />
+                {/* Toe beans */}
+                <ellipse cx="16" cy="16" rx="4" ry="5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.4)" strokeWidth="0.8" />
+                <ellipse cx="24" cy="13" rx="4" ry="5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.4)" strokeWidth="0.8" />
+                <ellipse cx="32" cy="16" rx="4" ry="5" fill="hsl(var(--primary) / 0.3)" stroke="hsl(var(--primary) / 0.4)" strokeWidth="0.8" />
+                {/* Tiny wrist spot */}
+                <ellipse cx="20" cy="48" rx="2.5" ry="3" fill="hsl(var(--primary) / 0.15)" />
+              </svg>
+            </motion.div>
           </motion.button>
         )}
       </AnimatePresence>
