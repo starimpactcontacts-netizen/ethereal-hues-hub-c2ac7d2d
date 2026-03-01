@@ -26,6 +26,7 @@ import MyRatingVideos from "@/components/loopgate/MyRatingVideos";
 import { getRankFromScore } from "@/data/gqtConfig";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -264,7 +265,10 @@ export default function ProfilePage() {
                 <p className="text-[8px] text-muted-foreground uppercase">Rank</p>
               </div>
               <div className="text-center px-1.5">
-                <p className="font-display text-base">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+                <div className="flex items-center gap-0.5 justify-center">
+                  <p className="font-display text-base">{Number(profile.global_index_score || 0).toFixed(1)}</p>
+                  <IndexEarnBadge size="sm" />
+                </div>
                 <p className="text-[8px] text-muted-foreground uppercase">Index</p>
               </div>
             </div>
@@ -321,8 +325,7 @@ export default function ProfilePage() {
               </div>
             </motion.div>
           </Link>
-          
-          
+
           <Link to="/connections">
             <motion.div 
               whileTap={{ scale: 0.98 }}
