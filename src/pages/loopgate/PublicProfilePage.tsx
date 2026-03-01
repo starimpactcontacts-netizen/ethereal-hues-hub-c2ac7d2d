@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SiTiktok, SiInstagram, SiYoutube, SiX } from "@icons-pack/react-simple-icons";
 import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Users } from "lucide-react";
+import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
 
 interface PublicProfile {
   id: string;
@@ -611,9 +612,12 @@ export default function PublicProfilePage() {
               </p>
             </div>
             <div className="text-center p-3 bg-surface-1 border border-border">
-              <p className="font-display text-2xl">
-                {Number(profile.global_index_score || 0).toFixed(1)}
-              </p>
+              <div className="flex items-center gap-1 justify-center">
+                <p className="font-display text-2xl">
+                  {Number(profile.global_index_score || 0).toFixed(1)}
+                </p>
+                <IndexEarnBadge size="md" />
+              </div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                 Index
               </p>

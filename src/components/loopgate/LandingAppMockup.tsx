@@ -58,6 +58,7 @@ export default function LandingAppMockup() {
             {/* Index pill */}
             <div className="bg-surface-2 border border-border/40 px-2.5 py-1.5 flex items-center gap-1.5">
               <span className="text-[9px] font-bold text-foreground">⚙ 0</span>
+              <span className="text-[8px] text-emerald-400 font-bold">$</span>
               <span className="text-[8px] text-gold font-bold tracking-wider uppercase">INDEX</span>
             </div>
           </div>

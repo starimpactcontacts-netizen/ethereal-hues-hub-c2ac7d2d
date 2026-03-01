@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRealRankings } from '@/hooks/useRealData';
 import { useLeagueApplications } from '@/hooks/useLeagueApplications';
 import { Button } from '@/components/ui/button';
+import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 
 const leagues = [
   {
@@ -118,7 +119,10 @@ export default function LeaguePage() {
                     <p className="text-[10px] text-muted-foreground uppercase">Events</p>
                   </div>
                   <div className="text-center">
-                    <p className="font-display text-xl">{profile.global_index_score || 0}</p>
+                    <div className="flex items-center gap-0.5 justify-center">
+                      <p className="font-display text-xl">{profile.global_index_score || 0}</p>
+                      <IndexEarnBadge size="sm" />
+                    </div>
                     <p className="text-[10px] text-muted-foreground uppercase">Index</p>
                   </div>
                 </div>
