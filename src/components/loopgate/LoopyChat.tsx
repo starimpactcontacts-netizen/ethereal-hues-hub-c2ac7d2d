@@ -39,7 +39,7 @@ export default function LoopyChat() {
     if (open && messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: "yooo what's good 🫡 i'm Loopy, your guide to Loopgate. ask me anything about battles, units, rankings, events — whatever u need fam. let's get u that clout 🔥"
+        content: "yoo wsg im loopy. ask me whatever about loopgate — battles, units, rankings, all that. i got u"
       }]);
     }
   }, [open, messages.length]);
