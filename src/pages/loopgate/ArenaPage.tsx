@@ -762,9 +762,7 @@ export default function ArenaPage() {
                   }
                 }}
                 disabled={isQfSearching}
-                className={`relative overflow-hidden touch-manipulation transition-colors min-h-[46px] px-7 flex items-center justify-center gap-1.5 ${
-                  selectedMode === 'drop' ? 'bg-brand hover:bg-brand/90' : 'bg-red-600 hover:bg-red-500'
-                }`}
+                className="relative overflow-hidden touch-manipulation transition-colors min-h-[46px] px-7 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-500"
               >
                 <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                 {isQfSearching ? (
