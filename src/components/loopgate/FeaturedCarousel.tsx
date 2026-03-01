@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback, type ReactNode, type RefObject } from 'react';
+import { useEffect, useRef, useCallback, useState, type ReactNode, type RefObject } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface FeaturedCarouselProps {
   children: ReactNode;
@@ -103,9 +104,33 @@ export default function FeaturedCarousel({
   }, [totalFeatured, activeIdx, getCardCount, scrollToCard, autoScrollRef]);
 
   const cardCount = getCardCount() || totalFeatured;
+  const canGoPrev = activeIdx > 0;
+  const canGoNext = activeIdx < cardCount - 1;
 
   return (
-    <div className="relative">
+    <div className="relative group/carousel">
+      {/* Left arrow */}
+      {canGoPrev && (
+        <button
+          onClick={() => { handleUserInteraction(); scrollToCard(activeIdx - 1); }}
+          className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200 hover:bg-surface-1"
+          aria-label="Previous"
+        >
+          <ChevronLeft className="w-4 h-4 text-foreground" />
+        </button>
+      )}
+
+      {/* Right arrow */}
+      {canGoNext && (
+        <button
+          onClick={() => { handleUserInteraction(); scrollToCard(activeIdx + 1); }}
+          className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-200 hover:bg-surface-1"
+          aria-label="Next"
+        >
+          <ChevronRight className="w-4 h-4 text-foreground" />
+        </button>
+      )}
+
       {/* Scrollable container */}
       <div
         ref={scrollRef}
