@@ -4,6 +4,7 @@ import AppHeader from './AppHeader';
 import BottomNav from './BottomNav';
 import LoadingScreen from './LoadingScreen';
 import BeginnerGuideModal from './BeginnerGuideModal';
+import LoopyChat from './LoopyChat';
 import { useGlobalNotifications } from '@/hooks/useGlobalNotifications';
 
 export default function AuthenticatedLayout() {
@@ -26,6 +27,9 @@ export default function AuthenticatedLayout() {
         </Suspense>
       </main>
       {showNav && <BottomNav />}
+      
+      {/* Loopy AI chatbot */}
+      <LoopyChat />
       
       {/* Auto-show beginner guide for new users / official opening */}
       <BeginnerGuideModal autoShow />
