@@ -17,6 +17,7 @@ import {
   RotateCw, Maximize, Minimize, Blend
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import StudioSubmitButton from "./StudioSubmitButton";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
@@ -871,6 +872,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
           );
         })}
         <div className="flex-1" />
+        <StudioSubmitButton />
         <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
         {state === "done" ? (
           <button onClick={handleDownload}
