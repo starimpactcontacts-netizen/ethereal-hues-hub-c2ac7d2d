@@ -67,32 +67,31 @@ export default function BottomNav() {
             </NavLink>
           ))}
 
-          {/* Center Arena Button - White x Gold Neon Glitch Aura */}
+          {/* Center Arena Button — Diamond shape with glitch aura */}
           <button
             onClick={handleArenaClick}
-            className="flex flex-col items-center justify-center group relative -mt-1"
+            className="flex flex-col items-center justify-center group relative -mt-3"
           >
             {/* Active battle indicator */}
             {hasActiveBattle && (
-              <span className="absolute -top-1 right-2 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse z-10 border border-background" />
+              <span className="absolute -top-2 right-1 w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse z-20 border border-background" />
             )}
-            {/* Offset glitch layers - infinite color morphing */}
             <div className="relative">
               {/* Outer glow */}
-              <div className="absolute -inset-2 rounded-2xl bg-white/[0.06] blur-md" />
-              <GlitchEdge side="left" className="absolute w-14 h-11 rounded-xl" style={{ left: '-4px' }} />
-              <GlitchEdge side="right" className="absolute w-14 h-11 rounded-xl" style={{ left: '4px' }} />
-              <div className="relative w-14 h-11 bg-white rounded-xl flex items-center justify-center group-active:scale-95 transition-transform shadow-[0_0_16px_rgba(255,255,255,0.15)]">
-                {/* Subtle gate pattern in white space */}
-                <div className="absolute inset-0 rounded-xl overflow-hidden opacity-[0.04]">
-                  <svg className="w-full h-full" viewBox="0 0 56 44">
-                    <pattern id="nav-gate" x="0" y="0" width="11" height="11" patternUnits="userSpaceOnUse">
-                      <polygon points="5.5,1 10,4 10,8 5.5,11 1,8 1,4" fill="none" stroke="black" strokeWidth="0.5" />
+              <div className="absolute -inset-3 rotate-45 bg-white/[0.04] blur-lg" />
+              <GlitchEdge side="left" className="absolute w-[46px] h-[46px] rotate-45" style={{ left: '-3px', top: '0px' }} />
+              <GlitchEdge side="right" className="absolute w-[46px] h-[46px] rotate-45" style={{ left: '3px', top: '0px' }} />
+              <div className="relative w-[46px] h-[46px] bg-white rotate-45 flex items-center justify-center group-active:scale-90 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.18)]">
+                {/* Subtle gate pattern */}
+                <div className="absolute inset-0 overflow-hidden opacity-[0.04]">
+                  <svg className="w-full h-full" viewBox="0 0 46 46">
+                    <pattern id="nav-gate-d" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                      <polygon points="5,1 9,4 9,8 5,10 1,8 1,4" fill="none" stroke="black" strokeWidth="0.5" />
                     </pattern>
-                    <rect width="100%" height="100%" fill="url(#nav-gate)" />
+                    <rect width="100%" height="100%" fill="url(#nav-gate-d)" />
                   </svg>
                 </div>
-                <InfinityIcon className="w-6 h-6 text-black relative z-10" strokeWidth={2.5} />
+                <InfinityIcon className="w-5 h-5 text-black relative z-10 -rotate-45" strokeWidth={2.5} />
               </div>
             </div>
           </button>
