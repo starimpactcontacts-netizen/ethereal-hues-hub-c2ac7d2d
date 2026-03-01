@@ -54,11 +54,11 @@ export default function FeaturedDropCard({ drop }: Props) {
       transition={{ duration: 0.35 }}
       className={cn(
         "relative w-[240px] sm:w-[260px] shrink-0 snap-start overflow-hidden rounded-xl",
-        "bg-gradient-to-b from-surface-1 to-surface-0",
+        "bg-[hsl(240,4%,18%)]",
         "border transition-all duration-300 group",
         isPromoted
-          ? "border-gold/40 shadow-[0_4px_24px_rgba(255,215,0,0.12)] hover:shadow-[0_8px_32px_rgba(255,215,0,0.2)]"
-          : "border-white/[0.06] hover:border-white/[0.12] shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+          ? "border-gold/40 shadow-[0_6px_28px_rgba(255,215,0,0.15)] hover:shadow-[0_10px_36px_rgba(255,215,0,0.25)]"
+          : "border-white/[0.08] shadow-[0_6px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_10px_32px_rgba(0,0,0,0.6)]"
       )}
     >
       {/* Poster */}
@@ -122,7 +122,7 @@ export default function FeaturedDropCard({ drop }: Props) {
 
         {/* Title + Song — bottom overlay */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
-          <h3 className="font-display text-[13px] sm:text-sm text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg">
+          <h3 className="font-display text-base sm:text-lg text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg font-extrabold">
             {drop.title}
           </h3>
           <p className="text-[9px] sm:text-[10px] text-white/50 mt-0.5 flex items-center gap-1 truncate">
@@ -133,7 +133,7 @@ export default function FeaturedDropCard({ drop }: Props) {
       </div>
 
       {/* Activity signal + Rewards */}
-      <div className="px-3 py-2 flex items-center gap-1.5 border-t border-white/[0.04]">
+      <div className="px-3 py-2.5 flex items-center gap-1.5 border-t border-white/[0.06]">
         <ActivityIcon className={cn("w-3 h-3 shrink-0", activity.color)} />
         <span className={cn("text-[9px] sm:text-[10px] font-semibold tracking-tight flex-1 truncate", activity.color)}>
           {activity.text}
