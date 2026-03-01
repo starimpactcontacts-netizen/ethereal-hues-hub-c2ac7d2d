@@ -5,6 +5,7 @@ import { useRecentSubmissions, RecentSubmission } from "@/hooks/useRecentSubmiss
 import { useThumbnail } from "@/hooks/useThumbnail";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Color palettes for no-thumbnail cells — cycles through these
 const CELL_PALETTES = [
@@ -218,10 +219,12 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
 
 export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
   const { submissions, loading } = useRecentSubmissions(limit);
+  const isMobile = useIsMobile();
+  const cols = isMobile ? 2 : 3;
 
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-0.5 aspect-square">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-0.5 aspect-square">
         {Array.from({ length: 9 }).map((_, i) => (
           <div key={i} className="bg-surface-1 animate-pulse" />
         ))}
@@ -270,8 +273,8 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="grid grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
-      style={{ gridAutoRows: "calc((min(100vw, 640px) - 2px) / 3)" }}
+      className="grid grid-cols-2 sm:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
+      style={{ gridAutoRows: `calc((min(100vw, 640px) - 2px) / ${cols})` }}
     >
       {cells.map((cell, i) => (
         <GridCell key={cell.submission.id} submission={cell.submission} size={cell.size} index={i} />
