@@ -9,9 +9,19 @@ export default function LoopyChat() {
   const [input, setInput] = useState('');
   const [showPulse, setShowPulse] = useState(true);
   const [view, setView] = useState<'menu' | 'chat' | 'history'>('menu');
-  const [docked, setDocked] = useState(false); // swiped to the side
+  const [docked, setDocked] = useState(false);
+  const [showDragHint, setShowDragHint] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Show drag hint after 4 seconds if not interacted
+  useEffect(() => {
+    if (!open && !docked) {
+      const timer = setTimeout(() => setShowDragHint(true), 4000);
+      return () => clearTimeout(timer);
+    }
+    setShowDragHint(false);
+  }, [open, docked]);
 
   const {
     conversations,
@@ -83,46 +93,49 @@ export default function LoopyChat() {
 
   return (
     <>
-      {/* ═══ DOCKED STATE — claws peeking from right edge ═══ */}
+      {/* ═══ DOCKED STATE — paw peeking from right edge ═══ */}
       <AnimatePresence>
         {!open && docked && (
           <motion.button
-            initial={{ x: 20, opacity: 0 }}
+            initial={{ x: 30, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 20, opacity: 0 }}
+            exit={{ x: 30, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setDocked(false)}
-            className="fixed bottom-28 right-0 z-50 flex items-center"
+            className="fixed bottom-28 right-0 z-50 flex items-center group"
             aria-label="Open Loopy"
           >
-            {/* Claws + peeking face */}
-            <div className="relative w-8 h-16 overflow-visible">
-              {/* Top claw */}
-              <svg width="14" height="18" viewBox="0 0 14 18" className="absolute -left-1 top-0">
+            <div className="relative w-12 h-20 overflow-visible">
+              {/* Paw / arm reaching around the edge */}
+              <svg width="40" height="80" viewBox="0 0 40 80" className="absolute -left-3 top-0">
+                {/* Arm */}
                 <path
-                  d="M12 2 Q10 0, 8 1 Q4 4, 6 8 Q7 10, 10 10"
-                  fill="none"
-                  stroke="hsl(var(--foreground) / 0.6)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
+                  d="M38 15 Q30 12, 22 18 Q16 24, 16 40 Q16 56, 22 62 Q30 68, 38 65"
+                  fill="hsl(var(--muted))"
+                  stroke="hsl(var(--border))"
+                  strokeWidth="1.5"
                 />
-                <circle cx="8" cy="1" r="2.5" fill="hsl(var(--foreground) / 0.15)" stroke="hsl(var(--foreground) / 0.5)" strokeWidth="1.5" />
-              </svg>
-              {/* Bottom claw */}
-              <svg width="14" height="18" viewBox="0 0 14 18" className="absolute -left-1 bottom-0">
-                <path
-                  d="M12 16 Q10 18, 8 17 Q4 14, 6 10 Q7 8, 10 8"
-                  fill="none"
-                  stroke="hsl(var(--foreground) / 0.6)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-                <circle cx="8" cy="17" r="2.5" fill="hsl(var(--foreground) / 0.15)" stroke="hsl(var(--foreground) / 0.5)" strokeWidth="1.5" />
+                {/* Top claw */}
+                <path d="M22 18 Q18 10, 14 8 Q12 7, 11 9 Q10 12, 14 16" fill="hsl(var(--foreground) / 0.7)" />
+                <path d="M19 16 Q14 6, 10 5 Q8 5, 7 7 Q7 10, 11 14" fill="hsl(var(--foreground) / 0.6)" />
+                <path d="M17 17 Q11 9, 7 10 Q5 11, 5 13 Q6 16, 10 17" fill="hsl(var(--foreground) / 0.5)" />
+                {/* Bottom claw */}
+                <path d="M22 62 Q18 70, 14 72 Q12 73, 11 71 Q10 68, 14 64" fill="hsl(var(--foreground) / 0.7)" />
+                <path d="M19 64 Q14 74, 10 75 Q8 75, 7 73 Q7 70, 11 66" fill="hsl(var(--foreground) / 0.6)" />
+                <path d="M17 63 Q11 71, 7 70 Q5 69, 5 67 Q6 64, 10 63" fill="hsl(var(--foreground) / 0.5)" />
+                {/* Paw pads */}
+                <circle cx="24" cy="30" r="3" fill="hsl(var(--primary) / 0.3)" />
+                <circle cx="24" cy="40" r="4" fill="hsl(var(--primary) / 0.25)" />
+                <circle cx="24" cy="50" r="3" fill="hsl(var(--primary) / 0.3)" />
               </svg>
               {/* Half-visible face peeking */}
-              <div className="absolute left-1 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full overflow-hidden border-2 border-primary bg-background shadow-lg">
+              <motion.div 
+                animate={{ x: [0, -3, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full overflow-hidden border-2 border-primary bg-background shadow-lg group-hover:shadow-primary/30 transition-shadow"
+              >
                 <img src={loopyAvatar} alt="Loopy peeking" className="w-full h-full object-cover" />
-              </div>
+              </motion.div>
             </div>
           </motion.button>
         )}
@@ -152,6 +165,20 @@ export default function LoopyChat() {
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full" />
               </>
             )}
+            {/* Drag hint arrow */}
+            <AnimatePresence>
+              {showDragHint && (
+                <motion.div
+                  initial={{ opacity: 0, x: -4 }}
+                  animate={{ opacity: 1, x: [0, 6, 0] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ x: { repeat: Infinity, duration: 1.2, ease: 'easeInOut' }, opacity: { duration: 0.3 } }}
+                  className="absolute -right-5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium whitespace-nowrap pointer-events-none flex items-center gap-0.5"
+                >
+                  <span>→</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.button>
         )}
       </AnimatePresence>
