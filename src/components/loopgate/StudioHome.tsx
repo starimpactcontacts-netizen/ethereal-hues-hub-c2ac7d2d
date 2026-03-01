@@ -8,6 +8,7 @@ import {
   ExternalLink, Bug, Sparkles
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import ActiveSoloBanner from "./ActiveSoloBanner";
 
 const ACCENT = "#9999FF";
 
@@ -159,6 +160,11 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
 
       {/* ═══ MAIN CONTENT ═══ */}
       <div className={`${isMobile ? "px-4 py-5" : "max-w-6xl mx-auto px-8 py-8"}`}>
+
+        {/* ═══ ACTIVE SOLO BANNER ═══ */}
+        <div className="mb-6">
+          <ActiveSoloBanner />
+        </div>
 
         {/* ═══ HERO IMPORT AREA ═══ */}
         <motion.button
