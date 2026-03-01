@@ -22,6 +22,7 @@ import { awardReviewXP } from "@/hooks/useJudgeXP";
 import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
 import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
+import RadioAdmin from "@/components/loopgate/RadioAdmin";
 
 interface RealEvent {
   id: string;
@@ -2351,6 +2352,9 @@ export default function OpsPanel() {
             <span className="text-muted-foreground">{users.length} users</span>
           </div>
         </section>
+
+        {/* LOOPGATE Radio Admin */}
+        <RadioAdmin />
 
         {/* 1v1 Battle Admin */}
         <BattleAdminPanel />
