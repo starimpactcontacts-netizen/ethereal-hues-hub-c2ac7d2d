@@ -60,7 +60,7 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
         <img
           src={loopgateWordmark}
           alt=""
-          className={cn("w-auto object-contain object-center select-none", isLarge ? "h-20 opacity-[0.34]" : "h-10 opacity-[0.3]")}
+          className={cn("w-auto object-contain object-center select-none", isLarge ? "h-20 opacity-[0.52]" : "h-10 opacity-[0.46]")}
           style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.72))" }}
         />
       </div>
@@ -278,8 +278,8 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="grid grid-cols-2 md:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
-      style={{ gridAutoRows: isMobile ? "calc((100vw - 1px) / 2)" : "calc((min(100vw, 640px) - 2px) / 3)" }}
+      className="grid grid-cols-2 md:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)]"
+      style={{ gridAutoRows: isMobile ? "calc((100% - 1px) / 2)" : "calc((100% - 2px) / 3)" }}
     >
       {cells.map((cell, i) => (
         <GridCell key={cell.submission.id} submission={cell.submission} size={cell.size} index={i} />
