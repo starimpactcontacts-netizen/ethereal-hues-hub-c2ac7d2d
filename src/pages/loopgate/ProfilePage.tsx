@@ -14,6 +14,7 @@ import { useCrewMembership } from "@/hooks/useCrewMembership";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { motion } from "framer-motion";
 import VerifiedBadge from "@/components/loopgate/VerifiedBadge";
+import FoundingBadge from "@/components/loopgate/FoundingBadge";
 import AvatarUploadModal from "@/components/loopgate/AvatarUploadModal";
 import ActivityStatusSelector from "@/components/loopgate/ActivityStatusSelector";
 import XPProgressBar from "@/components/loopgate/XPProgressBar";
@@ -234,6 +235,7 @@ export default function ProfilePage() {
                   {(profile as any).display_name || profile.username}
                 </h1>
                 {profile.verification_status && <VerifiedBadge size="sm" />}
+                {(profile as any).is_founding_member && <FoundingBadge size="sm" animate={false} />}
               </div>
               <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
             </div>
@@ -360,6 +362,27 @@ export default function ProfilePage() {
             </motion.div>
           </Link>
         </div>
+      </div>
+
+      {/* ═══ AVATAR SECTION ═══ */}
+      <div className="px-4 mb-2">
+        <button
+          onClick={() => setShowAvatarModal(true)}
+          className="w-full bg-surface-1 border border-border rounded-md p-2.5 flex items-center gap-3 hover:border-foreground/30 transition-colors group"
+        >
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-muted/30 border border-border flex items-center justify-center shrink-0">
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <Camera className="w-3.5 h-3.5 text-muted-foreground" />
+            )}
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-[11px] font-semibold text-foreground">Change Avatar</p>
+            <p className="text-[9px] text-muted-foreground">Update your profile picture</p>
+          </div>
+          <Camera className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+        </button>
       </div>
 
       {/* ═══ CONTENT TABS ═══ */}
