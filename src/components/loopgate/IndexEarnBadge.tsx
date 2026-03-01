@@ -41,12 +41,13 @@ export default function IndexEarnBadge({ size = 'sm', hideDollar = false }: Inde
                 </button>
               </div>
               <p className="text-[11px] text-foreground leading-relaxed">
-                Your <span className="text-gold font-bold">Index</span> points translate to real earnings. 
-                Compete in the Arena — win battles, complete drops, and get judged to earn Index that pays out.
+                Win official Arena events and drops to earn real payouts. 
+                Your <span className="text-gold font-bold">Index</span> tracks your competitive value — 
+                the higher you rank, the more you earn.
               </p>
               <div className="mt-2 pt-2 border-t border-border/50">
                 <p className="text-[9px] text-muted-foreground uppercase tracking-wider">
-                  Compete. Create. Get paid.
+                  First platform where editing pays.
                 </p>
               </div>
             </motion.div>
