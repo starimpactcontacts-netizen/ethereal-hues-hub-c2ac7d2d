@@ -367,11 +367,9 @@ export default function FeedPage() {
 
           {/* ─── Feed Content ─── */}
           <div className="mx-auto max-w-xl lg:max-w-none pb-24 lg:pb-0">
-            {/* Desktop inline composer */}
+            {/* Inline composer */}
             {user && (
-              <div className="hidden lg:block">
-                <FeedPostComposer userProfile={userProfile} onPost={createPost} />
-              </div>
+              <FeedPostComposer userProfile={userProfile} onPost={createPost} />
             )}
 
             {activeTab === 'posts' ? (
