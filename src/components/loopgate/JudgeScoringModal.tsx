@@ -184,8 +184,13 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
   };
 
   const handleExportClose = () => {
+    // Close the Dialog first, then let the portal unmount before triggering parent unmount
     setShowExport(false);
-    onComplete();
+    setCompletedReviewData(null);
+    // Give Radix Dialog portal time to unmount before parent unmounts this component
+    setTimeout(() => {
+      onComplete();
+    }, 150);
   };
 
   return (
@@ -195,7 +200,7 @@ export default function JudgeScoringModal({ request, onClose, onComplete }: Judg
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={showExport ? undefined : onClose}
       >
         <motion.div
           initial={{ y: 100, opacity: 0 }}
