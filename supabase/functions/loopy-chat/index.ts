@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.89.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,6 +45,7 @@ LOOPGATE FEATURES YOU KNOW:
 - **Playlists** (/playlists): Your music/audio playlists
 - **GQT** (/gqt): Quality test assessment
 - **Solo** (/solo/:id): Solo challenges
+- **Loop** (/loop): Social feed where editors post "Loops" — like tweets but for the editing community. You can post text, images, GIFs, videos. Has reactions, challenges, and a For You feed.
 
 EARNINGS & MONEY SYSTEM:
 - Loopgate is the FIRST platform where video editing actually pays. This is a huge deal.
@@ -70,6 +72,116 @@ Say something like "yo for that u wanna hit up amid directly" and drop both link
 
 Keep responses under 100 words. Be the chill friend who just knows things. If someone asks something you don't know, just say "ion kno tbh" or something. Never break character.`;
 
+// Fetch live platform data to inject as context
+async function fetchLiveContext(): Promise<string> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !supabaseKey) return "";
+
+  const sb = createClient(supabaseUrl, supabaseKey);
+  const parts: string[] = [];
+
+  try {
+    // Active featured drops with artist info
+    const { data: drops } = await sb
+      .from("featured_drops")
+      .select("title, song_name, status, prize_usd, submission_count, xp_reward, index_reward, mystery_reward_label, starts_at, ends_at, featured_artists(name, genre)")
+      .in("status", ["live", "judging"])
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (drops?.length) {
+      parts.push("LIVE FEATURED DROPS RIGHT NOW:");
+      for (const d of drops) {
+        const artist = (d as any).featured_artists;
+        parts.push(`- "${d.title}" (song: ${d.song_name}) by ${artist?.name || "unknown"} [${artist?.genre || ""}] — status: ${d.status}, ${d.submission_count} submissions, prize: $${d.prize_usd}, XP: ${d.xp_reward}, IDX: ${d.index_reward}, mystery reward: ${d.mystery_reward_label}`);
+      }
+    }
+
+    // Top ranked editors
+    const { data: topEditors } = await sb
+      .from("profiles")
+      .select("username, display_name, index_score, league_tier, battle_wins")
+      .order("index_score", { ascending: false })
+      .limit(10);
+
+    if (topEditors?.length) {
+      parts.push("\nTOP 10 EDITORS (by Index):");
+      topEditors.forEach((e, i) => {
+        parts.push(`${i + 1}. ${e.display_name || e.username} (@${e.username}) — IDX: ${e.index_score}, League: ${e.league_tier}, Wins: ${e.battle_wins}`);
+      });
+    }
+
+    // Recent completed battles
+    const { data: battles } = await sb
+      .from("battles")
+      .select("challenger_username, opponent_username, status, winner_id, challenger_id, opponent_id, created_at")
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (battles?.length) {
+      parts.push("\nRECENT BATTLES:");
+      for (const b of battles) {
+        const winner = b.winner_id === b.challenger_id ? b.challenger_username : b.opponent_username;
+        const loser = b.winner_id === b.challenger_id ? b.opponent_username : b.challenger_username;
+        parts.push(`- ${winner} beat ${loser}`);
+      }
+    }
+
+    // Active sanctioned tournaments
+    const { data: tournaments } = await sb
+      .from("sanctioned_tournaments")
+      .select("name, status, max_participants, prize_pool_label")
+      .in("status", ["registration", "active", "in_progress"])
+      .limit(5);
+
+    if (tournaments?.length) {
+      parts.push("\nACTIVE TOURNAMENTS:");
+      for (const t of tournaments) {
+        parts.push(`- "${t.name}" — status: ${t.status}, max: ${t.max_participants} editors, prize: ${t.prize_pool_label || "TBD"}`);
+      }
+    }
+
+    // Featured artists
+    const { data: artists } = await sb
+      .from("featured_artists")
+      .select("name, genre, monthly_streams, verified")
+      .eq("is_active", true)
+      .order("monthly_streams", { ascending: false })
+      .limit(5);
+
+    if (artists?.length) {
+      parts.push("\nFEATURED ARTISTS ON THE PLATFORM:");
+      for (const a of artists) {
+        parts.push(`- ${a.name} (${a.genre})${a.verified ? " ✓" : ""} — ${a.monthly_streams?.toLocaleString() || "?"} monthly streams`);
+      }
+    }
+
+    // Platform stats
+    const { count: totalEditors } = await sb
+      .from("profiles")
+      .select("id", { count: "exact", head: true });
+
+    const { count: totalBattles } = await sb
+      .from("battles")
+      .select("id", { count: "exact", head: true });
+
+    const { count: totalUnits } = await sb
+      .from("crews")
+      .select("id", { count: "exact", head: true });
+
+    if (totalEditors || totalBattles || totalUnits) {
+      parts.push(`\nPLATFORM STATS: ${totalEditors || 0} editors, ${totalBattles || 0} battles, ${totalUnits || 0} units`);
+    }
+
+  } catch (e) {
+    console.error("Failed to fetch live context:", e);
+  }
+
+  return parts.length ? "\n\n--- LIVE PLATFORM DATA (use this to answer questions accurately) ---\n" + parts.join("\n") : "";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -77,6 +189,9 @@ serve(async (req) => {
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    // Fetch live data to give Loopy real context
+    const liveContext = await fetchLiveContext();
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -87,8 +202,8 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...messages.slice(-20), // Keep last 20 messages for context
+          { role: "system", content: SYSTEM_PROMPT + liveContext },
+          ...messages.slice(-20),
         ],
         stream: true,
       }),
