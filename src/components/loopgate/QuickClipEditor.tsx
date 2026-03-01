@@ -13,6 +13,7 @@ import {
   RotateCw, Maximize, Minimize, Blend
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import StudioSubmitButton from "./StudioSubmitButton";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
@@ -522,6 +523,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             <p className="text-[10px]" style={{ color: "#555" }}>{formatTimecode(trimEnd - trimStart)} clip</p>
           </div>
           <div className="flex items-center gap-1.5">
+            <StudioSubmitButton />
             {state === "done" ? (
               <button onClick={handleDownload}
                 className="h-8 px-4 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition-all"

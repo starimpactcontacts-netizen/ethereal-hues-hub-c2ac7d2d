@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Music, Trophy, Send, X, Loader2, Clock, Monitor, ChevronDown, ChevronUp } from "lucide-react";
+import { Sparkles, Music, Trophy, Send, X, Loader2, Clock, Monitor, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 import { useSoloMode } from "@/hooks/useSoloMode";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ export default function SoloModeBanner({ soloId }: { soloId: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showSoftware, setShowSoftware] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // If no active solo or mismatch, don't render
   if (!activeSolo || activeSolo.id !== soloId) return null;
@@ -54,6 +55,7 @@ export default function SoloModeBanner({ soloId }: { soloId: string }) {
 
   const handleCancel = async () => {
     const result = await cancelSolo(soloId);
+    setShowCancelConfirm(false);
     if (!result?.success) {
       toast.error("Couldn't cancel this solo right now. Try again.");
       return;
@@ -83,10 +85,49 @@ export default function SoloModeBanner({ soloId }: { soloId: string }) {
             <p className="text-sm text-foreground font-bold">{activeSolo.theme}</p>
           </div>
         </div>
-        <button onClick={handleCancel} className="p-1.5 hover:bg-surface-2 transition-colors">
+        <button onClick={() => setShowCancelConfirm(true)} className="p-1.5 hover:bg-surface-2 transition-colors">
           <X className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
+
+      {/* Cancel confirmation */}
+      <AnimatePresence>
+        {showCancelConfirm && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mx-3 mb-2 p-3 bg-destructive/10 border border-destructive/20">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-[12px] text-destructive font-semibold">Cancel this solo?</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
+                    Your first cancel is free. After that, each cancel costs <span className="text-destructive font-bold">2 Index points</span>.
+                  </p>
+                  <div className="flex gap-2 mt-2.5">
+                    <button
+                      onClick={() => setShowCancelConfirm(false)}
+                      className="px-3 py-1.5 text-[11px] font-medium bg-surface-2 text-muted-foreground border border-border transition-colors"
+                    >
+                      Keep editing
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      className="px-3 py-1.5 text-[11px] font-semibold bg-destructive/20 text-destructive border border-destructive/30 transition-colors"
+                    >
+                      Yes, cancel solo
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       {/* Song info */}
       <div className="flex items-center gap-2 bg-surface-1 border border-border px-3 py-2">
