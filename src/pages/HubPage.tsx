@@ -380,7 +380,7 @@ export default function HubPage() {
                   {/* Earnings + Index — top right, compact */}
                   <div className="flex flex-col gap-1.5 shrink-0">
                     {/* Earnings */}
-                    <div className="relative flex items-center gap-2 bg-gradient-to-r from-emerald-950/40 to-emerald-950/20 border border-emerald-500/20 rounded-md px-3 py-2 transition-all hover:border-emerald-400/40">
+                    <div className="relative flex items-center gap-2 bg-background border border-border/50 rounded-md px-3 py-2 transition-all hover:border-emerald-400/40">
                       <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
                       <span className="font-display text-base text-emerald-400 leading-none tabular-nums font-bold">
                         {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
