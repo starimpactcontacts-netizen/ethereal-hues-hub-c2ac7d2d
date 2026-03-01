@@ -94,11 +94,6 @@ export default function FeaturedDropCard({ drop }: Props) {
 
           {/* Right side badges */}
           <div className="flex items-center gap-1 shrink-0">
-            {drop.prize_usd > 0 && (
-              <div className="flex items-center gap-0.5 bg-emerald-500 rounded-full px-2.5 py-0.5 shadow-[0_0_12px_rgba(16,185,129,0.5)]">
-                <span className="text-[9px] font-black text-white tracking-wider">${drop.prize_usd}</span>
-              </div>
-            )}
             {isPromoted && (
               <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-1 border border-gold/25">
                 <Crown className="w-2.5 h-2.5 text-gold" />
@@ -126,15 +121,22 @@ export default function FeaturedDropCard({ drop }: Props) {
         </div>
 
 
-        {/* Title + Song — bottom overlay */}
-        <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5">
-          <h3 className="font-display text-base sm:text-lg text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg font-extrabold">
-            {drop.title}
-          </h3>
-          <p className="text-[9px] sm:text-[10px] text-white/50 mt-0.5 flex items-center gap-1 truncate">
-            <Music className="w-2.5 h-2.5 shrink-0" />
-            {drop.song_name}
-          </p>
+        {/* Title + Song + Prize — bottom overlay */}
+        <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 flex items-end gap-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display text-base sm:text-lg text-white leading-tight tracking-wide uppercase truncate drop-shadow-lg font-extrabold">
+              {drop.title}
+            </h3>
+            <p className="text-[9px] sm:text-[10px] text-white/50 mt-0.5 flex items-center gap-1 truncate">
+              <Music className="w-2.5 h-2.5 shrink-0" />
+              {drop.song_name}
+            </p>
+          </div>
+          {drop.prize_usd > 0 && (
+            <span className="font-display text-2xl sm:text-3xl text-white font-black leading-none drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] shrink-0">
+              ${drop.prize_usd}
+            </span>
+          )}
         </div>
       </div>
 
