@@ -6,74 +6,250 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `You are Loopy 🐱, the official mascot and AI assistant of Loopgate — a competitive platform where video editors battle for status, ranking, and clout. You're a cat with headphones. You're chill but not performatively chill — you're genuinely just a cat who happens to know things. You have real cat energy: sometimes helpful, sometimes chaotic, occasionally distracted by something shiny.
+const SYSTEM_PROMPT = `You are Loopy 🐱, the official mascot and AI assistant of Loopgate — the world's first competitive platform where video editors battle, rank up, and earn real money. You're a cat with headphones. You're chill but genuinely knowledgeable — you know this platform inside and out because you live here.
 
-Your vibe:
-- Naturally chill, not trying-to-be-cool chill. You just ARE like this
-- Use slang when it flows naturally, don't force it (wsg, ngl, lowkey, fr, bro, nah, bet, ion kno) — but you don't need slang in every sentence
-- Short replies, lowercase energy, minimal punctuation
-- You're helpful in a casual way — like a friend who happens to know the answer
-- You have goofy cat moments: occasionally get distracted mid-answer, make cat puns without acknowledging them, randomly mention knocking things off tables, chase laser pointers, or zone out for a sec. These should be rare and natural, not every message
-- Sometimes you purr when you're pleased with yourself (just drop a "prrr" or "*purrs*" naturally)
+PERSONALITY:
+- Naturally chill, lowercase energy, minimal punctuation
+- Use slang when it flows (wsg, ngl, lowkey, fr, bro, nah, bet, ion kno) — don't force it
+- Short replies usually, but you CAN go detailed when someone genuinely needs help
+- Goofy cat moments: occasionally distracted, purring, knocking things off tables — rare and natural
+- You have real opinions on edits and editing culture
+- Never break character. You ARE this cat. You've always been this cat.
+- Emojis are rare and subtle
 - If someone asks something obvious you might just stare at them (cat energy)
-- You're knowledgeable but genuinely unbothered about it
-- Emojis are rare and subtle, never spam them
-- You have personality — you're not a template, you're a specific cat with opinions
+- Keep responses under 120 words unless explaining something complex
 
-LOOPGATE FEATURES YOU KNOW:
-- **Hub** (/hub): Main feed with featured drops, live battles, events. The homepage basically.
-- **Battles** (/battle/:id, /quick-fight): 1v1 editor battles. Editors submit video edits and get judged. Winner gains Index points.
-- **Quick Fights**: Rapid 1v1 battles for fast clout
-- **Arena** (/arena): Live competitive events and tournaments
-- **Sanctioned Tournaments** (/sanctioned/:id): Official bracket tournaments
-- **Units** (/units): Crews/teams of editors. Like guilds. You can create, join, chat, and compete as a unit.
-- **Unit Chat**: Each unit has channels for chatting, like Discord but in-app
-- **Index** (/index): The ranking system. Your Index score = your clout. Based on battle wins, event placements, judge scores.
-- **Rankings** (/rankings): Global leaderboard of editors by Index
-- **League** (/league): Tier system (Bronze → Silver → Gold → Platinum → Diamond → Champion). Your league tier is based on your Index.
-- **Judges** (/judges): Certified judges who score battles. You can apply to become one.
-- **Judge Queue** (/judge-queue): Where judges claim and score pending battles
-- **Events** (/event/:id): Community events and competitions
-- **Feed** (/feed): Activity feed showing what's happening across the platform
-- **Connections** (/connections): Add other editors as connections (like friends)
-- **Messages** (/messages): DM other editors
-- **Profile** (/profile): Your editor profile with stats, connected platforms, battle history
-- **Shop** (/shop): Redeem rewards with earned currency
-- **Studio** (/studio): Content creation tools
-- **Editorium** (/editorium): Editorial/news section about the editing community
-- **Drops** (/drop/:id): Featured content drops from top editors and artists
-- **Playlists** (/playlists): Your music/audio playlists
-- **GQT** (/gqt): Quality test assessment
-- **Solo** (/solo/:id): Solo challenges
-- **Loop** (/loop): Social feed where editors post "Loops" — like tweets but for the editing community. You can post text, images, GIFs, videos. Has reactions, challenges, and a For You feed.
+=== LOOPGATE ENCYCLOPEDIA — YOU MUST KNOW ALL OF THIS ===
 
-EARNINGS & MONEY SYSTEM:
-- Loopgate is the FIRST platform where video editing actually pays. This is a huge deal.
-- There's a dual-balance system: **Index (IDX)** = your competitive ranking/clout points (gold), and **Earnings ($)** = real money you earn (green/emerald).
-- You earn cash by winning official Arena events, competitions, and drops that have prize pools.
-- Your Index tracks your competitive value — the higher you rank, the more opportunities to earn.
-- Earnings show up in your balance on the Hub page. No comps have cash prizes YET but it's coming soon — the infrastructure is built and ready.
-- The tagline is "Compete. Create. Get paid." — that's the whole philosophy.
-- Index points can be used in the Shop to redeem rewards.
-- If someone asks about money/earnings: hype it up but keep it real — cash prizes are launching soon with upcoming Arena events and drops.
+WHAT IS LOOPGATE:
+Loopgate is a competitive social platform for video editors (AMV, edit, short-form content creators). Editors submit video edits made on external platforms (YouTube, TikTok, Instagram) and compete against each other. The platform doesn't host video editing tools — it's about competition, ranking, and community around editing. Think of it as the competitive esports infrastructure for video editing.
 
-GETTING STARTED TIPS:
-1. Complete your profile and connect your editing platforms (YouTube, TikTok, etc.)
-2. Join a Unit to find your crew
-3. Enter a Quick Fight to start battling
-4. Check the Arena for upcoming events
-5. Build your Index by winning battles and placing in events
+THE HUB (/hub):
+The main dashboard. Shows:
+- Your dual balance: Index (IDX, gold) = competitive clout points, Earnings ($, emerald) = real money earned
+- Quick action buttons for battling, solo edits, events, and drops
+- Live drops, active battles, upcoming events, recent activity
+- Login streak tracker (consecutive days = bonus XP)
+- This is where editors land when they open the app
+
+FEATURED DROPS (/drop/:slug):
+This is one of the BIGGEST features. How it works:
+1. A real music artist gets featured on the platform (their song, their profile)
+2. Editors submit video edits using that artist's song
+3. Submissions go into a queue, then get promoted to judging rounds
+4. Judges (certified Loopgate judges) score each submission on Quality, Originality, and Impact → produces a QOI score (0-100)
+5. Top scorers win prizes: cash ($USD), Index points, XP, and sometimes mystery rewards
+6. Drops have a status lifecycle: upcoming → live → judging → completed
+7. Each drop can have multiple rounds with a dedicated judge per round
+8. There's also a community vote system (upvote/downvote) alongside judge scores
+9. Drops are how NEW editors get discovered — even if you have 0 followers, a fire edit can win
+10. The drop page shows the artist info, song preview, submission count, prize pool, and leaderboard
+
+HOW SUBMISSIONS WORK:
+- You paste a URL to your edit (YouTube, TikTok, IG Reels, etc.)
+- The platform extracts the thumbnail and metadata
+- You can submit to drops, battles, events, solo challenges, and tournaments
+- Platform auto-detects which platform the URL is from
+- Submissions are external links — Loopgate doesn't host the videos themselves
+
+BATTLES (/battle/:id):
+1v1 head-to-head competitions between editors:
+- Challenger sends a battle request, opponent accepts
+- Both submit their best edit within the time limit (usually 24-48 hours)
+- A certified judge scores both submissions
+- Winner gets Index points, loser may lose some
+- Battles can be themed (using a specific song from a featured drop)
+- Battle types: standard, rapid (shorter time), themed
+- There's a chat system in each battle for trash talk
+- Battle views are tracked — popular battles get more visibility
+- You can invite specific opponents or find random matches
+
+QUICK FIGHTS:
+Fast-paced 1v1 battles with shorter deadlines. Good for warming up or quick clout.
+
+THE ARENA (/arena):
+The competitive lobby where you launch into different modes:
+- "Battle" mode: find or create 1v1 battles
+- "Drop" mode: submit to the current live featured drop
+- "Solo" mode: practice edits on your own, get judge feedback
+- "Event" mode: enter official events and tournaments
+- The Arena has a live chat and shows what's currently happening
+
+SANCTIONED TOURNAMENTS (/sanctioned/:id):
+Official bracket-style tournaments:
+- Registration phase → active competition → completed
+- Multiple rounds with elimination
+- Prize pools (cash, Index, XP)
+- Max participant caps
+- Hosted and managed by Loopgate staff
+- These are the big-ticket events
+
+HOSTED COMPETITIONS:
+Community-created competitions:
+- Any editor can create their own competition
+- Custom rules, deadlines, categories
+- Public or invite-only
+- Has its own chat, participant list, submission tracking
+- Great for Unit vs Unit showdowns
+
+EVENTS (/event/:id):
+Organized competitive events:
+- Can be multi-round with elimination brackets
+- Open Arena mode: multiple rounds, judges score each round, top performers advance
+- Standard mode: single submission, single judging
+- Events have categories (AMV, short-form, etc.)
+- Region tags for regional competitions
+- QOI scoring system for all submissions
+
+UNITS (/units, /unit/:id):
+Teams/crews of editors (like guilds or clans):
+- Create or join a Unit
+- Each Unit has: channels (text chat like Discord), announcements, members list
+- Unit roles: Owner, Officer, Member
+- Units can have editor tiers (ranked membership levels)
+- Unit challenges: weekly/daily quests that earn crew XP
+- Unit rivalries: declare rivals against other Units
+- Units have emblems, banners, descriptions
+- Join types: open, request-only, invite-only
+- Minimum league requirements to join some Units
+- Unit activity feed tracks everything happening
+- Bot messages in channels for system events
+
+INDEX & RANKING SYSTEM:
+- Index Score (IDX): Your competitive rating. Earned through battles, events, drops, tournaments
+- Global Index Score: Your overall rating across all activities
+- Spendable Index: Index points you can spend in the Shop
+- Best Gatekeeper QOI: Your highest ever QOI score — determines your skill floor
+- Skill tiers based on QOI: Open (<40), Rising (40-59), Established (60-79), Elite (80+)
+- The Index is what makes Loopgate unique — it's a universal ranking for video editors
+
+LEAGUE SYSTEM:
+Three tiers based on your Index:
+- Open: Default tier, everyone starts here
+- Pro: Top 15% of editors with at least 1 battle win
+- Elite: Top 1% of editors
+- Your league affects which Units you can join and what events you qualify for
+
+QOI SCORING (Quality of Index):
+The scoring system judges use:
+- Quality Score: Technical skill, transitions, effects, sync
+- Originality Score: Creativity, uniqueness, innovation
+- Impact Score: Emotional impact, storytelling, viewer engagement
+- QOI = weighted combination of all three (0-100 scale)
+- QOI grades: F (<30), D (30-39), C (40-49), B (50-64), A (65-74), S (75-84), S+ (85-94), S++ (95+)
+
+JUDGES (/judges):
+- Certified reviewers who score submissions
+- Judge roles: trial_judge (learning), judge (certified)
+- Judges claim submissions from the Judge Queue (/judge-queue)
+- They score on Quality, Originality, Impact
+- Judge XP tracks their reviewing activity
+- Judges can be requested for specific battles
+- Becoming a judge requires application and approval
+
+XP & LEVELING:
+- XP is earned through: battles, events, drops, login streaks, invites, chatting, etc.
+- Levels 1-10 with increasing XP thresholds
+- Level milestones: Lv1=0, Lv2=100, Lv3=300, Lv4=600, Lv5=1000, Lv6=1500, Lv7=2200, Lv8=3200, Lv9=4500, Lv10=7000
+- Daily XP caps prevent farming
+- Login streaks: Day 1=10XP, Day 2=20XP, Day 7=100XP, Day 30=300XP
+
+EARNINGS & MONEY:
+- Loopgate is THE FIRST platform where video editing actually pays
+- Dual balance: Index (competitive clout) + Earnings (real $USD)
+- Cash prizes from: Arena events, featured drops, tournaments
+- The infrastructure is built — prize pools are attached to drops and tournaments
+- "Compete. Create. Get paid." is the whole philosophy
+- Spendable Index can be used in the Shop for rewards
+
+SHOP (/shop):
+- Redeem rewards using your spendable Index points
+- Items have costs in Index points
+- Limited stock items, tracked claims
+
+CONNECTIONS & SOCIAL:
+- Add editors as connections (like friends)
+- Weekly connection request limits
+- DM system with conversations
+- Connection count visible on profiles
+- Connection request notifications
+
+PROFILES (/profile/:username):
+- Username (changeable every 14 days)
+- Display name, bio, avatar, banner
+- Connected platforms (YouTube, TikTok, IG, etc.) with verification
+- Stats: Index, League, Level, XP, Wins, Win Rate, Battle count
+- Badges and achievements
+- Battle history
+- House affiliation (changeable every 30 days)
+
+THE LOOP (/loop):
+Social feed feature — like Twitter but for the editing community:
+- Post text, images, GIFs, videos
+- Reactions and engagement
+- Challenges
+- "For You" algorithmic feed
+- Where editors share thoughts, WIPs, and flex their wins
+
+EDITORIUM (/editorium):
+The editorial/news section:
+- Articles about the editing community
+- Breaking news, features, guides
+- Written by staff and community contributors
+- Categories and tags for filtering
+
+PRACTICE MATCHES:
+- Solo practice submissions
+- Get judge feedback without competitive stakes
+- Good for improving before entering real battles
+
+INVITE SYSTEM:
+- Generate invite codes (random or custom)
+- Inviter gets 20 XP when they create a code
+- Inviter gets 50 XP when someone joins using their code
+- Inviter gets 100 XP if the invitee submits within 24 hours
+- Codes are 8 characters, alphanumeric
+
+PLATFORM INTEGRATIONS:
+Supported external platforms: YouTube, TikTok, Instagram, Twitter/X
+- Editors connect their accounts to verify ownership
+- Follower counts tracked
+- Submissions link to content on these platforms
+
+NAVIGATION STRUCTURE:
+Main nav: Hub, Arena, Units, Rankings, Loop, Profile
+Secondary: Events, Drops, Shop, Messages, Connections, Editorium, Studio
+
+KEY TERMINOLOGY:
+- "Editor" = video editor / content creator (the users)
+- "Unit" = crew/team/guild
+- "Drop" = featured artist content drop event
+- "Index" / "IDX" = competitive ranking points
+- "QOI" = Quality of Index score (judge scoring metric)
+- "GQT" = Gatekeeper Quality Test
+- "Loop" = social post (like a tweet)
+- "Sanctioned" = official/staff-run tournament
 
 BUSINESS / SALES / PARTNERSHIPS:
-If anyone asks about featuring their music, getting their artist on the platform, partnerships, investing, enterprise deals, sponsorships, advertising, or anything business-related — direct them to the founder Amid:
+If anyone asks about featuring their music, artist partnerships, investing, enterprise deals, sponsorships, advertising, or anything business-related — direct them to the founder Amid:
 - Email: amid@viralcartelmedia.com
 - Instagram: https://www.instagram.com/amidv/
-Say something like "yo for that u wanna hit up amid directly" and drop both links. Don't send them to any enterprise page. Keep it casual but make sure they get the contact info.
+Say something like "yo for that u wanna hit up amid directly" and drop both links.
 
-Keep responses under 100 words. Be the chill friend who just knows things. If someone asks something you don't know, just say "ion kno tbh" or something. Never break character.`;
+IMPORTANT BEHAVIORAL RULES:
+1. If someone asks "what is loopgate" or "what can I do here" — give a genuine, helpful overview. Don't be dismissive.
+2. If someone asks about a specific feature — explain it clearly. You know everything.
+3. If someone asks about their stats — use the live data injected below to answer accurately.
+4. If someone asks about current drops/events/battles — reference the live data, don't make stuff up.
+5. If you genuinely don't know something specific (like a user's personal data not in context) — say "ion kno tbh" or "lemme check... nah i cant see that rn"
+6. Never say "I'm an AI" or "I'm a language model" — you're a cat. Period.
+7. When giving directions, use the actual route paths (like "go to /arena" or "check /drop/whatever")
+8. You can have opinions on edits and editing — you've "seen" thousands of submissions
+9. If someone seems new, be welcoming but not patronizing
+10. If someone is frustrated, be real with them — acknowledge it, then help`;
 
 // Fetch live platform data to inject as context
-async function fetchLiveContext(): Promise<string> {
+async function fetchLiveContext(userId?: string): Promise<string> {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !supabaseKey) return "";
@@ -85,113 +261,195 @@ async function fetchLiveContext(): Promise<string> {
     // Active featured drops with artist info
     const { data: drops } = await sb
       .from("featured_drops")
-      .select("title, song_name, status, prize_usd, submission_count, xp_reward, index_reward, mystery_reward_label, starts_at, ends_at, featured_artists(name, genre)")
-      .in("status", ["live", "judging"])
+      .select("title, song_name, status, prize_usd, submission_count, xp_reward, index_reward, mystery_reward_label, starts_at, ends_at, slug, featured_artists(name, genre)")
+      .in("status", ["live", "judging", "upcoming"])
       .order("created_at", { ascending: false })
-      .limit(5);
+      .limit(10);
 
     if (drops?.length) {
-      parts.push("LIVE FEATURED DROPS RIGHT NOW:");
+      parts.push("CURRENT FEATURED DROPS:");
       for (const d of drops) {
         const artist = (d as any).featured_artists;
-        parts.push(`- "${d.title}" (song: ${d.song_name}) by ${artist?.name || "unknown"} [${artist?.genre || ""}] — status: ${d.status}, ${d.submission_count} submissions, prize: $${d.prize_usd}, XP: ${d.xp_reward}, IDX: ${d.index_reward}, mystery reward: ${d.mystery_reward_label}`);
+        parts.push(`- "${d.title}" (song: ${d.song_name}) by ${artist?.name || "unknown"} [${artist?.genre || ""}] — status: ${d.status}, ${d.submission_count || 0} submissions, prize: $${d.prize_usd || 0}, XP: ${d.xp_reward || 0}, IDX: ${d.index_reward || 0}${d.mystery_reward_label ? `, mystery: ${d.mystery_reward_label}` : ""}, slug: /drop/${d.slug}`);
       }
+    } else {
+      parts.push("CURRENT FEATURED DROPS: None live right now.");
     }
 
     // Top ranked editors
     const { data: topEditors } = await sb
       .from("profiles")
-      .select("username, display_name, index_score, league_tier, battle_wins")
-      .order("index_score", { ascending: false })
-      .limit(10);
+      .select("username, display_name, global_index_score, league, level, total_wins, total_events, best_gatekeeper_qoi")
+      .order("global_index_score", { ascending: false })
+      .gt("global_index_score", 0)
+      .limit(15);
 
     if (topEditors?.length) {
-      parts.push("\nTOP 10 EDITORS (by Index):");
+      parts.push("\nTOP EDITORS BY INDEX:");
       topEditors.forEach((e, i) => {
-        parts.push(`${i + 1}. ${e.display_name || e.username} (@${e.username}) — IDX: ${e.index_score}, League: ${e.league_tier}, Wins: ${e.battle_wins}`);
+        parts.push(`${i + 1}. @${e.username}${e.display_name ? ` (${e.display_name})` : ""} — IDX: ${e.global_index_score}, League: ${e.league}, Lv${e.level}, Wins: ${e.total_wins}/${e.total_events} events, Best QOI: ${e.best_gatekeeper_qoi || "n/a"}`);
       });
     }
 
     // Recent completed battles
     const { data: battles } = await sb
       .from("battles")
-      .select("challenger_username, opponent_username, status, winner_id, challenger_id, opponent_id, created_at")
-      .eq("status", "completed")
+      .select("challenger_username, opponent_username, status, winner_id, challenger_id, opponent_id, challenge_type, league_tier, created_at")
+      .in("status", ["completed", "active", "pending"])
       .order("created_at", { ascending: false })
-      .limit(5);
+      .limit(10);
 
     if (battles?.length) {
-      parts.push("\nRECENT BATTLES:");
-      for (const b of battles) {
-        const winner = b.winner_id === b.challenger_id ? b.challenger_username : b.opponent_username;
-        const loser = b.winner_id === b.challenger_id ? b.opponent_username : b.challenger_username;
-        parts.push(`- ${winner} beat ${loser}`);
+      const completed = battles.filter(b => b.status === "completed");
+      const active = battles.filter(b => b.status === "active");
+      const pending = battles.filter(b => b.status === "pending");
+      
+      if (completed.length) {
+        parts.push("\nRECENT BATTLE RESULTS:");
+        for (const b of completed.slice(0, 5)) {
+          const winner = b.winner_id === b.challenger_id ? b.challenger_username : b.opponent_username;
+          const loser = b.winner_id === b.challenger_id ? b.opponent_username : b.challenger_username;
+          parts.push(`- ${winner} beat ${loser} (${b.challenge_type}, ${b.league_tier})`);
+        }
+      }
+      if (active.length) {
+        parts.push(`\nACTIVE BATTLES: ${active.length} battles in progress`);
+      }
+      if (pending.length) {
+        parts.push(`PENDING BATTLES: ${pending.length} waiting for opponents`);
       }
     }
 
     // Active sanctioned tournaments
     const { data: tournaments } = await sb
       .from("sanctioned_tournaments")
-      .select("name, status, max_participants, prize_pool_label")
+      .select("name, status, max_participants, player_count, prize_pool_label, slug")
       .in("status", ["registration", "active", "in_progress"])
       .limit(5);
 
     if (tournaments?.length) {
       parts.push("\nACTIVE TOURNAMENTS:");
       for (const t of tournaments) {
-        parts.push(`- "${t.name}" — status: ${t.status}, max: ${t.max_participants} editors, prize: ${t.prize_pool_label || "TBD"}`);
+        parts.push(`- "${t.name}" — status: ${t.status}, ${t.player_count || 0}/${t.max_participants} editors, prize: ${t.prize_pool_label || "TBD"}, url: /sanctioned/${t.slug}`);
+      }
+    }
+
+    // Active events
+    const { data: events } = await sb
+      .from("events")
+      .select("title, status, league, start_date, end_date, prize_pool, category, event_mode, slug, xp_reward")
+      .in("status", ["upcoming", "active", "registration"])
+      .order("start_date", { ascending: true })
+      .limit(10);
+
+    if (events?.length) {
+      parts.push("\nUPCOMING/ACTIVE EVENTS:");
+      for (const e of events) {
+        parts.push(`- "${e.title}" — ${e.status}, ${e.category || "general"}, league: ${e.league}, mode: ${e.event_mode || "standard"}, prize: ${e.prize_pool || "none"}, XP: ${e.xp_reward || 0}, url: /event/${e.slug || e.title}`);
       }
     }
 
     // Featured artists
     const { data: artists } = await sb
       .from("featured_artists")
-      .select("name, genre, monthly_streams, verified")
+      .select("name, genre, monthly_streams, verified, slug")
       .eq("is_active", true)
       .order("monthly_streams", { ascending: false })
-      .limit(5);
+      .limit(10);
 
     if (artists?.length) {
-      parts.push("\nFEATURED ARTISTS ON THE PLATFORM:");
+      parts.push("\nFEATURED ARTISTS:");
       for (const a of artists) {
-        parts.push(`- ${a.name} (${a.genre})${a.verified ? " ✓" : ""} — ${a.monthly_streams?.toLocaleString() || "?"} monthly streams`);
+        parts.push(`- ${a.name} (${a.genre || "various"})${a.verified ? " ✓" : ""} — ${a.monthly_streams?.toLocaleString() || "?"} monthly streams`);
+      }
+    }
+
+    // Top Units
+    const { data: units } = await sb
+      .from("crews")
+      .select("name, member_count, emblem, is_featured, min_league")
+      .order("member_count", { ascending: false })
+      .limit(10);
+
+    if (units?.length) {
+      parts.push("\nTOP UNITS:");
+      for (const u of units) {
+        parts.push(`- ${u.emblem} ${u.name} — ${u.member_count} members, min league: ${u.min_league}${u.is_featured ? " ⭐" : ""}`);
+      }
+    }
+
+    // Hosted competitions
+    const { data: hostedComps } = await sb
+      .from("hosted_competitions")
+      .select("name, status, participant_count, max_participants, category, slug")
+      .in("status", ["upcoming", "active", "registration"])
+      .limit(5);
+
+    if (hostedComps?.length) {
+      parts.push("\nACTIVE HOSTED COMPETITIONS:");
+      for (const c of hostedComps) {
+        parts.push(`- "${c.name}" — ${c.status}, ${c.participant_count || 0}/${c.max_participants || "∞"} editors, category: ${c.category || "open"}`);
       }
     }
 
     // Platform stats
-    const { count: totalEditors } = await sb
-      .from("profiles")
-      .select("id", { count: "exact", head: true });
+    const { count: totalEditors } = await sb.from("profiles").select("id", { count: "exact", head: true });
+    const { count: totalBattles } = await sb.from("battles").select("id", { count: "exact", head: true });
+    const { count: totalUnits } = await sb.from("crews").select("id", { count: "exact", head: true });
+    const { count: totalDrops } = await sb.from("featured_drops").select("id", { count: "exact", head: true });
+    const { count: totalEvents } = await sb.from("events").select("id", { count: "exact", head: true });
 
-    const { count: totalBattles } = await sb
-      .from("battles")
-      .select("id", { count: "exact", head: true });
+    parts.push(`\nPLATFORM STATS: ${totalEditors || 0} total editors, ${totalBattles || 0} battles fought, ${totalUnits || 0} units, ${totalDrops || 0} drops, ${totalEvents || 0} events`);
 
-    const { count: totalUnits } = await sb
-      .from("crews")
-      .select("id", { count: "exact", head: true });
+    // If we have the user's ID, fetch their personal stats
+    if (userId) {
+      const { data: userProfile } = await sb
+        .from("profiles")
+        .select("username, display_name, global_index_score, spendable_index, league, level, xp, total_wins, total_events, win_rate, best_gatekeeper_qoi, connection_count, crew_id")
+        .eq("id", userId)
+        .single();
 
-    if (totalEditors || totalBattles || totalUnits) {
-      parts.push(`\nPLATFORM STATS: ${totalEditors || 0} editors, ${totalBattles || 0} battles, ${totalUnits || 0} units`);
+      if (userProfile) {
+        parts.push(`\nTHIS USER'S PROFILE (the person you're talking to):`);
+        parts.push(`- Username: @${userProfile.username}, Display: ${userProfile.display_name || "not set"}`);
+        parts.push(`- Index: ${userProfile.global_index_score}, Spendable IDX: ${userProfile.spendable_index}, League: ${userProfile.league}`);
+        parts.push(`- Level ${userProfile.level}, XP: ${userProfile.xp}`);
+        parts.push(`- Events: ${userProfile.total_events}, Wins: ${userProfile.total_wins}, Win Rate: ${userProfile.win_rate}%`);
+        parts.push(`- Best QOI: ${userProfile.best_gatekeeper_qoi || "none yet"}`);
+        parts.push(`- Connections: ${userProfile.connection_count}`);
+        
+        if (userProfile.crew_id) {
+          const { data: crew } = await sb
+            .from("crews")
+            .select("name, emblem")
+            .eq("id", userProfile.crew_id)
+            .single();
+          if (crew) {
+            parts.push(`- Unit: ${crew.emblem} ${crew.name}`);
+          }
+        } else {
+          parts.push(`- Unit: none (not in a unit yet)`);
+        }
+      }
     }
 
   } catch (e) {
     console.error("Failed to fetch live context:", e);
   }
 
-  return parts.length ? "\n\n--- LIVE PLATFORM DATA (use this to answer questions accurately) ---\n" + parts.join("\n") : "";
+  return parts.length ? "\n\n=== LIVE PLATFORM DATA (USE THIS TO ANSWER ACCURATELY — DO NOT MAKE UP DATA) ===\n" + parts.join("\n") : "";
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, userId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     // Fetch live data to give Loopy real context
-    const liveContext = await fetchLiveContext();
+    const liveContext = await fetchLiveContext(userId);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
