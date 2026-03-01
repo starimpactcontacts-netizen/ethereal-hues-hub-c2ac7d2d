@@ -221,6 +221,22 @@ export default function FeaturedDropDetailPage() {
       {/* ═══ BODY ═══ */}
       <div className="px-4 space-y-3 mt-3">
 
+        {/* ═══ PRIZE CALLOUT ═══ */}
+        {drop.prize_usd > 0 && (
+          <div className="flex items-center gap-3 py-2">
+            <span
+              className="font-display text-5xl text-emerald-400 font-black leading-none"
+              style={{ textShadow: '0 0 16px rgba(16,185,129,0.5), 0 6px 30px rgba(16,185,129,0.35), 0 14px 50px rgba(16,185,129,0.2)' }}
+            >
+              ${drop.prize_usd}
+            </span>
+            <div>
+              <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Cash Prize</p>
+              <p className="text-[10px] text-muted-foreground">Best edit + random pick win</p>
+            </div>
+          </div>
+        )}
+
         {/* ═══ ROUND SYSTEM ═══ */}
         {hasRounds && (
           <div ref={queueRef} className="space-y-3">
