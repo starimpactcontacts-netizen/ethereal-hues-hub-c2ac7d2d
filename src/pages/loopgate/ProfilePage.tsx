@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users, Sparkles } from "lucide-react";
+import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users, Sparkles, ShoppingBag, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";
@@ -28,6 +28,7 @@ import { getRankFromScore } from "@/data/gqtConfig";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
+import ProfileInventory from "@/components/loopgate/ProfileInventory";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -364,26 +365,8 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ═══ AVATAR SECTION ═══ */}
-      <div className="px-4 mb-2">
-        <button
-          onClick={() => setShowAvatarModal(true)}
-          className="w-full bg-surface-1 border border-border rounded-md p-2.5 flex items-center gap-3 hover:border-foreground/30 transition-colors group"
-        >
-          <div className="w-8 h-8 rounded-full overflow-hidden bg-muted/30 border border-border flex items-center justify-center shrink-0">
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <Camera className="w-3.5 h-3.5 text-muted-foreground" />
-            )}
-          </div>
-          <div className="flex-1 text-left">
-            <p className="text-[11px] font-semibold text-foreground">Change Avatar</p>
-            <p className="text-[9px] text-muted-foreground">Update your profile picture</p>
-          </div>
-          <Camera className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
-        </button>
-      </div>
+      {/* ═══ MY ITEMS (INVENTORY) ═══ */}
+      <ProfileInventory userId={profile.id} navigate={navigate} />
 
       {/* ═══ CONTENT TABS ═══ */}
       <div className="px-4 mb-2">
