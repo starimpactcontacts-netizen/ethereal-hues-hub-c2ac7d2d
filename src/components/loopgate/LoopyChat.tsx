@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Sparkles } from 'lucide-react';
+import { X, Send, Sparkles, Loader2 } from 'lucide-react';
 import loopyAvatar from '@/assets/loopy-avatar.png';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -18,6 +19,7 @@ export default function LoopyChat() {
   const [showPulse, setShowPulse] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { profile } = useAuth();
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -30,19 +32,20 @@ export default function LoopyChat() {
   useEffect(() => {
     if (open) {
       setShowPulse(false);
-      setTimeout(() => inputRef.current?.focus(), 200);
+      setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [open]);
 
-  // Add greeting on first open
+  // Add personalized greeting on first open
   useEffect(() => {
     if (open && messages.length === 0) {
+      const name = profile?.display_name || profile?.username || 'bro';
       setMessages([{
         role: 'assistant',
-        content: "yoo wsg im loopy. ask me whatever about loopgate — battles, units, rankings, all that. i got u"
+        content: `wsg ${name}. im loopy, ask me whatever about loopgate — battles, units, rankings, all that. i got u`
       }]);
     }
-  }, [open, messages.length]);
+  }, [open, messages.length, profile]);
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
@@ -123,20 +126,21 @@ export default function LoopyChat() {
       <AnimatePresence>
         {!open && (
           <motion.button
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0 }}
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={{ scale: 0, rotate: 20 }}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
             onClick={() => setOpen(true)}
             className="fixed bottom-20 right-3 z-50 w-14 h-14 rounded-full bg-background border-2 border-primary shadow-lg shadow-primary/20 overflow-hidden"
           >
             <img src={loopyAvatar} alt="Loopy" className="w-full h-full object-cover" />
             {showPulse && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full animate-ping" />
-            )}
-            {showPulse && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full" />
+              <>
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full animate-ping" />
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary rounded-full" />
+              </>
             )}
           </motion.button>
         )}
@@ -146,14 +150,19 @@ export default function LoopyChat() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 40, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 28, mass: 0.8 }}
             className="fixed bottom-20 right-2 left-2 sm:left-auto sm:w-[360px] z-50 max-h-[70vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-card border-b border-border">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex items-center gap-2 px-3 py-2.5 bg-card border-b border-border"
+            >
               <img src={loopyAvatar} alt="Loopy" className="w-8 h-8 rounded-full border border-primary" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -166,12 +175,18 @@ export default function LoopyChat() {
               <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-muted transition-colors">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
-            </div>
+            </motion.div>
 
             {/* Messages */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3 min-h-[200px] max-h-[50vh]">
               {messages.map((msg, i) => (
-                <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <motion.div 
+                  key={i} 
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
                   {msg.role === 'assistant' && (
                     <img src={loopyAvatar} alt="" className="w-6 h-6 rounded-full border border-border mt-0.5 shrink-0" />
                   )}
@@ -185,8 +200,24 @@ export default function LoopyChat() {
                       <span className="inline-block w-1.5 h-4 bg-current ml-0.5 animate-pulse" />
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
+
+              {/* Typing indicator when waiting for first token */}
+              {streaming && (messages.length === 0 || messages[messages.length - 1]?.role === 'user') && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex gap-2 justify-start"
+                >
+                  <img src={loopyAvatar} alt="" className="w-6 h-6 rounded-full border border-border mt-0.5 shrink-0" />
+                  <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3 flex gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:150ms]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Input */}
@@ -205,9 +236,13 @@ export default function LoopyChat() {
               <button
                 type="submit"
                 disabled={!input.trim() || streaming}
-                className="p-2 rounded-full bg-primary text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
+                className="p-2 rounded-full bg-primary text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-all"
               >
-                <Send className="w-4 h-4" />
+                {streaming ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </button>
             </form>
           </motion.div>
