@@ -72,6 +72,14 @@ export default function InventoryPage() {
       setItems((prev) =>
         prev.map((i) => (i.id === purchase.id ? { ...i, is_equipped: newState } : i))
       );
+
+      // Sync is_founding_member on profile when toggling OG Claim
+      if (purchase.item.name === "OG Claim") {
+        await supabase
+          .from("profiles")
+          .update({ is_founding_member: newState } as any)
+          .eq("id", user.id);
+      }
     }
     setToggling(null);
   };
