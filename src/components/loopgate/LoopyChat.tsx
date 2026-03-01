@@ -3,6 +3,7 @@ import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { X, Send, Sparkles, Loader2, Plus, MessageSquare, Trash2, ChevronLeft } from 'lucide-react';
 import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useLoopyChat } from '@/hooks/useLoopyChat';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoopyChat() {
   const [open, setOpen] = useState(false);
@@ -39,11 +40,20 @@ export default function LoopyChat() {
     }
   }, [view]);
 
-  const handleOpen = () => {
+  const { user } = useAuth();
+  const isGuest = !user;
+
+  const handleOpen = async () => {
     setOpen(true);
     setShowPulse(false);
     setDocked(false);
-    if (activeConversationId && messages.length > 0) {
+    if (isGuest) {
+      // Guests skip menu, go straight to chat
+      if (!activeConversationId || messages.length === 0) {
+        await startNewChat();
+      }
+      setView('chat');
+    } else if (activeConversationId && messages.length > 0) {
       setView('chat');
     } else {
       setView('menu');
@@ -182,7 +192,7 @@ export default function LoopyChat() {
               transition={{ delay: 0.1 }}
               className="flex items-center gap-2 px-3 py-2.5 bg-card border-b border-border"
             >
-              {view !== 'menu' && (
+              {view !== 'menu' && !isGuest && (
                 <button onClick={() => setView('menu')} className="p-1 rounded-full hover:bg-muted transition-colors">
                   <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                 </button>

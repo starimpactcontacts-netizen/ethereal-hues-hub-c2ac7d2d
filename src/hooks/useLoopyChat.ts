@@ -23,23 +23,26 @@ export function useLoopyChat() {
   const [streaming, setStreaming] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const saveQueueRef = useRef<Message[]>([]);
+  const guestConvCounterRef = useRef(0);
 
+  const isGuest = !user;
   const displayName = profile?.display_name || profile?.username || '';
 
   // Load conversation list
   const loadConversations = useCallback(async () => {
-    if (!user) return;
+    if (isGuest) return; // guests have no persisted conversations
     const { data } = await supabase
       .from('loopy_conversations')
       .select('id, title, updated_at')
-      .eq('user_id', user.id)
+      .eq('user_id', user!.id)
       .order('updated_at', { ascending: false })
       .limit(20);
     if (data) setConversations(data);
-  }, [user]);
+  }, [user, isGuest]);
 
   // Load messages for a conversation
   const loadMessages = useCallback(async (convId: string) => {
+    if (isGuest) return; // guest messages are already in state
     setLoadingHistory(true);
     const { data } = await supabase
       .from('loopy_messages')
@@ -49,24 +52,31 @@ export function useLoopyChat() {
     if (data) setMessages(data as Message[]);
     setActiveConversationId(convId);
     setLoadingHistory(false);
-  }, []);
+  }, [isGuest]);
 
   // Create new conversation
   const startNewChat = useCallback(async () => {
-    if (!user) return;
     const greeting: Message = {
       role: 'assistant',
       content: `yoo wsg${displayName ? ` ${displayName}` : ''}. ask me whatever about loopgate — battles, units, rankings, all that. i got u`
     };
 
+    if (isGuest) {
+      // In-memory only for guests
+      guestConvCounterRef.current += 1;
+      const guestId = `guest-${guestConvCounterRef.current}`;
+      setActiveConversationId(guestId);
+      setMessages([greeting]);
+      return;
+    }
+
     const { data } = await supabase
       .from('loopy_conversations')
-      .insert({ user_id: user.id, title: 'New Chat' })
+      .insert({ user_id: user!.id, title: 'New Chat' })
       .select('id')
       .single();
 
     if (data) {
-      // Save greeting
       await supabase.from('loopy_messages').insert({
         conversation_id: data.id,
         role: 'assistant',
@@ -76,7 +86,7 @@ export function useLoopyChat() {
       setMessages([greeting]);
       loadConversations();
     }
-  }, [user, displayName, loadConversations]);
+  }, [user, isGuest, displayName, loadConversations]);
 
   // Continue most recent conversation
   const continueLastChat = useCallback(async () => {
@@ -87,8 +97,9 @@ export function useLoopyChat() {
     }
   }, [conversations, loadMessages, startNewChat]);
 
-  // Save message to DB
+  // Save message to DB (skip for guests)
   const saveMessage = useCallback(async (convId: string, msg: Message) => {
+    if (isGuest) return; // no persistence for guests
     await supabase.from('loopy_messages').insert({
       conversation_id: convId,
       role: msg.role,
@@ -102,7 +113,7 @@ export function useLoopyChat() {
         .update({ title, updated_at: new Date().toISOString() })
         .eq('id', convId);
     }
-  }, []);
+  }, [isGuest]);
 
   // Send message with streaming
   const sendMessage = useCallback(async (text: string) => {
@@ -187,13 +198,15 @@ export function useLoopyChat() {
 
   // Delete a conversation
   const deleteConversation = useCallback(async (convId: string) => {
-    await supabase.from('loopy_conversations').delete().eq('id', convId);
+    if (!isGuest) {
+      await supabase.from('loopy_conversations').delete().eq('id', convId);
+    }
     if (activeConversationId === convId) {
       setActiveConversationId(null);
       setMessages([]);
     }
-    loadConversations();
-  }, [activeConversationId, loadConversations]);
+    if (!isGuest) loadConversations();
+  }, [activeConversationId, isGuest, loadConversations]);
 
   // Load conversations on mount
   useEffect(() => {
