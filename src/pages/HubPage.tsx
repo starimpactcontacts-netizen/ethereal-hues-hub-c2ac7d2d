@@ -365,25 +365,35 @@ export default function HubPage() {
                   </div>
                 </button>
 
-                <Link to="/shop" className="group shrink-0">
-                  <div className="relative flex items-center gap-2.5 bg-background border border-border/60 hover:border-gold/40 px-3 py-2 transition-all group-hover:shadow-[0_0_12px_rgba(212,175,55,0.15)]">
-                    {/* Corner accents — Loopgate coded */}
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-gold/40" />
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-gold/40" />
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-gold/40" />
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-gold/40" />
-                    <ShoppingBag className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
-                    <div className="flex items-center gap-1">
-                      <Coins className="w-3 h-3 text-gold" />
-                      <span className="font-display text-lg text-foreground leading-none tabular-nums">
-                        {(profile as any)?.spendable_index || 0}
-                      </span>
-                    </div>
-                    <DollarSign className="w-3 h-3 text-emerald-400" />
-                    <span className="text-[8px] text-gold/60 uppercase tracking-[0.15em] font-semibold">INDEX</span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Earnings bracket */}
+                  <div className="relative flex items-center gap-1.5 bg-background border border-emerald-500/30 px-2.5 py-1.5 transition-all">
+                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-emerald-400/50" />
+                    <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-emerald-400/50" />
+                    <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-emerald-400/50" />
+                    <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-emerald-400/50" />
+                    <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="font-display text-base text-emerald-400 leading-none tabular-nums">
+                      {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
+                    </span>
                     <IndexEarnBadge size="sm" hideDollar />
                   </div>
-                </Link>
+
+                  {/* Index bracket */}
+                  <Link to="/shop" className="group">
+                    <div className="relative flex items-center gap-1.5 bg-background border border-border/60 hover:border-gold/40 px-2.5 py-1.5 transition-all group-hover:shadow-[0_0_12px_rgba(212,175,55,0.15)]">
+                      <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-gold/40" />
+                      <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-gold/40" />
+                      <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-gold/40" />
+                      <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-gold/40" />
+                      <Coins className="w-3.5 h-3.5 text-gold" />
+                      <span className="font-display text-base text-foreground leading-none tabular-nums">
+                        {(profile as any)?.spendable_index || 0}
+                      </span>
+                      <span className="text-[7px] text-gold/60 uppercase tracking-[0.1em] font-semibold">IDX</span>
+                    </div>
+                  </Link>
+                </div>
               </div>
 
               {/* XP Progress Bar */}
