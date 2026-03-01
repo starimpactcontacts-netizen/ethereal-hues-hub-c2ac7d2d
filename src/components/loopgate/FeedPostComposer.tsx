@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Link2, Sparkles, Trophy, Zap } from "lucide-react";
+import { Send, Link2, Sparkles, ImagePlus } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { FeedPostItem } from "@/hooks/useFeedPosts";
+import GifPicker from "./GifPicker";
+import MediaUploadButton from "./MediaUploadButton";
 
 interface FeedPostComposerProps {
   userProfile?: { username: string; avatar_url: string | null; league?: string; level?: number } | null;
-  onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string) => Promise<void>;
+  onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => Promise<void>;
 }
 
 const POST_TYPE_OPTIONS: { id: FeedPostItem['post_type']; label: string; icon: React.ReactNode }[] = [
-  { id: 'text', label: 'Post', icon: null },
+  { id: 'text', label: 'Loop', icon: null },
   { id: 'flex', label: 'Flex', icon: <Sparkles className="w-3 h-3" /> },
   { id: 'edit_share', label: 'Edit', icon: <Link2 className="w-3 h-3" /> },
 ];
@@ -26,12 +27,15 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
   const [postType, setPostType] = useState<FeedPostItem['post_type']>('text');
   const [submitting, setSubmitting] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [selectedGif, setSelectedGif] = useState<string | null>(null);
+  const [uploadedMedia, setUploadedMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
 
   if (!user) return null;
 
   const charsLeft = MAX_CHARS - content.length;
   const isOverLimit = charsLeft < 0;
-  const canSubmit = content.trim().length > 0 && !isOverLimit && !submitting;
+  const canSubmit = (content.trim().length > 0 || selectedGif || uploadedMedia) && !isOverLimit && !submitting;
 
   const detectPlatform = (url: string): string | undefined => {
     if (url.includes("tiktok.com")) return "tiktok";
@@ -43,13 +47,30 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setSubmitting(true);
+    const finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
     const platform = mediaUrl ? detectPlatform(mediaUrl) : undefined;
-    await onPost(content.trim(), postType, mediaUrl.trim() || undefined, platform);
+    await onPost(
+      finalContent,
+      postType,
+      mediaUrl.trim() || undefined,
+      platform,
+      uploadedMedia?.url,
+      uploadedMedia?.type,
+    );
     setContent("");
     setMediaUrl("");
     setPostType('text');
     setIsFocused(false);
+    setSelectedGif(null);
+    setUploadedMedia(null);
+    setShowGifPicker(false);
     setSubmitting(false);
+  };
+
+  const handleGifSelect = (gifUrl: string) => {
+    setSelectedGif(gifUrl);
+    setShowGifPicker(false);
+    setUploadedMedia(null); // Can't have both
   };
 
   return (
@@ -72,22 +93,65 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
             placeholder={
               postType === 'flex' ? "Just hit S++ rank 🔥" :
               postType === 'edit_share' ? "Check out my latest edit..." :
-              "What's happening in your edit life?"
+              "What's happening in the loop?"
             }
             rows={isFocused ? 3 : 1}
             className="w-full bg-transparent text-foreground text-[14px] placeholder:text-muted-foreground/50 resize-none focus:outline-none leading-snug py-1"
             maxLength={300}
           />
 
-          {(isFocused || content.length > 0) && (
-            <div className="flex items-center justify-between mb-2">
-              <span className={`text-[11px] font-mono ${
-                isOverLimit ? 'text-destructive' :
-                charsLeft <= 20 ? 'text-gold' :
-                'text-muted-foreground/50'
-              }`}>
-                {charsLeft}
-              </span>
+          {/* Uploaded media / GIF preview */}
+          {uploadedMedia && (
+            <div className="mt-1">
+              <MediaUploadButton
+                onUpload={() => {}}
+                uploadedUrl={uploadedMedia.url}
+                onClear={() => setUploadedMedia(null)}
+              />
+            </div>
+          )}
+          {selectedGif && !uploadedMedia && (
+            <div className="relative mt-2 inline-block">
+              <img src={selectedGif} alt="Selected GIF" className="max-w-[180px] max-h-[140px] rounded-xl" />
+              <button
+                onClick={() => setSelectedGif(null)}
+                className="absolute -top-2 -right-2 w-5 h-5 bg-background border border-border rounded-full flex items-center justify-center shadow-sm text-[10px]"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {(isFocused || content.length > 0 || selectedGif || uploadedMedia) && (
+            <div className="flex items-center justify-between mb-2 mt-1">
+              <div className="flex items-center gap-1">
+                {/* Media upload */}
+                {!uploadedMedia && !selectedGif && (
+                  <MediaUploadButton
+                    onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
+                    uploadedUrl={null}
+                    onClear={() => {}}
+                  />
+                )}
+                {/* GIF button */}
+                <button
+                  onClick={() => setShowGifPicker(!showGifPicker)}
+                  className={`px-2 py-1 rounded-full text-[10px] font-black tracking-tight transition-all ${
+                    showGifPicker || selectedGif
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                  }`}
+                >
+                  GIF
+                </button>
+                <span className={`text-[11px] font-mono ml-1 ${
+                  isOverLimit ? 'text-destructive' :
+                  charsLeft <= 20 ? 'text-gold' :
+                  'text-muted-foreground/50'
+                }`}>
+                  {charsLeft}
+                </span>
+              </div>
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
@@ -100,7 +164,7 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
                 {submitting ? (
                   <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  "Post"
+                  "Loop"
                 )}
               </button>
             </div>
@@ -141,6 +205,16 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
                     placeholder="Paste edit link (TikTok, YT, IG)..."
                     className="w-full bg-muted/30 border border-border/30 rounded-lg px-3 py-2 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/30 mb-2"
                   />
+                )}
+
+                {/* GIF Picker */}
+                {showGifPicker && (
+                  <div className="rounded-xl overflow-hidden border border-border mb-2">
+                    <GifPicker
+                      onSelect={handleGifSelect}
+                      onClose={() => setShowGifPicker(false)}
+                    />
+                  </div>
                 )}
               </motion.div>
             )}

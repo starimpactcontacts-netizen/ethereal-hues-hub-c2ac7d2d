@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { X, Sparkles, Link2, Globe, ImageIcon } from "lucide-react";
+import { X, Sparkles, Link2, Globe } from "lucide-react";
 import GifPicker from "./GifPicker";
+import MediaUploadButton from "./MediaUploadButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import { FeedPostItem } from "@/hooks/useFeedPosts";
@@ -9,11 +10,11 @@ interface FeedComposeSheetProps {
   open: boolean;
   onClose: () => void;
   userProfile?: { username: string; avatar_url: string | null; league?: string; level?: number } | null;
-  onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string) => Promise<void>;
+  onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => Promise<void>;
 }
 
 const POST_TYPES: { id: FeedPostItem['post_type']; label: string; icon: React.ReactNode }[] = [
-  { id: 'text', label: 'Post', icon: <Globe className="w-3.5 h-3.5" /> },
+  { id: 'text', label: 'Loop', icon: <Globe className="w-3.5 h-3.5" /> },
   { id: 'flex', label: 'Flex', icon: <Sparkles className="w-3.5 h-3.5" /> },
   { id: 'edit_share', label: 'Edit', icon: <Link2 className="w-3.5 h-3.5" /> },
 ];
@@ -27,10 +28,11 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
   const [submitting, setSubmitting] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [selectedGif, setSelectedGif] = useState<string | null>(null);
+  const [uploadedMedia, setUploadedMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
 
   const charsLeft = MAX_CHARS - content.length;
   const isOverLimit = charsLeft < 0;
-  const canSubmit = (content.trim().length > 0 || selectedGif) && !isOverLimit && !submitting;
+  const canSubmit = (content.trim().length > 0 || selectedGif || uploadedMedia) && !isOverLimit && !submitting;
 
   const detectPlatform = (url: string): string | undefined => {
     if (url.includes("tiktok.com")) return "tiktok";
@@ -44,11 +46,19 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
     setSubmitting(true);
     const finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
     const platform = mediaUrl ? detectPlatform(mediaUrl) : undefined;
-    await onPost(finalContent, postType, mediaUrl.trim() || undefined, platform);
+    await onPost(
+      finalContent,
+      postType,
+      mediaUrl.trim() || undefined,
+      platform,
+      uploadedMedia?.url,
+      uploadedMedia?.type,
+    );
     setContent("");
     setMediaUrl("");
     setPostType('text');
     setSelectedGif(null);
+    setUploadedMedia(null);
     setSubmitting(false);
     onClose();
   };
@@ -56,6 +66,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
   const handleGifSelect = (gifUrl: string) => {
     setSelectedGif(gifUrl);
     setShowGifPicker(false);
+    setUploadedMedia(null);
   };
 
   const progressPct = Math.min(100, (content.length / MAX_CHARS) * 100);
@@ -71,14 +82,13 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
           transition={{ duration: 0.15 }}
           className="fixed inset-0 z-[60] bg-background flex flex-col safe-top"
         >
-          {/* Header — always visible */}
+          {/* Header */}
           <div className="flex items-center justify-between px-4 h-12 border-b border-border/30 shrink-0">
             <button onClick={onClose} className="p-1.5 -ml-1.5 rounded-full hover:bg-muted/30 transition-colors">
               <X className="w-5 h-5 text-foreground" />
             </button>
 
             <div className="flex items-center gap-3">
-              {/* Char counter ring — inline in header */}
               {content.length > 0 && (
                 <div className="flex items-center gap-1.5">
                   <svg width="24" height="24" viewBox="0 0 24 24" className="shrink-0">
@@ -110,12 +120,12 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
               >
                 {submitting ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : "Post"}
+                ) : "Loop"}
               </button>
             </div>
           </div>
 
-          {/* Post type chips + GIF button — below header */}
+          {/* Post type chips + media buttons */}
           <div className="flex items-center gap-1.5 px-4 py-2 border-b border-border/15 shrink-0">
             {POST_TYPES.map(opt => (
               <button
@@ -132,7 +142,16 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
               </button>
             ))}
 
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1">
+              {/* Upload button */}
+              {!uploadedMedia && !selectedGif && (
+                <MediaUploadButton
+                  onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
+                  uploadedUrl={null}
+                  onClear={() => {}}
+                />
+              )}
+              {/* GIF button */}
               <button
                 onClick={() => setShowGifPicker(!showGifPicker)}
                 className={`px-3 py-1.5 rounded-full text-[11px] font-black tracking-tight transition-all ${
@@ -146,7 +165,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
             </div>
           </div>
 
-          {/* Compose body — scrollable, fills remaining space */}
+          {/* Compose body */}
           <div className="flex-1 overflow-y-auto">
             <div className="flex gap-3 px-4 pt-4 pb-24">
               <Avatar className="w-10 h-10 border border-border/40 shrink-0">
@@ -163,7 +182,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
                   placeholder={
                     postType === 'flex' ? "What's your flex? 🔥" :
                     postType === 'edit_share' ? "Share your latest edit..." :
-                    "What's happening?"
+                    "What's happening in the loop?"
                   }
                   autoFocus
                   className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[200px]"
@@ -180,8 +199,19 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
                   />
                 )}
 
+                {/* Uploaded media preview */}
+                {uploadedMedia && (
+                  <div className="mt-3">
+                    <MediaUploadButton
+                      onUpload={() => {}}
+                      uploadedUrl={uploadedMedia.url}
+                      onClear={() => setUploadedMedia(null)}
+                    />
+                  </div>
+                )}
+
                 {/* Selected GIF preview */}
-                {selectedGif && (
+                {selectedGif && !uploadedMedia && (
                   <div className="relative mt-3 inline-block">
                     <img src={selectedGif} alt="Selected GIF" className="max-w-[200px] max-h-[160px] rounded-xl" />
                     <button
@@ -206,10 +236,14 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
             </div>
           </div>
 
-          {/* Bottom action bar — persistent CTA */}
+          {/* Bottom action bar */}
           <div className="border-t border-border/20 bg-background/95 backdrop-blur px-4 py-2 safe-bottom shrink-0">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] text-muted-foreground/70">{selectedGif ? 'GIF attached ✓' : postType === 'edit_share' ? 'Add your edit link' : 'Write your post'}</p>
+              <p className="text-[11px] text-muted-foreground/70">
+                {uploadedMedia ? `${uploadedMedia.type === 'video' ? 'Video' : 'Image'} attached ✓` :
+                 selectedGif ? 'GIF attached ✓' : 
+                 postType === 'edit_share' ? 'Add your edit link' : 'Write your loop'}
+              </p>
               <button
                 onClick={handleSubmit}
                 disabled={!canSubmit}
@@ -221,7 +255,7 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
               >
                 {submitting ? (
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                ) : "Post"}
+                ) : "Loop"}
               </button>
             </div>
           </div>

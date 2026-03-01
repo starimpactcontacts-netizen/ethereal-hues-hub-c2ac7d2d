@@ -9,6 +9,8 @@ export interface FeedPostItem {
   post_type: 'text' | 'flex' | 'edit_share' | 'milestone';
   media_url: string | null;
   media_platform: string | null;
+  uploaded_media_url: string | null;
+  uploaded_media_type: string | null;
   like_count: number;
   bookmark_count: number;
   comment_count: number;
@@ -55,6 +57,8 @@ export function useFeedPosts(limit = 30) {
         ...p,
         data: (p.data as Record<string, any>) || {},
         post_type: p.post_type as FeedPostItem['post_type'],
+        uploaded_media_url: (p as any).uploaded_media_url || null,
+        uploaded_media_type: (p as any).uploaded_media_type || null,
         username: profile?.username || 'editor',
         avatar_url: profile?.avatar_url || null,
         league: profile?.league || 'open',
@@ -95,7 +99,7 @@ export function useFeedPosts(limit = 30) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchPosts]);
 
-  const createPost = async (content: string, postType: FeedPostItem['post_type'] = 'text', mediaUrl?: string, mediaPlatform?: string) => {
+  const createPost = async (content: string, postType: FeedPostItem['post_type'] = 'text', mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => {
     if (!user) return;
     const { error } = await supabase.from('feed_posts').insert({
       user_id: user.id,
@@ -103,6 +107,8 @@ export function useFeedPosts(limit = 30) {
       post_type: postType,
       media_url: mediaUrl || null,
       media_platform: mediaPlatform || null,
+      uploaded_media_url: uploadedMediaUrl || null,
+      uploaded_media_type: uploadedMediaType || null,
     });
     if (error) console.error('Error creating post:', error);
   };

@@ -2779,6 +2779,38 @@ export type Database = {
           },
         ]
       }
+      feed_post_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feed_posts: {
         Row: {
           bookmark_count: number
@@ -2794,6 +2826,8 @@ export type Database = {
           post_type: string
           share_count: number
           submission_id: string | null
+          uploaded_media_type: string | null
+          uploaded_media_url: string | null
           user_id: string
         }
         Insert: {
@@ -2810,6 +2844,8 @@ export type Database = {
           post_type?: string
           share_count?: number
           submission_id?: string | null
+          uploaded_media_type?: string | null
+          uploaded_media_url?: string | null
           user_id: string
         }
         Update: {
@@ -2826,6 +2862,8 @@ export type Database = {
           post_type?: string
           share_count?: number
           submission_id?: string | null
+          uploaded_media_type?: string | null
+          uploaded_media_url?: string | null
           user_id?: string
         }
         Relationships: []
