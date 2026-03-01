@@ -6,7 +6,8 @@ import {
   Flame, Calendar, Target, Shield, Swords,
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
-  Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2
+  Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
+  Clapperboard
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -583,6 +584,25 @@ export default function ArenaPage() {
                   </div>
                 </motion.div>
               )}
+
+              {/* Open Editor — Studio CTA */}
+              <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+                <Link to="/studio" className="block">
+                  <div className="group relative bg-surface-1 border border-border hover:border-foreground/20 transition-all overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#9999FF]/5 via-transparent to-[#9999FF]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative flex items-center gap-4 p-4">
+                      <div className="w-12 h-12 bg-[#9999FF]/10 border border-[#9999FF]/20 flex items-center justify-center shrink-0">
+                        <Clapperboard className="w-6 h-6 text-[#9999FF]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] font-black text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>Open Editor</p>
+                        <p className="text-[11px] text-muted-foreground">Studio — create, edit & export</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-[#9999FF] transition-colors shrink-0" />
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
 
               {!activeSolo && profile && (
                 <div className="bg-surface-1 border border-border p-4 text-center">

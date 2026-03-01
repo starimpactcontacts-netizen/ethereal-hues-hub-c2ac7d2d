@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, FileText, Home, Trophy, Shield, Search, Calendar, Building2, ShoppingBag, BookOpen, Gavel, Crown, Clapperboard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useRealRankings } from '@/hooks/useRealData';
@@ -16,6 +16,7 @@ import loopgateBrand from '@/assets/loopgate-brand.png';
 const menuItems = [
   { to: '/hub', icon: Home, label: 'Hub' },
   { to: '/arena', icon: Calendar, label: 'Arena', primary: true },
+  { to: '/studio', icon: Clapperboard, label: 'Studio', highlight: true },
   { to: '/league', icon: Crown, label: 'League' },
   { to: '/rankings', icon: Trophy, label: 'Rankings' },
   { to: '/class', icon: Shield, label: 'Class' },
