@@ -110,7 +110,7 @@ function BadgeIcon({ className, size }: { className?: string; size: number }) {
 }
 
 const SIZES = {
-  sm: { icon: 16, container: 'h-4 px-1.5 text-[9px] gap-0.5' },
+  sm: { icon: 14, container: 'h-[15px] px-1.5 text-[7px] gap-0.5' },
   md: { icon: 22, container: 'h-6 px-2 text-[10px] gap-1' },
   lg: { icon: 48, container: '' },
 };
