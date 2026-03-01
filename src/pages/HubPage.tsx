@@ -315,89 +315,91 @@ export default function HubPage() {
             className="relative z-10"
           >
             <div className="bg-surface-1 border border-border/50 overflow-hidden relative">
-              {/* Top Row: Avatar + Identity + Shop Balance */}
-              <div className="p-4 flex items-start justify-between gap-4">
-                <button 
-                  onClick={() => navigate('/profile')}
-                  className="flex items-center gap-3 group text-left"
-                >
-                  <div className="relative shrink-0">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
-                      <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
-                        {displayAvatar ? (
-                          <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="font-display text-2xl text-foreground">
-                            {displayUsername?.charAt(0).toUpperCase() || 'E'}
+               {/* Top Row: Avatar + Identity */}
+              <div className="p-4 pb-2">
+                <div className="flex items-start justify-between gap-3">
+                  <button 
+                    onClick={() => navigate('/profile')}
+                    className="flex items-center gap-3 group text-left min-w-0"
+                  >
+                    <div className="relative shrink-0">
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br ${league.gradient} p-[2px] shadow-lg ${league.glow} group-hover:scale-105 transition-transform`}>
+                        <div className="w-full h-full rounded-full bg-background flex items-center justify-center overflow-hidden">
+                          {displayAvatar ? (
+                            <img src={displayAvatar} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="font-display text-2xl text-foreground">
+                              {displayUsername?.charAt(0).toUpperCase() || 'E'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg">
+                        <span className="font-display text-[9px] text-muted-foreground uppercase tracking-wider">Lv</span>
+                        <span className="font-display text-xs text-foreground ml-0.5">{profile?.level || 1}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h1 className="font-display text-xl sm:text-2xl text-foreground leading-none truncate max-w-[160px] sm:max-w-[200px]">
+                          {displayUsername}
+                        </h1>
+                        {isJudge && (
+                          <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
+                          <LeagueIcon className="w-3 h-3 text-background" />
+                          <span className="text-[9px] font-bold tracking-wider text-background uppercase">
+                            {league.label}
                           </span>
+                        </div>
+                        {globalRank && globalRank <= 500 && (
+                          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted border border-border/50 rounded-sm">
+                            <Trophy className="w-3 h-3 text-gold" />
+                            <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
+                          </div>
                         )}
                       </div>
                     </div>
-                    <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg">
-                      <span className="font-display text-[9px] text-muted-foreground uppercase tracking-wider">Lv</span>
-                      <span className="font-display text-xs text-foreground ml-0.5">{profile?.level || 1}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h1 className="font-display text-2xl text-foreground leading-none truncate max-w-[200px]">
-                        {displayUsername}
-                      </h1>
-                      {isJudge && (
-                        <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
-                        <LeagueIcon className="w-3 h-3 text-background" />
-                        <span className="text-[9px] font-bold tracking-wider text-background uppercase">
-                          {league.label}
-                        </span>
-                      </div>
-                      {globalRank && globalRank <= 500 && (
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted border border-border/50 rounded-sm">
-                          <Trophy className="w-3 h-3 text-gold" />
-                          <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
+                {/* Earnings + Index brackets */}
+                <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto scrollbar-none">
                   {/* Earnings bracket */}
-                  <div className="relative flex items-center gap-2 bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-emerald-950/40 border border-emerald-500/25 px-3 py-1.5 transition-all hover:border-emerald-400/40 hover:shadow-[0_0_16px_rgba(16,185,129,0.12)]">
-                    <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-emerald-400/40" />
-                    <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-emerald-400/40" />
-                    <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-emerald-400/40" />
-                    <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-emerald-400/40" />
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/15 flex items-center justify-center">
-                      <DollarSign className="w-3 h-3 text-emerald-400" />
+                  <div className="relative flex items-center gap-1.5 bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-emerald-950/40 border border-emerald-500/25 px-2 sm:px-3 py-1.5 transition-all hover:border-emerald-400/40 shrink-0">
+                    <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-emerald-400/40" />
+                    <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-emerald-400/40" />
+                    <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-emerald-400/40" />
+                    <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-emerald-400/40" />
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-emerald-500/15 flex items-center justify-center">
+                      <DollarSign className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
                     </div>
-                    <span className="font-display text-base text-emerald-400 leading-none tabular-nums">
+                    <span className="font-display text-sm sm:text-base text-emerald-400 leading-none tabular-nums">
                       {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
                     </span>
                     <IndexEarnBadge size="sm" hideDollar />
                   </div>
 
                   {/* Index bracket */}
-                  <Link to="/shop" className="group">
-                    <div className="relative flex items-center gap-1.5 bg-background border border-border/60 hover:border-gold/40 px-2.5 py-1.5 transition-all group-hover:shadow-[0_0_12px_rgba(212,175,55,0.15)]">
+                  <Link to="/shop" className="group shrink-0">
+                    <div className="relative flex items-center gap-1.5 bg-background border border-border/60 hover:border-gold/40 px-2 sm:px-2.5 py-1.5 transition-all group-hover:shadow-[0_0_12px_rgba(212,175,55,0.15)]">
                       <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-gold/40" />
                       <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-gold/40" />
                       <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-gold/40" />
                       <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-gold/40" />
-                      <Coins className="w-3.5 h-3.5 text-gold" />
-                      <span className="font-display text-base text-foreground leading-none tabular-nums">
+                      <Coins className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gold" />
+                      <span className="font-display text-sm sm:text-base text-foreground leading-none tabular-nums">
                         {(profile as any)?.spendable_index || 0}
                       </span>
-                      <ShoppingBag className="w-3 h-3 text-gold/50 group-hover:text-gold transition-colors" />
+                      <ShoppingBag className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gold/50 group-hover:text-gold transition-colors" />
                     </div>
                   </Link>
                 </div>
               </div>
-
               {/* XP Progress Bar */}
               <div className="px-4 pb-2">
                 <XPProgressBar 
