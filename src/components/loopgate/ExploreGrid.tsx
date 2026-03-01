@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Play, Trophy, Swords, Gavel, Zap, Target } from "lucide-react";
-import loopgateLogo from "@/assets/loopgate-logo.png";
+import loopgateWordmark from "@/assets/loopgate-wordmark.png";
 import { useRecentSubmissions, RecentSubmission } from "@/hooks/useRecentSubmissions";
 import { useThumbnail } from "@/hooks/useThumbnail";
 import { motion } from "framer-motion";
@@ -55,16 +55,14 @@ function BrandedCell({ submission, size, paletteIdx }: { submission: RecentSubmi
     <div className={cn("absolute inset-0 bg-gradient-to-br", palette.bg)}>
       <CellPattern color={palette.accent} />
 
-      {/* Center: Loopgate logo — optically centered */}
-      <div className={cn("absolute left-1/2 -translate-x-1/2 pointer-events-none z-[1]", isLarge ? "top-[54%]" : "top-[55%]")}>
-        <div className={cn("overflow-hidden", isLarge ? "w-44 h-20" : "w-24 h-10")}>
-          <img
-            src={loopgateLogo}
-            alt=""
-            className={cn("w-full h-full object-cover object-center select-none", isLarge ? "opacity-[0.34]" : "opacity-[0.3]")}
-            style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.72))" }}
-          />
-        </div>
+      {/* Center: Loopgate logo — true center */}
+      <div className="absolute inset-0 pointer-events-none z-[1] flex items-center justify-center">
+        <img
+          src={loopgateWordmark}
+          alt=""
+          className={cn("w-auto object-contain object-center select-none", isLarge ? "h-20 opacity-[0.34]" : "h-10 opacity-[0.3]")}
+          style={{ filter: "drop-shadow(0 6px 20px rgba(0,0,0,0.72))" }}
+        />
       </div>
 
       {/* Content */}
@@ -145,7 +143,7 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
       to={submission.type === 'battle' && submission.battle_id ? `/battle/${submission.battle_id}` : `/editor/${submission.user_id}`}
       className={cn(
         "relative block overflow-hidden group bg-black",
-        size === "large" ? "row-span-2 col-span-2" : ""
+        size === "large" ? "md:row-span-2 md:col-span-2" : ""
       )}
     >
       {loading ? (
@@ -222,7 +220,6 @@ function GridCell({ submission, size = "normal", index }: { submission: RecentSu
 export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
   const { submissions, loading } = useRecentSubmissions(limit);
   const isMobile = useIsMobile();
-  const cols = isMobile ? 2 : 3;
 
   if (loading) {
     return (
@@ -242,33 +239,39 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
     );
   }
 
-  // IG Explore layout: every 6 items, one is large (2x2)
-  const cells: { submission: RecentSubmission; size: "large" | "normal" }[] = [];
-  let idx = 0;
-  let groupIdx = 0;
+  // Desktop keeps IG Explore rhythm; mobile uses uniform 2-col flow for stability.
+  const cells: { submission: RecentSubmission; size: "large" | "normal" }[] = isMobile
+    ? submissions.map((submission) => ({ submission, size: "normal" }))
+    : (() => {
+        const desktopCells: { submission: RecentSubmission; size: "large" | "normal" }[] = [];
+        let idx = 0;
+        let groupIdx = 0;
 
-  while (idx < submissions.length) {
-    const isEvenGroup = groupIdx % 2 === 0;
+        while (idx < submissions.length) {
+          const isEvenGroup = groupIdx % 2 === 0;
 
-    if (isEvenGroup && idx < submissions.length) {
-      cells.push({ submission: submissions[idx], size: "large" });
-      idx++;
-    }
+          if (isEvenGroup && idx < submissions.length) {
+            desktopCells.push({ submission: submissions[idx], size: "large" });
+            idx++;
+          }
 
-    const smallCount = Math.min(isEvenGroup ? 4 : 5, submissions.length - idx);
-    for (let s = 0; s < smallCount; s++) {
-      if (idx < submissions.length) {
-        cells.push({ submission: submissions[idx], size: "normal" });
-        idx++;
-      }
-    }
+          const smallCount = Math.min(isEvenGroup ? 4 : 5, submissions.length - idx);
+          for (let s = 0; s < smallCount; s++) {
+            if (idx < submissions.length) {
+              desktopCells.push({ submission: submissions[idx], size: "normal" });
+              idx++;
+            }
+          }
 
-    if (!isEvenGroup && idx < submissions.length) {
-      cells.push({ submission: submissions[idx], size: "large" });
-      idx++;
-    }
-    groupIdx++;
-  }
+          if (!isEvenGroup && idx < submissions.length) {
+            desktopCells.push({ submission: submissions[idx], size: "large" });
+            idx++;
+          }
+          groupIdx++;
+        }
+
+        return desktopCells;
+      })();
 
   return (
     <motion.div
@@ -276,7 +279,7 @@ export default function ExploreGrid({ limit = 12 }: { limit?: number }) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
       className="grid grid-cols-2 md:grid-cols-3 gap-px auto-rows-[minmax(0,1fr)] -mx-4 sm:mx-0"
-      style={{ gridAutoRows: `calc((min(100vw, 640px) - 2px) / ${cols})` }}
+      style={{ gridAutoRows: isMobile ? "calc((100vw - 1px) / 2)" : "calc((min(100vw, 640px) - 2px) / 3)" }}
     >
       {cells.map((cell, i) => (
         <GridCell key={cell.submission.id} submission={cell.submission} size={cell.size} index={i} />
