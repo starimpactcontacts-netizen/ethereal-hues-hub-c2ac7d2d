@@ -110,7 +110,7 @@ function BadgeIcon({ className, size }: { className?: string; size: number }) {
 }
 
 const SIZES = {
-  sm: { icon: 14, container: 'h-[15px] px-1.5 text-[7px] gap-0.5' },
+  sm: { icon: 14, container: 'h-4 px-1.5 text-[8px] gap-0.5' },
   md: { icon: 22, container: 'h-6 px-2 text-[10px] gap-1' },
   lg: { icon: 48, container: '' },
 };
@@ -136,7 +136,7 @@ export default function FoundingBadge({ size = 'sm', animate = true }: FoundingB
   
   const badge = (
     <span 
-      className={`inline-flex items-center ${s.container} bg-[#1a1708] text-gold border border-gold/40 rounded-full font-semibold uppercase tracking-wider`}
+      className={`inline-flex items-center ${s.container} bg-[#1a1708] text-gold border border-gold/40 rounded-full font-display tracking-[0.15em]`}
       title="First Circle — Founding Loopgate Member"
     >
       <BadgeIcon size={s.icon} />
