@@ -2382,6 +2382,7 @@ export type Database = {
           is_promoted: boolean
           mystery_reward_label: string | null
           poster_url: string | null
+          prize_usd: number | null
           random_pick_id: string | null
           random_pick_username: string | null
           slug: string | null
@@ -2408,6 +2409,7 @@ export type Database = {
           is_promoted?: boolean
           mystery_reward_label?: string | null
           poster_url?: string | null
+          prize_usd?: number | null
           random_pick_id?: string | null
           random_pick_username?: string | null
           slug?: string | null
@@ -2434,6 +2436,7 @@ export type Database = {
           is_promoted?: boolean
           mystery_reward_label?: string | null
           poster_url?: string | null
+          prize_usd?: number | null
           random_pick_id?: string | null
           random_pick_username?: string | null
           slug?: string | null
