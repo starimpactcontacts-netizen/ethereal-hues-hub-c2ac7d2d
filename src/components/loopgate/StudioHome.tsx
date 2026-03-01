@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
+import StudioSubmitHub from "./StudioSubmitHub";
 
 const ACCENT = "#9999FF";
 
@@ -160,6 +161,11 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
 
       {/* ═══ MAIN CONTENT ═══ */}
       <div className={`${isMobile ? "px-4 py-5" : "max-w-6xl mx-auto px-8 py-8"}`}>
+
+        {/* ═══ SUBMISSION HUB ═══ */}
+        <div className="mb-4">
+          <StudioSubmitHub />
+        </div>
 
         {/* ═══ ACTIVE SOLO BANNER ═══ */}
         <div className="mb-6">
