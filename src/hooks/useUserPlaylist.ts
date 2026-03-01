@@ -8,6 +8,7 @@ export interface UserPlaylistTrack {
   track_name: string;
   artist_name: string | null;
   audio_url: string;
+  cover_url: string | null;
   duration_seconds: number | null;
   is_public: boolean;
   track_order: number;
@@ -49,6 +50,29 @@ export function useUserPlaylist(userId: string | null) {
   }, [userId]);
 
   useEffect(() => { fetchTracks(); }, [fetchTracks]);
+
+  const uploadCover = useCallback(async (trackId: string, file: File) => {
+    if (!userId) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Cover must be under 5MB');
+      return;
+    }
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from('track-covers').upload(path, file, { contentType: file.type });
+    if (error) {
+      toast.error('Cover upload failed');
+      return;
+    }
+    const { data: urlData } = supabase.storage.from('track-covers').getPublicUrl(path);
+    await supabase.from('user_radio_tracks').update({ cover_url: urlData.publicUrl }).eq('id', trackId);
+    toast.success('Cover art updated');
+    fetchTracks();
+  }, [userId, fetchTracks]);
 
   const uploadTrack = useCallback(async (file: File) => {
     if (!userId) { toast.error('Sign in to upload tracks'); return; }
@@ -114,7 +138,7 @@ export function useUserPlaylist(userId: string | null) {
     fetchTracks();
   }, [fetchTracks]);
 
-  return { myTracks, loading, uploading, playlistName, renamePlaylist, uploadTrack, deleteTrack, togglePublic, refetch: fetchTracks };
+  return { myTracks, loading, uploading, playlistName, renamePlaylist, uploadTrack, uploadCover, deleteTrack, togglePublic, refetch: fetchTracks };
 }
 
 /** Fetch public playlists from other users */

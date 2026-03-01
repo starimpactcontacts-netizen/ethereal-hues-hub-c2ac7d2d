@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Star, StarOff, Loader2, Music, Upload } from 'lucide-react';
+import { Plus, Trash2, Star, StarOff, Loader2, Music, Upload, Image } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,14 @@ export default function RadioAdmin() {
   const [artistName, setArtistName] = useState('');
   const [showForm, setShowForm] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedCover, setSelectedCover] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  // For editing cover on existing tracks
+  const editCoverRef = useRef<HTMLInputElement>(null);
+  const [editingCoverTrackId, setEditingCoverTrackId] = useState<string | null>(null);
 
   const fetchTracks = async () => {
     const { data } = await supabase
@@ -38,6 +45,26 @@ export default function RadioAdmin() {
 
   useEffect(() => { fetchTracks(); }, []);
 
+  const uploadCoverImage = async (file: File, prefix: string): Promise<string | null> => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return null;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Cover image must be under 5MB');
+      return null;
+    }
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `radio/${prefix}-${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from('track-covers').upload(path, file, { contentType: file.type });
+    if (error) {
+      toast.error('Cover upload failed');
+      return null;
+    }
+    const { data: urlData } = supabase.storage.from('track-covers').getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
   const handleUpload = async () => {
     if (!selectedFile || !songName.trim()) {
       toast.error('Song name and file are required');
@@ -45,6 +72,16 @@ export default function RadioAdmin() {
     }
 
     setUploading(true);
+
+    // Upload cover if selected
+    let coverUrl: string | null = null;
+    if (selectedCover) {
+      coverUrl = await uploadCoverImage(selectedCover, 'cover');
+      if (!coverUrl && selectedCover) {
+        // Cover upload failed but we can continue without it
+      }
+    }
+
     const ext = selectedFile.name.split('.').pop() || 'mp3';
     const path = `${crypto.randomUUID()}.${ext}`;
 
@@ -66,6 +103,7 @@ export default function RadioAdmin() {
         song_name: songName.trim(),
         artist_name: artistName.trim() || null,
         audio_url: urlData.publicUrl,
+        cover_url: coverUrl,
         track_order: tracks.length,
       });
 
@@ -76,10 +114,32 @@ export default function RadioAdmin() {
       setSongName('');
       setArtistName('');
       setSelectedFile(null);
+      setSelectedCover(null);
+      setCoverPreview(null);
       setShowForm(false);
       fetchTracks();
     }
     setUploading(false);
+  };
+
+  const handleCoverSelect = (file: File | null) => {
+    setSelectedCover(file);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCoverPreview(url);
+    } else {
+      setCoverPreview(null);
+    }
+  };
+
+  const handleEditCover = async (trackId: string, file: File) => {
+    const coverUrl = await uploadCoverImage(file, 'cover');
+    if (coverUrl) {
+      await supabase.from('radio_tracks').update({ cover_url: coverUrl }).eq('id', trackId);
+      toast.success('Cover art updated');
+      fetchTracks();
+    }
+    setEditingCoverTrackId(null);
   };
 
   const deleteTrack = async (track: RadioTrack) => {
@@ -99,6 +159,19 @@ export default function RadioAdmin() {
 
   return (
     <section className="bg-surface-0 border border-border rounded-lg p-4 mb-6">
+      {/* Hidden input for editing cover on existing tracks */}
+      <input
+        ref={editCoverRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f && editingCoverTrackId) handleEditCover(editingCoverTrackId, f);
+          e.target.value = '';
+        }}
+      />
+
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-emerald-500 flex items-center gap-2">
           <Music size={14} />
@@ -122,6 +195,38 @@ export default function RadioAdmin() {
             <Label className="text-xs">Artist Name</Label>
             <Input value={artistName} onChange={(e) => setArtistName(e.target.value)} placeholder="e.g. LOOPGATE" className="mt-1 h-8 text-sm" />
           </div>
+          {/* Cover Art */}
+          <div>
+            <Label className="text-xs">Cover Art</Label>
+            <input
+              ref={coverRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleCoverSelect(e.target.files?.[0] || null)}
+            />
+            <div className="mt-1 flex items-center gap-3">
+              {coverPreview ? (
+                <div className="relative w-14 h-14 rounded-md overflow-hidden border border-border">
+                  <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => { handleCoverSelect(null); }}
+                    className="absolute top-0 right-0 bg-black/60 text-white text-[8px] px-1 rounded-bl"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : null}
+              <button
+                onClick={() => coverRef.current?.click()}
+                className="flex items-center gap-2 flex-1 py-2 px-3 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:border-emerald-500/50 hover:text-foreground transition-colors"
+              >
+                <Image size={14} />
+                {selectedCover ? 'Change cover' : 'Add cover image'}
+              </button>
+            </div>
+          </div>
+          {/* Audio file */}
           <div>
             <input
               ref={fileRef}
@@ -146,7 +251,7 @@ export default function RadioAdmin() {
             >
               {uploading ? <><Loader2 size={12} className="inline animate-spin mr-1" /> Uploading...</> : 'Add to Radio'}
             </button>
-            <button onClick={() => { setShowForm(false); setSelectedFile(null); }} className="px-3 py-2 text-xs text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setShowForm(false); setSelectedFile(null); setSelectedCover(null); setCoverPreview(null); }} className="px-3 py-2 text-xs text-muted-foreground hover:text-foreground">
               Cancel
             </button>
           </div>
@@ -163,9 +268,23 @@ export default function RadioAdmin() {
         <div className="space-y-1 max-h-64 overflow-y-auto">
           {tracks.map((track) => (
             <div key={track.id} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-1 transition-colors">
-              <div className="w-7 h-7 rounded bg-surface-1 flex items-center justify-center shrink-0">
-                <Music size={12} className={track.is_priority ? 'text-emerald-500' : 'text-muted-foreground/50'} />
-              </div>
+              {/* Cover art thumbnail — clickable to change */}
+              <button
+                onClick={() => {
+                  setEditingCoverTrackId(track.id);
+                  editCoverRef.current?.click();
+                }}
+                className="w-8 h-8 rounded bg-surface-1 overflow-hidden shrink-0 border border-border hover:border-emerald-500/40 transition-colors"
+                title="Click to change cover art"
+              >
+                {track.cover_url ? (
+                  <img src={track.cover_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Music size={12} className={track.is_priority ? 'text-emerald-500' : 'text-muted-foreground/50'} />
+                  </div>
+                )}
+              </button>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium truncate">{track.song_name}</p>
                 {track.artist_name && <p className="text-[9px] text-muted-foreground truncate">{track.artist_name}</p>}
