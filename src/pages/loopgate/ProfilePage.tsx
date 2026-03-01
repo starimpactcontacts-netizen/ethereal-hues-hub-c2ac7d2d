@@ -320,7 +320,7 @@ export default function ProfilePage() {
 
       {/* ═══ QUICK NAV BUTTONS ═══ */}
       <div className="px-4 mb-2">
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-4 gap-1.5">
           <Link to="/profile/stats">
             <motion.div 
               whileTap={{ scale: 0.98 }}
@@ -348,6 +348,8 @@ export default function ProfilePage() {
               </div>
             </motion.div>
           </Link>
+
+          <ProfileInventoryLink />
           
           <Link to="/profile/settings">
             <motion.div 
@@ -364,9 +366,6 @@ export default function ProfilePage() {
           </Link>
         </div>
       </div>
-
-      {/* ═══ MY ITEMS (INVENTORY) ═══ */}
-      <ProfileInventoryLink navigate={navigate} />
 
       {/* ═══ CONTENT TABS ═══ */}
       <div className="px-4 mb-2">
