@@ -5451,18 +5451,21 @@ export type Database = {
       shop_purchases: {
         Row: {
           id: string
+          is_equipped: boolean
           item_id: string
           purchased_at: string
           user_id: string
         }
         Insert: {
           id?: string
+          is_equipped?: boolean
           item_id: string
           purchased_at?: string
           user_id: string
         }
         Update: {
           id?: string
+          is_equipped?: boolean
           item_id?: string
           purchased_at?: string
           user_id?: string
