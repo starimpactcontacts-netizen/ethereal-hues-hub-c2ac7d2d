@@ -108,6 +108,11 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
 
   return (
     <div className="min-h-screen bg-black">
+      {/* ═══ SUBMISSION HUB — TOP OF TOP ═══ */}
+      <div className={`${isMobile ? "px-3 pt-3" : "max-w-6xl mx-auto px-8 pt-4"}`}>
+        <StudioSubmitHub />
+      </div>
+
       {/* ═══ HEADER BAR ═══ */}
       <div className="sticky top-0 z-30 border-b border-white/[0.06]"
         style={{ background: "linear-gradient(180deg, rgba(10,10,14,0.98) 0%, rgba(10,10,14,0.95) 100%)", backdropFilter: "blur(12px)" }}
@@ -161,11 +166,6 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
 
       {/* ═══ MAIN CONTENT ═══ */}
       <div className={`${isMobile ? "px-4 py-5" : "max-w-6xl mx-auto px-8 py-8"}`}>
-
-        {/* ═══ SUBMISSION HUB ═══ */}
-        <div className="mb-4">
-          <StudioSubmitHub />
-        </div>
 
         {/* ═══ ACTIVE SOLO BANNER ═══ */}
         <div className="mb-6">
