@@ -5,7 +5,7 @@ import {
   Target, ArrowRight, Crown, Shield, Users, Trophy, 
   Users2, TrendingUp, Coins, ShoppingBag, Gavel, Gift,
   ChevronRight, Plus, Infinity as InfinityIcon, Star, Swords, Loader2,
-  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard
+  Zap, UserRound, ChevronDown, Check, Clock, X, Info, Clapperboard, DollarSign
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
@@ -42,6 +42,7 @@ import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import GatePattern from '@/components/loopgate/GatePattern';
 import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
+import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -378,7 +379,9 @@ export default function HubPage() {
                         {(profile as any)?.spendable_index || 0}
                       </span>
                     </div>
+                    <DollarSign className="w-3 h-3 text-emerald-400" />
                     <span className="text-[8px] text-gold/60 uppercase tracking-[0.15em] font-semibold">INDEX</span>
+                    <IndexEarnBadge size="sm" hideDollar />
                   </div>
                 </Link>
               </div>

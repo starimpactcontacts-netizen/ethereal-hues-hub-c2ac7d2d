@@ -4,14 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface IndexEarnBadgeProps {
   size?: 'sm' | 'md';
+  hideDollar?: boolean;
 }
 
-export default function IndexEarnBadge({ size = 'sm' }: IndexEarnBadgeProps) {
+export default function IndexEarnBadge({ size = 'sm', hideDollar = false }: IndexEarnBadgeProps) {
   const [showInfo, setShowInfo] = useState(false);
 
   return (
     <span className="relative inline-flex items-center">
-      <DollarSign className={`${size === 'sm' ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} text-emerald-400`} />
+      {!hideDollar && <DollarSign className={`${size === 'sm' ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'} text-emerald-400`} />}
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowInfo(v => !v); }}
         className="ml-0.5 hover:opacity-80 transition-opacity"
