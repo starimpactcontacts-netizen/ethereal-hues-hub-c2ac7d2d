@@ -208,24 +208,24 @@ export default function EditoriumPage() {
       <SEO {...pageSEO.editorium} />
 
       {/* ═══ TOP BAR ═══ */}
-      <div style={{ backgroundColor: '#111111' }} className="py-1.5">
+      <div style={{ backgroundColor: '#111111' }} className="py-3">
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/hub')} className="flex items-center gap-1.5 hover:opacity-70 transition-opacity">
-              <ArrowLeft className="w-3.5 h-3.5" style={{ color: '#888' }} />
-              <span style={{ color: '#888', fontSize: '10px', fontWeight: 600 }}>Loopgate</span>
+            <button onClick={() => navigate('/hub')} className="flex items-center gap-2 hover:opacity-70 transition-opacity py-1 pr-2">
+              <ArrowLeft className="w-4.5 h-4.5 sm:w-5 sm:h-5" style={{ color: '#aaa' }} />
+              <span style={{ color: '#aaa', fontSize: '15px', fontWeight: 600 }}>Loopgate</span>
             </button>
-            <span style={{ color: '#333', fontSize: '10px' }}>|</span>
-            <span style={{ color: '#999', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
+            <span style={{ color: '#444', fontSize: '15px', fontWeight: 300 }}>|</span>
+            <span style={{ color: '#999', fontSize: '13px', letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600 }}>
               The Editor's World
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1" style={{ color: '#cc0000', fontSize: '9px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="flex items-center gap-1.5" style={{ color: '#cc0000', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               Live
             </span>
-            <span style={{ color: '#666', fontSize: '10px' }} className="hidden sm:inline">Press · Culture · Community</span>
+            <span style={{ color: '#666', fontSize: '12px' }} className="hidden sm:inline">Press · Culture · Community</span>
           </div>
         </div>
       </div>
