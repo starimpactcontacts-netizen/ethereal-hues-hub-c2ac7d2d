@@ -359,7 +359,7 @@ export default function HubPage() {
                  </div>
                )}
                {/* Top Row: Avatar + Identity + Earnings/Index */}
-              <div className="p-4 pb-2">
+              <div className="relative z-10 p-4 pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <button 
                     onClick={() => navigate('/profile')}
@@ -437,7 +437,7 @@ export default function HubPage() {
                 </div>
               </div>
               {/* XP Progress Bar */}
-              <div className="px-4 pb-2">
+              <div className="relative z-10 px-4 pb-2">
                 <XPProgressBar 
                   xp={profile?.xp || 0} 
                   level={profile?.level || 1} 
@@ -447,7 +447,7 @@ export default function HubPage() {
               </div>
 
               {/* Stats Row */}
-              <div className="border-t border-border/30 px-4 py-2">
+              <div className="relative z-10 border-t border-border/30 px-4 py-2">
                 <div className="grid grid-cols-4 gap-3 text-center">
                   <div>
                     <p className="font-display text-xl text-foreground">{activityStats.totalEvents}</p>
@@ -469,7 +469,7 @@ export default function HubPage() {
               </div>
 
               {/* Quick Access — Horizontal scrollable cards */}
-              <div className="border-t border-border/30 px-3 py-2.5">
+              <div className="relative z-10 border-t border-border/30 px-3 py-2.5">
                 <div className="grid grid-cols-3 gap-2">
                   {/* Judge-optimized: Start Judging replaces Get Rated */}
                   {isJudge ? (
