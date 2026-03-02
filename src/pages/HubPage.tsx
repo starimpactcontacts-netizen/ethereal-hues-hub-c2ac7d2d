@@ -46,6 +46,7 @@ import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
 import { useEquippedBadges } from '@/hooks/useEquippedBadges';
+import CommissionsSection from '@/components/loopgate/CommissionsSection';
 
 // ── Live Feed for Hub ──────────────────────────────────────────────────
 const actionColors: Record<string, string> = {
@@ -1113,6 +1114,11 @@ export default function HubPage() {
           </FeaturedCarousel>
         </motion.div>
       )}
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          💰 GET PAID — Commissions Section
+      ═══════════════════════════════════════════════════════════════════ */}
+      <CommissionsSection />
 
       {/* ═══════════════════════════════════════════════════════════════════
           ⚖️ JUDGE AUTHORITY — Cinematic gateway to /judges

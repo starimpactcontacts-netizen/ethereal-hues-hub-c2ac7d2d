@@ -86,6 +86,8 @@ const EditoriumArticlePage = lazy(() => import("./pages/loopgate/EditoriumArticl
 const StudioPage = lazy(() => import("./pages/loopgate/StudioPage"));
 const SoloDetailPage = lazy(() => import("./pages/loopgate/SoloDetailPage"));
 const PlaylistsPage = lazy(() => import("./pages/loopgate/PlaylistsPage"));
+const CommissionsPage = lazy(() => import("./pages/loopgate/CommissionsPage"));
+const CommissionDetailPage = lazy(() => import("./pages/loopgate/CommissionDetailPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
@@ -313,6 +315,8 @@ export default function App() {
               <Route path="/editorium" element={<EditoriumPage />} />
               <Route path="/editorium/:slug" element={<EditoriumArticlePage />} />
               <Route path="/solo/:id" element={<SoloDetailPage />} />
+              <Route path="/commissions" element={<CommissionsPage />} />
+              <Route path="/commissions/:id" element={<CommissionDetailPage />} />
             </Route>
 
             {/* Protected routes - auth required */}
