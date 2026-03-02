@@ -654,6 +654,116 @@ export type Database = {
           },
         ]
       }
+      commission_submissions: {
+        Row: {
+          avatar_url: string | null
+          commission_id: string
+          created_at: string
+          feedback: string | null
+          id: string
+          message: string | null
+          platform: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          submission_url: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          commission_id: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          message?: string | null
+          platform?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submission_url: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          commission_id?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          message?: string | null
+          platform?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          submission_url?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_submissions_commission_id_fkey"
+            columns: ["commission_id"]
+            isOneToOne: false
+            referencedRelation: "commissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commissions: {
+        Row: {
+          accepted_count: number
+          artist_name: string | null
+          created_at: string
+          created_by: string
+          deadline: string | null
+          description: string | null
+          id: string
+          max_slots: number
+          payout_cents: number
+          song_name: string | null
+          status: string
+          submission_count: number
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_count?: number
+          artist_name?: string | null
+          created_at?: string
+          created_by: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          max_slots?: number
+          payout_cents?: number
+          song_name?: string | null
+          status?: string
+          submission_count?: number
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_count?: number
+          artist_name?: string | null
+          created_at?: string
+          created_by?: string
+          deadline?: string | null
+          description?: string | null
+          id?: string
+          max_slots?: number
+          payout_cents?: number
+          song_name?: string | null
+          status?: string
+          submission_count?: number
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       connected_platforms: {
         Row: {
           connected_at: string | null
