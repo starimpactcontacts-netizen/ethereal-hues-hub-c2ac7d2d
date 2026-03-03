@@ -88,7 +88,7 @@ export default function CommissionsSection() {
 
   const openCommissions = commissions.filter(c => c.status === 'open' && (!c.deadline || new Date(c.deadline) > new Date()));
 
-  if (loading || openCommissions.length === 0) return null;
+  if (loading) return null;
 
   return (
     <motion.div
@@ -118,13 +118,24 @@ export default function CommissionsSection() {
       </div>
 
       {/* Horizontal scroll */}
-      <div className="overflow-x-auto scrollbar-hide">
-        <div className="flex gap-3 px-4 pb-2">
-          {openCommissions.slice(0, 8).map(c => (
-            <CommissionCard key={c.id} commission={c} />
-          ))}
+      {openCommissions.length > 0 ? (
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-3 px-4 pb-2">
+            {openCommissions.slice(0, 8).map(c => (
+              <CommissionCard key={c.id} commission={c} />
+            ))}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="px-4 pb-2">
+          <Link to="/commissions">
+            <div className="bg-surface-1/60 border border-emerald-500/10 hover:border-emerald-500/30 transition-colors p-4 text-center">
+              <p className="text-xs text-muted-foreground">No open commissions right now</p>
+              <p className="text-[10px] text-emerald-400/60 mt-1">Check back soon for paid editing opportunities →</p>
+            </div>
+          </Link>
+        </div>
+      )}
     </motion.div>
   );
 }

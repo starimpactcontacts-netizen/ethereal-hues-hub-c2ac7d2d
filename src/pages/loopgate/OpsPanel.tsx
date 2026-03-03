@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel, Megaphone, Bell } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel, Megaphone, Bell, DollarSign } from "lucide-react";
 import OpenArenaForm, { getDefaultOpenArenaConfig } from "@/components/loopgate/OpenArenaForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -2324,12 +2324,21 @@ export default function OpsPanel() {
               Campaigns
             </button>
             <button 
+              onClick={() => navigate('/commissions')}
+              className="flex items-center justify-center gap-2 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-semibold py-3 rounded-lg text-sm hover:bg-emerald-500/30 transition-colors"
+            >
+              <DollarSign size={16} />
+              Commissions
+            </button>
+            <button 
               onClick={() => setShowCreateItem(true)}
               className="flex items-center justify-center gap-2 bg-surface-1 border border-border font-semibold py-3 rounded-lg text-sm hover:border-gold/50 transition-colors"
             >
               <ShoppingBag size={16} />
               Shop Item
             </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
             <button 
               onClick={() => setShowBroadcastModal(true)}
               className="flex items-center justify-center gap-2 bg-violet-500/20 border border-violet-500/50 text-violet-300 font-semibold py-3 rounded-lg text-sm hover:bg-violet-500/30 transition-colors"
