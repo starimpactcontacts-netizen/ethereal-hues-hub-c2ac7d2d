@@ -189,6 +189,7 @@ export type Database = {
           goal_posts: number
           goal_views: number
           id: string
+          incoming_note: string | null
           name: string
           password_hash: string | null
           roi_percentage: number | null
@@ -215,6 +216,7 @@ export type Database = {
           goal_posts?: number
           goal_views?: number
           id?: string
+          incoming_note?: string | null
           name: string
           password_hash?: string | null
           roi_percentage?: number | null
@@ -241,6 +243,7 @@ export type Database = {
           goal_posts?: number
           goal_views?: number
           id?: string
+          incoming_note?: string | null
           name?: string
           password_hash?: string | null
           roi_percentage?: number | null

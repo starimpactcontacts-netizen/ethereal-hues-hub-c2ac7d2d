@@ -248,12 +248,18 @@ export default function ArtistDashboardPage() {
                     {/* Goal Progress Bar (inline) */}
                     {campaign.goal_views > 0 && (
                       <div className="px-4 pb-2">
-                        <div className="h-1 bg-white/[0.03] overflow-hidden">
+                        <div className="h-1 bg-white/[0.03] overflow-hidden relative">
                           <div 
-                            className="h-full bg-gradient-to-r from-[#FFD700]/40 to-[#FFD700]/80 transition-all duration-1000"
+                            className="h-full bg-gradient-to-r from-[#FFD700]/40 to-[#FFD700]/80 transition-all duration-1000 absolute inset-y-0 left-0"
                             style={{ width: `${goalProgress}%` }}
                           />
                         </div>
+                        {(campaign as any).incoming_note && (
+                          <div className="px-0 pt-1.5 flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="text-[8px] text-emerald-400/80 font-medium">{(campaign as any).incoming_note}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -350,9 +356,9 @@ export default function ArtistDashboardPage() {
                                     )}
                                   </div>
                                   {edit.video_url && (
-                                    <a href={edit.video_url} target="_blank" rel="noopener noreferrer" className="text-white/10 hover:text-white/30 p-1.5">
+                                    <button onClick={() => window.open(edit.video_url!, '_blank', 'noopener,noreferrer')} className="text-white/10 hover:text-white/30 p-1.5">
                                       <ExternalLink className="w-3.5 h-3.5" />
-                                    </a>
+                                    </button>
                                   )}
                                 </div>
                               ))}

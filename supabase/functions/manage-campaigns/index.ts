@@ -73,7 +73,7 @@ serve(async (req) => {
 
       const { data: campaign, error } = await supabase
         .from("artist_campaigns")
-        .select("id, name, description, status, total_views, total_impressions, total_engagements, total_clicks, budget_cents, spent_cents, roi_percentage, goal_views, goal_label, goal_posts, start_date, end_date, cover_image_url, slug, featured_artist_id, client_name")
+        .select("id, name, description, status, total_views, total_impressions, total_engagements, total_clicks, budget_cents, spent_cents, roi_percentage, goal_views, goal_label, goal_posts, start_date, end_date, cover_image_url, slug, featured_artist_id, client_name, incoming_note")
         .eq("slug", slug)
         .single();
 
@@ -210,7 +210,7 @@ serve(async (req) => {
 
       const allowed = ['name', 'description', 'status', 'total_views', 'total_impressions', 
         'total_engagements', 'total_clicks', 'budget_cents', 'spent_cents', 'roi_percentage',
-        'start_date', 'end_date', 'cover_image_url', 'goal_views', 'goal_label', 'goal_posts', 'featured_artist_id', 'client_name'];
+        'start_date', 'end_date', 'cover_image_url', 'goal_views', 'goal_label', 'goal_posts', 'featured_artist_id', 'client_name', 'incoming_note'];
       const filtered: Record<string, any> = {};
       for (const key of allowed) {
         if (updates[key] !== undefined) filtered[key] = updates[key];
