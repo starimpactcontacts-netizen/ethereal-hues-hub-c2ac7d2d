@@ -64,7 +64,7 @@ export default function CampaignAdminPage() {
   // Add edit form
   const [newEdit, setNewEdit] = useState({ title: '', video_url: '', thumbnail_url: '', platform: 'tiktok', editor_username: '', view_count: 0 });
   // Edit stats form
-  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '' });
+  const [statsForm, setStatsForm] = useState({ total_views: 0, total_impressions: 0, total_engagements: 0, total_clicks: 0, roi_percentage: 0, goal_views: 0, goal_posts: 0, goal_label: '', incoming_note: '' });
 
   const [artistSongs, setArtistSongs] = useState<ArtistSong[]>([]);
 
@@ -553,7 +553,7 @@ export default function CampaignAdminPage() {
                                 size="sm"
                                 variant="ghost"
                                 onClick={() => {
-                                  setEditingStats(campaign.id);
+                                setEditingStats(campaign.id);
                                   setStatsForm({
                                     total_views: campaign.total_views,
                                     total_impressions: campaign.total_impressions,
@@ -563,6 +563,7 @@ export default function CampaignAdminPage() {
                                     goal_views: campaign.goal_views,
                                     goal_posts: (campaign as any).goal_posts || 0,
                                     goal_label: campaign.goal_label || '',
+                                    incoming_note: (campaign as any).incoming_note || '',
                                   });
                                 }}
                                 className="h-6 text-[10px]"
@@ -621,6 +622,15 @@ export default function CampaignAdminPage() {
                                     className="bg-surface-0 h-8 text-xs"
                                   />
                                 </div>
+                              </div>
+                              <div className="pt-1 border-t border-border">
+                                <label className="text-[8px] text-emerald-400 uppercase tracking-wider block mb-1">📢 Incoming Note (shown to client)</label>
+                                <Input
+                                  value={statsForm.incoming_note}
+                                  onChange={e => setStatsForm(p => ({ ...p, incoming_note: e.target.value }))}
+                                  placeholder="e.g. 3 edits incoming today"
+                                  className="bg-surface-0 h-8 text-xs border-emerald-500/30 focus:border-emerald-500/50"
+                                />
                               </div>
                             </div>
                           ) : (

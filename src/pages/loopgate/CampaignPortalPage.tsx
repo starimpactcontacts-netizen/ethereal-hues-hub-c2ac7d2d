@@ -29,6 +29,7 @@ interface CampaignData {
   cover_image_url: string | null;
   slug: string;
   featured_artist_id: string | null;
+  incoming_note: string | null;
 }
 
 interface ArtistData {
@@ -314,18 +315,33 @@ export default function CampaignPortalPage() {
                   <span className="text-[9px] uppercase tracking-[0.2em] text-white/30 font-bold">Posts Goal</span>
                   <span className="font-display text-sm text-white">{edits.length}/{campaign.goal_posts}</span>
                 </div>
-                <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden relative">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${postsProgress}%` }}
                     transition={{ duration: 1.5, ease: 'easeOut', delay: 0.7 }}
-                    className="h-full bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-400 rounded-full"
+                    className="h-full bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-400 rounded-full absolute inset-y-0 left-0"
                   />
+                  {campaign.incoming_note && (
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, postsProgress + 12)}%` }}
+                      transition={{ duration: 1.8, ease: 'easeOut', delay: 0.9 }}
+                      className="h-full bg-gradient-to-r from-emerald-500/40 to-emerald-400/60 rounded-full absolute inset-y-0 left-0"
+                      style={{ zIndex: 0 }}
+                    />
+                  )}
                 </div>
                 <div className="flex justify-between mt-1.5">
                   <span className="text-[10px] text-white/25">{edits.length} edits submitted</span>
                   <span className="text-[10px] text-white/25">Goal: {campaign.goal_posts} posts</span>
                 </div>
+                {campaign.incoming_note && (
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[10px] text-emerald-400/80 font-medium">{campaign.incoming_note}</span>
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
@@ -443,14 +459,12 @@ export default function CampaignPortalPage() {
                           )}
                         </div>
                         {edit.video_url && (
-                          <a 
-                            href={edit.video_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button 
+                            onClick={() => window.open(edit.video_url!, '_blank', 'noopener,noreferrer')}
                             className="p-1.5 bg-white/[0.04] hover:bg-white/[0.08] transition-colors flex-shrink-0"
                           >
                             <ExternalLink size={12} className="text-white/40" />
-                          </a>
+                          </button>
                         )}
                       </div>
 
