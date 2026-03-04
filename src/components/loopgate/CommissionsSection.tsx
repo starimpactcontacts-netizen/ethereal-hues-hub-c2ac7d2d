@@ -326,25 +326,17 @@ export default function CommissionsSection() {
           </div>
         )}
 
-        {/* Quick Bounties — always visible */}
+        {/* Marketplace — Coming Soon */}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="w-full h-[1px] bg-gradient-to-r from-foreground/10 to-transparent" />
-            <span className="text-[7px] font-black text-foreground/20 uppercase tracking-[0.25em] whitespace-nowrap">Bounties</span>
+            <span className="text-[7px] font-black text-foreground/20 uppercase tracking-[0.25em] whitespace-nowrap">Marketplace</span>
             <div className="w-8 h-[1px] bg-foreground/5" />
           </div>
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-            <div className="flex gap-2 pb-2">
-              {openCommissions.slice(0, 8).map(c => (
-                <QuickBountyCard key={c.id} commission={c} />
-              ))}
-              <Link to="/commissions" className="shrink-0">
-                <div className="w-[100px] h-[90px] border border-dashed border-emerald-500/20 flex flex-col items-center justify-center gap-1 hover:border-emerald-500/40 transition-colors">
-                  <Plus className="w-4 h-4 text-emerald-400/40" />
-                  <span className="text-[8px] font-bold text-emerald-400/40 uppercase tracking-wider">Post</span>
-                </div>
-              </Link>
-            </div>
+          <div className="relative overflow-hidden rounded-sm border border-dashed border-foreground/[0.06] px-4 py-5 flex flex-col items-center justify-center gap-1.5">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-transparent" />
+            <span className="text-[10px] font-black text-foreground/25 uppercase tracking-[0.2em]">Coming Soon</span>
+            <span className="text-[8px] text-foreground/15 max-w-[200px] text-center leading-relaxed">Post bounties, hire editors, and trade work — all on-platform.</span>
           </div>
         </div>
       </div>
