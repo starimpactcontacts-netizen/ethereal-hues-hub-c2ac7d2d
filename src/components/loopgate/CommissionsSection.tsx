@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState, useRef, useCallback } from 'react';
+import WalletDrawer from './WalletDrawer';
 
 interface ArenaDrop {
   id: string;
@@ -25,10 +26,11 @@ interface ArenaDrop {
 function BalanceTicker() {
   const { user } = useAuth();
   const { availableBalance, earnings } = useEditorEarnings();
+  const [walletOpen, setWalletOpen] = useState(false);
   if (!user) return null;
 
   return (
-    <Link to="/payouts">
+    <>
       <motion.div
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
@@ -44,12 +46,16 @@ function BalanceTicker() {
               <span className="text-[8px] text-emerald-400/30 font-bold">${(earnings.earnings_cents / 100).toFixed(0)} EARNED</span>
             )}
           </div>
-          <div className="flex items-center gap-1 text-emerald-400/50 group-hover:text-emerald-400 text-[8px] font-bold tracking-widest uppercase transition-colors">
+          <button
+            onClick={() => setWalletOpen(true)}
+            className="flex items-center gap-1 text-emerald-400/50 group-hover:text-emerald-400 text-[8px] font-bold tracking-widest uppercase transition-colors bg-transparent border-none cursor-pointer"
+          >
             WITHDRAW <ChevronRight className="w-3 h-3" />
-          </div>
+          </button>
         </div>
       </motion.div>
-    </Link>
+      <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
+    </>
   );
 }
 
