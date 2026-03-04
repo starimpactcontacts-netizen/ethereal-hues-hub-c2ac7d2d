@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { DollarSign, ArrowRight, Wallet, ChevronRight, Eye, Crosshair, Flame } from 'lucide-react';
+import { DollarSign, ArrowRight, Wallet, ChevronRight, Eye, Crosshair, Flame, Plus } from 'lucide-react';
 import { useCommissions, useEditorEarnings, type Commission } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
@@ -272,7 +272,9 @@ export default function CommissionsSection() {
     fetchDrops();
   }, []);
 
-  const openCommissions = [...commissions.filter(c => c.status === 'open' && (!c.deadline || new Date(c.deadline) > new Date())), ...marketplaceBounties];
+  // Merge and deduplicate: staff commissions (non-marketplace) + marketplace bounties
+  const staffCommissions = commissions.filter(c => c.status === 'open' && !(c as any).is_marketplace && (!c.deadline || new Date(c.deadline) > new Date()));
+  const openCommissions = [...staffCommissions, ...marketplaceBounties];
   const loading = commLoading || loadingDrops;
 
   if (loading) return null;
@@ -324,23 +326,27 @@ export default function CommissionsSection() {
           </div>
         )}
 
-        {/* Quick Bounties */}
-        {openCommissions.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-full h-[1px] bg-gradient-to-r from-foreground/10 to-transparent" />
-              <span className="text-[7px] font-black text-foreground/20 uppercase tracking-[0.25em] whitespace-nowrap">Bounties</span>
-              <div className="w-8 h-[1px] bg-foreground/5" />
-            </div>
-            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-              <div className="flex gap-2 pb-2">
-                {openCommissions.slice(0, 8).map(c => (
-                  <QuickBountyCard key={c.id} commission={c} />
-                ))}
-              </div>
+        {/* Quick Bounties — always visible */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-full h-[1px] bg-gradient-to-r from-foreground/10 to-transparent" />
+            <span className="text-[7px] font-black text-foreground/20 uppercase tracking-[0.25em] whitespace-nowrap">Bounties</span>
+            <div className="w-8 h-[1px] bg-foreground/5" />
+          </div>
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+            <div className="flex gap-2 pb-2">
+              {openCommissions.slice(0, 8).map(c => (
+                <QuickBountyCard key={c.id} commission={c} />
+              ))}
+              <Link to="/commissions" className="shrink-0">
+                <div className="w-[100px] h-[90px] border border-dashed border-emerald-500/20 flex flex-col items-center justify-center gap-1 hover:border-emerald-500/40 transition-colors">
+                  <Plus className="w-4 h-4 text-emerald-400/40" />
+                  <span className="text-[8px] font-bold text-emerald-400/40 uppercase tracking-wider">Post</span>
+                </div>
+              </Link>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </motion.div>
   );
