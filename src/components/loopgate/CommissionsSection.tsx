@@ -112,9 +112,14 @@ export default function CommissionsSection() {
           </span>
           <span className="text-[9px] text-muted-foreground">({openCommissions.length} open)</span>
         </div>
-        <Link to="/commissions" className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-1">
-          VIEW ALL <ArrowRight size={10} />
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/payouts" className="text-[9px] text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 font-bold">
+            💰 MY EARNINGS
+          </Link>
+          <Link to="/commissions" className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-1">
+            VIEW ALL <ArrowRight size={10} />
+          </Link>
+        </div>
       </div>
 
       {/* Horizontal scroll */}
