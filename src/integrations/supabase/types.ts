@@ -2509,6 +2509,7 @@ export type Database = {
           arena_eligible: boolean
           artist_id: string
           created_at: string | null
+          custom_payouts: Json | null
           description: string | null
           ends_at: string | null
           id: string
@@ -2531,12 +2532,15 @@ export type Database = {
           top_scorer_id: string | null
           top_scorer_username: string | null
           updated_at: string | null
+          views_bonus_cents: number | null
+          views_milestone: number | null
           xp_reward: number | null
         }
         Insert: {
           arena_eligible?: boolean
           artist_id: string
           created_at?: string | null
+          custom_payouts?: Json | null
           description?: string | null
           ends_at?: string | null
           id?: string
@@ -2559,12 +2563,15 @@ export type Database = {
           top_scorer_id?: string | null
           top_scorer_username?: string | null
           updated_at?: string | null
+          views_bonus_cents?: number | null
+          views_milestone?: number | null
           xp_reward?: number | null
         }
         Update: {
           arena_eligible?: boolean
           artist_id?: string
           created_at?: string | null
+          custom_payouts?: Json | null
           description?: string | null
           ends_at?: string | null
           id?: string
@@ -2587,6 +2594,8 @@ export type Database = {
           top_scorer_id?: string | null
           top_scorer_username?: string | null
           updated_at?: string | null
+          views_bonus_cents?: number | null
+          views_milestone?: number | null
           xp_reward?: number | null
         }
         Relationships: [
