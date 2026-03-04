@@ -62,6 +62,7 @@ const actionColors: Record<string, string> = {
   quick_fight: 'text-red-400',
   gqt: 'text-amber-400',
   tournament_join: 'text-cyan-400',
+  earning: 'text-emerald-400',
 };
 
 function HubLiveFeed() {
@@ -91,12 +92,15 @@ function HubLiveFeed() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, delay: i * 0.03 }}
-            className="flex items-center gap-2 py-1.5 text-[10px] border-b border-border/20 last:border-0"
+            className={`flex items-center gap-2 py-1.5 text-[10px] border-b border-border/20 last:border-0 ${item.type === 'earning' ? 'bg-emerald-500/5' : ''}`}
           >
             <span className="text-foreground font-semibold truncate max-w-[80px]">{item.username}</span>
-            <span className="text-muted-foreground shrink-0">{item.action}</span>
+            <span className={`shrink-0 ${item.type === 'earning' ? 'text-emerald-400 font-bold' : 'text-muted-foreground'}`}>{item.action}</span>
             <span className={`${actionColors[item.type] || 'text-gold'} truncate flex-1 font-medium`}>{item.target}</span>
-            {item.score != null && item.score > 0 && (
+            {item.earned_cents != null && item.earned_cents > 0 && (
+              <span className="text-emerald-400 font-black shrink-0">${(item.earned_cents / 100).toFixed(2)}</span>
+            )}
+            {item.score != null && item.score > 0 && item.type !== 'earning' && (
               <span className="text-gold font-bold shrink-0">{Math.round(item.score)}</span>
             )}
             <span className="text-muted-foreground/50 shrink-0">
@@ -124,7 +128,7 @@ interface UserCrew {
 }
 
 export default function HubPage() {
-  const { profile, user } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const { isJudge } = useUserRoles(user?.id);
   const { profile: tempProfile } = useTempProfile();
   const { isGuest } = useGuestMode();
@@ -246,6 +250,26 @@ export default function HubPage() {
     }
   }, [profile?.crew_id]);
 
+  // Realtime earnings — auto-refresh profile when earnings_cents changes
+  useEffect(() => {
+    if (!user?.id) return;
+    const channel = supabase
+      .channel(`hub-earnings-${user.id}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${user.id}`,
+      }, (payload) => {
+        const newEarnings = (payload.new as any)?.earnings_cents;
+        const oldEarnings = (payload.old as any)?.earnings_cents;
+        if (newEarnings !== oldEarnings) {
+          refreshProfile();
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user?.id, refreshProfile]);
   useEffect(() => {
     if (isJudge && user?.id) {
       supabase
