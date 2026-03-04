@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  DollarSign, Zap, Music, Send, ExternalLink, Loader2, Star, 
-  ArrowLeft, Wallet, CheckCircle2, Clock, Trophy, ChevronRight
+  DollarSign, Music, Send, ExternalLink, Loader2, Star, 
+  ArrowLeft, Wallet, CheckCircle2, Clock, Trophy, ChevronRight, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useEditorEarnings, RATING_COLORS, RATING_PAYOUTS, type SubmissionRating } from '@/hooks/useCommissions';
+import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +24,7 @@ interface FeaturedSong {
   poster_url: string | null;
   status: string | null;
   submission_count: number | null;
+  arena_eligible: boolean;
 }
 
 interface ArenaSubmission {
@@ -62,7 +64,9 @@ function BalanceBanner() {
   );
 }
 
-function SongCard({ song, onSelect, isSelected }: { song: FeaturedSong; onSelect: (s: FeaturedSong) => void; isSelected: boolean }) {
+function SongCard({ song, onSelect, isSelected, isStaff, onToggleArena }: { 
+  song: FeaturedSong; onSelect: (s: FeaturedSong) => void; isSelected: boolean; isStaff: boolean; onToggleArena?: (song: FeaturedSong) => void 
+}) {
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
@@ -85,11 +89,25 @@ function SongCard({ song, onSelect, isSelected }: { song: FeaturedSong; onSelect
           <h4 className="font-display text-sm text-foreground truncate">{song.song_name}</h4>
           <p className="text-[10px] text-muted-foreground truncate">{song.artist_name} · {song.title}</p>
         </div>
-        {isSelected && (
-          <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
-          </div>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {isStaff && onToggleArena && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleArena(song); }}
+              className={`text-[9px] font-bold px-2 py-1 rounded border transition-colors ${
+                song.arena_eligible 
+                  ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' 
+                  : 'text-muted-foreground border-border/30 bg-muted/20'
+              }`}
+            >
+              {song.arena_eligible ? '✓ ARENA' : 'OFF'}
+            </button>
+          )}
+          {isSelected && (
+            <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center">
+              <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" />
+            </div>
+          )}
+        </div>
       </div>
     </motion.button>
   );
@@ -274,7 +292,7 @@ function RatingModal({ submission, onClose, onRated }: { submission: ArenaSubmis
         className="bg-card border border-border rounded-xl w-full max-w-md p-5 space-y-4" onClick={e => e.stopPropagation()}>
         
         <h3 className="font-display text-lg text-foreground flex items-center gap-2">
-          <Zap className="w-5 h-5 text-amber-400" /> Rate @{submission.username}
+          <InfinityLoop size={20} /> Rate @{submission.username}
         </h3>
 
         <button onClick={() => window.open(submission.submission_url, '_blank', 'noopener,noreferrer')}
@@ -332,11 +350,18 @@ export default function SoloArenaPage() {
   const [ratingTarget, setRatingTarget] = useState<ArenaSubmission | null>(null);
 
   const fetchSongs = useCallback(async () => {
-    const { data } = await supabase
+    const query = supabase
       .from('featured_drops')
-      .select('id, title, song_name, poster_url, status, submission_count, artist_id, featured_artists(name, avatar_url)')
+      .select('id, title, song_name, poster_url, status, submission_count, artist_id, arena_eligible, featured_artists(name, avatar_url)')
       .in('status', ['active', 'open', 'live'])
       .order('created_at', { ascending: false });
+
+    // Non-staff only see arena-eligible songs
+    if (!isStaff) {
+      query.eq('arena_eligible', true);
+    }
+
+    const { data } = await query;
 
     if (data) {
       setSongs(data.map((d: any) => ({
@@ -348,10 +373,11 @@ export default function SoloArenaPage() {
         poster_url: d.poster_url,
         status: d.status,
         submission_count: d.submission_count,
+        arena_eligible: d.arena_eligible ?? false,
       })));
     }
     setLoading(false);
-  }, []);
+  }, [isStaff]);
 
   const fetchSubmissions = useCallback(async () => {
     if (!user) return;
@@ -370,6 +396,13 @@ export default function SoloArenaPage() {
     if (data) setSubmissions(data as any as ArenaSubmission[]);
   }, [user, isStaff]);
 
+  const toggleArenaEligible = useCallback(async (song: FeaturedSong) => {
+    const newVal = !song.arena_eligible;
+    await supabase.from('featured_drops').update({ arena_eligible: newVal } as any).eq('id', song.id);
+    setSongs(prev => prev.map(s => s.id === song.id ? { ...s, arena_eligible: newVal } : s));
+    toast.success(newVal ? `${song.song_name} added to Arena` : `${song.song_name} removed from Arena`);
+  }, []);
+
   useEffect(() => { fetchSongs(); }, [fetchSongs]);
   useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
 
@@ -387,11 +420,11 @@ export default function SoloArenaPage() {
         </Link>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center">
-            <Zap className="w-5 h-5 text-amber-400" />
+            <InfinityLoop size={24} />
           </div>
           <div>
             <h1 className="font-display text-2xl text-foreground">SOLO ARENA</h1>
-            <p className="text-[10px] text-muted-foreground">Pick a song. Submit your edit. Get rated. Get paid.</p>
+            <p className="text-[10px] text-muted-foreground">Pick a song. Submit your edit. Earn up to $5.</p>
           </div>
         </div>
 
@@ -415,7 +448,7 @@ export default function SoloArenaPage() {
         {/* Song selection */}
         <div>
           <h3 className="font-display text-sm text-foreground mb-2 flex items-center gap-2">
-            <Music className="w-4 h-4 text-amber-400" /> Pick a Song
+            <Music className="w-4 h-4 text-amber-400" /> {isStaff ? 'Manage Arena Songs' : 'Pick a Song'}
           </h3>
           {loading ? (
             <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 text-amber-400 animate-spin" /></div>
@@ -428,7 +461,7 @@ export default function SoloArenaPage() {
           ) : (
             <div className="space-y-2">
               {songs.map(s => (
-                <SongCard key={s.id} song={s} onSelect={setSelectedSong} isSelected={selectedSong?.id === s.id} />
+                <SongCard key={s.id} song={s} onSelect={setSelectedSong} isSelected={selectedSong?.id === s.id} isStaff={isStaff} onToggleArena={toggleArenaEligible} />
               ))}
             </div>
           )}

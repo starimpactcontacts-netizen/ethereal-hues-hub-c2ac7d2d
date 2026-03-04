@@ -2506,6 +2506,7 @@ export type Database = {
       }
       featured_drops: {
         Row: {
+          arena_eligible: boolean
           artist_id: string
           created_at: string | null
           description: string | null
@@ -2533,6 +2534,7 @@ export type Database = {
           xp_reward: number | null
         }
         Insert: {
+          arena_eligible?: boolean
           artist_id: string
           created_at?: string | null
           description?: string | null
@@ -2560,6 +2562,7 @@ export type Database = {
           xp_reward?: number | null
         }
         Update: {
+          arena_eligible?: boolean
           artist_id?: string
           created_at?: string | null
           description?: string | null

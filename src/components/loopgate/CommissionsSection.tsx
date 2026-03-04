@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { DollarSign, ArrowRight, Clock, Users, CheckCircle2, Zap, Wallet, ChevronRight, Star, Music } from 'lucide-react';
+import { DollarSign, ArrowRight, Clock, Users, CheckCircle2, Wallet, ChevronRight, Star, Music } from 'lucide-react';
 import { useCommissions, useEditorEarnings, RATING_PAYOUTS, RATING_COLORS, type Commission, type SubmissionRating } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
 
 const RATINGS: SubmissionRating[] = ['S', 'A', 'B', 'C', 'D', 'F'];
 
@@ -53,11 +54,11 @@ function SoloArenaCTA() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-amber-400" />
+              <InfinityLoop size={18} />
             </div>
             <div>
               <h4 className="font-display text-sm text-foreground">SOLO ARENA</h4>
-              <p className="text-[9px] text-muted-foreground">Pick a song · Submit your edit · Get paid</p>
+              <p className="text-[9px] text-muted-foreground">Pick a song · Submit your edit · Earn up to $5</p>
             </div>
           </div>
           <div className="flex items-center gap-1 text-amber-400 text-[10px] font-bold">
