@@ -657,6 +657,44 @@ export type Database = {
           },
         ]
       }
+      bounty_ratings: {
+        Row: {
+          bounty_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          poster_id: string
+          rater_id: string
+          rating: number
+        }
+        Insert: {
+          bounty_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          poster_id: string
+          rater_id: string
+          rating: number
+        }
+        Update: {
+          bounty_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          poster_id?: string
+          rater_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bounty_ratings_bounty_id_fkey"
+            columns: ["bounty_id"]
+            isOneToOne: false
+            referencedRelation: "commissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       commission_submissions: {
         Row: {
           avatar_url: string | null
@@ -723,15 +761,25 @@ export type Database = {
         Row: {
           accepted_count: number
           artist_name: string | null
+          bounty_type: string
           campaign_id: string | null
+          cover_url: string | null
           created_at: string
           created_by: string
           custom_payouts: Json | null
           deadline: string | null
           description: string | null
           id: string
+          is_marketplace: boolean
           max_slots: number
           payout_cents: number
+          platform_fee_cents: number
+          poster_avatar_url: string | null
+          poster_rating_avg: number | null
+          poster_rating_count: number | null
+          poster_username: string | null
+          reference_urls: string[] | null
+          requirements: string | null
           song_name: string | null
           status: string
           submission_count: number
@@ -742,15 +790,25 @@ export type Database = {
         Insert: {
           accepted_count?: number
           artist_name?: string | null
+          bounty_type?: string
           campaign_id?: string | null
+          cover_url?: string | null
           created_at?: string
           created_by: string
           custom_payouts?: Json | null
           deadline?: string | null
           description?: string | null
           id?: string
+          is_marketplace?: boolean
           max_slots?: number
           payout_cents?: number
+          platform_fee_cents?: number
+          poster_avatar_url?: string | null
+          poster_rating_avg?: number | null
+          poster_rating_count?: number | null
+          poster_username?: string | null
+          reference_urls?: string[] | null
+          requirements?: string | null
           song_name?: string | null
           status?: string
           submission_count?: number
@@ -761,15 +819,25 @@ export type Database = {
         Update: {
           accepted_count?: number
           artist_name?: string | null
+          bounty_type?: string
           campaign_id?: string | null
+          cover_url?: string | null
           created_at?: string
           created_by?: string
           custom_payouts?: Json | null
           deadline?: string | null
           description?: string | null
           id?: string
+          is_marketplace?: boolean
           max_slots?: number
           payout_cents?: number
+          platform_fee_cents?: number
+          poster_avatar_url?: string | null
+          poster_rating_avg?: number | null
+          poster_rating_count?: number | null
+          poster_username?: string | null
+          reference_urls?: string[] | null
+          requirements?: string | null
           song_name?: string | null
           status?: string
           submission_count?: number
