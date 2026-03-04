@@ -300,26 +300,13 @@ function ArenaBountiesCarousel() {
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5">
           <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Bounties</span>
-          {bounties.length > 0 && <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5">{bounties.length} open</span>}
+          <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Marketplace</span>
         </div>
-        <Link to="/commissions" className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-0.5 font-bold">
-          All <ChevronRight className="w-2.5 h-2.5" />
-        </Link>
       </div>
-      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-        <div className="flex gap-2 pb-1">
-          {bounties.map(b => (
-            <ArenaBountyCard key={b.id} bounty={b} />
-          ))}
-          {/* Post bounty CTA */}
-          <Link to="/commissions" className="shrink-0">
-            <div className="w-[120px] h-[180px] border border-dashed border-emerald-500/20 flex flex-col items-center justify-center gap-2 hover:border-emerald-500/40 transition-colors">
-              <Plus className="w-5 h-5 text-emerald-400/40" />
-              <span className="text-[9px] font-bold text-emerald-400/40 uppercase tracking-wider">Post Bounty</span>
-            </div>
-          </Link>
-        </div>
+      <div className="relative overflow-hidden rounded-sm border border-dashed border-foreground/[0.06] px-4 py-5 flex flex-col items-center justify-center gap-1.5">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-transparent" />
+        <span className="text-[10px] font-black text-foreground/25 uppercase tracking-[0.2em]">Coming Soon</span>
+        <span className="text-[8px] text-foreground/15 max-w-[200px] text-center leading-relaxed">Post bounties, hire editors, and trade work — all on-platform.</span>
       </div>
     </div>
   );
