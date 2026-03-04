@@ -15,6 +15,8 @@ export interface Commission {
   thumbnail_url: string | null;
   submission_count: number;
   accepted_count: number;
+  campaign_id: string | null;
+  custom_payouts: Record<string, number> | null;
   created_at: string;
   updated_at: string;
 }
@@ -150,7 +152,9 @@ export function useCommissionDetail(id: string | undefined) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
-    const earnedCents = RATING_PAYOUTS[rating];
+    // Use custom payouts if set on the commission, otherwise global defaults
+    const payoutMap = commission?.custom_payouts as Record<string, number> | null;
+    const earnedCents = payoutMap ? (payoutMap[rating] ?? RATING_PAYOUTS[rating]) : RATING_PAYOUTS[rating];
     const status = rating === 'F' ? 'declined' : 'accepted';
 
     const { error } = await supabase
@@ -167,7 +171,7 @@ export function useCommissionDetail(id: string | undefined) {
 
     if (error) throw error;
     await fetch();
-  }, [fetch]);
+  }, [commission, fetch]);
 
   // Keep legacy reviewSubmission for backwards compat
   const reviewSubmission = useCallback(async (submissionId: string, status: 'accepted' | 'declined', feedback: string) => {

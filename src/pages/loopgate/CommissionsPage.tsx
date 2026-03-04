@@ -1,15 +1,25 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, ArrowLeft, Plus, Users, Clock, CheckCircle2, Loader2, Send } from 'lucide-react';
-import { useCommissions } from '@/hooks/useCommissions';
+import { DollarSign, ArrowLeft, Plus, Users, Clock, CheckCircle2, Loader2, Send, Crown, ChevronDown } from 'lucide-react';
+import { useCommissions, RATING_PAYOUTS, type SubmissionRating } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+
+interface CampaignOption {
+  id: string;
+  name: string;
+  client_name: string | null;
+  featured_artist_id: string | null;
+}
+
+const RATINGS: SubmissionRating[] = ['S', 'A', 'B', 'C', 'D', 'F'];
 
 function CreateCommissionModal({ onClose, onCreate }: { onClose: () => void; onCreate: (params: any) => Promise<any> }) {
   const [title, setTitle] = useState('');
@@ -21,11 +31,51 @@ function CreateCommissionModal({ onClose, onCreate }: { onClose: () => void; onC
   const [deadline, setDeadline] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Campaign linking
+  const [campaigns, setCampaigns] = useState<CampaignOption[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string>('');
+  const [useCustomPayouts, setUseCustomPayouts] = useState(false);
+  const [customPayouts, setCustomPayouts] = useState<Record<SubmissionRating, string>>({
+    S: '5', A: '3', B: '1', C: '0', D: '0', F: '0'
+  });
+
+  useEffect(() => {
+    supabase
+      .from('artist_campaigns')
+      .select('id, name, client_name, featured_artist_id')
+      .in('status', ['active', 'planning'])
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        if (data) setCampaigns(data as CampaignOption[]);
+      });
+  }, []);
+
+  const handleCampaignChange = async (campaignId: string) => {
+    setSelectedCampaignId(campaignId);
+    if (!campaignId) return;
+
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (campaign) {
+      // Auto-fill title with campaign name if empty
+      if (!title.trim()) setTitle(`Edit for ${campaign.name}`);
+
+      // Try to get artist info from the campaign's featured artist
+      if (campaign.featured_artist_id) {
+        const { data: artist } = await supabase
+          .from('featured_artists')
+          .select('name')
+          .eq('id', campaign.featured_artist_id)
+          .single();
+        if (artist) setArtistName(artist.name);
+      }
+    }
+  };
+
   const handleCreate = async () => {
     if (!title.trim() || !payoutDollars) return;
     setSubmitting(true);
     try {
-      await onCreate({
+      const params: any = {
         title: title.trim(),
         description: description.trim() || null,
         artist_name: artistName.trim() || null,
@@ -33,7 +83,21 @@ function CreateCommissionModal({ onClose, onCreate }: { onClose: () => void; onC
         payout_cents: Math.round(parseFloat(payoutDollars) * 100),
         max_slots: parseInt(maxSlots) || 3,
         deadline: deadline ? new Date(deadline).toISOString() : null,
-      });
+      };
+
+      if (selectedCampaignId) {
+        params.campaign_id = selectedCampaignId;
+      }
+
+      if (useCustomPayouts) {
+        const payoutsInCents: Record<string, number> = {};
+        for (const r of RATINGS) {
+          payoutsInCents[r] = Math.round(parseFloat(customPayouts[r] || '0') * 100);
+        }
+        params.custom_payouts = payoutsInCents;
+      }
+
+      await onCreate(params);
       toast.success('Commission created!');
       onClose();
     } catch (err: any) {
@@ -57,6 +121,32 @@ function CreateCommissionModal({ onClose, onCreate }: { onClose: () => void; onC
         </div>
 
         <div className="p-4 space-y-3">
+          {/* Campaign link */}
+          {campaigns.length > 0 && (
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block flex items-center gap-1.5">
+                <Crown className="w-3 h-3 text-cyan-400" /> Link to Campaign
+              </label>
+              <select
+                value={selectedCampaignId}
+                onChange={e => handleCampaignChange(e.target.value)}
+                className="w-full h-10 rounded-md border border-border bg-background px-3 text-sm text-foreground"
+              >
+                <option value="">None (standalone bounty)</option>
+                {campaigns.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}{c.client_name ? ` — ${c.client_name}` : ''}
+                  </option>
+                ))}
+              </select>
+              {selectedCampaignId && (
+                <p className="text-[10px] text-cyan-400 mt-1">
+                  ✓ Rated submissions will auto-populate this campaign's dashboard
+                </p>
+              )}
+            </div>
+          )}
+
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Title *</label>
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Edit for Drake - God's Plan" />
@@ -77,7 +167,7 @@ function CreateCommissionModal({ onClose, onCreate }: { onClose: () => void; onC
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Payout ($) *</label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Base Payout ($) *</label>
               <Input type="number" value={payoutDollars} onChange={e => setPayoutDollars(e.target.value)} placeholder="25" min="1" />
             </div>
             <div>
@@ -85,6 +175,39 @@ function CreateCommissionModal({ onClose, onCreate }: { onClose: () => void; onC
               <Input type="number" value={maxSlots} onChange={e => setMaxSlots(e.target.value)} placeholder="3" min="1" max="50" />
             </div>
           </div>
+
+          {/* Custom payout tiers toggle */}
+          <div>
+            <button
+              onClick={() => setUseCustomPayouts(!useCustomPayouts)}
+              className="flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronDown className={`w-3 h-3 transition-transform ${useCustomPayouts ? 'rotate-180' : ''}`} />
+              Custom Payout Tiers
+            </button>
+            {useCustomPayouts && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="grid grid-cols-3 gap-2 mt-2"
+              >
+                {RATINGS.map(r => (
+                  <div key={r} className="flex items-center gap-1.5">
+                    <span className="text-xs font-black text-foreground w-4">{r}</span>
+                    <Input
+                      type="number"
+                      value={customPayouts[r]}
+                      onChange={e => setCustomPayouts(prev => ({ ...prev, [r]: e.target.value }))}
+                      className="h-8 text-xs"
+                      min="0"
+                      placeholder="$"
+                    />
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </div>
+
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Deadline (optional)</label>
             <Input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} />
@@ -127,7 +250,7 @@ export default function CommissionsPage() {
             <h1 className="font-display text-2xl text-foreground flex items-center gap-2">
               <DollarSign className="w-6 h-6 text-emerald-400" /> COMMISSIONS
             </h1>
-            <p className="text-xs text-muted-foreground mt-1">Get paid to edit. Submit your work, get accepted, earn money.</p>
+            <p className="text-xs text-muted-foreground mt-1">Get paid to edit. Submit your work, get rated, earn money.</p>
           </div>
           {isStaff && (
             <Button onClick={() => setShowCreate(true)} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-white">
@@ -140,7 +263,7 @@ export default function CommissionsPage() {
         <div className="flex gap-2 mt-3">
           {(['all', 'open', 'filled', 'closed'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded transition-colors ${
                 filter === f ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-surface-1 text-muted-foreground border border-border/30 hover:text-foreground'
               }`}>
               {f}
@@ -172,7 +295,14 @@ export default function CommissionsPage() {
                   }`}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-display text-base text-foreground truncate">{c.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-display text-base text-foreground truncate">{c.title}</h3>
+                        {c.campaign_id && (
+                          <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded shrink-0">
+                            Campaign
+                          </span>
+                        )}
+                      </div>
                       {c.artist_name && (
                         <p className="text-[11px] text-muted-foreground mt-0.5">{c.artist_name}{c.song_name ? ` · ${c.song_name}` : ''}</p>
                       )}

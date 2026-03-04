@@ -723,8 +723,10 @@ export type Database = {
         Row: {
           accepted_count: number
           artist_name: string | null
+          campaign_id: string | null
           created_at: string
           created_by: string
+          custom_payouts: Json | null
           deadline: string | null
           description: string | null
           id: string
@@ -740,8 +742,10 @@ export type Database = {
         Insert: {
           accepted_count?: number
           artist_name?: string | null
+          campaign_id?: string | null
           created_at?: string
           created_by: string
+          custom_payouts?: Json | null
           deadline?: string | null
           description?: string | null
           id?: string
@@ -757,8 +761,10 @@ export type Database = {
         Update: {
           accepted_count?: number
           artist_name?: string | null
+          campaign_id?: string | null
           created_at?: string
           created_by?: string
+          custom_payouts?: Json | null
           deadline?: string | null
           description?: string | null
           id?: string
@@ -771,7 +777,15 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "commissions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "artist_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       connected_platforms: {
         Row: {

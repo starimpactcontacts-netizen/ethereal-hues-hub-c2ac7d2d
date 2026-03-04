@@ -257,6 +257,8 @@ export default function CommissionDetailPage() {
     );
   }
 
+  const payoutMap = commission.custom_payouts as Record<string, number> | null;
+  const getPayoutForRating = (r: SubmissionRating) => payoutMap ? (payoutMap[r] ?? RATING_PAYOUTS[r]) : RATING_PAYOUTS[r];
   const payout = (commission.payout_cents / 100).toFixed(0);
   const slotsLeft = commission.max_slots - commission.accepted_count;
   const isOpen = commission.status === 'open' && slotsLeft > 0 && (!commission.deadline || new Date(commission.deadline) > new Date());
@@ -281,6 +283,11 @@ export default function CommissionDetailPage() {
               }`}>
                 {isOpen ? 'Open' : commission.status === 'filled' ? 'Filled' : 'Closed'}
               </span>
+              {commission.campaign_id && (
+                <span className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  Campaign
+                </span>
+              )}
             </div>
             <h1 className="font-display text-2xl text-foreground leading-tight">{commission.title}</h1>
             {commission.artist_name && (
@@ -326,10 +333,12 @@ export default function CommissionDetailPage() {
       <div className="px-4 mt-4 space-y-4">
         {/* Payout tiers info */}
         <div className="bg-surface-1/60 border border-amber-500/10 p-3 rounded-lg">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-2">💰 Payout Tiers</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-2">
+            💰 Payout Tiers {payoutMap ? '(Custom)' : ''}
+          </p>
           <div className="flex gap-2 flex-wrap">
             {RATINGS.map(r => {
-              const p = RATING_PAYOUTS[r];
+              const p = getPayoutForRating(r);
               return (
                 <div key={r} className={`px-2 py-1 rounded border text-[10px] font-bold ${RATING_COLORS[r]}`}>
                   {r}{p > 0 ? ` = $${p / 100}` : ' = IDX'}
