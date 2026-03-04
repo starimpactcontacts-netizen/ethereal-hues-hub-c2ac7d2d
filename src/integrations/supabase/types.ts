@@ -662,10 +662,12 @@ export type Database = {
           avatar_url: string | null
           commission_id: string
           created_at: string
+          earned_cents: number
           feedback: string | null
           id: string
           message: string | null
           platform: string | null
+          rating: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -677,10 +679,12 @@ export type Database = {
           avatar_url?: string | null
           commission_id: string
           created_at?: string
+          earned_cents?: number
           feedback?: string | null
           id?: string
           message?: string | null
           platform?: string | null
+          rating?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -692,10 +696,12 @@ export type Database = {
           avatar_url?: string | null
           commission_id?: string
           created_at?: string
+          earned_cents?: number
           feedback?: string | null
           id?: string
           message?: string | null
           platform?: string | null
+          rating?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -4319,6 +4325,48 @@ export type Database = {
         }
         Relationships: []
       }
+      payout_requests: {
+        Row: {
+          admin_notes: string | null
+          amount_cents: number
+          avatar_url: string | null
+          created_at: string
+          id: string
+          paypal_email: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount_cents: number
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          paypal_email: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount_cents?: number
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          paypal_email?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       pinned_edits: {
         Row: {
           created_at: string
@@ -4558,6 +4606,7 @@ export type Database = {
           crew_id: string | null
           discord: string | null
           display_name: string | null
+          earnings_cents: number
           email: string | null
           global_index_score: number | null
           has_password: boolean | null
@@ -4580,6 +4629,7 @@ export type Database = {
           notify_drops: boolean
           notify_scores: boolean
           onboarding_completed: boolean | null
+          pending_withdrawal_cents: number
           playlist_name: string | null
           portfolio_url: string | null
           primary_crew_changed_at: string | null
@@ -4601,6 +4651,7 @@ export type Database = {
           verification_requested_at: string | null
           verification_status: boolean | null
           win_rate: number | null
+          withdrawn_cents: number
           xp: number
         }
         Insert: {
@@ -4616,6 +4667,7 @@ export type Database = {
           crew_id?: string | null
           discord?: string | null
           display_name?: string | null
+          earnings_cents?: number
           email?: string | null
           global_index_score?: number | null
           has_password?: boolean | null
@@ -4638,6 +4690,7 @@ export type Database = {
           notify_drops?: boolean
           notify_scores?: boolean
           onboarding_completed?: boolean | null
+          pending_withdrawal_cents?: number
           playlist_name?: string | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null
@@ -4659,6 +4712,7 @@ export type Database = {
           verification_requested_at?: string | null
           verification_status?: boolean | null
           win_rate?: number | null
+          withdrawn_cents?: number
           xp?: number
         }
         Update: {
@@ -4674,6 +4728,7 @@ export type Database = {
           crew_id?: string | null
           discord?: string | null
           display_name?: string | null
+          earnings_cents?: number
           email?: string | null
           global_index_score?: number | null
           has_password?: boolean | null
@@ -4696,6 +4751,7 @@ export type Database = {
           notify_drops?: boolean
           notify_scores?: boolean
           onboarding_completed?: boolean | null
+          pending_withdrawal_cents?: number
           playlist_name?: string | null
           portfolio_url?: string | null
           primary_crew_changed_at?: string | null
@@ -4717,6 +4773,7 @@ export type Database = {
           verification_requested_at?: string | null
           verification_status?: boolean | null
           win_rate?: number | null
+          withdrawn_cents?: number
           xp?: number
         }
         Relationships: [

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, XCircle, Send, ExternalLink, MessageSquare, Loader2 } from 'lucide-react';
-import { useCommissionDetail } from '@/hooks/useCommissions';
+import { DollarSign, ArrowLeft, Clock, Users, CheckCircle2, XCircle, Send, ExternalLink, MessageSquare, Loader2, Star, Zap } from 'lucide-react';
+import { useCommissionDetail, type SubmissionRating, RATING_PAYOUTS, RATING_COLORS } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Button } from '@/components/ui/button';
@@ -68,26 +68,34 @@ function SubmitForm({ onSubmit, disabled }: { onSubmit: (url: string, platform: 
   );
 }
 
-function ReviewModal({ submission, onReview, onClose }: {
+const RATINGS: SubmissionRating[] = ['S', 'A', 'B', 'C', 'D', 'F'];
+
+function RatingModal({ submission, onRate, onClose }: {
   submission: any;
-  onReview: (id: string, status: 'accepted' | 'declined', feedback: string) => Promise<void>;
+  onRate: (id: string, rating: SubmissionRating, feedback: string) => Promise<void>;
   onClose: () => void;
 }) {
   const [feedback, setFeedback] = useState('');
+  const [selectedRating, setSelectedRating] = useState<SubmissionRating | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleReview = async (status: 'accepted' | 'declined') => {
-    if (!feedback.trim()) {
-      toast.error('Feedback is required');
+  const handleRate = async () => {
+    if (!selectedRating) {
+      toast.error('Pick a rating');
       return;
     }
     setSubmitting(true);
     try {
-      await onReview(submission.id, status, feedback.trim());
-      toast.success(status === 'accepted' ? 'Submission accepted!' : 'Submission declined');
+      await onRate(submission.id, selectedRating, feedback.trim());
+      const payout = RATING_PAYOUTS[selectedRating];
+      if (payout > 0) {
+        toast.success(`Rated ${selectedRating} — $${(payout / 100).toFixed(0)} awarded to @${submission.username}`);
+      } else {
+        toast.success(`Rated ${selectedRating} — Index points only`);
+      }
       onClose();
     } catch {
-      toast.error('Review failed');
+      toast.error('Rating failed');
     }
     setSubmitting(false);
   };
@@ -107,7 +115,11 @@ function ReviewModal({ submission, onReview, onClose }: {
         className="bg-card border border-border rounded-xl w-full max-w-md p-5 space-y-4"
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="font-display text-lg text-foreground">Review Submission</h3>
+        <h3 className="font-display text-lg text-foreground flex items-center gap-2">
+          <Zap className="w-5 h-5 text-amber-400" /> Rate Submission
+        </h3>
+
+        {/* Submission info */}
         <div className="bg-surface-1 border border-border/50 p-3 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
@@ -119,52 +131,111 @@ function ReviewModal({ submission, onReview, onClose }: {
             </div>
             <span className="text-sm font-semibold text-foreground">@{submission.username}</span>
           </div>
-          <a href={submission.submission_url} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
-            <ExternalLink className="w-3 h-3" /> View Edit
-          </a>
+          <button
+            onClick={() => window.open(submission.submission_url, '_blank', 'noopener,noreferrer')}
+            className="text-xs text-emerald-400 hover:underline flex items-center gap-1"
+          >
+            <ExternalLink className="w-3 h-3" /> Watch Edit
+          </button>
           {submission.message && (
             <p className="text-xs text-muted-foreground mt-2 italic">"{submission.message}"</p>
           )}
         </div>
 
+        {/* Rating grid */}
+        <div>
+          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">
+            Rating
+          </label>
+          <div className="grid grid-cols-6 gap-2">
+            {RATINGS.map(r => {
+              const payout = RATING_PAYOUTS[r];
+              const isSelected = selectedRating === r;
+              return (
+                <motion.button
+                  key={r}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={() => setSelectedRating(r)}
+                  className={`flex flex-col items-center py-3 rounded-lg border-2 transition-all ${
+                    isSelected
+                      ? RATING_COLORS[r] + ' ring-2 ring-offset-1 ring-offset-background'
+                      : 'border-border/30 bg-surface-1 hover:border-border/60'
+                  }`}
+                >
+                  <span className={`text-xl font-black ${isSelected ? '' : 'text-foreground'}`}>{r}</span>
+                  {payout > 0 ? (
+                    <span className="text-[9px] font-bold text-emerald-400 mt-0.5">${payout / 100}</span>
+                  ) : (
+                    <span className="text-[9px] text-muted-foreground mt-0.5">IDX</span>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+          {selectedRating && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-2 text-center"
+            >
+              {RATING_PAYOUTS[selectedRating] > 0 ? (
+                <p className="text-sm text-emerald-400 font-bold">
+                  <DollarSign className="w-3.5 h-3.5 inline" />
+                  {(RATING_PAYOUTS[selectedRating] / 100).toFixed(0)} will be added to @{submission.username}'s balance
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">Index points only — no cash payout</p>
+              )}
+            </motion.div>
+          )}
+        </div>
+
+        {/* Feedback */}
         <div>
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">
-            Feedback <span className="text-red-400">*</span>
+            Feedback (optional)
           </label>
           <Textarea
             value={feedback}
             onChange={e => setFeedback(e.target.value)}
-            placeholder="Provide feedback on the submission..."
-            className="min-h-[80px] resize-none"
+            placeholder="Quick note on the edit..."
+            className="min-h-[60px] resize-none"
           />
         </div>
 
-        <div className="flex gap-2">
-          <Button
-            onClick={() => handleReview('declined')}
-            disabled={submitting}
-            variant="outline"
-            className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
-          >
-            <XCircle className="w-4 h-4 mr-1.5" /> Decline
-          </Button>
-          <Button
-            onClick={() => handleReview('accepted')}
-            disabled={submitting}
-            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white"
-          >
-            <CheckCircle2 className="w-4 h-4 mr-1.5" /> Accept
-          </Button>
-        </div>
+        <Button
+          onClick={handleRate}
+          disabled={submitting || !selectedRating}
+          className="w-full bg-amber-500 hover:bg-amber-400 text-background font-bold text-base py-5"
+        >
+          {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+            <>
+              <Star className="w-4 h-4 mr-2" />
+              Confirm {selectedRating || '...'} Rating
+            </>
+          )}
+        </Button>
       </motion.div>
     </motion.div>
   );
 }
 
+function RatingBadge({ rating, earnedCents }: { rating: string; earnedCents: number }) {
+  const colors = RATING_COLORS[rating as SubmissionRating] || 'text-muted-foreground bg-muted/30 border-border/30';
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded border text-xs font-black ${colors}`}>
+      <span className="text-base">{rating}</span>
+      {earnedCents > 0 && (
+        <span className="text-emerald-400 font-bold text-[10px]">+${earnedCents / 100}</span>
+      )}
+    </div>
+  );
+}
+
 export default function CommissionDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { commission, submissions, loading, submitEdit, reviewSubmission } = useCommissionDetail(id);
-  const { user, profile } = useAuth();
+  const { commission, submissions, loading, submitEdit, rateSubmission } = useCommissionDetail(id);
+  const { user } = useAuth();
   const { isDev, isAdmin } = useUserRoles(user?.id);
   const isStaff = isDev || isAdmin;
   const [reviewingSubmission, setReviewingSubmission] = useState<any>(null);
@@ -192,11 +263,13 @@ export default function CommissionDetailPage() {
   const mySubmission = submissions.find(s => s.user_id === user?.id);
   const canSubmit = isOpen && !mySubmission && !!user;
 
+  const totalPaidOut = submissions.reduce((acc, s) => acc + (s.earned_cents || 0), 0);
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <div className="bg-gradient-to-b from-emerald-950/40 to-background border-b border-emerald-500/10 px-4 pt-4 pb-5">
-        <Link to="/hub" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4">
+        <Link to="/commissions" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4">
           <ArrowLeft className="w-3.5 h-3.5" /> Back
         </Link>
 
@@ -241,10 +314,31 @@ export default function CommissionDetailPage() {
             <MessageSquare className="w-3.5 h-3.5" />
             <span>{submissions.length} submission{submissions.length !== 1 ? 's' : ''}</span>
           </div>
+          {totalPaidOut > 0 && (
+            <div className="flex items-center gap-1 text-xs text-emerald-400">
+              <DollarSign className="w-3.5 h-3.5" />
+              <span>${(totalPaidOut / 100).toFixed(0)} paid out</span>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="px-4 mt-4 space-y-4">
+        {/* Payout tiers info */}
+        <div className="bg-surface-1/60 border border-amber-500/10 p-3 rounded-lg">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-2">💰 Payout Tiers</p>
+          <div className="flex gap-2 flex-wrap">
+            {RATINGS.map(r => {
+              const p = RATING_PAYOUTS[r];
+              return (
+                <div key={r} className={`px-2 py-1 rounded border text-[10px] font-bold ${RATING_COLORS[r]}`}>
+                  {r}{p > 0 ? ` = $${p / 100}` : ' = IDX'}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Description */}
         {commission.description && (
           <div className="bg-surface-1/60 border border-border/30 p-4 rounded-lg">
@@ -270,7 +364,9 @@ export default function CommissionDetailPage() {
             'bg-surface-1 border-border/50'
           }`}>
             <div className="flex items-center gap-2 mb-2">
-              {mySubmission.status === 'accepted' ? (
+              {mySubmission.rating ? (
+                <RatingBadge rating={mySubmission.rating} earnedCents={mySubmission.earned_cents} />
+              ) : mySubmission.status === 'accepted' ? (
                 <><CheckCircle2 className="w-4 h-4 text-emerald-400" /><span className="text-sm font-bold text-emerald-400">Accepted!</span></>
               ) : mySubmission.status === 'declined' ? (
                 <><XCircle className="w-4 h-4 text-red-400" /><span className="text-sm font-bold text-red-400">Declined</span></>
@@ -278,9 +374,17 @@ export default function CommissionDetailPage() {
                 <><Clock className="w-4 h-4 text-amber-400" /><span className="text-sm font-bold text-amber-400">Pending Review</span></>
               )}
             </div>
-            <a href={mySubmission.submission_url} target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-400 hover:underline flex items-center gap-1">
+            {mySubmission.earned_cents > 0 && (
+              <p className="text-sm text-emerald-400 font-bold mb-2">
+                +${(mySubmission.earned_cents / 100).toFixed(0)} added to your balance 🎉
+              </p>
+            )}
+            <button
+              onClick={() => window.open(mySubmission.submission_url, '_blank', 'noopener,noreferrer')}
+              className="text-xs text-emerald-400 hover:underline flex items-center gap-1"
+            >
               <ExternalLink className="w-3 h-3" /> Your submission
-            </a>
+            </button>
             {mySubmission.feedback && (
               <div className="mt-2 pt-2 border-t border-border/30">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Feedback</p>
@@ -315,9 +419,12 @@ export default function CommissionDetailPage() {
                       <div>
                         <span className="text-sm font-semibold text-foreground">@{sub.username}</span>
                         <div className="flex items-center gap-2">
-                          <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1">
+                          <button
+                            onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')}
+                            className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1"
+                          >
                             <ExternalLink className="w-2.5 h-2.5" /> View
-                          </a>
+                          </button>
                           {sub.platform && <span className="text-[9px] text-muted-foreground capitalize">{sub.platform}</span>}
                         </div>
                       </div>
@@ -328,10 +435,12 @@ export default function CommissionDetailPage() {
                         <Button
                           size="sm"
                           onClick={() => setReviewingSubmission(sub)}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8"
+                          className="bg-amber-500 hover:bg-amber-400 text-background text-xs h-8 font-bold"
                         >
-                          Review
+                          <Star className="w-3.5 h-3.5 mr-1" /> Rate
                         </Button>
+                      ) : sub.rating ? (
+                        <RatingBadge rating={sub.rating} earnedCents={sub.earned_cents} />
                       ) : (
                         <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 ${
                           sub.status === 'accepted' ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'
@@ -357,15 +466,15 @@ export default function CommissionDetailPage() {
           </div>
         )}
 
-        {/* Non-staff: show accepted submissions */}
-        {!isStaff && submissions.filter(s => s.status === 'accepted').length > 0 && (
+        {/* Non-staff: show rated submissions */}
+        {!isStaff && submissions.filter(s => s.status === 'accepted' || s.rating).length > 0 && (
           <div>
             <h3 className="font-display text-sm text-foreground mb-3 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              Accepted Edits
+              Rated Edits
             </h3>
             <div className="space-y-2">
-              {submissions.filter(s => s.status === 'accepted').map(sub => (
+              {submissions.filter(s => s.status === 'accepted' || s.rating).map(sub => (
                 <div key={sub.id} className="bg-emerald-950/20 border border-emerald-500/20 rounded-lg p-3 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                     {sub.avatar_url ? (
@@ -376,11 +485,18 @@ export default function CommissionDetailPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-semibold text-foreground">@{sub.username}</span>
-                    <a href={sub.submission_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1">
+                    <button
+                      onClick={() => window.open(sub.submission_url, '_blank', 'noopener,noreferrer')}
+                      className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1"
+                    >
                       <ExternalLink className="w-2.5 h-2.5" /> Watch Edit
-                    </a>
+                    </button>
                   </div>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  {sub.rating ? (
+                    <RatingBadge rating={sub.rating} earnedCents={sub.earned_cents} />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  )}
                 </div>
               ))}
             </div>
@@ -388,12 +504,12 @@ export default function CommissionDetailPage() {
         )}
       </div>
 
-      {/* Review Modal */}
+      {/* Rating Modal */}
       <AnimatePresence>
         {reviewingSubmission && (
-          <ReviewModal
+          <RatingModal
             submission={reviewingSubmission}
-            onReview={reviewSubmission}
+            onRate={rateSubmission}
             onClose={() => setReviewingSubmission(null)}
           />
         )}
