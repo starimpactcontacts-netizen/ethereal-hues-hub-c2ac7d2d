@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -7,8 +7,9 @@ import {
   Search, X, TrendingUp, Plus, HelpCircle, CheckCircle2,
   Clock, Award, UserPlus, Eye, Globe, Crown, Zap, UserRound,
   Sparkles, Star, Music, Mail, ArrowRight, History, Play, Loader2,
-  Clapperboard, ChevronDown
+  Clapperboard, ChevronDown, Crosshair, DollarSign
 } from "lucide-react";
+import { InfinityLoop } from "@/components/loopgate/InfinityLoop";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import LoopMonster from "@/components/loopgate/LoopMonster";
@@ -51,6 +52,153 @@ interface Event {
   league: string;
   event_mode: string | null;
   xp_reward: number | null;
+}
+
+// ─── Arena Missions Carousel (GET PAID) ────────────────────────
+interface ArenaMission {
+  id: string;
+  song_name: string;
+  poster_url: string | null;
+  status: string;
+  prize_usd: number;
+  custom_payouts: Record<string, number> | null;
+  views_milestone: number;
+  views_bonus_cents: number;
+  artist_name: string | null;
+}
+
+function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
+  const navigate = useNavigate();
+  const payouts = drop.custom_payouts || { S: 500, A: 300, B: 100 };
+  const sRate = ((payouts.S || 500) / 100);
+  const aRate = ((payouts.A || 300) / 100);
+  const bRate = ((payouts.B || 100) / 100);
+  const hasViewsBonus = drop.views_milestone > 0 && drop.views_bonus_cents > 0;
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={() => navigate('/solo-arena')}
+      className="shrink-0 relative w-[200px] h-[250px] overflow-hidden group text-left touch-manipulation"
+      style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}
+    >
+      {drop.poster_url ? (
+        <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-surface-1 to-background" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)' }} />
+
+      {/* Top */}
+      <div className="absolute top-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between">
+        <div className="flex items-center gap-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 border-l-2 border-emerald-500">
+          <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.15em]">Live</span>
+        </div>
+        {drop.prize_usd > 0 && (
+          <div className="bg-emerald-500/20 backdrop-blur-sm px-1.5 py-0.5 border border-emerald-500/30">
+            <span className="text-[8px] font-black text-emerald-400">${drop.prize_usd}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        {hasViewsBonus && (
+          <div className="flex items-center gap-1 mb-1.5 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 w-fit">
+            <Eye className="w-2.5 h-2.5 text-amber-400" />
+            <span className="text-[7px] font-black text-amber-400 uppercase">{(drop.views_milestone / 1000).toFixed(0)}K = +${(drop.views_bonus_cents / 100).toFixed(0)}</span>
+          </div>
+        )}
+
+        {drop.artist_name && (
+          <p className="text-[8px] font-bold text-foreground/40 uppercase tracking-[0.1em]">{drop.artist_name}</p>
+        )}
+        <h4 className="font-display text-sm text-foreground leading-tight truncate">{drop.song_name}</h4>
+
+        {/* Payout strip */}
+        <div className="flex items-stretch gap-0 mt-2 h-[28px]">
+          <div className="flex-1 bg-amber-500/15 border border-amber-500/25 border-r-0 flex flex-col items-center justify-center">
+            <span className="text-[9px] font-black text-amber-400 leading-none">S</span>
+            <span className="text-[8px] font-bold text-emerald-400 leading-none">${sRate}</span>
+          </div>
+          <div className="flex-1 bg-emerald-500/10 border-y border-emerald-500/20 flex flex-col items-center justify-center">
+            <span className="text-[9px] font-black text-emerald-400 leading-none">A</span>
+            <span className="text-[8px] font-bold text-emerald-400 leading-none">${aRate}</span>
+          </div>
+          <div className="flex-1 bg-blue-500/10 border border-blue-500/20 border-l-0 flex flex-col items-center justify-center">
+            <span className="text-[9px] font-black text-blue-400 leading-none">B</span>
+            <span className="text-[8px] font-bold text-emerald-400 leading-none">${bRate}</span>
+          </div>
+          <div className="flex-1 bg-foreground/[0.03] border border-foreground/[0.06] border-l-0 flex items-center justify-center">
+            <span className="text-[7px] font-bold text-foreground/15">C-F</span>
+          </div>
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+function ArenaMissionsCarousel() {
+  const [drops, setDrops] = useState<ArenaMission[]>([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('featured_drops')
+        .select('id, song_name, poster_url, status, prize_usd, custom_payouts, views_milestone, views_bonus_cents, artist_id')
+        .in('status', ['active', 'open', 'live'])
+        .order('created_at', { ascending: false });
+
+      if (!data || data.length === 0) return;
+
+      const artistIds = [...new Set(data.map(d => d.artist_id).filter(Boolean))];
+      let artistMap: Record<string, string> = {};
+      if (artistIds.length > 0) {
+        const { data: artists } = await supabase.from('featured_artists').select('id, name').in('id', artistIds);
+        if (artists) artists.forEach(a => { artistMap[a.id] = a.name; });
+      }
+
+      setDrops(data.map(d => ({
+        id: d.id,
+        song_name: d.song_name,
+        poster_url: d.poster_url,
+        status: d.status || 'live',
+        prize_usd: d.prize_usd || 0,
+        custom_payouts: d.custom_payouts as Record<string, number> | null,
+        views_milestone: (d as any).views_milestone || 0,
+        views_bonus_cents: (d as any).views_bonus_cents || 0,
+        artist_name: d.artist_id ? artistMap[d.artist_id] || null : null,
+      })));
+    };
+    fetch();
+  }, []);
+
+  if (drops.length === 0) return null;
+
+  return (
+    <div className="mb-2">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <InfinityLoop size={14} />
+          <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Get Paid</span>
+          <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5">{drops.length} live</span>
+        </div>
+        <Link to="/solo-arena" className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-0.5 font-bold">
+          All <ChevronRight className="w-2.5 h-2.5" />
+        </Link>
+      </div>
+      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+        <div className="flex gap-2 pb-1">
+          {drops.map(drop => (
+            <ArenaMissionCard key={drop.id} drop={drop} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── Compact Event Card ────────────────────────────────────────
@@ -847,6 +995,9 @@ export default function ArenaPage() {
           )}
 
           {/* search bar moved to top */}
+
+          {/* ═══ MISSIONS CAROUSEL — GET PAID ═══ */}
+          <ArenaMissionsCarousel />
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">
