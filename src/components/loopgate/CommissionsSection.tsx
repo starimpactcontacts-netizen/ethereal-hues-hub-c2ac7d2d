@@ -1,19 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DollarSign, ArrowRight, Clock, Users, CheckCircle2, Wallet, ChevronRight, Star } from 'lucide-react';
-import { useCommissions, useEditorEarnings, RATING_PAYOUTS, RATING_COLORS, type Commission, type SubmissionRating } from '@/hooks/useCommissions';
+import { useCommissions, useEditorEarnings, type Commission } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
-
-const TIER_DATA: { grade: SubmissionRating; label: string; cash: boolean }[] = [
-  { grade: 'S', label: '$5', cash: true },
-  { grade: 'A', label: '$3', cash: true },
-  { grade: 'B', label: '$1', cash: true },
-  { grade: 'C', label: 'IDX', cash: false },
-  { grade: 'D', label: 'IDX', cash: false },
-  { grade: 'F', label: '—', cash: false },
-];
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from 'react';
 
 function BalanceStrip() {
   const { user } = useAuth();
@@ -58,103 +51,116 @@ function BalanceStrip() {
 }
 
 function SoloArenaHero() {
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [songName, setSongName] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from('featured_drops')
+      .select('poster_url, song_name')
+      .in('status', ['active', 'open', 'live'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data?.[0]) {
+          setCoverUrl(data[0].poster_url);
+          setSongName(data[0].song_name);
+        }
+      });
+  }, []);
+
   return (
     <Link to="/solo-arena" className="block">
       <motion.div
-        whileHover={{ scale: 1.005 }}
+        whileHover={{ scale: 1.008 }}
         whileTap={{ scale: 0.995 }}
-        className="relative overflow-hidden rounded-2xl group cursor-pointer"
+        className="relative overflow-hidden rounded-2xl group cursor-pointer h-[200px]"
       >
-        {/* Multi-layer background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-950/90 via-background to-emerald-950/40" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(245,158,11,0.12)_0%,transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.08)_0%,transparent_50%)]" />
+        {/* Cover image */}
+        {coverUrl && (
+          <img
+            src={coverUrl}
+            alt={songName || 'Featured'}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent" />
         
-        {/* Animated scan line */}
+        {/* Animated shimmer */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-400/[0.03] to-transparent"
-          animate={{ y: [-100, 200] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-          style={{ height: '60px' }}
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent -skew-x-12"
+          animate={{ x: ['-100%', '200%'] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'linear', repeatDelay: 2 }}
         />
 
-        {/* Grid texture */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '24px 24px'
-        }} />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
 
-        {/* Top accent border */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/60 to-transparent" />
-        
-        {/* Bottom accent border */}
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
-
-        <div className="relative px-5 pt-5 pb-4">
-          {/* Header row */}
-          <div className="flex items-start justify-between mb-4">
+        {/* Content */}
+        <div className="absolute inset-0 flex flex-col justify-between p-5">
+          {/* Top row */}
+          <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              {/* Glowing infinity icon */}
               <div className="relative">
-                <div className="absolute inset-0 blur-xl bg-amber-500/20 rounded-full scale-150" />
-                <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-600/5 border border-amber-500/20 flex items-center justify-center">
-                  <InfinityLoop size={28} />
+                <div className="absolute inset-0 blur-xl bg-gold/20 rounded-full scale-150" />
+                <div className="relative w-11 h-11 rounded-xl bg-black/50 backdrop-blur-sm border border-gold/30 flex items-center justify-center">
+                  <InfinityLoop size={26} />
                 </div>
               </div>
               <div>
-                <h3 className="font-display text-xl text-foreground tracking-wide leading-none">SOLO ARENA</h3>
-                <p className="text-[10px] text-amber-400/60 mt-0.5 font-medium">Edit songs. Get graded. Earn cash.</p>
+                <h3 className="font-display text-2xl text-foreground tracking-wide leading-none">SOLO ARENA</h3>
+                <p className="text-[10px] text-foreground/50 mt-0.5 font-medium">Edit songs. Get graded. Earn cash.</p>
               </div>
             </div>
 
-            {/* Enter button */}
             <motion.div
               whileHover={{ x: 2 }}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2 group-hover:border-amber-500/40 group-hover:from-amber-500/15 transition-all"
+              className="flex items-center gap-1.5 bg-gold/15 backdrop-blur-sm border border-gold/30 rounded-lg px-4 py-2 group-hover:bg-gold/25 transition-all"
             >
-              <span className="text-xs font-bold text-amber-400 tracking-wide">ENTER</span>
-              <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-bold text-gold tracking-wide">ENTER</span>
+              <ChevronRight className="w-3.5 h-3.5 text-gold" />
             </motion.div>
           </div>
 
-          {/* Payout tiers - the money shot */}
-          <div className="flex items-stretch gap-2">
-            {TIER_DATA.map(({ grade, label, cash }) => (
-              <motion.div
-                key={grade}
-                whileHover={{ y: -2, scale: 1.05 }}
-                className={`flex-1 relative overflow-hidden rounded-lg border text-center py-2.5 transition-all ${
-                  cash
-                    ? 'border-emerald-500/25 bg-gradient-to-b from-emerald-500/10 to-emerald-500/5'
-                    : 'border-border/20 bg-surface-1/40'
-                }`}
-              >
-                {cash && (
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.08)_0%,transparent_70%)]" />
-                )}
-                <div className="relative">
-                  <span className={`text-lg font-black leading-none ${
-                    grade === 'S' ? 'text-amber-400' :
-                    grade === 'A' ? 'text-emerald-400' :
-                    grade === 'B' ? 'text-blue-400' :
-                    'text-muted-foreground/60'
-                  }`}>{grade}</span>
-                  <p className={`text-[10px] font-bold mt-0.5 ${
-                    cash ? 'text-emerald-400' : 'text-muted-foreground/40'
-                  }`}>{label}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Bottom tagline */}
-          <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-amber-500/10">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] text-emerald-400/70 font-bold uppercase tracking-[0.15em]">Instant payouts</span>
+          {/* Bottom row */}
+          <div>
+            {/* Payout pills */}
+            <div className="flex items-center gap-2 mb-3">
+              {(['S', 'A', 'B'] as const).map((grade) => {
+                const amt = grade === 'S' ? '$5' : grade === 'A' ? '$3' : '$1';
+                return (
+                  <div
+                    key={grade}
+                    className="flex items-center gap-1.5 bg-emerald-500/15 backdrop-blur-sm border border-emerald-500/25 rounded-full px-3 py-1"
+                  >
+                    <span className={`text-sm font-black leading-none ${
+                      grade === 'S' ? 'text-gold' : grade === 'A' ? 'text-emerald-400' : 'text-blue-400'
+                    }`}>{grade}</span>
+                    <span className="text-[10px] font-bold text-emerald-400">{amt}</span>
+                  </div>
+                );
+              })}
+              <span className="text-[9px] text-foreground/30 font-medium ml-1">C-F = IDX</span>
             </div>
-            <span className="text-muted-foreground/20">·</span>
-            <span className="text-[9px] text-amber-400/50 font-medium uppercase tracking-wider">Up to $5 per edit</span>
+
+            {/* Status bar */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[9px] text-emerald-400/80 font-bold uppercase tracking-[0.15em]">Instant payouts</span>
+              </div>
+              <span className="text-foreground/15">·</span>
+              <span className="text-[9px] text-gold/50 font-medium uppercase tracking-wider">Up to $5 per edit</span>
+              {songName && (
+                <>
+                  <span className="text-foreground/15">·</span>
+                  <span className="text-[9px] text-foreground/30 font-medium truncate max-w-[120px]">Now playing: {songName}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </motion.div>
