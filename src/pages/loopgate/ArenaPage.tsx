@@ -1158,20 +1158,34 @@ export default function ArenaPage() {
             <SoloShowcase onStartSolo={() => setShowSoloMode(true)} />
           )}
 
-          {/* Featured Drops */}
-          {liveDrops.length > 0 && (activeFilter === "all" || activeFilter === "official") && (
-            <motion.section key="featured-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {/* Official Events — Featured Drops with rounds */}
+          {(activeFilter === "all" || activeFilter === "official") && (
+            <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SectionHeader
-                icon={<Flame className="w-4 h-4 text-brand" />}
-                title="Featured Artist"
-                badge="New"
-                badgeColor="bg-brand/20 border-brand/40 text-brand"
+                icon={<InfinityIcon className="w-4 h-4 text-gold" />}
+                title="Official Events"
+                badge={liveDrops.length > 0 ? `${liveDrops.length} Live` : undefined}
+                badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
               />
-              <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
-                {liveDrops.map(drop => (
-                  <FeaturedDropCard key={drop.id} drop={drop} />
-                ))}
-              </div>
+              <p className="text-[12px] text-muted-foreground px-4 mb-1">Artist-featured multi-round competitions · Cash prizes · Best edit + random pick wins</p>
+              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Submit your edit each round. Judges score on a 0–100 QOI scale. Top scorers earn cash + Index.</p>
+              {liveDrops.length > 0 ? (
+                <div className="px-4 flex gap-3 overflow-x-auto pb-1 scrollbar-hide snap-x snap-mandatory">
+                  {liveDrops.map(drop => (
+                    <FeaturedDropCard key={drop.id} drop={drop} />
+                  ))}
+                </div>
+              ) : (
+                <div className="px-4">
+                  <div className="bg-surface-1 border border-border border-dashed p-8 text-center">
+                    <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
+                      <InfinityIcon className="w-6 h-6 text-gold/30" />
+                    </div>
+                    <p className="text-[13px] text-muted-foreground font-medium">No active official events</p>
+                    <p className="text-[11px] text-muted-foreground/50 mt-1">New drops announced weekly — stay tuned</p>
+                  </div>
+                </div>
+              )}
             </motion.section>
           )}
 
@@ -1192,7 +1206,8 @@ export default function ArenaPage() {
                   </button>
                 }
               />
-              <p className="text-[12px] text-muted-foreground px-4 mb-3">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
+              <p className="text-[12px] text-muted-foreground px-4 mb-1">Instant matchmaking · 3hr edit window · Winner +20 IDX</p>
+              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Auto-matched with another editor. Both submit an edit within 3 hours. Judge picks the winner.</p>
 
 
 
@@ -1249,7 +1264,8 @@ export default function ArenaPage() {
                 badge={liveBattles > 0 ? `${liveBattles} Live` : undefined}
                 badgeColor="bg-red-500/20 border-red-500/40 text-red-400"
               />
-              <p className="text-[12px] text-muted-foreground px-4 mb-3">Head-to-head editing showdowns · Winner +20 IDX</p>
+              <p className="text-[12px] text-muted-foreground px-4 mb-1">Head-to-head editing showdowns · Winner +20 IDX</p>
+              <p className="text-[10px] text-muted-foreground/50 px-4 mb-3">Challenge a specific editor. Pick a song, set the deadline, and go head-to-head. Loser gets no penalty.</p>
 
               {battlesLoading ? (
                 <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
@@ -1285,37 +1301,7 @@ export default function ArenaPage() {
             </motion.section>
           )}
 
-          {/* Official Events */}
-          {(activeFilter === "all" || activeFilter === "official") && (
-            <motion.section key="official-section" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <SectionHeader
-                icon={<InfinityIcon className="w-4 h-4 text-gold" />}
-                title="Official Events"
-                badge={liveEvents.length > 0 ? `${liveEvents.length} Live` : undefined}
-                badgeColor="bg-emerald-500/20 border-emerald-500/40 text-emerald-400"
-                action={
-                  <Link to="/arena" className="text-[12px] text-muted-foreground hover:text-foreground font-medium transition-colors">View All</Link>
-                }
-              />
-              {allActiveEvents.length > 0 ? (
-                <div className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide pb-2">
-                  {allActiveEvents.map(event => <EventCard key={event.id} event={event} />)}
-                  {allActiveEvents.length < 3 && Array.from({ length: Math.max(0, 3 - allActiveEvents.length) }).map((_, i) => (
-                    <GhostSlot key={`ghost-event-${i}`} width="w-[240px]" icon={<Trophy className="w-4 h-4 text-gold/20" />} label="Upcoming" accentColor="border-gold/15" />
-                  ))}
-                </div>
-              ) : (
-                <div className="px-4">
-                  <div className="bg-surface-1 border border-border border-dashed p-8 text-center">
-                    <div className="w-12 h-12 bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-3">
-                      <InfinityIcon className="w-6 h-6 text-gold/30" />
-                    </div>
-                    <p className="text-[13px] text-muted-foreground font-medium">No active events</p>
-                  </div>
-                </div>
-              )}
-            </motion.section>
-          )}
+          {/* (Official Events now shown above as Featured Drops with rounds) */}
 
           {/* Premium Comps */}
           {(activeFilter === "all") && (
