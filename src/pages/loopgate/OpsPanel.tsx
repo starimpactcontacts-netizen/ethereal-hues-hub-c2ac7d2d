@@ -2331,6 +2331,13 @@ export default function OpsPanel() {
               Commissions
             </button>
             <button 
+              onClick={() => navigate('/solo-arena')}
+              className="flex items-center justify-center gap-2 bg-amber-600/20 border border-amber-500/50 text-amber-300 font-semibold py-3 rounded-lg text-sm hover:bg-amber-600/30 transition-colors"
+            >
+              <Zap size={16} />
+              Solo Arena
+            </button>
+            <button 
               onClick={() => navigate('/payouts')}
               className="flex items-center justify-center gap-2 bg-amber-500/20 border border-amber-500/50 text-amber-300 font-semibold py-3 rounded-lg text-sm hover:bg-amber-500/30 transition-colors"
             >
