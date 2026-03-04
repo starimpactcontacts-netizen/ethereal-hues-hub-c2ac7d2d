@@ -293,7 +293,7 @@ function ArenaBountiesCarousel() {
     fetch();
   }, []);
 
-  if (bounties.length === 0) return null;
+  // Always show — even empty, show the "Post Bounty" CTA
 
   return (
     <div className="mb-2">
@@ -301,7 +301,7 @@ function ArenaBountiesCarousel() {
         <div className="flex items-center gap-1.5">
           <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
           <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Bounties</span>
-          <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5">{bounties.length} open</span>
+          {bounties.length > 0 && <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5">{bounties.length} open</span>}
         </div>
         <Link to="/commissions" className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-0.5 font-bold">
           All <ChevronRight className="w-2.5 h-2.5" />
