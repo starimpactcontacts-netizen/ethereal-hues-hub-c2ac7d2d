@@ -201,6 +201,130 @@ function ArenaMissionsCarousel() {
   );
 }
 
+// ─── Arena Bounties Carousel ───────────────────────────────────
+interface ArenaBounty {
+  id: string;
+  title: string;
+  payout_cents: number;
+  cover_url: string | null;
+  poster_username: string | null;
+  poster_avatar_url: string | null;
+  poster_rating_avg: number;
+  max_slots: number;
+  accepted_count: number;
+  artist_name: string | null;
+}
+
+function ArenaBountyCard({ bounty }: { bounty: ArenaBounty }) {
+  const navigate = useNavigate();
+  const payout = (bounty.payout_cents / 100).toFixed(0);
+  const slotsLeft = bounty.max_slots - bounty.accepted_count;
+
+  return (
+    <motion.button
+      whileTap={{ scale: 0.97 }}
+      onClick={() => navigate(`/commissions/${bounty.id}`)}
+      className="shrink-0 relative w-[160px] h-[180px] overflow-hidden group text-left touch-manipulation border border-foreground/[0.06]"
+      style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+    >
+      {bounty.cover_url ? (
+        <img src={bounty.cover_url} alt={bounty.title} className="absolute inset-0 w-full h-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/60 to-background" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)' }} />
+
+      {/* Top - price */}
+      <div className="absolute top-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between">
+        <div className="bg-black/60 backdrop-blur-sm px-1.5 py-0.5 border-l-2 border-emerald-500">
+          <span className="font-display text-base text-emerald-400">${payout}</span>
+        </div>
+        <span className="text-[7px] font-bold text-emerald-400/60 bg-emerald-500/10 px-1 py-0.5">{slotsLeft} left</span>
+      </div>
+
+      {/* Bottom */}
+      <div className="absolute bottom-0 left-0 right-0 p-2">
+        <h4 className="text-[11px] font-bold text-foreground leading-tight truncate">{bounty.title}</h4>
+        <div className="flex items-center gap-1.5 mt-1">
+          {bounty.poster_avatar_url ? (
+            <img src={bounty.poster_avatar_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+          ) : (
+            <div className="w-3.5 h-3.5 rounded-full bg-muted flex items-center justify-center">
+              <span className="text-[6px] font-bold">{bounty.poster_username?.charAt(0)?.toUpperCase()}</span>
+            </div>
+          )}
+          <span className="text-[8px] text-foreground/40 truncate">@{bounty.poster_username}</span>
+          {bounty.poster_rating_avg > 0 && (
+            <div className="flex items-center gap-0.5 ml-auto">
+              <Star className="w-2 h-2 text-amber-400 fill-amber-400" />
+              <span className="text-[7px] text-amber-400 font-bold">{bounty.poster_rating_avg.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.button>
+  );
+}
+
+function ArenaBountiesCarousel() {
+  const [bounties, setBounties] = useState<ArenaBounty[]>([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from('commissions')
+        .select('id, title, payout_cents, cover_url, poster_username, poster_avatar_url, poster_rating_avg, max_slots, accepted_count, artist_name')
+        .eq('is_marketplace', true)
+        .eq('status', 'open')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (data && data.length > 0) {
+        setBounties(data.map(d => ({
+          ...d,
+          cover_url: (d as any).cover_url || null,
+          poster_username: (d as any).poster_username || null,
+          poster_avatar_url: (d as any).poster_avatar_url || null,
+          poster_rating_avg: (d as any).poster_rating_avg || 0,
+        })) as ArenaBounty[]);
+      }
+    };
+    fetch();
+  }, []);
+
+  if (bounties.length === 0) return null;
+
+  return (
+    <div className="mb-2">
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[10px] font-black text-foreground uppercase tracking-wider">Bounties</span>
+          <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5">{bounties.length} open</span>
+        </div>
+        <Link to="/commissions" className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-0.5 font-bold">
+          All <ChevronRight className="w-2.5 h-2.5" />
+        </Link>
+      </div>
+      <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+        <div className="flex gap-2 pb-1">
+          {bounties.map(b => (
+            <ArenaBountyCard key={b.id} bounty={b} />
+          ))}
+          {/* Post bounty CTA */}
+          <Link to="/commissions" className="shrink-0">
+            <div className="w-[120px] h-[180px] border border-dashed border-emerald-500/20 flex flex-col items-center justify-center gap-2 hover:border-emerald-500/40 transition-colors">
+              <Plus className="w-5 h-5 text-emerald-400/40" />
+              <span className="text-[9px] font-bold text-emerald-400/40 uppercase tracking-wider">Post Bounty</span>
+            </div>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Compact Event Card ────────────────────────────────────────
 function EventCard({ event }: { event: Event }) {
   const isLive = event.status === "live";
@@ -998,6 +1122,9 @@ export default function ArenaPage() {
 
           {/* ═══ MISSIONS CAROUSEL — GET PAID ═══ */}
           <ArenaMissionsCarousel />
+
+          {/* ═══ BOUNTIES CAROUSEL ═══ */}
+          <ArenaBountiesCarousel />
 
           {/* ═══ FILTER PILLS — small rounded ═══ */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1 pb-1">

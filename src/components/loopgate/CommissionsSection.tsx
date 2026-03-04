@@ -161,10 +161,10 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
   );
 }
 
-/* ── Quick Bounty Card ── */
-function QuickBountyCard({ commission }: { commission: Commission }) {
-  const payout = (commission.payout_cents / 100).toFixed(0);
-  const slotsLeft = commission.max_slots - commission.accepted_count;
+/* ── Quick Bounty Card (marketplace bounties) ── */
+function QuickBountyCard({ commission }: { commission: any }) {
+  const payout = ((commission.payout_cents || 0) / 100).toFixed(0);
+  const slotsLeft = (commission.max_slots || 1) - (commission.accepted_count || 0);
   const isDead = commission.status === 'filled' || slotsLeft <= 0;
 
   if (isDead) return null;
@@ -174,16 +174,34 @@ function QuickBountyCard({ commission }: { commission: Commission }) {
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-[180px] bg-surface-1/50 border border-border/30 hover:border-emerald-500/30 rounded-sm p-2.5 transition-all"
+        className="w-[160px] overflow-hidden border border-border/30 hover:border-emerald-500/30 transition-all"
+        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)' }}
       >
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="font-display text-lg text-emerald-400 leading-none">${payout}</span>
-          <span className="text-[7px] font-bold text-emerald-400/50 bg-emerald-500/10 px-1.5 py-0.5 uppercase tracking-widest">{slotsLeft} left</span>
-        </div>
-        <h4 className="text-[10px] font-bold text-foreground/70 truncate">{commission.title}</h4>
-        {commission.artist_name && (
-          <p className="text-[8px] text-foreground/30 truncate mt-0.5">{commission.artist_name}</p>
+        {commission.cover_url ? (
+          <div className="relative h-16">
+            <img src={commission.cover_url} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface-1 to-transparent" />
+            <div className="absolute bottom-1 left-2">
+              <span className="font-display text-base text-emerald-400">${payout}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="px-2.5 pt-2">
+            <span className="font-display text-lg text-emerald-400">${payout}</span>
+          </div>
         )}
+        <div className="px-2.5 pb-2 pt-1">
+          <div className="flex items-center justify-between mb-0.5">
+            <span className="text-[7px] font-bold text-emerald-400/50 bg-emerald-500/10 px-1 py-0.5 uppercase tracking-widest">{slotsLeft} left</span>
+          </div>
+          <h4 className="text-[10px] font-bold text-foreground/70 truncate">{commission.title}</h4>
+          {commission.poster_username && commission.is_marketplace && (
+            <p className="text-[8px] text-foreground/30 truncate mt-0.5">@{commission.poster_username}</p>
+          )}
+          {commission.artist_name && !commission.is_marketplace && (
+            <p className="text-[8px] text-foreground/30 truncate mt-0.5">{commission.artist_name}</p>
+          )}
+        </div>
       </motion.div>
     </Link>
   );
@@ -192,9 +210,24 @@ function QuickBountyCard({ commission }: { commission: Commission }) {
 /* ── Main Section ── */
 export default function CommissionsSection() {
   const { commissions, loading: commLoading } = useCommissions();
+  const [marketplaceBounties, setMarketplaceBounties] = useState<any[]>([]);
   const [drops, setDrops] = useState<ArenaDrop[]>([]);
   const [loadingDrops, setLoadingDrops] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch marketplace bounties
+  useEffect(() => {
+    supabase
+      .from('commissions')
+      .select('id, title, payout_cents, max_slots, accepted_count, status, artist_name, poster_username, cover_url, is_marketplace')
+      .eq('is_marketplace', true)
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(8)
+      .then(({ data }) => {
+        if (data) setMarketplaceBounties(data);
+      });
+  }, []);
 
   // Fetch arena-eligible drops
   useEffect(() => {
@@ -239,7 +272,7 @@ export default function CommissionsSection() {
     fetchDrops();
   }, []);
 
-  const openCommissions = commissions.filter(c => c.status === 'open' && (!c.deadline || new Date(c.deadline) > new Date()));
+  const openCommissions = [...commissions.filter(c => c.status === 'open' && (!c.deadline || new Date(c.deadline) > new Date())), ...marketplaceBounties];
   const loading = commLoading || loadingDrops;
 
   if (loading) return null;
