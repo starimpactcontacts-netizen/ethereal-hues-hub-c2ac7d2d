@@ -9,8 +9,9 @@ export interface LiveActivityItem {
   action: string;
   target: string;
   score?: number | null;
+  earned_cents?: number | null;
   timestamp: string;
-  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry' | 'quick_fight' | 'gqt' | 'tournament_join';
+  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry' | 'quick_fight' | 'gqt' | 'tournament_join' | 'earning';
 }
 
 // Randomized action text for variety
@@ -107,7 +108,7 @@ export function useLiveActivity(limit = 8) {
           .limit(limit),
         supabase
           .from('featured_submissions')
-          .select('id, user_id, username, avatar_url, drop_id, qoi_score, created_at')
+          .select('id, user_id, username, avatar_url, drop_id, qoi_score, earned_cents, rating, judged_at, created_at')
           .order('created_at', { ascending: false })
           .limit(limit),
         supabase
@@ -296,6 +297,20 @@ export function useLiveActivity(limit = 8) {
           timestamp: f.created_at || new Date().toISOString(),
           type: 'featured_sub',
         });
+        // If this submission has earnings, add a separate earning entry
+        if ((f as any).earned_cents > 0 && (f as any).rating) {
+          all.push({
+            id: `earning-${f.id}`,
+            user_id: f.user_id,
+            username: f.username || 'editor',
+            avatar_url: f.avatar_url || null,
+            action: `earned $${((f as any).earned_cents / 100).toFixed(2)} (${(f as any).rating} rank) from`,
+            target: dropMap.get(f.drop_id) || 'a mission',
+            earned_cents: (f as any).earned_cents,
+            timestamp: (f as any).judged_at || f.created_at || new Date().toISOString(),
+            type: 'earning',
+          });
+        }
       });
 
       // Crew joins

@@ -78,7 +78,7 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
-      onClick={() => navigate('/solo-arena')}
+      onClick={() => navigate('/studio')}
       className="shrink-0 relative w-[200px] h-[250px] overflow-hidden group text-left touch-manipulation"
       style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}
     >
@@ -1013,7 +1013,7 @@ export default function ArenaPage() {
                 onClick={() => {
                   if (isQfSearching) return;
                   if (selectedMode === 'drop' && liveDrops.length > 0) {
-                    navigate(`/drop/${(liveDrops[0] as any).slug || liveDrops[0].id}`);
+                    navigate('/studio');
                   } else if (selectedMode === 'quick' && qfActiveFight) {
                     modeActions.quick();
                   } else if (selectedMode !== 'drop') {

@@ -68,7 +68,7 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
   const hasViewsBonus = drop.views_milestone > 0 && drop.views_bonus_cents > 0;
 
   return (
-    <Link to="/solo-arena" className="shrink-0">
+    <Link to="/studio" className="shrink-0">
       <motion.div
         whileHover={{ scale: 1.02, y: -3 }}
         whileTap={{ scale: 0.97 }}
