@@ -113,8 +113,11 @@ export default function CommissionsSection() {
           <span className="text-[9px] text-muted-foreground">({openCommissions.length} open)</span>
         </div>
         <div className="flex items-center gap-3">
+          <Link to="/solo-arena" className="text-[9px] text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 font-bold">
+            ⚡ SOLO ARENA
+          </Link>
           <Link to="/payouts" className="text-[9px] text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 font-bold">
-            💰 MY EARNINGS
+            💰 EARNINGS
           </Link>
           <Link to="/commissions" className="text-[9px] text-muted-foreground hover:text-emerald-400 transition-colors flex items-center gap-1">
             VIEW ALL <ArrowRight size={10} />

@@ -2667,6 +2667,7 @@ export type Database = {
           created_at: string | null
           downvotes: number
           drop_id: string
+          earned_cents: number
           embed_html: string | null
           feedback: string | null
           id: string
@@ -2679,6 +2680,7 @@ export type Database = {
           platform: string | null
           qoi_score: number | null
           quality_score: number | null
+          rating: string | null
           round_id: string | null
           status: string | null
           submission_url: string
@@ -2697,6 +2699,7 @@ export type Database = {
           created_at?: string | null
           downvotes?: number
           drop_id: string
+          earned_cents?: number
           embed_html?: string | null
           feedback?: string | null
           id?: string
@@ -2709,6 +2712,7 @@ export type Database = {
           platform?: string | null
           qoi_score?: number | null
           quality_score?: number | null
+          rating?: string | null
           round_id?: string | null
           status?: string | null
           submission_url: string
@@ -2727,6 +2731,7 @@ export type Database = {
           created_at?: string | null
           downvotes?: number
           drop_id?: string
+          earned_cents?: number
           embed_html?: string | null
           feedback?: string | null
           id?: string
@@ -2739,6 +2744,7 @@ export type Database = {
           platform?: string | null
           qoi_score?: number | null
           quality_score?: number | null
+          rating?: string | null
           round_id?: string | null
           status?: string | null
           submission_url?: string
