@@ -73,66 +73,53 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
   const navigate = useNavigate();
   const payouts = drop.mission_custom_payouts || { S: 0, A: 0, B: 0 };
   const sRate = ((payouts.S || 0) / 100);
+  const maxPay = Math.max(sRate, (payouts.A || 0) / 100, (payouts.B || 0) / 100);
 
   return (
     <motion.button
-      whileTap={{ scale: 0.97 }}
+      whileTap={{ scale: 0.96 }}
       onClick={() => navigate(`/mission/${drop.id}`)}
-      className="shrink-0 relative w-[200px] h-[250px] overflow-hidden group text-left touch-manipulation border-2 border-foreground/[0.08] hover:border-emerald-500/30 transition-colors"
+      className="shrink-0 relative w-[200px] h-[260px] overflow-hidden group text-left touch-manipulation border-2 border-foreground/[0.08] hover:border-red-500/40 transition-all"
       style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}
     >
       {drop.poster_url ? (
-        <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover" />
+        <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700" />
       ) : (
         <div className="absolute inset-0 bg-surface-2" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
-      <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 3px)' }} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/20" />
+      <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 3px)' }} />
 
-      {/* Top */}
-      <div className="absolute top-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between">
-        <div className="flex items-center gap-1 bg-black/70 px-1.5 py-0.5 border-l-2 border-emerald-500">
-          <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.15em]">Live</span>
+      {/* Instant payout corner */}
+      {drop.instant_payout && (
+        <div className="absolute top-0 right-0 z-10 bg-red-600 text-white text-[6px] font-black uppercase tracking-wider px-2 py-0.5"
+          style={{ clipPath: 'polygon(8px 0, 100% 0, 100% 100%, 0 100%)' }}>
+          24H PAY
         </div>
-        <div className="flex items-center gap-1">
-          {drop.instant_payout && (
-            <div className="bg-red-600 px-1.5 py-0.5">
-              <span className="text-[7px] font-black text-white">⚡</span>
-            </div>
-          )}
-          {sRate > 0 && (
-            <div className="bg-emerald-600/90 px-1.5 py-0.5">
-              <span className="text-[8px] font-black text-white">${sRate}</span>
-            </div>
-          )}
-        </div>
+      )}
+
+      {/* Top: money */}
+      <div className="absolute top-2.5 left-2.5 z-10">
+        {maxPay > 0 && (
+          <span className="font-display text-2xl text-emerald-400 leading-none drop-shadow-lg">${maxPay}</span>
+        )}
       </div>
 
       {/* Bottom */}
       <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        <div className="flex items-center gap-1 mb-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50" />
+          <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live</span>
+        </div>
         {drop.artist_name && (
-          <p className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.1em]">{drop.artist_name}</p>
+          <p className="text-[7px] font-black text-foreground/40 uppercase tracking-[0.1em]">{drop.artist_name}</p>
         )}
-        <h4 className="font-display text-sm text-foreground leading-tight truncate mb-2">{drop.song_name}</h4>
+        <h4 className="font-display text-base text-foreground leading-tight truncate mb-2">{drop.song_name}</h4>
 
-        {/* Compact payout strip */}
-        <div className="flex items-stretch gap-0 h-[26px]">
-          <div className="flex-1 bg-amber-500/20 border-2 border-amber-500/40 border-r-0 flex flex-col items-center justify-center">
-            <span className="text-[9px] font-black text-amber-400 leading-none">S</span>
-            <span className="text-[7px] font-black text-emerald-400 leading-none">${sRate}</span>
-          </div>
-          <div className="flex-1 bg-emerald-500/15 border-2 border-emerald-500/30 border-x-0 flex flex-col items-center justify-center">
-            <span className="text-[9px] font-black text-emerald-400 leading-none">A</span>
-            <span className="text-[7px] font-black text-emerald-400 leading-none">${((payouts.A || 0) / 100)}</span>
-          </div>
-          <div className="flex-1 bg-blue-500/15 border-2 border-blue-500/30 border-x-0 flex flex-col items-center justify-center">
-            <span className="text-[9px] font-black text-blue-400 leading-none">B</span>
-            <span className="text-[7px] font-black text-emerald-400 leading-none">${((payouts.B || 0) / 100)}</span>
-          </div>
-          <div className="flex-1 bg-foreground/[0.04] border-2 border-foreground/[0.08] border-l-0 flex items-center justify-center">
-            <span className="text-[7px] font-black text-foreground/15">C-F</span>
-          </div>
+        {/* Big CTA */}
+        <div className="bg-red-600 group-hover:bg-red-500 transition-colors flex items-center justify-center gap-1.5 py-2">
+          <span className="font-display text-sm text-white tracking-[0.3em] uppercase">Enter</span>
+          <ChevronRight className="w-3.5 h-3.5 text-white" />
         </div>
       </div>
     </motion.button>
