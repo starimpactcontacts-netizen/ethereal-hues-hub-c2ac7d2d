@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Crosshair, DollarSign, Trophy, Send, ExternalLink,
   Loader2, Star, Clock, Eye, Zap, Target, TrendingUp, ChevronRight,
-  Music, Shield, Flame, Swords, ArrowRight, Sparkles
+  Music, Shield, Flame, Swords, ArrowRight, Sparkles, ThumbsUp, ThumbsDown,
+  Film, ChevronLeft
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -46,6 +47,9 @@ interface MissionSubmission {
   earned_cents: number;
   feedback: string | null;
   created_at: string | null;
+  upvotes?: number;
+  downvotes?: number;
+  thumbnail_url?: string | null;
 }
 
 interface OfficialEvent {
@@ -55,9 +59,10 @@ interface OfficialEvent {
   poster_url: string | null;
 }
 
+const teko = { fontFamily: 'Teko, sans-serif' };
 const RATINGS: SubmissionRating[] = ['S', 'A', 'B', 'C', 'D', 'F'];
 const RANK_LABELS: Record<string, string> = { S: 'ELITE', A: 'PRO', B: 'SOLID', C: 'MID', D: 'WEAK', F: 'FAIL' };
-const PASSING_RATINGS = ['S', 'A', 'B', 'C', 'D']; // F = fail, no auto-entry
+const PASSING_RATINGS = ['S', 'A', 'B', 'C', 'D'];
 
 export default function MissionLobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -69,12 +74,16 @@ export default function MissionLobbyPage() {
 
   const [mission, setMission] = useState<MissionData | null>(null);
   const [submissions, setSubmissions] = useState<MissionSubmission[]>([]);
+  const [ratedSubmissions, setRatedSubmissions] = useState<MissionSubmission[]>([]);
   const [mySubmission, setMySubmission] = useState<MissionSubmission | null>(null);
   const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [ratingTarget, setRatingTarget] = useState<MissionSubmission | null>(null);
   const [officialEvent, setOfficialEvent] = useState<OfficialEvent | null>(null);
+  const [myVotes, setMyVotes] = useState<Record<string, string>>({});
+
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const fetchMission = useCallback(async () => {
     if (!id) return;
@@ -126,7 +135,7 @@ export default function MissionLobbyPage() {
     if (!id) return;
     const query = supabase
       .from('featured_submissions')
-      .select('id, user_id, username, avatar_url, submission_url, platform, status, rating, earned_cents, feedback, created_at')
+      .select('id, user_id, username, avatar_url, submission_url, platform, status, rating, earned_cents, feedback, created_at, upvotes, downvotes, thumbnail_url')
       .eq('drop_id', id)
       .order('created_at', { ascending: false });
 
@@ -144,8 +153,38 @@ export default function MissionLobbyPage() {
     }
   }, [id, user, isStaff]);
 
+  // Fetch ALL rated submissions for social proof carousel (public)
+  const fetchRatedSubmissions = useCallback(async () => {
+    if (!id) return;
+    const { data } = await supabase
+      .from('featured_submissions')
+      .select('id, user_id, username, avatar_url, submission_url, platform, rating, earned_cents, feedback, created_at, upvotes, downvotes, thumbnail_url')
+      .eq('drop_id', id)
+      .not('rating', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (data) setRatedSubmissions(data as any as MissionSubmission[]);
+  }, [id]);
+
+  // Fetch user's votes
+  const fetchMyVotes = useCallback(async () => {
+    if (!user || !id) return;
+    const { data } = await supabase
+      .from('featured_submission_votes')
+      .select('submission_id, vote_type')
+      .eq('user_id', user.id);
+    if (data) {
+      const map: Record<string, string> = {};
+      data.forEach(v => { map[v.submission_id] = v.vote_type; });
+      setMyVotes(map);
+    }
+  }, [user, id]);
+
   useEffect(() => { fetchMission(); }, [fetchMission]);
   useEffect(() => { fetchSubmissions(); }, [fetchSubmissions]);
+  useEffect(() => { fetchRatedSubmissions(); }, [fetchRatedSubmissions]);
+  useEffect(() => { fetchMyVotes(); }, [fetchMyVotes]);
 
   const detectPlatform = (u: string) => {
     if (u.includes('tiktok.com') || u.includes('vm.tiktok.com')) return 'tiktok';
@@ -174,8 +213,38 @@ export default function MissionLobbyPage() {
       } as any);
 
     if (error) toast.error(error.message);
-    else { toast.success('Edit submitted!'); setUrl(''); fetchSubmissions(); }
+    else { toast.success('Edit submitted!'); setUrl(''); fetchSubmissions(); fetchRatedSubmissions(); }
     setSubmitting(false);
+  };
+
+  const handleVote = async (submissionId: string, voteType: 'up' | 'down') => {
+    if (!user) { toast.error('Sign in to vote'); return; }
+    const existing = myVotes[submissionId];
+
+    if (existing === voteType) {
+      // Remove vote
+      await supabase.from('featured_submission_votes').delete()
+        .eq('submission_id', submissionId).eq('user_id', user.id);
+      setMyVotes(prev => { const n = { ...prev }; delete n[submissionId]; return n; });
+    } else {
+      // Upsert vote
+      if (existing) {
+        await supabase.from('featured_submission_votes')
+          .update({ vote_type: voteType } as any)
+          .eq('submission_id', submissionId).eq('user_id', user.id);
+      } else {
+        await supabase.from('featured_submission_votes')
+          .insert({ submission_id: submissionId, user_id: user.id, vote_type: voteType } as any);
+      }
+      setMyVotes(prev => ({ ...prev, [submissionId]: voteType }));
+    }
+    // Refetch to get updated counts
+    fetchRatedSubmissions();
+  };
+
+  const scrollCarousel = (dir: 'left' | 'right') => {
+    if (!carouselRef.current) return;
+    carouselRef.current.scrollBy({ left: dir === 'left' ? -220 : 220, behavior: 'smooth' });
   };
 
   const payouts = mission?.mission_custom_payouts || {};
@@ -200,7 +269,7 @@ export default function MissionLobbyPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* ═══ HERO BANNER ═══ */}
-      <div className="relative h-[280px] overflow-hidden">
+      <div className="relative h-[240px] overflow-hidden">
         {mission.poster_url ? (
           <img src={mission.poster_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
         ) : (
@@ -232,40 +301,167 @@ export default function MissionLobbyPage() {
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <p className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-1">{mission.artist_name}</p>
-          <h1 className="font-display text-3xl text-foreground leading-none tracking-wide">{mission.song_name}</h1>
+          <h1 style={teko} className="text-3xl text-foreground leading-none tracking-wide">{mission.song_name}</h1>
           <p className="text-[10px] text-muted-foreground mt-1">{mission.title}</p>
         </div>
       </div>
 
-      {/* ═══ OFFICIAL EVENT AUTO-ENTRY CALLOUT ═══ */}
+      {/* ═══ OFFICIAL EVENT QUICK LINK ═══ */}
       {officialEvent && (
-        <div className="px-4 -mt-1 relative z-10 mb-3">
+        <div className="px-4 -mt-1 relative z-10 mb-2">
           <Link to={`/drop/${officialEvent.id}`}>
-            <div className="bg-emerald-950/60 border-2 border-emerald-500/40 overflow-hidden hover:border-emerald-400/60 transition-all group"
-              style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
-              <div className="flex items-center gap-3 px-3 py-2.5">
-                <div className="w-10 h-10 bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                  <Swords className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3 text-emerald-400" />
-                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Auto-Entry to Official Event</span>
-                  </div>
-                  <p className="text-[10px] text-foreground/60 mt-0.5 truncate">
-                    Complete this mission → your edit enters <span className="text-emerald-400 font-bold">{officialEvent.title}</span> for{' '}
-                    <span className="text-emerald-400 font-black">${officialEvent.prize_usd}</span>
-                  </p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-emerald-400/50 group-hover:text-emerald-400 transition-colors shrink-0" />
+            <div className="bg-emerald-950/60 border border-emerald-500/40 overflow-hidden hover:border-emerald-400/60 transition-all group flex items-center gap-3 px-3 py-2">
+              <Swords className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Your edit enters this event →</span>
+                <p className="text-[10px] text-foreground/50 truncate">
+                  <span className="text-emerald-400 font-bold">{officialEvent.title}</span> — <span className="text-emerald-400 font-black">${officialEvent.prize_usd} prize</span>
+                </p>
               </div>
+              <ChevronRight className="w-4 h-4 text-emerald-400/50 group-hover:text-emerald-400 transition-colors shrink-0" />
             </div>
           </Link>
         </div>
       )}
 
+      {/* ═══ SUBMIT + ENTER STUDIO (TOP) ═══ */}
+      <div className="px-4 mt-2 space-y-2">
+        {!user ? (
+          <Link to="/login">
+            <div className="bg-red-500/10 border-2 border-red-500/30 p-4 text-center">
+              <Crosshair className="w-5 h-5 text-red-400 mx-auto mb-1.5" />
+              <p style={teko} className="text-xl text-foreground">SIGN IN TO COMPETE</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Create a free account to start earning</p>
+            </div>
+          </Link>
+        ) : mySubmission ? (
+          <div className={`border-2 p-3 ${mySubmission.rating ? 'border-amber-500/40 bg-amber-500/5' : 'border-border bg-surface-1'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-foreground/40" />
+              <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">Your Submission</span>
+            </div>
+            {mySubmission.rating ? (
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-2 border text-lg font-black ${RATING_COLORS[mySubmission.rating as SubmissionRating]}`}>
+                    {mySubmission.rating}
+                    {mySubmission.earned_cents > 0 && (
+                      <span className="text-emerald-400 text-sm">+${(mySubmission.earned_cents / 100).toFixed(0)}</span>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold">{RANK_LABELS[mySubmission.rating] || ''}</span>
+                </div>
+                {mySubmission.feedback && (
+                  <div className="bg-surface-2 border border-border/50 p-2.5 mt-2">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">Judge Feedback</span>
+                    <p className="text-xs text-foreground/80 mt-1 italic">"{mySubmission.feedback}"</p>
+                  </div>
+                )}
+                {officialEvent && PASSING_RATINGS.includes(mySubmission.rating) && (
+                  <Link to={`/drop/${officialEvent.id}`}>
+                    <div className="mt-2 bg-emerald-950/40 border border-emerald-500/30 px-3 py-2 flex items-center gap-2 hover:border-emerald-400/50 transition-colors">
+                      <Swords className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider flex-1">Auto-Entered Official Event</span>
+                      <ArrowRight className="w-3 h-3 text-emerald-400/50 shrink-0" />
+                    </div>
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
+                <span className="text-sm font-bold text-amber-400">Awaiting Rating</span>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="border-2 border-emerald-500/30 bg-surface-0 overflow-hidden">
+            <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-2 flex items-center gap-2">
+              <Crosshair className="w-4 h-4 text-emerald-400" />
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Submit Your Edit</span>
+            </div>
+            <div className="p-3 space-y-2.5">
+              <Input
+                value={url}
+                onChange={e => setUrl(e.target.value)}
+                placeholder="Paste your TikTok, YouTube, or Instagram link..."
+                className="h-10 bg-surface-1 border-border/50 font-mono text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSubmit}
+                  disabled={submitting || !url.trim()}
+                  className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white uppercase tracking-wider"
+                  style={teko}
+                >
+                  {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                    <span className="text-lg flex items-center gap-2"><Send className="w-4 h-4" /> Submit & Earn</span>
+                  )}
+                </Button>
+                <Link to={`/studio?mission=${mission.id}`} className="shrink-0">
+                  <Button variant="outline" className="h-full px-4 border-red-500/30 bg-red-500/5 hover:bg-red-500/10 text-red-400">
+                    <Film className="w-4 h-4 mr-1.5" />
+                    <span className="text-xs font-black uppercase">Studio</span>
+                  </Button>
+                </Link>
+              </div>
+              {officialEvent && (
+                <p className="text-[9px] text-emerald-400/50 text-center">
+                  ✓ Your edit auto-enters the <span className="font-bold text-emerald-400/70">${officialEvent.prize_usd} Official Event</span> after rating
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ═══ SOCIAL PROOF — RATED EDITS CAROUSEL ═══ */}
+      <div className="mt-4">
+        <div className="px-4 flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Flame className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-[10px] font-black text-foreground uppercase tracking-[0.2em]">Rated Edits</span>
+          </div>
+          {ratedSubmissions.length > 0 && (
+            <span className="text-[9px] text-muted-foreground">{ratedSubmissions.length} rated</span>
+          )}
+        </div>
+
+        {ratedSubmissions.length === 0 ? (
+          <div className="px-4">
+            <div className="border border-dashed border-border/40 bg-surface-0/50 py-8 flex flex-col items-center gap-2">
+              <div className="w-10 h-10 bg-surface-1 border border-border/30 flex items-center justify-center">
+                <Star className="w-5 h-5 text-muted-foreground/30" />
+              </div>
+              <p className="text-xs text-muted-foreground/50 font-bold">No rated edits yet</p>
+              <p className="text-[9px] text-muted-foreground/30">Be the first to submit and get rated</p>
+            </div>
+          </div>
+        ) : (
+          <div className="relative group/carousel">
+            {ratedSubmissions.length > 2 && (
+              <>
+                <button onClick={() => scrollCarousel('left')}
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity">
+                  <ChevronLeft className="w-4 h-4 text-foreground" />
+                </button>
+                <button onClick={() => scrollCarousel('right')}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 rounded-full bg-background/80 backdrop-blur border border-border/50 flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity">
+                  <ChevronRight className="w-4 h-4 text-foreground" />
+                </button>
+              </>
+            )}
+            <div ref={carouselRef} className="flex gap-2.5 px-4 overflow-x-auto scrollbar-hide scroll-smooth pb-2">
+              {ratedSubmissions.map(sub => (
+                <RatedEditCard key={sub.id} sub={sub} myVote={myVotes[sub.id]} onVote={handleVote} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* ═══ EARNINGS POTENTIAL ═══ */}
-      <div className="px-4 relative z-10" style={{ marginTop: officialEvent ? '0' : '-0.5rem' }}>
+      <div className="px-4 mt-4 relative z-10">
         <div className="bg-surface-0 border-2 border-emerald-500/30 overflow-hidden">
           <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -273,7 +469,7 @@ export default function MissionLobbyPage() {
               <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Earnings</span>
             </div>
             {maxPayout > 0 && (
-              <span className="font-display text-lg text-emerald-400">UP TO ${(maxPayout / 100).toFixed(0)}</span>
+              <span style={teko} className="text-lg text-emerald-400">UP TO ${(maxPayout / 100).toFixed(0)}</span>
             )}
           </div>
 
@@ -320,7 +516,7 @@ export default function MissionLobbyPage() {
               </div>
               <div>
                 <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Balance</span>
-                <p className="font-display text-lg text-emerald-400 leading-none">${(availableBalance / 100).toFixed(2)}</p>
+                <p style={teko} className="text-lg text-emerald-400 leading-none">${(availableBalance / 100).toFixed(2)}</p>
               </div>
             </div>
             <Link to="/payouts" className="text-[8px] font-black text-emerald-400/50 hover:text-emerald-400 uppercase tracking-wider flex items-center gap-1">
@@ -398,92 +594,6 @@ export default function MissionLobbyPage() {
         </div>
       )}
 
-      {/* ═══ SUBMISSION PORTAL ═══ */}
-      <div className="px-4 mt-4">
-        {!user ? (
-          <Link to="/login">
-            <div className="bg-red-500/10 border-2 border-red-500/30 p-5 text-center">
-              <Crosshair className="w-6 h-6 text-red-400 mx-auto mb-2" />
-              <p className="font-display text-lg text-foreground">SIGN IN TO COMPETE</p>
-              <p className="text-[10px] text-muted-foreground mt-1">Create a free account to start earning</p>
-            </div>
-          </Link>
-        ) : mySubmission ? (
-          <div className={`border-2 p-4 ${mySubmission.rating ? 'border-amber-500/40 bg-amber-500/5' : 'border-border bg-surface-1'}`}>
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-foreground/40" />
-              <span className="text-[10px] font-black text-foreground uppercase tracking-[0.15em]">Your Submission</span>
-            </div>
-            {mySubmission.rating ? (
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <div className={`inline-flex items-center gap-1.5 px-3 py-2 border text-lg font-black ${RATING_COLORS[mySubmission.rating as SubmissionRating]}`}>
-                    {mySubmission.rating}
-                    {mySubmission.earned_cents > 0 && (
-                      <span className="text-emerald-400 text-sm">+${(mySubmission.earned_cents / 100).toFixed(0)}</span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold">{RANK_LABELS[mySubmission.rating] || ''}</span>
-                </div>
-                {mySubmission.feedback && (
-                  <div className="bg-surface-2 border border-border/50 p-3 mt-2">
-                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider">Judge Feedback</span>
-                    <p className="text-xs text-foreground/80 mt-1 italic">"{mySubmission.feedback}"</p>
-                  </div>
-                )}
-                {/* Auto-entry confirmation */}
-                {officialEvent && PASSING_RATINGS.includes(mySubmission.rating) && (
-                  <Link to={`/drop/${officialEvent.id}`}>
-                    <div className="mt-3 bg-emerald-950/40 border border-emerald-500/30 px-3 py-2.5 flex items-center gap-2 hover:border-emerald-400/50 transition-colors">
-                      <Swords className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">Auto-Entered Official Event</span>
-                        <p className="text-[10px] text-foreground/50 truncate">{officialEvent.title} — ${officialEvent.prize_usd} prize</p>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-emerald-400/50 shrink-0" />
-                    </div>
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-amber-400 animate-pulse" />
-                <span className="text-sm font-bold text-amber-400">Awaiting Rating</span>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="border-2 border-emerald-500/30 bg-surface-0 overflow-hidden">
-            <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-2.5 flex items-center gap-2">
-              <Crosshair className="w-4 h-4 text-emerald-400" />
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">Submit Your Edit</span>
-            </div>
-            <div className="p-4 space-y-3">
-              <Input
-                value={url}
-                onChange={e => setUrl(e.target.value)}
-                placeholder="Paste your TikTok, YouTube, or Instagram link..."
-                className="h-11 bg-surface-1 border-border/50 font-mono text-sm"
-              />
-              <Button
-                onClick={handleSubmit}
-                disabled={submitting || !url.trim()}
-                className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-display text-lg uppercase tracking-wider"
-              >
-                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                  <><Send className="w-4 h-4 mr-2" /> Submit & Earn</>
-                )}
-              </Button>
-              {officialEvent && (
-                <p className="text-[9px] text-emerald-400/50 text-center">
-                  ✓ Your edit auto-enters the <span className="font-bold text-emerald-400/70">${officialEvent.prize_usd} Official Event</span> after rating
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* ═══ SUBMISSIONS (Staff) ═══ */}
       {isStaff && submissions.length > 0 && (
         <div className="px-4 mt-4">
@@ -534,7 +644,7 @@ export default function MissionLobbyPage() {
             officialEvent={officialEvent}
             missionArtistId={mission.artist_id}
             onClose={() => setRatingTarget(null)}
-            onRated={fetchSubmissions}
+            onRated={() => { fetchSubmissions(); fetchRatedSubmissions(); }}
           />
         )}
       </AnimatePresence>
@@ -542,6 +652,65 @@ export default function MissionLobbyPage() {
   );
 }
 
+/* ═══ RATED EDIT CARD ═══ */
+function RatedEditCard({ sub, myVote, onVote }: { sub: MissionSubmission; myVote?: string; onVote: (id: string, type: 'up' | 'down') => void }) {
+  const ratingColor = sub.rating === 'S' ? 'text-amber-400 border-amber-500/50 bg-amber-500/10' :
+    sub.rating === 'A' ? 'text-emerald-400 border-emerald-500/50 bg-emerald-500/10' :
+    sub.rating === 'B' ? 'text-blue-400 border-blue-500/50 bg-blue-500/10' :
+    sub.rating === 'C' ? 'text-foreground/60 border-border bg-surface-1' :
+    sub.rating === 'D' ? 'text-orange-400 border-orange-500/50 bg-orange-500/10' :
+    'text-red-400 border-red-500/50 bg-red-500/10';
+
+  return (
+    <div className="shrink-0 w-[200px] bg-surface-0 border border-border/40 overflow-hidden hover:border-border/60 transition-colors">
+      {/* Top — rating badge + username */}
+      <div className="flex items-center gap-2 px-2.5 py-2 border-b border-border/20">
+        <div className={`w-7 h-7 border flex items-center justify-center shrink-0 ${ratingColor}`}>
+          <span className="text-sm font-black">{sub.rating}</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <span className="text-[11px] font-bold text-foreground truncate block">@{sub.username}</span>
+          {sub.earned_cents > 0 && (
+            <span className="text-[9px] font-black text-emerald-400">+${(sub.earned_cents / 100).toFixed(0)} earned</span>
+          )}
+        </div>
+      </div>
+
+      {/* Feedback preview */}
+      {sub.feedback && (
+        <div className="px-2.5 py-2 border-b border-border/10">
+          <p className="text-[9px] text-muted-foreground italic leading-relaxed line-clamp-2">"{sub.feedback}"</p>
+        </div>
+      )}
+
+      {/* Actions — watch + vote */}
+      <div className="flex items-center justify-between px-2.5 py-1.5">
+        <button onClick={() => window.open(sub.submission_url, '_blank')}
+          className="text-[9px] text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1">
+          <ExternalLink className="w-3 h-3" /> Watch
+        </button>
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => onVote(sub.id, 'up')}
+            className={`flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold transition-colors ${
+              myVote === 'up' ? 'text-emerald-400 bg-emerald-500/15' : 'text-muted-foreground/40 hover:text-emerald-400'
+            }`}>
+            <ThumbsUp className="w-3 h-3" />
+            <span>{sub.upvotes || 0}</span>
+          </button>
+          <button onClick={() => onVote(sub.id, 'down')}
+            className={`flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold transition-colors ${
+              myVote === 'down' ? 'text-red-400 bg-red-500/15' : 'text-muted-foreground/40 hover:text-red-400'
+            }`}>
+            <ThumbsDown className="w-3 h-3" />
+            <span>{sub.downvotes || 0}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══ RATING MODAL ═══ */
 function RatingModal({ submission, payoutMap, officialEvent, missionArtistId, onClose, onRated }: {
   submission: MissionSubmission;
   payoutMap: Record<string, number> | null;
@@ -585,7 +754,6 @@ function RatingModal({ submission, payoutMap, officialEvent, missionArtistId, on
     const isPassing = PASSING_RATINGS.includes(selectedRating);
     if (isPassing && officialEvent && submission.user_id) {
       try {
-        // Check if user already has an entry in the official event queue
         const { data: existing } = await supabase
           .from('featured_drop_queue')
           .select('id')
@@ -594,7 +762,6 @@ function RatingModal({ submission, payoutMap, officialEvent, missionArtistId, on
           .limit(1);
 
         if (!existing || existing.length === 0) {
-          // Also check featured_submissions for that drop
           const { data: existingSub } = await supabase
             .from('featured_submissions')
             .select('id')
@@ -617,7 +784,6 @@ function RatingModal({ submission, payoutMap, officialEvent, missionArtistId, on
           }
         }
       } catch (e) {
-        // Non-blocking — don't fail the rating if auto-entry fails
         console.error('Auto-entry to official event failed:', e);
       }
 
@@ -643,7 +809,7 @@ function RatingModal({ submission, payoutMap, officialEvent, missionArtistId, on
         <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-400" />
-            <span className="font-display text-lg text-foreground">RATE @{submission.username}</span>
+            <span style={{ fontFamily: 'Teko, sans-serif' }} className="text-lg text-foreground">RATE @{submission.username}</span>
           </div>
           <button onClick={() => window.open(submission.submission_url, '_blank')}
             className="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
@@ -670,7 +836,6 @@ function RatingModal({ submission, payoutMap, officialEvent, missionArtistId, on
             })}
           </div>
 
-          {/* Auto-entry notice */}
           {officialEvent && selectedRating && PASSING_RATINGS.includes(selectedRating) && (
             <div className="bg-emerald-950/40 border border-emerald-500/30 px-3 py-2 flex items-center gap-2">
               <Swords className="w-3.5 h-3.5 text-emerald-400 shrink-0" />

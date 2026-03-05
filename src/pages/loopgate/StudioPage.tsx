@@ -1,23 +1,49 @@
 import { useIsMobile } from "@/hooks/use-mobile";
-import { lazy, Suspense, useState, useCallback, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { lazy, Suspense, useState, useCallback, useRef, useEffect } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import SEO from "@/components/SEO";
 import LoadingScreen from "@/components/loopgate/LoadingScreen";
 import SoloModeBanner from "@/components/loopgate/SoloModeBanner";
 import StudioHome, { type StudioProject, saveStudioProject } from "@/components/loopgate/StudioHome";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Film, Upload } from "lucide-react";
+import { Film, Upload, Target, ArrowRight, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const StudioNLE = lazy(() => import("@/components/loopgate/StudioNLE"));
 const QuickClipEditor = lazy(() => import("@/components/loopgate/QuickClipEditor"));
+
+interface ActiveMission {
+  id: string;
+  song_name: string;
+  artist_name: string;
+}
 
 export default function StudioPage() {
   const isMobile = useIsMobile();
   const [searchParams] = useSearchParams();
   const soloId = searchParams.get("solo");
+  const missionId = searchParams.get("mission");
 
   const [editorOpen, setEditorOpen] = useState(false);
+  const [activeMission, setActiveMission] = useState<ActiveMission | null>(null);
+  const [missionDismissed, setMissionDismissed] = useState(false);
+
+  // Fetch mission data if mission param present
+  useEffect(() => {
+    if (!missionId) return;
+    (async () => {
+      const { data } = await supabase
+        .from('featured_drops')
+        .select('id, song_name, featured_artists(name)')
+        .eq('id', missionId)
+        .single();
+      if (data) {
+        const d = data as any;
+        setActiveMission({ id: d.id, song_name: d.song_name, artist_name: d.featured_artists?.name || 'Unknown' });
+      }
+    })();
+  }, [missionId]);
   const [initialFile, setInitialFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,17 +135,34 @@ export default function StudioPage() {
         onChange={handleFileSelected}
       />
 
+      {/* Active Mission Sticky Banner */}
+      {activeMission && !missionDismissed && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-red-600/95 backdrop-blur-sm px-3 py-2 flex items-center gap-2">
+          <Target className="w-4 h-4 text-white shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] font-black text-white/70 uppercase tracking-wider">Active Mission</span>
+            <p className="text-xs font-bold text-white truncate">{activeMission.artist_name} — {activeMission.song_name}</p>
+          </div>
+          <Link to={`/mission/${activeMission.id}`} className="shrink-0 text-[9px] font-black text-white bg-white/20 px-2 py-1 flex items-center gap-1 hover:bg-white/30 transition-colors">
+            Submit <ArrowRight className="w-3 h-3" />
+          </Link>
+          <button onClick={() => setMissionDismissed(true)} className="shrink-0 text-white/50 hover:text-white">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {!editorOpen ? (
         <StudioHome onNewProject={handleNewProject} onOpenProject={handleOpenProject} />
       ) : (
         <Suspense fallback={<LoadingScreen minimal />}>
           {isMobile ? (
-            <div className="min-h-screen bg-background pb-24 px-4 pt-4 space-y-3">
+            <div className={`min-h-screen bg-background pb-24 px-4 space-y-3 ${activeMission && !missionDismissed ? 'pt-14' : 'pt-4'}`}>
               {soloId && <SoloModeBanner soloId={soloId} />}
               <QuickClipEditor initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); }} />
             </div>
           ) : (
-            <div className="flex flex-col h-screen">
+            <div className={`flex flex-col h-screen ${activeMission && !missionDismissed ? 'pt-10' : ''}`}>
               {soloId && (
                 <div className="shrink-0">
                   <SoloModeBanner soloId={soloId} />
