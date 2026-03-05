@@ -157,8 +157,11 @@ export default function HubPage() {
   const featuredAutoScrollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { hasEquippedOG } = useEquippedBadges(user?.id);
   // Stabilize shuffle — only re-shuffle when the actual drop IDs change
+  // Official events (prize_usd > 0) always first, then shuffle the rest
   const shuffledDrops = useMemo(() => {
-    return [...liveDrops].sort(() => Math.random() - 0.5);
+    const official = liveDrops.filter(d => d.prize_usd > 0);
+    const regular = [...liveDrops.filter(d => !d.prize_usd || d.prize_usd === 0)].sort(() => Math.random() - 0.5);
+    return [...official, ...regular];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [liveDrops.map(d => d.id).join(',')]);
 
