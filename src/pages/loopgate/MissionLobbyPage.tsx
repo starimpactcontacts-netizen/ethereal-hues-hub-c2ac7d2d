@@ -4,13 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Crosshair, DollarSign, Trophy, Send, ExternalLink,
   Loader2, Star, Clock, Eye, Zap, Target, TrendingUp, ChevronRight,
-  Music, Shield, Flame
+  Music, Shield, Flame, Swords, ArrowRight, Sparkles
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useEditorEarnings, RATING_COLORS, type SubmissionRating } from '@/hooks/useCommissions';
-import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +20,7 @@ interface MissionData {
   id: string;
   song_name: string;
   title: string;
+  artist_id: string;
   artist_name: string;
   artist_avatar: string | null;
   poster_url: string | null;
@@ -48,8 +48,16 @@ interface MissionSubmission {
   created_at: string | null;
 }
 
+interface OfficialEvent {
+  id: string;
+  title: string;
+  prize_usd: number;
+  poster_url: string | null;
+}
+
 const RATINGS: SubmissionRating[] = ['S', 'A', 'B', 'C', 'D', 'F'];
 const RANK_LABELS: Record<string, string> = { S: 'ELITE', A: 'PRO', B: 'SOLID', C: 'MID', D: 'WEAK', F: 'FAIL' };
+const PASSING_RATINGS = ['S', 'A', 'B', 'C', 'D']; // F = fail, no auto-entry
 
 export default function MissionLobbyPage() {
   const { id } = useParams<{ id: string }>();
@@ -66,6 +74,7 @@ export default function MissionLobbyPage() {
   const [url, setUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [ratingTarget, setRatingTarget] = useState<MissionSubmission | null>(null);
+  const [officialEvent, setOfficialEvent] = useState<OfficialEvent | null>(null);
 
   const fetchMission = useCallback(async () => {
     if (!id) return;
@@ -81,6 +90,7 @@ export default function MissionLobbyPage() {
         id: d.id,
         song_name: d.song_name,
         title: d.title,
+        artist_id: d.artist_id,
         artist_name: d.featured_artists?.name || 'Unknown',
         artist_avatar: d.featured_artists?.avatar_url || null,
         poster_url: d.poster_url,
@@ -93,6 +103,21 @@ export default function MissionLobbyPage() {
         theme_description: d.theme_description || null,
         submission_count: d.submission_count || 0,
       });
+
+      // Find official event for the same artist (prize_usd > 0, live status)
+      const { data: eventData } = await supabase
+        .from('featured_drops')
+        .select('id, title, prize_usd, poster_url')
+        .eq('artist_id', d.artist_id)
+        .gt('prize_usd', 0)
+        .in('status', ['live', 'judging'])
+        .neq('id', d.id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (eventData && eventData.length > 0) {
+        setOfficialEvent(eventData[0] as any);
+      }
     }
     setLoading(false);
   }, [id]);
@@ -181,15 +206,11 @@ export default function MissionLobbyPage() {
         ) : (
           <div className="absolute inset-0 bg-surface-1" />
         )}
-        {/* Heavy dark overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-black/40" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent" />
-        {/* Scan lines */}
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.08) 2px, rgba(255,255,255,0.08) 3px)' }} />
-        {/* Red accent line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-red-500 to-transparent" />
 
-        {/* Back button */}
         <div className="absolute top-4 left-4 z-10">
           <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-foreground/60 hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -197,7 +218,6 @@ export default function MissionLobbyPage() {
           </button>
         </div>
 
-        {/* Status badges */}
         <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
           {mission.instant_payout && (
             <div className="bg-red-600 px-2.5 py-1">
@@ -210,7 +230,6 @@ export default function MissionLobbyPage() {
           </div>
         </div>
 
-        {/* Hero content */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <p className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em] mb-1">{mission.artist_name}</p>
           <h1 className="font-display text-3xl text-foreground leading-none tracking-wide">{mission.song_name}</h1>
@@ -218,10 +237,36 @@ export default function MissionLobbyPage() {
         </div>
       </div>
 
+      {/* ═══ OFFICIAL EVENT AUTO-ENTRY CALLOUT ═══ */}
+      {officialEvent && (
+        <div className="px-4 -mt-1 relative z-10 mb-3">
+          <Link to={`/drop/${officialEvent.id}`}>
+            <div className="bg-emerald-950/60 border-2 border-emerald-500/40 overflow-hidden hover:border-emerald-400/60 transition-all group"
+              style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
+              <div className="flex items-center gap-3 px-3 py-2.5">
+                <div className="w-10 h-10 bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                  <Swords className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Auto-Entry to Official Event</span>
+                  </div>
+                  <p className="text-[10px] text-foreground/60 mt-0.5 truncate">
+                    Complete this mission → your edit enters <span className="text-emerald-400 font-bold">{officialEvent.title}</span> for{' '}
+                    <span className="text-emerald-400 font-black">${officialEvent.prize_usd}</span>
+                  </p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-emerald-400/50 group-hover:text-emerald-400 transition-colors shrink-0" />
+              </div>
+            </div>
+          </Link>
+        </div>
+      )}
+
       {/* ═══ EARNINGS POTENTIAL ═══ */}
-      <div className="px-4 -mt-2 relative z-10">
+      <div className="px-4 relative z-10" style={{ marginTop: officialEvent ? '0' : '-0.5rem' }}>
         <div className="bg-surface-0 border-2 border-emerald-500/30 overflow-hidden">
-          {/* Header bar */}
           <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-3 py-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-emerald-400" />
@@ -232,7 +277,6 @@ export default function MissionLobbyPage() {
             )}
           </div>
 
-          {/* Rating tiers grid */}
           <div className="grid grid-cols-6 divide-x divide-border/30">
             {RATINGS.map(r => {
               const cents = payouts[r] || 0;
@@ -254,7 +298,6 @@ export default function MissionLobbyPage() {
             })}
           </div>
 
-          {/* Views bonus */}
           {mission.mission_views_milestone > 0 && mission.mission_views_bonus_cents > 0 && (
             <div className="border-t border-emerald-500/20 bg-amber-500/5 px-3 py-2 flex items-center gap-2">
               <Eye className="w-3.5 h-3.5 text-amber-400" />
@@ -298,16 +341,19 @@ export default function MissionLobbyPage() {
               { step: '01', icon: Music, label: 'Listen to the track', desc: 'Study the vibe, tempo & mood' },
               { step: '02', icon: Target, label: 'Create your edit', desc: 'Use any NLE — make it slap' },
               { step: '03', icon: Send, label: 'Submit your link', desc: 'TikTok, YouTube, or Instagram' },
-              { step: '04', icon: Star, label: 'Get rated & paid', desc: 'S-rank = max payout. No cap.' },
+              { step: '04', icon: Star, label: 'Get rated & paid', desc: 'QOI score + class rank + payout' },
+              ...(officialEvent ? [{
+                step: '05', icon: Swords, label: 'Auto-enter official event', desc: `Rated C+ or better → enters $${officialEvent.prize_usd} event`
+              }] : []),
             ].map(({ step, icon: Icon, label, desc }) => (
               <div key={step} className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
-                  <span className="text-[10px] font-black text-red-400">{step}</span>
+                <div className={`w-8 h-8 ${step === '05' ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-red-500/10 border-red-500/20'} border flex items-center justify-center shrink-0`}>
+                  <span className={`text-[10px] font-black ${step === '05' ? 'text-emerald-400' : 'text-red-400'}`}>{step}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <Icon className="w-3 h-3 text-foreground/40" />
-                    <span className="text-xs font-bold text-foreground">{label}</span>
+                    <Icon className={`w-3 h-3 ${step === '05' ? 'text-emerald-400/60' : 'text-foreground/40'}`} />
+                    <span className={`text-xs font-bold ${step === '05' ? 'text-emerald-400' : 'text-foreground'}`}>{label}</span>
                   </div>
                   <p className="text-[9px] text-muted-foreground">{desc}</p>
                 </div>
@@ -385,6 +431,19 @@ export default function MissionLobbyPage() {
                     <p className="text-xs text-foreground/80 mt-1 italic">"{mySubmission.feedback}"</p>
                   </div>
                 )}
+                {/* Auto-entry confirmation */}
+                {officialEvent && PASSING_RATINGS.includes(mySubmission.rating) && (
+                  <Link to={`/drop/${officialEvent.id}`}>
+                    <div className="mt-3 bg-emerald-950/40 border border-emerald-500/30 px-3 py-2.5 flex items-center gap-2 hover:border-emerald-400/50 transition-colors">
+                      <Swords className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">Auto-Entered Official Event</span>
+                        <p className="text-[10px] text-foreground/50 truncate">{officialEvent.title} — ${officialEvent.prize_usd} prize</p>
+                      </div>
+                      <ArrowRight className="w-3.5 h-3.5 text-emerald-400/50 shrink-0" />
+                    </div>
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -415,6 +474,11 @@ export default function MissionLobbyPage() {
                   <><Send className="w-4 h-4 mr-2" /> Submit & Earn</>
                 )}
               </Button>
+              {officialEvent && (
+                <p className="text-[9px] text-emerald-400/50 text-center">
+                  ✓ Your edit auto-enters the <span className="font-bold text-emerald-400/70">${officialEvent.prize_usd} Official Event</span> after rating
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -467,6 +531,8 @@ export default function MissionLobbyPage() {
           <RatingModal
             submission={ratingTarget}
             payoutMap={mission.mission_custom_payouts}
+            officialEvent={officialEvent}
+            missionArtistId={mission.artist_id}
             onClose={() => setRatingTarget(null)}
             onRated={fetchSubmissions}
           />
@@ -476,9 +542,11 @@ export default function MissionLobbyPage() {
   );
 }
 
-function RatingModal({ submission, payoutMap, onClose, onRated }: {
+function RatingModal({ submission, payoutMap, officialEvent, missionArtistId, onClose, onRated }: {
   submission: MissionSubmission;
   payoutMap: Record<string, number> | null;
+  officialEvent: OfficialEvent | null;
+  missionArtistId: string;
   onClose: () => void;
   onRated: () => void;
 }) {
@@ -494,6 +562,8 @@ function RatingModal({ submission, payoutMap, onClose, onRated }: {
     setSubmitting(true);
 
     const earnedCents = getPayout(selectedRating);
+    const qoiScore = selectedRating === 'S' ? 90 : selectedRating === 'A' ? 75 : selectedRating === 'B' ? 60 : selectedRating === 'C' ? 45 : selectedRating === 'D' ? 30 : 15;
+
     const { error } = await supabase
       .from('featured_submissions')
       .update({
@@ -501,16 +571,66 @@ function RatingModal({ submission, payoutMap, onClose, onRated }: {
         earned_cents: earnedCents,
         status: selectedRating === 'F' ? 'declined' : 'scored',
         feedback: feedback.trim(),
-        qoi_score: selectedRating === 'S' ? 90 : selectedRating === 'A' ? 75 : selectedRating === 'B' ? 60 : selectedRating === 'C' ? 45 : selectedRating === 'D' ? 30 : 15,
+        qoi_score: qoiScore,
       } as any)
       .eq('id', submission.id);
 
-    if (error) toast.error(error.message);
-    else {
-      toast.success(`Rated ${selectedRating}${earnedCents > 0 ? ` — $${(earnedCents / 100).toFixed(0)} awarded` : ''}`);
-      onRated();
-      onClose();
+    if (error) {
+      toast.error(error.message);
+      setSubmitting(false);
+      return;
     }
+
+    // ═══ AUTO-ENTRY: If rated C+ or better and official event exists, queue into it ═══
+    const isPassing = PASSING_RATINGS.includes(selectedRating);
+    if (isPassing && officialEvent && submission.user_id) {
+      try {
+        // Check if user already has an entry in the official event queue
+        const { data: existing } = await supabase
+          .from('featured_drop_queue')
+          .select('id')
+          .eq('drop_id', officialEvent.id)
+          .eq('user_id', submission.user_id)
+          .limit(1);
+
+        if (!existing || existing.length === 0) {
+          // Also check featured_submissions for that drop
+          const { data: existingSub } = await supabase
+            .from('featured_submissions')
+            .select('id')
+            .eq('drop_id', officialEvent.id)
+            .eq('user_id', submission.user_id)
+            .limit(1);
+
+          if (!existingSub || existingSub.length === 0) {
+            await supabase
+              .from('featured_drop_queue')
+              .insert({
+                drop_id: officialEvent.id,
+                user_id: submission.user_id,
+                username: submission.username,
+                avatar_url: submission.avatar_url,
+                submission_url: submission.submission_url,
+                platform: submission.platform || 'tiktok',
+                status: 'waiting',
+              } as any);
+          }
+        }
+      } catch (e) {
+        // Non-blocking — don't fail the rating if auto-entry fails
+        console.error('Auto-entry to official event failed:', e);
+      }
+
+      toast.success(
+        `Rated ${selectedRating}${earnedCents > 0 ? ` — $${(earnedCents / 100).toFixed(0)} awarded` : ''} · Auto-entered $${officialEvent.prize_usd} event! 🔥`,
+        { duration: 5000 }
+      );
+    } else {
+      toast.success(`Rated ${selectedRating}${earnedCents > 0 ? ` — $${(earnedCents / 100).toFixed(0)} awarded` : ''}`);
+    }
+
+    onRated();
+    onClose();
     setSubmitting(false);
   };
 
@@ -549,6 +669,22 @@ function RatingModal({ submission, payoutMap, onClose, onRated }: {
               );
             })}
           </div>
+
+          {/* Auto-entry notice */}
+          {officialEvent && selectedRating && PASSING_RATINGS.includes(selectedRating) && (
+            <div className="bg-emerald-950/40 border border-emerald-500/30 px-3 py-2 flex items-center gap-2">
+              <Swords className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="text-[9px] text-emerald-400 font-bold">
+                This will auto-enter their edit into the <span className="font-black">${officialEvent.prize_usd} Official Event</span>
+              </span>
+            </div>
+          )}
+
+          {selectedRating === 'F' && officialEvent && (
+            <div className="bg-red-950/30 border border-red-500/20 px-3 py-2 flex items-center gap-2">
+              <span className="text-[9px] text-red-400/60">F-rated edits do not auto-enter the official event</span>
+            </div>
+          )}
 
           <div>
             <Label className="text-[10px] font-black text-red-400 uppercase tracking-wider">Feedback (Required)</Label>
