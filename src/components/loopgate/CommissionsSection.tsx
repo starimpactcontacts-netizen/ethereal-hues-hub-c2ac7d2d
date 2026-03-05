@@ -20,6 +20,7 @@ interface ArenaDrop {
   mission_views_bonus_cents: number;
   artist_name: string | null;
   artist_avatar: string | null;
+  instant_payout: boolean;
 }
 
 /* ── Balance Ticker ── */
@@ -65,85 +66,70 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
   const sRate = ((payouts.S || 0) / 100);
   const aRate = ((payouts.A || 0) / 100);
   const bRate = ((payouts.B || 0) / 100);
-  const hasViewsBonus = drop.mission_views_milestone > 0 && drop.mission_views_bonus_cents > 0;
 
   return (
-    <Link to="/studio" className="shrink-0">
+    <Link to={`/mission/${drop.id}`} className="shrink-0">
       <motion.div
-        whileHover={{ scale: 1.02, y: -3 }}
         whileTap={{ scale: 0.97 }}
-        className="relative w-[260px] sm:w-[280px] h-[340px] rounded-none overflow-hidden group cursor-pointer border border-foreground/[0.06]"
+        className="relative w-[240px] h-[320px] overflow-hidden group cursor-pointer border-2 border-foreground/[0.08] hover:border-emerald-500/30 transition-colors"
         style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%)' }}
       >
         {/* Cover */}
         {drop.poster_url ? (
           <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-surface-1 to-background" />
+          <div className="absolute inset-0 bg-surface-2" />
         )}
 
-        {/* Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+        {/* Heavy overlays - no soft gradients */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
         
-        {/* Scan lines */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)' }} />
+        {/* Scan lines for texture */}
+        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 3px)' }} />
 
-        {/* Top strip - status */}
-        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-3 py-2">
-          <div className="flex items-center gap-1.5 bg-black/60 backdrop-blur-sm px-2 py-1 border-l-2 border-emerald-500">
+        {/* Top-left: LIVE indicator */}
+        <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-2.5 py-2">
+          <div className="flex items-center gap-1.5 bg-black/70 px-2 py-1 border-l-2 border-emerald-500">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live Mission</span>
+            <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live</span>
           </div>
-          {drop.prize_usd > 0 && (
-            <div className="bg-emerald-500/20 backdrop-blur-sm px-2 py-1 border border-emerald-500/30">
-              <span className="text-[9px] font-black text-emerald-400">${drop.prize_usd} PRIZE</span>
-            </div>
-          )}
+          <div className="flex items-center gap-1">
+            {(drop as any).instant_payout && (
+              <div className="bg-red-600 px-1.5 py-0.5">
+                <span className="text-[7px] font-black text-white uppercase">⚡</span>
+              </div>
+            )}
+            {sRate > 0 && (
+              <div className="bg-emerald-600/90 px-2 py-0.5">
+                <span className="text-[9px] font-black text-white">${sRate}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Bottom content */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
-          {/* Views bonus badge */}
-          {hasViewsBonus && (
-            <div className="flex items-center gap-1.5 mb-2 bg-amber-500/10 border border-amber-500/20 px-2 py-1 w-fit">
-              <Eye className="w-3 h-3 text-amber-400" />
-              <span className="text-[8px] font-black text-amber-400 uppercase tracking-wider">
-                {(drop.mission_views_milestone / 1000).toFixed(0)}K views = +${(drop.mission_views_bonus_cents / 100).toFixed(0)} bonus
-              </span>
-              <span className="text-[7px] text-amber-400/40 ml-1">C+ only</span>
-            </div>
+          {drop.artist_name && (
+            <p className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.15em] mb-0.5">{drop.artist_name}</p>
           )}
+          <h4 className="font-display text-lg text-foreground leading-tight tracking-wide truncate mb-2.5">{drop.song_name}</h4>
 
-          {/* Song info */}
-          <div className="mb-3">
-            {drop.artist_name && (
-              <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-[0.15em] mb-0.5">{drop.artist_name}</p>
-            )}
-            <h4 className="font-display text-lg text-foreground leading-tight tracking-wide truncate">{drop.song_name}</h4>
-          </div>
-
-          {/* Payout tiers - horizontal strip */}
-          <div className="flex items-stretch gap-0 mb-3 h-[36px]">
-            {/* S tier */}
-            <div className="flex-1 bg-amber-500/15 border border-amber-500/25 border-r-0 flex flex-col items-center justify-center">
+          {/* Payout tiers - sharp boxes, no gradients */}
+          <div className="flex items-stretch gap-0 h-[32px] mb-2.5">
+            <div className="flex-1 bg-amber-500/20 border-2 border-amber-500/40 border-r-0 flex flex-col items-center justify-center">
               <span className="text-[10px] font-black text-amber-400 leading-none">S</span>
-              <span className="text-[9px] font-bold text-emerald-400 leading-none mt-0.5">${sRate}</span>
+              <span className="text-[8px] font-black text-emerald-400 leading-none mt-0.5">${sRate}</span>
             </div>
-            {/* A tier */}
-            <div className="flex-1 bg-emerald-500/10 border-y border-emerald-500/20 flex flex-col items-center justify-center">
+            <div className="flex-1 bg-emerald-500/15 border-2 border-emerald-500/30 border-x-0 flex flex-col items-center justify-center">
               <span className="text-[10px] font-black text-emerald-400 leading-none">A</span>
-              <span className="text-[9px] font-bold text-emerald-400 leading-none mt-0.5">${aRate}</span>
+              <span className="text-[8px] font-black text-emerald-400 leading-none mt-0.5">${aRate}</span>
             </div>
-            {/* B tier */}
-            <div className="flex-1 bg-blue-500/10 border border-blue-500/20 border-l-0 flex flex-col items-center justify-center">
+            <div className="flex-1 bg-blue-500/15 border-2 border-blue-500/30 border-x-0 flex flex-col items-center justify-center">
               <span className="text-[10px] font-black text-blue-400 leading-none">B</span>
-              <span className="text-[9px] font-bold text-emerald-400 leading-none mt-0.5">${bRate}</span>
+              <span className="text-[8px] font-black text-emerald-400 leading-none mt-0.5">${bRate}</span>
             </div>
-            {/* C-F */}
-            <div className="flex-1 bg-foreground/[0.03] border border-foreground/[0.06] border-l-0 flex flex-col items-center justify-center">
-              <span className="text-[8px] font-bold text-foreground/20 leading-none">C-F</span>
-              <span className="text-[8px] font-medium text-foreground/15 leading-none mt-0.5">IDX</span>
+            <div className="flex-1 bg-foreground/[0.04] border-2 border-foreground/[0.08] border-l-0 flex items-center justify-center">
+              <span className="text-[7px] font-black text-foreground/20">C-F</span>
             </div>
           </div>
 
@@ -151,15 +137,12 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Crosshair className="w-3 h-3 text-emerald-400/60" />
-              <span className="text-[8px] font-bold text-foreground/30 uppercase tracking-wider">Edit & Submit</span>
+              <span className="text-[8px] font-black text-foreground/30 uppercase tracking-wider">Enter Lobby</span>
             </div>
-            <motion.div
-              whileHover={{ x: 2 }}
-              className="flex items-center gap-1 bg-emerald-500/20 border border-emerald-500/30 px-3 py-1.5 group-hover:bg-emerald-500/30 transition-all"
-            >
-              <span className="text-[9px] font-black text-emerald-400 tracking-widest">GO</span>
-              <ChevronRight className="w-3 h-3 text-emerald-400" />
-            </motion.div>
+            <div className="flex items-center gap-1 bg-emerald-600/80 px-3 py-1.5 group-hover:bg-emerald-500 transition-colors">
+              <span className="text-[9px] font-black text-white tracking-widest uppercase">Go</span>
+              <ChevronRight className="w-3 h-3 text-white" />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -240,7 +223,7 @@ export default function CommissionsSection() {
     const fetchDrops = async () => {
       const { data } = await supabase
         .from('featured_drops')
-        .select('id, song_name, poster_url, status, prize_usd, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, artist_id')
+        .select('id, song_name, poster_url, status, prize_usd, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, artist_id')
         .eq('mission_live', true)
         .order('created_at', { ascending: false });
 
@@ -272,6 +255,7 @@ export default function CommissionsSection() {
           mission_views_bonus_cents: d.mission_views_bonus_cents || 0,
           artist_name: d.artist_id ? artistMap[d.artist_id]?.name || null : null,
           artist_avatar: d.artist_id ? artistMap[d.artist_id]?.avatar_url || null : null,
+          instant_payout: d.instant_payout ?? false,
         })));
       } else {
         setDrops([]);
