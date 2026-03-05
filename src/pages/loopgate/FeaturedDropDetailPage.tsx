@@ -24,6 +24,8 @@ import DropLobbyChat from "@/components/loopgate/DropLobbyChat";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
+const teko = { fontFamily: 'Teko, sans-serif' };
+
 export default function FeaturedDropDetailPage() {
   const { dropId } = useParams<{ dropId: string }>();
   const navigate = useNavigate();
@@ -44,7 +46,6 @@ export default function FeaturedDropDetailPage() {
   useEffect(() => {
     if (!dropId) return;
     const fetch = async () => {
-      // Try UUID first, then slug
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dropId);
       const query = supabase
         .from('featured_drops')
@@ -64,7 +65,6 @@ export default function FeaturedDropDetailPage() {
     fetch();
   }, [dropId]);
 
-  // Auto-scroll to queue/active round section on page load
   useEffect(() => {
     if (!loading && drop && queueRef.current) {
       setTimeout(() => {
@@ -99,7 +99,6 @@ export default function FeaturedDropDetailPage() {
   const isJudging = drop.status === 'judging';
   const isClosed = drop.status === 'closed';
 
-  // Round-based data
   const hasRounds = rounds.length > 0;
   const roundSubs = (roundId: string) => submissions.filter((s: any) => s.round_id === roundId);
   const activeRoundSubs = activeRound ? roundSubs(activeRound.id) : [];
@@ -109,12 +108,10 @@ export default function FeaturedDropDetailPage() {
   const allRoundsFull = hasRounds && !rounds.some(r => r.status === 'open');
   const canQueueSubmit = isLive && allRoundsFull && queueCount < 100;
 
-  // For non-round drops, fallback to old behavior
   const allSubs = submissions;
   const scored = allSubs.filter(s => s.status === 'scored').sort((a, b) => (b.qoi_score || 0) - (a.qoi_score || 0));
   const pending = allSubs.filter(s => s.status === 'pending');
 
-  // Clean slug-based link for bios
   const cleanLink = `${window.location.origin}/drop/${(drop as any).slug || dropId}`;
 
   const downloadAudio = async (url: string, filename: string) => {
@@ -204,7 +201,7 @@ export default function FeaturedDropDetailPage() {
 
         {/* Title + Artist */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
-          <h1 className="font-display text-2xl text-foreground tracking-wide leading-none">{drop.title}</h1>
+          <h1 className="text-3xl text-foreground tracking-wider leading-none uppercase font-bold" style={teko}>{drop.title}</h1>
           {artist && (
             <Link to={`/artist/${artist.slug}`} className="inline-flex items-center gap-1.5 mt-2 group">
               <Avatar className="w-5 h-5 border border-gold/40">
@@ -225,13 +222,13 @@ export default function FeaturedDropDetailPage() {
         {drop.prize_usd > 0 && (
           <div className="flex items-center gap-3 py-2">
             <span
-              className="font-display text-5xl text-emerald-400 font-black leading-none"
-              style={{ textShadow: '0 0 16px rgba(16,185,129,0.5), 0 6px 30px rgba(16,185,129,0.35), 0 14px 50px rgba(16,185,129,0.2)' }}
+              className="text-6xl text-emerald-400 font-bold leading-none"
+              style={{ ...teko, textShadow: '0 0 16px rgba(16,185,129,0.5), 0 6px 30px rgba(16,185,129,0.35), 0 14px 50px rgba(16,185,129,0.2)' }}
             >
               ${drop.prize_usd}
             </span>
             <div>
-              <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Cash Prize</p>
+              <p className="text-sm font-bold text-emerald-400 uppercase tracking-wider" style={teko}>Cash Prize</p>
               <p className="text-[10px] text-muted-foreground">Best edit + random pick win</p>
             </div>
           </div>
@@ -259,8 +256,8 @@ export default function FeaturedDropDetailPage() {
                         : 'bg-surface-1 border-border text-muted-foreground'
                     }`}
                   >
-                    <span className="text-[9px] font-black uppercase tracking-wider">R{round.round_number}</span>
-                    <span className="text-[8px] font-bold">{getRoundLabel(round.round_number)}</span>
+                    <span className="text-sm font-bold uppercase tracking-wider" style={teko}>R{round.round_number}</span>
+                    <span className="text-[11px] font-bold" style={teko}>{getRoundLabel(round.round_number)}</span>
                     {isCompleted && <Check className="w-3 h-3" />}
                     {isCurrentJudging && <Video className="w-3 h-3" />}
                     {isActive && <Flame className="w-3 h-3" />}
@@ -270,7 +267,7 @@ export default function FeaturedDropDetailPage() {
               })}
             </div>
 
-            {/* Active round — SLOT COUNTER (the star of the show) */}
+            {/* Active round — SLOT COUNTER */}
             {activeRound && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
@@ -279,8 +276,8 @@ export default function FeaturedDropDetailPage() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="font-display text-lg text-foreground tracking-wide">
-                      ROUND {activeRound.round_number}
+                    <h2 className="text-2xl text-foreground tracking-wider uppercase font-bold" style={teko}>
+                      Round {activeRound.round_number}
                     </h2>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
                       {slotsLeft > 0
@@ -318,35 +315,36 @@ export default function FeaturedDropDetailPage() {
 
                 {/* Slot counter text */}
                 <div className="text-center">
-                  <span className={`font-display text-3xl tabular-nums ${
+                  <span className={`text-4xl tabular-nums font-bold ${
                     slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-foreground'
-                  }`}>
+                  }`} style={teko}>
                     {slotsLeft}
                   </span>
-                  <span className="text-sm text-muted-foreground font-bold">/{slotsTotal}</span>
-                  <p className={`text-[10px] font-black uppercase tracking-widest mt-0.5 ${
+                  <span className="text-lg text-muted-foreground font-bold" style={teko}>/{slotsTotal}</span>
+                  <p className={`text-xs font-bold uppercase tracking-widest mt-0.5 ${
                     slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-muted-foreground'
-                  }`}>
-                    {slotsLeft === 0 ? '🔒 ROUND FULL' : slotsLeft === 1 ? '🔥 LAST SLOT' : 'SLOTS LEFT'}
+                  }`} style={teko}>
+                    {slotsLeft === 0 ? '🔒 Round Full' : slotsLeft === 1 ? '🔥 Last Slot' : 'Slots Left'}
                   </p>
                 </div>
 
-                {/* SUBMIT CTA */}
+                {/* SUBMIT CTA — Fortnite style */}
                 {slotsLeft > 0 && (
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={() => setShowSubmit(true)}
-                    className="w-full py-4 bg-gradient-to-r from-destructive to-destructive/80 text-white font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
+                    className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-destructive to-destructive/80 text-white flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
                   >
-                    <Flame className="w-5 h-5" />
-                    Submit Your Edit
-                    <ChevronRight className="w-5 h-5" />
+                    <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                    <Flame className="w-5 h-5 relative z-10" />
+                    <span className="text-xl uppercase tracking-wider relative z-10 font-bold" style={teko}>Submit Your Edit</span>
+                    <ChevronRight className="w-5 h-5 relative z-10" />
                   </motion.button>
                 )}
               </motion.div>
             )}
 
-            {/* ═══ QUEUE — when all rounds full, editors can still submit ═══ */}
+            {/* ═══ QUEUE — when all rounds full ═══ */}
             {allRoundsFull && isLive && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -354,7 +352,6 @@ export default function FeaturedDropDetailPage() {
                 transition={{ duration: 0.4 }}
                 className="relative bg-gradient-to-b from-gold/[0.08] to-surface-1 border-2 border-gold/30 p-5 space-y-4 overflow-hidden"
               >
-                {/* Animated glow */}
                 <motion.div
                   className="absolute -top-20 -right-20 w-40 h-40 bg-gold/10 rounded-full blur-3xl pointer-events-none"
                   animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
@@ -363,14 +360,14 @@ export default function FeaturedDropDetailPage() {
 
                 <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <h3 className="font-display text-lg text-foreground tracking-wide flex items-center gap-2">
+                    <h3 className="text-2xl text-foreground tracking-wider uppercase font-bold flex items-center gap-2" style={teko}>
                       <motion.div
                         animate={{ rotate: [0, -10, 10, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
                         <Zap className="w-5 h-5 text-gold" />
                       </motion.div>
-                      NEXT ROUND LOBBY
+                      Next Round Lobby
                     </h3>
                     <p className="text-[10px] text-muted-foreground mt-1">
                       🔥 Round full — drop your edit here to secure your spot
@@ -381,7 +378,8 @@ export default function FeaturedDropDetailPage() {
                       key={queueCount}
                       initial={{ scale: 1.4, color: 'hsl(var(--gold))' }}
                       animate={{ scale: 1, color: queueCount >= 100 ? 'hsl(var(--destructive))' : 'hsl(var(--gold))' }}
-                      className="font-display text-3xl tabular-nums block"
+                      className="text-4xl tabular-nums block font-bold"
+                      style={teko}
                     >
                       {queueCount}
                     </motion.span>
@@ -405,7 +403,7 @@ export default function FeaturedDropDetailPage() {
                   </motion.div>
                 </div>
 
-                {/* Queue avatars with live pulse */}
+                {/* Queue avatars */}
                 {queue.length > 0 && (
                   <div className="flex items-center gap-3 relative z-10">
                     <div className="flex -space-x-2">
@@ -443,17 +441,18 @@ export default function FeaturedDropDetailPage() {
                     whileTap={{ scale: 0.97 }}
                     whileHover={{ scale: 1.01 }}
                     onClick={() => setShowSubmit(true)}
-                    className="w-full py-4 bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
+                    className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-gold via-gold/90 to-gold/80 text-background flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(255,215,0,0.3)] hover:shadow-[0_4px_32px_-4px_rgba(255,215,0,0.5)] transition-all relative z-10"
                   >
-                    <Flame className="w-5 h-5" />
-                    Join the Queue
-                    <ChevronRight className="w-5 h-5" />
+                    <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                    <Flame className="w-5 h-5 relative z-10" />
+                    <span className="text-xl uppercase tracking-wider relative z-10 font-bold" style={teko}>Join the Queue</span>
+                    <ChevronRight className="w-5 h-5 relative z-10" />
                   </motion.button>
                 )}
                 {queueCount >= 100 && (
                   <div className="text-center relative z-10 space-y-1">
-                    <p className="text-[11px] font-black text-destructive uppercase tracking-widest">
-                      🔒 QUEUE FULL — 100/100
+                    <p className="text-base font-bold text-destructive uppercase tracking-widest" style={teko}>
+                      🔒 Queue Full — 100/100
                     </p>
                     <p className="text-[9px] text-muted-foreground">Next round drops soon. Stay locked in.</p>
                   </div>
@@ -468,7 +467,7 @@ export default function FeaturedDropDetailPage() {
                 className="bg-gold/5 border-2 border-gold/30 p-4 text-center space-y-2"
               >
                 <Video className="w-8 h-8 text-gold mx-auto" />
-                <h3 className="font-display text-sm text-gold uppercase tracking-widest">
+                <h3 className="text-xl text-gold uppercase tracking-widest font-bold" style={teko}>
                   Waiting for Judge Video
                 </h3>
                 <p className="text-[10px] text-muted-foreground">
@@ -496,7 +495,7 @@ export default function FeaturedDropDetailPage() {
                 <div key={round.id} className="space-y-2">
                   <div className="flex items-center gap-2 border-b border-border pb-2">
                     <Trophy className="w-4 h-4 text-gold" />
-                    <h3 className="font-display text-sm text-foreground uppercase tracking-wider">
+                    <h3 className="text-lg text-foreground uppercase tracking-wider font-bold" style={teko}>
                       Round {round.round_number} Results
                     </h3>
                     <Check className="w-3.5 h-3.5 text-emerald-400 ml-auto" />
@@ -514,7 +513,7 @@ export default function FeaturedDropDetailPage() {
                         <Play className="w-5 h-5 text-gold" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-foreground">Judge's Ranking Video</p>
+                        <p className="text-sm font-bold text-foreground" style={teko}>Judge's Ranking Video</p>
                         <p className="text-[9px] text-gold font-bold uppercase tracking-wider">
                           by @{round.judge_username}
                         </p>
@@ -540,9 +539,9 @@ export default function FeaturedDropDetailPage() {
                                 : 'bg-surface-1 border-border/60'
                             }`}
                           >
-                            <span className={`text-lg font-display tabular-nums w-8 text-center shrink-0 ${
+                            <span className={`text-xl tabular-nums w-8 text-center shrink-0 font-bold ${
                               rk.rank === 1 ? 'text-gold' : rk.rank === 2 ? 'text-foreground' : 'text-muted-foreground'
-                            }`}>
+                            }`} style={teko}>
                               #{rk.rank}
                             </span>
                             <Avatar className="w-7 h-7 border border-border shrink-0">
@@ -570,16 +569,16 @@ export default function FeaturedDropDetailPage() {
         {/* ═══ NON-ROUND DROPS (legacy fallback) ═══ */}
         {!hasRounds && (
           <>
-            {/* Submit CTA */}
             {isLive && (
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowSubmit(true)}
-                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-display text-base uppercase tracking-widest flex items-center justify-center gap-2 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
+                className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_32px_-4px_rgba(16,185,129,0.5)] transition-all"
               >
-                <Flame className="w-5 h-5" />
-                Submit Your Edit
-                <ChevronRight className="w-5 h-5" />
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                <Flame className="w-5 h-5 relative z-10" />
+                <span className="text-xl uppercase tracking-wider relative z-10 font-bold" style={teko}>Submit Your Edit</span>
+                <ChevronRight className="w-5 h-5 relative z-10" />
               </motion.button>
             )}
           </>
@@ -594,7 +593,7 @@ export default function FeaturedDropDetailPage() {
                 <Music className="w-4 h-4 text-destructive" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-foreground truncate">{drop.song_name}</p>
+                <p className="text-sm font-bold text-foreground truncate" style={teko}>{drop.song_name}</p>
                 <p className="text-[9px] text-destructive font-bold uppercase tracking-wider">⚡ Use this sound</p>
               </div>
               <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
@@ -634,7 +633,7 @@ export default function FeaturedDropDetailPage() {
                 <Music className="w-3.5 h-3.5 text-destructive" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold text-foreground truncate">🔊 Preview</p>
+                <p className="text-sm font-bold text-foreground truncate" style={teko}>🔊 Preview</p>
                 <p className="text-[9px] text-muted-foreground truncate">{drop.song_name}</p>
               </div>
               <button
@@ -655,7 +654,8 @@ export default function FeaturedDropDetailPage() {
           <div>
             <button
               onClick={() => setShowGuide(!showGuide)}
-              className="w-full py-2 bg-surface-1 border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center justify-center gap-2 hover:text-foreground hover:border-destructive/30 transition-colors"
+              className="w-full py-2 bg-surface-1 border border-border text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center justify-center gap-2 hover:text-foreground hover:border-destructive/30 transition-colors"
+              style={teko}
             >
               <Zap className="w-3 h-3 text-gold" />
               How Do I Join?
@@ -675,7 +675,7 @@ export default function FeaturedDropDetailPage() {
                 ].map((step) => (
                   <div key={step.num} className="flex items-center gap-2">
                     <div className="w-5 h-5 bg-surface-2 border border-border flex items-center justify-center shrink-0">
-                      <span className="text-[9px] font-bold text-gold">{step.num}</span>
+                      <span className="text-sm font-bold text-gold" style={teko}>{step.num}</span>
                     </div>
                     <p className="text-[10px] font-medium text-foreground">{step.text}</p>
                   </div>
@@ -690,7 +690,8 @@ export default function FeaturedDropDetailPage() {
           <div>
             <button
               onClick={() => setShowDesc(!showDesc)}
-              className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors"
+              style={teko}
             >
               About This Drop
               <ChevronDown className={`w-3 h-3 transition-transform ${showDesc ? 'rotate-180' : ''}`} />
@@ -707,15 +708,15 @@ export default function FeaturedDropDetailPage() {
           </div>
         )}
 
-        {/* ═══ ALL SUBMISSIONS (leaderboard for non-round, or current round subs) ═══ */}
+        {/* ═══ ALL SUBMISSIONS ═══ */}
         {!hasRounds && (
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b border-border pb-2">
-              <h2 className="font-display text-lg text-foreground flex items-center gap-2 tracking-wide">
+              <h2 className="text-xl text-foreground flex items-center gap-2 tracking-wider uppercase font-bold" style={teko}>
                 <Trophy className="w-4 h-4 text-gold" />
-                {scored.length > 0 ? 'LEADERBOARD' : 'SUBMISSIONS'}
+                {scored.length > 0 ? 'Leaderboard' : 'Submissions'}
               </h2>
-              <span className="text-[10px] text-muted-foreground font-bold tabular-nums">{allSubs.length} {allSubs.length === 1 ? 'ENTRY' : 'ENTRIES'}</span>
+              <span className="text-sm text-muted-foreground font-bold tabular-nums" style={teko}>{allSubs.length} {allSubs.length === 1 ? 'Entry' : 'Entries'}</span>
             </div>
 
             {subsLoading ? (
@@ -725,7 +726,7 @@ export default function FeaturedDropDetailPage() {
             ) : allSubs.length === 0 ? (
               <div className="bg-surface-1 border border-border p-8 text-center">
                 <Flame className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
-                <p className="text-sm font-bold text-muted-foreground">No submissions yet</p>
+                <p className="text-lg font-bold text-muted-foreground" style={teko}>No Submissions Yet</p>
                 <p className="text-[10px] text-muted-foreground/60 mt-1">Be the first to enter & set the bar 🔥</p>
               </div>
             ) : (
@@ -744,7 +745,6 @@ export default function FeaturedDropDetailPage() {
         {/* Round-based submissions — ranked leaderboard */}
         {hasRounds && activeRound && activeRoundSubs.length > 0 && (
           <div>
-            {/* Leaderboard header — cinematic */}
             <div className="relative overflow-hidden border border-border/40 mb-px">
               <div className="absolute inset-0 bg-gradient-to-r from-destructive/[0.06] via-transparent to-gold/[0.04]" />
               <div className="relative px-4 py-3 flex items-center justify-between">
@@ -756,7 +756,7 @@ export default function FeaturedDropDetailPage() {
                     <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-destructive animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="font-display text-base sm:text-lg text-foreground uppercase tracking-wider leading-none">
+                    <h3 className="text-xl sm:text-2xl text-foreground uppercase tracking-wider leading-none font-bold" style={teko}>
                       Round {activeRound.round_number} Rankings
                     </h3>
                     <p className="text-[9px] text-muted-foreground/60 font-mono uppercase tracking-widest mt-0.5">
@@ -765,7 +765,7 @@ export default function FeaturedDropDetailPage() {
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-2xl font-display text-foreground tabular-nums leading-none">
+                  <span className="text-3xl text-foreground tabular-nums leading-none font-bold" style={teko}>
                     {activeRoundSubs.length}
                   </span>
                   <span className="text-[7px] text-muted-foreground/40 uppercase tracking-widest font-mono">entries</span>
@@ -773,7 +773,6 @@ export default function FeaturedDropDetailPage() {
               </div>
             </div>
 
-            {/* Ranked entries */}
             <div className="space-y-px">
               {(() => {
                 const sorted = [...activeRoundSubs].sort((a, b) => {
@@ -793,7 +792,6 @@ export default function FeaturedDropDetailPage() {
               })()}
             </div>
 
-            {/* Remaining slots teaser */}
             {slotsLeft > 0 && (
               <div className="border border-dashed border-border/30 mt-px">
                 <div className="flex items-center justify-center gap-2 py-6 sm:py-8">
@@ -803,7 +801,7 @@ export default function FeaturedDropDetailPage() {
                     ))}
                   </div>
                   <div className="text-center">
-                    <p className="text-xs font-display text-muted-foreground/30 uppercase tracking-wider">
+                    <p className="text-sm text-muted-foreground/30 uppercase tracking-wider font-bold" style={teko}>
                       {slotsLeft} {slotsLeft === 1 ? 'slot' : 'slots'} remaining
                     </p>
                     <p className="text-[8px] text-muted-foreground/20 font-mono uppercase">
@@ -822,7 +820,7 @@ export default function FeaturedDropDetailPage() {
         {/* Winners (legacy) */}
         {(drop.top_scorer_username || drop.random_pick_username) && (
           <div className="space-y-2">
-            <h2 className="font-display text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+            <h2 className="text-lg uppercase tracking-widest text-muted-foreground flex items-center gap-2 font-bold" style={teko}>
               <Crown className="w-3.5 h-3.5 text-gold" /> Winners
             </h2>
             {drop.top_scorer_username && (
