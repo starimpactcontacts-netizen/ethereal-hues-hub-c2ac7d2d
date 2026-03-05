@@ -139,8 +139,7 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
           </div>
 
           {/* CTA — Fortnite-style skewed button */}
-          <div className="relative overflow-hidden bg-red-600 group-hover:bg-red-500 active:bg-red-400 transition-colors flex items-center justify-center gap-3 py-4 -mx-3 -mb-4"
-            style={{ clipPath: 'polygon(2% 0, 100% 0, 98% 100%, 0% 100%)' }}>
+          <div className="relative overflow-hidden bg-red-600 group-hover:bg-red-500 active:bg-red-400 transition-colors flex items-center justify-center gap-3 py-4 -mx-3 -mb-4">
             <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
               <Crosshair className="w-3.5 h-3.5 text-white" />
