@@ -200,9 +200,8 @@ export default function MissionLobbyPage() {
         {/* Status badges */}
         <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
           {mission.instant_payout && (
-            <div className="bg-red-600 px-2 py-1 flex items-center gap-1 shadow-lg shadow-red-600/30">
-              <Zap className="w-3 h-3 text-white" />
-              <span className="text-[8px] font-black text-white uppercase tracking-wider">Instant</span>
+            <div className="bg-red-600 px-2.5 py-1">
+              <span className="text-[8px] font-black text-white uppercase tracking-wider">24H Pay</span>
             </div>
           )}
           <div className="bg-emerald-600 px-2.5 py-1 flex items-center gap-1 shadow-lg shadow-emerald-600/30">
