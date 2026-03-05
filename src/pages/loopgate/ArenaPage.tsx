@@ -71,43 +71,39 @@ interface ArenaMission {
 
 function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
   const navigate = useNavigate();
-  const payouts = drop.mission_custom_payouts || { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
+  const payouts = drop.mission_custom_payouts || { S: 0, A: 0, B: 0 };
   const sRate = ((payouts.S || 0) / 100);
-  const aRate = ((payouts.A || 0) / 100);
-  const bRate = ((payouts.B || 0) / 100);
-  const hasViewsBonus = drop.mission_views_milestone > 0 && drop.mission_views_bonus_cents > 0;
 
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
-      onClick={() => navigate('/studio')}
-      className="shrink-0 relative w-[200px] h-[250px] overflow-hidden group text-left touch-manipulation"
+      onClick={() => navigate(`/mission/${drop.id}`)}
+      className="shrink-0 relative w-[200px] h-[250px] overflow-hidden group text-left touch-manipulation border-2 border-foreground/[0.08] hover:border-emerald-500/30 transition-colors"
       style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}
     >
       {drop.poster_url ? (
         <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover" />
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-surface-1 to-background" />
+        <div className="absolute inset-0 bg-surface-2" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
-      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px)' }} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
+      <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 3px)' }} />
 
       {/* Top */}
       <div className="absolute top-0 left-0 right-0 px-2 py-1.5 flex items-center justify-between">
-        <div className="flex items-center gap-1 bg-black/60 backdrop-blur-sm px-1.5 py-0.5 border-l-2 border-emerald-500">
+        <div className="flex items-center gap-1 bg-black/70 px-1.5 py-0.5 border-l-2 border-emerald-500">
           <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.15em]">Live</span>
         </div>
         <div className="flex items-center gap-1">
           {drop.instant_payout && (
-            <div className="bg-red-500/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm">
-              <span className="text-[7px] font-black text-white uppercase">⚡ INSTANT</span>
+            <div className="bg-red-600 px-1.5 py-0.5">
+              <span className="text-[7px] font-black text-white">⚡</span>
             </div>
           )}
-          {drop.prize_usd > 0 && (
-            <div className="bg-emerald-500/20 backdrop-blur-sm px-1.5 py-0.5 border border-emerald-500/30">
-              <span className="text-[8px] font-black text-emerald-400">${drop.prize_usd}</span>
+          {sRate > 0 && (
+            <div className="bg-emerald-600/90 px-1.5 py-0.5">
+              <span className="text-[8px] font-black text-white">${sRate}</span>
             </div>
           )}
         </div>
@@ -115,34 +111,27 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
 
       {/* Bottom */}
       <div className="absolute bottom-0 left-0 right-0 p-2.5">
-        {hasViewsBonus && (
-          <div className="flex items-center gap-1 mb-1.5 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 w-fit">
-            <Eye className="w-2.5 h-2.5 text-amber-400" />
-            <span className="text-[7px] font-black text-amber-400 uppercase">{(drop.mission_views_milestone / 1000).toFixed(0)}K = +${(drop.mission_views_bonus_cents / 100).toFixed(0)}</span>
-          </div>
-        )}
-
         {drop.artist_name && (
-          <p className="text-[8px] font-bold text-foreground/40 uppercase tracking-[0.1em]">{drop.artist_name}</p>
+          <p className="text-[8px] font-black text-foreground/40 uppercase tracking-[0.1em]">{drop.artist_name}</p>
         )}
-        <h4 className="font-display text-sm text-foreground leading-tight truncate">{drop.song_name}</h4>
+        <h4 className="font-display text-sm text-foreground leading-tight truncate mb-2">{drop.song_name}</h4>
 
-        {/* Payout strip */}
-        <div className="flex items-stretch gap-0 mt-2 h-[28px]">
-          <div className="flex-1 bg-amber-500/15 border border-amber-500/25 border-r-0 flex flex-col items-center justify-center">
+        {/* Compact payout strip */}
+        <div className="flex items-stretch gap-0 h-[26px]">
+          <div className="flex-1 bg-amber-500/20 border-2 border-amber-500/40 border-r-0 flex flex-col items-center justify-center">
             <span className="text-[9px] font-black text-amber-400 leading-none">S</span>
-            <span className="text-[8px] font-bold text-emerald-400 leading-none">${sRate}</span>
+            <span className="text-[7px] font-black text-emerald-400 leading-none">${sRate}</span>
           </div>
-          <div className="flex-1 bg-emerald-500/10 border-y border-emerald-500/20 flex flex-col items-center justify-center">
+          <div className="flex-1 bg-emerald-500/15 border-2 border-emerald-500/30 border-x-0 flex flex-col items-center justify-center">
             <span className="text-[9px] font-black text-emerald-400 leading-none">A</span>
-            <span className="text-[8px] font-bold text-emerald-400 leading-none">${aRate}</span>
+            <span className="text-[7px] font-black text-emerald-400 leading-none">${((payouts.A || 0) / 100)}</span>
           </div>
-          <div className="flex-1 bg-blue-500/10 border border-blue-500/20 border-l-0 flex flex-col items-center justify-center">
+          <div className="flex-1 bg-blue-500/15 border-2 border-blue-500/30 border-x-0 flex flex-col items-center justify-center">
             <span className="text-[9px] font-black text-blue-400 leading-none">B</span>
-            <span className="text-[8px] font-bold text-emerald-400 leading-none">${bRate}</span>
+            <span className="text-[7px] font-black text-emerald-400 leading-none">${((payouts.B || 0) / 100)}</span>
           </div>
-          <div className="flex-1 bg-foreground/[0.03] border border-foreground/[0.06] border-l-0 flex items-center justify-center">
-            <span className="text-[7px] font-bold text-foreground/15">C-F</span>
+          <div className="flex-1 bg-foreground/[0.04] border-2 border-foreground/[0.08] border-l-0 flex items-center justify-center">
+            <span className="text-[7px] font-black text-foreground/15">C-F</span>
           </div>
         </div>
       </div>
