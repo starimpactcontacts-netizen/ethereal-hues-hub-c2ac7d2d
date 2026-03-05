@@ -35,7 +35,7 @@ export default function FeaturedArtistAdmin() {
 
   // Edit drop state
   const [editingDrop, setEditingDrop] = useState<FeaturedDrop | null>(null);
-  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', arena_eligible: false, custom_payouts: { S: 500, A: 300, B: 100, C: 0, D: 0, F: 0 } as Record<string, number>, views_milestone: 0, views_bonus_cents: 0 });
+  const [editDropForm, setEditDropForm] = useState({ title: '', song_name: '', song_url: '', song_preview_url: '', poster_url: '', description: '', xp_reward: 30, index_reward: 15, mystery_reward_label: '', artist_id: '', mission_live: false, mission_custom_payouts: { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 } as Record<string, number>, mission_views_milestone: 0, mission_views_bonus_cents: 0 });
   const [savingDrop, setSavingDrop] = useState(false);
   const [uploadingEditPreview, setUploadingEditPreview] = useState(false);
 
@@ -288,7 +288,7 @@ export default function FeaturedArtistAdmin() {
   const openEditDrop = (drop: FeaturedDrop) => {
     setEditingDrop(drop);
     const dropAny = drop as any;
-    const defaultPayouts = { S: 500, A: 300, B: 100, C: 0, D: 0, F: 0 };
+    const defaultPayouts = { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
     setEditDropForm({
       title: drop.title,
       song_name: drop.song_name,
@@ -300,10 +300,10 @@ export default function FeaturedArtistAdmin() {
       index_reward: drop.index_reward,
       mystery_reward_label: drop.mystery_reward_label || '',
       artist_id: drop.artist_id,
-      arena_eligible: dropAny.arena_eligible ?? false,
-      custom_payouts: dropAny.custom_payouts ? (typeof dropAny.custom_payouts === 'object' ? dropAny.custom_payouts : defaultPayouts) : defaultPayouts,
-      views_milestone: dropAny.views_milestone || 0,
-      views_bonus_cents: dropAny.views_bonus_cents || 0,
+      mission_live: dropAny.mission_live ?? false,
+      mission_custom_payouts: dropAny.mission_custom_payouts ? (typeof dropAny.mission_custom_payouts === 'object' ? dropAny.mission_custom_payouts : defaultPayouts) : defaultPayouts,
+      mission_views_milestone: dropAny.mission_views_milestone || 0,
+      mission_views_bonus_cents: dropAny.mission_views_bonus_cents || 0,
     });
   };
 
@@ -321,10 +321,10 @@ export default function FeaturedArtistAdmin() {
       index_reward: editDropForm.index_reward,
       mystery_reward_label: editDropForm.mystery_reward_label || '',
       artist_id: editDropForm.artist_id,
-      arena_eligible: editDropForm.arena_eligible,
-      custom_payouts: editDropForm.custom_payouts,
-      views_milestone: editDropForm.views_milestone,
-      views_bonus_cents: editDropForm.views_bonus_cents,
+      mission_live: editDropForm.mission_live,
+      mission_custom_payouts: editDropForm.mission_custom_payouts,
+      mission_views_milestone: editDropForm.mission_views_milestone,
+      mission_views_bonus_cents: editDropForm.mission_views_bonus_cents,
     } as any).eq('id', editingDrop.id);
     if (error) toast.error(error.message);
     else { toast.success('Drop updated!'); setEditingDrop(null); refresh(); }
@@ -1021,50 +1021,50 @@ export default function FeaturedArtistAdmin() {
               </div>
             </div>
 
-            {/* ═══ ARENA MISSION CONFIG ═══ */}
+            {/* ═══ OFFICIAL MISSION CONFIG (SEPARATE) ═══ */}
             <div className="border-t border-border pt-3 mt-2">
               <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                💰 Arena / Get Paid Config
+                💰 Official Mission Settings (Separate from Featured)
               </h4>
               
-              {/* Arena Eligible Toggle */}
+              {/* Mission Live Toggle */}
               <label className="flex items-center justify-between p-2 bg-surface-1 border border-border rounded-lg mb-2 cursor-pointer">
-                <span className="text-xs font-semibold">Arena Eligible</span>
-                <input type="checkbox" checked={editDropForm.arena_eligible} onChange={e => setEditDropForm({...editDropForm, arena_eligible: e.target.checked})}
+                <span className="text-xs font-semibold">Mission Live (shows in GET PAID)</span>
+                <input type="checkbox" checked={editDropForm.mission_live} onChange={e => setEditDropForm({...editDropForm, mission_live: e.target.checked})}
                   className="w-4 h-4 accent-emerald-500" />
               </label>
 
               {/* Per-Tier Payouts */}
-              <Label className="text-xs text-emerald-400">Payouts per Rating (cents)</Label>
+              <Label className="text-xs text-emerald-400">Mission Payouts per Rating (cents)</Label>
               <div className="grid grid-cols-3 gap-1.5 mt-1 mb-2">
                 {['S', 'A', 'B', 'C', 'D', 'F'].map(tier => (
                   <div key={tier} className="flex items-center gap-1">
                     <span className={`text-[10px] font-black w-4 ${
                       tier === 'S' ? 'text-amber-400' : tier === 'A' ? 'text-emerald-400' : tier === 'B' ? 'text-blue-400' : 'text-muted-foreground'
                     }`}>{tier}</span>
-                    <Input type="number" value={editDropForm.custom_payouts[tier] || 0}
-                      onChange={e => setEditDropForm({...editDropForm, custom_payouts: {...editDropForm.custom_payouts, [tier]: Number(e.target.value)}})}
+                    <Input type="number" value={editDropForm.mission_custom_payouts[tier] || 0}
+                      onChange={e => setEditDropForm({...editDropForm, mission_custom_payouts: {...editDropForm.mission_custom_payouts, [tier]: Number(e.target.value)}})}
                       className="h-7 text-xs" placeholder="0" />
                   </div>
                 ))}
               </div>
-              <p className="text-[9px] text-muted-foreground mb-2">S=500 means $5. Set 0 for IDX-only tiers.</p>
+              <p className="text-[9px] text-muted-foreground mb-2">Set exact mission payout by rank (example: S=1000 for $10).</p>
 
               {/* Views Milestone */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-xs text-amber-400">Views Milestone</Label>
-                  <Input type="number" value={editDropForm.views_milestone}
-                    onChange={e => setEditDropForm({...editDropForm, views_milestone: Number(e.target.value)})}
-                    className="mt-1 h-8 text-xs" placeholder="e.g. 50000" />
+                  <Label className="text-xs text-amber-400">Mission Views Milestone</Label>
+                  <Input type="number" value={editDropForm.mission_views_milestone}
+                    onChange={e => setEditDropForm({...editDropForm, mission_views_milestone: Number(e.target.value)})}
+                    className="mt-1 h-8 text-xs" placeholder="e.g. 100000" />
                   <p className="text-[8px] text-muted-foreground mt-0.5">0 = disabled</p>
                 </div>
                 <div>
-                  <Label className="text-xs text-amber-400">Views Bonus (cents)</Label>
-                  <Input type="number" value={editDropForm.views_bonus_cents}
-                    onChange={e => setEditDropForm({...editDropForm, views_bonus_cents: Number(e.target.value)})}
-                    className="mt-1 h-8 text-xs" placeholder="e.g. 1000" />
-                  <p className="text-[8px] text-muted-foreground mt-0.5">C+ rated only, F excluded</p>
+                  <Label className="text-xs text-amber-400">Mission Views Bonus (cents)</Label>
+                  <Input type="number" value={editDropForm.mission_views_bonus_cents}
+                    onChange={e => setEditDropForm({...editDropForm, mission_views_bonus_cents: Number(e.target.value)})}
+                    className="mt-1 h-8 text-xs" placeholder="e.g. 2000" />
+                  <p className="text-[8px] text-muted-foreground mt-0.5">Bonus paid regardless of rank when milestone hits</p>
                 </div>
               </div>
             </div>

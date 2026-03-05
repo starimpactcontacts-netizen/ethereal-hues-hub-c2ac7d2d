@@ -8,7 +8,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import { useEditorEarnings, RATING_COLORS, RATING_PAYOUTS, type SubmissionRating } from '@/hooks/useCommissions';
+import { useEditorEarnings, RATING_COLORS, type SubmissionRating } from '@/hooks/useCommissions';
 import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,8 @@ interface FeaturedSong {
   poster_url: string | null;
   status: string | null;
   submission_count: number | null;
-  arena_eligible: boolean;
+  mission_live: boolean;
+  mission_custom_payouts: Record<string, number> | null;
 }
 
 interface ArenaSubmission {
@@ -94,12 +95,12 @@ function SongCard({ song, onSelect, isSelected, isStaff, onToggleArena }: {
             <button
               onClick={(e) => { e.stopPropagation(); onToggleArena(song); }}
               className={`text-[9px] font-bold px-2 py-1 rounded border transition-colors ${
-                song.arena_eligible 
+                song.mission_live 
                   ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' 
                   : 'text-muted-foreground border-border/30 bg-muted/20'
               }`}
             >
-              {song.arena_eligible ? '✓ ARENA' : 'OFF'}
+              {song.mission_live ? '✓ MISSION LIVE' : 'OFF'}
             </button>
           )}
           {isSelected && (
@@ -249,16 +250,18 @@ function MySubmissions({ submissions, isStaff, onRate }: { submissions: ArenaSub
   );
 }
 
-function RatingModal({ submission, onClose, onRated }: { submission: ArenaSubmission; onClose: () => void; onRated: () => void }) {
+function RatingModal({ submission, payoutMap, onClose, onRated }: { submission: ArenaSubmission; payoutMap: Record<string, number> | null; onClose: () => void; onRated: () => void }) {
   const [selectedRating, setSelectedRating] = useState<SubmissionRating | null>(null);
   const [feedback, setFeedback] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const getPayout = (rating: SubmissionRating) => (payoutMap?.[rating] ?? 0);
 
   const handleRate = async () => {
     if (!selectedRating) { toast.error('Pick a rating'); return; }
     setSubmitting(true);
 
-    const earnedCents = RATING_PAYOUTS[selectedRating];
+    const earnedCents = getPayout(selectedRating);
     const { error } = await supabase
       .from('featured_submissions')
       .update({
@@ -273,7 +276,7 @@ function RatingModal({ submission, onClose, onRated }: { submission: ArenaSubmis
     if (error) {
       toast.error(error.message);
     } else {
-      const payout = RATING_PAYOUTS[selectedRating];
+      const payout = getPayout(selectedRating);
       if (payout > 0) {
         toast.success(`Rated ${selectedRating} — $${(payout / 100).toFixed(0)} awarded to @${submission.username}`);
       } else {
@@ -302,7 +305,7 @@ function RatingModal({ submission, onClose, onRated }: { submission: ArenaSubmis
 
         <div className="grid grid-cols-6 gap-2">
           {RATINGS.map(r => {
-            const payout = RATING_PAYOUTS[r];
+            const payout = getPayout(r);
             const isSelected = selectedRating === r;
             return (
               <motion.button key={r} whileTap={{ scale: 0.92 }} onClick={() => setSelectedRating(r)}
@@ -320,9 +323,9 @@ function RatingModal({ submission, onClose, onRated }: { submission: ArenaSubmis
           })}
         </div>
 
-        {selectedRating && RATING_PAYOUTS[selectedRating] > 0 && (
+        {selectedRating && getPayout(selectedRating) > 0 && (
           <p className="text-sm text-emerald-400 font-bold text-center">
-            +${(RATING_PAYOUTS[selectedRating] / 100).toFixed(0)} will be added to @{submission.username}'s balance
+            +${(getPayout(selectedRating) / 100).toFixed(0)} will be added to @{submission.username}'s balance
           </p>
         )}
 
@@ -352,13 +355,12 @@ export default function SoloArenaPage() {
   const fetchSongs = useCallback(async () => {
     const query = supabase
       .from('featured_drops')
-      .select('id, title, song_name, poster_url, status, submission_count, artist_id, arena_eligible, featured_artists(name, avatar_url)')
-      .in('status', ['active', 'open', 'live'])
+      .select('id, title, song_name, poster_url, status, submission_count, artist_id, mission_live, mission_custom_payouts, featured_artists(name, avatar_url)')
       .order('created_at', { ascending: false });
 
-    // Non-staff only see arena-eligible songs
+    // Non-staff only see missions explicitly pushed live from admin
     if (!isStaff) {
-      query.eq('arena_eligible', true);
+      query.eq('mission_live', true);
     }
 
     const { data } = await query;
@@ -373,7 +375,8 @@ export default function SoloArenaPage() {
         poster_url: d.poster_url,
         status: d.status,
         submission_count: d.submission_count,
-        arena_eligible: d.arena_eligible ?? false,
+        mission_live: d.mission_live ?? false,
+        mission_custom_payouts: d.mission_custom_payouts as Record<string, number> | null,
       })));
     }
     setLoading(false);
@@ -397,10 +400,10 @@ export default function SoloArenaPage() {
   }, [user, isStaff]);
 
   const toggleArenaEligible = useCallback(async (song: FeaturedSong) => {
-    const newVal = !song.arena_eligible;
-    await supabase.from('featured_drops').update({ arena_eligible: newVal } as any).eq('id', song.id);
-    setSongs(prev => prev.map(s => s.id === song.id ? { ...s, arena_eligible: newVal } : s));
-    toast.success(newVal ? `${song.song_name} added to Arena` : `${song.song_name} removed from Arena`);
+    const newVal = !song.mission_live;
+    await supabase.from('featured_drops').update({ mission_live: newVal } as any).eq('id', song.id);
+    setSongs(prev => prev.map(s => s.id === song.id ? { ...s, mission_live: newVal } : s));
+    toast.success(newVal ? `${song.song_name} pushed live to Get Paid` : `${song.song_name} removed from Get Paid`);
   }, []);
 
   useEffect(() => { fetchSongs(); }, [fetchSongs]);
@@ -410,6 +413,10 @@ export default function SoloArenaPage() {
   const displaySubmissions = selectedSong 
     ? submissions.filter(s => s.drop_id === selectedSong.id) 
     : submissions;
+  const selectedSongPayouts = (selectedSong?.mission_custom_payouts as Record<string, number> | null) || null;
+  const ratingPayoutMap = ratingTarget
+    ? ((songs.find(s => s.id === ratingTarget.drop_id)?.mission_custom_payouts as Record<string, number> | null) || null)
+    : null;
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -431,10 +438,10 @@ export default function SoloArenaPage() {
         {/* Payout tiers */}
         <div className="flex gap-2 mt-3 flex-wrap">
           {RATINGS.map(r => {
-            const p = RATING_PAYOUTS[r];
-            return (
-              <div key={r} className={`px-2 py-1 rounded border text-[10px] font-bold ${RATING_COLORS[r]}`}>
-                {r}{p > 0 ? ` = $${p / 100}` : ' = IDX'}
+              const p = selectedSongPayouts?.[r] ?? 0;
+              return (
+                <div key={r} className={`px-2 py-1 rounded border text-[10px] font-bold ${RATING_COLORS[r]}`}>
+                  {r}{p > 0 ? ` = $${(p / 100).toFixed(0)}` : ' = IDX'}
               </div>
             );
           })}
@@ -515,7 +522,7 @@ export default function SoloArenaPage() {
       {/* Rating Modal */}
       <AnimatePresence>
         {ratingTarget && (
-          <RatingModal submission={ratingTarget} onClose={() => setRatingTarget(null)} onRated={fetchSubmissions} />
+          <RatingModal submission={ratingTarget} payoutMap={ratingPayoutMap} onClose={() => setRatingTarget(null)} onRated={fetchSubmissions} />
         )}
       </AnimatePresence>
     </div>

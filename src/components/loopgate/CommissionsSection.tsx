@@ -13,11 +13,11 @@ interface ArenaDrop {
   song_name: string;
   poster_url: string | null;
   status: string;
-  arena_eligible: boolean;
   prize_usd: number;
-  custom_payouts: Record<string, number> | null;
-  views_milestone: number;
-  views_bonus_cents: number;
+  mission_live: boolean;
+  mission_custom_payouts: Record<string, number> | null;
+  mission_views_milestone: number;
+  mission_views_bonus_cents: number;
   artist_name: string | null;
   artist_avatar: string | null;
 }
@@ -61,11 +61,11 @@ function BalanceTicker() {
 
 /* ── Mission Card (GTA-style drop card) ── */
 function MissionCard({ drop }: { drop: ArenaDrop }) {
-  const payouts = drop.custom_payouts || { S: 500, A: 300, B: 100 };
-  const sRate = ((payouts.S || 500) / 100);
-  const aRate = ((payouts.A || 300) / 100);
-  const bRate = ((payouts.B || 100) / 100);
-  const hasViewsBonus = drop.views_milestone > 0 && drop.views_bonus_cents > 0;
+  const payouts = drop.mission_custom_payouts || { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
+  const sRate = ((payouts.S || 0) / 100);
+  const aRate = ((payouts.A || 0) / 100);
+  const bRate = ((payouts.B || 0) / 100);
+  const hasViewsBonus = drop.mission_views_milestone > 0 && drop.mission_views_bonus_cents > 0;
 
   return (
     <Link to="/studio" className="shrink-0">
@@ -109,7 +109,7 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
             <div className="flex items-center gap-1.5 mb-2 bg-amber-500/10 border border-amber-500/20 px-2 py-1 w-fit">
               <Eye className="w-3 h-3 text-amber-400" />
               <span className="text-[8px] font-black text-amber-400 uppercase tracking-wider">
-                {(drop.views_milestone / 1000).toFixed(0)}K views = +${(drop.views_bonus_cents / 100).toFixed(0)} bonus
+                {(drop.mission_views_milestone / 1000).toFixed(0)}K views = +${(drop.mission_views_bonus_cents / 100).toFixed(0)} bonus
               </span>
               <span className="text-[7px] text-amber-400/40 ml-1">C+ only</span>
             </div>
@@ -240,13 +240,14 @@ export default function CommissionsSection() {
     const fetchDrops = async () => {
       const { data } = await supabase
         .from('featured_drops')
-        .select('id, song_name, poster_url, status, arena_eligible, prize_usd, custom_payouts, views_milestone, views_bonus_cents, artist_id')
-        .in('status', ['active', 'open', 'live'])
+        .select('id, song_name, poster_url, status, prize_usd, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, artist_id')
+        .eq('mission_live', true)
         .order('created_at', { ascending: false });
 
-      if (data && data.length > 0) {
+      const rows = (data || []) as any[];
+      if (rows.length > 0) {
         // Fetch artist names
-        const artistIds = [...new Set(data.map(d => d.artist_id).filter(Boolean))];
+        const artistIds = [...new Set(rows.map(d => d.artist_id).filter(Boolean))];
         let artistMap: Record<string, { name: string; avatar_url: string | null }> = {};
         
         if (artistIds.length > 0) {
@@ -259,19 +260,21 @@ export default function CommissionsSection() {
           }
         }
 
-        setDrops(data.map(d => ({
+        setDrops(rows.map((d: any) => ({
           id: d.id,
           song_name: d.song_name,
           poster_url: d.poster_url,
           status: d.status || 'live',
-          arena_eligible: d.arena_eligible ?? false,
           prize_usd: d.prize_usd || 0,
-          custom_payouts: d.custom_payouts as Record<string, number> | null,
-          views_milestone: (d as any).views_milestone || 0,
-          views_bonus_cents: (d as any).views_bonus_cents || 0,
+          mission_live: d.mission_live ?? false,
+          mission_custom_payouts: d.mission_custom_payouts as Record<string, number> | null,
+          mission_views_milestone: d.mission_views_milestone || 0,
+          mission_views_bonus_cents: d.mission_views_bonus_cents || 0,
           artist_name: d.artist_id ? artistMap[d.artist_id]?.name || null : null,
           artist_avatar: d.artist_id ? artistMap[d.artist_id]?.avatar_url || null : null,
         })));
+      } else {
+        setDrops([]);
       }
       setLoadingDrops(false);
     };
