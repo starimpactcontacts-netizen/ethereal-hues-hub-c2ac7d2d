@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, Loader2, MessageCircle } from "lucide-react";
+import { Send, Loader2, MessageCircle, Image as ImageIcon, Info, X, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import GifPicker from "./GifPicker";
 
 interface Message {
   id: string;
@@ -21,14 +21,26 @@ interface DropLobbyChatProps {
   accentColor?: string;
 }
 
-export default function DropLobbyChat({ dropId, accentColor = 'purple' }: DropLobbyChatProps) {
+function isGifUrl(text: string): boolean {
+  return /\.(gif|gifv)(\?|$)/i.test(text) || text.includes("tenor.com") || text.includes("giphy.com") || text.includes("media.tenor");
+}
+
+// Quick reaction chips for fast engagement
+const QUICK_CHIPS = ["🔥", "W", "💀", "GG", "nah", "😭", "goated"];
+
+export default function DropLobbyChat({ dropId }: DropLobbyChatProps) {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [newCount, setNewCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!dropId) return;
@@ -39,7 +51,7 @@ export default function DropLobbyChat({ dropId, accentColor = 'purple' }: DropLo
         .select('*')
         .eq('drop_id', dropId)
         .order('created_at', { ascending: true })
-        .limit(100);
+        .limit(200);
 
       setMessages((data as unknown as Message[]) || []);
       setLoading(false);
@@ -56,20 +68,36 @@ export default function DropLobbyChat({ dropId, accentColor = 'purple' }: DropLo
         filter: `drop_id=eq.${dropId}`
       }, (payload) => {
         setMessages(prev => [...prev, payload.new as Message]);
+        if (!isAtBottom) setNewCount(c => c + 1);
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [dropId]);
 
+  // Auto-scroll when at bottom
   useEffect(() => {
+    if (isAtBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setNewCount(0);
+    }
+  }, [messages, isAtBottom]);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    setIsAtBottom(atBottom);
+    if (atBottom) setNewCount(0);
+  };
+
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    setNewCount(0);
+  };
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !user || !profile) return;
-
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || !user || !profile) return;
     setIsSending(true);
     await supabase
       .from('featured_drop_messages' as any)
@@ -78,62 +106,143 @@ export default function DropLobbyChat({ dropId, accentColor = 'purple' }: DropLo
         user_id: user.id,
         username: profile.username,
         avatar_url: profile.avatar_url,
-        message_text: newMessage.trim()
+        message_text: text.trim()
       });
-
     setNewMessage("");
     setIsSending(false);
+    setShowGifPicker(false);
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(newMessage);
+  };
+
+  const handleGifSelect = (gifUrl: string) => {
+    sendMessage(gifUrl);
   };
 
   return (
-    <div className="bg-surface-0 border border-border rounded-lg overflow-hidden flex flex-col">
+    <div className="relative overflow-hidden flex flex-col border-2 border-foreground/[0.06]">
+      {/* Top accent bar */}
+      <div className="h-[2px] bg-gradient-to-r from-red-500/60 via-red-500 to-red-500/60" />
+
       {/* Header */}
-      <div className="px-3 py-2 border-b border-border flex items-center gap-2 bg-surface-1">
-        <MessageCircle className="w-4 h-4 text-purple-400" />
-        <span className="text-xs font-bold text-foreground uppercase tracking-wider">Live Chat</span>
-        {messages.length > 0 && (
-          <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 text-[9px] font-bold rounded-full">
-            {messages.length}
+      <div className="px-3 py-2.5 flex items-center justify-between bg-gradient-to-r from-red-950/40 via-background to-background">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <MessageCircle className="w-4 h-4 text-red-400" />
+            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+          </div>
+          <span className="font-bold text-xs text-foreground uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif', fontSize: '16px' }}>
+            Live Chat
           </span>
-        )}
+          {messages.length > 0 && (
+            <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[8px] font-black rounded-sm">
+              {messages.length}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => setShowInfo(!showInfo)}
+          className="w-6 h-6 flex items-center justify-center text-foreground/30 hover:text-red-400 transition-colors"
+        >
+          <Info className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      {/* Messages */}
-      <div className="h-52 overflow-y-auto p-2 space-y-1.5 bg-background">
+      {/* Info panel */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-b border-foreground/[0.06]"
+          >
+            <div className="px-3 py-3 bg-red-950/20 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">What is this?</span>
+                <button onClick={() => setShowInfo(false)} className="text-foreground/30 hover:text-foreground">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              <p className="text-[11px] text-foreground/60 leading-relaxed">
+                This is the <span className="text-red-400 font-bold">Official Event lobby</span>. 
+                Talk trash, hype up your edit, react to others' submissions, and vibe with the community.
+                Messages are live and visible to everyone in this event.
+              </p>
+              <p className="text-[10px] text-foreground/30 leading-relaxed">
+                Send GIFs, quick reactions, or type your message. Keep it competitive. 🔥
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Messages area — tall on mobile for prominence */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="h-[280px] sm:h-64 overflow-y-auto p-2 space-y-1 bg-background/80 relative"
+      >
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+            <Loader2 className="w-5 h-5 text-red-400 animate-spin" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <MessageCircle className="w-8 h-8 text-muted-foreground/20 mb-2" />
-            <p className="text-xs text-muted-foreground">Be the first to say something</p>
+          <div className="flex flex-col items-center justify-center h-full text-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-red-500/30" />
+            </div>
+            <p className="text-[11px] text-foreground/30 font-bold uppercase tracking-wider">No messages yet</p>
+            <p className="text-[9px] text-foreground/15">Be the first to talk in this lobby</p>
           </div>
         ) : (
           <AnimatePresence initial={false}>
             {messages.map((msg) => (
               <motion.div
                 key={msg.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex items-start gap-1.5 ${msg.is_system ? 'justify-center' : ''}`}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.15 }}
+                className={`flex items-start gap-1.5 py-0.5 ${msg.is_system ? 'justify-center' : ''}`}
               >
                 {msg.is_system ? (
-                  <p className="text-[10px] text-muted-foreground italic">{msg.message_text}</p>
+                  <p className="text-[10px] text-foreground/25 italic text-center">{msg.message_text}</p>
                 ) : (
                   <>
-                    <div className="w-5 h-5 rounded-full bg-surface-2 overflow-hidden shrink-0 mt-0.5">
+                    <button
+                      onClick={() => navigate(`/u/${msg.username}`)}
+                      className="w-6 h-6 rounded-full bg-surface-2 overflow-hidden shrink-0 mt-0.5 hover:ring-1 hover:ring-red-500/40 transition-all"
+                    >
                       {msg.avatar_url ? (
                         <img src={msg.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                        <div className="w-full h-full flex items-center justify-center text-[9px] font-black text-foreground/40">
                           {msg.username[0]?.toUpperCase()}
                         </div>
                       )}
-                    </div>
+                    </button>
                     <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-bold text-purple-400 mr-1.5">{msg.username}</span>
-                      <span className="text-[11px] text-foreground break-words">{msg.message_text}</span>
+                      <button
+                        onClick={() => navigate(`/u/${msg.username}`)}
+                        className="text-[10px] font-black text-red-400 hover:text-red-300 mr-1.5 uppercase tracking-wide transition-colors"
+                      >
+                        {msg.username}
+                      </button>
+                      {isGifUrl(msg.message_text) ? (
+                        <div className="mt-0.5">
+                          <img
+                            src={msg.message_text}
+                            alt="GIF"
+                            className="max-w-[180px] max-h-[120px] rounded-sm object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : (
+                        <span className="text-[12px] text-foreground/80 break-words leading-snug">{msg.message_text}</span>
+                      )}
                     </div>
                   </>
                 )}
@@ -142,31 +251,86 @@ export default function DropLobbyChat({ dropId, accentColor = 'purple' }: DropLo
           </AnimatePresence>
         )}
         <div ref={messagesEndRef} />
+
+        {/* New messages indicator */}
+        {!isAtBottom && newCount > 0 && (
+          <button
+            onClick={scrollToBottom}
+            className="sticky bottom-1 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg shadow-red-500/30 z-10"
+          >
+            <ChevronDown className="w-3 h-3" /> {newCount} new
+          </button>
+        )}
       </div>
 
-      {/* Input */}
-      {user ? (
-        <form onSubmit={handleSend} className="border-t border-border p-1.5 flex gap-1.5 bg-surface-1">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Say something..."
-            className="flex-1 bg-surface-2 border border-border rounded-md px-2.5 py-1.5 text-xs text-foreground placeholder:text-muted-foreground"
-            maxLength={300}
-          />
-          <button
-            type="submit"
-            disabled={isSending || !newMessage.trim()}
-            className="px-2.5 py-1.5 bg-purple-500 text-white rounded-md disabled:opacity-40 transition-opacity"
+      {/* GIF Picker */}
+      <AnimatePresence>
+        {showGifPicker && (
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: 280 }}
+            exit={{ height: 0 }}
+            className="overflow-hidden border-t border-foreground/[0.06]"
           >
-            {isSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-          </button>
-        </form>
+            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Quick chips + input */}
+      {user ? (
+        <div className="border-t border-foreground/[0.06] bg-background">
+          {/* Quick reaction chips */}
+          <div className="px-2 pt-2 pb-1 flex gap-1.5 overflow-x-auto scrollbar-hide">
+            {QUICK_CHIPS.map((chip) => (
+              <button
+                key={chip}
+                onClick={() => sendMessage(chip)}
+                disabled={isSending}
+                className="shrink-0 px-2.5 py-1 bg-foreground/[0.05] hover:bg-red-500/20 border border-foreground/[0.08] hover:border-red-500/30 text-[11px] font-bold text-foreground/50 hover:text-red-400 transition-all active:scale-95 touch-manipulation"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          {/* Input row */}
+          <form onSubmit={handleSend} className="px-2 pb-2 flex gap-1.5 items-center">
+            <button
+              type="button"
+              onClick={() => setShowGifPicker(!showGifPicker)}
+              className={`w-9 h-9 shrink-0 flex items-center justify-center border transition-all touch-manipulation ${
+                showGifPicker
+                  ? "bg-red-500/20 border-red-500/40 text-red-400"
+                  : "bg-foreground/[0.04] border-foreground/[0.08] text-foreground/30 hover:text-foreground/60"
+              }`}
+            >
+              <ImageIcon className="w-4 h-4" />
+            </button>
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Say something..."
+              className="flex-1 bg-foreground/[0.04] border border-foreground/[0.08] px-3 py-2 text-[13px] text-foreground placeholder:text-foreground/20 focus:outline-none focus:border-red-500/30 transition-colors"
+              maxLength={300}
+            />
+            <button
+              type="submit"
+              disabled={isSending || !newMessage.trim()}
+              className="w-9 h-9 shrink-0 flex items-center justify-center bg-red-600 hover:bg-red-500 disabled:opacity-30 text-white transition-all touch-manipulation active:scale-95"
+            >
+              {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            </button>
+          </form>
+        </div>
       ) : (
-        <div className="border-t border-border p-2 text-center">
-          <button onClick={() => navigate('/start')} className="text-[10px] text-purple-400 font-medium hover:underline">
-            Sign in to chat
+        <div className="border-t border-foreground/[0.06] p-3 text-center bg-background">
+          <button
+            onClick={() => navigate('/start')}
+            className="text-[11px] text-red-400 font-bold hover:underline uppercase tracking-wider"
+          >
+            Sign in to join the chat →
           </button>
         </div>
       )}
