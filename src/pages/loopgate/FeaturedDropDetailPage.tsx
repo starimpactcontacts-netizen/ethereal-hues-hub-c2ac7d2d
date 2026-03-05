@@ -7,7 +7,7 @@ import {
   TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2, Download,
   ListOrdered, MessageCircle, Info, X, Swords
 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
 import DropLeaderboardRow from "@/components/loopgate/DropLeaderboardRow";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,7 +36,6 @@ export default function FeaturedDropDetailPage() {
   const [showSubmit, setShowSubmit] = useState(false);
   const [copied, setCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const [resolvedId, setResolvedId] = useState<string | null>(null);
   const [chatCount, setChatCount] = useState(0);
@@ -364,9 +363,9 @@ export default function FeaturedDropDetailPage() {
 
         {/* ═══ ROUND SYSTEM ═══ */}
         {hasRounds && (
-          <div ref={queueRef} className="space-y-3">
-            {/* Round timeline */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1">
+          <div ref={queueRef} className="space-y-4">
+            {/* Round timeline — inline pills, no boxes */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
               {rounds.map((round) => {
                 const isActive = round.status === 'open' || round.status === 'full';
                 const isCompleted = round.status === 'completed';
@@ -374,14 +373,14 @@ export default function FeaturedDropDetailPage() {
                 return (
                   <div
                     key={round.id}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 border shrink-0 transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 shrink-0 transition-colors ${
                       isActive
-                        ? 'bg-destructive/10 border-destructive/30 text-destructive'
+                        ? 'bg-destructive/10 text-destructive'
                         : isCurrentJudging
-                        ? 'bg-gold/10 border-gold/30 text-gold'
+                        ? 'bg-gold/10 text-gold'
                         : isCompleted
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                        : 'bg-surface-1 border-border text-muted-foreground'
+                        ? 'bg-emerald-500/10 text-emerald-400'
+                        : 'bg-foreground/[0.04] text-muted-foreground'
                     }`}
                   >
                     <span className="text-sm font-bold uppercase tracking-wider" style={teko}>R{round.round_number}</span>
@@ -395,12 +394,12 @@ export default function FeaturedDropDetailPage() {
               })}
             </div>
 
-            {/* Active round — SLOT COUNTER */}
+            {/* Active round — streamlined */}
             {activeRound && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-surface-1 border-2 border-destructive/30 p-4 space-y-3"
+                className="space-y-3"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -414,71 +413,71 @@ export default function FeaturedDropDetailPage() {
                     </p>
                   </div>
                   {activeRound.judge_username && (
-                    <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-2 py-1">
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-gold/10">
                       <Award className="w-3 h-3 text-gold" />
                       <span className="text-[9px] font-bold text-gold">Judge: @{activeRound.judge_username}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Slot visual */}
-                <div className="flex items-center gap-2">
+                {/* Slot visual — flat, no individual borders */}
+                <div className="flex items-center gap-1.5">
                   {Array.from({ length: slotsTotal }).map((_, i) => (
                     <div
                       key={i}
-                      className={`flex-1 h-10 border-2 flex items-center justify-center transition-all ${
+                      className={`flex-1 h-9 flex items-center justify-center transition-all ${
                         i < slotsFilled
-                          ? 'bg-destructive/15 border-destructive/40'
-                          : 'bg-surface-2 border-border border-dashed'
+                          ? 'bg-destructive/15'
+                          : 'bg-foreground/[0.04]'
                       }`}
                     >
                       {i < slotsFilled ? (
                         <Check className="w-4 h-4 text-destructive" />
                       ) : (
-                        <span className="text-[10px] text-muted-foreground/40 font-bold">?</span>
+                        <span className="text-[10px] text-muted-foreground/30 font-bold">?</span>
                       )}
                     </div>
                   ))}
                 </div>
 
-                {/* Slot counter text */}
-                <div className="text-center">
-                  <span className={`text-4xl tabular-nums font-bold ${
-                    slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-foreground'
-                  }`} style={teko}>
-                    {slotsLeft}
-                  </span>
-                  <span className="text-lg text-muted-foreground font-bold" style={teko}>/{slotsTotal}</span>
-                  <p className={`text-xs font-bold uppercase tracking-widest mt-0.5 ${
-                    slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-muted-foreground'
-                  }`} style={teko}>
-                    {slotsLeft === 0 ? '🔒 Round Full' : slotsLeft === 1 ? '🔥 Last Slot' : 'Slots Left'}
-                  </p>
-                </div>
+                {/* Counter + CTA inline */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-baseline gap-1">
+                    <span className={`text-3xl tabular-nums font-bold ${
+                      slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-foreground'
+                    }`} style={teko}>
+                      {slotsLeft}
+                    </span>
+                    <span className="text-lg text-muted-foreground font-bold" style={teko}>/{slotsTotal}</span>
+                    <span className={`text-xs font-bold uppercase tracking-widest ml-1 ${
+                      slotsLeft === 0 ? 'text-gold' : slotsLeft <= 1 ? 'text-destructive' : 'text-muted-foreground'
+                    }`} style={teko}>
+                      {slotsLeft === 0 ? '🔒 Full' : slotsLeft === 1 ? '🔥 Last Slot' : 'Open'}
+                    </span>
+                  </div>
 
-                {/* SUBMIT CTA — Fortnite style */}
-                {slotsLeft > 0 && (
-                  <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setShowSubmit(true)}
-                    className="w-full relative overflow-hidden py-4 bg-gradient-to-r from-destructive to-destructive/80 text-white flex items-center justify-center gap-3 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
-                  >
-                    <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
-                    <Flame className="w-5 h-5 relative z-10" />
-                    <span className="text-xl uppercase tracking-wider relative z-10 font-bold" style={teko}>Submit Your Edit</span>
-                    <ChevronRight className="w-5 h-5 relative z-10" />
-                  </motion.button>
-                )}
+                  {slotsLeft > 0 && (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setShowSubmit(true)}
+                      className="ml-auto relative overflow-hidden px-5 py-3 bg-gradient-to-r from-destructive to-destructive/80 text-white flex items-center gap-2 shadow-[0_4px_24px_-4px_hsl(var(--destructive)/0.4)] hover:shadow-[0_4px_32px_-4px_hsl(var(--destructive)/0.6)] transition-all"
+                    >
+                      <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
+                      <Flame className="w-4 h-4 relative z-10" />
+                      <span className="text-lg uppercase tracking-wider relative z-10 font-bold" style={teko}>Submit</span>
+                    </motion.button>
+                  )}
+                </div>
               </motion.div>
             )}
 
-            {/* ═══ QUEUE — when all rounds full ═══ */}
+            {/* ═══ QUEUE — borderless, gradient bg only ═══ */}
             {allRoundsFull && isLive && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="relative bg-gradient-to-b from-gold/[0.08] to-surface-1 border-2 border-gold/30 p-5 space-y-4 overflow-hidden"
+                className="relative bg-gradient-to-b from-gold/[0.08] to-transparent p-5 space-y-4 overflow-hidden"
               >
                 <motion.div
                   className="absolute -top-20 -right-20 w-40 h-40 bg-gold/10 rounded-full blur-3xl pointer-events-none"
@@ -516,7 +515,7 @@ export default function FeaturedDropDetailPage() {
                 </div>
 
                 {/* Queue progress bar */}
-                <div className="w-full h-3 bg-surface-2 border border-border overflow-hidden relative z-10">
+                <div className="w-full h-2.5 bg-foreground/[0.06] overflow-hidden relative z-10">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min((queueCount / 100) * 100, 100)}%` }}
@@ -592,7 +591,7 @@ export default function FeaturedDropDetailPage() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="bg-gold/5 border-2 border-gold/30 p-4 text-center space-y-2"
+                className="bg-gold/[0.04] p-4 text-center space-y-2"
               >
                 <Video className="w-8 h-8 text-gold mx-auto" />
                 <h3 className="text-xl text-gold uppercase tracking-widest font-bold" style={teko}>
@@ -615,13 +614,13 @@ export default function FeaturedDropDetailPage() {
               </motion.div>
             )}
 
-            {/* Completed rounds — show judge video + rankings */}
+            {/* Completed rounds — clean divider style */}
             {rounds.filter(r => r.status === 'completed').map((round) => {
               const roundRankings = rankings.filter(rk => rk.round_id === round.id);
               const roundSubmissions = roundSubs(round.id);
               return (
-                <div key={round.id} className="space-y-2">
-                  <div className="flex items-center gap-2 border-b border-border pb-2">
+                <div key={round.id} className="space-y-2 pt-2">
+                  <div className="flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-gold" />
                     <h3 className="text-lg text-foreground uppercase tracking-wider font-bold" style={teko}>
                       Round {round.round_number} Results
@@ -635,9 +634,9 @@ export default function FeaturedDropDetailPage() {
                       href={round.judge_video_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-gold/5 border border-gold/20 hover:border-gold/40 transition-colors group"
+                      className="flex items-center gap-3 p-3 bg-gold/[0.04] hover:bg-gold/[0.08] transition-colors group"
                     >
-                      <div className="w-10 h-10 bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 bg-gold/10 flex items-center justify-center shrink-0">
                         <Play className="w-5 h-5 text-gold" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -650,21 +649,17 @@ export default function FeaturedDropDetailPage() {
                     </a>
                   )}
 
-                  {/* Rankings */}
+                  {/* Rankings — no individual borders */}
                   {roundRankings.length > 0 && (
-                    <div className="space-y-1.5">
+                    <div className="space-y-px">
                       {roundRankings.map((rk) => {
                         const sub = roundSubmissions.find(s => s.id === rk.submission_id);
                         if (!sub) return null;
                         return (
                           <div
                             key={rk.id}
-                            className={`flex items-center gap-3 p-2.5 border ${
-                              rk.rank === 1
-                                ? 'bg-gold/5 border-gold/30'
-                                : rk.rank === 2
-                                ? 'bg-surface-1 border-border'
-                                : 'bg-surface-1 border-border/60'
+                            className={`flex items-center gap-3 p-2.5 ${
+                              rk.rank === 1 ? 'bg-gold/[0.06]' : 'bg-foreground/[0.02]'
                             }`}
                           >
                             <span className={`text-xl tabular-nums w-8 text-center shrink-0 font-bold ${
@@ -712,134 +707,63 @@ export default function FeaturedDropDetailPage() {
           </>
         )}
 
-        {/* ─── SOUND link ─── */}
+        {/* ─── SOUND — merged single section ─── */}
         {drop.song_url && (
-          <div className="flex items-center bg-surface-1 border border-border hover:border-destructive/30 transition-colors">
-            <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2.5 px-3 py-2.5 flex-1 min-w-0 group">
-              <div className="w-9 h-9 bg-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-destructive/10 flex items-center justify-center shrink-0">
                 <Music className="w-4 h-4 text-destructive" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-foreground truncate" style={teko}>{drop.song_name}</p>
                 <p className="text-[9px] text-destructive font-bold uppercase tracking-wider">⚡ Use this sound</p>
               </div>
-              <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-            </a>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="px-3 py-2.5 border-l border-border hover:bg-surface-2 transition-colors shrink-0">
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              <a href={drop.song_url} target="_blank" rel="noopener noreferrer"
+                className="p-2 hover:bg-foreground/[0.06] transition-colors">
+                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+              </a>
+              {drop.song_preview_url && (
+                <button
+                  onClick={() => downloadAudio(drop.song_preview_url!, `${drop.song_name || 'preview'}.m4a`)}
+                  className="flex items-center gap-1.5 px-2 py-1.5 bg-destructive/10 hover:bg-destructive/20 transition-colors"
+                  title="Download audio"
+                >
+                  <Download className="w-3 h-3 text-destructive" />
+                  <span className="text-[8px] font-bold text-foreground uppercase tracking-wider">DL</span>
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-surface-1 border-border">
-                <DropdownMenuItem asChild>
-                  <a href={drop.song_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Open Sound Link
-                  </a>
-                </DropdownMenuItem>
-                {drop.song_preview_url && (
-                  <DropdownMenuItem
-                    onClick={() => downloadAudio(drop.song_preview_url!, `${drop.song_name || 'preview'}.m4a`)}
-                    className="flex items-center gap-2 text-xs"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download Preview Audio
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
-
-        {/* Song Preview */}
-        {drop.song_preview_url && (
-          <div className="bg-surface-1 border border-border p-3 space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-destructive/10 flex items-center justify-center">
-                <Music className="w-3.5 h-3.5 text-destructive" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-foreground truncate" style={teko}>🔊 Preview</p>
-                <p className="text-[9px] text-muted-foreground truncate">{drop.song_name}</p>
-              </div>
-              <button
-                onClick={() => downloadAudio(drop.song_preview_url!, `${drop.song_name || 'preview'}.m4a`)}
-                className="flex items-center gap-1.5 bg-surface-2 border border-border hover:border-destructive/30 px-2 py-1 transition-colors"
-                title="Download audio"
-              >
-                <Download className="w-3 h-3 text-destructive" />
-                <span className="text-[8px] font-bold text-foreground uppercase tracking-wider">DL</span>
-              </button>
+              )}
             </div>
-            <audio src={drop.song_preview_url} controls className="w-full h-9" preload="metadata" />
-          </div>
-        )}
-
-        {/* How to join */}
-        {isLive && (
-          <div>
-            <button
-              onClick={() => setShowGuide(!showGuide)}
-              className="w-full py-2 bg-surface-1 border border-border text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center justify-center gap-2 hover:text-foreground hover:border-destructive/30 transition-colors"
-              style={teko}
-            >
-              <Zap className="w-3 h-3 text-gold" />
-              How Do I Join?
-              <ChevronDown className={`w-3 h-3 transition-transform ${showGuide ? 'rotate-180' : ''}`} />
-            </button>
-            {showGuide && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="mt-1 bg-surface-1 border border-border p-3 space-y-2"
-              >
-                {[
-                  { num: '1', text: '🎧 Listen to the song & vibe with it' },
-                  { num: '2', text: '🎬 Make a fire edit — any app works' },
-                  { num: '3', text: '📱 Post on TikTok, IG, or YouTube' },
-                  { num: '4', text: '🔗 Come back & paste the link' },
-                ].map((step) => (
-                  <div key={step.num} className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-surface-2 border border-border flex items-center justify-center shrink-0">
-                      <span className="text-sm font-bold text-gold" style={teko}>{step.num}</span>
-                    </div>
-                    <p className="text-[10px] font-medium text-foreground">{step.text}</p>
-                  </div>
-                ))}
-              </motion.div>
+            {drop.song_preview_url && (
+              <audio src={drop.song_preview_url} controls className="w-full h-9" preload="metadata" />
             )}
           </div>
         )}
 
-        {/* Description */}
+        {/* Description — inline toggle */}
         {drop.description && (
-          <div>
-            <button
-              onClick={() => setShowDesc(!showDesc)}
-              className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground uppercase tracking-widest hover:text-foreground transition-colors"
-              style={teko}
-            >
-              About This Drop
-              <ChevronDown className={`w-3 h-3 transition-transform ${showDesc ? 'rotate-180' : ''}`} />
-            </button>
-            {showDesc && (
-              <motion.p
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                className="text-xs text-muted-foreground leading-relaxed mt-2"
-              >
-                {drop.description}
-              </motion.p>
-            )}
-          </div>
+          <button
+            onClick={() => setShowDesc(!showDesc)}
+            className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground/60 uppercase tracking-widest hover:text-foreground/80 transition-colors"
+            style={teko}
+          >
+            About This Drop
+            <ChevronDown className={`w-3 h-3 transition-transform ${showDesc ? 'rotate-180' : ''}`} />
+          </button>
+        )}
+        {showDesc && drop.description && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="text-xs text-muted-foreground leading-relaxed -mt-1"
+          >
+            {drop.description}
+          </motion.p>
         )}
 
         {/* ═══ ALL SUBMISSIONS ═══ */}
         {!hasRounds && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between border-b border-border pb-2">
+            <div className="flex items-center justify-between">
               <h2 className="text-xl text-foreground flex items-center gap-2 tracking-wider uppercase font-bold" style={teko}>
                 <Trophy className="w-4 h-4 text-gold" />
                 {scored.length > 0 ? 'Leaderboard' : 'Submissions'}
@@ -852,7 +776,7 @@ export default function FeaturedDropDetailPage() {
                 {[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full" />)}
               </div>
             ) : allSubs.length === 0 ? (
-              <div className="bg-surface-1 border border-border p-8 text-center">
+              <div className="p-8 text-center">
                 <Flame className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
                 <p className="text-lg font-bold text-muted-foreground" style={teko}>No Submissions Yet</p>
                 <p className="text-[10px] text-muted-foreground/60 mt-1">Be the first to enter & set the bar 🔥</p>
@@ -872,33 +796,19 @@ export default function FeaturedDropDetailPage() {
 
         {/* Round-based submissions — ranked leaderboard */}
         {hasRounds && activeRound && activeRoundSubs.length > 0 && (
-          <div>
-            <div className="relative overflow-hidden border border-border/40 mb-px">
-              <div className="absolute inset-0 bg-gradient-to-r from-destructive/[0.06] via-transparent to-gold/[0.04]" />
-              <div className="relative px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <div className="w-8 h-8 rounded-md bg-destructive/10 border border-destructive/20 flex items-center justify-center">
-                      <ListOrdered className="w-4 h-4 text-destructive" />
-                    </div>
-                    <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl sm:text-2xl text-foreground uppercase tracking-wider leading-none font-bold" style={teko}>
-                      Round {activeRound.round_number} Rankings
-                    </h3>
-                    <p className="text-[9px] text-muted-foreground/60 font-mono uppercase tracking-widest mt-0.5">
-                      Live Leaderboard • {activeRoundSubs.length}/{activeRound.max_submissions} slots
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className="text-3xl text-foreground tabular-nums leading-none font-bold" style={teko}>
-                    {activeRoundSubs.length}
-                  </span>
-                  <span className="text-[7px] text-muted-foreground/40 uppercase tracking-widest font-mono">entries</span>
-                </div>
+          <div className="space-y-1">
+            {/* Leaderboard header — lightweight */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <ListOrdered className="w-4 h-4 text-destructive" />
+                <h3 className="text-xl text-foreground uppercase tracking-wider leading-none font-bold" style={teko}>
+                  Round {activeRound.round_number} Rankings
+                </h3>
+                <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
               </div>
+              <span className="text-sm text-muted-foreground font-bold tabular-nums" style={teko}>
+                {activeRoundSubs.length}/{activeRound.max_submissions}
+              </span>
             </div>
 
             <div className="space-y-px">
@@ -921,22 +831,10 @@ export default function FeaturedDropDetailPage() {
             </div>
 
             {slotsLeft > 0 && (
-              <div className="border border-dashed border-border/30 mt-px">
-                <div className="flex items-center justify-center gap-2 py-6 sm:py-8">
-                  <div className="flex -space-x-1">
-                    {[...Array(Math.min(slotsLeft, 3))].map((_, i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-dashed border-muted-foreground/15 bg-surface-0/30" />
-                    ))}
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground/30 uppercase tracking-wider font-bold" style={teko}>
-                      {slotsLeft} {slotsLeft === 1 ? 'slot' : 'slots'} remaining
-                    </p>
-                    <p className="text-[8px] text-muted-foreground/20 font-mono uppercase">
-                      Submit to claim your rank
-                    </p>
-                  </div>
-                </div>
+              <div className="flex items-center justify-center gap-2 py-4 opacity-30">
+                <span className="text-sm uppercase tracking-wider font-bold" style={teko}>
+                  {slotsLeft} {slotsLeft === 1 ? 'slot' : 'slots'} remaining
+                </span>
               </div>
             )}
           </div>
@@ -949,12 +847,12 @@ export default function FeaturedDropDetailPage() {
 
         {/* Winners (legacy) */}
         {(drop.top_scorer_username || drop.random_pick_username) && (
-          <div className="space-y-2">
-            <h2 className="text-lg uppercase tracking-widest text-muted-foreground flex items-center gap-2 font-bold" style={teko}>
+          <div className="space-y-2 pt-2">
+            <h2 className="text-lg uppercase tracking-widest text-foreground flex items-center gap-2 font-bold" style={teko}>
               <Crown className="w-3.5 h-3.5 text-gold" /> Winners
             </h2>
             {drop.top_scorer_username && (
-              <div className="flex items-center gap-3 p-3 bg-gold/5 border border-gold/20">
+              <div className="flex items-center gap-3 p-3 bg-gold/[0.06]">
                 <Crown className="w-5 h-5 text-gold shrink-0" />
                 <div>
                   <span className="text-xs font-bold text-gold">@{drop.top_scorer_username}</span>
@@ -963,7 +861,7 @@ export default function FeaturedDropDetailPage() {
               </div>
             )}
             {drop.random_pick_username && (
-              <div className="flex items-center gap-3 p-3 bg-destructive/5 border border-destructive/20">
+              <div className="flex items-center gap-3 p-3 bg-destructive/[0.04]">
                 <Star className="w-5 h-5 text-destructive shrink-0" />
                 <div>
                   <span className="text-xs font-bold text-destructive">@{drop.random_pick_username}</span>
