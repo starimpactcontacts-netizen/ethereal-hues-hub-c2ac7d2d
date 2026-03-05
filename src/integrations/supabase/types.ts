@@ -2583,6 +2583,10 @@ export type Database = {
           id: string
           index_reward: number | null
           is_promoted: boolean
+          mission_custom_payouts: Json | null
+          mission_live: boolean
+          mission_views_bonus_cents: number
+          mission_views_milestone: number
           mystery_reward_label: string | null
           poster_url: string | null
           prize_usd: number | null
@@ -2614,6 +2618,10 @@ export type Database = {
           id?: string
           index_reward?: number | null
           is_promoted?: boolean
+          mission_custom_payouts?: Json | null
+          mission_live?: boolean
+          mission_views_bonus_cents?: number
+          mission_views_milestone?: number
           mystery_reward_label?: string | null
           poster_url?: string | null
           prize_usd?: number | null
@@ -2645,6 +2653,10 @@ export type Database = {
           id?: string
           index_reward?: number | null
           is_promoted?: boolean
+          mission_custom_payouts?: Json | null
+          mission_live?: boolean
+          mission_views_bonus_cents?: number
+          mission_views_milestone?: number
           mystery_reward_label?: string | null
           poster_url?: string | null
           prize_usd?: number | null

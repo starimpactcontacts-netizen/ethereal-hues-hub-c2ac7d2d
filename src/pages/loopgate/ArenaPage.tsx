@@ -61,19 +61,20 @@ interface ArenaMission {
   poster_url: string | null;
   status: string;
   prize_usd: number;
-  custom_payouts: Record<string, number> | null;
-  views_milestone: number;
-  views_bonus_cents: number;
+  mission_live: boolean;
+  mission_custom_payouts: Record<string, number> | null;
+  mission_views_milestone: number;
+  mission_views_bonus_cents: number;
   artist_name: string | null;
 }
 
 function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
   const navigate = useNavigate();
-  const payouts = drop.custom_payouts || { S: 500, A: 300, B: 100 };
-  const sRate = ((payouts.S || 500) / 100);
-  const aRate = ((payouts.A || 300) / 100);
-  const bRate = ((payouts.B || 100) / 100);
-  const hasViewsBonus = drop.views_milestone > 0 && drop.views_bonus_cents > 0;
+  const payouts = drop.mission_custom_payouts || { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
+  const sRate = ((payouts.S || 0) / 100);
+  const aRate = ((payouts.A || 0) / 100);
+  const bRate = ((payouts.B || 0) / 100);
+  const hasViewsBonus = drop.mission_views_milestone > 0 && drop.mission_views_bonus_cents > 0;
 
   return (
     <motion.button
@@ -109,7 +110,7 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
         {hasViewsBonus && (
           <div className="flex items-center gap-1 mb-1.5 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 w-fit">
             <Eye className="w-2.5 h-2.5 text-amber-400" />
-            <span className="text-[7px] font-black text-amber-400 uppercase">{(drop.views_milestone / 1000).toFixed(0)}K = +${(drop.views_bonus_cents / 100).toFixed(0)}</span>
+            <span className="text-[7px] font-black text-amber-400 uppercase">{(drop.mission_views_milestone / 1000).toFixed(0)}K = +${(drop.mission_views_bonus_cents / 100).toFixed(0)}</span>
           </div>
         )}
 
@@ -148,28 +149,33 @@ function ArenaMissionsCarousel() {
     const fetch = async () => {
       const { data } = await supabase
         .from('featured_drops')
-        .select('id, song_name, poster_url, status, prize_usd, custom_payouts, views_milestone, views_bonus_cents, artist_id')
-        .in('status', ['active', 'open', 'live'])
+        .select('id, song_name, poster_url, status, prize_usd, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, artist_id')
+        .eq('mission_live', true)
         .order('created_at', { ascending: false });
 
-      if (!data || data.length === 0) return;
+      const rows = (data || []) as any[];
+      if (rows.length === 0) {
+        setDrops([]);
+        return;
+      }
 
-      const artistIds = [...new Set(data.map(d => d.artist_id).filter(Boolean))];
+      const artistIds = [...new Set(rows.map(d => d.artist_id).filter(Boolean))];
       let artistMap: Record<string, string> = {};
       if (artistIds.length > 0) {
         const { data: artists } = await supabase.from('featured_artists').select('id, name').in('id', artistIds);
         if (artists) artists.forEach(a => { artistMap[a.id] = a.name; });
       }
 
-      setDrops(data.map(d => ({
+      setDrops(rows.map((d: any) => ({
         id: d.id,
         song_name: d.song_name,
         poster_url: d.poster_url,
         status: d.status || 'live',
         prize_usd: d.prize_usd || 0,
-        custom_payouts: d.custom_payouts as Record<string, number> | null,
-        views_milestone: (d as any).views_milestone || 0,
-        views_bonus_cents: (d as any).views_bonus_cents || 0,
+        mission_live: d.mission_live ?? false,
+        mission_custom_payouts: d.mission_custom_payouts as Record<string, number> | null,
+        mission_views_milestone: d.mission_views_milestone || 0,
+        mission_views_bonus_cents: d.mission_views_bonus_cents || 0,
         artist_name: d.artist_id ? artistMap[d.artist_id] || null : null,
       })));
     };

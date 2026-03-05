@@ -41,6 +41,10 @@ export interface FeaturedDrop {
   random_pick_id: string | null;
   random_pick_username: string | null;
   prize_usd: number;
+  mission_live?: boolean;
+  mission_custom_payouts?: Record<string, number> | null;
+  mission_views_milestone?: number;
+  mission_views_bonus_cents?: number;
   created_at: string;
   slug: string | null;
   // Joined
