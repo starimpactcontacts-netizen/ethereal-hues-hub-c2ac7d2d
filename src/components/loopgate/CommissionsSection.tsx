@@ -62,7 +62,7 @@ function BalanceTicker() {
 
 /* ── Mission Card (GTA-style drop card) ── */
 function MissionCard({ drop }: { drop: ArenaDrop }) {
-  const payouts = drop.mission_custom_payouts || { S: 0, A: 0, B: 0, C: 0, D: 0, F: 0 };
+  const payouts = drop.mission_custom_payouts || {};
   const sRate = ((payouts.S || 0) / 100);
   const aRate = ((payouts.A || 0) / 100);
   const bRate = ((payouts.B || 0) / 100);
@@ -72,76 +72,77 @@ function MissionCard({ drop }: { drop: ArenaDrop }) {
     <Link to={`/mission/${drop.id}`} className="shrink-0">
       <motion.div
         whileTap={{ scale: 0.96 }}
-        className="relative w-[240px] h-[330px] overflow-hidden group cursor-pointer border-2 border-foreground/[0.08] hover:border-red-500/40 active:border-red-500/60 transition-all"
-        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%)' }}
+        className="relative w-[280px] h-[400px] overflow-hidden group cursor-pointer"
       >
-        {/* Cover */}
+        {/* Full bleed cover */}
         {drop.poster_url ? (
-          <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700" />
+          <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover scale-[1.02] group-hover:scale-[1.08] transition-transform duration-1000 ease-out" />
         ) : (
           <div className="absolute inset-0 bg-surface-2" />
         )}
 
-        {/* Hard overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/20" />
-        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 3px)' }} />
+        {/* Cinematic overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-[65%] bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.06) 3px, rgba(255,255,255,0.06) 4px)' }} />
+        
+        {/* Hard border */}
+        <div className="absolute inset-0 border-2 border-foreground/[0.06] group-hover:border-red-500/40 transition-colors" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-red-500/60 via-red-500 to-red-500/60 opacity-0 group-hover:opacity-100 transition-opacity" />
+        
+        {/* Corner cut */}
+        <div className="absolute bottom-0 right-0 w-7 h-7 bg-background" style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }} />
 
-        {/* Instant payout corner ribbon */}
-        {(drop as any).instant_payout && (
-          <div className="absolute top-0 right-0 z-10">
-            <div className="bg-red-600 text-white text-[7px] font-black uppercase tracking-wider px-3 py-1 origin-center" 
-              style={{ clipPath: 'polygon(12px 0, 100% 0, 100% 100%, 0 100%)' }}>
-              24H PAY
-            </div>
+        {/* 24H PAY ribbon */}
+        {drop.instant_payout && (
+          <div className="absolute top-3 right-0 z-10 bg-red-600 text-white text-[7px] font-black uppercase tracking-wider pl-3 pr-2 py-1">
+            24H PAY
           </div>
         )}
 
-        {/* Top: big money number */}
-        <div className="absolute top-3 left-3 z-10">
+        {/* Top left — LIVE + Max payout */}
+        <div className="absolute top-0 left-0 z-10 p-3 flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 bg-black/80 backdrop-blur-sm px-2 py-1 border-l-2 border-emerald-500 w-fit">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/60" />
+            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.25em]">Live Mission</span>
+          </div>
           {maxPay > 0 && (
-            <div className="flex items-baseline gap-0.5">
-              <span className="font-display text-3xl text-emerald-400 leading-none drop-shadow-lg">${maxPay}</span>
-              <span className="text-[8px] font-black text-emerald-400/50 uppercase">max</span>
+            <div className="bg-black/70 backdrop-blur-sm px-2 py-1 w-fit">
+              <span className="font-display text-4xl text-emerald-400 leading-none drop-shadow-[0_0_12px_rgba(16,185,129,0.4)]">${maxPay}</span>
             </div>
           )}
         </div>
 
         {/* Bottom content */}
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          {/* Live pulse */}
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/50" />
-            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.2em]">Live Now</span>
-          </div>
-
+        <div className="absolute bottom-0 left-0 right-0 p-3 pb-4">
           {drop.artist_name && (
-            <p className="text-[9px] font-black text-foreground/50 uppercase tracking-[0.15em] mb-0.5">{drop.artist_name}</p>
+            <p className="text-[9px] font-black text-foreground/50 uppercase tracking-[0.2em] mb-0.5">{drop.artist_name}</p>
           )}
-          <h4 className="font-display text-xl text-foreground leading-none tracking-wide truncate mb-3">{drop.song_name}</h4>
+          <h4 className="font-display text-2xl text-foreground leading-none tracking-wider truncate mb-3">{drop.song_name}</h4>
 
-          {/* Payout tiers */}
-          <div className="flex items-stretch gap-0 h-[30px] mb-3">
-            <div className="flex-1 bg-amber-500/25 border-2 border-amber-500/50 border-r-0 flex flex-col items-center justify-center">
-              <span className="text-[10px] font-black text-amber-400 leading-none">S</span>
-              <span className="text-[8px] font-black text-white leading-none mt-0.5">${sRate}</span>
-            </div>
-            <div className="flex-1 bg-emerald-500/15 border-2 border-emerald-500/30 border-x-0 flex flex-col items-center justify-center">
-              <span className="text-[10px] font-black text-emerald-400 leading-none">A</span>
-              <span className="text-[8px] font-black text-white leading-none mt-0.5">${aRate}</span>
-            </div>
-            <div className="flex-1 bg-blue-500/15 border-2 border-blue-500/30 border-x-0 flex flex-col items-center justify-center">
-              <span className="text-[10px] font-black text-blue-400 leading-none">B</span>
-              <span className="text-[8px] font-black text-white leading-none mt-0.5">${bRate}</span>
-            </div>
-            <div className="flex-1 bg-foreground/[0.04] border-2 border-foreground/[0.08] border-l-0 flex items-center justify-center">
-              <span className="text-[7px] font-black text-foreground/20">C-F</span>
-            </div>
+          {/* Rating tiers with QOI */}
+          <div className="flex items-stretch gap-[1px] mb-3 bg-black/40 backdrop-blur-sm">
+            {[
+              { rank: 'S', color: 'text-amber-400 bg-amber-500/25 border-amber-500/50', pay: sRate, qoi: '90+' },
+              { rank: 'A', color: 'text-emerald-400 bg-emerald-500/20 border-emerald-500/40', pay: aRate, qoi: '75+' },
+              { rank: 'B', color: 'text-blue-400 bg-blue-500/20 border-blue-500/40', pay: bRate, qoi: '60+' },
+              { rank: 'C-F', color: 'text-foreground/25 bg-foreground/[0.04] border-foreground/10', pay: 0, qoi: '<60' },
+            ].map(tier => (
+              <div key={tier.rank} className={`flex-1 border ${tier.color} py-2 flex flex-col items-center gap-0.5`}>
+                <span className="text-[11px] font-black leading-none">{tier.rank}</span>
+                <span className={`text-[8px] font-black leading-none ${tier.pay > 0 ? 'text-white' : 'text-foreground/15'}`}>
+                  {tier.pay > 0 ? `$${tier.pay}` : 'IDX'}
+                </span>
+                <span className="text-[6px] font-bold text-foreground/20 uppercase">QOI {tier.qoi}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Big CTA */}
-          <div className="bg-red-600 hover:bg-red-500 group-hover:bg-red-500 transition-colors flex items-center justify-center gap-2 py-2.5 group-active:bg-red-400">
-            <span className="font-display text-base text-white tracking-[0.3em] uppercase">Enter</span>
-            <ChevronRight className="w-4 h-4 text-white" />
+          {/* CTA */}
+          <div className="bg-red-600 group-hover:bg-red-500 active:bg-red-400 transition-colors flex items-center justify-center gap-2 py-2.5 -mx-3 -mb-4"
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, calc(100% - 28px) 100%, 0 100%)' }}>
+            <Crosshair className="w-4 h-4 text-white/80" />
+            <span className="font-display text-lg text-white tracking-[0.4em] uppercase">Enter Mission</span>
           </div>
         </div>
       </motion.div>
