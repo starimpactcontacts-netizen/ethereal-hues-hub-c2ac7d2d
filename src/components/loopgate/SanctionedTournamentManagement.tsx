@@ -536,7 +536,7 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
 
   const pendingTournaments = tournaments.filter(t => t.status === "pending");
   const approvedTournaments = tournaments.filter(t => ["approved", "ready_up", "live", "bracket"].includes(t.status));
-  const completedTournaments = tournaments.filter(t => ["completed", "rejected", "cancelled"].includes(t.status));
+  const completedTournaments = tournaments.filter(t => ["completed", "rejected", "cancelled", "closed"].includes(t.status));
 
   const statusColors: Record<string, string> = {
     pending: "bg-amber-500",
@@ -547,6 +547,7 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
     bracket: "bg-sky-500",
     completed: "bg-purple-500",
     cancelled: "bg-muted-foreground",
+    closed: "bg-muted-foreground",
   };
 
   if (approvalMode && selectedTournament) {
@@ -1082,8 +1083,25 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                   </div>
                 ) : null}
 
-                {/* Delete Button for Active Tournaments */}
-                <div className="mt-3 pt-3 border-t border-border">
+                {/* Kill / Close Tournament */}
+                <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={async () => {
+                      if (!confirm(`Kill "${tournament.name}"? This will mark it as closed and grey it out.`)) return;
+                      const { error } = await supabase
+                        .from("sanctioned_tournaments")
+                        .update({ status: "closed" })
+                        .eq("id", tournament.id);
+                      if (error) toast.error(error.message);
+                      else { toast.success("Tournament closed"); fetchTournaments(); }
+                    }}
+                    className="text-muted-foreground hover:text-foreground hover:bg-muted/50 text-xs"
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Kill (Close)
+                  </Button>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -1091,7 +1109,7 @@ export default function SanctionedTournamentManagement({ onClose }: SanctionedTo
                     className="text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs"
                   >
                     <Trash2 className="w-3 h-3 mr-1" />
-                    Remove Tournament
+                    Delete
                   </Button>
                 </div>
               </div>

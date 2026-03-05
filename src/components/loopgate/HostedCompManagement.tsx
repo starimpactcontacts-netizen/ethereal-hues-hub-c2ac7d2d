@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Globe, Check, X, Loader2, Calendar, Users, 
-  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus, Crown
+  ChevronDown, ChevronUp, ExternalLink, Trophy, Star, StarOff, Trash2, ImagePlus, Crown, Ban
 } from "lucide-react";
 import { usePendingHostedCompetitions, HostedCompetition, PremiumStep } from "@/hooks/useHostedCompetitions";
 import { useAuth } from "@/hooks/useAuth";
@@ -169,12 +169,14 @@ function LiveCompCard({
   onToggleFeatured,
   onTogglePremium,
   onDelete,
+  onKill,
   onRefresh
 }: { 
   comp: HostedCompetition; 
   onToggleFeatured: () => void;
   onTogglePremium: () => void;
   onDelete: () => void;
+  onKill: () => void;
   onRefresh: () => void;
 }) {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -208,7 +210,7 @@ function LiveCompCard({
 
   return (
     <>
-      <div className="bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between gap-3">
+      <div className={`bg-surface-1 border border-border rounded-lg p-3 flex items-center justify-between gap-3 ${comp.status === 'closed' ? 'opacity-50 grayscale' : ''}`}>
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center overflow-hidden flex-shrink-0">
             {comp.host_avatar_url ? (
@@ -277,6 +279,14 @@ function LiveCompCard({
             ) : (
               <StarOff className="w-4 h-4" />
             )}
+          </button>
+          {/* Kill (Close) */}
+          <button
+            onClick={onKill}
+            className="p-2 rounded-lg bg-surface-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+            title="Kill — mark as closed"
+          >
+            <Ban className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowDeleteConfirm(true)}
@@ -407,6 +417,15 @@ export default function HostedCompManagement() {
                 onToggleFeatured={() => toggleFeatured(comp.id, !!comp.is_featured)}
                 onTogglePremium={() => togglePremium(comp.id, !!comp.is_premium)}
                 onDelete={() => deleteCompetition(comp.id)}
+                onKill={async () => {
+                  if (!confirm(`Kill "${comp.name}"? This will mark it as closed.`)) return;
+                  const { error } = await supabase
+                    .from("hosted_competitions")
+                    .update({ status: "closed" })
+                    .eq("id", comp.id);
+                  if (error) toast.error(error.message);
+                  else { toast.success("Competition closed"); refetch(); }
+                }}
                 onRefresh={refetch}
               />
             ))}
