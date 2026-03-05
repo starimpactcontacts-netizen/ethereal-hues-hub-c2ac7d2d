@@ -5,7 +5,7 @@ import {
   ArrowLeft, Music, ExternalLink, Flame, Trophy, Crown, Star,
   Zap, Send, ChevronRight, Users, Clock, Eye, Share2, Check,
   TrendingUp, ChevronDown, Play, Lock, Video, Award, Link2, Download,
-  ListOrdered
+  ListOrdered, MessageCircle, Info, X, Swords
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import DropSubmissionCard from "@/components/loopgate/DropSubmissionCard";
@@ -39,6 +39,9 @@ export default function FeaturedDropDetailPage() {
   const [showGuide, setShowGuide] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
   const [resolvedId, setResolvedId] = useState<string | null>(null);
+  const [chatCount, setChatCount] = useState(0);
+  const [showInfoDrawer, setShowInfoDrawer] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
   const { submissions, loading: subsLoading } = useDropSubmissions(resolvedId);
   const { rounds, rankings, activeRound, currentRound } = useDropRounds(resolvedId);
   const { queue, queueCount } = useDropQueue(resolvedId);
@@ -63,6 +66,33 @@ export default function FeaturedDropDetailPage() {
       setLoading(false);
     };
     fetch();
+  }, [dropId]);
+
+  // Fetch chat count + realtime
+  useEffect(() => {
+    if (!dropId) return;
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from('featured_drop_messages' as any)
+        .select('*', { count: 'exact', head: true })
+        .eq('drop_id', dropId);
+      setChatCount(count || 0);
+    };
+    fetchCount();
+
+    const channel = supabase
+      .channel(`drop-chat-count-${dropId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'featured_drop_messages',
+        filter: `drop_id=eq.${dropId}`
+      }, () => {
+        setChatCount(c => c + 1);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [dropId]);
 
   useEffect(() => {
@@ -214,6 +244,104 @@ export default function FeaturedDropDetailPage() {
           )}
         </div>
       </div>
+
+      {/* ═══ LOBBY ACTION BAR ═══ */}
+      <div className="px-4 mt-2 flex items-center gap-2">
+        {/* Chat quick-link */}
+        <button
+          onClick={() => chatRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          className="flex-1 flex items-center gap-2.5 px-3 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08] hover:border-red-500/30 hover:bg-red-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
+        >
+          <div className="relative">
+            <MessageCircle className="w-4 h-4 text-red-400" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          </div>
+          <span className="text-sm font-bold text-foreground/70 group-hover:text-foreground uppercase tracking-wider" style={teko}>
+            Live Chat
+          </span>
+          {chatCount > 0 && (
+            <motion.span
+              key={chatCount}
+              initial={{ scale: 1.3 }}
+              animate={{ scale: 1 }}
+              className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[9px] font-black"
+            >
+              {chatCount}
+            </motion.span>
+          )}
+        </button>
+
+        {/* Info button */}
+        <button
+          onClick={() => setShowInfoDrawer(!showInfoDrawer)}
+          className="flex items-center gap-2 px-3 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08] hover:border-emerald-500/30 hover:bg-emerald-500/[0.06] transition-all active:scale-[0.98] touch-manipulation group"
+        >
+          <Info className="w-4 h-4 text-emerald-400" />
+          <span className="text-sm font-bold text-foreground/70 group-hover:text-foreground uppercase tracking-wider" style={teko}>
+            How It Works
+          </span>
+        </button>
+
+        {/* Participant count */}
+        <div className="flex items-center gap-1.5 px-2.5 py-2.5 bg-foreground/[0.04] border border-foreground/[0.08]">
+          <Users className="w-3.5 h-3.5 text-foreground/30" />
+          <span className="text-sm font-bold text-foreground/40 tabular-nums" style={teko}>
+            {allSubs.length + queueCount}
+          </span>
+        </div>
+      </div>
+
+      {/* Info Drawer */}
+      <AnimatePresence>
+        {showInfoDrawer && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden mx-4 mt-1"
+          >
+            <div className="border-2 border-emerald-500/20 bg-emerald-950/20 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Swords className="w-4 h-4 text-emerald-400" />
+                  <span className="text-lg font-bold text-emerald-400 uppercase tracking-wider" style={teko}>Official Event</span>
+                </div>
+                <button onClick={() => setShowInfoDrawer(false)} className="text-foreground/30 hover:text-foreground">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  { icon: '🎧', title: 'Listen', desc: 'Grab the song and vibe with it' },
+                  { icon: '🎬', title: 'Edit', desc: 'Make a fire edit — any app, any style' },
+                  { icon: '📱', title: 'Post', desc: 'Upload to TikTok, IG, or YouTube' },
+                  { icon: '🔗', title: 'Submit', desc: 'Paste the link here to enter' },
+                  { icon: '⚡', title: 'Get Rated', desc: 'A judge scores your edit 0–100 QOI' },
+                  { icon: '🏆', title: 'Win', desc: 'Best edit + random pick split the prize' },
+                ].map((step, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                      <span className="text-xs">{step.icon}</span>
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold text-foreground uppercase tracking-wider" style={teko}>{step.title}</span>
+                      <p className="text-[10px] text-foreground/40 leading-snug">{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-foreground/[0.03] border border-foreground/[0.06] p-2.5 text-center">
+                <p className="text-[10px] text-foreground/30 leading-relaxed">
+                  Rounds fill up fast. Once full, join the <span className="text-gold font-bold">Next Round Queue</span> to secure your spot.
+                  Judges rate edits on <span className="text-red-400 font-bold">Quality · Originality · Impact</span>.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ═══ BODY ═══ */}
       <div className="px-4 space-y-3 mt-3">
@@ -815,7 +943,9 @@ export default function FeaturedDropDetailPage() {
         )}
 
         {/* ═══ LIVE CHAT ═══ */}
-        <DropLobbyChat dropId={dropId!} />
+        <div ref={chatRef}>
+          <DropLobbyChat dropId={dropId!} />
+        </div>
 
         {/* Winners (legacy) */}
         {(drop.top_scorer_username || drop.random_pick_username) && (
