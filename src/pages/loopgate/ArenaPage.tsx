@@ -148,11 +148,16 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
           ))}
         </div>
 
-        {/* CTA */}
-        <div className="bg-red-600 group-hover:bg-red-500 active:bg-red-400 transition-colors flex items-center justify-center gap-2 py-2.5 -mx-3 -mb-4"
-          style={{ clipPath: 'polygon(0 0, 100% 0, 100% 100%, calc(100% - 24px) 100%, 0 100%)' }}>
-          <Crosshair className="w-4 h-4 text-white/80" />
-          <span className="font-display text-lg text-white tracking-[0.4em] uppercase">Enter Mission</span>
+        {/* CTA — Fortnite-style skewed button */}
+        <div className="relative overflow-hidden bg-red-600 group-hover:bg-red-500 active:bg-red-400 transition-colors flex items-center justify-center gap-3 py-4 -mx-3 -mb-4"
+          style={{ clipPath: 'polygon(2% 0, 100% 0, 98% 100%, 0% 100%)' }}>
+          <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
+            <Crosshair className="w-3.5 h-3.5 text-white" />
+          </div>
+          <span className="text-[20px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+            Enter Mission
+          </span>
         </div>
       </div>
     </motion.button>
