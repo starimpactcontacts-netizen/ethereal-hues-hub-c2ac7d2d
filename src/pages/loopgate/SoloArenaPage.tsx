@@ -13,6 +13,7 @@ import { InfinityLoop } from '@/components/loopgate/InfinityLoop';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
 interface FeaturedSong {
@@ -26,6 +27,10 @@ interface FeaturedSong {
   submission_count: number | null;
   mission_live: boolean;
   mission_custom_payouts: Record<string, number> | null;
+  instant_payout: boolean;
+  inspo_url: string | null;
+  inspo_thumbnail_url: string | null;
+  theme_description: string | null;
 }
 
 interface ArenaSubmission {
@@ -159,6 +164,45 @@ function SubmitPanel({ song, userId, onSubmitted }: { song: FeaturedSong; userId
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+      {/* Theme & Inspo Preview */}
+      {(song.theme_description || song.inspo_thumbnail_url || song.inspo_url) && (
+        <div className="bg-purple-500/5 border border-purple-500/20 rounded-lg p-4 space-y-3">
+          <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+            🎨 Theme & Inspo
+          </h4>
+          {song.theme_description && (
+            <p className="text-xs text-foreground/80 leading-relaxed">{song.theme_description}</p>
+          )}
+          {song.inspo_thumbnail_url && (
+            <div className="relative rounded-lg overflow-hidden border border-border">
+              <img src={song.inspo_thumbnail_url} alt="Inspo preview" className="w-full h-40 object-cover" />
+              {song.inspo_url && (
+                <a href={song.inspo_url} target="_blank" rel="noopener noreferrer"
+                  className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 hover:opacity-100 transition-opacity">
+                  <span className="bg-white/20 backdrop-blur-sm px-3 py-2 rounded-lg text-xs font-bold text-white flex items-center gap-1.5">
+                    <ExternalLink className="w-3 h-3" /> Watch Inspo
+                  </span>
+                </a>
+              )}
+            </div>
+          )}
+          {song.inspo_url && !song.inspo_thumbnail_url && (
+            <a href={song.inspo_url} target="_blank" rel="noopener noreferrer"
+              className="text-xs text-purple-400 hover:underline flex items-center gap-1">
+              <ExternalLink className="w-3 h-3" /> Watch Inspo Video
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Instant payout badge */}
+      {song.instant_payout && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 flex items-center gap-2">
+          <span className="text-[9px] font-black bg-red-500 text-white px-1.5 py-0.5 rounded uppercase">⚡ INSTANT</span>
+          <span className="text-[10px] text-red-400">Paid within 24-48h</span>
+        </div>
+      )}
+
       <div className="bg-surface-1/80 border border-amber-500/15 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-3">
           <Music className="w-4 h-4 text-amber-400" />
@@ -259,6 +303,7 @@ function RatingModal({ submission, payoutMap, onClose, onRated }: { submission: 
 
   const handleRate = async () => {
     if (!selectedRating) { toast.error('Pick a rating'); return; }
+    if (!feedback.trim()) { toast.error('Feedback is mandatory — editors need to know why'); return; }
     setSubmitting(true);
 
     const earnedCents = getPayout(selectedRating);
@@ -329,9 +374,13 @@ function RatingModal({ submission, payoutMap, onClose, onRated }: { submission: 
           </p>
         )}
 
-        <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Quick feedback..." className="min-h-[60px] resize-none" />
+        <div>
+          <Label className="text-xs font-bold text-red-400">Feedback (REQUIRED)</Label>
+          <p className="text-[9px] text-muted-foreground mb-1">Tell them why — what to improve or what they nailed</p>
+          <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} placeholder="Great transitions but pacing needs work..." className="min-h-[80px] resize-none" />
+        </div>
 
-        <Button onClick={handleRate} disabled={submitting || !selectedRating}
+        <Button onClick={handleRate} disabled={submitting || !selectedRating || !feedback.trim()}
           className="w-full bg-amber-500 hover:bg-amber-400 text-background font-bold text-base py-5">
           {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <>
             <Star className="w-4 h-4 mr-2" /> Confirm {selectedRating || '...'} Rating
@@ -355,7 +404,7 @@ export default function SoloArenaPage() {
   const fetchSongs = useCallback(async () => {
     const query = supabase
       .from('featured_drops')
-      .select('id, title, song_name, poster_url, status, submission_count, artist_id, mission_live, mission_custom_payouts, featured_artists(name, avatar_url)')
+      .select('id, title, song_name, poster_url, status, submission_count, artist_id, mission_live, mission_custom_payouts, instant_payout, inspo_url, inspo_thumbnail_url, theme_description, featured_artists(name, avatar_url)')
       .order('created_at', { ascending: false });
 
     // Non-staff only see missions explicitly pushed live from admin
@@ -377,6 +426,10 @@ export default function SoloArenaPage() {
         submission_count: d.submission_count,
         mission_live: d.mission_live ?? false,
         mission_custom_payouts: d.mission_custom_payouts as Record<string, number> | null,
+        instant_payout: d.instant_payout ?? false,
+        inspo_url: d.inspo_url || null,
+        inspo_thumbnail_url: d.inspo_thumbnail_url || null,
+        theme_description: d.theme_description || null,
       })));
     }
     setLoading(false);

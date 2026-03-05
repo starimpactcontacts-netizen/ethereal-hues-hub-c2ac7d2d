@@ -66,6 +66,7 @@ interface ArenaMission {
   mission_views_milestone: number;
   mission_views_bonus_cents: number;
   artist_name: string | null;
+  instant_payout: boolean;
 }
 
 function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
@@ -98,11 +99,18 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
           <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-[7px] font-black text-emerald-400 uppercase tracking-[0.15em]">Live</span>
         </div>
-        {drop.prize_usd > 0 && (
-          <div className="bg-emerald-500/20 backdrop-blur-sm px-1.5 py-0.5 border border-emerald-500/30">
-            <span className="text-[8px] font-black text-emerald-400">${drop.prize_usd}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-1">
+          {drop.instant_payout && (
+            <div className="bg-red-500/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm">
+              <span className="text-[7px] font-black text-white uppercase">⚡ INSTANT</span>
+            </div>
+          )}
+          {drop.prize_usd > 0 && (
+            <div className="bg-emerald-500/20 backdrop-blur-sm px-1.5 py-0.5 border border-emerald-500/30">
+              <span className="text-[8px] font-black text-emerald-400">${drop.prize_usd}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Bottom */}
@@ -149,7 +157,7 @@ function ArenaMissionsCarousel() {
     const fetch = async () => {
       const { data } = await supabase
         .from('featured_drops')
-        .select('id, song_name, poster_url, status, prize_usd, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, artist_id')
+        .select('id, song_name, poster_url, status, prize_usd, mission_live, mission_custom_payouts, mission_views_milestone, mission_views_bonus_cents, instant_payout, artist_id')
         .eq('mission_live', true)
         .order('created_at', { ascending: false });
 
@@ -177,6 +185,7 @@ function ArenaMissionsCarousel() {
         mission_views_milestone: d.mission_views_milestone || 0,
         mission_views_bonus_cents: d.mission_views_bonus_cents || 0,
         artist_name: d.artist_id ? artistMap[d.artist_id] || null : null,
+        instant_payout: d.instant_payout ?? false,
       })));
     };
     fetch();

@@ -2582,6 +2582,9 @@ export type Database = {
           ends_at: string | null
           id: string
           index_reward: number | null
+          inspo_thumbnail_url: string | null
+          inspo_url: string | null
+          instant_payout: boolean
           is_promoted: boolean
           mission_custom_payouts: Json | null
           mission_live: boolean
@@ -2599,6 +2602,7 @@ export type Database = {
           starts_at: string | null
           status: string | null
           submission_count: number | null
+          theme_description: string | null
           title: string
           top_score: number | null
           top_scorer_id: string | null
@@ -2617,6 +2621,9 @@ export type Database = {
           ends_at?: string | null
           id?: string
           index_reward?: number | null
+          inspo_thumbnail_url?: string | null
+          inspo_url?: string | null
+          instant_payout?: boolean
           is_promoted?: boolean
           mission_custom_payouts?: Json | null
           mission_live?: boolean
@@ -2634,6 +2641,7 @@ export type Database = {
           starts_at?: string | null
           status?: string | null
           submission_count?: number | null
+          theme_description?: string | null
           title: string
           top_score?: number | null
           top_scorer_id?: string | null
@@ -2652,6 +2660,9 @@ export type Database = {
           ends_at?: string | null
           id?: string
           index_reward?: number | null
+          inspo_thumbnail_url?: string | null
+          inspo_url?: string | null
+          instant_payout?: boolean
           is_promoted?: boolean
           mission_custom_payouts?: Json | null
           mission_live?: boolean
@@ -2669,6 +2680,7 @@ export type Database = {
           starts_at?: string | null
           status?: string | null
           submission_count?: number | null
+          theme_description?: string | null
           title?: string
           top_score?: number | null
           top_scorer_id?: string | null
