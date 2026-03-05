@@ -23,6 +23,7 @@ import BattleAdminPanel from "@/components/loopgate/BattleAdminPanel";
 import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
 import RadioAdmin from "@/components/loopgate/RadioAdmin";
+import MissionAdmin from "@/components/loopgate/MissionAdmin";
 
 interface RealEvent {
   id: string;
@@ -2381,6 +2382,11 @@ export default function OpsPanel() {
 
         {/* 1v1 Battle Admin */}
         <BattleAdminPanel />
+
+        {/* ═══ MISSION ADMIN ═══ */}
+        <div className="mb-6 p-4 bg-surface-0 border border-emerald-500/20 rounded-lg">
+          <MissionAdmin />
+        </div>
 
         {/* Featured Artists & Drops Admin */}
         <FeaturedArtistAdmin />

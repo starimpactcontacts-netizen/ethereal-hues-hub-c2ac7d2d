@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Send, Trophy, Loader2, X,
+  Send, Trophy, Loader2, X, DollarSign,
   Swords, Flame, Music, Target, Users, Zap,
   ChevronRight, Inbox, ArrowRight, LogIn
 } from "lucide-react";
@@ -111,8 +111,8 @@ export default function StudioSubmitHub() {
     // 3. Active Featured Drops
     const { data: drops } = await supabase
       .from("featured_drops")
-      .select("id, title, song_name, status, ends_at")
-      .in("status", ["active", "submissions_open"])
+      .select("id, title, song_name, status, ends_at, mission_live")
+      .or("status.in.(active,submissions_open),mission_live.eq.true")
       .order("created_at", { ascending: false })
       .limit(10);
     if (drops) {
@@ -121,10 +121,10 @@ export default function StudioSubmitHub() {
         .from("featured_submissions").select("drop_id")
         .eq("user_id", user.id).in("drop_id", dropIds);
       const submittedDropIds = new Set((existingSubs || []).map(s => (s as any).drop_id));
-      for (const d of drops) {
+      for (const d of drops as any[]) {
         allItems.push({
-          id: d.id, type: "drop", label: d.title,
-          subLabel: d.song_name, icon: Music, color: "#8B5CF6",
+          id: d.id, type: "drop", label: d.mission_live ? `💰 ${d.title}` : d.title,
+          subLabel: d.song_name, icon: d.mission_live ? DollarSign : Music, color: d.mission_live ? "#10B981" : "#8B5CF6",
           deadline: d.ends_at || undefined, alreadySubmitted: submittedDropIds.has(d.id),
         });
       }
