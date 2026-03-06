@@ -2791,6 +2791,7 @@ export type Database = {
           id: string
           impact_score: number | null
           index_awarded: number | null
+          is_editorium_indexed: boolean
           judge_id: string | null
           judge_username: string | null
           judged_at: string | null
@@ -2823,6 +2824,7 @@ export type Database = {
           id?: string
           impact_score?: number | null
           index_awarded?: number | null
+          is_editorium_indexed?: boolean
           judge_id?: string | null
           judge_username?: string | null
           judged_at?: string | null
@@ -2855,6 +2857,7 @@ export type Database = {
           id?: string
           impact_score?: number | null
           index_awarded?: number | null
+          is_editorium_indexed?: boolean
           judge_id?: string | null
           judge_username?: string | null
           judged_at?: string | null
