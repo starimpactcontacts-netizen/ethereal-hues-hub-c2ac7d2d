@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Sparkles, ChevronDown, Palette, X, Image,
   Heart, Lightbulb, Music, Fingerprint, Zap, RotateCcw,
-  Smartphone, Monitor, Square
+  Smartphone, Monitor, Square, Scan, ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { getPillarVerdict } from '@/data/pillarVerdicts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
