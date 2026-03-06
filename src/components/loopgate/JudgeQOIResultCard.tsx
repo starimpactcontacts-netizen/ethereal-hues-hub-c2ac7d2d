@@ -342,10 +342,19 @@ export default function JudgeQOIResultCard() {
                   {PILLARS.map((pillar) => {
                     const score = scores[pillar.id as keyof typeof scores];
                     const pct = (score / pillar.max) * 100;
+                    const verdict = getPillarVerdict(pillar.id, score, pillar.max);
                     return (
                       <div key={pillar.id}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                          <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.85 }}>{pillar.label}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, opacity: 0.85 }}>{pillar.label}</span>
+                            <span style={{ 
+                              fontSize: 8, fontWeight: 800, letterSpacing: '0.1em', 
+                              padding: '1px 5px',
+                              background: verdict.tag === 'ELITE' ? `${pillar.color}25` : verdict.tag === 'CRITICAL' ? '#ef444425' : 'transparent',
+                              color: verdict.tag === 'ELITE' ? pillar.color : verdict.tag === 'CRITICAL' ? '#ef4444' : `${bg.text}60`,
+                            }}>{verdict.tag}</span>
+                          </div>
                           <span style={{ fontSize: 14, fontWeight: 800, color: pillar.color }}>
                             {score}<span style={{ opacity: 0.35, fontSize: 10, fontWeight: 500 }}>/{pillar.max}</span>
                           </span>
@@ -385,6 +394,69 @@ export default function JudgeQOIResultCard() {
 
               {/* Bottom accent line */}
               <div style={{ height: 3, background: bg.accent, flexShrink: 0 }} />
+            </div>
+          </div>
+
+          {/* ═══ PILLAR ANALYSIS (below card, not in screenshot) ═══ */}
+          <div className="px-1 pt-2">
+            <div className="flex items-center gap-3 pb-3">
+              <Scan className="w-4 h-4 text-muted-foreground" />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-semibold">PILLAR ANALYSIS</p>
+              <div className="h-px flex-1 bg-border/50" />
+            </div>
+            <div className="space-y-2">
+              {PILLARS.map((pillar, i) => {
+                const Icon = pillar.icon;
+                const score = scores[pillar.id as keyof typeof scores];
+                const pct = (score / pillar.max) * 100;
+                const verdict = getPillarVerdict(pillar.id, score, pillar.max);
+                return (
+                  <motion.div
+                    key={pillar.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.06 * i }}
+                    className="relative overflow-hidden bg-surface-1/80 border border-border/40 p-3"
+                  >
+                    <div className="absolute inset-0 opacity-[0.04]" style={{ background: `linear-gradient(90deg, ${pillar.color} ${pct}%, transparent ${pct}%)` }} />
+                    <div className="relative">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 flex items-center justify-center" style={{ background: `${pillar.color}15`, border: `1px solid ${pillar.color}30` }}>
+                            <Icon className="w-3 h-3" style={{ color: pillar.color }} />
+                          </div>
+                          <div>
+                            <p className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-medium leading-none">{verdict.label}</p>
+                            <span className={`text-[8px] font-bold uppercase tracking-wider ${verdict.tagColor}`}>{verdict.tag}</span>
+                          </div>
+                        </div>
+                        <p className="text-base font-bold tabular-nums" style={{ color: pillar.color }}>
+                          {score}<span className="text-[10px] text-muted-foreground font-normal">/{pillar.max}</span>
+                        </p>
+                      </div>
+                      <div className="h-0.5 bg-border/30 overflow-hidden mb-2">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ delay: 0.1 * i, duration: 0.5 }} className="h-full" style={{ background: pillar.color }} />
+                      </div>
+                      <div className="flex items-start gap-1">
+                        <ChevronRight className="w-2.5 h-2.5 text-muted-foreground/40 mt-0.5 shrink-0" />
+                        <p className="text-[10px] text-foreground/60 leading-relaxed italic">{verdict.description}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+            <div className="mt-2 p-2.5 border border-border/30 bg-surface-0 text-center">
+              <p className="text-[8px] text-muted-foreground uppercase tracking-[0.2em] mb-0.5">COMPOSITE ASSESSMENT</p>
+              <p className="text-[10px] text-foreground/50">
+                {totalScore >= 80
+                  ? 'Elite-tier output across multiple dimensions. Exceptional craft.'
+                  : totalScore >= 60
+                  ? 'Solid foundation with room for refinement. Focus on weakest pillars.'
+                  : totalScore >= 40
+                  ? 'Developing skills with clear gaps. Targeted practice will accelerate growth.'
+                  : 'Significant improvement needed. Study fundamentals first.'}
+              </p>
             </div>
           </div>
 
