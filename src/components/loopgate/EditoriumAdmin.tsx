@@ -326,6 +326,51 @@ export default function EditoriumAdmin() {
     dailyCover: articles.find(a => a.is_daily_cover),
   };
 
+  // ═══ INDEXED EDITS STATE ═══
+  const [indexedEdits, setIndexedEdits] = useState<any[]>([]);
+  const [editSearchQuery, setEditSearchQuery] = useState('');
+  const [editSearchResults, setEditSearchResults] = useState<any[]>([]);
+  const [searchingEdits, setSearchingEdits] = useState(false);
+  const [showEditIndexer, setShowEditIndexer] = useState(false);
+
+  useEffect(() => {
+    if (showEditIndexer) fetchIndexedEdits();
+  }, [showEditIndexer]);
+
+  async function fetchIndexedEdits() {
+    const { data } = await supabase
+      .from('featured_submissions')
+      .select('*')
+      .eq('is_editorium_indexed', true)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (data) setIndexedEdits(data);
+  }
+
+  async function searchEditsForIndex() {
+    if (!editSearchQuery.trim()) return;
+    setSearchingEdits(true);
+    const { data } = await supabase
+      .from('featured_submissions')
+      .select('*')
+      .or(`username.ilike.%${editSearchQuery}%,submission_url.ilike.%${editSearchQuery}%`)
+      .not('rating', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    setEditSearchResults(data || []);
+    setSearchingEdits(false);
+  }
+
+  async function toggleEditIndex(edit: any) {
+    const newVal = !edit.is_editorium_indexed;
+    await supabase.from('featured_submissions').update({ is_editorium_indexed: newVal }).eq('id', edit.id);
+    toast.success(newVal ? 'Edit indexed on Editorium' : 'Edit removed from Editorium');
+    fetchIndexedEdits();
+    if (editSearchResults.length > 0) {
+      setEditSearchResults(prev => prev.map(e => e.id === edit.id ? { ...e, is_editorium_indexed: newVal } : e));
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* ═══ HEADER ═══ */}
