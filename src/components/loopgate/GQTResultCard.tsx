@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, Quote, Share2, Crown, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap, Users } from 'lucide-react';
+import { Star, Quote, Share2, Crown, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap, Users, Scan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getRankFromScore, getPercentile, getClassFromScore, scoringPillars, GQTRank, getIndexFloorFromRank, gqtClasses } from '@/data/gqtConfig';
 import GQTShareCard from './GQTShareCard';
+import PillarBreakdownCards from './PillarBreakdownCards';
 
 interface GQTResultCardProps {
   submission: {
