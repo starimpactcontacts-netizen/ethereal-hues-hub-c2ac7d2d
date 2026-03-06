@@ -363,7 +363,7 @@ export default function EditoriumAdmin() {
 
   async function toggleEditIndex(edit: any) {
     const newVal = !edit.is_editorium_indexed;
-    await supabase.from('featured_submissions').update({ is_editorium_indexed: newVal }).eq('id', edit.id);
+    await supabase.from('featured_submissions').update({ is_editorium_indexed: newVal } as any).eq('id', edit.id);
     toast.success(newVal ? 'Edit indexed on Editorium' : 'Edit removed from Editorium');
     fetchIndexedEdits();
     if (editSearchResults.length > 0) {
