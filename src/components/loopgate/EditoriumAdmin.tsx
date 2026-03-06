@@ -338,10 +338,10 @@ export default function EditoriumAdmin() {
   }, [showEditIndexer]);
 
   async function fetchIndexedEdits() {
-    const { data } = await supabase
+    const { data } = await (supabase
       .from('featured_submissions')
-      .select('*')
-      .eq('is_editorium_indexed' as any, true)
+      .select('*') as any)
+      .eq('is_editorium_indexed', true)
       .order('created_at', { ascending: false })
       .limit(20);
     if (data) setIndexedEdits(data);
