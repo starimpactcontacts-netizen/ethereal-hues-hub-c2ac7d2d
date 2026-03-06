@@ -1,0 +1,1 @@
+ALTER TABLE public.featured_submissions ADD COLUMN IF NOT EXISTS is_editorium_indexed boolean NOT NULL DEFAULT false;

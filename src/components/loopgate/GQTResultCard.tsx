@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, Quote, Share2, Crown, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap, Users } from 'lucide-react';
+import { Star, Quote, Share2, Crown, Trophy, TrendingUp, Music, Lightbulb, Settings, Heart, Fingerprint, Shield, Flame, Zap, Users, Scan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { getRankFromScore, getPercentile, getClassFromScore, scoringPillars, GQTRank, getIndexFloorFromRank, gqtClasses } from '@/data/gqtConfig';
 import GQTShareCard from './GQTShareCard';
+import PillarBreakdownCards from './PillarBreakdownCards';
 
 interface GQTResultCardProps {
   submission: {
@@ -276,44 +277,17 @@ Take the Global QOI Test at loopgate.io/gqt`;
         )}
       </div>
       
-      {/* 5-Pillar Breakdown */}
+      {/* 5-Pillar Detailed Analysis — PSL-style breakdown */}
       <div className="p-5 border-b border-border/50">
-        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-4">SCORE BREAKDOWN</p>
-        <div className="space-y-3">
-          {pillarsWithScores.map((pillar, i) => {
-            const Icon = pillarIcons[pillar.icon] || Star;
-            const score = pillar.score;
-            const pct = score !== null ? (score / pillar.maxPoints) * 100 : 0;
-            
-            return (
-              <motion.div 
-                key={pillar.key}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 * i }}
-                className="flex items-center gap-3"
-              >
-                <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-muted-foreground">{pillar.label}</span>
-                    <span className={`text-sm font-display ${getScoreColor(score ?? null, pillar.maxPoints)}`}>
-                      {score?.toFixed(0) ?? '--'} / {pillar.maxPoints}
-                    </span>
-                  </div>
-                  <div className="h-1.5 bg-surface-1 overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ delay: 0.2 + 0.1 * i, duration: 0.5 }}
-                      className={`h-full ${score !== null && pct >= 70 ? 'bg-gold' : 'bg-muted-foreground/50'}`}
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        <PillarBreakdownCards
+          pillars={pillarsWithScores.map(p => ({
+            key: p.key,
+            label: p.label,
+            score: p.score ?? 0,
+            max: p.maxPoints,
+          }))}
+          totalScore={totalScore}
+        />
       </div>
       
       {/* Projected Class */}
