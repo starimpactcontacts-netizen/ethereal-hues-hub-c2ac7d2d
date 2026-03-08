@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, CheckCircle2, Pencil, Clock, XCircle, DollarSign, ChevronRight, Shield, HelpCircle, Settings, FileText, Mail } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useEditorEarnings } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
