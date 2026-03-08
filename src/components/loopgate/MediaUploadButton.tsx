@@ -23,7 +23,7 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
     if (!file || !user) return;
 
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      alert(`File must be under ${MAX_SIZE_MB}MB`);
+      toast.error(`File must be under ${MAX_SIZE_MB}MB`);
       return;
     }
 
