@@ -490,19 +490,18 @@ export default function HubPage() {
                   </button>
 
                   {/* Earnings + Index — top right */}
-                  <div className="flex flex-col gap-1 shrink-0 items-end">
-                    <button onClick={() => setWalletOpen(true)} className="flex items-center gap-1.5 group">
-                      <span className="font-display text-lg tabular-nums font-bold text-emerald-400 leading-none">
-                        ${(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button onClick={() => setWalletOpen(true)} className="flex items-center gap-0.5 group">
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="font-display text-base tabular-nums font-bold text-emerald-400 leading-none">
+                        {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
                       </span>
-                      <ChevronRight className="w-3 h-3 text-emerald-400/30 group-hover:text-emerald-400 transition-colors" />
                     </button>
-                    <Link to="/index" className="flex items-center gap-1.5 group">
-                      <IndexEarnBadge size="sm" />
-                      <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
+                    <Link to="/index" className="flex items-center gap-0.5">
+                      <Coins className="w-3.5 h-3.5 text-gold" />
+                      <span className="font-display text-base tabular-nums font-bold text-foreground/80 leading-none">
                         {profile?.global_index_score || 0}
                       </span>
-                      <span className="text-[8px] text-gold/50 font-bold tracking-wider">IDX</span>
                     </Link>
                   </div>
                 </div>
