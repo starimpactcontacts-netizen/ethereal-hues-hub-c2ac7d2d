@@ -483,6 +483,7 @@ export function useLiveActivity(limit = 8) {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gatekeeper_submissions' }, () => fetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'connections' }, () => fetch())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sanctioned_tournament_participants' }, () => fetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => fetch())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
