@@ -777,7 +777,7 @@ export default function HubPage() {
             {/* Dropdown toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative overflow-hidden flex items-center justify-center px-4 py-5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/50">
+                <button className="relative overflow-hidden flex items-center justify-center px-5 py-6 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/50">
                   <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                   <ChevronDown className="w-5 h-5 text-white/70 relative z-10" />
                 </button>
