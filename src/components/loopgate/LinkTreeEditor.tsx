@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
-import { Plus, Trash2, GripVertical, Eye, EyeOff, Link2, Video, Globe, ChevronRight, ExternalLink, Copy, Palette, Sparkles } from "lucide-react";
-import { useEditorLinkPage, type EditorLink } from "@/hooks/useEditorLinkPage";
+import { useNavigate } from "react-router-dom";
+import { motion, Reorder } from "framer-motion";
+import { Plus, Trash2, GripVertical, Eye, EyeOff, Link2, Video, Globe, ChevronRight, Copy } from "lucide-react";
+import { useEditorLinkPage } from "@/hooks/useEditorLinkPage";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import LinkTreePreview from "./LinkTreePreview";
@@ -28,13 +29,31 @@ const CARD_STYLES = [
 ];
 
 export default function LinkTreeEditor() {
-  const { profile } = useAuth();
-  const { settings, links, loading, saveSettings, addLink, updateLink, removeLink, reorderLinks } = useEditorLinkPage(profile?.id);
+  const navigate = useNavigate();
+  const { profile, session } = useAuth();
+  const editorUserId = session?.user?.id;
+  const { settings, links, loading, saveSettings, addLink, updateLink, removeLink, reorderLinks } = useEditorLinkPage(editorUserId);
+
   const [mode, setMode] = useState<'overview' | 'edit' | 'preview' | 'style'>('overview');
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [newType, setNewType] = useState<"link" | "embed">("link");
+
+  if (!editorUserId) {
+    return (
+      <div className="py-8 px-4 border border-border/30 rounded-xl bg-surface-1/20 text-center">
+        <p className="text-sm font-semibold">Sign in required</p>
+        <p className="text-xs text-muted-foreground mt-1">You need to sign in again to add and manage links.</p>
+        <button
+          onClick={() => navigate("/start")}
+          className="mt-3 h-8 px-4 rounded-lg bg-foreground text-background text-xs font-medium"
+        >
+          Sign in
+        </button>
+      </div>
+    );
+  }
 
   if (loading || !settings) {
     return (
@@ -55,32 +74,47 @@ export default function LinkTreeEditor() {
   const accentColor = settings.accent_color || "#d4af37";
 
   const handleAdd = async () => {
-    if (!newTitle.trim() || !newUrl.trim()) { toast.error("Title and URL required"); return; }
+    if (!newTitle.trim() || !newUrl.trim()) {
+      toast.error("Title and URL required");
+      return;
+    }
+
     let url = newUrl.trim();
     if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
-    await addLink({ title: newTitle.trim(), url, link_type: newType, embed_url: newType === "embed" ? url : undefined });
-    setNewTitle(""); setNewUrl(""); setAdding(false);
+
+    await addLink({
+      title: newTitle.trim(),
+      url,
+      link_type: newType,
+      embed_url: newType === "embed" ? url : undefined,
+    });
+
+    setNewTitle("");
+    setNewUrl("");
+    setAdding(false);
     toast.success("Link added!");
   };
 
-  const copyLink = () => { navigator.clipboard.writeText(fullUrl); toast.success("Link copied!"); };
+  const copyLink = () => {
+    navigator.clipboard.writeText(fullUrl);
+    toast.success("Link copied!");
+  };
 
-  // ═══ OVERVIEW ═══
   if (mode === 'overview') {
     return (
       <div className="space-y-3 pb-6">
-        {/* Hero preview card */}
         <div className="relative overflow-hidden rounded-xl border border-border/20">
-          <div className="relative h-48 overflow-hidden" style={{
-            background: settings.bg_type === "gradient" && settings.bg_gradient_from
-              ? `linear-gradient(180deg, ${settings.bg_gradient_from} 0%, ${settings.bg_gradient_to} 100%)`
-              : settings.bg_color || "#0a0a0a",
-          }}>
-            {/* Accent glow */}
+          <div
+            className="relative h-48 overflow-hidden"
+            style={{
+              background: settings.bg_type === "gradient" && settings.bg_gradient_from
+                ? `linear-gradient(180deg, ${settings.bg_gradient_from} 0%, ${settings.bg_gradient_to} 100%)`
+                : settings.bg_color || "#0a0a0a",
+            }}
+          >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full blur-[80px] opacity-15 pointer-events-none" style={{ backgroundColor: accentColor }} />
 
             <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-              {/* Avatar */}
               <div className="relative mb-2">
                 <div className="absolute inset-0 rounded-full blur-md opacity-25" style={{ backgroundColor: accentColor, transform: "scale(1.3)" }} />
                 <div className="relative w-12 h-12 rounded-full overflow-hidden" style={{ border: `2px solid ${accentColor}`, boxShadow: `0 0 16px ${accentColor}22` }}>
@@ -88,7 +122,9 @@ export default function LinkTreeEditor() {
                     <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: `${accentColor}18` }}>
-                      <span className="text-base font-black text-white/70" style={{ fontFamily: "Teko, sans-serif" }}>{(profile?.username || '?').charAt(0).toUpperCase()}</span>
+                      <span className="text-base font-black text-white/70" style={{ fontFamily: "Teko, sans-serif" }}>
+                        {(profile?.username || '?').charAt(0).toUpperCase()}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -97,7 +133,6 @@ export default function LinkTreeEditor() {
               <p className="text-white text-sm font-black uppercase tracking-wide" style={{ fontFamily: "Teko, sans-serif" }}>{displayTitle}</p>
               <p className="text-white/35 text-[9px]">@{profile?.username}</p>
 
-              {/* Mini link pills */}
               <div className="mt-2.5 space-y-1 w-full max-w-[180px]">
                 {links.slice(0, 3).map(l => (
                   <div key={l.id} className="w-full h-6 rounded-lg flex items-center justify-center backdrop-blur-sm" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -112,7 +147,6 @@ export default function LinkTreeEditor() {
                 )}
               </div>
 
-              {/* Branding */}
               <div className="mt-2.5 flex items-center gap-1 opacity-20">
                 <GateIcon size={7} color="#fff" />
                 <span className="text-[6px] text-white tracking-[0.15em] uppercase font-medium">Powered by Loopgate</span>
@@ -120,7 +154,6 @@ export default function LinkTreeEditor() {
             </div>
           </div>
 
-          {/* URL bar */}
           <div className="flex items-center gap-2 px-3 py-2 bg-surface-1/50 border-t border-border/10">
             <Globe className="w-3 h-3 text-muted-foreground shrink-0" />
             <span className="text-[10px] text-muted-foreground flex-1 truncate">{linkUrl}</span>
@@ -130,7 +163,6 @@ export default function LinkTreeEditor() {
           </div>
         </div>
 
-        {/* Publish button */}
         <button
           onClick={async () => {
             await saveSettings({ is_published: !settings.is_published });
@@ -147,7 +179,6 @@ export default function LinkTreeEditor() {
           {settings.is_published ? "Live · Unpublish" : "Publish Link Page"}
         </button>
 
-        {/* Stats */}
         <div className="flex items-center justify-center gap-5 text-center py-1">
           {[
             { val: links.length, label: "Links" },
@@ -164,7 +195,6 @@ export default function LinkTreeEditor() {
           ))}
         </div>
 
-        {/* Actions */}
         <div className="space-y-1">
           {[
             { key: 'edit' as const, icon: <Link2 className="w-3.5 h-3.5 text-muted-foreground" />, label: "Edit Links", desc: `${links.length} link${links.length !== 1 ? 's' : ''}` },
@@ -187,7 +217,6 @@ export default function LinkTreeEditor() {
     );
   }
 
-  // ═══ FULL PREVIEW ═══
   if (mode === 'preview') {
     return (
       <div className="space-y-2 pb-6">
@@ -197,13 +226,11 @@ export default function LinkTreeEditor() {
     );
   }
 
-  // ═══ STYLE EDITOR ═══
   if (mode === 'style') {
     return (
       <div className="space-y-4 pb-6">
         <button onClick={() => setMode('overview')} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">← Back to overview</button>
 
-        {/* Page title */}
         <div>
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Page Title</label>
           <input
@@ -214,7 +241,6 @@ export default function LinkTreeEditor() {
           />
         </div>
 
-        {/* Bio */}
         <div>
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Bio</label>
           <textarea
@@ -226,7 +252,6 @@ export default function LinkTreeEditor() {
           />
         </div>
 
-        {/* Background */}
         <div>
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Background</label>
           <div className="grid grid-cols-4 gap-1.5">
@@ -247,7 +272,6 @@ export default function LinkTreeEditor() {
           </div>
         </div>
 
-        {/* Accent */}
         <div>
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Accent Color</label>
           <div className="flex gap-2 flex-wrap">
@@ -262,7 +286,6 @@ export default function LinkTreeEditor() {
           </div>
         </div>
 
-        {/* Card Style */}
         <div>
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Link Style</label>
           <div className="grid grid-cols-4 gap-1.5">
@@ -278,7 +301,6 @@ export default function LinkTreeEditor() {
           </div>
         </div>
 
-        {/* Toggles */}
         <div className="space-y-1.5">
           <label className="text-[9px] text-muted-foreground mb-1.5 block uppercase tracking-wider font-medium">Visibility</label>
           {([
@@ -298,7 +320,6 @@ export default function LinkTreeEditor() {
     );
   }
 
-  // ═══ EDIT LINKS ═══
   return (
     <div className="space-y-2 pb-6">
       <button onClick={() => setMode('overview')} className="text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">← Back to overview</button>
@@ -337,7 +358,6 @@ export default function LinkTreeEditor() {
       {adding ? (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="overflow-hidden">
           <div className="space-y-2 p-3 border border-border/30 rounded-lg bg-surface-1/20">
-            {/* Type selector */}
             <div className="flex gap-1">
               {[
                 { type: "link" as const, icon: <Link2 className="w-2.5 h-2.5" />, label: "Link" },
