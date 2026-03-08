@@ -47,8 +47,9 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
         .getPublicUrl(path);
 
       onUpload(urlData.publicUrl, isVideo ? 'video' : 'image');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload error:', err);
+      toast.error(err?.message || 'Upload failed — try again');
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';
