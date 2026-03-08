@@ -794,7 +794,7 @@ export default function StartPage() {
                 <div className="h-5 w-5 border-2 border-gold-foreground/30 border-t-gold-foreground rounded-full animate-spin" />
               ) : step === 2 ? (
                 <>
-                  <Sparkles className="mr-2 h-5 w-5" />
+                  <GateIcon className="mr-2 h-5 w-5" />
                   CREATE ACCOUNT
                 </>
               ) : (

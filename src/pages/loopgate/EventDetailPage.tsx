@@ -203,7 +203,7 @@ export default function EventDetailPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-gold">
-                    <Sparkles size={12} />
+                    <GateIcon size={12} />
                     <span>{activeRound.index_reward} INDEX</span>
                   </div>
                 </div>

@@ -56,7 +56,7 @@ export default function StudioSubmitButton() {
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                <GateIcon className="w-3.5 h-3.5 text-yellow-400" />
                 <span className="text-[11px] text-yellow-400 font-bold uppercase tracking-wider">Solo Submit</span>
               </div>
               <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/[0.06]">

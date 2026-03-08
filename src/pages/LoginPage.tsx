@@ -494,7 +494,7 @@ export default function LoginPage() {
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
                     {magicSubMethod === 'one-tap' ? (
-                      <Sparkles className="h-8 w-8 text-gold" />
+                      <GateIcon className="h-8 w-8 text-gold" />
                     ) : (
                       <Lock className="h-8 w-8 text-gold" />
                     )}

@@ -581,7 +581,7 @@ export default function EditoriumPage() {
             {cultureStories.length > 0 && (
               <div className="mb-10">
                 <SectionBar>
-                  <Sparkles className="w-4 h-4" style={{ color: '#cc0000' }} />
+                  <GateIcon className="w-4 h-4" style={{ color: '#cc0000' }} />
                   <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Culture & Artists</h3>
                   <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{cultureStories.length} features</span>
                 </SectionBar>

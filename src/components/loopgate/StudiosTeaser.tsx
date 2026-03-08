@@ -37,7 +37,7 @@ export default function StudiosTeaser({ variant = "full" }: StudiosTeaserProps) 
     { icon: Trophy, label: "Studio Challenges" },
     { icon: Star, label: "Editor Recruitment" },
     { icon: BarChart3, label: "Analytics Dashboard" },
-    { icon: Sparkles, label: "Premium Placement" },
+    { icon: GateIcon, label: "Premium Placement" },
   ];
 
   if (variant === "compact") {

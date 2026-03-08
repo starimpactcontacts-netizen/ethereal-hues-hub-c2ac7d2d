@@ -200,7 +200,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
                 transition={{ delay: 0.3 }}
                 className="bg-gradient-to-br from-gold/10 via-surface-1 to-gold/5 border border-gold/40 p-6 text-center"
               >
-                <Sparkles className="w-6 h-6 text-gold mx-auto mb-2" />
+                <GateIcon className="w-6 h-6 text-gold mx-auto mb-2" />
                 <p className="text-[10px] text-gold font-bold uppercase tracking-widest mb-1">Your Theme</p>
                 <motion.h2
                   initial={{ opacity: 0, scale: 0.8 }}

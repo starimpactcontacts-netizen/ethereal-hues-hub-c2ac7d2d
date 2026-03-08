@@ -304,7 +304,7 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
       {isOfficer && pendingApplications.length > 0 && (
         <div>
           <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-purple-400" />
+            <GateIcon className="w-5 h-5 text-purple-400" />
             Pending Applications
             <Badge variant="secondary">{pendingApplications.length}</Badge>
           </h3>
