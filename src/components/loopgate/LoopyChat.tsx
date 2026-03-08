@@ -274,7 +274,33 @@ export default function LoopyChat() {
                           }`}>
                             {msg.role === 'assistant' ? (
                               <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:my-1 [&>ul]:pl-4 [&>ol]:my-1 [&>ol]:pl-4 [&>li]:my-0.5 [&>strong]:text-foreground [&>h1]:text-sm [&>h2]:text-sm [&>h3]:text-xs [&>code]:text-[11px] [&>code]:bg-background/30 [&>code]:px-1 [&>code]:rounded">
-                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                <ReactMarkdown
+                                  components={{
+                                    a: ({ href, children }) => {
+                                      const isInternal = href?.startsWith('/');
+                                      if (isInternal) {
+                                        return (
+                                          <button
+                                            onClick={() => { setOpen(false); navigate(href!); }}
+                                            className="text-primary underline underline-offset-2 hover:text-primary/80 font-medium transition-colors"
+                                          >
+                                            {children}
+                                          </button>
+                                        );
+                                      }
+                                      return (
+                                        <a
+                                          href={href}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-primary underline underline-offset-2 hover:text-primary/80 font-medium transition-colors"
+                                        >
+                                          {children}
+                                        </a>
+                                      );
+                                    },
+                                  }}
+                                >{msg.content}</ReactMarkdown>
                               </div>
                             ) : (
                               msg.content
