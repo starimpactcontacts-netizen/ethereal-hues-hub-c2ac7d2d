@@ -337,6 +337,8 @@ export default function HubPage() {
   const league = leagueConfig[userLeague] || leagueConfig.open;
   const LeagueIcon = league.icon;
   const bestScore = profile?.best_gatekeeper_qoi;
+  const classRankConfig = bestScore && bestScore > 0 ? getRankFromScore(bestScore) : null;
+  const classLetter = classRankConfig?.rank || ((profile?.level || 1) >= 2 ? 'D' : 'F');
 
   const liveEvents = events.filter(e => e.status === 'live');
   
