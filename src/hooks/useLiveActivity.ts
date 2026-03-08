@@ -11,7 +11,7 @@ export interface LiveActivityItem {
   score?: number | null;
   earned_cents?: number | null;
   timestamp: string;
-  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry' | 'quick_fight' | 'gqt' | 'tournament_join' | 'earning';
+  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry' | 'quick_fight' | 'gqt' | 'tournament_join' | 'earning' | 'new_user' | 'profile_update';
 }
 
 // Randomized action text for variety
