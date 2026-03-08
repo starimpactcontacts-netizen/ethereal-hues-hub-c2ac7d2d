@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
 import ProfileInventoryLink from "@/components/loopgate/ProfileInventoryLink";
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
+import LinkTreeEditor from "@/components/loopgate/LinkTreeEditor";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
