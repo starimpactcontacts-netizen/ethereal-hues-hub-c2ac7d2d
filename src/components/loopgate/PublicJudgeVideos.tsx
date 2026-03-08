@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Video, ExternalLink, Eye, Sparkles, Play } from 'lucide-react';
+import { Video, ExternalLink, Eye, Play } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { useVideoStats } from '@/hooks/useVideoStats';

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft, Play, ExternalLink, Star } from 'lucide-react';
+import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft, Play, ExternalLink, Star } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import SEO, { pageSEO } from '@/components/SEO';

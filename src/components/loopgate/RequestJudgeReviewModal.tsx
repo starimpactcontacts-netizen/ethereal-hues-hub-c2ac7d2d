@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, Send, AlertCircle, Loader2, ChevronDown, Sparkles, MessageSquare } from 'lucide-react';
+import { X, Send, AlertCircle, Loader2, ChevronDown, MessageSquare } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';

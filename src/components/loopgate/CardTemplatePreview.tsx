@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, Sparkles } from 'lucide-react';
+import { X, Download } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import JudgeReviewCard, { CardTemplate } from './JudgeReviewCard';
 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, User, Ticket, Users, Mail, Lock, Swords, Scale, Check, Eye, EyeOff, Sparkles, Zap, ChevronDown } from 'lucide-react';
+import { ArrowRight, ArrowLeft, User, Ticket, Users, Mail, Lock, Swords, Scale, Check, Eye, EyeOff, Zap, ChevronDown } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';

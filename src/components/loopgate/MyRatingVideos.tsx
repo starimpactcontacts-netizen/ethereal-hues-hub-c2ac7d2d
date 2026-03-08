@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Video, ExternalLink, Eye, Plus, Trash2, Sparkles, Play, ImagePlus, Upload, Link } from 'lucide-react';
+import { Video, ExternalLink, Eye, Plus, Trash2, Play, ImagePlus, Upload, Link } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useJudgeRatingVideos } from '@/hooks/useJudgeRatingVideos';
 import SubmitRatingVideoModal from './SubmitRatingVideoModal';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';

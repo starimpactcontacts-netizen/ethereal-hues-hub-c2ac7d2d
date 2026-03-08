@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { X, Send, Sparkles, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star } from 'lucide-react';
+import { X, Send, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useNavigate } from 'react-router-dom';
 import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useLoopyChat } from '@/hooks/useLoopyChat';

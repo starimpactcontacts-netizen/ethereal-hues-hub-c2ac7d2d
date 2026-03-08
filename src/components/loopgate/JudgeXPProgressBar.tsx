@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { JUDGE_XP_LEVELS, getJudgeXPForNextLevel, getJudgeLevelPerk } from '@/hooks/useJudgeLeaderboard';
-import { Gavel, Sparkles } from 'lucide-react';
+import { Gavel } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 
 interface JudgeXPProgressBarProps {
   judgeXp: number;

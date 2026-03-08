@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
-import { Gavel, Star, Sparkles, Flame, Zap, Crown, Skull, Award } from 'lucide-react';
+import { Gavel, Star, Flame, Zap, Crown, Skull, Award } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
 // Card template types
