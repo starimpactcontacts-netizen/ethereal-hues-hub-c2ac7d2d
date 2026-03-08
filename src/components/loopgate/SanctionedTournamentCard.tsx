@@ -59,10 +59,10 @@ export default function SanctionedTournamentCard({ tournament, onClick }: Sancti
 
   return (
     <motion.div
-      whileHover={{ y: -4, scale: 1.01 }}
+      whileHover={{ y: isComplete ? -2 : -4, scale: isComplete ? 1.005 : 1.01 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
-      className="w-[280px] shrink-0 cursor-pointer group relative"
+      className={`w-[280px] shrink-0 cursor-pointer group relative ${isComplete ? "opacity-50 grayscale" : ""}`}
     >
       {/* Outer glow on hover */}
       <div className={`absolute -inset-px rounded-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
