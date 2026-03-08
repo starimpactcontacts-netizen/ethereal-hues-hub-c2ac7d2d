@@ -536,12 +536,23 @@ function SubmissionDetailModal({
             </div>
           )}
           
+          {/* Visibility toggle */}
+          {userId && (
+            <button
+              onClick={() => { onToggleHidden(submission); onClose(); }}
+              className="flex items-center justify-center gap-2 w-full py-2 text-xs text-muted-foreground hover:text-foreground transition-colors border-t border-border/20"
+            >
+              {submission.is_hidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              {submission.is_hidden ? 'Show on public profile' : 'Hide from public profile'}
+            </button>
+          )}
+          
           {/* View button */}
           <a
             href={submission.submission_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-3 bg-gold text-black text-center text-sm font-semibold uppercase tracking-wider hover:bg-gold/90 transition-colors"
+            className="block w-full py-2.5 text-center text-xs font-semibold uppercase tracking-wider text-foreground hover:text-gold transition-colors border-t border-border/20"
           >
             View Submission →
           </a>
