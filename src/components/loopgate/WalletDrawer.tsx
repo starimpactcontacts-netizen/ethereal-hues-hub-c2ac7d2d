@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, CheckCircle2, Pencil, Clock, XCircle, DollarSign, ChevronRight } from 'lucide-react';
+import { X, Send, Loader2, CheckCircle2, Pencil, Clock, XCircle, DollarSign, ChevronRight, Shield, HelpCircle, Settings, FileText, Mail } from 'lucide-react';
 import { useEditorEarnings } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,10 +34,9 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
   const [submitting, setSubmitting] = useState(false);
   const [loadingPaypal, setLoadingPaypal] = useState(true);
 
-  // Refresh earnings + PayPal when drawer opens
   useEffect(() => {
     if (!user || !open) return;
-    refresh(); // re-fetch earnings data
+    refresh();
     const load = async () => {
       setLoadingPaypal(true);
       const { data } = await supabase
@@ -91,7 +90,7 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -99,26 +98,25 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl max-h-[70vh] overflow-y-auto"
-            style={{ background: 'linear-gradient(180deg, #0a1a0f 0%, #050d08 100%)' }}
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl max-h-[85vh] overflow-y-auto bg-[#0a0a0a]"
           >
-            {/* Pull handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-12 h-1 rounded-full bg-emerald-500/30" />
+            {/* Drag handle */}
+            <div className="sticky top-0 z-10 bg-[#0a0a0a] flex justify-center pt-3 pb-1 cursor-grab">
+              <div className="w-10 h-1 rounded-full bg-white/10" />
             </div>
 
             <div className="px-5 pb-8">
-              {/* Header — GTA style */}
+              {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-                    <DollarSign className="w-4.5 h-4.5 text-emerald-400" />
+                  <div className="w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                    <DollarSign className="w-4 h-4 text-foreground/60" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-foreground tracking-tight uppercase" style={teko}>
-                      MAZE BANK
+                    <h2 className="text-lg font-black text-foreground tracking-tight uppercase" style={teko}>
+                      Wallet
                     </h2>
-                    <p className="text-[9px] text-emerald-500/60 font-bold uppercase tracking-[0.2em] -mt-1">Loopgate Wallet</p>
+                    <p className="text-[8px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] -mt-0.5">Loopgate Payouts</p>
                   </div>
                 </div>
                 <button onClick={onClose} className="p-2 hover:bg-white/5 transition-colors rounded-lg">
@@ -126,48 +124,65 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                 </button>
               </div>
 
-              {/* Balance Card — main focus */}
-              <div className="relative rounded-xl overflow-hidden mb-5">
-                {/* BG layers */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-emerald-950/60 to-black/80" />
-                <div className="absolute inset-0 border border-emerald-500/20 rounded-xl" />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
+              {/* Balance Card — dark matte, not green */}
+              <div className="relative rounded-xl overflow-hidden mb-4">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#111] to-[#0a0a0a]" />
+                <div className="absolute inset-0 border border-white/[0.06] rounded-xl" />
 
                 <div className="relative p-5">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/70 mb-1">Available to Withdraw</p>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-1">Available to Withdraw</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-black text-emerald-400" style={teko}>
+                    <span className="text-[44px] font-black text-foreground leading-none tabular-nums" style={teko}>
                       ${(availableBalance / 100).toFixed(2)}
                     </span>
                   </div>
                   
-                  {/* Breakdown stats */}
-                  <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-emerald-500/10">
+                  {/* Breakdown */}
+                  <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/[0.04]">
                     <div>
-                      <p className="text-[8px] font-bold uppercase tracking-widest text-emerald-400/40">Total Earned</p>
-                      <p className="text-lg font-black text-emerald-400/80" style={teko}>${(earnings.earnings_cents / 100).toFixed(2)}</p>
+                      <p className="text-[7px] font-bold uppercase tracking-widest text-emerald-400/50">Total Earned</p>
+                      <p className="text-base font-black text-emerald-400/80 tabular-nums" style={teko}>${(earnings.earnings_cents / 100).toFixed(2)}</p>
                     </div>
                     {earnings.pending_withdrawal_cents > 0 && (
                       <div>
-                        <p className="text-[8px] font-bold uppercase tracking-widest text-amber-400/50">Pending</p>
-                        <p className="text-lg font-black text-amber-400" style={teko}>${(earnings.pending_withdrawal_cents / 100).toFixed(2)}</p>
+                        <p className="text-[7px] font-bold uppercase tracking-widest text-amber-400/50">Pending</p>
+                        <p className="text-base font-black text-amber-400 tabular-nums" style={teko}>${(earnings.pending_withdrawal_cents / 100).toFixed(2)}</p>
                       </div>
                     )}
                     {earnings.withdrawn_cents > 0 && (
                       <div>
-                        <p className="text-[8px] font-bold uppercase tracking-widest text-foreground/30">Withdrawn</p>
-                        <p className="text-lg font-black text-foreground/50" style={teko}>${(earnings.withdrawn_cents / 100).toFixed(2)}</p>
+                        <p className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/30">Withdrawn</p>
+                        <p className="text-base font-black text-muted-foreground/50 tabular-nums" style={teko}>${(earnings.withdrawn_cents / 100).toFixed(2)}</p>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
 
+              {/* Withdraw Button */}
+              {availableBalance > 0 && savedPaypal && !editingPaypal && (
+                <Button
+                  onClick={handleWithdraw}
+                  disabled={submitting}
+                  className="w-full bg-foreground text-background hover:bg-foreground/90 font-black h-12 rounded-xl text-sm uppercase tracking-wider mb-4"
+                >
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <><Send className="w-4 h-4 mr-2" /> Withdraw ${(availableBalance / 100).toFixed(2)}</>
+                  )}
+                </Button>
+              )}
+
+              {availableBalance > 0 && !savedPaypal && !editingPaypal && (
+                <p className="text-[10px] text-amber-400 text-center mb-4">Link your PayPal below to withdraw</p>
+              )}
+
               {/* PayPal Method */}
-              <div className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4 mb-4">
+              <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] p-4 mb-3">
                 <div className="flex items-center gap-2 mb-3">
-                  <PayPalLogo className="w-5 h-5" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/60">Payout Method</p>
+                  <PayPalLogo className="w-4 h-4" />
+                  <p className="text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground/50">Payout Method</p>
                 </div>
                 
                 {loadingPaypal ? (
@@ -182,7 +197,7 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                       value={paypalInput}
                       onChange={e => setPaypalInput(e.target.value)}
                       placeholder="your@paypal.email"
-                      className="h-11 text-sm bg-black/40 border-white/10 focus:border-emerald-500/40 rounded-lg"
+                      className="h-11 text-sm bg-black/40 border-white/[0.06] focus:border-white/20 rounded-lg"
                     />
                     <div className="flex gap-2">
                       <Button
@@ -201,7 +216,7 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                         <Button
                           onClick={() => { setEditingPaypal(false); setPaypalInput(savedPaypal); }}
                           variant="outline"
-                          className="text-xs h-11 rounded-lg border-white/10"
+                          className="text-xs h-11 rounded-lg border-white/[0.06]"
                         >
                           Cancel
                         </Button>
@@ -209,66 +224,75 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between bg-black/30 rounded-lg px-3 py-2.5">
+                  <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.04] rounded-lg px-3 py-2.5">
                     <div className="flex items-center gap-2.5">
                       <PayPalLogo className="w-4 h-4" />
-                      <span className="text-xs text-foreground font-mono">{savedPaypal}</span>
+                      <span className="text-xs text-foreground/70 font-mono">{savedPaypal}</span>
                     </div>
                     <button
                       onClick={() => setEditingPaypal(true)}
                       className="p-1.5 hover:bg-white/5 rounded-lg transition-colors"
                     >
-                      <Pencil className="w-3 h-3 text-muted-foreground" />
+                      <Pencil className="w-3 h-3 text-muted-foreground/40" />
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Withdraw Button */}
-              {availableBalance > 0 && savedPaypal && !editingPaypal && (
-                <Button
-                  onClick={handleWithdraw}
-                  disabled={submitting}
-                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black h-12 rounded-xl text-sm uppercase tracking-wider mb-4"
-                >
-                  {submitting ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <><Send className="w-4 h-4 mr-2" /> Withdraw ${(availableBalance / 100).toFixed(2)}</>
-                  )}
-                </Button>
-              )}
-
-              {availableBalance > 0 && !savedPaypal && !editingPaypal && (
-                <p className="text-[10px] text-amber-400 text-center mb-4">Link your PayPal above to withdraw</p>
-              )}
-
               {/* Recent Payouts */}
               {payouts.length > 0 && (
-                <div>
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/40 mb-2">Transactions</p>
-                  <div className="space-y-1.5">
+                <div className="mb-4">
+                  <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 mb-2">Transactions</p>
+                  <div className="space-y-1">
                     {payouts.slice(0, 5).map(p => (
                       <div key={p.id} className="flex items-center gap-2.5 bg-white/[0.02] border border-white/[0.04] rounded-lg px-3 py-2.5">
                         {p.status === 'approved' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> :
                          p.status === 'rejected' ? <XCircle className="w-3.5 h-3.5 text-destructive shrink-0" /> :
                          <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
-                        <span className="text-sm font-bold text-foreground flex-1" style={teko}>${(p.amount_cents / 100).toFixed(2)}</span>
+                        <span className="text-sm font-bold text-foreground flex-1 tabular-nums" style={teko}>${(p.amount_cents / 100).toFixed(2)}</span>
                         <span className={`text-[8px] font-black uppercase tracking-wider ${
                           p.status === 'approved' ? 'text-emerald-400' : p.status === 'rejected' ? 'text-destructive' : 'text-amber-400'
                         }`}>
                           {p.status === 'approved' ? 'Paid' : p.status}
                         </span>
-                        <ChevronRight className="w-3 h-3 text-muted-foreground/30" />
+                        <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              <p className="text-[9px] text-muted-foreground/30 text-center mt-5">Payouts reviewed within 24 hours</p>
-              {/* Safe area bottom padding for mobile */}
-              <div className="h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }} />
+              {/* Settings & Support — trust signals */}
+              <div className="border-t border-white/[0.04] pt-4 space-y-1">
+                <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 mb-2">Settings & Support</p>
+                
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
+                  <Settings className="w-3.5 h-3.5 text-muted-foreground/40" />
+                  <span className="text-xs text-foreground/60 flex-1">Payout Preferences</span>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
+                </button>
+
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
+                  <FileText className="w-3.5 h-3.5 text-muted-foreground/40" />
+                  <span className="text-xs text-foreground/60 flex-1">Payout Policy</span>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
+                </button>
+
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
+                  <Mail className="w-3.5 h-3.5 text-muted-foreground/40" />
+                  <span className="text-xs text-foreground/60 flex-1">Contact Support</span>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
+                </button>
+              </div>
+
+              {/* Trust footer */}
+              <div className="flex items-center justify-center gap-1.5 mt-5 pt-3 border-t border-white/[0.03]">
+                <Shield className="w-3 h-3 text-muted-foreground/20" />
+                <p className="text-[8px] text-muted-foreground/20 font-medium">Payouts reviewed within 24h · Secured by Loopgate</p>
+              </div>
+
+              {/* Safe area */}
+              <div className="h-8" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }} />
             </div>
           </motion.div>
         </>
