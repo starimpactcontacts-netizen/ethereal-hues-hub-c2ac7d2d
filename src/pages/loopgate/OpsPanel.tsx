@@ -27,6 +27,7 @@ import RadioAdmin from "@/components/loopgate/RadioAdmin";
 import MissionAdmin from "@/components/loopgate/MissionAdmin";
 import OpsAdminDashboard from "@/components/loopgate/OpsAdminDashboard";
 import TournamentProposalsAdmin from "@/components/loopgate/TournamentProposalsAdmin";
+import TournamentLifecycleAdmin from "@/components/loopgate/TournamentLifecycleAdmin";
 import FeedModerationAdmin from "@/components/loopgate/FeedModerationAdmin";
 import PlatformAnalyticsAdmin from "@/components/loopgate/PlatformAnalyticsAdmin";
 
