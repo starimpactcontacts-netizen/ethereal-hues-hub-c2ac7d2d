@@ -2799,7 +2799,7 @@ export default function OpsPanel() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge className="bg-green-500/20 text-green-500 flex items-center gap-1">
-                              <Sparkles size={10} />
+                              <GateIcon size={10} />
                               +{submission.xp_awarded || 0} XP
                             </Badge>
                             <button
