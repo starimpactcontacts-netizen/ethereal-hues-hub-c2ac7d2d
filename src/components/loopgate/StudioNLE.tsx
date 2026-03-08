@@ -1124,7 +1124,95 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
-                {/* ════════ TEXT — Full Editor ════════ */}
+                {/* ════════ CROP / TRANSFORM ════════ */}
+                {activeToolTab === "crop" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#666" }}>Aspect Ratio</span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {CROP_PRESETS.map((preset) => {
+                          const isActive = cropPreset === preset.id;
+                          const Icon = preset.icon;
+                          return (
+                            <button key={preset.id}
+                              onClick={() => setCropPreset(isActive ? "free" : preset.id)}
+                              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all"
+                              style={{
+                                background: isActive ? ACCENT_DIM : "#151515",
+                                border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                              }}>
+                              <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: isActive ? ACCENT : "#555" }} />
+                              <div className="text-left">
+                                <span className="text-[11px] font-semibold block" style={{ color: isActive ? ACCENT : "#bbb" }}>{preset.label}</span>
+                                <span className="text-[8px] block" style={{ color: "#555" }}>{preset.desc}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Rotation */}
+                    <div className="space-y-2 pt-2" style={{ borderTop: "1px solid #222" }}>
+                      <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#666" }}>Rotation</span>
+                      <div className="flex items-center gap-2">
+                        <Slider value={[rotation]} onValueChange={v => setRotation(v[0])} min={-180} max={180} step={1} className="flex-1" />
+                        <span className="text-[10px] font-mono w-10 text-right" style={{ color: "#888" }}>{rotation}°</span>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {[-90, 0, 90, 180].map(deg => (
+                          <button key={deg} onClick={() => setRotation(deg)}
+                            className="flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all"
+                            style={{
+                              background: rotation === deg ? ACCENT_DIM : "#151515",
+                              border: rotation === deg ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                              color: rotation === deg ? ACCENT : "#666",
+                            }}>
+                            {deg === 0 ? "0°" : `${deg}°`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Flip */}
+                    <div className="space-y-2 pt-2" style={{ borderTop: "1px solid #222" }}>
+                      <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#666" }}>Flip</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => setFlipH(!flipH)}
+                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all"
+                          style={{
+                            background: flipH ? ACCENT_DIM : "#151515",
+                            border: flipH ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                            color: flipH ? ACCENT : "#666",
+                          }}>
+                          <FlipHorizontal className="w-4 h-4" />
+                          <span className="text-[10px] font-medium">Horizontal</span>
+                        </button>
+                        <button onClick={() => setFlipV(!flipV)}
+                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all"
+                          style={{
+                            background: flipV ? ACCENT_DIM : "#151515",
+                            border: flipV ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                            color: flipV ? ACCENT : "#666",
+                          }}>
+                          <FlipVertical className="w-4 h-4" />
+                          <span className="text-[10px] font-medium">Vertical</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Reset */}
+                    {(cropPreset !== "free" || rotation !== 0 || flipH || flipV) && (
+                      <button onClick={() => { setCropPreset("free"); setRotation(0); setFlipH(false); setFlipV(false); }}
+                        className="w-full py-2 text-[10px] font-medium rounded-lg transition-all hover:bg-red-500/10"
+                        style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
+                        Reset Transform
+                      </button>
+                    )}
+                  </>
+                )}
+
+
                 {activeToolTab === "text" && (
                   <>
                     {/* Text input */}
