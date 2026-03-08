@@ -39,10 +39,22 @@ export default function EditoriumPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [indexedEdits, setIndexedEdits] = useState<any[]>([]);
 
   useEffect(() => {
     fetchArticles();
+    fetchIndexedEdits();
   }, []);
+
+  async function fetchIndexedEdits() {
+    const { data } = await supabase
+      .from('editorium_indexed_edits')
+      .select('*')
+      .eq('is_active', true)
+      .order('featured_date', { ascending: false })
+      .limit(20);
+    if (data) setIndexedEdits(data);
+  }
 
   useEffect(() => {
     document.documentElement.classList.add('editorium-active');
