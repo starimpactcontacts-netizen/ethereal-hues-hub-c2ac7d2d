@@ -712,7 +712,7 @@ export default function HeaderMusicPlayer() {
     </div>
   );
 
-  // Mobile: use Sheet, Desktop: use Popover
+  // Mobile: Sheet player, Desktop: just navigate to /playlists
   if (isMobile) {
     return (
       <>
@@ -730,12 +730,5 @@ export default function HeaderMusicPlayer() {
     );
   }
 
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-96 bg-[#0a0a0a] border-white/[0.08] p-0 overflow-hidden max-h-[85vh] flex flex-col">
-        {playerContent}
-      </PopoverContent>
-    </Popover>
-  );
+  return triggerButton;
 }
