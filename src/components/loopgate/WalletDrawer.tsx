@@ -129,7 +129,7 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
               </div>
 
               {/* CENTURION CARD */}
-              <div className="relative rounded-xl overflow-hidden mb-4" style={{ aspectRatio: '3.37/2.125' }}>
+              <div className="relative rounded-xl overflow-hidden mb-4" style={{ aspectRatio: '8.56/5.398', maxHeight: '200px' }}>
                 {/* Titanium matte base */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#111] to-[#0d0d0d]" />
                 {/* Subtle brushed-metal texture */}
