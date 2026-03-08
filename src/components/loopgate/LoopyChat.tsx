@@ -183,7 +183,7 @@ export default function LoopyChat() {
 
             {/* MENU VIEW */}
             {view === 'menu' && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-2.5 min-h-[200px]">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-2.5 overflow-y-auto flex-1">
                 <div className="text-center mb-4">
                   <img src={loopyAvatar} alt="Loopy" className="w-16 h-16 rounded-full border-2 border-primary mx-auto mb-2" />
                   <p className="text-xs text-muted-foreground">wsg — loopy 1.1 loaded up 🧠</p>
