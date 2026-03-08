@@ -93,6 +93,7 @@ const PayoutsPage = lazy(() => import("./pages/loopgate/PayoutsPage"));
 const SoloArenaPage = lazy(() => import("./pages/loopgate/SoloArenaPage"));
 const MissionLobbyPage = lazy(() => import("./pages/loopgate/MissionLobbyPage"));
 const LoopyPage = lazy(() => import("./pages/loopgate/LoopyPage"));
+const LoopyRatePage = lazy(() => import("./pages/loopgate/LoopyRatePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // GLOBAL DEV MODE DETECTION - runs BEFORE React
@@ -327,6 +328,7 @@ export default function App() {
               <Route path="/solo-arena" element={<SoloArenaPage />} />
               <Route path="/mission/:id" element={<MissionLobbyPage />} />
               <Route path="/loopy" element={<LoopyPage />} />
+              <Route path="/loopy/rate" element={<LoopyRatePage />} />
             </Route>
 
             {/* Protected routes - auth required */}
