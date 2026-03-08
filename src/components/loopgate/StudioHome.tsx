@@ -363,7 +363,7 @@ function ProjectCard({
 
           {project.resolution && (
             <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider"
-              style={{ color: "#7C6AFF", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+              style={{ color: MONO_ACCENT, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
             >
               {project.resolution.includes("1920") ? "1080p" : project.resolution.includes("3840") ? "4K" : project.resolution.includes("1280") ? "720p" : project.resolution.split("x")[1] + "p"}
             </div>
