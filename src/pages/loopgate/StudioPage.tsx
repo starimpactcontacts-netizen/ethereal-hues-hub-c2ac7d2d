@@ -250,11 +250,30 @@ export default function StudioPage() {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
-    // Close dialog, open editor with the re-selected file
+
+    const projectToRefresh = pendingProject;
+
+    // Close dialog + reopen editor immediately
     setPendingProject(null);
     setInitialFile(f);
     setEditorOpen(true);
-  }, []);
+
+    // Refresh saved metadata/thumbnail for existing project card
+    if (!projectToRefresh) return;
+
+    void (async () => {
+      const metadata = await extractProjectMetadata(f);
+      saveStudioProject({
+        ...projectToRefresh,
+        name: projectToRefresh.name || f.name.replace(/\.[^/.]+$/, ""),
+        thumbnail: metadata.thumbnail,
+        duration: metadata.duration,
+        resolution: metadata.resolution,
+        fileSize: f.size,
+        lastModified: Date.now(),
+      });
+    })();
+  }, [extractProjectMetadata, pendingProject]);
 
   return (
     <>
