@@ -47,7 +47,7 @@ export default function ProfilePage() {
   const { isAnyJudge } = useUserRoles(profile?.id);
   const { hasEquippedOG } = useEquippedBadges(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
+  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos' | 'links'>('edits');
   
   // Set default tab to videos for judges once roles load
   useEffect(() => {
