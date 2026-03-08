@@ -371,7 +371,7 @@ export default function LoopyPage() {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g., Demon Slayer AMV — Akeboshi"
-                        className="bg-[#0a0a0a] border-white/[0.08] h-11 text-sm text-white/80 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/15"
+                        className="bg-[#0a0a0a] border-white/[0.12] h-11 text-sm text-white/90 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/25"
                       />
                     </div>
 
