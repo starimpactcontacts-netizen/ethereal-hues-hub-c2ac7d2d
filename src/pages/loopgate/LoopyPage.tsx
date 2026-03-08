@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   Plus, MessageSquare, Trash2, Send, Loader2, Star, Swords, Trophy, Users, Zap,
-  Menu, X, ChevronRight, Brain, PanelLeftClose, PanelLeft
+  Menu, X, ChevronRight, Brain, PanelLeftClose, PanelLeft, ArrowLeft, Home
 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import GatePattern from '@/components/loopgate/GatePattern';
