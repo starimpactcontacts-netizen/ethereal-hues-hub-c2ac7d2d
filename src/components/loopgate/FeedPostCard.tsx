@@ -228,14 +228,61 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                 <Share2 className="w-[15px] h-[15px]" />
               </button>
 
-              {/* Challenge from post */}
-              {!isOwn && !post.is_system && (
+              {/* Challenge from post — Red/Blue gradient swords */}
+              {!isOwn && !post.is_system && user && (
                 <button
-                  onClick={() => navigate('/arena')}
-                  className="flex items-center gap-1 px-2 py-1.5 rounded-full text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                  title="Challenge this editor"
+                  onClick={async () => {
+                    // Get own profile
+                    const { data: myProfile } = await supabase
+                      .from('profiles')
+                      .select('username, avatar_url, league')
+                      .eq('id', user.id)
+                      .single();
+                    if (!myProfile) { toast.error('Profile not found'); return; }
+
+                    const result = await createBattle(
+                      user.id,
+                      myProfile.username,
+                      myProfile.avatar_url,
+                      myProfile.league || 'open',
+                      48,
+                      'direct',
+                      post.user_id,
+                      post.username,
+                      post.avatar_url,
+                    );
+                    if (result.success && result.battleId) {
+                      // Post a system loop announcing the challenge
+                      await supabase.from('feed_posts').insert({
+                        user_id: user.id,
+                        content: `⚔️ @${myProfile.username} challenged @${post.username} to a 1v1 Edit Battle!`,
+                        post_type: 'milestone',
+                        is_system: true,
+                        data: { battle_id: result.battleId, challenger: myProfile.username, opponent: post.username },
+                      });
+                      // Also post as a comment on the original post
+                      await supabase.from('feed_comments').insert({
+                        post_id: post.id,
+                        user_id: user.id,
+                        username: myProfile.username,
+                        avatar_url: myProfile.avatar_url,
+                        content: `⚔️ challenged @${post.username} to a 1v1 battle!`,
+                      });
+                      toast.success('Battle challenge sent!');
+                      navigate(`/battle/${result.battleId}`);
+                    } else {
+                      toast.error(result.error || 'Failed to create battle');
+                    }
+                  }}
+                  className="flex items-center gap-1 px-2 py-1.5 rounded-full hover:bg-gradient-to-r hover:from-red-500/15 hover:to-blue-500/15 transition-colors group"
+                  title="Challenge this editor to a 1v1"
                 >
-                  <Swords className="w-[15px] h-[15px]" />
+                  <Swords className="w-[15px] h-[15px] text-transparent bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text" style={{
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundImage: 'linear-gradient(135deg, #ef4444, #3b82f6)',
+                    filter: 'none',
+                  }} />
                 </button>
               )}
 
