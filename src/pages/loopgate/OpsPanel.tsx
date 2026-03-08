@@ -3504,9 +3504,6 @@ export default function OpsPanel() {
         {/* ━━━ TOURNAMENT PROPOSALS (from unit owners) ━━━ */}
         <TournamentProposalsAdmin />
 
-        {/* ━━━ HOSTED COMP MANAGEMENT ━━━ */}
-        <HostedCompManagement />
-
         {/* ━━━ FEED MODERATION ━━━ */}
         <FeedModerationAdmin />
 
