@@ -183,7 +183,7 @@ export default function UpscalerPage() {
           </button>
           <div className="flex-1">
             <h1 className="font-display text-lg flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold" />
+              <GateIcon className="w-4 h-4 text-gold" />
               4K Upscaler
             </h1>
             <p className="text-[10px] text-muted-foreground">Upscale your edits for free</p>
