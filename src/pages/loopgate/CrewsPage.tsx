@@ -59,7 +59,7 @@ const bannerGradients = [
   "from-violet-900 via-purple-800 to-fuchsia-900",
 ];
 
-// Unit Card Component
+// Unit Card Component — premium redesign
 const UnitCard = ({ 
   crew, 
   index, 
@@ -79,134 +79,125 @@ const UnitCard = ({
   canJoinPrimary?: boolean;
   canJoinSecondary?: boolean;
 }) => {
-  const gradient = bannerGradients[index % bannerGradients.length];
   const onlineCount = Math.max(1, Math.floor(crew.member_count * 0.25));
+  const teko = { fontFamily: 'Teko, sans-serif' };
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04 }}
+      transition={{ delay: index * 0.03 }}
       onClick={onClick}
       className="group cursor-pointer"
     >
-      {/* Banner */}
-      <div className={`relative h-28 sm:h-32 rounded-t-xl overflow-hidden bg-gradient-to-br ${gradient}`}>
-        {crew.banner_url ? (
-          <img src={crew.banner_url} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `radial-gradient(circle at 30% 70%, rgba(255,255,255,0.1) 0%, transparent 50%)`
-            }} />
-          </div>
-        )}
-        
-        {crew.is_featured && (
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-gold/20 backdrop-blur-sm">
-            <Star className="w-3 h-3 text-gold fill-gold" />
-          </div>
-        )}
-      </div>
-      
-      {/* Content with Avatar overlapping */}
-      <div className="bg-surface-1 rounded-b-xl p-3 border-x border-b border-border/40 group-hover:border-purple-500/30 transition-colors">
-        {/* Avatar - positioned to overlap banner */}
-        <div className="relative z-10 -mt-8 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-surface-1 border-[3px] border-surface-1 overflow-hidden flex items-center justify-center shadow-lg">
-            {crew.avatar_url ? (
-              <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="text-muted-foreground scale-75">
-                {emblemIcons[crew.emblem] || <Shield className="w-6 h-6" />}
-              </div>
-            )}
+      <div className="relative rounded-xl overflow-hidden border border-border/20 hover:border-border/50 bg-muted/5 transition-all duration-300 hover:bg-muted/10">
+        {/* Banner strip */}
+        <div className="h-24 sm:h-28 relative overflow-hidden">
+          {crew.banner_url ? (
+            <img src={crew.banner_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-muted/30 via-muted/10 to-background" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          
+          {crew.is_featured && (
+            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gold/20 backdrop-blur-sm flex items-center justify-center">
+              <Star className="w-3 h-3 text-gold fill-gold" />
+            </div>
+          )}
+          
+          {/* Avatar floating at bottom-left */}
+          <div className="absolute -bottom-5 left-3 z-10">
+            <div className="w-[42px] h-[42px] rounded-lg bg-background border-2 border-background overflow-hidden flex items-center justify-center shadow-lg">
+              {crew.avatar_url ? (
+                <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-muted-foreground/60 scale-75">
+                  {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
-        <h3 className="font-semibold text-sm truncate mb-1 group-hover:text-white transition-colors">
-          {crew.name}
-        </h3>
-        
-        <p className="text-xs text-muted-foreground line-clamp-2 mb-3 min-h-[32px]">
-          {crew.description || "A unit for competitive editors."}
-        </p>
-        
-        {/* Stats */}
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-3">
-          <span className="flex items-center gap-1">
-            <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500" />
-            <span className="text-foreground">{onlineCount}</span> Online
-          </span>
-          <span className="flex items-center gap-1">
-            <Circle className="w-1.5 h-1.5 fill-muted-foreground" />
-            <span className="text-foreground">{crew.member_count}</span>
-            {crew.max_members ? `/${crew.max_members}` : ""} Members
-          </span>
-        </div>
+        {/* Content */}
+        <div className="pt-7 pb-3 px-3">
+          <h3 className="text-sm font-bold uppercase tracking-wide truncate text-foreground/90 group-hover:text-foreground transition-colors" style={teko}>
+            {crew.name}
+          </h3>
+          
+          <p className="text-[10px] text-muted-foreground/50 line-clamp-2 mb-3 min-h-[24px] leading-relaxed">
+            {crew.description || "A competitive editing unit."}
+          </p>
+          
+          {/* Stats row */}
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground/40 mb-3">
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-foreground/60 font-medium">{onlineCount}</span> online
+            </span>
+            <span className="flex items-center gap-1">
+              <Users className="w-2.5 h-2.5" />
+              <span className="text-foreground/60 font-medium">{crew.member_count}</span>
+              {crew.max_members ? `/${crew.max_members}` : ""}
+            </span>
+          </div>
 
-        {/* Unit Full indicator */}
-        {crew.max_members && crew.member_count >= crew.max_members && (
-          <div className="text-[10px] text-red-400 mb-2 flex items-center gap-1">
-            <span>Unit Full</span>
-          </div>
-        )}
-        
-        {/* Actions - hide join buttons if unit is full */}
-        {showActions && (canJoinPrimary || canJoinSecondary) && (
-          <>
-            {crew.max_members && crew.member_count >= crew.max_members ? (
-              <div className="py-2 px-4 bg-muted/50 rounded-md text-center text-xs text-muted-foreground">
-                Unit Full
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                {canJoinPrimary && !canJoinSecondary && (
-                  <Button
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
-                    className="w-full h-8 text-xs bg-gold text-background hover:bg-gold/90"
-                  >
-                    <Crown className="w-3 h-3 mr-1" />
-                    Join as Primary
-                  </Button>
-                )}
-                {canJoinSecondary && !canJoinPrimary && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
-                    className="w-full h-8 text-xs border-purple-500/40 text-purple-400 hover:bg-purple-500/10"
-                  >
-                    <Plus className="w-3 h-3 mr-1" />
-                    Join
-                  </Button>
-                )}
-                {canJoinPrimary && canJoinSecondary && (
-                  <>
+          {/* Full indicator */}
+          {crew.max_members && crew.member_count >= crew.max_members && (
+            <div className="text-[9px] text-destructive/70 mb-2 font-semibold uppercase tracking-wider">Unit Full</div>
+          )}
+          
+          {/* Actions */}
+          {showActions && (canJoinPrimary || canJoinSecondary) && (
+            <>
+              {crew.max_members && crew.member_count >= crew.max_members ? (
+                <div className="py-1.5 text-center text-[10px] text-muted-foreground/40 font-medium">Full</div>
+              ) : (
+                <div className="flex gap-1.5">
+                  {canJoinPrimary && !canJoinSecondary && (
                     <Button
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
-                      className="flex-1 h-8 text-xs bg-gold text-background hover:bg-gold/90"
+                      className="w-full h-7 text-[10px] bg-foreground text-background hover:bg-foreground/90 font-bold"
                     >
-                      <Crown className="w-3 h-3 mr-1" />
-                      Primary
+                      Join as Primary
                     </Button>
+                  )}
+                  {canJoinSecondary && !canJoinPrimary && (
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
-                      className="flex-1 h-8 text-xs border-border text-muted-foreground hover:bg-surface-2"
+                      className="w-full h-7 text-[10px] border-border/30 hover:border-foreground/30 font-bold"
                     >
-                      <Plus className="w-3 h-3 mr-1" />
                       Join
                     </Button>
-                  </>
-                )}
-              </div>
-            )}
-          </>
-        )}
+                  )}
+                  {canJoinPrimary && canJoinSecondary && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
+                        className="flex-1 h-7 text-[10px] bg-foreground text-background hover:bg-foreground/90 font-bold"
+                      >
+                        Primary
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
+                        className="flex-1 h-7 text-[10px] border-border/30 font-bold"
+                      >
+                        Join
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </motion.div>
   );
