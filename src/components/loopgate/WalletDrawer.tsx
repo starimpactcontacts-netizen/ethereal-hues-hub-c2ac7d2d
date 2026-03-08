@@ -34,8 +34,10 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
   const [submitting, setSubmitting] = useState(false);
   const [loadingPaypal, setLoadingPaypal] = useState(true);
 
+  // Refresh earnings + PayPal when drawer opens
   useEffect(() => {
     if (!user || !open) return;
+    refresh(); // re-fetch earnings data
     const load = async () => {
       setLoadingPaypal(true);
       const { data } = await supabase
