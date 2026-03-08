@@ -377,10 +377,10 @@ export default function HeaderMusicPlayer() {
     { key: 'pitch', label: 'Pitch', icon: <Send size={13} /> },
   ];
 
-  const triggerButton = (
+  const triggerButton = isMobile ? (
     <button
       onClick={() => setOpen(true)}
-      className="relative flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:bg-accent"
+      className="relative flex items-center justify-center w-10 h-10 transition-colors hover:bg-accent"
     >
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="2" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'} />
@@ -397,6 +397,34 @@ export default function HeaderMusicPlayer() {
           animate={isPlaying ? { opacity: [0.2, 0.8, 0.2], scale: [1, 1.12, 1] } : { opacity: 1, scale: 1 }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} style={{ transformOrigin: 'center' }} />
       </svg>
+    </button>
+  ) : (
+    <button
+      onClick={() => navigate('/playlists')}
+      className="relative flex items-center gap-2 px-3 py-2 transition-colors hover:bg-white/[0.04] border border-white/[0.06] group"
+      style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)', fontFamily: 'Teko, sans-serif' }}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="2" className={isPlaying ? 'stroke-emerald-400' : 'stroke-current text-white/40'} />
+        <motion.path d="M16.24 7.76a6 6 0 0 1 0 8.49" className={isPlaying ? 'stroke-emerald-400' : 'stroke-current text-white/40'}
+          animate={isPlaying ? { opacity: [0.4, 1, 0.4] } : { opacity: 1 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} />
+        <motion.path d="M7.76 16.24a6 6 0 0 1 0-8.49" className={isPlaying ? 'stroke-emerald-400' : 'stroke-current text-white/40'}
+          animate={isPlaying ? { opacity: [0.4, 1, 0.4] } : { opacity: 1 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} />
+      </svg>
+      <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-white/50 group-hover:text-emerald-400 transition-colors">
+        {isPlaying ? (nowPlayingName || 'Radio').substring(0, 20).toUpperCase() : 'RADIO'}
+      </span>
+      {isPlaying && (
+        <div className="flex gap-[2px] items-end h-3 ml-1">
+          {[0, 1, 2].map(b => (
+            <motion.div key={b} className="w-[2px] bg-emerald-400"
+              animate={{ height: ['3px', '10px', '3px'] }}
+              transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.12 }} />
+          ))}
+        </div>
+      )}
     </button>
   );
 
