@@ -3594,6 +3594,7 @@ export type Database = {
           format: string
           host_avatar_url: string | null
           host_crew_id: string | null
+          host_earnings_cents: number
           host_name: string
           host_user_id: string
           id: string
@@ -3626,6 +3627,7 @@ export type Database = {
           format?: string
           host_avatar_url?: string | null
           host_crew_id?: string | null
+          host_earnings_cents?: number
           host_name: string
           host_user_id: string
           id?: string
@@ -3658,6 +3660,7 @@ export type Database = {
           format?: string
           host_avatar_url?: string | null
           host_crew_id?: string | null
+          host_earnings_cents?: number
           host_name?: string
           host_user_id?: string
           id?: string
