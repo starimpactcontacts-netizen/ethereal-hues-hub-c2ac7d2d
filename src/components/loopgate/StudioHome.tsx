@@ -10,6 +10,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
 import StudioSubmitHub from "./StudioSubmitHub";
+import GatePattern from "./GatePattern";
 import { toast } from "sonner";
 import { deleteVideoFile } from "@/lib/studioFileStore";
 
@@ -24,6 +25,9 @@ export type StudioProject = {
 };
 
 const STORAGE_KEY = "loopgate_studio_projects";
+const MONO_ACCENT = "hsl(0 0% 95%)";
+const MONO_ACCENT_DIM = "hsl(0 0% 100% / 0.08)";
+const MONO_ACCENT_BORDER = "hsl(0 0% 100% / 0.2)";
 
 export function getStudioProjects(): StudioProject[] {
   try {
@@ -115,35 +119,38 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
   const hasProjects = recentProjects.length > 0;
 
   return (
-    <div className="min-h-screen" style={{ background: "#06060a" }}>
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      <GatePattern className="absolute inset-0 z-0" opacity={4} color="white" tileSize={56} />
+      <div className="pointer-events-none absolute inset-0 z-0" style={{ background: "radial-gradient(120% 100% at 15% 0%, hsl(0 0% 100% / 0.08) 0%, transparent 45%), linear-gradient(165deg, hsl(0 0% 2%) 0%, hsl(0 0% 4%) 40%, hsl(0 0% 1%) 100%)" }} />
+      <div className="relative z-10">
 
       {/* ═══════════════════ TOP BAR ═══════════════════ */}
-      <div className="sticky top-0 z-30" style={{ background: "rgba(6,6,10,0.92)", backdropFilter: "blur(24px) saturate(1.6)" }}>
+      <div className="sticky top-0 z-30" style={{ background: "hsl(0 0% 2% / 0.9)", backdropFilter: "blur(24px) saturate(1.4)" }}>
         <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "max-w-[1100px] mx-auto px-6 py-3"}`}>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/hub")} className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors">
               <ChevronLeft className="w-4 h-4 text-white/30" />
             </button>
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)" }}>
-                <Layers className="w-3.5 h-3.5 text-white" />
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 68%))" }}>
+                <Layers className="w-3.5 h-3.5 text-black" />
               </div>
               <span className="font-bold text-white/90 text-[15px] tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "20px", letterSpacing: "0.04em" }}>STUDIO</span>
               <span className="text-[7px] font-bold tracking-[0.25em] uppercase px-1.5 py-0.5 rounded"
-                style={{ color: "#7C6AFF", background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.12)" }}
+                style={{ color: MONO_ACCENT, background: MONO_ACCENT_DIM, border: `1px solid ${MONO_ACCENT_BORDER}` }}
               >NLE</span>
             </div>
           </div>
           <button
             onClick={onNewProject}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all hover:brightness-110 active:scale-95"
-            style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 4px 20px rgba(124,106,255,0.25)" }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-black transition-all hover:brightness-110 active:scale-95"
+            style={{ background: "linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 72%))", boxShadow: "0 4px 20px hsl(0 0% 100% / 0.2)" }}
           >
             <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
             {isMobile ? "New" : "New Project"}
           </button>
         </div>
-        <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(124,106,255,0.15), transparent)" }} />
+        <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.18), transparent)" }} />
       </div>
 
       {/* ═══════════════════ SUBMIT HUB ═══════════════════ */}
@@ -170,18 +177,18 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
                 className="w-full rounded-2xl overflow-hidden relative group cursor-pointer h-full min-h-[200px] flex flex-col items-center justify-center gap-4 p-8 text-left"
                 style={{
                   background: isDragOver
-                    ? "linear-gradient(135deg, rgba(124,106,255,0.12), rgba(10,10,16,0.95))"
-                    : "linear-gradient(160deg, rgba(124,106,255,0.05) 0%, rgba(10,10,16,0.95) 40%)",
-                  border: isDragOver ? "2px dashed rgba(124,106,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                    ? "linear-gradient(135deg, hsl(0 0% 100% / 0.12), hsl(0 0% 4% / 0.96))"
+                    : "linear-gradient(160deg, hsl(0 0% 100% / 0.06) 0%, hsl(0 0% 4% / 0.96) 42%)",
+                  border: isDragOver ? `2px dashed ${MONO_ACCENT_BORDER}` : "1px solid hsl(0 0% 100% / 0.08)",
                   transition: "all 0.3s ease",
                 }}
               >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                  style={{ background: "radial-gradient(circle, rgba(124,106,255,0.06), transparent 70%)" }}
+                  style={{ background: "radial-gradient(circle, hsl(0 0% 100% / 0.1), transparent 70%)" }}
                 />
                 <div className="relative flex flex-col items-center gap-3">
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105"
-                    style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 12px 40px rgba(124,106,255,0.25)" }}
+                    style={{ background: "linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 74%))", boxShadow: "0 12px 40px hsl(0 0% 100% / 0.25)" }}
                   >
                     <Upload className="w-6 h-6 text-white" strokeWidth={2} />
                   </div>
@@ -192,7 +199,7 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
                   <div className="flex items-center gap-1.5 mt-1">
                     {["MP4", "MOV", "WEBM"].map(fmt => (
                       <span key={fmt} className="text-[8px] font-mono font-bold tracking-widest px-2 py-0.5 rounded"
-                        style={{ color: "rgba(124,106,255,0.5)", background: "rgba(124,106,255,0.06)", border: "1px solid rgba(124,106,255,0.08)" }}
+                         style={{ color: "hsl(0 0% 8%)", background: "hsl(0 0% 100% / 0.82)", border: "1px solid hsl(0 0% 100% / 0.25)" }}
                       >{fmt}</span>
                     ))}
                     <span className="text-[8px] text-white/15 ml-1">up to 2GB</span>
@@ -213,9 +220,9 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
                   style={{ border: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: "rgba(124,106,255,0.06)" }}
+                    style={{ background: "hsl(0 0% 100% / 0.08)" }}
                   >
-                    <cap.icon className="w-3.5 h-3.5" style={{ color: "#7C6AFF" }} />
+                    <cap.icon className="w-3.5 h-3.5" style={{ color: MONO_ACCENT }} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[12px] font-semibold text-white/70 leading-tight">{cap.label}</p>
@@ -290,6 +297,7 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
           </div>
         </section>
       </div>
+      </div>
     </div>
   );
 }
@@ -299,11 +307,11 @@ function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: stri
   return (
     <div className="mb-4">
       <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4" style={{ color: "#7C6AFF" }} />
+        <Icon className="w-4 h-4" style={{ color: MONO_ACCENT }} />
         <h2 className="font-bold text-white/90 tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "22px", letterSpacing: "0.03em" }}>{title.toUpperCase()}</h2>
       </div>
       <p className="text-[11px] text-white/25 ml-6">{subtitle}</p>
-      <div className="mt-3 h-px" style={{ background: "linear-gradient(90deg, rgba(124,106,255,0.2), transparent 60%)" }} />
+      <div className="mt-3 h-px" style={{ background: "linear-gradient(90deg, hsl(0 0% 100% / 0.24), transparent 60%)" }} />
     </div>
   );
 }
@@ -330,7 +338,7 @@ function ProjectCard({
     >
       <button
         onClick={() => onOpen(project)}
-        className="w-full text-left rounded-xl overflow-hidden transition-all duration-300 hover:border-[rgba(124,106,255,0.25)] hover:shadow-[0_8px_40px_rgba(124,106,255,0.08)] hover:-translate-y-0.5"
+        className="w-full text-left rounded-xl overflow-hidden transition-all duration-300 hover:border-[hsl(0_0%_100%_/_0.3)] hover:shadow-[0_8px_40px_hsl(0_0%_100%_/_0.08)] hover:-translate-y-0.5"
         style={{
           background: "rgba(255,255,255,0.02)",
           border: "1px solid rgba(255,255,255,0.05)",
@@ -343,7 +351,7 @@ function ProjectCard({
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-500" />
           ) : (
             <div className="w-full h-full flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, rgba(124,106,255,0.06), rgba(10,10,16,1) 60%)" }}
+              style={{ background: "linear-gradient(135deg, hsl(0 0% 100% / 0.12), hsl(0 0% 6%) 60%)" }}
             >
               <Film className="w-7 h-7 text-white/8" />
             </div>
@@ -359,7 +367,7 @@ function ProjectCard({
 
           {project.resolution && (
             <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider"
-              style={{ color: "#7C6AFF", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+              style={{ color: MONO_ACCENT, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
             >
               {project.resolution.includes("1920") ? "1080p" : project.resolution.includes("3840") ? "4K" : project.resolution.includes("1280") ? "720p" : project.resolution.split("x")[1] + "p"}
             </div>
@@ -399,7 +407,7 @@ function ProjectCard({
         <MoreVertical className="w-3 h-3" />
       </button>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {contextMenu === project.id && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { Film, Upload, Target, ArrowRight, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { saveVideoFile, loadVideoFile, deleteVideoFile } from "@/lib/studioFileStore";
+import StudioCrashBoundary from "@/components/loopgate/studio/StudioCrashBoundary";
 
 const StudioNLE = lazy(() => import("@/components/loopgate/StudioNLE"));
 const QuickClipEditor = lazy(() => import("@/components/loopgate/QuickClipEditor"));
@@ -49,6 +50,12 @@ export default function StudioPage() {
   const [initialFile, setInitialFile] = useState<File | null>(null);
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCloseEditor = useCallback(() => {
+    setEditorOpen(false);
+    setInitialFile(null);
+    setActiveProjectId(null);
+  }, []);
 
   const handleNewProject = useCallback(() => {
     const input = fileInputRef.current;
@@ -371,7 +378,9 @@ export default function StudioPage() {
           {isMobile ? (
             <div className={`min-h-screen bg-background pb-24 px-4 space-y-3 ${activeMission && !missionDismissed ? 'pt-14' : 'pt-4'}`}>
               {soloId && <SoloModeBanner soloId={soloId} />}
-              <QuickClipEditor initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); setActiveProjectId(null); }} />
+              <StudioCrashBoundary onReset={handleCloseEditor}>
+                <QuickClipEditor initialFile={initialFile} onBack={handleCloseEditor} />
+              </StudioCrashBoundary>
             </div>
           ) : (
             <div className={`flex flex-col h-screen ${activeMission && !missionDismissed ? 'pt-10' : ''}`}>
@@ -381,7 +390,9 @@ export default function StudioPage() {
                 </div>
               )}
               <div className="flex-1 min-h-0">
-                <StudioNLE initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); setActiveProjectId(null); }} />
+                <StudioCrashBoundary onReset={handleCloseEditor}>
+                  <StudioNLE initialFile={initialFile} onBack={handleCloseEditor} />
+                </StudioCrashBoundary>
               </div>
             </div>
           )}

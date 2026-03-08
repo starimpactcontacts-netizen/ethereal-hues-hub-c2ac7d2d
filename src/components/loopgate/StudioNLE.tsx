@@ -24,6 +24,7 @@ import { useCanvasDrag } from "./studio/useCanvasDrag";
 import { useTimelineDrag } from "./studio/useTimelineDrag";
 import type { ClipSegment, EditorSnapshot } from "./studio/types";
 import { motion, AnimatePresence } from "framer-motion";
+import GatePattern from "@/components/loopgate/GatePattern";
 import StudioSubmitButton from "./StudioSubmitButton";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -69,11 +70,11 @@ type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text
 type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop";
 type EffectIntensity = Record<string, number>;
 
-// Studio accent — refined blue-violet
-const ACCENT = "#7C6AFF";
-const ACCENT_DIM = "rgba(124,106,255,0.10)";
-const ACCENT_BORDER = "rgba(124,106,255,0.25)";
-const ACCENT_GLOW = "rgba(124,106,255,0.35)";
+// Studio accent — monochrome premium
+const ACCENT = "hsl(0 0% 95%)";
+const ACCENT_DIM = "hsl(0 0% 100% / 0.08)";
+const ACCENT_BORDER = "hsl(0 0% 100% / 0.22)";
+const ACCENT_GLOW = "hsl(0 0% 100% / 0.25)";
 
 // Crop/Aspect ratio presets
 type CropPreset = { id: string; label: string; icon: typeof Square; ratio: number | null; desc: string };
@@ -1080,7 +1081,10 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
   // ─── RENDER ───
   return (
-    <div className="h-full flex flex-col overflow-hidden select-none" style={{ background: "#09090c", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="relative h-full overflow-hidden" style={{ background: "linear-gradient(160deg, hsl(0 0% 2%) 0%, hsl(0 0% 4%) 42%, hsl(0 0% 1%) 100%)" }}>
+      <GatePattern className="absolute inset-0 z-0" opacity={3} color="white" tileSize={54} />
+      <div className="pointer-events-none absolute inset-0 z-0" style={{ background: "radial-gradient(110% 100% at 10% 0%, hsl(0 0% 100% / 0.09) 0%, transparent 42%)" }} />
+      <div className="relative z-10 h-full flex flex-col overflow-hidden select-none" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* ═══ TOP TOOLBAR ═══ */}
       <div className="h-11 flex items-center px-2 gap-0.5 flex-shrink-0 z-20" style={{ background: "#111114", borderBottom: "1px solid #1e1e24" }}>
@@ -1118,13 +1122,13 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         {state === "done" ? (
           <button onClick={handleDownload}
             className="h-8 px-5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, color: "#fff", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, hsl(0 0% 70%))`, color: "hsl(0 0% 5%)", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
             <Download className="w-3.5 h-3.5" /> Save
           </button>
         ) : (
           <button onClick={startExport} disabled={state === "processing" || !activeMedia}
             className="h-8 px-5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-30"
-            style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, color: "#fff", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, hsl(0 0% 70%))`, color: "hsl(0 0% 5%)", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
             {state === "processing" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
             {state === "processing" ? `${progress}%` : "Export"}
           </button>
@@ -1135,7 +1139,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       <div className="flex-1 flex min-h-0">
 
         {/* ─── LEFT PANEL ─── */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {activeToolTab && (
             <motion.div
               key={activeToolTab}
@@ -1310,7 +1314,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                         <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#555", transform: showFontPicker ? "rotate(180deg)" : "" }} />
                       </button>
 
-                      <AnimatePresence>
+                      <AnimatePresence initial={false}>
                         {showFontPicker && (
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden rounded-lg" style={{ border: "1px solid #2a2a2a", background: "#111" }}>
@@ -1913,7 +1917,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   onMouseLeave={canvasDrag.onMouseUp}
                 />
 
-                <AnimatePresence>
+                <AnimatePresence initial={false}>
                   {!playing && (
                     <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       onClick={togglePlay} className="absolute inset-0 flex items-center justify-center">
@@ -1960,7 +1964,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             )}
 
             {/* Shortcuts overlay */}
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {showShortcuts && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="absolute inset-0 z-30 flex items-center justify-center p-8" style={{ background: "rgba(0,0,0,0.9)" }}>
@@ -1995,7 +1999,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             <span className="text-[10px] font-mono tracking-wider" style={{ color: "#444" }}>{formatTimecode(duration, true)}</span>
             <div className="flex-1" />
             <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipBack className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
-            <button onClick={togglePlay} className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105" style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, boxShadow: `0 0 20px ${ACCENT_GLOW}` }}>
+            <button onClick={togglePlay} className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105" style={{ background: `linear-gradient(135deg, ${ACCENT}, hsl(0 0% 70%))`, boxShadow: `0 0 20px ${ACCENT_GLOW}` }}>
               {playing ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white ml-0.5" />}
             </button>
             <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipForward className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
@@ -2229,6 +2233,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
       <input ref={fileInputRef} type="file" accept="video/*,image/*,audio/*" multiple onChange={handleFileSelect} className="hidden" />
       <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
+      </div>
     </div>
   );
 }
