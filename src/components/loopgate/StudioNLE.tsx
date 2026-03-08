@@ -767,6 +767,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       startTime: trimStart,
       endTime: trimEnd,
     };
+    saveUndoSnapshot();
     setTextOverlays((prev) => [...prev, overlay]);
     setTextInput(""); toast.success("Text overlay added");
   };
@@ -776,13 +777,47 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   };
 
   const removeTextOverlay = (id: string) => {
+    saveUndoSnapshot();
     setTextOverlays((prev) => prev.filter((t) => t.id !== id));
     if (editingTextId === id) setEditingTextId(null);
   };
 
   const splitAtPlayhead = () => {
     if (!activeMedia || currentTime <= trimStart || currentTime >= trimEnd) return;
+    saveUndoSnapshot();
+    
+    // If no segments yet, create the initial segment
+    if (segments.length === 0) {
+      const seg: ClipSegment = {
+        id: crypto.randomUUID(),
+        mediaId: activeMedia.id,
+        sourceStart: trimStart,
+        sourceEnd: trimEnd,
+        trackPosition: 0,
+        duration: trimEnd - trimStart,
+      };
+      // Split into two segments
+      const seg1: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceEnd: currentTime, duration: currentTime - trimStart };
+      const seg2: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceStart: currentTime, trackPosition: currentTime - trimStart, duration: trimEnd - currentTime };
+      setSegments([seg1, seg2]);
+    } else {
+      // Find the segment that contains the playhead
+      const segIdx = segments.findIndex(s => currentTime >= s.sourceStart && currentTime < s.sourceEnd);
+      if (segIdx === -1) return;
+      const seg = segments[segIdx];
+      const seg1: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceEnd: currentTime, duration: currentTime - seg.sourceStart };
+      const seg2: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceStart: currentTime, trackPosition: seg.trackPosition + (currentTime - seg.sourceStart), duration: seg.sourceEnd - currentTime };
+      const newSegments = [...segments];
+      newSegments.splice(segIdx, 1, seg1, seg2);
+      setSegments(newSegments);
+    }
     toast.success(`Split at ${formatTimecode(currentTime, true)}`);
+  };
+
+  const deleteSegment = (segId: string) => {
+    saveUndoSnapshot();
+    setSegments(prev => prev.filter(s => s.id !== segId));
+    toast.success("Segment deleted");
   };
 
   const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); setAdjustments({ ...DEFAULT_ADJUSTMENTS }); };
