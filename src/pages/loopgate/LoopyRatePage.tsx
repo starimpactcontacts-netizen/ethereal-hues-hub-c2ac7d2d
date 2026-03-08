@@ -6,7 +6,7 @@ import {
   Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
   Trophy, TrendingUp, Star, Clock, ChevronRight, ExternalLink,
   MessageSquare, RotateCcw, Brain, Shield, Target, Activity,
-  Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users
+  Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users, AlertTriangle
 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import GatePattern from '@/components/loopgate/GatePattern';
@@ -627,6 +627,56 @@ export default function LoopyPage() {
                       </div>
                     </div>
                   </div>
+                )}
+
+                {/* ═══════ METADATA-ONLY DISCLAIMER ═══════ */}
+                {rating._meta && !rating._meta.hadThumbnail && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="relative bg-amber-500/[0.06] border border-amber-500/20 p-4 space-y-3"
+                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)' }}
+                  >
+                    <CornerMarks />
+                    <div className="h-[2px] bg-gradient-to-r from-amber-500 to-transparent -mx-4 -mt-4 mb-2" />
+                    <div className="flex items-start gap-2.5">
+                      <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <div className="space-y-2">
+                        <p className="text-[11px] font-bold text-amber-400 uppercase tracking-[0.12em]" style={TEKO}>
+                          Limited Analysis — No Visual Data
+                        </p>
+                        <p className="text-[11px] text-white/40 leading-relaxed">
+                          {detectPlatform(url) === 'tiktok' || detectPlatform(url) === 'instagram'
+                            ? <>TikTok and Instagram don't allow thumbnail access, so Loopy scored based on <span className="text-white/60 font-semibold">metadata only</span> (title, tags, description). Your actual edit could be way better than this score.</>
+                            : <>Loopy couldn't load a thumbnail for this edit, so the score is based on <span className="text-white/60 font-semibold">metadata only</span>.</>
+                          }
+                        </p>
+                        <div className="space-y-1.5 pt-1">
+                          <p className="text-[10px] text-white/30 uppercase tracking-wider font-bold" style={TEKO}>For a real score:</p>
+                          {(detectPlatform(url) === 'tiktok' || detectPlatform(url) === 'instagram') && (
+                            <p className="flex items-start gap-2 text-[11px] text-white/50 leading-relaxed">
+                              <span className="text-emerald-400 mt-0.5 shrink-0">→</span>
+                              <span>Re-upload your edit to <span className="text-emerald-400 font-semibold">YouTube / Shorts</span> and paste that link here for full visual analysis</span>
+                            </p>
+                          )}
+                          <p className="flex items-start gap-2 text-[11px] text-white/50 leading-relaxed">
+                            <span className="text-amber-400 mt-0.5 shrink-0">→</span>
+                            <span>Submit to the <span className="text-amber-400 font-semibold">Arena</span> and get rated by a <span className="text-amber-400 font-semibold">certified human judge</span> with a real QOI score on your profile</span>
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => navigate(user ? '/arena' : '/start')}
+                          className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/15 border border-amber-500/25 hover:bg-amber-500/25 transition-all text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]"
+                          style={{ ...TEKO, clipPath: 'polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%)' }}
+                        >
+                          <Shield className="w-3 h-3" />
+                          {user ? 'Get Real Rating' : 'Sign Up & Get Rated'}
+                          <ChevronRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
 
                 {/* ═══════ PILLAR SCORES ═══════ */}
