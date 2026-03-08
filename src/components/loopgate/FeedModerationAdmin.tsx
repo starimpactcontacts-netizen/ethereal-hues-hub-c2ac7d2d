@@ -11,14 +11,11 @@ interface FeedPost {
   id: string;
   user_id: string;
   username: string;
-  avatar_url: string | null;
   content: string | null;
   media_url: string | null;
-  media_type: string | null;
   like_count: number;
   comment_count: number;
   created_at: string;
-  crew_id: string | null;
 }
 
 export default function FeedModerationAdmin() {
