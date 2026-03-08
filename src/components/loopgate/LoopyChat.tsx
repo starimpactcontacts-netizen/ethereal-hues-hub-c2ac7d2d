@@ -23,10 +23,12 @@ export default function LoopyChat() {
   const [showPulse, setShowPulse] = useState(true);
   const [view, setView] = useState<'menu' | 'chat' | 'history'>('menu');
   const [docked, setDocked] = useState(false);
-  const [dragY, setDragY] = useState(0);
+  const [dragY, setDragY] = useState(() => {
+    const saved = sessionStorage.getItem('loopy-y');
+    return saved ? Number(saved) : 0;
+  });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const constraintsRef = useRef<HTMLDivElement>(null);
 
   const {
     conversations,
@@ -82,17 +84,21 @@ export default function LoopyChat() {
 
   return (
     <>
-      {/* Drag constraints boundary */}
-      <div ref={constraintsRef} className="fixed top-20 bottom-24 right-0 w-20 z-50 pointer-events-none" />
-
       {/* ═══ DOCKED STATE — paws ═══ */}
       <AnimatePresence>
         {!open && docked && (
           <motion.button
             drag="y"
-            dragConstraints={constraintsRef}
+            dragConstraints={{ top: -300, bottom: 200 }}
             dragElastic={0.1}
             dragMomentum={false}
+            style={{ y: dragY }}
+            onDragEnd={(_, info) => {
+              const newY = dragY + info.offset.y;
+              const clamped = Math.max(-300, Math.min(200, newY));
+              setDragY(clamped);
+              sessionStorage.setItem('loopy-y', String(clamped));
+            }}
             initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setDocked(false)}
@@ -119,9 +125,16 @@ export default function LoopyChat() {
         {!open && !docked && (
           <motion.div
             drag="y"
-            dragConstraints={constraintsRef}
+            dragConstraints={{ top: -300, bottom: 200 }}
             dragElastic={0.1}
             dragMomentum={false}
+            style={{ y: dragY }}
+            onDragEnd={(_, info) => {
+              const newY = dragY + info.offset.y;
+              const clamped = Math.max(-300, Math.min(200, newY));
+              setDragY(clamped);
+              sessionStorage.setItem('loopy-y', String(clamped));
+            }}
             className="fixed bottom-28 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
           >
             <motion.button
