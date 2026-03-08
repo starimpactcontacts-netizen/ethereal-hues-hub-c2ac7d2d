@@ -78,6 +78,7 @@ const MessagesPage = lazy(() => import("./pages/loopgate/MessagesPage"));
 const DirectMessagePage = lazy(() => import("./pages/loopgate/DirectMessagePage"));
 const HostedCompsPage = lazy(() => import("./pages/loopgate/HostedCompsPage"));
 const HostedCompDetailPage = lazy(() => import("./pages/loopgate/HostedCompDetailPage"));
+const HostTournamentPage = lazy(() => import("./pages/loopgate/HostTournamentPage"));
 const ConnectionsPage = lazy(() => import("./pages/loopgate/ConnectionsPage"));
 const ArtistProfilePage = lazy(() => import("./pages/loopgate/ArtistProfilePage"));
 const FeaturedDropDetailPage = lazy(() => import("./pages/loopgate/FeaturedDropDetailPage"));
