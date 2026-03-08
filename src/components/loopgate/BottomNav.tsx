@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Home, Search, User, LogIn, Infinity as InfinityIcon, RefreshCw } from "lucide-react";
+import { motion } from "framer-motion";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
 import GlitchEdge from "@/components/loopgate/GlitchEdge";
