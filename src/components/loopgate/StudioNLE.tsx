@@ -2009,28 +2009,31 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         </div>
 
         {/* ─── RIGHT PANEL — Details ─── */}
-        <div className="w-[260px] flex-shrink-0 flex flex-col" style={{ background: "#1a1a1a", borderLeft: "1px solid #2a2a2a" }}>
-          <div className="h-8 flex items-center px-3" style={{ borderBottom: "1px solid #222" }}>
-            <span className="text-[11px] font-medium" style={{ color: ACCENT }}>Details</span>
+        <div className="w-[260px] flex-shrink-0 flex flex-col" style={{ background: "#131316", borderLeft: "1px solid #1e1e24" }}>
+          <div className="h-8 flex items-center px-3" style={{ borderBottom: "1px solid #1e1e24" }}>
+            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: ACCENT }}>Details</span>
           </div>
-          <div className="flex-1 p-3 space-y-3 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+          <div className="flex-1 p-3 space-y-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
             {activeMedia ? (
-              <div className="space-y-2.5">
+              <div className="space-y-0">
                 {[
                   ["Name", activeMedia.name],
                   ["Duration", formatTimecode(activeMedia.duration)],
                   ["Type", activeMedia.type.toUpperCase()],
                   ["Trim", `${formatTimecode(trimStart)} — ${formatTimecode(trimEnd)}`],
                   ["Speed", `${speed}x`],
+                  ["Crop", cropPreset === "free" ? "None" : cropPreset],
+                  ["Rotation", rotation !== 0 ? `${rotation}°` : "None"],
+                  ["Flip", flipH || flipV ? [flipH && "H", flipV && "V"].filter(Boolean).join("+") : "None"],
                   ["Filter", activeFilter.label],
                   ["Effects", activeEffects.length > 0 ? `${activeEffects.length} active` : "None"],
                   ["Transition", activeTransition ? TRANSITIONS.find(t => t.id === activeTransition)?.label ?? "None" : "None"],
                   ["Text Layers", textOverlays.length > 0 ? `${textOverlays.length}` : "None"],
                   ["Segments", segments.length > 0 ? `${segments.length} clips` : "1 clip"],
                 ].map(([label, val]) => (
-                  <div key={label} className="flex justify-between items-start">
-                    <span className="text-[10px]" style={{ color: "#666" }}>{label}:</span>
-                    <span className="text-[10px] font-medium text-right max-w-[140px] truncate" style={{ color: "#ccc" }}>{val}</span>
+                  <div key={label} className="flex justify-between items-center py-1.5" style={{ borderBottom: "1px solid #1a1a1e" }}>
+                    <span className="text-[10px] font-medium" style={{ color: "#555" }}>{label}</span>
+                    <span className="text-[10px] font-semibold text-right max-w-[140px] truncate" style={{ color: "#c0c0c8" }}>{val}</span>
                   </div>
                 ))}
               </div>
