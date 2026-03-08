@@ -7,8 +7,9 @@ import SoloModeBanner from "@/components/loopgate/SoloModeBanner";
 import StudioHome, { type StudioProject, saveStudioProject } from "@/components/loopgate/StudioHome";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Film, Upload, Target, ArrowRight, X } from "lucide-react";
+import { Film, Upload, Target, ArrowRight, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { saveVideoFile, loadVideoFile, deleteVideoFile } from "@/lib/studioFileStore";
 
 const StudioNLE = lazy(() => import("@/components/loopgate/StudioNLE"));
 const QuickClipEditor = lazy(() => import("@/components/loopgate/QuickClipEditor"));
@@ -28,6 +29,7 @@ export default function StudioPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [activeMission, setActiveMission] = useState<ActiveMission | null>(null);
   const [missionDismissed, setMissionDismissed] = useState(false);
+  const [loadingProject, setLoadingProject] = useState(false);
 
   // Fetch mission data if mission param present
   useEffect(() => {
@@ -45,10 +47,10 @@ export default function StudioPage() {
     })();
   }, [missionId]);
   const [initialFile, setInitialFile] = useState<File | null>(null);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleNewProject = useCallback(() => {
-    // Open native file picker
     const input = fileInputRef.current;
     if (!input) return;
     input.value = "";
@@ -123,7 +125,6 @@ export default function StudioPage() {
         const url = canvas.toDataURL("image/jpeg", 0.78);
         if (url.length < 900) return null;
 
-        // Prefer bright + detailed frames, but never discard valid frames as "too dark"
         const score = avgLuma * 0.5 + variance * 0.95 + maxLuma * 0.2;
         return { url, score };
       };
@@ -168,14 +169,13 @@ export default function StudioPage() {
         const duration = Number.isFinite(vid.duration) ? vid.duration : 0;
         const resolution = vid.videoWidth > 0 && vid.videoHeight > 0 ? `${vid.videoWidth}x${vid.videoHeight}` : "";
 
-        // Ensure at least one decoded frame exists before timeline probing
         if (vid.readyState < 2) {
           try {
             await new Promise<void>((resolveLoadedData) => {
               vid.addEventListener("loadeddata", () => resolveLoadedData(), { once: true });
             });
           } catch {
-            // continue with probing anyway
+            // continue
           }
         }
 
@@ -192,14 +192,10 @@ export default function StudioPage() {
             await waitForPaint();
             const shot = captureThumbnail();
             if (!shot) continue;
-
-            if (!bestShot || shot.score > bestShot.score) {
-              bestShot = shot;
-            }
-
+            if (!bestShot || shot.score > bestShot.score) bestShot = shot;
             if (shot.score > 260) break;
           } catch {
-            // try next point in timeline
+            // try next
           }
         }
 
@@ -208,7 +204,6 @@ export default function StudioPage() {
           return;
         }
 
-        // Final fallback: play a bit to force decoder to a real frame
         try {
           await vid.play();
           await new Promise((r) => setTimeout(r, 320));
@@ -234,6 +229,13 @@ export default function StudioPage() {
     const projectId = crypto.randomUUID();
 
     void (async () => {
+      // Save video file to IndexedDB immediately
+      try {
+        await saveVideoFile(projectId, f);
+      } catch (err) {
+        console.warn("Could not cache video file:", err);
+      }
+
       const metadata = await extractProjectMetadata(f);
 
       const project: StudioProject = {
@@ -247,6 +249,7 @@ export default function StudioPage() {
       };
 
       saveStudioProject(project);
+      setActiveProjectId(projectId);
       setInitialFile(f);
       setEditorOpen(true);
     })();
@@ -255,15 +258,33 @@ export default function StudioPage() {
   const [pendingProject, setPendingProject] = useState<StudioProject | null>(null);
   const reimportInputRef = useRef<HTMLInputElement>(null);
 
-  const handleOpenProject = useCallback((project: StudioProject) => {
+  const handleOpenProject = useCallback(async (project: StudioProject) => {
     project.lastModified = Date.now();
     saveStudioProject(project);
+
+    // Try loading from IndexedDB first
+    setLoadingProject(true);
+    try {
+      const cachedFile = await loadVideoFile(project.id);
+      if (cachedFile) {
+        // File found in IndexedDB — open directly, no re-import needed!
+        setActiveProjectId(project.id);
+        setInitialFile(cachedFile);
+        setEditorOpen(true);
+        setLoadingProject(false);
+        return;
+      }
+    } catch (err) {
+      console.warn("Failed to load cached file:", err);
+    }
+    setLoadingProject(false);
+
+    // Fall back to re-import dialog
     setPendingProject(project);
   }, []);
 
   const handleConfirmReimport = useCallback(() => {
     if (!pendingProject) return;
-    // Open file picker specifically for re-import
     const input = reimportInputRef.current;
     if (!input) return;
     input.value = "";
@@ -277,15 +298,21 @@ export default function StudioPage() {
 
     const projectToRefresh = pendingProject;
 
-    // Close dialog + reopen editor immediately
     setPendingProject(null);
     setInitialFile(f);
+    setActiveProjectId(projectToRefresh?.id ?? null);
     setEditorOpen(true);
 
-    // Refresh saved metadata/thumbnail for existing project card
     if (!projectToRefresh) return;
 
     void (async () => {
+      // Save to IndexedDB so next time it auto-loads
+      try {
+        await saveVideoFile(projectToRefresh.id, f);
+      } catch (err) {
+        console.warn("Could not cache re-imported video:", err);
+      }
+
       const metadata = await extractProjectMetadata(f);
       saveStudioProject({
         ...projectToRefresh,
@@ -327,6 +354,16 @@ export default function StudioPage() {
         </div>
       )}
 
+      {/* Loading overlay when restoring from IndexedDB */}
+      {loadingProject && (
+        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 text-[#9999FF] animate-spin" />
+            <p className="text-white/70 text-sm font-medium">Restoring project…</p>
+          </div>
+        </div>
+      )}
+
       {!editorOpen ? (
         <StudioHome onNewProject={handleNewProject} onOpenProject={handleOpenProject} />
       ) : (
@@ -334,7 +371,7 @@ export default function StudioPage() {
           {isMobile ? (
             <div className={`min-h-screen bg-background pb-24 px-4 space-y-3 ${activeMission && !missionDismissed ? 'pt-14' : 'pt-4'}`}>
               {soloId && <SoloModeBanner soloId={soloId} />}
-              <QuickClipEditor initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); }} />
+              <QuickClipEditor initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); setActiveProjectId(null); }} />
             </div>
           ) : (
             <div className={`flex flex-col h-screen ${activeMission && !missionDismissed ? 'pt-10' : ''}`}>
@@ -344,14 +381,14 @@ export default function StudioPage() {
                 </div>
               )}
               <div className="flex-1 min-h-0">
-                <StudioNLE initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); }} />
+                <StudioNLE initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); setActiveProjectId(null); }} />
               </div>
             </div>
           )}
         </Suspense>
       )}
 
-      {/* Re-import dialog */}
+      {/* Re-import dialog (fallback when IndexedDB doesn't have the file) */}
       <Dialog open={!!pendingProject} onOpenChange={(open) => { if (!open) setPendingProject(null); }}>
         <DialogContent className="bg-black border-white/10 max-w-sm">
           <DialogTitle className="text-white font-semibold text-base flex items-center gap-2">
@@ -359,7 +396,7 @@ export default function StudioPage() {
             Re-select Video File
           </DialogTitle>
           <DialogDescription className="text-white/50 text-sm leading-relaxed">
-            Browser storage can't hold video files between sessions. Select <span className="text-white/80 font-medium">"{pendingProject?.name}"</span> from your device to continue editing.
+            The cached file for <span className="text-white/80 font-medium">"{pendingProject?.name}"</span> was cleared by the browser. Select it from your device to continue editing — it will be cached again for next time.
           </DialogDescription>
           <div className="flex gap-2 mt-2">
             <button
