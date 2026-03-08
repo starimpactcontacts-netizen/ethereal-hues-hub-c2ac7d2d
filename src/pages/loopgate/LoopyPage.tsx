@@ -425,10 +425,10 @@ export default function LoopyPage() {
                   {PILLARS.map((p) => {
                     const Icon = p.icon;
                     return (
-                      <div key={p.key} className="flex items-center gap-1 px-2 py-1 bg-white/[0.03] border border-white/[0.05]">
+                      <div key={p.key} className="flex items-center gap-1 px-2 py-1 bg-white/[0.05] border border-white/[0.08]">
                         <Icon className={`w-3 h-3 ${p.accent}`} />
-                        <span className="text-[10px] text-white/30 font-bold tracking-wider" style={TEKO}>{p.label}</span>
-                        <span className="text-[9px] text-white/15" style={TEKO}>/{p.max}</span>
+                        <span className="text-[10px] text-white/50 font-bold tracking-wider" style={TEKO}>{p.label}</span>
+                        <span className="text-[9px] text-white/25" style={TEKO}>/{p.max}</span>
                       </div>
                     );
                   })}
