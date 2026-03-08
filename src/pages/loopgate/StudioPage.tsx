@@ -105,9 +105,9 @@ export default function StudioPage() {
   }, []);
 
   const [pendingProject, setPendingProject] = useState<StudioProject | null>(null);
+  const reimportInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenProject = useCallback((project: StudioProject) => {
-    // Update last modified
     project.lastModified = Date.now();
     saveStudioProject(project);
     setPendingProject(project);
@@ -115,9 +115,22 @@ export default function StudioPage() {
 
   const handleConfirmReimport = useCallback(() => {
     if (!pendingProject) return;
+    // Open file picker specifically for re-import
+    const input = reimportInputRef.current;
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }, [pendingProject]);
+
+  const handleReimportFileSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
+    // Close dialog, open editor with the re-selected file
     setPendingProject(null);
-    handleNewProject();
-  }, [pendingProject, handleNewProject]);
+    setInitialFile(f);
+    setEditorOpen(true);
+  }, []);
 
   return (
     <>
