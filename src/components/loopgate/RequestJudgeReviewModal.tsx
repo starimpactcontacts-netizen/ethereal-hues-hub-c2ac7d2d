@@ -199,7 +199,7 @@ export default function RequestJudgeReviewModal({
             <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
               <div>
                 <h2 className="font-display text-lg flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-gold" />
+                  <GateIcon className="w-4 h-4 text-gold" />
                   Request Review
                 </h2>
                 <p className="text-xs text-muted-foreground">
