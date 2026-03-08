@@ -28,11 +28,24 @@ export default function FeedModerationAdmin() {
   const fetchPosts = useCallback(async () => {
     const { data } = await supabase
       .from("feed_posts")
-      .select("id, user_id, username, avatar_url, content, media_url, media_type, like_count, comment_count, created_at, crew_id")
+      .select("id, user_id, content, media_url, like_count, comment_count, created_at")
       .order("created_at", { ascending: false })
       .limit(50);
 
-    setPosts((data as FeedPost[]) || []);
+    if (!data || data.length === 0) { setPosts([]); setLoading(false); return; }
+
+    // Fetch usernames
+    const userIds = [...new Set(data.map(p => p.user_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, username")
+      .in("id", userIds);
+    const profileMap = new Map((profiles || []).map(p => [p.id, p.username]));
+
+    setPosts(data.map(p => ({
+      ...p,
+      username: profileMap.get(p.user_id) || "Unknown",
+    })));
     setLoading(false);
   }, []);
 
