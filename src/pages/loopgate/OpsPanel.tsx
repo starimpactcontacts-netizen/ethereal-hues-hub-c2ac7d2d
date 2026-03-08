@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, Sparkles, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel, Megaphone, Bell, DollarSign } from "lucide-react";
+import { ArrowLeft, Plus, Upload, Save, Lock, Unlock, Download, Eye, ChevronDown, ChevronUp, Clock, AlertTriangle, Check, Users, Calendar, Trophy, Image as ImageIcon, X, Pencil, Trash2, ShieldCheck, BadgeCheck, Ban, EyeOff, Shield, UserX, ThumbsUp, ThumbsDown, ShoppingBag, Package, Gift, Coins, Home, Crown, UserPlus, Search, Send, Zap, Play, Square, LinkIcon, Gavel, Megaphone, Bell, DollarSign } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import OpenArenaForm, { getDefaultOpenArenaConfig } from "@/components/loopgate/OpenArenaForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";

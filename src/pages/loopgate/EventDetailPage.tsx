@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, Sparkles, ExternalLink } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Zap, Eye, Users, Send, CheckCircle2, XCircle, Target, Trophy, ExternalLink } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useRealEvents, useEventRankings, useEventStats, useActiveSession, getEventSlug } from "@/hooks/useRealData";
 import { useEventRounds, useUserRoundStatus } from "@/hooks/useOpenArenaData";
 import { useAuth } from "@/hooks/useAuth";
@@ -202,7 +203,7 @@ export default function EventDetailPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-gold">
-                    <Sparkles size={12} />
+                    <GateIcon size={12} />
                     <span>{activeRound.index_reward} INDEX</span>
                   </div>
                 </div>

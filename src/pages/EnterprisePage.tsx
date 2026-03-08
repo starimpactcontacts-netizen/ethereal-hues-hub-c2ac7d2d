@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, ArrowRight, Zap, Trophy, Users, Calendar, Mail, KeyRound, Loader2, Check, Clock, BarChart3, Eye, EyeOff, Play, Flame, Upload, X, ChevronRight, Shield, Sparkles, TrendingUp, Star, User, Crown, Diamond, CreditCard, Wallet, Bitcoin, Handshake, ShoppingBag } from 'lucide-react';
+import { Lock, ArrowRight, Zap, Trophy, Users, Calendar, Mail, KeyRound, Loader2, Check, Clock, BarChart3, Eye, EyeOff, Play, Flame, Upload, X, ChevronRight, Shield, TrendingUp, Star, User, Crown, Diamond, CreditCard, Wallet, Bitcoin, Handshake, ShoppingBag } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';

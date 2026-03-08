@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, Sparkles } from 'lucide-react';
+import { X, Download } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import JudgeReviewCard, { CardTemplate } from './JudgeReviewCard';
 
@@ -55,7 +56,7 @@ export default function CardTemplatePreview({ isOpen, onClose }: CardTemplatePre
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-gold" />
+            <GateIcon className="w-5 h-5 text-gold" />
             <div>
               <h2 className="font-display text-lg">Card Templates</h2>
               <p className="text-xs text-muted-foreground">Preview all available review card styles</p>

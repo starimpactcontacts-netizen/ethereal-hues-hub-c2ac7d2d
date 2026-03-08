@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Minus, Zap, Trophy, Clock, Eye, EyeOff, Users, Target, Percent, ChevronDown, ChevronUp, Sparkles, Settings2 } from "lucide-react";
+import { Plus, Minus, Zap, Trophy, Clock, Eye, EyeOff, Users, Target, Percent, ChevronDown, ChevronUp, Settings2 } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -363,7 +364,7 @@ export default function OpenArenaForm({ config, onChange }: OpenArenaFormProps) 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs flex items-center gap-1">
-                      <Sparkles size={12} className="text-gold" />
+                      <GateIcon size={12} className="text-gold" />
                       Index Reward
                     </Label>
                     <Input

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Video, ExternalLink, Eye, Plus, Trash2, Sparkles, Play, ImagePlus, Upload, Link } from 'lucide-react';
+import { Video, ExternalLink, Eye, Plus, Trash2, Play, ImagePlus, Upload, Link } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useJudgeRatingVideos } from '@/hooks/useJudgeRatingVideos';
 import SubmitRatingVideoModal from './SubmitRatingVideoModal';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
@@ -123,7 +124,7 @@ function VideoCard({
         {/* Viral badge */}
         {video.viral_bonus_awarded && (
           <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-gold/90 flex items-center gap-1">
-            <Sparkles size={10} className="text-black" />
+            <GateIcon size={10} className="text-black" />
             <span className="text-[10px] font-bold text-black">+{video.bonus_xp_awarded} JXP</span>
           </div>
         )}

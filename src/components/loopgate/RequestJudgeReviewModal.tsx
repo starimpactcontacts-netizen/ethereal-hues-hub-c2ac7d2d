@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { X, Send, AlertCircle, Loader2, ChevronDown, Sparkles, MessageSquare } from 'lucide-react';
+import { X, Send, AlertCircle, Loader2, ChevronDown, MessageSquare } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -198,7 +199,7 @@ export default function RequestJudgeReviewModal({
             <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
               <div>
                 <h2 className="font-display text-lg flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-gold" />
+                  <GateIcon className="w-4 h-4 text-gold" />
                   Request Review
                 </h2>
                 <p className="text-xs text-muted-foreground">
@@ -296,7 +297,7 @@ export default function RequestJudgeReviewModal({
                           }`}
                         >
                           <div className="w-6 h-6 rounded-full bg-surface-1 flex items-center justify-center">
-                            <Sparkles size={12} className="text-gold" />
+                            <GateIcon size={12} className="text-gold" />
                           </div>
                           <span className="text-sm">Auto-match</span>
                         </button>
@@ -407,7 +408,7 @@ export default function RequestJudgeReviewModal({
 
               {/* XP Info */}
               <div className="bg-gold/5 border border-gold/20 rounded-lg p-3 flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-gold shrink-0 mt-0.5" />
+                <GateIcon className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground">
                   You'll earn <span className="text-gold font-bold">+10 XP</span> for submitting and{' '}
                   <span className="text-gold font-bold">+15 XP</span> when your review is complete!

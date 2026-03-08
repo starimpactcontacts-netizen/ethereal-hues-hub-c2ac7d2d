@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Sparkles, Shield, Upload, ImagePlus } from "lucide-react";
+import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Shield, Upload, ImagePlus } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -303,7 +304,7 @@ export default function UnitApplicationsTab({ crewId, isOfficer }: UnitApplicati
       {isOfficer && pendingApplications.length > 0 && (
         <div>
           <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-purple-400" />
+            <GateIcon className="w-5 h-5 text-purple-400" />
             Pending Applications
             <Badge variant="secondary">{pendingApplications.length}</Badge>
           </h3>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Target, Flag, Layers, Sparkles, Circle, LogOut, ArrowRight, Clock, AlertCircle, Settings, Newspaper } from "lucide-react";
+import { Plus, Search, Users, Shield, Crown, Star, Zap, Award, ChevronRight, Trophy, Target, Flag, Layers, Circle, LogOut, ArrowRight, Clock, AlertCircle, Settings, Newspaper } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users, Sparkles } from "lucide-react";
+import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTempProfile } from "@/hooks/useTempProfile";

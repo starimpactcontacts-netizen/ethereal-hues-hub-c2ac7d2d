@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, User, Mail, Lock, Loader2, Sparkles, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, User, Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
@@ -225,7 +226,7 @@ export default function LoginPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Sparkles className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+              <GateIcon className="h-4 w-4 inline mr-1.5 -mt-0.5" />
               Magic
             </button>
           </div>
@@ -388,7 +389,7 @@ export default function LoginPage() {
                     className="w-full p-4 rounded-lg bg-surface-1 border border-border hover:border-gold/50 transition-all text-left flex items-center gap-4"
                   >
                     <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center">
-                      <Sparkles className="h-6 w-6 text-gold" />
+                      <GateIcon className="h-6 w-6 text-gold" />
                     </div>
                     <div>
                       <p className="font-medium">One-Tap Magic Link</p>
@@ -435,7 +436,7 @@ export default function LoginPage() {
                 <div className="text-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
                     {magicSubMethod === 'one-tap' ? (
-                      <Sparkles className="h-6 w-6 text-gold" />
+                      <GateIcon className="h-6 w-6 text-gold" />
                     ) : (
                       <Lock className="h-6 w-6 text-gold" />
                     )}
@@ -471,7 +472,7 @@ export default function LoginPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      {magicSubMethod === 'one-tap' ? <Sparkles className="mr-2 h-5 w-5" /> : <Lock className="mr-2 h-5 w-5" />}
+                      {magicSubMethod === 'one-tap' ? <GateIcon className="mr-2 h-5 w-5" /> : <Lock className="mr-2 h-5 w-5" />}
                       Send {magicSubMethod === 'one-tap' ? 'Magic Link' : 'Code'}
                     </>
                   )}
@@ -493,7 +494,7 @@ export default function LoginPage() {
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
                     {magicSubMethod === 'one-tap' ? (
-                      <Sparkles className="h-8 w-8 text-gold" />
+                      <GateIcon className="h-8 w-8 text-gold" />
                     ) : (
                       <Lock className="h-8 w-8 text-gold" />
                     )}

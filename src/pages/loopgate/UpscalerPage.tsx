@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import { ArrowLeft, Upload, Download, Film, Sparkles, Check, Loader2, X, Link2 } from "lucide-react";
+import { ArrowLeft, Upload, Download, Film, Check, Loader2, X, Link2 } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";

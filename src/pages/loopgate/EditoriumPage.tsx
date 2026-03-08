@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft, Play, ExternalLink, Star } from 'lucide-react';
+import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft, Play, ExternalLink, Star } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import SEO, { pageSEO } from '@/components/SEO';
@@ -580,7 +581,7 @@ export default function EditoriumPage() {
             {cultureStories.length > 0 && (
               <div className="mb-10">
                 <SectionBar>
-                  <Sparkles className="w-4 h-4" style={{ color: '#cc0000' }} />
+                  <GateIcon className="w-4 h-4" style={{ color: '#cc0000' }} />
                   <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Culture & Artists</h3>
                   <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{cultureStories.length} features</span>
                 </SectionBar>

@@ -4,7 +4,8 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Users, Sparkles } from "lucide-react";
+import { Copy, Check, Users } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import loopgateLogo from "@/assets/loopgate-wordmark.png";
@@ -89,7 +90,7 @@ export default function CrewInviteModal({
 
           {/* XP Reward indicator */}
           <div className="flex items-center justify-center gap-1.5 text-xs text-gold mb-4">
-            <Sparkles className="w-3 h-3" />
+            <GateIcon className="w-3 h-3" />
             <span>They get +15 XP for joining</span>
           </div>
 

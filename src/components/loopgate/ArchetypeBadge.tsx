@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Film, Music, Swords, Trophy, Gamepad2, Clapperboard, Sparkles, Laugh } from "lucide-react";
+import { Film, Music, Swords, Trophy, Gamepad2, Clapperboard, Laugh } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 
 export const ARCHETYPES = [
   { id: 'film', label: 'Film Editor', icon: Film },
@@ -8,7 +9,7 @@ export const ARCHETYPES = [
   { id: 'sports', label: 'Sports Editor', icon: Trophy },
   { id: 'gaming', label: 'Gaming Editor', icon: Gamepad2 },
   { id: 'trailer', label: 'Trailer Editor', icon: Clapperboard },
-  { id: 'abstract', label: 'Abstract / FX Editor', icon: Sparkles },
+  { id: 'abstract', label: 'Abstract / FX Editor', icon: GateIcon },
   { id: 'meme', label: 'Meme / Shortform Editor', icon: Laugh },
 ] as const;
 

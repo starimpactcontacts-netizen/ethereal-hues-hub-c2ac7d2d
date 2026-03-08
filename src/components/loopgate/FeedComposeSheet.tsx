@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, Sparkles, Link2, Globe } from "lucide-react";
+import { X, Link2, Globe } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import GifPicker from "./GifPicker";
 import MediaUploadButton from "./MediaUploadButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -15,7 +16,7 @@ interface FeedComposeSheetProps {
 
 const POST_TYPES: { id: FeedPostItem['post_type']; label: string; icon: React.ReactNode }[] = [
   { id: 'text', label: 'Loop', icon: <Globe className="w-3.5 h-3.5" /> },
-  { id: 'flex', label: 'Flex', icon: <Sparkles className="w-3.5 h-3.5" /> },
+  { id: 'flex', label: 'Flex', icon: <GateIcon className="w-3.5 h-3.5" /> },
   { id: 'edit_share', label: 'Edit', icon: <Link2 className="w-3.5 h-3.5" /> },
 ];
 

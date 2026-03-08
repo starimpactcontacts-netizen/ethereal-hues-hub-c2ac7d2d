@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Sparkles, Film, Music, Gamepad2, ChevronDown, ChevronUp, Upload, Wand2, Loader2, TrendingUp, Video, ExternalLink, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Eye, EyeOff, Star, Image as ImageIcon, Newspaper, Flame, Crown, Megaphone, Users2, Film, Music, Gamepad2, ChevronDown, ChevronUp, Upload, Wand2, Loader2, TrendingUp, Video, ExternalLink, Search } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -42,7 +43,7 @@ interface UnitOption {
 }
 
 const ARTICLE_CATEGORIES = [
-  { value: 'feature', label: 'Feature', icon: Sparkles, color: '#cc0000' },
+  { value: 'feature', label: 'Feature', icon: GateIcon, color: '#cc0000' },
   { value: 'daily_cover', label: 'Daily Cover', icon: Crown, color: '#d4a020' },
   { value: 'press_release', label: 'Press Release', icon: Megaphone, color: '#2563eb' },
   { value: 'breaking', label: 'Breaking News', icon: Flame, color: '#ef4444' },

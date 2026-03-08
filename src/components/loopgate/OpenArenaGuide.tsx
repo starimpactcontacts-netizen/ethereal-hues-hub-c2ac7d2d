@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { X, Zap, Trophy, Users, Target, Sparkles, ArrowRight, Info } from "lucide-react";
+import { X, Zap, Trophy, Users, Target, ArrowRight, Info } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface OpenArenaGuideProps {
@@ -56,7 +57,7 @@ export default function OpenArenaGuide({ isOpen, onClose }: OpenArenaGuideProps)
       bgColor: "bg-purple-500/10",
     },
     {
-      icon: Sparkles,
+      icon: GateIcon,
       title: "Bonus Rewards",
       description: "Later rounds often have higher Index rewards and bonus multipliers. Push through to maximize your earnings!",
       color: "text-gold",

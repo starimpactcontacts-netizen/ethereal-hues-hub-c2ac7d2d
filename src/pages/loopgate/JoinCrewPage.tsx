@@ -5,7 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import PageTransition from "@/components/loopgate/PageTransition";
 import { Button } from "@/components/ui/button";
-import { Users, Check, Sparkles } from "lucide-react";
+import { Users, Check } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { motion } from "framer-motion";
 import loopgateLogo from "@/assets/loopgate-wordmark.png";
 

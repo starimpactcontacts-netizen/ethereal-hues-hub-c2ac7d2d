@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Music, Sparkles, Star, ArrowLeft, Zap, Trophy, Loader2 } from "lucide-react";
+import { Music, Star, ArrowLeft, Zap, Trophy, Loader2 } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import SongPicker from "./SongPicker";
 import { Button } from "@/components/ui/button";
 import { useSoloMode, getRandomTheme } from "@/hooks/useSoloMode";
@@ -33,7 +34,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
           <div className="flex items-center gap-3 px-4 py-3">
             <button onClick={onBack} className="p-1"><ArrowLeft className="w-5 h-5" /></button>
             <h1 className="font-display text-lg flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold" /> Solo Mode
+              <GateIcon className="w-4 h-4 text-gold" /> Solo Mode
             </h1>
           </div>
         </div>
@@ -118,7 +119,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
           </button>
           <div className="flex-1">
             <h1 className="font-display text-lg flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold" />
+              <GateIcon className="w-4 h-4 text-gold" />
               Solo Mode
             </h1>
             <p className="text-[10px] text-muted-foreground">Pick a song · Get a theme · Edit · Get scored</p>
@@ -145,7 +146,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
                 <div className="space-y-1.5">
                   {[
                     { step: "1", text: "Pick a featured song below", icon: <Music className="w-3 h-3" /> },
-                    { step: "2", text: "Get assigned a random editing theme", icon: <Sparkles className="w-3 h-3" /> },
+                    { step: "2", text: "Get assigned a random editing theme", icon: <GateIcon className="w-3 h-3" /> },
                     { step: "3", text: "Edit your video and submit", icon: <Zap className="w-3 h-3" /> },
                     { step: "4", text: "A judge scores your work — earn up to 100+ Index", icon: <Trophy className="w-3 h-3" /> },
                   ].map(s => (
@@ -199,7 +200,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
                 transition={{ delay: 0.3 }}
                 className="bg-gradient-to-br from-gold/10 via-surface-1 to-gold/5 border border-gold/40 p-6 text-center"
               >
-                <Sparkles className="w-6 h-6 text-gold mx-auto mb-2" />
+                <GateIcon className="w-6 h-6 text-gold mx-auto mb-2" />
                 <p className="text-[10px] text-gold font-bold uppercase tracking-widest mb-1">Your Theme</p>
                 <motion.h2
                   initial={{ opacity: 0, scale: 0.8 }}

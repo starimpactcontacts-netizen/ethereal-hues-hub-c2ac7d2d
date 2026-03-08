@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { JUDGE_XP_LEVELS, getJudgeXPForNextLevel, getJudgeLevelPerk } from '@/hooks/useJudgeLeaderboard';
-import { Gavel, Sparkles } from 'lucide-react';
+import { Gavel } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 
 interface JudgeXPProgressBarProps {
   judgeXp: number;
@@ -56,7 +57,7 @@ export default function JudgeXPProgressBar({
       </div>
       {showPerk && nextPerk && !isMaxLevel && (
         <div className="flex items-center gap-1 mt-1.5">
-          <Sparkles size={10} className="text-purple-400" />
+          <GateIcon size={10} className="text-purple-400" />
           <span className="text-[9px] text-purple-400">
             Unlock at JLv{judgeLevel + 1}: {nextPerk}
           </span>

@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
-import { Gavel, Star, Sparkles, Flame, Zap, Crown, Skull, Award } from 'lucide-react';
+import { Gavel, Star, Flame, Zap, Crown, Skull, Award } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import loopgateLogo from '@/assets/loopgate-logo.png';
 
 // Card template types
@@ -141,7 +142,7 @@ const TEMPLATE_STYLES: Record<CardTemplate, {
     pillBg: 'bg-[#f0f0f0]',
     gradeBg: 'bg-black',
     gradeText: 'text-white',
-    icon: Sparkles,
+    icon: GateIcon,
     logoFilter: 'invert(1)',
   },
 };

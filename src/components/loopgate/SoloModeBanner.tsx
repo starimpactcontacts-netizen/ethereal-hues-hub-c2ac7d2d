@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Music, Trophy, Send, X, Loader2, Clock, Monitor, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { Music, Trophy, Send, X, Loader2, Clock, Monitor, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useSoloMode } from "@/hooks/useSoloMode";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -78,7 +79,7 @@ export default function SoloModeBanner({ soloId }: { soloId: string }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-gold/20 flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4 text-gold" />
+            <GateIcon className="w-4 h-4 text-gold" />
           </div>
           <div>
             <p className="text-[10px] text-gold font-bold uppercase tracking-wider">Solo Mode Active</p>

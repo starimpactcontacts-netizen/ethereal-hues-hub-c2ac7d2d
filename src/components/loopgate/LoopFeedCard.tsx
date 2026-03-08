@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, Swords, Video, Heart, Bookmark, BarChart3 } from "lucide-react";
+import { Star, Trophy, MessageCircle, Share2, ExternalLink, Swords, Video, Heart, Bookmark, BarChart3 } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -81,7 +82,7 @@ function getTypeBadge(type: string, status?: string) {
   if (type === 'quick_fight') return { label: 'QUICK 1v1', icon: <Swords className="w-2.5 h-2.5" />, cls: 'text-red-400' };
   if (type === 'battle') return { label: '1v1', icon: <Swords className="w-2.5 h-2.5" />, cls: 'text-red-400' };
   if (type === 'judge_video') return { label: 'JUDGE', icon: <Video className="w-2.5 h-2.5" />, cls: 'text-purple-400' };
-  return { label: 'REVIEW', icon: <Sparkles className="w-2.5 h-2.5" />, cls: 'text-purple-400' };
+  return { label: 'REVIEW', icon: <GateIcon className="w-2.5 h-2.5" />, cls: 'text-purple-400' };
 }
 
 interface LoopFeedCardProps {
