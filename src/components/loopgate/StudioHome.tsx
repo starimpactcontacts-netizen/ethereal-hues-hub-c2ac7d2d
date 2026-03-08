@@ -294,6 +294,7 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
           </div>
         </section>
       </div>
+      </div>
     </div>
   );
 }
