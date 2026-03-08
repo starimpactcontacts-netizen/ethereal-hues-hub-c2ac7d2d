@@ -489,7 +489,7 @@ export default function HubPage() {
                           </div>
                         )}
                         <div className="inline-flex items-center gap-0.5 px-2 py-0.5">
-                          <span className={`text-[9px] font-bold ${classRankConfig.color}`}>{classLetter}</span>
+                          <span className={`text-[9px] font-bold ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</span>
                         </div>
                       </div>
                     </div>
