@@ -59,7 +59,7 @@ const bannerGradients = [
   "from-violet-900 via-purple-800 to-fuchsia-900",
 ];
 
-// Unit Card Component
+// Unit Card Component — premium redesign
 const UnitCard = ({ 
   crew, 
   index, 
@@ -79,134 +79,125 @@ const UnitCard = ({
   canJoinPrimary?: boolean;
   canJoinSecondary?: boolean;
 }) => {
-  const gradient = bannerGradients[index % bannerGradients.length];
   const onlineCount = Math.max(1, Math.floor(crew.member_count * 0.25));
+  const teko = { fontFamily: 'Teko, sans-serif' };
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04 }}
+      transition={{ delay: index * 0.03 }}
       onClick={onClick}
       className="group cursor-pointer"
     >
-      {/* Banner */}
-      <div className={`relative h-28 sm:h-32 rounded-t-xl overflow-hidden bg-gradient-to-br ${gradient}`}>
-        {crew.banner_url ? (
-          <img src={crew.banner_url} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `radial-gradient(circle at 30% 70%, rgba(255,255,255,0.1) 0%, transparent 50%)`
-            }} />
-          </div>
-        )}
-        
-        {crew.is_featured && (
-          <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-gold/20 backdrop-blur-sm">
-            <Star className="w-3 h-3 text-gold fill-gold" />
-          </div>
-        )}
-      </div>
-      
-      {/* Content with Avatar overlapping */}
-      <div className="bg-surface-1 rounded-b-xl p-3 border-x border-b border-border/40 group-hover:border-purple-500/30 transition-colors">
-        {/* Avatar - positioned to overlap banner */}
-        <div className="relative z-10 -mt-8 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-surface-1 border-[3px] border-surface-1 overflow-hidden flex items-center justify-center shadow-lg">
-            {crew.avatar_url ? (
-              <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="text-muted-foreground scale-75">
-                {emblemIcons[crew.emblem] || <Shield className="w-6 h-6" />}
-              </div>
-            )}
+      <div className="relative rounded-xl overflow-hidden border border-border/20 hover:border-border/50 bg-muted/5 transition-all duration-300 hover:bg-muted/10">
+        {/* Banner strip */}
+        <div className="h-24 sm:h-28 relative overflow-hidden">
+          {crew.banner_url ? (
+            <img src={crew.banner_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-muted/30 via-muted/10 to-background" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+          
+          {crew.is_featured && (
+            <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gold/20 backdrop-blur-sm flex items-center justify-center">
+              <Star className="w-3 h-3 text-gold fill-gold" />
+            </div>
+          )}
+          
+          {/* Avatar floating at bottom-left */}
+          <div className="absolute -bottom-5 left-3 z-10">
+            <div className="w-[42px] h-[42px] rounded-lg bg-background border-2 border-background overflow-hidden flex items-center justify-center shadow-lg">
+              {crew.avatar_url ? (
+                <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-muted-foreground/60 scale-75">
+                  {emblemIcons[crew.emblem] || <Shield className="w-5 h-5" />}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         
-        <h3 className="font-semibold text-sm truncate mb-1 group-hover:text-white transition-colors">
-          {crew.name}
-        </h3>
-        
-        <p className="text-xs text-muted-foreground line-clamp-2 mb-3 min-h-[32px]">
-          {crew.description || "A unit for competitive editors."}
-        </p>
-        
-        {/* Stats */}
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-3">
-          <span className="flex items-center gap-1">
-            <Circle className="w-1.5 h-1.5 fill-green-500 text-green-500" />
-            <span className="text-foreground">{onlineCount}</span> Online
-          </span>
-          <span className="flex items-center gap-1">
-            <Circle className="w-1.5 h-1.5 fill-muted-foreground" />
-            <span className="text-foreground">{crew.member_count}</span>
-            {crew.max_members ? `/${crew.max_members}` : ""} Members
-          </span>
-        </div>
+        {/* Content */}
+        <div className="pt-7 pb-3 px-3">
+          <h3 className="text-sm font-bold uppercase tracking-wide truncate text-foreground/90 group-hover:text-foreground transition-colors" style={teko}>
+            {crew.name}
+          </h3>
+          
+          <p className="text-[10px] text-muted-foreground/50 line-clamp-2 mb-3 min-h-[24px] leading-relaxed">
+            {crew.description || "A competitive editing unit."}
+          </p>
+          
+          {/* Stats row */}
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground/40 mb-3">
+            <span className="flex items-center gap-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="text-foreground/60 font-medium">{onlineCount}</span> online
+            </span>
+            <span className="flex items-center gap-1">
+              <Users className="w-2.5 h-2.5" />
+              <span className="text-foreground/60 font-medium">{crew.member_count}</span>
+              {crew.max_members ? `/${crew.max_members}` : ""}
+            </span>
+          </div>
 
-        {/* Unit Full indicator */}
-        {crew.max_members && crew.member_count >= crew.max_members && (
-          <div className="text-[10px] text-red-400 mb-2 flex items-center gap-1">
-            <span>Unit Full</span>
-          </div>
-        )}
-        
-        {/* Actions - hide join buttons if unit is full */}
-        {showActions && (canJoinPrimary || canJoinSecondary) && (
-          <>
-            {crew.max_members && crew.member_count >= crew.max_members ? (
-              <div className="py-2 px-4 bg-muted/50 rounded-md text-center text-xs text-muted-foreground">
-                Unit Full
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                {canJoinPrimary && !canJoinSecondary && (
-                  <Button
-                    size="sm"
-                    onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
-                    className="w-full h-8 text-xs bg-gold text-background hover:bg-gold/90"
-                  >
-                    <Crown className="w-3 h-3 mr-1" />
-                    Join as Primary
-                  </Button>
-                )}
-                {canJoinSecondary && !canJoinPrimary && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
-                    className="w-full h-8 text-xs border-purple-500/40 text-purple-400 hover:bg-purple-500/10"
-                  >
-                    <Plus className="w-3 h-3 mr-1" />
-                    Join
-                  </Button>
-                )}
-                {canJoinPrimary && canJoinSecondary && (
-                  <>
+          {/* Full indicator */}
+          {crew.max_members && crew.member_count >= crew.max_members && (
+            <div className="text-[9px] text-destructive/70 mb-2 font-semibold uppercase tracking-wider">Unit Full</div>
+          )}
+          
+          {/* Actions */}
+          {showActions && (canJoinPrimary || canJoinSecondary) && (
+            <>
+              {crew.max_members && crew.member_count >= crew.max_members ? (
+                <div className="py-1.5 text-center text-[10px] text-muted-foreground/40 font-medium">Full</div>
+              ) : (
+                <div className="flex gap-1.5">
+                  {canJoinPrimary && !canJoinSecondary && (
                     <Button
                       size="sm"
                       onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
-                      className="flex-1 h-8 text-xs bg-gold text-background hover:bg-gold/90"
+                      className="w-full h-7 text-[10px] bg-foreground text-background hover:bg-foreground/90 font-bold"
                     >
-                      <Crown className="w-3 h-3 mr-1" />
-                      Primary
+                      Join as Primary
                     </Button>
+                  )}
+                  {canJoinSecondary && !canJoinPrimary && (
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
-                      className="flex-1 h-8 text-xs border-border text-muted-foreground hover:bg-surface-2"
+                      className="w-full h-7 text-[10px] border-border/30 hover:border-foreground/30 font-bold"
                     >
-                      <Plus className="w-3 h-3 mr-1" />
                       Join
                     </Button>
-                  </>
-                )}
-              </div>
-            )}
-          </>
-        )}
+                  )}
+                  {canJoinPrimary && canJoinSecondary && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); onJoinPrimary?.(); }}
+                        className="flex-1 h-7 text-[10px] bg-foreground text-background hover:bg-foreground/90 font-bold"
+                      >
+                        Primary
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => { e.stopPropagation(); onJoinSecondary?.(); }}
+                        className="flex-1 h-7 text-[10px] border-border/30 font-bold"
+                      >
+                        Join
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -390,20 +381,22 @@ export default function CrewsPage() {
     { id: "top" as const, label: "Top" },
   ];
 
+  const teko = { fontFamily: 'Teko, sans-serif' };
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background pb-24">
-        {/* Header */}
-        <div className="sticky top-0 z-50 bg-surface-0/95 backdrop-blur-md border-b border-border/50">
-          <div className="px-4 py-3 flex items-center justify-between">
+        {/* Header — minimal, authoritative */}
+        <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
+          <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-70" />
-              <span className="text-sm font-medium text-muted-foreground">/units</span>
+              <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-50" />
+              <span className="text-[11px] font-medium text-muted-foreground/40 tracking-wider uppercase">/units</span>
             </div>
             <Button
               size="sm"
               onClick={() => navigate("/units/create")}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold h-8"
+              className="bg-foreground text-background hover:bg-foreground/90 font-bold h-8 text-xs"
             >
               <Plus className="w-3.5 h-3.5 mr-1" />
               Create
@@ -411,16 +404,16 @@ export default function CrewsPage() {
           </div>
           
           {/* Category Tabs + Search */}
-          <div className="px-4 pb-3 flex items-center gap-4">
-            <div className="flex items-center gap-4">
+          <div className="px-4 sm:px-6 pb-3 flex items-center gap-4">
+            <div className="flex items-center gap-5">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`text-sm font-medium pb-1 border-b-2 transition-colors ${
+                  className={`text-xs font-bold uppercase tracking-[0.1em] pb-1 border-b-2 transition-all ${
                     activeCategory === cat.id
-                      ? "text-white border-gold"
-                      : "text-muted-foreground border-transparent hover:text-foreground"
+                      ? "text-foreground border-foreground"
+                      : "text-muted-foreground/40 border-transparent hover:text-muted-foreground"
                   }`}
                 >
                   {cat.label}
@@ -431,33 +424,33 @@ export default function CrewsPage() {
             <div className="flex-1" />
             
             <div className="relative w-40">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/30" />
               <input
                 type="text"
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-surface-1 border border-border/50 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-purple-500/50"
+                className="w-full bg-muted/10 border border-border/20 rounded-lg pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-foreground/20 transition-colors"
               />
             </div>
           </div>
         </div>
 
-        {/* Hero */}
-        <div className="px-4 pt-6 pb-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-display text-4xl sm:text-5xl tracking-wide text-white leading-none mb-2">
-              FIND YOUR UNIT
+        {/* Hero — bold, short */}
+        <div className="px-4 sm:px-6 pt-8 pb-6">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-wide text-foreground leading-[0.9] mb-2" style={teko}>
+              FIND YOUR<br />UNIT
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Compete together. Climb together.
+            <p className="text-xs text-muted-foreground/40 tracking-wider uppercase font-medium">
+              Compete together · Climb together
             </p>
           </motion.div>
         </div>
 
         {/* Tab Switch */}
-        <div className="px-4 mb-5">
-          <div className="inline-flex gap-1 p-1 bg-surface-1 rounded-lg">
+        <div className="px-4 sm:px-6 mb-6">
+          <div className="inline-flex gap-0 border border-border/20 rounded-lg overflow-hidden">
             {[
               { id: "discover" as const, label: "Discover", icon: Target },
               { id: "my-units" as const, label: "My Units", icon: Layers, count: (primaryCrew ? 1 : 0) + secondaryCrews.length },
@@ -465,16 +458,16 @@ export default function CrewsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition-all ${
                   activeTab === tab.id
-                    ? "bg-white text-background"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground/50 hover:text-foreground bg-transparent"
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className="w-3.5 h-3.5" />
                 {tab.label}
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-purple-500 text-white text-[9px] font-bold">
+                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[8px] font-bold">
                     {tab.count}
                   </span>
                 )}

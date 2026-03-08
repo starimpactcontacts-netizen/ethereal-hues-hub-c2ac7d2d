@@ -586,209 +586,225 @@ export default function CrewDetailPage() {
     { id: 'challenges', icon: <Calendar className="w-4 h-4" />, label: 'Quests' },
   ];
 
+  const teko = { fontFamily: 'Teko, sans-serif' };
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background flex flex-col pb-20">
-        {/* Cinematic Hero Header */}
+        {/* ═══ CINEMATIC HERO ═══ */}
         <div className="relative">
-          {/* Banner Background */}
+          {/* Banner — taller, more immersive */}
           <div 
-            className="h-40 w-full relative overflow-hidden"
+            className="h-52 sm:h-64 w-full relative overflow-hidden"
             style={{
               background: crew.banner_url 
                 ? `url(${crew.banner_url}) center/cover` 
                 : crew.banner_color 
-                  ? `linear-gradient(135deg, ${crew.banner_color}60, ${crew.banner_color}20, rgba(0,0,0,0.9))` 
-                  : 'linear-gradient(135deg, rgba(212,175,55,0.3), rgba(212,175,55,0.1), rgba(0,0,0,0.9))'
+                  ? `linear-gradient(160deg, ${crew.banner_color}50, ${crew.banner_color}15, rgba(0,0,0,0.95))` 
+                  : 'linear-gradient(160deg, rgba(255,255,255,0.08), rgba(0,0,0,0.95))'
             }}
           >
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background" />
+            {/* Cinematic gradient fade */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-background" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
             
-            {/* Decorative Lines */}
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
-              <div className="absolute bottom-20 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-            </div>
+            {/* Subtle scan lines */}
+            <div className="absolute inset-0 opacity-[0.03]" style={{
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)'
+            }} />
           </div>
 
-          {/* Back Button */}
-          <button 
-            onClick={() => navigate("/units")} 
-            className="absolute top-4 left-4 z-20 w-9 h-9 rounded-md bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-
-          {/* Settings Button */}
-          {canAccessSettings && (
+          {/* Nav overlay */}
+          <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-4 pt-4">
             <button 
-              onClick={() => navigate(`/units/${crewId}/settings`)}
-              className="absolute top-4 right-4 z-20 w-9 h-9 rounded-md bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => navigate("/units")} 
+              className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
             >
-              <Settings className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
             </button>
-          )}
-
-          {/* Unit Identity Card - Overlapping the banner */}
-          <div className="relative z-10 -mt-16 px-4">
-            <div className="bg-surface-1 border border-border rounded-lg p-4">
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div className="w-20 h-20 rounded-md bg-surface-2 border-2 border-gold/30 overflow-hidden flex items-center justify-center text-gold shrink-0 -mt-10 shadow-lg">
-                  {crew.avatar_url ? (
-                    <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
-                  ) : (
-                    emblemIcons[crew.emblem] || <Shield className="w-10 h-10" />
-                  )}
-                </div>
-                
-                {/* Info */}
-                <div className="flex-1 min-w-0 pt-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h1 className="font-display text-xl tracking-wide truncate">{crew.name}</h1>
-                    {crew.is_featured && (
-                      <Star className="w-4 h-4 text-gold fill-gold shrink-0" />
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{crew.description || "No description"}</p>
-                </div>
-              </div>
-
-              {/* Stats Row */}
-              <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-border">
-                <div className="text-center">
-                  <div className="flex justify-center mb-1">
-                    <CrewLevelBadge level={crewStats.crewLevel} size="sm" />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Level</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-display text-lg">
-                    {members.length}
-                    {crew.max_members && <span className="text-muted-foreground text-sm">/{crew.max_members}</span>}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Members</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-display text-lg text-gold">{crewStats.totalXP.toLocaleString()}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">XP</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Circle className="w-2 h-2 fill-green-500 text-green-500" />
-                    <p className="font-display text-lg">{onlineCount}</p>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Online</p>
-                </div>
-              </div>
-
-              {/* XP Progress Bar */}
-              <div className="mt-3">
-                <Progress value={progressToNext} className="h-1.5" />
-                <p className="text-[10px] text-muted-foreground text-right mt-1">
-                  {Math.round(progressToNext)}% to Level {crewStats.crewLevel + 1}
-                </p>
-              </div>
-
-              {/* Action Buttons */}
+            <div className="flex gap-2">
               {myRole && (
-                <div className="flex flex-col gap-2 mt-4">
-                  {/* Primary Row: Channels + Icons */}
-                  <div className="flex gap-2">
-                    <motion.div
-                      className="flex-1 relative"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.97 }}
-                    >
-                      {/* Glitch offset layers */}
-                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-500 to-red-500 translate-x-[3px] translate-y-[3px] opacity-40 blur-[1px]" />
-                      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-cyan-400 to-purple-500 -translate-x-[3px] -translate-y-[3px] opacity-30 blur-[1px]" />
-                      <Button
-                        onClick={() => navigate(`/units/${crewId}/channels`)}
-                        size="lg"
-                        className="w-full bg-gold text-black hover:bg-gold/90 font-bold text-base h-14 relative z-10 shadow-[0_0_20px_rgba(234,179,8,0.3)]"
-                      >
-                        <MessageCircle className="w-5 h-5 mr-2" />
-                        Channels
-                        {channelUnreadCount > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-[10px] px-2 py-0.5 rounded-full font-bold min-w-[22px] text-center animate-pulse">
-                            {channelUnreadCount > 99 ? "99+" : channelUnreadCount}
-                          </span>
-                        )}
-                      </Button>
-                    </motion.div>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowInviteModal(true)}
-                      className="border-border hover:border-gold/50 hover:bg-gold/5"
-                    >
-                      <Share2 className="w-4 h-4" />
-                    </Button>
-                    {crew.discord_url && (
-                      <a href={crew.discord_url} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" className="border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/10">
-                          <SiDiscord className="w-4 h-4" />
-                        </Button>
-                      </a>
-                    )}
-                    {myRole !== "owner" && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" className="border-red-500/30 text-red-500 hover:bg-red-500/10">
-                            <LogOut className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                          <AlertDialogTitle>Leave Unit?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to leave {crew.name}?
-                          </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleLeaveCrew}>Leave</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    )}
-                  </div>
-                  
-                  {/* Propose Tournament Button - Owner Only */}
-                  {isOwner && (
-                    <Button
-                      onClick={() => setShowProposalForm(true)}
-                      variant="outline"
-                      className="w-full border-gold/30 text-gold hover:bg-gold/10 font-semibold gap-2"
-                    >
-                      <Trophy className="w-4 h-4" />
-                      Propose Sanctioned Tournament
-                    </Button>
-                  )}
-                </div>
+                <button 
+                  onClick={() => setShowInviteModal(true)}
+                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                </button>
+              )}
+              {canAccessSettings && (
+                <button 
+                  onClick={() => navigate(`/units/${crewId}/settings`)}
+                  className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
               )}
             </div>
           </div>
+
+          {/* ═══ IDENTITY BLOCK — overlaps banner ═══ */}
+          <div className="relative z-10 -mt-20 px-4 sm:px-6">
+            <div className="flex items-end gap-4 mb-4">
+              {/* Avatar — large, bold */}
+              <div className="w-[88px] h-[88px] rounded-xl bg-background border-[3px] border-background overflow-hidden flex items-center justify-center shrink-0 shadow-2xl shadow-black/60">
+                {crew.avatar_url ? (
+                  <img src={crew.avatar_url} alt={crew.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-muted/30 flex items-center justify-center text-muted-foreground">
+                    {emblemIcons[crew.emblem] || <Shield className="w-10 h-10" />}
+                  </div>
+                )}
+              </div>
+              
+              {/* Name & description */}
+              <div className="flex-1 min-w-0 pb-1">
+                <div className="flex items-center gap-2.5 mb-1">
+                  <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wide text-foreground leading-none truncate" style={teko}>
+                    {crew.name}
+                  </h1>
+                  {crew.is_featured && (
+                    <Star className="w-4 h-4 text-gold fill-gold shrink-0" />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed max-w-lg">
+                  {crew.description || "No description set."}
+                </p>
+              </div>
+            </div>
+
+            {/* ═══ STATS BAR — sleek horizontal strip ═══ */}
+            <div className="flex items-center gap-0 border-y border-border/30 py-3 mb-1">
+              {/* Level */}
+              <div className="flex-1 flex items-center justify-center gap-2">
+                <CrewLevelBadge level={crewStats.crewLevel} size="sm" />
+                <div>
+                  <p className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">Level</p>
+                </div>
+              </div>
+              
+              <div className="w-px h-8 bg-border/20" />
+              
+              {/* Members */}
+              <div className="flex-1 text-center">
+                <p className="text-lg font-black text-foreground leading-none" style={teko}>
+                  {members.length}
+                </p>
+                <p className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">Members</p>
+              </div>
+              
+              <div className="w-px h-8 bg-border/20" />
+              
+              {/* XP */}
+              <div className="flex-1 text-center">
+                <p className="text-lg font-black text-gold leading-none" style={teko}>
+                  {crewStats.totalXP.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">XP</p>
+              </div>
+              
+              <div className="w-px h-8 bg-border/20" />
+              
+              {/* Online */}
+              <div className="flex-1 text-center">
+                <div className="flex items-center justify-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <p className="text-lg font-black text-green-400 leading-none" style={teko}>
+                    {onlineCount}
+                  </p>
+                </div>
+                <p className="text-[10px] text-muted-foreground/50 uppercase tracking-[0.15em] font-semibold">Online</p>
+              </div>
+            </div>
+
+            {/* XP Progress — minimal */}
+            <div className="mb-4">
+              <Progress value={progressToNext} className="h-1 bg-muted/20" />
+              <p className="text-[9px] text-muted-foreground/40 text-right mt-1 font-medium">
+                {Math.round(progressToNext)}% to Level {crewStats.crewLevel + 1}
+              </p>
+            </div>
+
+            {/* ═══ ACTION BAR ═══ */}
+            {myRole && (
+              <div className="flex gap-2 mb-4">
+                <motion.div className="flex-1 relative" whileTap={{ scale: 0.97 }}>
+                  <Button
+                    onClick={() => navigate(`/units/${crewId}/channels`)}
+                    className="w-full bg-foreground text-background hover:bg-foreground/90 font-bold text-sm h-11 relative"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Channels
+                    {channelUnreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] px-1.5 py-0.5 rounded-full font-bold min-w-[18px] text-center animate-pulse">
+                        {channelUnreadCount > 99 ? "99+" : channelUnreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </motion.div>
+                
+                {crew.discord_url && (
+                  <a href={crew.discord_url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" className="h-11 border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/10">
+                      <SiDiscord className="w-4 h-4" />
+                    </Button>
+                  </a>
+                )}
+                
+                {myRole !== "owner" && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" className="h-11 border-border/30 text-muted-foreground hover:text-destructive hover:border-destructive/30">
+                        <LogOut className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Leave Unit?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to leave {crew.name}?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleLeaveCrew}>Leave</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            )}
+
+            {/* Propose Tournament — subtle */}
+            {isOwner && (
+              <Button
+                onClick={() => setShowProposalForm(true)}
+                variant="ghost"
+                className="w-full h-9 text-xs text-gold/60 hover:text-gold hover:bg-gold/5 font-semibold gap-2 mb-2"
+              >
+                <Trophy className="w-3.5 h-3.5" />
+                Propose Sanctioned Tournament
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Tabs Navigation */}
-        <div className="sticky top-0 z-30 bg-background border-b border-border mt-4">
-          <div className="flex overflow-x-auto scrollbar-hide px-2">
+        {/* ═══ TABS — refined, edge-to-edge ═══ */}
+        <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/20">
+          <div className="flex overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-3 py-3 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                className={`flex items-center gap-1.5 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.08em] whitespace-nowrap border-b-2 transition-all ${
                   activeTab === tab.id
-                    ? 'border-gold text-gold'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    ? 'border-foreground text-foreground'
+                    : 'border-transparent text-muted-foreground/50 hover:text-muted-foreground'
                 }`}
               >
                 {tab.icon}
                 <span>{tab.label}</span>
                 {tab.badge && tab.badge > 0 && (
-                  <span className="min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
+                  <span className="min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold">
                     {tab.badge > 9 ? '9+' : tab.badge}
                   </span>
                 )}
