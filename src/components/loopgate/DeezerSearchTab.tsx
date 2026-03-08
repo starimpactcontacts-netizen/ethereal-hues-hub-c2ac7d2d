@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Search, Play, Pause, Loader2, Plus, ExternalLink } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Search, Play, Pause, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface DeezerTrack {
   id: number;
   title: string;
   artist: { name: string; picture_small: string };
-  album: { title: string; cover_small: string };
-  preview: string; // 30s MP3 preview URL
+  album: { title: string; cover_small: string; cover_medium?: string };
+  preview: string;
   duration: number;
   link: string;
 }
@@ -18,116 +18,122 @@ interface DeezerSearchTabProps {
   isPlaying: boolean;
 }
 
+const CORS_PROXIES = [
+  (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  (url: string) => url, // direct (may work in some environments)
+];
+
 export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPlaying }: DeezerSearchTabProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DeezerTrack[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const search = async (q: string) => {
     if (!q.trim()) return;
     setLoading(true);
     setSearched(true);
-    try {
-      // Deezer API supports CORS via JSONP, but we'll use a proxy approach
-      // Using the cors-anywhere pattern or direct fetch (Deezer allows it for search)
-      const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=20`)}`);
-      const data = await res.json();
-      setResults(data.data || []);
-    } catch (err) {
-      console.error('Deezer search failed:', err);
-      // Fallback: try direct (may work in some browsers)
+
+    const baseUrl = `https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=25`;
+
+    for (const proxy of CORS_PROXIES) {
       try {
-        const res = await fetch(`https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=20`);
+        const res = await fetch(proxy(baseUrl));
+        if (!res.ok) continue;
         const data = await res.json();
-        setResults(data.data || []);
+        if (data.data && Array.isArray(data.data)) {
+          setResults(data.data.filter((t: DeezerTrack) => t.preview));
+          setLoading(false);
+          return;
+        }
       } catch {
-        setResults([]);
+        continue;
       }
     }
+    setResults([]);
     setLoading(false);
   };
 
-  const formatDuration = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
   return (
     <div>
-      {/* Search bar */}
-      <div className="px-3 py-2 border-b border-border">
-        <form onSubmit={(e) => { e.preventDefault(); search(query); }} className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+      {/* Search bar — large touch target */}
+      <div className="px-4 py-3 border-b border-border">
+        <form onSubmit={(e) => { e.preventDefault(); search(query); inputRef.current?.blur(); }} className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
+            ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search any song globally..."
-            className="w-full bg-surface-1 border border-border/30 rounded-md pl-8 pr-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-emerald-500/40"
+            enterKeyHint="search"
+            className="w-full bg-surface-1 border border-border/30 rounded-xl pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
           />
         </form>
-        <p className="text-[8px] text-muted-foreground/40 mt-1 text-center">
+        <p className="text-[9px] text-muted-foreground/40 mt-1.5 text-center">
           Powered by Deezer · 30s previews · Free worldwide
         </p>
       </div>
 
       {/* Results */}
-      <div className="max-h-64 overflow-y-auto">
+      <div className="max-h-[50vh] overflow-y-auto overscroll-contain">
         {loading && (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-5 h-5 text-emerald-500 animate-spin" />
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
           </div>
         )}
 
         {!loading && searched && results.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-xs text-muted-foreground">No results found</p>
+          <div className="text-center py-12">
+            <p className="text-sm text-muted-foreground">No results found</p>
+            <p className="text-xs text-muted-foreground/50 mt-1">Try a different search term</p>
           </div>
         )}
 
         {!loading && !searched && (
-          <div className="text-center py-8 px-4">
-            <Search className="w-6 h-6 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-xs text-muted-foreground/60">Search millions of songs</p>
-            <p className="text-[9px] text-muted-foreground/40 mt-0.5">Play 30-second previews instantly</p>
+          <div className="text-center py-12 px-6">
+            <Search className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground/60">Search millions of songs</p>
+            <p className="text-xs text-muted-foreground/40 mt-1">Play 30-second previews instantly</p>
           </div>
         )}
 
         {results.map((track) => {
-          const isCurrentlyPlaying = currentPreviewUrl === track.preview && isPlaying;
-
+          const active = currentPreviewUrl === track.preview && isPlaying;
           return (
             <button
               key={track.id}
-              onClick={() => onPlayPreview(track.preview, track.title, track.artist.name, track.album.cover_small)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
-                isCurrentlyPlaying ? 'bg-emerald-500/10' : 'hover:bg-surface-1'
+              onClick={() => onPlayPreview(track.preview, track.title, track.artist.name, track.album.cover_medium || track.album.cover_small)}
+              className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors active:bg-emerald-500/15 ${
+                active ? 'bg-emerald-500/10' : 'hover:bg-surface-1'
               }`}
             >
-              <div className="w-9 h-9 rounded-sm bg-surface-1 overflow-hidden shrink-0 relative group">
+              <div className="w-12 h-12 rounded-lg bg-surface-1 overflow-hidden shrink-0 relative">
                 <img src={track.album.cover_small} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  {isCurrentlyPlaying ? (
-                    <Pause size={14} className="text-white" />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  {active ? (
+                    <Pause size={18} className="text-white" />
                   ) : (
-                    <Play size={14} className="text-white ml-0.5" />
+                    <Play size={18} className="text-white ml-0.5" />
                   )}
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className={`text-xs font-medium truncate ${isCurrentlyPlaying ? 'text-emerald-400' : 'text-foreground'}`}>
+                <p className={`text-sm font-medium truncate ${active ? 'text-emerald-400' : 'text-foreground'}`}>
                   {track.title}
                 </p>
-                <p className="text-[9px] text-muted-foreground truncate">
-                  {track.artist.name} · {formatDuration(track.duration)}
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {track.artist.name} · {fmt(track.duration)}
                 </p>
               </div>
-              {isCurrentlyPlaying && (
-                <div className="flex gap-[2px] items-end h-3 shrink-0">
+              {active && (
+                <div className="flex gap-[2px] items-end h-4 shrink-0">
                   {[0, 1, 2].map(b => (
-                    <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
-                      animate={{ height: ['4px', '12px', '4px'] }}
+                    <motion.div key={b} className="w-[3px] bg-emerald-500 rounded-full"
+                      animate={{ height: ['5px', '16px', '5px'] }}
                       transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }} />
                   ))}
                 </div>

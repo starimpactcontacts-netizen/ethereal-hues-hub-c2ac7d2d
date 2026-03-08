@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Radio, Music, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Users, Loader2, Pencil, Search, Send, Scissors, Share2, Heart } from 'lucide-react';
+import { Radio, Music, Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Users, Loader2, Pencil, Search, Send, Share2 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -171,6 +171,7 @@ export default function PlaylistsPage() {
   }, [deezerNow, isPlaying, playUrl, stopProgress]);
 
   const pause = useCallback(() => { audioRef.current?.pause(); setIsPlaying(false); stopProgress(); }, [stopProgress]);
+
   const togglePlay = useCallback(() => {
     if (isPlaying) { pause(); return; }
     if (audioRef.current?.src) { audioRef.current.play().then(() => { setIsPlaying(true); startProgress(); }).catch(() => {}); }
@@ -180,10 +181,8 @@ export default function PlaylistsPage() {
   useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
   useEffect(() => () => { cleanupAudio(); }, [cleanupAudio]);
 
-  // Handle upload with trim picker
   const handleUploadIntent = (file: File) => {
-    // Check if file needs trimming — show picker for files that might be long
-    if (file.size > 1 * 1024 * 1024) { // >1MB, likely long
+    if (file.size > 1 * 1024 * 1024) {
       setTrimFile(file);
     } else {
       uploadTrack(file);
@@ -208,12 +207,22 @@ export default function PlaylistsPage() {
   const np = getNowPlaying();
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: 'radio', label: 'Radio', icon: <Radio size={14} /> },
-    { key: 'mine', label: 'Mine', icon: <Music size={14} /> },
-    { key: 'search', label: 'Search', icon: <Search size={14} /> },
-    { key: 'community', label: 'Community', icon: <Users size={14} /> },
-    { key: 'pitch', label: 'Pitch', icon: <Send size={14} /> },
+    { key: 'radio', label: 'Radio', icon: <Radio size={isMobile ? 16 : 14} /> },
+    { key: 'mine', label: 'Mine', icon: <Music size={isMobile ? 16 : 14} /> },
+    { key: 'search', label: 'Search', icon: <Search size={isMobile ? 16 : 14} /> },
+    { key: 'community', label: 'Community', icon: <Users size={isMobile ? 16 : 14} /> },
+    { key: 'pitch', label: 'Pitch', icon: <Send size={isMobile ? 16 : 14} /> },
   ];
+
+  const skipNext = () => {
+    if (playbackSource === 'radio') playRadio((currentIndex + 1) % featuredTracks.length);
+    else if (playbackSource === 'mine') playMy((myPlaylistIndex + 1) % myTracks.length);
+  };
+
+  const skipPrev = () => {
+    if (playbackSource === 'radio') playRadio((currentIndex - 1 + featuredTracks.length) % featuredTracks.length);
+    else if (playbackSource === 'mine') playMy((myPlaylistIndex - 1 + myTracks.length) % myTracks.length);
+  };
 
   return (
     <>
@@ -222,21 +231,21 @@ export default function PlaylistsPage() {
         <meta name="description" content="Browse LOOPGATE playlists, create your own, search global music, and pitch tracks to Loopgate Radio." />
       </Helmet>
 
-      <div className="min-h-screen bg-background pb-32">
+      <div className="min-h-screen bg-background pb-36 md:pb-24">
         {/* Header */}
         <div className="px-4 pt-6 pb-2 max-w-5xl mx-auto">
           <h1 className="text-xl md:text-2xl font-display font-bold text-foreground">Playlists</h1>
           <p className="text-xs text-muted-foreground mt-0.5">Radio · Upload · Search · Community · Pitch</p>
         </div>
 
-        {/* Tabs — scrollable on mobile */}
+        {/* Tabs — scrollable, bigger touch targets */}
         <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
-          <div className="max-w-5xl mx-auto px-2 flex overflow-x-auto no-scrollbar">
+          <div className="max-w-5xl mx-auto px-1 flex overflow-x-auto no-scrollbar">
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-4 py-3 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors shrink-0 ${
+                className={`flex items-center gap-1.5 px-4 py-3.5 text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors shrink-0 min-h-[48px] active:bg-surface-1 ${
                   activeTab === tab.key
                     ? 'text-emerald-500 border-b-2 border-emerald-500'
                     : 'text-muted-foreground hover:text-foreground'
@@ -255,13 +264,13 @@ export default function PlaylistsPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+              className="fixed inset-0 z-50 bg-black/80 flex items-end md:items-center justify-center p-0 md:p-4"
             >
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="w-full max-w-md bg-surface-0 rounded-2xl border border-border p-5"
+                initial={{ y: isMobile ? 100 : 0, scale: isMobile ? 1 : 0.9, opacity: 0 }}
+                animate={{ y: 0, scale: 1, opacity: 1 }}
+                exit={{ y: isMobile ? 100 : 0, scale: isMobile ? 1 : 0.9, opacity: 0 }}
+                className="w-full md:max-w-md bg-surface-0 md:rounded-2xl rounded-t-2xl border-t md:border border-border p-5 max-h-[85vh] overflow-y-auto"
               >
                 <AudioTrimPicker
                   file={trimFile}
@@ -274,38 +283,38 @@ export default function PlaylistsPage() {
         </AnimatePresence>
 
         {/* Tab Content */}
-        <div className="max-w-5xl mx-auto px-4 py-4">
+        <div className="max-w-5xl mx-auto px-3 md:px-4 py-4">
           {activeTab === 'radio' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-muted-foreground">{featuredTracks.length} tracks</p>
               </div>
               <div className="rounded-xl border border-border bg-surface-0 overflow-hidden">
-                <div className="max-h-[60vh] overflow-y-auto">
+                <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
                   {featuredTracks.map((track, i) => {
                     const active = i === currentIndex && playbackSource === 'radio';
                     return (
                       <button key={track.id}
                         onClick={() => playRadio(i)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
+                        className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors active:bg-emerald-500/15 ${
                           active ? 'bg-emerald-500/10' : 'hover:bg-surface-1'
                         }`}>
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-surface-1 overflow-hidden shrink-0">
+                        <div className="w-12 h-12 rounded-lg bg-surface-1 overflow-hidden shrink-0">
                           {track.poster_url ? (
                             <img src={track.poster_url} alt="" className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center"><Radio size={16} className="text-muted-foreground/40" /></div>
+                            <div className="w-full h-full flex items-center justify-center"><Radio size={18} className="text-muted-foreground/40" /></div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm font-medium truncate ${active ? 'text-emerald-400' : 'text-foreground'}`}>{track.song_name}</p>
-                          <p className="text-[10px] text-muted-foreground truncate">{track.artist_name || track.title}</p>
+                          <p className="text-xs text-muted-foreground truncate mt-0.5">{track.artist_name || track.title}</p>
                         </div>
                         {active && isPlaying && (
-                          <div className="flex gap-[2px] items-end h-3 shrink-0">
+                          <div className="flex gap-[2px] items-end h-4 shrink-0">
                             {[0,1,2].map(b => (
-                              <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
-                                animate={{ height: ['4px','12px','4px'] }}
+                              <motion.div key={b} className="w-[3px] bg-emerald-500 rounded-full"
+                                animate={{ height: ['5px','16px','5px'] }}
                                 transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }} />
                             ))}
                           </div>
@@ -320,21 +329,21 @@ export default function PlaylistsPage() {
 
           {activeTab === 'mine' && (
             <div className="rounded-xl border border-border bg-surface-0 overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-                <Music size={14} className="text-emerald-500" />
+              <div className="flex items-center gap-2 px-4 py-3.5 border-b border-border min-h-[48px]">
+                <Music size={16} className="text-emerald-500" />
                 {editingName ? (
                   <form className="flex-1" onSubmit={(e) => { e.preventDefault(); renamePlaylist(nameInput); setEditingName(false); }}>
                     <input autoFocus value={nameInput} onChange={(e) => setNameInput(e.target.value)}
                       onBlur={() => { renamePlaylist(nameInput); setEditingName(false); }}
-                      maxLength={40} className="text-xs font-bold uppercase tracking-wider bg-transparent border-b border-emerald-500 text-foreground outline-none w-full" />
+                      maxLength={40} className="text-sm font-bold uppercase tracking-wider bg-transparent border-b border-emerald-500 text-foreground outline-none w-full" />
                   </form>
                 ) : (
-                  <h2 className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-foreground flex items-center gap-2">
                     {playlistName}
-                    {userId && <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="text-muted-foreground hover:text-emerald-500"><Pencil size={10} /></button>}
+                    {userId && <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="p-1 text-muted-foreground hover:text-emerald-500"><Pencil size={12} /></button>}
                   </h2>
                 )}
-                <span className="text-[9px] text-muted-foreground ml-auto">{myTracks.length}/25</span>
+                <span className="text-xs text-muted-foreground ml-auto">{myTracks.length}/25</span>
               </div>
               <MyPlaylistTab
                 tracks={myTracks}
@@ -377,39 +386,39 @@ export default function PlaylistsPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {curatedPlaylists.map(pl => (
                     <div key={pl.user_id} className="rounded-xl border border-border bg-surface-0 overflow-hidden hover:border-emerald-500/30 transition-colors">
-                      <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-                        <div className="w-8 h-8 rounded-full bg-surface-1 overflow-hidden shrink-0 flex items-center justify-center">
-                          {pl.avatar_url ? <img src={pl.avatar_url} alt="" className="w-full h-full object-cover" /> : <Users size={14} className="text-muted-foreground/50" />}
+                      <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border">
+                        <div className="w-10 h-10 rounded-full bg-surface-1 overflow-hidden shrink-0 flex items-center justify-center">
+                          {pl.avatar_url ? <img src={pl.avatar_url} alt="" className="w-full h-full object-cover" /> : <Users size={16} className="text-muted-foreground/50" />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold truncate text-foreground">{pl.playlist_name || `@${pl.username}'s Playlist`}</p>
-                          <p className="text-[9px] text-muted-foreground">@{pl.username} · {pl.tracks.length} track{pl.tracks.length !== 1 ? 's' : ''}</p>
+                          <p className="text-sm font-bold truncate text-foreground">{pl.playlist_name || `@${pl.username}'s Playlist`}</p>
+                          <p className="text-xs text-muted-foreground">@{pl.username} · {pl.tracks.length} track{pl.tracks.length !== 1 ? 's' : ''}</p>
                         </div>
                         <button onClick={() => playCurated(pl.user_id, 0)}
-                          className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-colors shrink-0">
-                          <Play size={14} className="ml-0.5" />
+                          className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-colors shrink-0 active:scale-95">
+                          <Play size={18} className="ml-0.5" />
                         </button>
                       </div>
-                      <div className="max-h-[200px] overflow-y-auto">
+                      <div className="max-h-[200px] overflow-y-auto overscroll-contain">
                         {pl.tracks.map((t, idx) => {
                           const active = playbackSource === 'curated' && activeCuratedUser === pl.user_id && curatedTrackIndex === idx;
                           return (
                             <button key={t.id} onClick={() => playCurated(pl.user_id, idx)}
-                              className={`w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors ${
+                              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors active:bg-emerald-500/15 ${
                                 active ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
                               }`}>
-                              <div className="w-7 h-7 rounded bg-surface-1 flex items-center justify-center shrink-0 overflow-hidden">
-                                {t.cover_url ? <img src={t.cover_url} alt="" className="w-full h-full object-cover" /> : <Music size={10} className="text-muted-foreground/40" />}
+                              <div className="w-9 h-9 rounded-lg bg-surface-1 flex items-center justify-center shrink-0 overflow-hidden">
+                                {t.cover_url ? <img src={t.cover_url} alt="" className="w-full h-full object-cover" /> : <Music size={12} className="text-muted-foreground/40" />}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-xs truncate">{t.track_name}</p>
-                                {t.artist_name && <p className="text-[8px] text-muted-foreground truncate">{t.artist_name}</p>}
+                                <p className="text-sm truncate">{t.track_name}</p>
+                                {t.artist_name && <p className="text-xs text-muted-foreground truncate">{t.artist_name}</p>}
                               </div>
                               {active && isPlaying && (
-                                <div className="flex gap-[2px] items-end h-2.5 shrink-0">
+                                <div className="flex gap-[2px] items-end h-3 shrink-0">
                                   {[0,1,2].map(b => (
-                                    <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
-                                      animate={{ height: ['3px','10px','3px'] }}
+                                    <motion.div key={b} className="w-[3px] bg-emerald-500 rounded-full"
+                                      animate={{ height: ['4px','14px','4px'] }}
                                       transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }} />
                                   ))}
                                 </div>
@@ -432,64 +441,58 @@ export default function PlaylistsPage() {
           )}
         </div>
 
-        {/* Sticky Bottom Player */}
+        {/* Sticky Bottom Player — mobile optimized */}
         <div className="fixed bottom-14 md:bottom-0 left-0 right-0 z-40 bg-surface-0/95 backdrop-blur-lg border-t border-border safe-area-bottom">
-          {/* Progress bar */}
-          <div className="w-full h-0.5 bg-border">
+          {/* Progress bar — tappable */}
+          <div className="w-full h-1 bg-border relative">
             <motion.div className="h-full bg-emerald-500" style={{ width: `${progress}%` }} transition={{ duration: 0.15 }} />
           </div>
 
-          <div className="max-w-5xl mx-auto flex items-center gap-3 px-4 py-2">
+          <div className="max-w-5xl mx-auto flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2.5">
             {/* Cover */}
-            <div className="w-10 h-10 rounded-lg bg-surface-1 overflow-hidden shrink-0 flex items-center justify-center">
-              {np.poster ? <img src={np.poster} alt="" className="w-full h-full object-cover" /> : <Music size={16} className="text-muted-foreground/40" />}
+            <div className="w-12 h-12 rounded-lg bg-surface-1 overflow-hidden shrink-0 flex items-center justify-center">
+              {np.poster ? <img src={np.poster} alt="" className="w-full h-full object-cover" /> : <Music size={18} className="text-muted-foreground/40" />}
             </div>
 
             {/* Track info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 {isPlaying && (
-                  <div className="flex gap-[2px] items-end h-2.5 shrink-0">
+                  <div className="flex gap-[2px] items-end h-3 shrink-0">
                     {[0,1,2].map(b => (
-                      <motion.div key={b} className="w-[1.5px] bg-emerald-500 rounded-full"
-                        animate={{ height: ['2px','8px','2px'] }}
+                      <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
+                        animate={{ height: ['3px','10px','3px'] }}
                         transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.12 }} />
                     ))}
                   </div>
                 )}
-                <span className="text-[8px] uppercase tracking-wider text-emerald-500 font-bold">{np.label}</span>
+                <span className="text-[9px] uppercase tracking-wider text-emerald-500 font-bold">{np.label}</span>
               </div>
-              <p className="text-xs font-medium text-foreground truncate">{np.name || 'Nothing playing'}</p>
-              <p className="text-[9px] text-muted-foreground truncate">{np.sub}</p>
+              <p className="text-sm font-medium text-foreground truncate">{np.name || 'Nothing playing'}</p>
+              <p className="text-xs text-muted-foreground truncate">{np.sub}</p>
             </div>
 
-            {/* Controls */}
-            <div className="flex items-center gap-1">
-              <button onClick={() => {
-                if (playbackSource === 'radio') playRadio((currentIndex - 1 + featuredTracks.length) % featuredTracks.length);
-                else if (playbackSource === 'mine') playMy((myPlaylistIndex - 1 + myTracks.length) % myTracks.length);
-              }} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                <SkipBack size={16} />
+            {/* Controls — bigger touch targets */}
+            <div className="flex items-center gap-0">
+              <button onClick={skipPrev} className="p-3 text-muted-foreground hover:text-foreground transition-colors active:scale-90">
+                <SkipBack size={20} />
               </button>
               <button onClick={togglePlay}
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-colors">
-                {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
+                className="w-12 h-12 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-all active:scale-95">
+                {isPlaying ? <Pause size={22} /> : <Play size={22} className="ml-0.5" />}
               </button>
-              <button onClick={() => {
-                if (playbackSource === 'radio') playRadio((currentIndex + 1) % featuredTracks.length);
-                else if (playbackSource === 'mine') playMy((myPlaylistIndex + 1) % myTracks.length);
-              }} className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                <SkipForward size={16} />
+              <button onClick={skipNext} className="p-3 text-muted-foreground hover:text-foreground transition-colors active:scale-90">
+                <SkipForward size={20} />
               </button>
             </div>
 
             {/* Volume — desktop only */}
-            <div className="hidden md:flex items-center gap-2 w-24">
-              <button onClick={() => setVolume(v => v === 0 ? 0.3 : 0)} className="text-muted-foreground hover:text-foreground">
-                {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            <div className="hidden md:flex items-center gap-2 w-28">
+              <button onClick={() => setVolume(v => v === 0 ? 0.3 : 0)} className="p-2 text-muted-foreground hover:text-foreground">
+                {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
               </button>
               <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
-                className="flex-1 [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
+                className="flex-1 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
             </div>
           </div>
         </div>

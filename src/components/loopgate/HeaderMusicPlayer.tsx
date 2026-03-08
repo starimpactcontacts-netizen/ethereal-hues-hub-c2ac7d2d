@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge, Settings, Search, Send } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge, Settings, Search, Send, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +13,7 @@ import MyPlaylistTab from './MyPlaylistTab';
 import DeezerSearchTab from './DeezerSearchTab';
 import PitchToRadio from './PitchToRadio';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Track {
   id: string;
@@ -34,7 +37,6 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-// Iconic LOOPGATE intro chime using Web Audio API
 function playIntroChime(vol: number): Promise<void> {
   return new Promise((resolve) => {
     try {
@@ -93,6 +95,8 @@ function playIntroChime(vol: number): Promise<void> {
 
 export default function HeaderMusicPlayer() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [open, setOpen] = useState(false);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -129,7 +133,6 @@ export default function HeaderMusicPlayer() {
 
   const isMuted = volume === 0;
 
-  // Fetch tracks from both featured_drops AND radio_tracks
   useEffect(() => {
     const fetchTracks = async () => {
       const { data: radioData } = await supabase
@@ -146,34 +149,21 @@ export default function HeaderMusicPlayer() {
         .limit(50);
 
       const radioTracks: Track[] = (radioData || []).map(t => ({
-        id: t.id,
-        song_name: t.song_name,
-        song_preview_url: t.audio_url,
-        artist_name: t.artist_name,
-        title: t.artist_name || 'LOOPGATE Radio',
-        poster_url: t.cover_url,
-        is_priority: t.is_priority,
-        source: 'radio_track' as const,
+        id: t.id, song_name: t.song_name, song_preview_url: t.audio_url,
+        artist_name: t.artist_name, title: t.artist_name || 'LOOPGATE Radio',
+        poster_url: t.cover_url, is_priority: t.is_priority, source: 'radio_track' as const,
       }));
 
       const dropTracks: Track[] = (dropData || []).filter(t => t.song_preview_url).map(t => ({
-        id: t.id,
-        song_name: t.song_name,
-        song_preview_url: t.song_preview_url!,
-        title: t.title,
-        poster_url: t.poster_url,
-        is_priority: false,
-        source: 'featured_drop' as const,
+        id: t.id, song_name: t.song_name, song_preview_url: t.song_preview_url!,
+        title: t.title, poster_url: t.poster_url, is_priority: false, source: 'featured_drop' as const,
       }));
 
       const priority = radioTracks.filter(t => t.is_priority);
       const nonPriority = shuffleArray([...radioTracks.filter(t => !t.is_priority), ...dropTracks]);
       setTracks([...priority, ...nonPriority]);
-      if (priority.length > 0) {
-        setCurrentIndex(0);
-      } else if (nonPriority.length > 0) {
-        setCurrentIndex(Math.floor(Math.random() * nonPriority.length));
-      }
+      if (priority.length > 0) setCurrentIndex(0);
+      else if (nonPriority.length > 0) setCurrentIndex(Math.floor(Math.random() * nonPriority.length));
     };
     fetchTracks();
   }, []);
@@ -185,18 +175,13 @@ export default function HeaderMusicPlayer() {
     progressInterval.current = setInterval(() => {
       if (audioRef.current) {
         const dur = audioRef.current.duration;
-        if (dur && !isNaN(dur)) {
-          setProgress((audioRef.current.currentTime / dur) * 100);
-        }
+        if (dur && !isNaN(dur)) setProgress((audioRef.current.currentTime / dur) * 100);
       }
     }, 200);
   }, []);
 
   const stopProgressTracking = useCallback(() => {
-    if (progressInterval.current) {
-      clearInterval(progressInterval.current);
-      progressInterval.current = null;
-    }
+    if (progressInterval.current) { clearInterval(progressInterval.current); progressInterval.current = null; }
   }, []);
 
   const cleanupAudio = useCallback(() => {
@@ -234,16 +219,11 @@ export default function HeaderMusicPlayer() {
         setIsPlaying(true);
         setAudioError(false);
         startProgressTracking();
-      }).catch(() => {
-        // Autoplay blocked — will play on user interaction
-      });
+      }).catch(() => {});
     };
 
-    if (a.readyState >= 2) {
-      tryPlay();
-    } else {
-      a.addEventListener('canplay', tryPlay, { once: true });
-    }
+    if (a.readyState >= 2) tryPlay();
+    else a.addEventListener('canplay', tryPlay, { once: true });
   }, [volume, playbackRate, pitchSemitones, cleanupAudio, startProgressTracking, stopProgressTracking]);
 
   const playTrack = useCallback((track: Track) => {
@@ -261,7 +241,6 @@ export default function HeaderMusicPlayer() {
       const next = (nextIdx + 1) % nextTracks.length;
       if (nextTracks[next]) {
         setMyPlaylistIndex(next);
-        // Use setTimeout to break the synchronous call chain
         setTimeout(() => {
           playAudioUrl(nextTracks[next].audio_url, 'myplaylist', () => {});
         }, 50);
@@ -270,14 +249,12 @@ export default function HeaderMusicPlayer() {
   }, [playAudioUrl]);
 
   const playDeezerPreview = useCallback((url: string, title: string, artist: string, cover: string) => {
-    // If same track, toggle play/pause
     if (deezerNowPlaying?.url === url && isPlaying) {
       audioRef.current?.pause();
       setIsPlaying(false);
       stopProgressTracking();
       return;
     }
-
     setPlaylistMode('deezer');
     setDeezerNowPlaying({ url, title, artist, cover });
     playAudioUrl(url, 'deezer', () => {
@@ -293,32 +270,22 @@ export default function HeaderMusicPlayer() {
   }, [stopProgressTracking]);
 
   const togglePlay = useCallback(() => {
-    if (isPlaying) {
-      pause();
-    } else if (playlistMode === 'deezer' && deezerNowPlaying) {
+    if (isPlaying) { pause(); return; }
+    if (playlistMode === 'deezer' && deezerNowPlaying) {
       if (audioRef.current && audioModeRef.current === 'deezer') {
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-          startProgressTracking();
-        }).catch(() => {});
+        audioRef.current.play().then(() => { setIsPlaying(true); startProgressTracking(); }).catch(() => {});
       } else {
         playDeezerPreview(deezerNowPlaying.url, deezerNowPlaying.title, deezerNowPlaying.artist, deezerNowPlaying.cover);
       }
     } else if (playlistMode === 'myplaylist' && myTracks[myPlaylistIndex]) {
       if (audioRef.current && audioModeRef.current === 'myplaylist') {
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-          startProgressTracking();
-        }).catch(() => {});
+        audioRef.current.play().then(() => { setIsPlaying(true); startProgressTracking(); }).catch(() => {});
       } else {
         playMyTrack(myTracks[myPlaylistIndex], myTracks, myPlaylistIndex);
       }
     } else if (current) {
       if (audioRef.current && audioModeRef.current === 'loopgate') {
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-          startProgressTracking();
-        }).catch(() => {});
+        audioRef.current.play().then(() => { setIsPlaying(true); startProgressTracking(); }).catch(() => {});
       } else {
         playTrack(current);
       }
@@ -335,29 +302,26 @@ export default function HeaderMusicPlayer() {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length]);
 
-  // Auto-play on first load
   useEffect(() => {
     if (tracks.length > 0 && !hasAutoPlayed && current) {
       setHasAutoPlayed(true);
       if (!settings.autoplay_enabled) return;
-
       if (settings.default_playlist === 'myplaylist' && myTracks.length > 0) {
         setPlaylistMode('myplaylist');
         setActiveTab('myplaylist');
-        const startMyPlayback = async () => {
+        const start = async () => {
           if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
           playMyTrack(myTracks[0], myTracks, 0);
         };
-        startMyPlayback().catch(() => {});
+        start().catch(() => {});
         return;
       }
-
-      const startPlayback = async () => {
+      const start = async () => {
         if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
         playTrack(current);
       };
-      startPlayback().catch(() => {
-        const unlock = () => { startPlayback(); window.removeEventListener('click', unlock); window.removeEventListener('touchstart', unlock); };
+      start().catch(() => {
+        const unlock = () => { start(); window.removeEventListener('click', unlock); window.removeEventListener('touchstart', unlock); };
         window.addEventListener('click', unlock, { once: true });
         window.addEventListener('touchstart', unlock, { once: true });
       });
@@ -365,19 +329,13 @@ export default function HeaderMusicPlayer() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tracks, myTracks]);
 
-  // When index changes and was playing, auto-play next
   useEffect(() => {
     if (!current) return;
-    if (isPlaying && playlistMode === 'loopgate') {
-      playTrack(current);
-    }
+    if (isPlaying && playlistMode === 'loopgate') playTrack(current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
-
+  useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.preservesPitch = false;
@@ -394,15 +352,9 @@ export default function HeaderMusicPlayer() {
     });
   }, []);
 
-  const toggleMute = useCallback(() => {
-    setVolume(v => v === 0 ? 0.3 : 0);
-  }, []);
+  const toggleMute = useCallback(() => { setVolume(v => v === 0 ? 0.3 : 0); }, []);
+  useEffect(() => () => { cleanupAudio(); }, [cleanupAudio]);
 
-  useEffect(() => () => {
-    cleanupAudio();
-  }, [cleanupAudio]);
-
-  // Get now-playing info regardless of mode
   const nowPlayingName = playlistMode === 'deezer' ? deezerNowPlaying?.title
     : playlistMode === 'myplaylist' ? (myTracks[myPlaylistIndex]?.track_name || 'No tracks')
     : current?.song_name;
@@ -419,259 +371,257 @@ export default function HeaderMusicPlayer() {
   if (!tracks.length) return null;
 
   const tabs: { key: TabMode; label: string; icon: React.ReactNode }[] = [
-    { key: 'loopgate', label: 'Radio', icon: <Radio size={11} /> },
-    { key: 'myplaylist', label: 'Mine', icon: <Music size={11} /> },
-    { key: 'search', label: 'Search', icon: <Search size={11} /> },
-    { key: 'pitch', label: 'Pitch', icon: <Send size={11} /> },
+    { key: 'loopgate', label: 'Radio', icon: <Radio size={13} /> },
+    { key: 'myplaylist', label: 'Mine', icon: <Music size={13} /> },
+    { key: 'search', label: 'Search', icon: <Search size={13} /> },
+    { key: 'pitch', label: 'Pitch', icon: <Send size={13} /> },
   ];
 
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button className="relative flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:bg-accent">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="2" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'} />
-            <motion.path d="M16.24 7.76a6 6 0 0 1 0 8.49" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
-              animate={isPlaying ? { opacity: [0.4, 1, 0.4], scale: [1, 1.05, 1] } : { opacity: 1, scale: 1 }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} style={{ transformOrigin: 'center' }} />
-            <motion.path d="M7.76 16.24a6 6 0 0 1 0-8.49" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
-              animate={isPlaying ? { opacity: [0.4, 1, 0.4], scale: [1, 1.05, 1] } : { opacity: 1, scale: 1 }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} style={{ transformOrigin: 'center' }} />
-            <motion.path d="M19.07 4.93a10 10 0 0 1 0 14.14" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
-              animate={isPlaying ? { opacity: [0.2, 0.8, 0.2], scale: [1, 1.12, 1] } : { opacity: 1, scale: 1 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} style={{ transformOrigin: 'center' }} />
-            <motion.path d="M4.93 19.07a10 10 0 0 1 0-14.14" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
-              animate={isPlaying ? { opacity: [0.2, 0.8, 0.2], scale: [1, 1.12, 1] } : { opacity: 1, scale: 1 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} style={{ transformOrigin: 'center' }} />
-          </svg>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-80 bg-surface-0 border-border p-0 overflow-hidden">
-        {/* Tab Switcher — 4 tabs */}
-        <div className="flex border-b border-border">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 py-2 text-[9px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 ${
-                activeTab === tab.key ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`px-2.5 py-2 transition-colors ${showSettings ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}
-          >
-            <Settings size={12} />
-          </button>
-        </div>
+  const triggerButton = (
+    <button
+      onClick={() => setOpen(true)}
+      className="relative flex items-center justify-center w-10 h-10 rounded-full transition-colors hover:bg-accent"
+    >
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="2" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'} />
+        <motion.path d="M16.24 7.76a6 6 0 0 1 0 8.49" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+          animate={isPlaying ? { opacity: [0.4, 1, 0.4], scale: [1, 1.05, 1] } : { opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} style={{ transformOrigin: 'center' }} />
+        <motion.path d="M7.76 16.24a6 6 0 0 1 0-8.49" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+          animate={isPlaying ? { opacity: [0.4, 1, 0.4], scale: [1, 1.05, 1] } : { opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }} style={{ transformOrigin: 'center' }} />
+        <motion.path d="M19.07 4.93a10 10 0 0 1 0 14.14" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+          animate={isPlaying ? { opacity: [0.2, 0.8, 0.2], scale: [1, 1.12, 1] } : { opacity: 1, scale: 1 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} style={{ transformOrigin: 'center' }} />
+        <motion.path d="M4.93 19.07a10 10 0 0 1 0-14.14" className={isPlaying ? 'stroke-emerald-500' : 'stroke-current text-muted-foreground'}
+          animate={isPlaying ? { opacity: [0.2, 0.8, 0.2], scale: [1, 1.12, 1] } : { opacity: 1, scale: 1 }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }} style={{ transformOrigin: 'center' }} />
+      </svg>
+    </button>
+  );
 
-        {/* Settings Panel */}
-        {showSettings && userId && (
-          <div className="px-4 py-3 border-b border-border space-y-3 bg-surface-1/50">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Radio Settings</p>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-foreground">Autoplay on open</span>
-              <Switch checked={settings.autoplay_enabled} onCheckedChange={(v) => updateSetting('autoplay_enabled', v)} className="scale-75" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-foreground">Default to My Playlist</span>
-              <Switch checked={settings.default_playlist === 'myplaylist'} onCheckedChange={(v) => updateSetting('default_playlist', v ? 'myplaylist' : 'loopgate')} className="scale-75" />
-            </div>
+  const playerContent = (
+    <div className="flex flex-col h-full">
+      {/* Tab Switcher */}
+      <div className="flex border-b border-border shrink-0">
+        {tabs.map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 min-h-[44px] ${
+              activeTab === tab.key ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {tab.icon} {tab.label}
+          </button>
+        ))}
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          className={`px-3 py-3 transition-colors min-h-[44px] ${showSettings ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          <Settings size={14} />
+        </button>
+      </div>
+
+      {/* Settings Panel */}
+      {showSettings && userId && (
+        <div className="px-4 py-4 border-b border-border space-y-4 bg-surface-1/50 shrink-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Radio Settings</p>
+          <div className="flex items-center justify-between min-h-[44px]">
+            <span className="text-sm text-foreground">Autoplay on open</span>
+            <Switch checked={settings.autoplay_enabled} onCheckedChange={(v) => updateSetting('autoplay_enabled', v)} />
+          </div>
+          <div className="flex items-center justify-between min-h-[44px]">
+            <span className="text-sm text-foreground">Default to My Playlist</span>
+            <Switch checked={settings.default_playlist === 'myplaylist'} onCheckedChange={(v) => updateSetting('default_playlist', v ? 'myplaylist' : 'loopgate')} />
+          </div>
+        </div>
+      )}
+
+      {/* Now Playing Hero */}
+      <div className="relative shrink-0">
+        {nowPlayingCover && (
+          <div className="absolute inset-0 overflow-hidden">
+            <img src={nowPlayingCover} alt="" className="w-full h-full object-cover opacity-20 blur-sm" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-0" />
           </div>
         )}
-
-        {/* Now Playing Hero — always visible */}
-        <div className="relative">
-          {nowPlayingCover && (
-            <div className="absolute inset-0 overflow-hidden">
-              <img src={nowPlayingCover} alt="" className="w-full h-full object-cover opacity-20 blur-sm" />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-0" />
-            </div>
-          )}
-          <div className="relative p-4 pb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex gap-[2px] items-end h-3">
-                {isPlaying ? (
-                  [0, 1, 2, 3].map(b => (
-                    <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
-                      animate={{ height: ['3px', '12px', '3px'] }}
-                      transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.12 }} />
-                  ))
-                ) : (
-                  [0, 1, 2, 3].map(b => (
-                    <div key={b} className="w-[2px] h-[3px] bg-muted-foreground/40 rounded-full" />
-                  ))
-                )}
-              </div>
-              <span className="text-[9px] uppercase tracking-[0.2em] text-emerald-500 font-bold">
-                {nowPlayingLabel}
-              </span>
-              {activeTab === 'myplaylist' && playlistMode === 'myplaylist' && userId && (
-                editingName ? (
-                  <form className="ml-1" onSubmit={(e) => { e.preventDefault(); renamePlaylist(nameInput); setEditingName(false); }}>
-                    <input autoFocus value={nameInput} onChange={(e) => setNameInput(e.target.value)}
-                      onBlur={() => { renamePlaylist(nameInput); setEditingName(false); }}
-                      maxLength={40} className="text-[9px] bg-transparent border-b border-emerald-500 text-foreground outline-none w-20" />
-                  </form>
-                ) : (
-                  <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="ml-1 text-muted-foreground hover:text-emerald-500">
-                    <Pencil size={8} />
-                  </button>
-                )
+        <div className="relative p-4 pb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex gap-[2px] items-end h-3">
+              {isPlaying ? (
+                [0, 1, 2, 3].map(b => (
+                  <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
+                    animate={{ height: ['3px', '12px', '3px'] }}
+                    transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.12 }} />
+                ))
+              ) : (
+                [0, 1, 2, 3].map(b => (
+                  <div key={b} className="w-[2px] h-[3px] bg-muted-foreground/40 rounded-full" />
+                ))
               )}
             </div>
-            <p className="text-sm font-display text-foreground truncate">{nowPlayingName || 'Nothing playing'}</p>
-            <p className="text-[10px] text-muted-foreground truncate mt-0.5">{nowPlayingArtist}</p>
-            {audioError && <p className="text-[9px] text-destructive mt-1">Failed to load audio</p>}
-          </div>
-        </div>
-
-        {/* Seekable Progress Bar */}
-        <div className="px-4 pb-1">
-          <Slider value={[progress]}
-            onValueChange={([v]) => {
-              setProgress(v);
-              if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration)) {
-                audioRef.current.currentTime = (v / 100) * audioRef.current.duration;
-              }
-            }}
-            max={100} step={0.5}
-            className="w-full [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none" />
-        </div>
-
-        {/* Controls */}
-        <div className="flex items-center justify-between px-4 py-3">
-          <button onClick={toggleShuffle}
-            className={`p-1.5 transition-colors ${shuffled ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}>
-            <Shuffle size={14} />
-          </button>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setProgress(0);
-                if (playlistMode === 'myplaylist' && myTracks.length > 0) {
-                  const newIdx = (myPlaylistIndex - 1 + myTracks.length) % myTracks.length;
-                  setMyPlaylistIndex(newIdx);
-                  playMyTrack(myTracks[newIdx], myTracks, newIdx);
-                } else { prev(); }
-              }}
-              className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <SkipBack size={16} />
-            </button>
-            <button onClick={togglePlay}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-colors">
-              {isPlaying ? <Pause size={18} /> : <Play size={18} className="ml-0.5" />}
-            </button>
-            <button
-              onClick={() => {
-                setProgress(0);
-                if (playlistMode === 'myplaylist' && myTracks.length > 0) {
-                  const newIdx = (myPlaylistIndex + 1) % myTracks.length;
-                  setMyPlaylistIndex(newIdx);
-                  playMyTrack(myTracks[newIdx], myTracks, newIdx);
-                } else { skip(); }
-              }}
-              className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <SkipForward size={16} />
-            </button>
-          </div>
-          <button onClick={toggleMute} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-          </button>
-        </div>
-
-        {/* Volume */}
-        <div className="px-4 pb-2 flex items-center gap-3">
-          <VolumeX size={12} className="text-muted-foreground shrink-0" />
-          <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
-            className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none [&_[role=slider]]:select-none" />
-          <Volume2 size={12} className="text-muted-foreground shrink-0" />
-        </div>
-
-        {/* Speed Presets */}
-        <div className="px-4 pb-1.5">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-1">
-              <Gauge size={11} className="text-muted-foreground" />
-              <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Speed</span>
-            </div>
-            <button onClick={() => setPlaybackRate(1.0)}
-              className={`text-[9px] font-mono font-bold px-2 py-1 rounded transition-colors ${
-                playbackRate === 1.0 ? 'text-muted-foreground' : 'text-emerald-500 hover:text-emerald-400 bg-emerald-500/10'
-              }`}>
-              {playbackRate < 1 ? '🌙' : playbackRate > 1 ? '⚡' : '•'} {playbackRate.toFixed(2)}x
-            </button>
-          </div>
-          <div className="grid grid-cols-5 gap-1.5">
-            {[0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0].map(rate => (
-              <button key={rate} onClick={() => setPlaybackRate(rate)}
-                className={`text-[10px] font-mono py-2 rounded-md transition-colors tap-target ${
-                  Math.abs(playbackRate - rate) < 0.01
-                    ? 'text-emerald-500 bg-emerald-500/15 font-bold border border-emerald-500/30'
-                    : 'text-muted-foreground bg-surface-2 hover:text-foreground hover:bg-surface-3 border border-transparent'
-                }`}>
-                {rate}x
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Pitcher */}
-        <div className="px-4 pb-3">
-          <div className="flex items-center gap-1 mb-1.5">
-            <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
-            <span className="text-[8px] text-muted-foreground/60 ml-auto">
-              {pitchSemitones === 0 ? 'default' : `${pitchSemitones > 0 ? '+' : ''}${pitchSemitones} st`}
+            <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-500 font-bold">
+              {nowPlayingLabel}
             </span>
-            {pitchSemitones !== 0 && (
-              <button onClick={() => setPitchSemitones(0)} className="text-[8px] text-emerald-500 hover:text-emerald-400 font-bold ml-1">reset</button>
+            {activeTab === 'myplaylist' && playlistMode === 'myplaylist' && userId && (
+              editingName ? (
+                <form className="ml-1" onSubmit={(e) => { e.preventDefault(); renamePlaylist(nameInput); setEditingName(false); }}>
+                  <input autoFocus value={nameInput} onChange={(e) => setNameInput(e.target.value)}
+                    onBlur={() => { renamePlaylist(nameInput); setEditingName(false); }}
+                    maxLength={40} className="text-[10px] bg-transparent border-b border-emerald-500 text-foreground outline-none w-24" />
+                </form>
+              ) : (
+                <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="ml-1 p-1 text-muted-foreground hover:text-emerald-500">
+                  <Pencil size={10} />
+                </button>
+              )
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[9px] text-muted-foreground font-bold shrink-0">−8</span>
-            <Slider value={[pitchSemitones]} onValueChange={([v]) => setPitchSemitones(v)} min={-8} max={8} step={1}
-              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none [&_[role=slider]]:select-none" />
-            <span className="text-[9px] text-muted-foreground font-bold shrink-0">+8</span>
-          </div>
+          <p className="text-base font-display text-foreground truncate">{nowPlayingName || 'Nothing playing'}</p>
+          <p className="text-xs text-muted-foreground truncate mt-0.5">{nowPlayingArtist}</p>
+          {audioError && <p className="text-xs text-destructive mt-1">Failed to load audio</p>}
         </div>
+      </div>
 
-        {/* Tab Content */}
+      {/* Seekable Progress Bar */}
+      <div className="px-4 pb-2 shrink-0">
+        <Slider value={[progress]}
+          onValueChange={([v]) => {
+            setProgress(v);
+            if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration)) {
+              audioRef.current.currentTime = (v / 100) * audioRef.current.duration;
+            }
+          }}
+          max={100} step={0.5}
+          className="w-full [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center justify-between px-4 py-3 shrink-0">
+        <button onClick={toggleShuffle}
+          className={`p-3 rounded-full transition-colors ${shuffled ? 'text-emerald-500 bg-emerald-500/10' : 'text-muted-foreground hover:text-foreground'}`}>
+          <Shuffle size={18} />
+        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setProgress(0);
+              if (playlistMode === 'myplaylist' && myTracks.length > 0) {
+                const newIdx = (myPlaylistIndex - 1 + myTracks.length) % myTracks.length;
+                setMyPlaylistIndex(newIdx);
+                playMyTrack(myTracks[newIdx], myTracks, newIdx);
+              } else { prev(); }
+            }}
+            className="p-3 text-muted-foreground hover:text-foreground transition-colors active:scale-90">
+            <SkipBack size={22} />
+          </button>
+          <button onClick={togglePlay}
+            className="w-14 h-14 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-all active:scale-95">
+            {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+          </button>
+          <button
+            onClick={() => {
+              setProgress(0);
+              if (playlistMode === 'myplaylist' && myTracks.length > 0) {
+                const newIdx = (myPlaylistIndex + 1) % myTracks.length;
+                setMyPlaylistIndex(newIdx);
+                playMyTrack(myTracks[newIdx], myTracks, newIdx);
+              } else { skip(); }
+            }}
+            className="p-3 text-muted-foreground hover:text-foreground transition-colors active:scale-90">
+            <SkipForward size={22} />
+          </button>
+        </div>
+        <button onClick={toggleMute} className="p-3 rounded-full text-muted-foreground hover:text-foreground transition-colors">
+          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+        </button>
+      </div>
+
+      {/* Volume */}
+      <div className="px-4 pb-3 flex items-center gap-3 shrink-0">
+        <VolumeX size={14} className="text-muted-foreground shrink-0" />
+        <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
+          className="flex-1 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
+        <Volume2 size={14} className="text-muted-foreground shrink-0" />
+      </div>
+
+      {/* Speed Presets */}
+      <div className="px-4 pb-2 shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <Gauge size={13} className="text-muted-foreground" />
+            <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Speed</span>
+          </div>
+          <button onClick={() => setPlaybackRate(1.0)}
+            className={`text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-lg transition-colors ${
+              playbackRate === 1.0 ? 'text-muted-foreground' : 'text-emerald-500 hover:text-emerald-400 bg-emerald-500/10'
+            }`}>
+            {playbackRate < 1 ? '🌙' : playbackRate > 1 ? '⚡' : '•'} {playbackRate.toFixed(2)}x
+          </button>
+        </div>
+        <div className="grid grid-cols-5 gap-2">
+          {[0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0].map(rate => (
+            <button key={rate} onClick={() => setPlaybackRate(rate)}
+              className={`text-xs font-mono py-3 rounded-xl transition-colors active:scale-95 ${
+                Math.abs(playbackRate - rate) < 0.01
+                  ? 'text-emerald-500 bg-emerald-500/15 font-bold border border-emerald-500/30'
+                  : 'text-muted-foreground bg-surface-2 hover:text-foreground hover:bg-surface-3 border border-transparent'
+              }`}>
+              {rate}x
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Pitcher */}
+      <div className="px-4 pb-4 shrink-0">
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
+          <span className="text-[9px] text-muted-foreground/60 ml-auto">
+            {pitchSemitones === 0 ? 'default' : `${pitchSemitones > 0 ? '+' : ''}${pitchSemitones} st`}
+          </span>
+          {pitchSemitones !== 0 && (
+            <button onClick={() => setPitchSemitones(0)} className="text-[10px] text-emerald-500 hover:text-emerald-400 font-bold ml-1 p-1">reset</button>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground font-bold shrink-0">−8</span>
+          <Slider value={[pitchSemitones]} onValueChange={([v]) => setPitchSemitones(v)} min={-8} max={8} step={1}
+            className="flex-1 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
+          <span className="text-xs text-muted-foreground font-bold shrink-0">+8</span>
+        </div>
+      </div>
+
+      {/* Tab Content — scrollable area */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {activeTab === 'loopgate' && (
-          <div className="max-h-48 overflow-y-auto border-t border-border">
+          <div className="border-t border-border">
             {tracks.slice(0, 20).map((track, i) => (
               <button key={track.id}
-                onClick={() => {
-                  setProgress(0);
-                  setCurrentIndex(i);
-                  playTrack(track);
-                }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
+                onClick={() => { setProgress(0); setCurrentIndex(i); playTrack(track); }}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors active:bg-emerald-500/15 ${
                   i === currentIndex && playlistMode === 'loopgate' ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
                 }`}>
-                <div className="w-8 h-8 rounded-sm bg-surface-1 overflow-hidden shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-surface-1 overflow-hidden shrink-0">
                   {track.poster_url ? (
                     <img src={track.poster_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Radio size={12} className="text-muted-foreground/50" />
-                    </div>
+                    <div className="w-full h-full flex items-center justify-center"><Radio size={14} className="text-muted-foreground/50" /></div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{track.song_name}</p>
-                  <p className="text-[9px] text-muted-foreground truncate">{track.artist_name || track.title}</p>
+                  <p className="text-sm font-medium truncate">{track.song_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{track.artist_name || track.title}</p>
                 </div>
                 {track.is_priority && (
-                  <span className="text-[7px] font-bold text-emerald-500 bg-emerald-500/10 px-1 py-0.5 rounded-full shrink-0">⭐</span>
+                  <span className="text-[8px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-1 rounded-full shrink-0">⭐</span>
                 )}
                 {i === currentIndex && playlistMode === 'loopgate' && isPlaying && (
-                  <div className="flex gap-[2px] items-end h-3 shrink-0">
+                  <div className="flex gap-[2px] items-end h-4 shrink-0">
                     {[0, 1, 2].map(b => (
-                      <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
-                        animate={{ height: ['4px', '12px', '4px'] }}
+                      <motion.div key={b} className="w-[3px] bg-emerald-500 rounded-full"
+                        animate={{ height: ['5px', '16px', '5px'] }}
                         transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }} />
                     ))}
                   </div>
@@ -712,14 +662,41 @@ export default function HeaderMusicPlayer() {
         {activeTab === 'pitch' && (
           <PitchToRadio userId={userId} />
         )}
+      </div>
 
-        {/* Bottom link */}
-        <button
-          onClick={() => navigate('/playlists')}
-          className="w-full flex items-center justify-center gap-1.5 py-2.5 border-t border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-emerald-500 transition-colors"
-        >
-          <ExternalLink size={11} /> Browse Curated Playlists
-        </button>
+      {/* Bottom link */}
+      <button
+        onClick={() => { setOpen(false); navigate('/playlists'); }}
+        className="w-full flex items-center justify-center gap-1.5 py-3.5 border-t border-border text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-emerald-500 transition-colors shrink-0 min-h-[44px]"
+      >
+        <ExternalLink size={13} /> Browse Curated Playlists
+      </button>
+    </div>
+  );
+
+  // Mobile: use Sheet, Desktop: use Popover
+  if (isMobile) {
+    return (
+      <>
+        {triggerButton}
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetContent side="bottom" className="h-[92vh] rounded-t-2xl px-0 pt-0 pb-0 overflow-hidden flex flex-col">
+            <VisuallyHidden><SheetTitle>Radio Player</SheetTitle></VisuallyHidden>
+            <div className="flex justify-center py-2 shrink-0">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+            </div>
+            {playerContent}
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
+      <PopoverContent side="bottom" align="start" className="w-96 bg-surface-0 border-border p-0 overflow-hidden max-h-[85vh] flex flex-col">
+        {playerContent}
       </PopoverContent>
     </Popover>
   );

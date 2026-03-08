@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Plus, Trash2, Globe, Lock, Loader2, Music, Image } from 'lucide-react';
+import { Plus, Trash2, Globe, Lock, Loader2, Music } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { UserPlaylistTrack } from '@/hooks/useUserPlaylist';
 import {
@@ -39,22 +39,19 @@ export default function MyPlaylistTab({
 
   if (!isLoggedIn) {
     return (
-      <div className="p-6 text-center">
-        <Music size={24} className="mx-auto mb-2 text-muted-foreground/50" />
-        <p className="text-xs text-muted-foreground">Sign in to create your own playlist</p>
+      <div className="p-8 text-center">
+        <Music size={28} className="mx-auto mb-3 text-muted-foreground/50" />
+        <p className="text-sm text-muted-foreground">Sign in to create your own playlist</p>
       </div>
     );
   }
 
   return (
     <div>
-      {/* Confirmation Dialog */}
       <AlertDialog open={!!confirmTrack} onOpenChange={(open) => !open && setConfirmTrack(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {confirmTrack?.isPublic ? 'Make Private?' : 'Make Public?'}
-            </AlertDialogTitle>
+            <AlertDialogTitle>{confirmTrack?.isPublic ? 'Make Private?' : 'Make Public?'}</AlertDialogTitle>
             <AlertDialogDescription>
               {confirmTrack?.isPublic
                 ? 'This track will be removed from curated playlists and only you will be able to hear it.'
@@ -63,21 +60,13 @@ export default function MyPlaylistTab({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (confirmTrack) {
-                  onTogglePublic(confirmTrack.id, confirmTrack.isPublic);
-                  setConfirmTrack(null);
-                }
-              }}
-            >
+            <AlertDialogAction onClick={() => { if (confirmTrack) { onTogglePublic(confirmTrack.id, confirmTrack.isPublic); setConfirmTrack(null); } }}>
               {confirmTrack?.isPublic ? 'Make Private' : 'Make Public'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Hidden cover input */}
       <input
         ref={coverRef}
         type="file"
@@ -85,16 +74,14 @@ export default function MyPlaylistTab({
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
-          if (f && coverTrackId && onUploadCover) {
-            onUploadCover(coverTrackId, f);
-          }
+          if (f && coverTrackId && onUploadCover) onUploadCover(coverTrackId, f);
           setCoverTrackId(null);
           e.target.value = '';
         }}
       />
 
-      {/* Upload button */}
-      <div className="px-3 py-2 border-b border-border">
+      {/* Upload button — big touch target */}
+      <div className="px-3 py-3 border-b border-border">
         <input
           ref={fileRef}
           type="file"
@@ -109,93 +96,87 @@ export default function MyPlaylistTab({
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading || tracks.length >= 25}
-          className="w-full flex items-center justify-center gap-2 py-2 rounded-md border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors disabled:opacity-40"
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border border-dashed border-border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors disabled:opacity-40 active:bg-surface-1 min-h-[48px]"
         >
           {uploading ? (
-            <><Loader2 size={14} className="animate-spin" /> Uploading...</>
+            <><Loader2 size={16} className="animate-spin" /> Uploading...</>
           ) : (
-            <><Plus size={14} /> Add Track ({tracks.length}/25)</>
+            <><Plus size={16} /> Add Track ({tracks.length}/25)</>
           )}
         </button>
       </div>
 
       {/* Track list */}
-      <div className={compact ? 'max-h-48 overflow-y-auto' : ''}>
+      <div className={compact ? 'max-h-48 overflow-y-auto overscroll-contain' : 'overscroll-contain'}>
         {loading ? (
-          <div className="p-4 text-center">
-            <Loader2 size={16} className="mx-auto animate-spin text-muted-foreground" />
+          <div className="p-6 text-center">
+            <Loader2 size={18} className="mx-auto animate-spin text-muted-foreground" />
           </div>
         ) : tracks.length === 0 ? (
-          <div className="p-6 text-center">
-            <Music size={20} className="mx-auto mb-2 text-muted-foreground/40" />
-            <p className="text-[10px] text-muted-foreground">Upload MP3s to build your playlist</p>
+          <div className="p-8 text-center">
+            <Music size={24} className="mx-auto mb-3 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">Upload MP3s to build your playlist</p>
           </div>
         ) : (
           tracks.map((track, i) => (
             <div
               key={track.id}
-              className={`w-full flex items-center gap-2 px-3 py-2 transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-3 transition-colors ${
                 currentTrackId === track.id ? 'bg-emerald-500/10' : 'hover:bg-surface-1'
               }`}
             >
-              {/* Cover art thumbnail — clickable to change */}
+              {/* Cover art — bigger tap target */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (onUploadCover) {
-                    setCoverTrackId(track.id);
-                    coverRef.current?.click();
-                  }
+                  if (onUploadCover) { setCoverTrackId(track.id); coverRef.current?.click(); }
                 }}
-                className="w-8 h-8 rounded-sm bg-surface-1 overflow-hidden shrink-0 border border-border hover:border-emerald-500/40 transition-colors"
+                className="w-11 h-11 rounded-lg bg-surface-1 overflow-hidden shrink-0 border border-border hover:border-emerald-500/40 transition-colors active:scale-95"
                 title="Click to set cover art"
               >
                 {track.cover_url ? (
                   <img src={track.cover_url} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Music size={12} className={currentTrackId === track.id ? 'text-emerald-500' : 'text-muted-foreground/50'} />
+                    <Music size={14} className={currentTrackId === track.id ? 'text-emerald-500' : 'text-muted-foreground/50'} />
                   </div>
                 )}
               </button>
               <button
                 onClick={() => onPlay(track, i)}
-                className="flex-1 flex items-center gap-2 min-w-0 text-left"
+                className="flex-1 flex items-center gap-2 min-w-0 text-left py-1"
               >
                 <div className="flex-1 min-w-0">
-                  <p className={`text-xs font-medium truncate ${currentTrackId === track.id ? 'text-emerald-400' : 'text-foreground'}`}>
+                  <p className={`text-sm font-medium truncate ${currentTrackId === track.id ? 'text-emerald-400' : 'text-foreground'}`}>
                     {track.track_name}
                   </p>
                   {track.artist_name && (
-                    <p className="text-[9px] text-muted-foreground truncate">{track.artist_name}</p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">{track.artist_name}</p>
                   )}
                 </div>
                 {currentTrackId === track.id && isPlaying && (
-                  <div className="flex gap-[2px] items-end h-3 shrink-0">
+                  <div className="flex gap-[2px] items-end h-4 shrink-0">
                     {[0, 1, 2].map(b => (
-                      <motion.div
-                        key={b}
-                        className="w-[2px] bg-emerald-500 rounded-full"
-                        animate={{ height: ['4px', '12px', '4px'] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }}
-                      />
+                      <motion.div key={b} className="w-[3px] bg-emerald-500 rounded-full"
+                        animate={{ height: ['5px', '16px', '5px'] }}
+                        transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }} />
                     ))}
                   </div>
                 )}
               </button>
-              {/* Actions */}
+              {/* Actions — bigger tap targets */}
               <button
                 onClick={() => setConfirmTrack({ id: track.id, isPublic: track.is_public })}
-                className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                className="p-2.5 text-muted-foreground hover:text-foreground transition-colors rounded-lg active:bg-surface-1"
                 title={track.is_public ? 'Public — click to make private' : 'Private — click to make public'}
               >
-                {track.is_public ? <Globe size={12} className="text-emerald-500" /> : <Lock size={12} />}
+                {track.is_public ? <Globe size={16} className="text-emerald-500" /> : <Lock size={16} />}
               </button>
               <button
                 onClick={() => onDelete(track.id, track.audio_url)}
-                className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
+                className="p-2.5 text-muted-foreground hover:text-red-400 transition-colors rounded-lg active:bg-surface-1"
               >
-                <Trash2 size={12} />
+                <Trash2 size={16} />
               </button>
             </div>
           ))
