@@ -101,6 +101,30 @@ export function useFeedPosts(limit = 30) {
 
   const createPost = async (content: string, postType: FeedPostItem['post_type'] = 'text', mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => {
     if (!user) return;
+
+    // Optimistic insert — show it immediately
+    const optimisticId = `optimistic-${Date.now()}`;
+    const optimisticPost: FeedPostItem = {
+      id: optimisticId,
+      user_id: user.id,
+      content: content.slice(0, 280),
+      post_type: postType,
+      media_url: mediaUrl || null,
+      media_platform: mediaPlatform || null,
+      uploaded_media_url: uploadedMediaUrl || null,
+      uploaded_media_type: uploadedMediaType || null,
+      like_count: 0,
+      bookmark_count: 0,
+      comment_count: 0,
+      share_count: 0,
+      is_system: false,
+      data: {},
+      created_at: new Date().toISOString(),
+      username: undefined, // will be enriched on refetch
+      avatar_url: null,
+    };
+    setPosts(prev => [optimisticPost, ...prev]);
+
     const { error } = await supabase.from('feed_posts').insert({
       user_id: user.id,
       content: content.slice(0, 280),
@@ -110,7 +134,12 @@ export function useFeedPosts(limit = 30) {
       uploaded_media_url: uploadedMediaUrl || null,
       uploaded_media_type: uploadedMediaType || null,
     });
-    if (error) console.error('Error creating post:', error);
+    if (error) {
+      console.error('Error creating post:', error);
+      // Remove optimistic post on failure
+      setPosts(prev => prev.filter(p => p.id !== optimisticId));
+    }
+    // Realtime will refetch and replace the optimistic entry
   };
 
   const toggleLike = async (postId: string) => {

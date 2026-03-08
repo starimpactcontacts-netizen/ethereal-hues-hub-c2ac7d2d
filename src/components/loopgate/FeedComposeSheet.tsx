@@ -47,14 +47,14 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
     setSubmitting(true);
     const finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
     const platform = mediaUrl ? detectPlatform(mediaUrl) : undefined;
-    await onPost(
-      finalContent,
-      postType,
-      mediaUrl.trim() || undefined,
-      platform,
-      uploadedMedia?.url,
-      uploadedMedia?.type,
-    );
+    
+    // Close immediately for snappy UX — fire and forget
+    const savedContent = finalContent;
+    const savedPostType = postType;
+    const savedMediaUrl = mediaUrl.trim() || undefined;
+    const savedPlatform = platform;
+    const savedUploadedMedia = uploadedMedia ? { ...uploadedMedia } : null;
+    
     setContent("");
     setMediaUrl("");
     setPostType('text');
@@ -62,6 +62,16 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
     setUploadedMedia(null);
     setSubmitting(false);
     onClose();
+
+    // Post in background
+    await onPost(
+      savedContent,
+      savedPostType,
+      savedMediaUrl,
+      savedPlatform,
+      savedUploadedMedia?.url,
+      savedUploadedMedia?.type,
+    );
   };
 
   const handleGifSelect = (gifUrl: string) => {

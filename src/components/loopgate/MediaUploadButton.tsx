@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { ImagePlus, X, Loader2, Film } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface MediaUploadButtonProps {
   onUpload: (url: string, type: 'image' | 'video') => void;
@@ -22,7 +23,7 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
     if (!file || !user) return;
 
     if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-      alert(`File must be under ${MAX_SIZE_MB}MB`);
+      toast.error(`File must be under ${MAX_SIZE_MB}MB`);
       return;
     }
 
@@ -46,8 +47,9 @@ export default function MediaUploadButton({ onUpload, uploadedUrl, onClear }: Me
         .getPublicUrl(path);
 
       onUpload(urlData.publicUrl, isVideo ? 'video' : 'image');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Upload error:', err);
+      toast.error(err?.message || 'Upload failed — try again');
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';
