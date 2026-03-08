@@ -453,9 +453,12 @@ export default function HubPage() {
                           )}
                         </div>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0">
-                        <svg width="14" height="12" viewBox="0 0 28 24" fill="none" className="text-muted-foreground">
-                          <path d="M2 22L8 2h2l-4.5 16h3L14 6l5.5 12h3L18 2h2l6 20h-3.5l-1.5-4H17l-3-7-3 7H6.5L5 22H2z" fill="currentColor" fillRule="evenodd"/>
+                      <div className="absolute -bottom-1 -right-1 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
+                        <svg width="12" height="11" viewBox="0 0 24 22" fill="none" className="text-muted-foreground">
+                          {/* L stroke */}
+                          <path d="M3 1L3 17L10 17" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                          {/* V stroke — overlapping the L */}
+                          <path d="M8 1L14 17L20 1" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                         </svg>
                         <span className="font-display text-xs text-foreground">{profile?.level || 1}</span>
                       </div>
