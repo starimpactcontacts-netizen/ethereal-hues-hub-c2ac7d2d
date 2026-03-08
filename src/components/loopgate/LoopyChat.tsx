@@ -82,14 +82,21 @@ export default function LoopyChat() {
 
   return (
     <>
+      {/* Drag constraints boundary */}
+      <div ref={constraintsRef} className="fixed top-20 bottom-24 right-0 w-20 z-50 pointer-events-none" />
+
       {/* ═══ DOCKED STATE — paws ═══ */}
       <AnimatePresence>
         {!open && docked && (
           <motion.button
+            drag="y"
+            dragConstraints={constraintsRef}
+            dragElastic={0.1}
+            dragMomentum={false}
             initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setDocked(false)}
-            className="fixed bottom-28 right-0 z-50 cursor-pointer group"
+            className="fixed bottom-28 right-0 z-50 cursor-grab active:cursor-grabbing pointer-events-auto group touch-none"
           >
             <motion.div animate={{ x: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }} className="flex flex-col gap-6 items-end">
               {[0, 1].map(i => (
@@ -110,7 +117,13 @@ export default function LoopyChat() {
       {/* ═══ FLOATING BUTTON ═══ */}
       <AnimatePresence>
         {!open && !docked && (
-          <div className="fixed bottom-28 right-3 z-50">
+          <motion.div
+            drag="y"
+            dragConstraints={constraintsRef}
+            dragElastic={0.1}
+            dragMomentum={false}
+            className="fixed bottom-28 right-3 z-50 cursor-grab active:cursor-grabbing pointer-events-auto touch-none"
+          >
             <motion.button
               initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ delay: 0.2 }}
               onClick={handleDock}
@@ -133,7 +146,7 @@ export default function LoopyChat() {
                 </>
               )}
             </motion.button>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
