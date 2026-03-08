@@ -589,6 +589,53 @@ export default function CrewDetailPage() {
       {/* Tournament Earnings for owners */}
       {isOwner && crewId && <TournamentEarnings crewId={crewId} />}
 
+      {/* ━━━ OWNER ACTION BUTTONS ━━━ */}
+      {isOwner && crewId && (
+        <div className="mx-3 mb-3 space-y-2">
+          {/* Free Tournament - The Red Button */}
+          <button
+            onClick={() => navigate(`/arena?host=true&crew=${crewId}`)}
+            className="w-full group relative overflow-hidden rounded-lg p-3 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg, hsl(0 72% 51%), hsl(350 80% 40%))' }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0 border border-white/10">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-black uppercase tracking-wide text-white leading-none" style={teko}>
+                  Host Tournament
+                </p>
+                <p className="text-[10px] text-white/60 mt-0.5">Free competition · Build hype</p>
+              </div>
+              <Zap className="w-4 h-4 text-white/40 group-hover:text-white/80 transition-colors shrink-0" />
+            </div>
+          </button>
+
+          {/* Monetized Tournament */}
+          <button
+            onClick={() => navigate(`/arena?host=true&crew=${crewId}&monetize=true`)}
+            className="w-full group relative overflow-hidden rounded-lg p-3 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+            style={{ background: 'linear-gradient(135deg, hsl(160 84% 39%), hsl(160 84% 25%))' }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center shrink-0 border border-white/10">
+                <DollarSign className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-black uppercase tracking-wide text-white leading-none" style={teko}>
+                  Monetize Tournament
+                </p>
+                <p className="text-[10px] text-white/60 mt-0.5">Earn from views & competitors</p>
+              </div>
+              <DollarSign className="w-4 h-4 text-white/40 group-hover:text-white/80 transition-colors shrink-0" />
+            </div>
+          </button>
+        </div>
+      )}
+
       {/* Channels */}
       <div className="flex-1 overflow-y-auto py-1 overscroll-contain">
         {isMember ? (
