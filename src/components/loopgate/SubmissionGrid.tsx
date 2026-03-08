@@ -212,9 +212,16 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
               {/* No-thumbnail persistent hint */}
               {!thumbnail && !submission.thumbnail_url && (
                 <div className="absolute bottom-8 right-1">
-                  <div className="w-5 h-5 rounded-full bg-black/60 flex items-center justify-center border border-gold/30">
-                    <ImagePlus className="w-2.5 h-2.5 text-gold/80" />
+                  <div className="w-5 h-5 rounded-full bg-black/60 flex items-center justify-center border border-border/30">
+                    <ImagePlus className="w-2.5 h-2.5 text-muted-foreground" />
                   </div>
+                </div>
+              )}
+              
+              {/* Hidden indicator */}
+              {submission.is_hidden && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <EyeOff className="w-5 h-5 text-white/60" />
                 </div>
               )}
             </motion.button>
