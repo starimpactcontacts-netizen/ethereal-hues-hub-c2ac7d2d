@@ -1311,7 +1311,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                         <ChevronDown className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "#555", transform: showFontPicker ? "rotate(180deg)" : "" }} />
                       </button>
 
-                      <AnimatePresence>
+                      <AnimatePresence initial={false}>
                         {showFontPicker && (
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden rounded-lg" style={{ border: "1px solid #2a2a2a", background: "#111" }}>
