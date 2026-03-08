@@ -3509,6 +3509,30 @@ export type Database = {
         }
         Relationships: []
       }
+      hidden_edits: {
+        Row: {
+          hidden_at: string
+          id: string
+          source: string
+          source_id: string
+          user_id: string
+        }
+        Insert: {
+          hidden_at?: string
+          id?: string
+          source: string
+          source_id: string
+          user_id: string
+        }
+        Update: {
+          hidden_at?: string
+          id?: string
+          source?: string
+          source_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       hosted_comp_messages: {
         Row: {
           avatar_url: string | null
