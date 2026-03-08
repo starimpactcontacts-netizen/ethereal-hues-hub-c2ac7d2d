@@ -2303,7 +2303,7 @@ export default function OpsPanel() {
         <section className="bg-gradient-to-r from-gold/5 to-transparent border border-gold/20 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gold flex items-center gap-2">
-              <Sparkles size={14} />
+               <GateIcon size={14} />
               Quick Actions
             </h2>
             <span className="text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded-full">
@@ -2455,7 +2455,7 @@ export default function OpsPanel() {
                             )}
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                              <Sparkles size={10} className="text-gold" />
+                              <GateIcon size={10} className="text-gold" />
                               {event.xp_reward || 50} XP
                             </span>
                           </div>
@@ -2799,7 +2799,7 @@ export default function OpsPanel() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Badge className="bg-green-500/20 text-green-500 flex items-center gap-1">
-                              <Sparkles size={10} />
+                              <GateIcon size={10} />
                               +{submission.xp_awarded || 0} XP
                             </Badge>
                             <button
@@ -3093,7 +3093,7 @@ export default function OpsPanel() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Sparkles size={14} className="text-gold" />
+               <GateIcon size={14} className="text-gold" />
               Global QOI Test (GQT)
             </h2>
             <span className="text-xs text-gold">
@@ -3103,7 +3103,7 @@ export default function OpsPanel() {
 
           {gqtSubmissions.length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-6 text-center">
-              <Sparkles className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+               <GateIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">No GQT submissions yet</p>
             </div>
           ) : (
@@ -3344,7 +3344,7 @@ export default function OpsPanel() {
               <TabsContent value="scored">
                 {gqtSubmissions.filter(s => s.status === 'scored').length === 0 ? (
                   <div className="bg-card border border-border rounded-lg p-6 text-center">
-                    <Sparkles className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <GateIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
                     <p className="text-sm text-muted-foreground">No scored submissions yet</p>
                   </div>
                 ) : (
@@ -3753,7 +3753,7 @@ export default function OpsPanel() {
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           ) : (
                             <>
-                              {item.item_type === 'cosmetic' && <Sparkles size={16} className="text-gold" />}
+                              {item.item_type === 'cosmetic' && <GateIcon size={16} className="text-gold" />}
                               {item.item_type === 'digital' && <Gift size={16} className="text-blue-400" />}
                               {item.item_type === 'physical' && <Package size={16} className="text-green-400" />}
                             </>
@@ -4282,7 +4282,7 @@ export default function OpsPanel() {
             {/* XP Reward */}
             <div>
               <Label htmlFor="xp-reward" className="flex items-center gap-1">
-                <Sparkles size={14} className="text-gold" />
+                 <GateIcon size={14} className="text-gold" />
                 XP Reward per Submission
               </Label>
               <Input
@@ -4641,7 +4641,7 @@ export default function OpsPanel() {
             {/* XP Reward */}
             <div>
               <Label htmlFor="edit-xp-reward" className="flex items-center gap-1">
-                <Sparkles size={14} className="text-gold" />
+                 <GateIcon size={14} className="text-gold" />
                 XP Reward per Submission
               </Label>
               <Input

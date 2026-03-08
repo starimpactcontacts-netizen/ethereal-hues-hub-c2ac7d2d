@@ -639,7 +639,7 @@ export default function IndexPage() {
                 {/* ─── RISING STARS CAROUSEL ─── */}
                 {risingStars.length > 0 && (
                   <div className="pt-4 pb-2">
-                    <SectionHeader icon={Sparkles} label="UP & COMING" count={risingStars.length} />
+                    <SectionHeader icon={GateIcon} label="UP & COMING" count={risingStars.length} />
                     <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 pb-2">
                       {risingStars.map((editor, i) => (
                         <motion.div key={editor.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
