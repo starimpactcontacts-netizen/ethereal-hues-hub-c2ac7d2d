@@ -316,7 +316,7 @@ export default function LoopyPage() {
 
           {/* Messages area */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5">
               {loadingHistory ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-6 h-6 animate-spin text-white/20" />
