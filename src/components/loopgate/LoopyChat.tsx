@@ -10,7 +10,7 @@ import ReactMarkdown from 'react-markdown';
 
 const QUICK_ACTIONS = [
   { label: '⚔️ Battle', msg: 'how do i start a battle?', icon: Swords },
-  { label: '⭐ Rate Edit', route: '/loopy', icon: Star },
+  { label: '⭐ Rate Edit', route: '/loopy/rate', icon: Star },
   { label: '🏆 Drops', msg: 'whats dropping rn?', icon: Trophy },
   { label: '👥 Units', msg: 'tell me about units', icon: Users },
   { label: '📈 My Stats', msg: 'whats my current stats looking like?', icon: Zap },
