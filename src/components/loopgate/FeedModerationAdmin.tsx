@@ -55,13 +55,13 @@ export default function FeedModerationAdmin() {
     if (!deleteId) return;
     setDeleting(true);
     try {
-      // Delete comments first
-      await supabase.from("feed_comments").delete().eq("post_id", deleteId);
-      // Delete likes
-      await supabase.from("feed_post_likes").delete().eq("post_id", deleteId);
-      // Delete bookmarks
-      await supabase.from("feed_post_bookmarks").delete().eq("post_id", deleteId);
-      // Delete the post
+      // Delete related data then the post
+      const delOps = [
+        supabase.from("feed_comments" as any).delete().eq("post_id", deleteId),
+        supabase.from("feed_post_likes" as any).delete().eq("post_id", deleteId),
+        supabase.from("feed_post_bookmarks" as any).delete().eq("post_id", deleteId),
+      ];
+      await Promise.all(delOps);
       const { error } = await supabase.from("feed_posts").delete().eq("id", deleteId);
       if (error) throw error;
       toast.success("Post deleted");
