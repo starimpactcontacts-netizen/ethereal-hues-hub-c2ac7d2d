@@ -475,56 +475,34 @@ export default function HubPage() {
                           <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
                         )}
                       </div>
-                      <div className="inline-flex items-center border border-border/60 rounded-sm mt-1.5 divide-x divide-border/40 bg-surface-0/50">
-                        <div className="inline-flex items-center gap-1 px-2 py-0.5">
-                          <LeagueIcon className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-[9px] font-bold tracking-wider text-foreground uppercase">
-                            {league.label}
-                          </span>
-                        </div>
-                        {globalRank && globalRank <= 500 && (
-                          <div className="inline-flex items-center gap-1 px-2 py-0.5">
-                            <Trophy className="w-3 h-3 text-gold" />
-                            <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
-                          </div>
-                        )}
-                        <div className="inline-flex items-center gap-0.5 px-2 py-0.5">
-                          <span className={`text-[9px] font-bold ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</span>
-                        </div>
+                      <div className="flex items-center gap-[6px] mt-1.5">
+                        <span className="text-[10px] font-bold tracking-[0.15em] text-muted-foreground uppercase">{league.label}</span>
+                        <span className="text-muted-foreground/30 text-[8px]">·</span>
+                        {globalRank && globalRank <= 500 ? (
+                          <>
+                            <span className="text-[10px] font-bold tabular-nums text-foreground">#{globalRank}</span>
+                            <span className="text-muted-foreground/30 text-[8px]">·</span>
+                          </>
+                        ) : null}
+                        <span className={`text-[10px] font-black ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</span>
                       </div>
                     </div>
                   </button>
 
-                  {/* Earnings + Index — top right, refined */}
-                  <div className="flex flex-col gap-1.5 shrink-0 min-w-[140px]">
-                    {/* Earnings — dual line: available + total */}
-                    <button onClick={() => setWalletOpen(true)} className="relative bg-background border border-emerald-500/20 hover:border-emerald-400/40 rounded-lg px-3 py-2 transition-all cursor-pointer w-full text-left">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span className="font-display text-lg text-emerald-400 leading-none tabular-nums font-bold">
-                            {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
-                          </span>
-                        </div>
-                        <ChevronRight className="w-3 h-3 text-emerald-400/30 shrink-0" />
-                      </div>
-                      <div className="flex items-center justify-between mt-0.5">
-                        <span className="text-[8px] text-muted-foreground/50 font-bold uppercase tracking-wider">Available</span>
-                        <span className="text-[9px] text-emerald-400/40 tabular-nums font-semibold">
-                          ${(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} earned
-                        </span>
-                      </div>
+                  {/* Earnings + Index — top right */}
+                  <div className="flex flex-col gap-1 shrink-0 items-end">
+                    <button onClick={() => setWalletOpen(true)} className="flex items-center gap-1.5 group">
+                      <span className="font-display text-lg tabular-nums font-bold text-emerald-400 leading-none">
+                        ${(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
+                      </span>
+                      <ChevronRight className="w-3 h-3 text-emerald-400/30 group-hover:text-emerald-400 transition-colors" />
                     </button>
-                    {/* Index */}
-                    <Link to="/shop" className="group">
-                      <div className="relative flex items-center gap-2 bg-background border border-border/50 hover:border-gold/40 rounded-lg px-3 py-2 transition-all">
-                        <Coins className="w-3.5 h-3.5 text-gold shrink-0" />
-                        <span className="font-display text-lg text-foreground leading-none tabular-nums font-bold">
-                          {(profile as any)?.spendable_index || 0}
-                        </span>
-                        <span className="text-[9px] text-gold/60 font-bold tracking-wider">IDX</span>
-                        <ShoppingBag className="w-3 h-3 text-gold/30 group-hover:text-gold transition-colors shrink-0 ml-auto" />
-                      </div>
+                    <Link to="/index" className="flex items-center gap-1.5 group">
+                      <IndexEarnBadge size="sm" />
+                      <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
+                        {profile?.global_index_score || 0}
+                      </span>
+                      <span className="text-[8px] text-gold/50 font-bold tracking-wider">IDX</span>
                     </Link>
                   </div>
                 </div>
