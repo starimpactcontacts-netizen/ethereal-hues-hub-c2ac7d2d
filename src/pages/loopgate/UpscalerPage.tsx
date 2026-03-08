@@ -328,7 +328,7 @@ export default function UpscalerPage() {
               onClick={startUpscale}
               className="w-full h-12 bg-gold text-black hover:bg-gold/90 font-display text-base gap-2"
             >
-              <Sparkles className="w-4 h-4" />
+              <GateIcon className="w-4 h-4" />
               Upscale {mode}
             </Button>
           </motion.div>

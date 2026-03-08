@@ -4641,7 +4641,7 @@ export default function OpsPanel() {
             {/* XP Reward */}
             <div>
               <Label htmlFor="edit-xp-reward" className="flex items-center gap-1">
-                <Sparkles size={14} className="text-gold" />
+                 <GateIcon size={14} className="text-gold" />
                 XP Reward per Submission
               </Label>
               <Input

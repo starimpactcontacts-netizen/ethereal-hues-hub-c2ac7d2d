@@ -272,7 +272,7 @@ export default function JoinCrewPage() {
           {/* XP Reward - subtle indicator */}
           {!joined && !(crew.max_members && crew.member_count >= crew.max_members) && (
             <div className="flex items-center justify-center gap-1.5 text-xs text-gold mb-5">
-              <Sparkles className="w-3 h-3" />
+              <GateIcon className="w-3 h-3" />
               <span>+15 XP for joining</span>
             </div>
           )}
