@@ -440,7 +440,7 @@ export default function LoopyPage() {
                             if (action.route) navigate(action.route);
                             else if (action.msg) handleSend(action.msg);
                           }}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] text-[11px] text-white/30 hover:text-white/50 hover:bg-white/[0.05] hover:border-purple-500/20 transition-all"
+                           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-[11px] text-white/30 hover:text-white/50 hover:bg-white/[0.05] hover:border-purple-500/20 transition-all active:scale-95"
                         >
                           {action.label}
                         </button>
