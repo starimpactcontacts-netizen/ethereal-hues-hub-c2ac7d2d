@@ -105,7 +105,7 @@ export default function LoopyPage() {
         <meta name="description" content="Chat with Loopy, the AI oracle of Loopgate. Get help with battles, drops, rankings, and everything editing." />
       </Helmet>
 
-      <div className="h-[calc(100vh-64px)] sm:h-[calc(100vh-56px)] flex bg-[#080808] relative overflow-hidden">
+      <div className="h-[calc(100vh-120px)] sm:h-[calc(100vh-120px)] flex bg-[#080808] relative overflow-hidden">
         <GatePattern opacity={1.5} color="white" tileSize={56} />
 
         {/* ═══ DESKTOP SIDEBAR ═══ */}
