@@ -267,6 +267,8 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
               )}
 
               <p className="text-[9px] text-muted-foreground/30 text-center mt-5">Payouts reviewed within 24 hours</p>
+              {/* Safe area bottom padding for mobile */}
+              <div className="h-16" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }} />
             </div>
           </motion.div>
         </>
