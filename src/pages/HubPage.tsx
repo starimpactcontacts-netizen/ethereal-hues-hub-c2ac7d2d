@@ -44,6 +44,7 @@ import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
 import lvMonogram from '@/assets/lv-monogram.png';
 import GatePattern from '@/components/loopgate/GatePattern';
+import { getRankFromScore } from '@/data/gqtConfig';
 import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
 import FoundingBadge from '@/components/loopgate/FoundingBadge';
@@ -337,6 +338,8 @@ export default function HubPage() {
   const league = leagueConfig[userLeague] || leagueConfig.open;
   const LeagueIcon = league.icon;
   const bestScore = profile?.best_gatekeeper_qoi;
+  const classRankConfig = bestScore && bestScore > 0 ? getRankFromScore(bestScore) : null;
+  const classLetter = classRankConfig?.rank || ((profile?.level || 1) >= 2 ? 'D' : 'F');
 
   const liveEvents = events.filter(e => e.status === 'live');
   
@@ -472,19 +475,22 @@ export default function HubPage() {
                           <JudgeClassBadge reviewCount={judgeReviewCount} size="sm" />
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r ${league.gradient} rounded-sm`}>
-                          <LeagueIcon className="w-3 h-3 text-background" />
-                          <span className="text-[9px] font-bold tracking-wider text-background uppercase">
+                      <div className="inline-flex items-center border border-border/60 rounded-sm mt-1.5 divide-x divide-border/40 bg-surface-0/50">
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5">
+                          <LeagueIcon className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-[9px] font-bold tracking-wider text-foreground uppercase">
                             {league.label}
                           </span>
                         </div>
                         {globalRank && globalRank <= 500 && (
-                          <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-muted border border-border/50 rounded-sm">
+                          <div className="inline-flex items-center gap-1 px-2 py-0.5">
                             <Trophy className="w-3 h-3 text-gold" />
                             <span className="text-[9px] font-bold text-gold">#{globalRank}</span>
                           </div>
                         )}
+                        <div className="inline-flex items-center gap-0.5 px-2 py-0.5">
+                          <span className={`text-[9px] font-bold ${classRankConfig?.color || 'text-muted-foreground'}`}>{classLetter}</span>
+                        </div>
                       </div>
                     </div>
                   </button>
