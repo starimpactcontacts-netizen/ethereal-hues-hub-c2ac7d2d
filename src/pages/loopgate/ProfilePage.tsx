@@ -187,67 +187,63 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="bg-background">
+    <div className="bg-background min-h-screen">
 
-      {/* ═══ HERO SECTION ═══ */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-muted/10 via-transparent to-transparent" />
+      {/* ═══ SEAMLESS HERO ═══ */}
+      <div className="relative px-4 pt-3 pb-0">
+        {/* Top row — share + status */}
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => {
+              const profileUrl = `${window.location.origin}/editor/${profile.id}`;
+              navigator.clipboard.writeText(profileUrl);
+              toast.success("Profile link copied!");
+            }}
+            className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Share2 className="w-3 h-3" />
+            Share
+          </button>
+          <ActivityStatusSelector
+            userId={profile.id}
+            currentStatus={(profile as any).activity_status || "online"}
+            onStatusChange={refreshProfile}
+          />
+        </div>
         
-        <div className="relative px-4 pt-2 pb-2">
-          {/* Top Actions */}
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={() => {
-                const profileUrl = `${window.location.origin}/editor/${profile.id}`;
-                navigator.clipboard.writeText(profileUrl);
-                toast.success("Profile link copied!");
-              }}
-              className="flex items-center gap-1 px-2.5 py-1 bg-surface-1 border border-border text-[11px] font-medium hover:border-foreground/30 transition-colors rounded-md"
-            >
-              <Share2 className="w-3 h-3" />
-              Share
-            </button>
-            <ActivityStatusSelector
-              userId={profile.id}
-              currentStatus={(profile as any).activity_status || "online"}
-              onStatusChange={refreshProfile}
-            />
-          </div>
-          
-          {/* Avatar + Identity */}
-          <div className="flex flex-col items-center">
-            <button
-              onClick={() => setShowAvatarModal(true)}
-              className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-border group mb-1.5"
-            >
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-surface-1 flex items-center justify-center">
-                  <span className="font-display text-xl text-muted-foreground">
-                    {profile.username?.charAt(0).toUpperCase() || '?'}
-                  </span>
-                </div>
-              )}
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="w-4 h-4 text-white" />
+        {/* Avatar + Name — compact horizontal layout */}
+        <div className="flex items-center gap-3 mb-3">
+          <button
+            onClick={() => setShowAvatarModal(true)}
+            className="relative w-14 h-14 rounded-full overflow-hidden border border-border/50 group shrink-0"
+          >
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt={profile.username} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-surface-1 flex items-center justify-center">
+                <span className="font-display text-lg text-muted-foreground">
+                  {profile.username?.charAt(0).toUpperCase() || '?'}
+                </span>
               </div>
-            </button>
-            
-            <div className="text-center mb-1.5">
-              <div className="flex items-center justify-center gap-1.5">
-                <h1 className="font-display text-lg">
-                  {(profile as any).display_name || profile.username}
-                </h1>
-                {profile.verification_status && <VerifiedBadge size="sm" />}
-                {(hasEquippedOG || (profile as any).is_founding_member) && <FoundingBadge size="sm" animate={false} />}
-              </div>
-              <p className="text-[11px] text-muted-foreground">@{profile.username}</p>
+            )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="w-3.5 h-3.5 text-white" />
             </div>
-
-            {/* Identity Badges */}
+          </button>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <h1 className="font-display text-base leading-tight truncate">
+                {(profile as any).display_name || profile.username}
+              </h1>
+              {profile.verification_status && <VerifiedBadge size="sm" />}
+              {(hasEquippedOG || (profile as any).is_founding_member) && <FoundingBadge size="sm" animate={false} />}
+            </div>
+            <p className="text-[10px] text-muted-foreground mb-1">@{profile.username}</p>
+            
+            {/* Identity badges inline */}
             {((profile as any).archetype || ((profile as any).software && (profile as any).software.length > 0)) && (
-              <div className="flex items-center gap-1.5 mb-1.5">
+              <div className="flex items-center gap-1">
                 {(profile as any).archetype && (
                   <ArchetypeBadge archetype={(profile as any).archetype} size="sm" animate={false} />
                 )}
@@ -256,197 +252,123 @@ export default function ProfilePage() {
                 )}
               </div>
             )}
+          </div>
+        </div>
 
-            {/* Stats Row */}
-            <div className="flex items-center justify-center gap-2 mb-1.5">
-              <Link to="/gqt" className={`flex flex-col items-center justify-center w-10 h-10 rounded-md border ${classColors[classLetter]}`}>
-                <span className="font-display text-base">{classLetter}</span>
-                <span className="text-[6px] uppercase tracking-wider opacity-60">Class</span>
-              </Link>
-              <div className="text-center px-1.5">
-                <p className="font-display text-base">{isAnyJudge ? judgeVideos.length : submissions.length}</p>
-                <p className="text-[8px] text-muted-foreground uppercase">{isAnyJudge ? 'Videos' : 'Edits'}</p>
-              </div>
-              <div className="text-center px-1.5">
-                <p className="font-display text-base">#{userRank}</p>
-                <p className="text-[8px] text-muted-foreground uppercase">Rank</p>
-              </div>
-              <div className="text-center px-1.5">
-                <div className="flex items-center gap-0.5 justify-center">
-                  <p className="font-display text-base">{Number(profile.global_index_score || 0).toFixed(1)}</p>
-                </div>
-                <p className="text-[8px] text-muted-foreground uppercase">Index</p>
-              </div>
-              <div className="text-center px-1.5">
-                <div className="flex items-center gap-0.5 justify-center">
-                  <p className="font-display text-base text-emerald-400">${(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}</p>
-                  <IndexEarnBadge size="sm" hideDollar />
-                </div>
-                <p className="text-[8px] text-emerald-400/60 uppercase">Earnings</p>
-              </div>
+        {/* Stats — single fluid row */}
+        <div className="flex items-center gap-0 mb-2 -mx-1">
+          <Link to="/gqt" className={`flex flex-col items-center justify-center px-2.5 py-1.5 border-r border-border/30 ${classColors[classLetter]?.split(' ')[0] || 'text-muted-foreground'}`}>
+            <span className="font-display text-sm leading-none">{classLetter}</span>
+            <span className="text-[7px] uppercase tracking-wider text-muted-foreground mt-0.5">Class</span>
+          </Link>
+          <div className="flex flex-col items-center px-2.5 py-1.5 border-r border-border/30">
+            <span className="font-display text-sm leading-none">{isAnyJudge ? judgeVideos.length : submissions.length}</span>
+            <span className="text-[7px] uppercase tracking-wider text-muted-foreground mt-0.5">{isAnyJudge ? 'Videos' : 'Edits'}</span>
+          </div>
+          <div className="flex flex-col items-center px-2.5 py-1.5 border-r border-border/30">
+            <span className="font-display text-sm leading-none">#{userRank}</span>
+            <span className="text-[7px] uppercase tracking-wider text-muted-foreground mt-0.5">Rank</span>
+          </div>
+          <div className="flex flex-col items-center px-2.5 py-1.5 border-r border-border/30">
+            <span className="font-display text-sm leading-none">{Number(profile.global_index_score || 0).toFixed(1)}</span>
+            <span className="text-[7px] uppercase tracking-wider text-muted-foreground mt-0.5">Index</span>
+          </div>
+          <div className="flex flex-col items-center px-2.5 py-1.5">
+            <div className="flex items-center gap-0.5">
+              <span className="font-display text-sm leading-none text-emerald-400">${(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}</span>
+              <IndexEarnBadge size="sm" hideDollar />
             </div>
+            <span className="text-[7px] uppercase tracking-wider text-emerald-400/50 mt-0.5">Earn</span>
+          </div>
+        </div>
 
-            {/* Primary Unit */}
-            {primaryCrew?.crew && (
-              <Link to={`/units/${primaryCrew.crew_id}`} className="w-full max-w-xs">
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-surface-1 border border-border hover:border-foreground/30 transition-colors">
-                  <div className="w-6 h-6 rounded overflow-hidden bg-muted/30 flex items-center justify-center">
-                    {primaryCrew.crew.avatar_url ? (
-                      <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Shield className="w-3 h-3 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <Crown className="w-2.5 h-2.5 text-muted-foreground" />
-                      <span className="text-[11px] font-medium truncate">{primaryCrew.crew.name}</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
+        {/* Unit + XP — combined row */}
+        <div className="flex items-center gap-2 mb-2">
+          {primaryCrew?.crew && (
+            <Link to={`/units/${primaryCrew.crew_id}`} className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 px-2 py-1.5 bg-surface-1/50 border border-border/30 rounded hover:border-border/60 transition-colors">
+                <div className="w-5 h-5 rounded overflow-hidden bg-muted/30 flex items-center justify-center shrink-0">
+                  {primaryCrew.crew.avatar_url ? (
+                    <img src={primaryCrew.crew.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Shield className="w-2.5 h-2.5 text-muted-foreground" />
+                  )}
                 </div>
-              </Link>
-            )}
+                <span className="text-[10px] font-medium truncate">{primaryCrew.crew.name}</span>
+                <ChevronRight className="w-2.5 h-2.5 text-muted-foreground shrink-0" />
+              </div>
+            </Link>
+          )}
+          <div className={`${primaryCrew?.crew ? 'w-28' : 'flex-1'} shrink-0`}>
+            <div className="flex items-center justify-between text-[8px] text-muted-foreground mb-0.5">
+              <span className="flex items-center gap-0.5">
+                <Zap className="w-2 h-2 text-purple-400" />
+                Lv {level}
+              </span>
+              <span className="tabular-nums">{xp}</span>
+            </div>
+            <XPProgressBar xp={xp} level={level} size="sm" />
           </div>
         </div>
       </div>
-      {/* ═══ XP BAR ═══ */}
+
+      {/* ═══ QUICK NAV — icon strip ═══ */}
       <div className="px-4 mb-1.5">
-        <div className="flex items-center justify-between text-[9px] text-muted-foreground mb-0.5">
-          <span className="flex items-center gap-1">
-            <Zap className="w-2.5 h-2.5 text-purple-400" />
-            <span className="uppercase tracking-wider font-medium">Lv {level}</span>
-          </span>
-          <span className="tabular-nums">{xp} XP</span>
-        </div>
-        <XPProgressBar xp={xp} level={level} size="sm" />
-      </div>
-
-      {/* ═══ QUICK NAV BUTTONS ═══ */}
-      <div className="px-4 mb-2">
-        <div className="grid grid-cols-4 gap-1.5">
-          <Link to="/profile/stats">
-            <motion.div 
-              whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-md p-2 flex items-center gap-1.5 hover:border-foreground/30 transition-colors"
-            >
-              <div className="w-6 h-6 rounded bg-purple-500/10 flex items-center justify-center">
-                <BarChart3 className="w-3 h-3 text-purple-400" />
-              </div>
-              <div className="flex-1 min-w-0 hidden sm:block">
-                <p className="text-[10px] font-medium">Stats</p>
-              </div>
-            </motion.div>
-          </Link>
-
-          <Link to="/connections">
-            <motion.div 
-              whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-md p-2 flex items-center gap-1.5 hover:border-foreground/30 transition-colors"
-            >
-              <div className="w-6 h-6 rounded bg-sky-500/10 flex items-center justify-center">
-                <Users className="w-3 h-3 text-sky-400" />
-              </div>
-              <div className="flex-1 min-w-0 hidden sm:block">
-                <p className="text-[10px] font-medium">Network</p>
-              </div>
-            </motion.div>
-          </Link>
-
-          <ProfileInventoryLink />
-          
-          <Link to="/profile/settings">
-            <motion.div 
-              whileTap={{ scale: 0.98 }}
-              className="bg-surface-1 border border-border rounded-md p-2 flex items-center gap-1.5 hover:border-foreground/30 transition-colors"
-            >
-              <div className="w-6 h-6 rounded bg-muted/30 flex items-center justify-center">
-                <Settings className="w-3 h-3 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0 hidden sm:block">
-                <p className="text-[10px] font-medium">Settings</p>
-              </div>
+        <div className="flex gap-1">
+          {[
+            { to: "/profile/stats", icon: BarChart3, label: "Stats", color: "text-purple-400" },
+            { to: "/connections", icon: Users, label: "Network", color: "text-sky-400" },
+          ].map(({ to, icon: Icon, label, color }) => (
+            <Link key={to} to={to} className="flex-1">
+              <motion.div whileTap={{ scale: 0.97 }} className="flex items-center justify-center gap-1.5 py-1.5 bg-surface-1/40 border border-border/20 rounded hover:border-border/50 transition-colors">
+                <Icon className={`w-3 h-3 ${color}`} />
+                <span className="text-[9px] font-medium text-muted-foreground">{label}</span>
+              </motion.div>
+            </Link>
+          ))}
+          <div className="flex-1"><ProfileInventoryLink /></div>
+          <Link to="/profile/settings" className="flex-1">
+            <motion.div whileTap={{ scale: 0.97 }} className="flex items-center justify-center gap-1.5 py-1.5 bg-surface-1/40 border border-border/20 rounded hover:border-border/50 transition-colors h-full">
+              <Settings className="w-3 h-3 text-muted-foreground" />
+              <span className="text-[9px] font-medium text-muted-foreground">Settings</span>
             </motion.div>
           </Link>
         </div>
       </div>
 
-      {/* ═══ CONTENT TABS ═══ */}
-      <div className="px-4 mb-2">
-        <div className="flex gap-0.5 p-0.5 bg-surface-1 border border-border rounded-md">
-          <button
-            onClick={() => setActiveTab('edits')}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-              activeTab === 'edits' 
-                ? 'bg-background text-foreground' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Grid3X3 className="w-3 h-3" />
-            Edits
-          </button>
-          {isAnyJudge && (
-            <>
-              <button
-                onClick={() => setActiveTab('reviews')}
-                className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                  activeTab === 'reviews' 
-                    ? 'bg-gold/20 text-gold' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Gavel className="w-3 h-3" />
-                Reviews
-              </button>
-              <button
-                onClick={() => setActiveTab('videos')}
-                className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                  activeTab === 'videos' 
-                    ? 'bg-purple-500/20 text-purple-400' 
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Video className="w-3 h-3" />
-                Videos
-              </button>
-            </>
-          )}
-          <button
-            onClick={() => setActiveTab('links')}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-              activeTab === 'links' 
-                ? 'bg-gold/20 text-gold' 
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Link2 className="w-3 h-3" />
-            Links
-          </button>
+      {/* ═══ CONTENT TABS — flush edge-to-edge ═══ */}
+      <div className="border-b border-border/30 mb-0">
+        <div className="flex">
+          {[
+            { id: 'edits' as const, icon: Grid3X3, label: 'Edits', show: true },
+            { id: 'reviews' as const, icon: Gavel, label: 'Reviews', show: isAnyJudge },
+            { id: 'videos' as const, icon: Video, label: 'Videos', show: isAnyJudge },
+            { id: 'links' as const, icon: Link2, label: 'Links', show: true },
+          ].filter(t => t.show).map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors relative ${
+                activeTab === tab.id 
+                  ? 'text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground/70'
+              }`}
+            >
+              <tab.icon className="w-3 h-3" />
+              {tab.label}
+              {activeTab === tab.id && (
+                <motion.div layoutId="profileTab" className="absolute bottom-0 left-2 right-2 h-0.5 bg-gold rounded-full" />
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* ═══ TAB CONTENT ═══ */}
-      {activeTab === 'edits' && (
-        <SubmissionGrid />
-      )}
-      
-      {activeTab === 'reviews' && (
-        <div className="px-4">
-          <MyJudgeReviews />
-        </div>
-      )}
-      
-      {activeTab === 'videos' && isAnyJudge && (
-        <div className="px-4">
-          <MyRatingVideos />
-        </div>
-      )}
-
-      {activeTab === 'links' && (
-        <div className="px-4">
-          <LinkTreeEditor />
-        </div>
-      )}
+      {activeTab === 'edits' && <SubmissionGrid />}
+      {activeTab === 'reviews' && <div className="px-4"><MyJudgeReviews /></div>}
+      {activeTab === 'videos' && isAnyJudge && <div className="px-4"><MyRatingVideos /></div>}
+      {activeTab === 'links' && <div className="px-4 pt-3"><LinkTreeEditor /></div>}
 
       {/* ═══ AVATAR MODAL ═══ */}
       {showAvatarModal && (
