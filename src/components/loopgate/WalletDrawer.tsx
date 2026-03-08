@@ -33,6 +33,9 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
   const [savingPaypal, setSavingPaypal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loadingPaypal, setLoadingPaypal] = useState(true);
+  const [showPrefs, setShowPrefs] = useState(false);
+  const [showPolicy, setShowPolicy] = useState(false);
+  const [payoutSpeed, setPayoutSpeed] = useState<'instant' | 'standard'>('instant');
 
   useEffect(() => {
     if (!user || !open) return;
