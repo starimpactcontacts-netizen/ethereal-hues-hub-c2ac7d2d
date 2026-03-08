@@ -269,7 +269,7 @@ export default function LoopyPage() {
                 if (window.innerWidth < 640) setMobileSidebar(true);
                 else setSidebarOpen(!sidebarOpen);
               }}
-              className="p-1.5 hover:bg-white/[0.06] rounded transition-colors"
+              className="p-1.5 hover:bg-white/[0.06] rounded-lg transition-all active:scale-95"
             >
               {sidebarOpen ? <PanelLeftClose className="w-4 h-4 text-white/30 hidden sm:block" /> : <PanelLeft className="w-4 h-4 text-white/30 hidden sm:block" />}
               <Menu className="w-4 h-4 text-white/30 sm:hidden" />
