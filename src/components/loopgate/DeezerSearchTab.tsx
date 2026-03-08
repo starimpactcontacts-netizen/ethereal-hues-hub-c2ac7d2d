@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, Play, Pause, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,25 +21,62 @@ interface DeezerSearchTabProps {
 
 type DeezerSearchResponse = { data?: DeezerTrack[] } | DeezerTrack[];
 
+const extractTracks = (payload: DeezerSearchResponse | null): DeezerTrack[] => {
+  const tracks = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : [];
+
+  return tracks.filter((t) => Boolean(t?.preview));
+};
+
 export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPlaying }: DeezerSearchTabProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DeezerTrack[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [showEditorial, setShowEditorial] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const loadEditorial = async () => {
+    setLoading(true);
+    setSearched(false);
+    setShowEditorial(true);
+    setErrorMessage(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('deezer-search', {
+        body: { limit: 25 },
+      });
+
+      if (error) throw error;
+      setResults(extractTracks((data as DeezerSearchResponse | null) ?? null));
+    } catch (err) {
+      console.error('Deezer editorial load failed:', err);
+      setResults([]);
+      setErrorMessage('Could not load editorial picks.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadEditorial();
+  }, []);
+
   const search = async (q: string) => {
     const clean = q.trim();
+
     if (!clean) {
-      setResults([]);
-      setSearched(false);
-      setErrorMessage(null);
+      await loadEditorial();
       return;
     }
 
     setLoading(true);
     setSearched(true);
+    setShowEditorial(false);
     setErrorMessage(null);
 
     try {
@@ -47,18 +84,8 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
         body: { query: clean, limit: 25 },
       });
 
-      if (error) {
-        throw error;
-      }
-
-      const payload = data as DeezerSearchResponse | null;
-      const tracks = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.data)
-          ? payload.data
-          : [];
-
-      setResults(tracks.filter((t) => Boolean(t?.preview)));
+      if (error) throw error;
+      setResults(extractTracks((data as DeezerSearchResponse | null) ?? null));
     } catch (err) {
       console.error('Deezer search failed:', err);
       setErrorMessage('Search failed. Try again.');
@@ -72,7 +99,6 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
 
   return (
     <div>
-      {/* Search bar — large touch target */}
       <div className="px-4 py-3 border-b border-border">
         <form onSubmit={(e) => { e.preventDefault(); search(query); inputRef.current?.blur(); }} className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -93,11 +119,10 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
           </button>
         </form>
         <p className="text-[9px] text-muted-foreground/40 mt-1.5 text-center">
-          Powered by Deezer · 30s previews · Free worldwide
+          {showEditorial ? 'Editorial picks · 30s previews · Free worldwide' : 'Powered by Deezer · 30s previews · Free worldwide'}
         </p>
       </div>
 
-      {/* Results */}
       <div className="max-h-[50vh] overflow-y-auto overscroll-contain">
         {loading && (
           <div className="flex items-center justify-center py-12">
@@ -114,11 +139,17 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
           </div>
         )}
 
-        {!loading && !searched && (
+        {!loading && !searched && results.length === 0 && (
           <div className="text-center py-12 px-6">
             <Search className="w-8 h-8 text-muted-foreground/20 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground/60">Search millions of songs</p>
             <p className="text-xs text-muted-foreground/40 mt-1">Play 30-second previews instantly</p>
+          </div>
+        )}
+
+        {!loading && showEditorial && results.length > 0 && (
+          <div className="px-4 py-2 text-[10px] uppercase tracking-wide text-muted-foreground/60 border-b border-border/50">
+            Editorial Songs
           </div>
         )}
 
