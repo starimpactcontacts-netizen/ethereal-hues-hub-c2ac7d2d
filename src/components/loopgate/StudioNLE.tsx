@@ -1786,8 +1786,8 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                       {[
                         ["Space", "Play / Pause"], ["← →", "Seek ±1s"], ["Shift+← →", "Seek ±5s"],
                         ["J / K / L", "Back / Play / Fwd"], ["I", "Set In Point"], ["O", "Set Out Point"],
-                        ["M", "Toggle Mute"], ["[ ]", "Speed ↓ / ↑"], ["⌘S", "Export"],
-                        ["?", "Shortcuts"],
+                        ["⌘Z", "Undo"], ["⌘⇧Z", "Redo"], ["M", "Toggle Mute"],
+                        ["[ ]", "Speed ↓ / ↑"], ["⌘S", "Export"], ["?", "Shortcuts"],
                       ].map(([key, desc]) => (
                         <div key={key} className="flex items-center gap-3">
                           <kbd className="px-2 py-0.5 rounded font-mono text-[10px] min-w-[44px] text-center" style={{ background: "#222", border: "1px solid #333", color: ACCENT }}>{key}</kbd>
