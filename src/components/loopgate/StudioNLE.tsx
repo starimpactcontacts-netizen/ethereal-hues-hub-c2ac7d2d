@@ -232,6 +232,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   // Clip segments for splitting
   const [segments, setSegments] = useState<ClipSegment[]>([]);
 
+  // Crop/Transform state
+  const [cropPreset, setCropPreset] = useState<string>("free");
+  const [rotation, setRotation] = useState(0); // degrees
+  const [flipH, setFlipH] = useState(false);
+  const [flipV, setFlipV] = useState(false);
+
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
     { id: "v1", name: "Video", type: "video", visible: true, locked: false },
