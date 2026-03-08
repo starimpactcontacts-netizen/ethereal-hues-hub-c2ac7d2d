@@ -350,7 +350,7 @@ export default function LoopyPage() {
                               if (action.route) navigate(action.route);
                               else if (action.msg) handleSend(action.msg);
                             }}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-purple-500/20 transition-all text-[11px] text-white/40 hover:text-white/60"
+                            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-xl hover:bg-white/[0.06] hover:border-purple-500/20 transition-all text-[11px] text-white/40 hover:text-white/60 active:scale-95"
                           >
                             <action.icon className="w-3 h-3" />
                             {action.label}
