@@ -741,12 +741,8 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     vid.currentTime = clamped; setCurrentTime(clamped);
   }, [duration]);
 
-  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!timelineRef.current || !duration) return;
-    const rect = timelineRef.current.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    seekTo(pct * duration);
-  };
+  // handleTimelineClick replaced by useTimelineDrag
+
 
   const addTextOverlay = () => {
     if (!textInput.trim()) return;
