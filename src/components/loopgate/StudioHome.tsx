@@ -125,7 +125,7 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
       <div className="relative z-10">
 
       {/* ═══════════════════ TOP BAR ═══════════════════ */}
-      <div className="sticky top-0 z-30" style={{ background: "rgba(6,6,10,0.92)", backdropFilter: "blur(24px) saturate(1.6)" }}>
+      <div className="sticky top-0 z-30" style={{ background: "hsl(0 0% 2% / 0.9)", backdropFilter: "blur(24px) saturate(1.4)" }}>
         <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "max-w-[1100px] mx-auto px-6 py-3"}`}>
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/hub")} className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors">
