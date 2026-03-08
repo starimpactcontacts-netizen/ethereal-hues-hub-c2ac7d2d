@@ -11,6 +11,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
 import StudioSubmitHub from "./StudioSubmitHub";
 import { toast } from "sonner";
+import { deleteVideoFile } from "@/lib/studioFileStore";
 
 export type StudioProject = {
   id: string;
