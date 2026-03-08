@@ -1342,15 +1342,8 @@ export default function HubPage() {
           <EditoriumPicks limit={10} />
         </div>
 
-        {/* Live Activity Log */}
-        <div className="mx-4 bg-surface-1/40 border border-border/30 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5 text-gold" />
-              <span className="text-[9px] text-foreground font-semibold uppercase tracking-wider">Live Activity</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
-          </div>
+        {/* Signal Feed — collapsible live activity */}
+        <div className="mx-4 bg-surface-1/30 border border-border/20 px-3 py-1">
           <HubLiveFeed />
         </div>
       </motion.div>
