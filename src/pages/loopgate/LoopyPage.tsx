@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import {
   Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
-  Trophy, TrendingUp, ArrowDown, Star, Clock, ChevronRight, ExternalLink,
-  MessageSquare, RotateCcw, Brain, Scan, Shield, Target, Activity,
-  ChevronDown, Award, BarChart3, Eye
+  Trophy, TrendingUp, Star, Clock, ChevronRight, ExternalLink,
+  MessageSquare, RotateCcw, Brain, Shield, Target, Activity,
+  Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users
 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
+import GatePattern from '@/components/loopgate/GatePattern';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
@@ -124,6 +125,50 @@ function ScoreRing({ score, max, color, size = 44 }: { score: number; max: numbe
   );
 }
 
+/** Architectural corner marks for section framing */
+function CornerMarks({ className = '' }: { className?: string }) {
+  return (
+    <div className={`absolute inset-0 pointer-events-none ${className}`}>
+      {/* TL */}
+      <div className="absolute top-0 left-0 w-4 h-4">
+        <div className="absolute top-0 left-0 w-full h-px bg-white/20" />
+        <div className="absolute top-0 left-0 h-full w-px bg-white/20" />
+      </div>
+      {/* TR */}
+      <div className="absolute top-0 right-0 w-4 h-4">
+        <div className="absolute top-0 right-0 w-full h-px bg-white/20" />
+        <div className="absolute top-0 right-0 h-full w-px bg-white/20" />
+      </div>
+      {/* BL */}
+      <div className="absolute bottom-0 left-0 w-4 h-4">
+        <div className="absolute bottom-0 left-0 w-full h-px bg-white/20" />
+        <div className="absolute bottom-0 left-0 h-full w-px bg-white/20" />
+      </div>
+      {/* BR */}
+      <div className="absolute bottom-0 right-0 w-4 h-4">
+        <div className="absolute bottom-0 right-0 w-full h-px bg-white/20" />
+        <div className="absolute bottom-0 right-0 h-full w-px bg-white/20" />
+      </div>
+    </div>
+  );
+}
+
+/** Tactical section divider */
+function SectionDivider({ label }: { label?: string }) {
+  return (
+    <div className="flex items-center gap-3 my-6">
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      {label && (
+        <span className="text-[9px] font-bold text-white/15 uppercase tracking-[0.3em] flex items-center gap-1.5" style={TEKO}>
+          <GateIcon className="w-2.5 h-2.5" />
+          {label}
+        </span>
+      )}
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+    </div>
+  );
+}
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
@@ -140,6 +185,7 @@ const jsonLd = {
 
 export default function LoopyPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -167,9 +213,8 @@ export default function LoopyPage() {
 
   useEffect(() => {
     if (!loading) { setScanPhase(0); return; }
-    const phases = ['Scanning URL...', 'Analyzing visuals...', 'Evaluating sync...', 'Computing identity...', 'Generating scores...'];
     let i = 0;
-    const interval = setInterval(() => { i = (i + 1) % phases.length; setScanPhase(i); }, 2800);
+    const interval = setInterval(() => { i = (i + 1) % 5; setScanPhase(i); }, 2800);
     return () => clearInterval(interval);
   }, [loading]);
 
@@ -240,6 +285,9 @@ export default function LoopyPage() {
     setRating(null); setShowResult(false); setAnimateScores(false);
   };
 
+  const gradeScore = rating?.total ?? 0;
+  const isHighScore = gradeScore >= 50;
+
   return (
     <>
       <Helmet>
@@ -257,7 +305,14 @@ export default function LoopyPage() {
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
-      <div className="min-h-screen bg-[#080808] pb-32">
+      <div className="min-h-screen bg-[#080808] pb-32 relative">
+        {/* ═══ GLOBAL BACKGROUND BONES ═══ */}
+        <GatePattern opacity={2} color="white" tileSize={56} />
+
+        {/* Vertical frame lines */}
+        <div className="fixed inset-y-0 left-4 sm:left-8 w-px bg-gradient-to-b from-transparent via-white/[0.04] to-transparent pointer-events-none z-0" />
+        <div className="fixed inset-y-0 right-4 sm:right-8 w-px bg-gradient-to-b from-transparent via-white/[0.04] to-transparent pointer-events-none z-0" />
+
         {/* ═══════ HERO ═══════ */}
         <div className="relative overflow-hidden">
           {/* Scan lines texture */}
@@ -266,8 +321,29 @@ export default function LoopyPage() {
           }} />
           {/* Radial glow */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.08)_0%,transparent_60%)]" />
+          
+          {/* Top frame line */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
 
           <div className="relative max-w-2xl mx-auto px-4 pt-10 pb-6 text-center">
+            {/* System status bar */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-center gap-3 mb-6"
+            >
+              <div className="flex items-center gap-1.5 px-2 py-0.5 border border-white/[0.06]">
+                <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
+                <span className="text-[8px] font-bold text-white/25 uppercase tracking-[0.3em]" style={TEKO}>System Online</span>
+              </div>
+              <div className="w-px h-3 bg-white/[0.08]" />
+              <span className="text-[8px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>Loopgate AI Engine</span>
+              <div className="w-px h-3 bg-white/[0.08]" />
+              <div className="flex items-center gap-1 px-2 py-0.5 border border-purple-500/20 bg-purple-500/[0.06]">
+                <span className="text-[8px] font-bold text-purple-400/60 uppercase tracking-[0.2em]" style={TEKO}>v1.1</span>
+              </div>
+            </motion.div>
+
             {/* Loopy avatar */}
             <motion.div
               initial={{ scale: 0 }}
@@ -283,6 +359,8 @@ export default function LoopyPage() {
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 flex items-center justify-center border-2 border-[#080808]">
                 <Brain className="w-3 h-3 text-white" />
               </div>
+              {/* Corner frame around avatar */}
+              <CornerMarks className="-inset-2" />
             </motion.div>
 
             {/* Badge */}
@@ -299,45 +377,66 @@ export default function LoopyPage() {
               Drop your edit link. Get <span className="text-white/70 font-semibold">instant diagnostic scores</span> across 5 QOI pillars.
             </p>
 
-            {/* Stats */}
+            {/* Stats row */}
             <div className="flex items-center justify-center gap-5 mt-4">
               {[
                 { label: '5 PILLARS', sub: 'DIAGNOSTIC' },
                 { label: 'INSTANT', sub: 'ANALYSIS' },
                 { label: '100%', sub: 'FREE' },
               ].map((s, i) => (
-                <div key={i} className="text-center">
+                <div key={i} className="text-center relative">
                   <span className="text-[13px] font-bold text-white/60 tracking-wider" style={TEKO}>{s.label}</span>
                   <span className="text-[9px] text-white/20 uppercase tracking-widest block" style={TEKO}>{s.sub}</span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Bottom border with accent */}
+          <div className="h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
         </div>
 
-        <div className="max-w-lg mx-auto px-4 space-y-4">
+        <div className="max-w-lg mx-auto px-4 space-y-4 relative z-10 mt-6">
           <AnimatePresence mode="wait">
             {!showResult ? (
               <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                 {/* ═══════ FORM CARD ═══════ */}
                 <div className="relative overflow-hidden bg-[#111] border border-white/[0.06]"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}>
+                  <CornerMarks />
                   {/* Top accent */}
                   <div className="h-[2px] bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-500" />
 
-                  <div className="p-5 space-y-4">
+                  {/* Section label */}
+                  <div className="flex items-center justify-between px-5 pt-4 pb-0">
+                    <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em] flex items-center gap-1.5" style={TEKO}>
+                      <Activity className="w-3 h-3 text-purple-400/50" /> Submission Panel
+                    </span>
+                    <span className="text-[8px] text-white/10 uppercase tracking-widest" style={TEKO}>QOI-ENGINE</span>
+                  </div>
+
+                  <div className="p-5 pt-3 space-y-4">
                     {/* How it works */}
                     <div className="grid grid-cols-3 gap-1.5">
                       {[
-                        { icon: Send, text: 'DROP LINK' },
-                        { icon: Brain, text: 'AI ANALYZES' },
-                        { icon: BarChart3, text: 'GET SCORES' },
+                        { icon: Send, text: 'DROP LINK', num: '01' },
+                        { icon: Brain, text: 'AI ANALYZES', num: '02' },
+                        { icon: BarChart3, text: 'GET SCORES', num: '03' },
                       ].map((step, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1 py-2.5 bg-white/[0.06] border border-white/[0.08]">
+                        <div key={i} className="relative flex flex-col items-center gap-1 py-2.5 bg-white/[0.04] border border-white/[0.08]">
+                          <span className="absolute top-1 left-1.5 text-[7px] text-white/10 font-bold" style={TEKO}>{step.num}</span>
                           <step.icon className="w-3.5 h-3.5 text-white/40" />
                           <span className="text-[10px] font-bold text-white/50 tracking-wider" style={TEKO}>{step.text}</span>
                         </div>
                       ))}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-white/[0.06]" />
+                      <GateIcon className="w-2.5 h-2.5 text-white/10" />
+                      <div className="flex-1 h-px bg-white/[0.06]" />
                     </div>
 
                     {/* URL */}
@@ -425,13 +524,37 @@ export default function LoopyPage() {
                   {PILLARS.map((p) => {
                     const Icon = p.icon;
                     return (
-                      <div key={p.key} className="flex items-center gap-1 px-2 py-1 bg-white/[0.05] border border-white/[0.08]">
+                      <div key={p.key} className="flex items-center gap-1 px-2 py-1 bg-white/[0.03] border border-white/[0.06]">
                         <Icon className={`w-3 h-3 ${p.accent}`} />
                         <span className="text-[10px] text-white/50 font-bold tracking-wider" style={TEKO}>{p.label}</span>
                         <span className="text-[9px] text-white/25" style={TEKO}>/{p.max}</span>
                       </div>
                     );
                   })}
+                </div>
+
+                {/* How it works explainer */}
+                <SectionDivider label="How It Works" />
+                <div className="relative bg-[#0e0e0e] border border-white/[0.05] p-4">
+                  <CornerMarks />
+                  <div className="space-y-3">
+                    {[
+                      { icon: Send, title: 'Paste your edit link', desc: 'TikTok, Instagram Reels, or YouTube — any platform works.' },
+                      { icon: Brain, title: 'Loopy runs multimodal AI analysis', desc: 'Thumbnail vision + metadata extraction across 5 QOI pillars.' },
+                      { icon: BarChart3, title: 'Get instant diagnostic scores', desc: 'Pillar breakdown, grade, strengths, and improvement tips.' },
+                      { icon: Swords, title: 'Take your score to the Arena', desc: 'Challenge editors, enter drops, and get paid for your edits.' },
+                    ].map((step, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="w-7 h-7 shrink-0 bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                          <step.icon className="w-3 h-3 text-purple-400/60" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-bold text-white/60" style={TEKO}>{step.title}</p>
+                          <p className="text-[10px] text-white/25 leading-relaxed">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </motion.div>
             ) : rating && (
@@ -440,14 +563,21 @@ export default function LoopyPage() {
                 {/* ═══════ GRADE HERO ═══════ */}
                 <div className="relative overflow-hidden bg-[#111] border border-white/[0.06]"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)' }}>
+                  <CornerMarks />
                   <div className="h-[2px] bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-500" />
-                  {/* Scan line */}
                   <motion.div
                     className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"
                     animate={{ top: ['0%', '100%'] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                   />
-                  <div className="relative p-6 text-center">
+
+                  {/* Section label */}
+                  <div className="flex items-center justify-between px-6 pt-4">
+                    <span className="text-[9px] font-bold text-white/15 uppercase tracking-[0.2em]" style={TEKO}>QOI Diagnostic Result</span>
+                    <span className="text-[8px] text-white/10 uppercase tracking-widest" style={TEKO}>LOOPY v1.1</span>
+                  </div>
+
+                  <div className="relative p-6 pt-3 text-center">
                     <motion.div
                       initial={{ scale: 0, rotate: -15 }}
                       animate={{ scale: 1, rotate: 0 }}
@@ -476,7 +606,8 @@ export default function LoopyPage() {
 
                 {/* ═══════ VIDEO CONTEXT ═══════ */}
                 {rating._meta && (rating._meta.thumbnailUrl || rating._meta.authorName || rating._meta.videoTitle) && (
-                  <div className="bg-[#111] border border-white/[0.06] p-3.5">
+                  <div className="relative bg-[#111] border border-white/[0.06] p-3.5">
+                    <CornerMarks />
                     <div className="flex gap-3">
                       {rating._meta.thumbnailUrl && (
                         <div className="w-24 h-16 overflow-hidden shrink-0 border border-white/[0.06]">
@@ -499,8 +630,9 @@ export default function LoopyPage() {
                 )}
 
                 {/* ═══════ PILLAR SCORES ═══════ */}
-                <div className="bg-[#111] border border-white/[0.06] p-4 space-y-4"
+                <div className="relative bg-[#111] border border-white/[0.06] p-4 space-y-4"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)' }}>
+                  <CornerMarks />
                   <div className="flex items-center justify-between">
                     <span className="text-[12px] font-bold text-white/40 uppercase tracking-[0.15em] flex items-center gap-2" style={TEKO}>
                       <Trophy className="w-3.5 h-3.5 text-amber-400" /> PILLAR BREAKDOWN
@@ -546,7 +678,8 @@ export default function LoopyPage() {
 
                 {/* ═══════ STRENGTHS & IMPROVEMENTS ═══════ */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-[#111] border border-white/[0.06] p-4 space-y-2.5">
+                  <div className="relative bg-[#111] border border-white/[0.06] p-4 space-y-2.5">
+                    <CornerMarks />
                     <div className="h-[2px] bg-gradient-to-r from-emerald-500 to-transparent -mx-4 -mt-4 mb-3" />
                     <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
                       <Star className="w-3 h-3" /> STRENGTHS
@@ -557,7 +690,8 @@ export default function LoopyPage() {
                       </p>
                     ))}
                   </div>
-                  <div className="bg-[#111] border border-white/[0.06] p-4 space-y-2.5">
+                  <div className="relative bg-[#111] border border-white/[0.06] p-4 space-y-2.5">
+                    <CornerMarks />
                     <div className="h-[2px] bg-gradient-to-r from-amber-500 to-transparent -mx-4 -mt-4 mb-3" />
                     <span className="text-[11px] font-bold text-amber-400 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
                       <TrendingUp className="w-3 h-3" /> LEVEL UP
@@ -571,7 +705,8 @@ export default function LoopyPage() {
                 </div>
 
                 {/* ═══════ LOOPY FEEDBACK ═══════ */}
-                <div className="bg-[#111] border border-white/[0.06] p-4">
+                <div className="relative bg-[#111] border border-white/[0.06] p-4">
+                  <CornerMarks />
                   <div className="h-[2px] bg-gradient-to-r from-purple-500 to-transparent -mx-4 -mt-4 mb-3" />
                   <div className="flex items-start gap-3">
                     <div className="relative shrink-0">
@@ -590,63 +725,169 @@ export default function LoopyPage() {
                   </div>
                 </div>
 
-                {/* ═══════ CONVERSION CTA — REAL JUDGES ═══════ */}
+                {/* ═══════════════════════════════════════════════ */}
+                {/* ═══ POST-RATING CONVERSION FUNNEL ═══ */}
+                {/* ═══════════════════════════════════════════════ */}
+                <SectionDivider label="What's Next?" />
+
+                {/* ═══ FOR GUESTS — SIGN UP CTA ═══ */}
                 {!user && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.2 }}
-                    className="relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.08] to-purple-500/[0.04]"
+                    transition={{ delay: 1 }}
+                    className="relative overflow-hidden border border-red-500/30 bg-gradient-to-br from-red-500/[0.08] to-amber-500/[0.04]"
                     style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
                   >
-                    <div className="h-[2px] bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500" />
+                    <CornerMarks />
+                    <div className="h-[2px] bg-gradient-to-r from-red-500 via-amber-500 to-red-500" />
                     <motion.div
-                      className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/20 to-transparent"
+                      className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-400/20 to-transparent"
                       animate={{ top: ['0%', '100%'] }}
                       transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
                     />
-                    <div className="relative p-5 text-center space-y-3">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/20">
-                        <Shield className="w-3 h-3 text-amber-400" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400" style={TEKO}>Not Satisfied?</span>
+                    <div className="relative p-5 text-center space-y-4">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 border border-red-500/20">
+                        <Sparkles className="w-3 h-3 text-red-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-400" style={TEKO}>
+                          {isHighScore ? "You're Ready" : "Level Up For Real"}
+                        </span>
                       </div>
 
-                      <h3 className="text-[28px] font-black text-white leading-none tracking-wide" style={TEKO}>
-                        GET RATED BY <span className="text-amber-400">REAL JUDGES</span>
+                      <h3 className="text-[28px] sm:text-[34px] font-black text-white leading-none tracking-wide" style={TEKO}>
+                        {isHighScore 
+                          ? <>YOUR EDIT IS <span className="text-amber-400">FIRE</span> — NOW GET PAID</>
+                          : <>TURN YOUR SCORE INTO <span className="text-red-400">REAL MONEY</span></>
+                        }
                       </h3>
 
                       <p className="text-[12px] text-white/40 leading-relaxed max-w-xs mx-auto">
-                        Official Loopgate judges will publicly rate your edit for <span className="text-white/70 font-semibold">thousands of editors</span> to see. 
-                        Your QOI score goes on your permanent profile.
+                        {isHighScore
+                          ? <>With a <span className="text-white/70 font-semibold">{rating.grade} grade</span>, you'd crush missions and 1v1 battles. Sign up and start earning.</>
+                          : <>Get rated by <span className="text-white/70 font-semibold">real certified judges</span>, compete in 1v1 edit battles, and earn cash from missions.</>
+                        }
                       </p>
 
-                      <div className="flex items-center justify-center gap-4 text-center">
+                      {/* Three conversion paths */}
+                      <div className="grid grid-cols-3 gap-2 text-center">
                         {[
-                          { val: 'PUBLIC', sub: 'RATING' },
-                          { val: 'OFFICIAL', sub: 'JUDGES' },
-                          { val: 'PERMANENT', sub: 'PROFILE' },
-                        ].map((s, i) => (
-                          <div key={i}>
-                            <span className="text-[12px] font-bold text-amber-400/80 tracking-wider" style={TEKO}>{s.val}</span>
-                            <span className="text-[8px] text-white/20 uppercase tracking-widest block" style={TEKO}>{s.sub}</span>
+                          { icon: Shield, label: 'REAL JUDGES', sub: 'Public Rating', color: 'text-amber-400' },
+                          { icon: DollarSign, label: 'MISSIONS', sub: 'Earn Cash', color: 'text-emerald-400' },
+                          { icon: Swords, label: '1v1 BATTLES', sub: 'Prove Yourself', color: 'text-red-400' },
+                        ].map((path, i) => (
+                          <div key={i} className="py-2 bg-white/[0.03] border border-white/[0.06]">
+                            <path.icon className={`w-4 h-4 mx-auto mb-1 ${path.color}`} />
+                            <span className="text-[10px] font-bold text-white/60 tracking-wider block" style={TEKO}>{path.label}</span>
+                            <span className="text-[8px] text-white/20 uppercase tracking-widest" style={TEKO}>{path.sub}</span>
                           </div>
                         ))}
                       </div>
 
-                      <a
-                        href="/start"
-                        className="group relative inline-flex items-center justify-center gap-2 w-full h-12 overflow-hidden"
+                      <button
+                        onClick={() => navigate('/start')}
+                        className="group relative w-full h-13 overflow-hidden"
                         style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)' }}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-amber-600 group-hover:from-amber-400 group-hover:to-amber-500 transition-all" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-amber-600 group-hover:from-red-500 group-hover:to-amber-500 transition-all" />
                         <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/15 to-transparent" />
-                        <div className="relative flex items-center gap-2">
-                          <GateIcon className="w-4 h-4 text-black" />
-                          <span className="text-[15px] font-bold text-black uppercase tracking-[0.2em]" style={TEKO}>Sign Up — Get Judged For Real</span>
+                        <div className="relative flex items-center justify-center gap-2 py-3">
+                          <GateIcon className="w-4 h-4 text-white" />
+                          <span className="text-[15px] font-bold text-white uppercase tracking-[0.2em]" style={TEKO}>Sign Up — Start Competing</span>
+                          <ArrowRight className="w-4 h-4 text-white/70" />
                         </div>
-                      </a>
+                      </button>
 
-                      <p className="text-[9px] text-white/15">Free account • Takes 30 seconds</p>
+                      <p className="text-[9px] text-white/15">Free account • Takes 30 seconds • Compete. Create. Get paid.</p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* ═══ FOR LOGGED-IN USERS — ACTION FUNNELS ═══ */}
+                {user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 }}
+                    className="space-y-2.5"
+                  >
+                    {/* Confidence message */}
+                    <div className="relative bg-[#111] border border-white/[0.06] p-4 text-center">
+                      <CornerMarks />
+                      <div className="h-[2px] bg-gradient-to-r from-emerald-500 via-primary to-emerald-500 -mx-4 -mt-4 mb-3" />
+                      <p className="text-[12px] text-white/50 leading-relaxed">
+                        {isHighScore 
+                          ? <>Your <span className="text-amber-400 font-bold">{rating.grade}</span> grade is competition-ready. Take it to the arena.</>
+                          : <>Now you know where you stand. Time to sharpen up and compete.</>
+                        }
+                      </p>
+                    </div>
+
+                    {/* Action cards */}
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        {
+                          icon: Shield,
+                          title: 'GET RATED BY REAL JUDGES',
+                          desc: 'Official QOI score on your permanent profile',
+                          route: '/arena',
+                          gradient: 'from-amber-500/20 to-amber-600/10',
+                          border: 'border-amber-500/30',
+                          accent: 'text-amber-400',
+                          cta: 'Enter Arena',
+                        },
+                        {
+                          icon: DollarSign,
+                          title: 'EARN CASH FROM MISSIONS',
+                          desc: isHighScore ? `Your ${rating.grade} grade could earn S-tier payouts` : 'Complete editing missions for real money',
+                          route: '/hub',
+                          gradient: 'from-emerald-500/20 to-emerald-600/10',
+                          border: 'border-emerald-500/30',
+                          accent: 'text-emerald-400',
+                          cta: 'View Missions',
+                        },
+                        {
+                          icon: Swords,
+                          title: '1v1 EDIT BATTLE',
+                          desc: 'Challenge another editor head-to-head for IDX',
+                          route: '/arena',
+                          gradient: 'from-red-500/20 to-red-600/10',
+                          border: 'border-red-500/30',
+                          accent: 'text-red-400',
+                          cta: 'Find Opponent',
+                        },
+                        {
+                          icon: Users,
+                          title: 'JOIN A UNIT',
+                          desc: 'Find your crew and compete together',
+                          route: '/units',
+                          gradient: 'from-blue-500/20 to-blue-600/10',
+                          border: 'border-blue-500/30',
+                          accent: 'text-blue-400',
+                          cta: 'Browse Units',
+                        },
+                      ].map((action, i) => (
+                        <motion.button
+                          key={i}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1.2 + i * 0.1 }}
+                          onClick={() => navigate(action.route)}
+                          className={`relative w-full flex items-center gap-3 p-3.5 bg-gradient-to-r ${action.gradient} border ${action.border} hover:brightness-125 transition-all text-left group`}
+                          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)' }}
+                        >
+                          <div className={`w-9 h-9 shrink-0 bg-white/[0.06] border border-white/[0.08] flex items-center justify-center`}>
+                            <action.icon className={`w-4 h-4 ${action.accent}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] font-bold text-white/80 tracking-wider" style={TEKO}>{action.title}</p>
+                            <p className="text-[10px] text-white/30 truncate">{action.desc}</p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className={`text-[10px] font-bold tracking-wider ${action.accent}`} style={TEKO}>{action.cta}</span>
+                            <ChevronRight className={`w-3.5 h-3.5 ${action.accent} opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all`} />
+                          </div>
+                        </motion.button>
+                      ))}
                     </div>
                   </motion.div>
                 )}
@@ -669,16 +910,14 @@ export default function LoopyPage() {
           {/* ═══════ HISTORY ═══════ */}
           {history.length > 0 && (
             <div className="space-y-2 mt-6">
-              <span className="text-[11px] font-bold text-white/25 uppercase tracking-[0.15em] flex items-center gap-2 px-1" style={TEKO}>
-                <Clock className="w-3 h-3" /> RATING HISTORY
-              </span>
+              <SectionDivider label="Rating History" />
               {history.map((r) => (
                 <a
                   key={r.id}
                   href={r.submission_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 bg-[#111] border border-white/[0.05] hover:border-purple-500/20 transition-all group"
+                  className="relative flex items-center gap-3 p-3 bg-[#111] border border-white/[0.05] hover:border-purple-500/20 transition-all group"
                 >
                   <div className={`w-10 h-10 bg-gradient-to-br ${GRADE_COLORS[r.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center shrink-0`}
                     style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}>
