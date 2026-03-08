@@ -28,11 +28,32 @@ export default function TrendingLoops({ limit = 10 }: { limit?: number }) {
     (async () => {
       const { data } = await supabase
         .from('feed_posts')
-        .select('id, user_id, content, like_count, comment_count, username, avatar_url, league, uploaded_media_url, uploaded_media_type, created_at')
+        .select('id, user_id, content, like_count, comment_count, uploaded_media_url, uploaded_media_type, created_at')
         .order('like_count', { ascending: false })
         .order('created_at', { ascending: false })
         .limit(limit);
-      setPosts((data as TrendingPost[]) || []);
+      
+      if (!data || data.length === 0) { setPosts([]); setLoading(false); return; }
+
+      const userIds = [...new Set(data.map(p => p.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url, league')
+        .in('id', userIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      const enriched: TrendingPost[] = data.map(p => {
+        const profile = profileMap.get(p.user_id);
+        return {
+          ...p,
+          username: profile?.username || undefined,
+          avatar_url: profile?.avatar_url || null,
+          league: profile?.league || undefined,
+        };
+      });
+
+      setPosts(enriched);
       setLoading(false);
     })();
   }, [limit]);
