@@ -257,15 +257,14 @@ export default function MyRatingVideos() {
 
   return (
     <div className="space-y-3">
-      {/* Add Video Button */}
-      <motion.button
-        whileTap={{ scale: 0.98 }}
+      {/* Add Video — minimal inline */}
+      <button
         onClick={() => setShowSubmitModal(true)}
-        className="w-full py-2.5 bg-gold/10 border border-gold/30 rounded-lg text-sm font-medium text-gold hover:bg-gold/20 transition-colors flex items-center justify-center gap-2"
+        className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors py-1"
       >
-        <Plus size={16} />
-        Submit Rating Video
-      </motion.button>
+        <Plus size={12} />
+        <span>Add video</span>
+      </button>
 
       {/* Videos Grid */}
       {videos.length === 0 ? (
