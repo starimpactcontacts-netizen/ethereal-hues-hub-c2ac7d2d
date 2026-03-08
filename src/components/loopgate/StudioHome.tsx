@@ -25,6 +25,9 @@ export type StudioProject = {
 };
 
 const STORAGE_KEY = "loopgate_studio_projects";
+const MONO_ACCENT = "hsl(0 0% 95%)";
+const MONO_ACCENT_DIM = "hsl(0 0% 100% / 0.08)";
+const MONO_ACCENT_BORDER = "hsl(0 0% 100% / 0.2)";
 
 export function getStudioProjects(): StudioProject[] {
   try {
