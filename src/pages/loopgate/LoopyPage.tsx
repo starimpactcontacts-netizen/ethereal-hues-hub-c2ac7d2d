@@ -467,9 +467,9 @@ export default function LoopyPage() {
           </div>
 
           {/* Input area */}
-          <div className="border-t border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-sm p-3 shrink-0">
+          <div className="border-t border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl p-3 sm:p-4 shrink-0">
             <div className="max-w-2xl mx-auto">
-              <div className="relative flex items-end gap-2 bg-white/[0.04] border border-white/[0.08] focus-within:border-purple-500/30 transition-colors px-3 py-2">
+              <div className="relative flex items-end gap-2 bg-white/[0.03] border border-white/[0.08] rounded-2xl focus-within:border-purple-500/25 focus-within:bg-white/[0.04] transition-all px-4 py-2.5">
                 <textarea
                   ref={inputRef}
                   value={input}
