@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Home, Search, User, LogIn, Infinity as InfinityIcon, RefreshCw } from "lucide-react";
+import { motion } from "framer-motion";
 import { useGuestMode } from "@/hooks/useGuestMode";
 import { useActiveBattles } from "@/hooks/useActiveBattles";
 import GlitchEdge from "@/components/loopgate/GlitchEdge";
@@ -44,11 +45,29 @@ export default function BottomNav() {
       )}
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background safe-bottom">
-        {/* Top border with center glow reflecting arena button */}
+        {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-border" />
-        <div className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-[200px] h-[2px] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
-        <div className="absolute top-[-4px] left-1/2 -translate-x-1/2 w-[120px] h-[8px] bg-gradient-to-r from-transparent via-white/20 to-transparent blur-sm" />
-        <div className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-[80px] h-[16px] bg-white/[0.06] blur-md" />
+        {/* Core bright line — hue-synced */}
+        <motion.div
+          className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-[200px] h-[2px]"
+          style={{ background: "linear-gradient(90deg, transparent, #f59e0b, #ef4444, #a855f7, #06b6d4, transparent)" }}
+          animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        />
+        {/* Soft spread glow — hue-synced */}
+        <motion.div
+          className="absolute top-[-4px] left-1/2 -translate-x-1/2 w-[140px] h-[8px] blur-sm opacity-60"
+          style={{ background: "linear-gradient(90deg, transparent, #f59e0b, #ef4444, #a855f7, #06b6d4, transparent)" }}
+          animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        />
+        {/* Wide ambient glow — hue-synced */}
+        <motion.div
+          className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-[100px] h-[16px] blur-md opacity-30"
+          style={{ background: "radial-gradient(ellipse, #a855f7, transparent)" }}
+          animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        />
         <div className="grid grid-cols-5 h-16 max-w-lg mx-auto">
           {/* Left side items (Hub, Loop) */}
           {navItems.slice(0, 2).map((item) => (
