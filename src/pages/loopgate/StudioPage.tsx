@@ -139,14 +139,9 @@ export default function StudioPage() {
         description="Edit clips, apply filters, and submit to competitions — all inside Loopgate."
       />
 
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="video/*"
-        className="hidden"
-        onChange={handleFileSelected}
-      />
+      {/* Hidden file inputs */}
+      <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileSelected} />
+      <input ref={reimportInputRef} type="file" accept="video/*" className="hidden" onChange={handleReimportFileSelected} />
 
       {/* Active Mission Sticky Banner */}
       {activeMission && !missionDismissed && (
