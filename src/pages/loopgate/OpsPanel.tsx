@@ -3093,7 +3093,7 @@ export default function OpsPanel() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Sparkles size={14} className="text-gold" />
+               <GateIcon size={14} className="text-gold" />
               Global QOI Test (GQT)
             </h2>
             <span className="text-xs text-gold">
