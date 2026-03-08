@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import {
   Sparkles, Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
   Trophy, TrendingUp, ArrowDown, Star, Clock, ChevronRight, ExternalLink,
-  MessageSquare, RotateCcw
+  MessageSquare, RotateCcw, Brain, Scan, Shield, Target, Activity,
+  ChevronDown, Award, BarChart3, Eye
 } from 'lucide-react';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
@@ -47,11 +48,11 @@ interface SavedRating {
 }
 
 const PILLARS = [
-  { key: 'emotion', label: 'Emotion', max: 15, icon: Heart, color: 'text-pink-400', bg: 'bg-pink-400' },
-  { key: 'creativity', label: 'Creativity', max: 25, icon: Lightbulb, color: 'text-yellow-400', bg: 'bg-yellow-400' },
-  { key: 'sync', label: 'Sync', max: 25, icon: Music, color: 'text-purple-400', bg: 'bg-purple-400' },
-  { key: 'identity', label: 'Identity', max: 10, icon: Fingerprint, color: 'text-blue-400', bg: 'bg-blue-400' },
-  { key: 'execution', label: 'Execution', max: 25, icon: Zap, color: 'text-green-400', bg: 'bg-green-400' },
+  { key: 'emotion', label: 'Emotion', max: 15, icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500', glow: 'shadow-pink-500/30', ringColor: '#ec4899' },
+  { key: 'creativity', label: 'Creativity', max: 25, icon: Lightbulb, color: 'text-amber-400', bg: 'bg-amber-500', glow: 'shadow-amber-500/30', ringColor: '#f59e0b' },
+  { key: 'sync', label: 'Sync', max: 25, icon: Music, color: 'text-purple-400', bg: 'bg-purple-500', glow: 'shadow-purple-500/30', ringColor: '#a855f7' },
+  { key: 'identity', label: 'Identity', max: 10, icon: Fingerprint, color: 'text-cyan-400', bg: 'bg-cyan-500', glow: 'shadow-cyan-500/30', ringColor: '#06b6d4' },
+  { key: 'execution', label: 'Execution', max: 25, icon: Zap, color: 'text-green-400', bg: 'bg-green-500', glow: 'shadow-green-500/30', ringColor: '#22c55e' },
 ];
 
 const GRADE_COLORS: Record<string, string> = {
@@ -63,6 +64,15 @@ const GRADE_COLORS: Record<string, string> = {
   'C': 'from-slate-500 to-gray-400 text-white',
   'D': 'from-red-600 to-rose-500 text-white',
   'F': 'from-red-800 to-red-600 text-white',
+};
+
+const VERDICT_TAG = (score: number, max: number) => {
+  const pct = (score / max) * 100;
+  if (pct >= 90) return { label: 'ELITE', color: 'text-amber-400 bg-amber-400/10 border-amber-400/30' };
+  if (pct >= 70) return { label: 'STRONG', color: 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' };
+  if (pct >= 50) return { label: 'AVERAGE', color: 'text-blue-400 bg-blue-400/10 border-blue-400/30' };
+  if (pct >= 30) return { label: 'WEAK', color: 'text-orange-400 bg-orange-400/10 border-orange-400/30' };
+  return { label: 'CRITICAL', color: 'text-red-400 bg-red-400/10 border-red-400/30' };
 };
 
 function detectPlatform(url: string): Platform {
@@ -81,6 +91,94 @@ function PlatformIcon({ platform, size = 16 }: { platform: string; size?: number
   }
 }
 
+/* ─── Animated Particles ─── */
+function HeroParticles() {
+  const particles = useMemo(() => Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    duration: Math.random() * 8 + 6,
+    delay: Math.random() * 5,
+  })), []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full bg-primary/20"
+          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
+          animate={{
+            y: [0, -30, 0],
+            opacity: [0, 0.6, 0],
+            scale: [0.5, 1.2, 0.5],
+          }}
+          transition={{
+            duration: p.duration,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Scan Line Effect ─── */
+function ScanLine() {
+  return (
+    <motion.div
+      className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent"
+      animate={{ top: ['0%', '100%'] }}
+      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+    />
+  );
+}
+
+/* ─── Circular Score Ring ─── */
+function ScoreRing({ score, max, color, size = 48 }: { score: number; max: number; color: string; size?: number }) {
+  const pct = (score / max) * 100;
+  const r = (size - 6) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (pct / 100) * circ;
+
+  return (
+    <svg width={size} height={size} className="transform -rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted))" strokeWidth={3} />
+      <motion.circle
+        cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={3}
+        strokeLinecap="round" strokeDasharray={circ}
+        initial={{ strokeDashoffset: circ }}
+        animate={{ strokeDashoffset: offset }}
+        transition={{ duration: 1.2, ease: 'easeOut' }}
+      />
+    </svg>
+  );
+}
+
+/* ─── JSON-LD Schema ─── */
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Loopy AI Rating — AI Video Edit Analyzer",
+  "alternateName": "Loopy Rate My Edit",
+  "url": "https://loopgate.io/loopy",
+  "description": "Free AI-powered video editing quality analyzer. Get instant diagnostic scores across 5 pillars — Emotion, Creativity, Sync, Identity & Execution. Used by thousands of AMV, edit, and content creators.",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "creator": { "@type": "Organization", "name": "Loopgate", "url": "https://loopgate.io" },
+  "featureList": [
+    "AI video edit analysis",
+    "5-pillar QOI scoring system",
+    "Instant edit feedback",
+    "Personalized improvement tips",
+    "Rating history tracking"
+  ],
+};
+
 export default function LoopyPage() {
   const { user } = useAuth();
   const [url, setUrl] = useState('');
@@ -92,8 +190,8 @@ export default function LoopyPage() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [showResult, setShowResult] = useState(false);
   const [animateScores, setAnimateScores] = useState(false);
+  const [scanPhase, setScanPhase] = useState(0);
 
-  // Load history
   const fetchHistory = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -108,10 +206,23 @@ export default function LoopyPage() {
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
+  // Scan phases during loading
+  useEffect(() => {
+    if (!loading) { setScanPhase(0); return; }
+    const phases = ['Scanning URL...', 'Analyzing visuals...', 'Evaluating sync...', 'Computing identity...', 'Generating scores...'];
+    let i = 0;
+    const interval = setInterval(() => {
+      i = (i + 1) % phases.length;
+      setScanPhase(i);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  const scanMessages = ['Scanning URL...', 'Analyzing visuals...', 'Evaluating sync...', 'Computing identity...', 'Generating scores...'];
+
   const handleSubmit = async () => {
     if (!url.trim() || loading) return;
     const platform = detectPlatform(url);
-    
     setLoading(true);
     setRating(null);
     setShowResult(false);
@@ -144,7 +255,6 @@ export default function LoopyPage() {
       setShowResult(true);
       setTimeout(() => setAnimateScores(true), 300);
 
-      // Save to DB
       if (user) {
         await supabase.from('loopy_ratings').insert({
           user_id: user.id,
@@ -182,43 +292,117 @@ export default function LoopyPage() {
   return (
     <>
       <Helmet>
-        <title>Loopy AI Rating | Loopgate</title>
-        <meta name="description" content="Get your video edits rated instantly by Loopy, Loopgate's AI judge." />
+        <title>AI Video Edit Rating Tool — Free Instant QOI Scores | Loopy by Loopgate</title>
+        <meta name="description" content="Rate your video edits with AI instantly. Loopy analyzes your AMV, edit, or content across 5 diagnostic pillars — Emotion, Creativity, Sync, Identity & Execution — and gives you a full QOI score with tips to level up. Free to use." />
+        <meta name="keywords" content="AI video edit rating, rate my edit, AMV rating AI, video editing score, QOI score, edit quality analyzer, AI edit feedback, loopy AI, video edit analyzer, free AI rating tool" />
+        <link rel="canonical" href="https://loopgate.io/loopy" />
+        <meta property="og:title" content="Loopy AI Rating — Free Video Edit Analyzer" />
+        <meta property="og:description" content="Drop your edit link and get instant AI diagnostic scores across 5 pillars. The most advanced AI video edit rating system." />
+        <meta property="og:url" content="https://loopgate.io/loopy" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Loopy AI Rating — Free Video Edit Analyzer" />
+        <meta name="twitter:description" content="AI-powered edit analysis across 5 QOI pillars. Get instant scores & tips." />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background pb-32">
-        {/* Hero */}
+        {/* ═══════ HERO ═══════ */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-transparent" />
-          <div className="relative max-w-2xl mx-auto px-4 pt-8 pb-6 text-center">
+          {/* Layered gradient background */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/8 via-primary/3 to-transparent" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--gold)/0.06)_0%,transparent_70%)]" />
+            <HeroParticles />
+          </div>
+
+          {/* Grid overlay */}
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)',
+              backgroundSize: '40px 40px',
+            }}
+          />
+
+          <div className="relative max-w-3xl mx-auto px-4 pt-10 pb-8 text-center">
+            {/* Loopy avatar with glow ring */}
             <motion.div
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              className="w-20 h-20 rounded-full border-2 border-primary shadow-lg shadow-primary/30 overflow-hidden mx-auto mb-4"
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              className="relative w-24 h-24 mx-auto mb-5"
             >
-              <img src={loopyAvatar} alt="Loopy" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/40 to-amber-500/40 blur-xl animate-pulse" />
+              <div className="relative w-24 h-24 rounded-full border-2 border-primary/60 shadow-[0_0_30px_hsl(var(--gold)/0.3)] overflow-hidden">
+                <img src={loopyAvatar} alt="Loopy AI — Video Edit Rating Assistant" className="w-full h-full object-cover" />
+              </div>
+              <motion.div
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center border-2 border-background"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, type: 'spring' }}
+              >
+                <Brain className="w-3.5 h-3.5 text-white" />
+              </motion.div>
             </motion.div>
-            <motion.h1
+
+            {/* Badge */}
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-2xl sm:text-3xl font-display font-bold text-foreground mb-1"
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4"
             >
-              Loopy AI Rating
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary">AI-Powered Analysis</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="font-display text-4xl sm:text-5xl md:text-6xl font-black text-foreground mb-3 leading-none tracking-tight"
+            >
+              LOOPY AI RATING
             </motion.h1>
+
             <motion.p
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-sm text-muted-foreground"
+              transition={{ delay: 0.4 }}
+              className="text-sm sm:text-base text-muted-foreground max-w-md mx-auto leading-relaxed"
             >
-              drop ur edit link and loopy rates it instantly on 5 QOI pillars 🐱
+              The most advanced AI video edit analyzer. Drop your link and get
+              <span className="text-foreground font-semibold"> instant diagnostic scores </span>
+              across 5 QOI pillars.
             </motion.p>
+
+            {/* Stats bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center justify-center gap-6 mt-5"
+            >
+              {[
+                { icon: Scan, label: '5 Pillars', value: 'Diagnostic' },
+                { icon: Activity, label: 'Instant', value: 'Analysis' },
+                { icon: Shield, label: '100%', value: 'Free' },
+              ].map((stat, i) => (
+                <div key={i} className="flex items-center gap-2 text-muted-foreground">
+                  <stat.icon className="w-3.5 h-3.5 text-primary/60" />
+                  <span className="text-[10px] uppercase tracking-wider">
+                    <span className="text-foreground font-semibold">{stat.label}</span> {stat.value}
+                  </span>
+                </div>
+              ))}
+            </motion.div>
           </div>
         </div>
 
         <div className="max-w-2xl mx-auto px-4 space-y-6">
-          {/* Submission Form */}
+          {/* ═══════ FORM / RESULT ═══════ */}
           <AnimatePresence mode="wait">
             {!showResult ? (
               <motion.div
@@ -226,84 +410,151 @@ export default function LoopyPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="bg-card border border-border rounded-2xl overflow-hidden"
               >
-                <div className="p-4 sm:p-6 space-y-4">
-                  {/* Info banner */}
-                  <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 flex items-start gap-3">
-                    <Sparkles className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-medium text-foreground">How it works</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
-                        Paste your edit URL → Loopy analyzes it → Get instant scores on Emotion, Creativity, Sync, Identity & Execution with specific tips to level up.
-                      </p>
+                {/* Main card with glassmorphic style */}
+                <div className="relative rounded-2xl overflow-hidden">
+                  {/* Outer glow border */}
+                  <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-primary/20 via-border to-border" />
+
+                  <div className="relative bg-card/95 backdrop-blur-xl rounded-2xl">
+                    {/* Card header */}
+                    <div className="px-5 sm:px-7 pt-5 sm:pt-7 pb-4 border-b border-border/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                          <Scan className="w-4 h-4 text-primary" />
+                        </div>
+                        <div>
+                          <h2 className="text-sm font-bold text-foreground">Submit Your Edit</h2>
+                          <p className="text-[10px] text-muted-foreground">paste a link → Loopy runs the full diagnostic</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-5 sm:p-7 space-y-5">
+                      {/* How it works — compact */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { icon: Send, text: 'Drop link' },
+                          { icon: Brain, text: 'AI analyzes' },
+                          { icon: BarChart3, text: 'Get scores' },
+                        ].map((step, i) => (
+                          <div key={i} className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted/30 border border-border/50">
+                            <step.icon className="w-4 h-4 text-primary/70" />
+                            <span className="text-[10px] text-muted-foreground font-medium">{step.text}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* URL Input */}
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-1.5">
+                          <Target className="w-3 h-3" />
+                          Edit URL
+                          <span className="text-destructive">*</span>
+                        </label>
+                        <div className="relative group">
+                          <Input
+                            value={url}
+                            onChange={(e) => setUrl(e.target.value)}
+                            placeholder="https://tiktok.com/@you/video/... or youtube/instagram"
+                            className="bg-background/80 border-border/60 h-13 text-sm pl-4 pr-4 rounded-xl focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
+                          />
+                          {url && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary/10 border border-primary/20"
+                            >
+                              <PlatformIcon platform={detectPlatform(url)} size={11} />
+                              <span className="text-[9px] text-primary uppercase font-bold tracking-wider">{detectPlatform(url)}</span>
+                            </motion.div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Title */}
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-1.5">
+                          <Award className="w-3 h-3" />
+                          Video Title
+                          <span className="text-muted-foreground/40 normal-case tracking-normal font-normal ml-1">optional</span>
+                        </label>
+                        <Input
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          placeholder="e.g., Demon Slayer AMV — Akeboshi"
+                          className="bg-background/80 border-border/60 rounded-xl h-11 text-sm focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
+                        />
+                      </div>
+
+                      {/* Notes */}
+                      <div className="space-y-2">
+                        <label className="text-[11px] text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-1.5">
+                          <MessageSquare className="w-3 h-3" />
+                          Notes for Loopy
+                          <span className="text-muted-foreground/40 normal-case tracking-normal font-normal ml-1">optional</span>
+                        </label>
+                        <Textarea
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder="anything u want loopy to know — editing software, how long it took, what u tried new..."
+                          className="bg-background/80 border-border/60 resize-none h-20 text-sm rounded-xl focus:border-primary/50 focus:ring-2 focus:ring-primary/10 transition-all"
+                        />
+                      </div>
+
+                      {/* Submit */}
+                      <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}>
+                        <Button
+                          onClick={handleSubmit}
+                          disabled={!url.trim() || loading}
+                          className="relative w-full h-14 rounded-xl font-display text-sm uppercase tracking-widest overflow-hidden bg-gradient-to-r from-foreground to-foreground/90 text-background hover:from-primary hover:to-primary/90 hover:text-primary-foreground transition-all duration-300 shadow-[0_4px_20px_hsl(var(--foreground)/0.15)]"
+                        >
+                          {loading ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="flex items-center gap-2">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="text-xs">{scanMessages[scanPhase]}</span>
+                              </div>
+                              {/* Progress bar */}
+                              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-background/20">
+                                <motion.div
+                                  className="h-full bg-primary"
+                                  initial={{ width: '0%' }}
+                                  animate={{ width: '95%' }}
+                                  transition={{ duration: 15, ease: 'linear' }}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2.5">
+                              <Sparkles className="w-4 h-4" />
+                              <span>Analyze My Edit</span>
+                            </div>
+                          )}
+                        </Button>
+                      </motion.div>
                     </div>
                   </div>
-
-                  {/* URL Input */}
-                  <div>
-                    <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block font-medium">
-                      Edit URL *
-                    </label>
-                    <Input
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      placeholder="https://tiktok.com/@you/video/... or youtube/instagram link"
-                      className="bg-background border-border h-12 text-sm"
-                    />
-                    {url && (
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <PlatformIcon platform={detectPlatform(url)} size={12} />
-                        <span className="text-[10px] text-muted-foreground capitalize">{detectPlatform(url)} detected</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Title */}
-                  <div>
-                    <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block font-medium">
-                      Video Title <span className="text-muted-foreground/50">(optional)</span>
-                    </label>
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g., Demon Slayer AMV — Akeboshi"
-                      className="bg-background border-border"
-                    />
-                  </div>
-
-                  {/* Notes */}
-                  <div>
-                    <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block font-medium">
-                      Notes for Loopy <span className="text-muted-foreground/50">(optional)</span>
-                    </label>
-                    <Textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="anything u want loopy to know — editing software, how long it took, what u tried new..."
-                      className="bg-background border-border resize-none h-20 text-sm"
-                    />
-                  </div>
-
-                  {/* Submit */}
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!url.trim() || loading}
-                    className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-display text-sm uppercase tracking-wider"
-                  >
-                    {loading ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>loopy is watching ur edit...</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4" />
-                        <span>Rate My Edit</span>
-                      </div>
-                    )}
-                  </Button>
                 </div>
+
+                {/* Pillar preview chips */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  className="flex flex-wrap items-center justify-center gap-2 mt-5"
+                >
+                  {PILLARS.map((p) => {
+                    const Icon = p.icon;
+                    return (
+                      <div key={p.key} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card/60 border border-border/40 backdrop-blur-sm">
+                        <Icon className={`w-3 h-3 ${p.color}`} size={12} />
+                        <span className="text-[10px] text-muted-foreground font-medium">{p.label}</span>
+                        <span className="text-[9px] text-muted-foreground/50">/{p.max}</span>
+                      </div>
+                    );
+                  })}
+                </motion.div>
               </motion.div>
             ) : rating && (
               <motion.div
@@ -312,169 +563,211 @@ export default function LoopyPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-4"
               >
-                {/* Grade Hero */}
+                {/* ═══════ GRADE HERO ═══════ */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="relative bg-card border border-border rounded-2xl overflow-hidden"
+                  className="relative overflow-hidden rounded-2xl"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
-                  <div className="relative p-6 text-center">
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.2 }}
-                      className={`inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} shadow-2xl mb-4`}
-                    >
-                      <span className="text-4xl font-display font-black">{rating.grade}</span>
-                    </motion.div>
+                  <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-primary/30 via-border to-border" />
+                  <div className="relative bg-card/95 backdrop-blur-xl rounded-2xl">
+                    <ScanLine />
+                    <div className="relative p-6 sm:p-8 text-center">
+                      {/* Grade badge */}
+                      <motion.div
+                        initial={{ scale: 0, rotate: -15 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 12, delay: 0.2 }}
+                        className="relative inline-block mb-4"
+                      >
+                        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br opacity-40 blur-2xl from-amber-400 to-primary" />
+                        <div className={`relative w-28 h-28 rounded-2xl bg-gradient-to-br ${GRADE_COLORS[rating.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center shadow-2xl border border-white/10`}>
+                          <span className="text-5xl font-display font-black">{rating.grade}</span>
+                        </div>
+                      </motion.div>
 
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      <p className="text-3xl font-display font-bold text-foreground">{rating.total}<span className="text-lg text-muted-foreground">/100</span></p>
-                      <p className="text-sm text-primary mt-2 font-medium italic">"{rating.vibe_check}"</p>
-                    </motion.div>
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+                        <div className="flex items-center justify-center gap-1">
+                          <span className="text-4xl font-display font-black text-foreground">{rating.total}</span>
+                          <span className="text-lg text-muted-foreground font-display">/100</span>
+                        </div>
+                        <p className="text-sm text-primary mt-2 font-semibold italic max-w-sm mx-auto">"{rating.vibe_check}"</p>
+                      </motion.div>
+
+                      {/* Diagnostic label */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20"
+                      >
+                        <Eye className="w-3 h-3 text-primary" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">QOI Diagnostic Complete</span>
+                      </motion.div>
+                    </div>
                   </div>
                 </motion.div>
 
-                {/* Pillar Scores */}
+                {/* ═══════ PILLAR SCORES ═══════ */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="bg-card border border-border rounded-2xl p-4 sm:p-6 space-y-4"
+                  className="relative rounded-2xl overflow-hidden"
                 >
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                    <Trophy className="w-3.5 h-3.5 text-primary" />
-                    QOI Pillar Breakdown
-                  </h3>
+                  <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-border/80 to-border/40" />
+                  <div className="relative bg-card/95 backdrop-blur-xl rounded-2xl p-5 sm:p-7 space-y-5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                        Pillar Breakdown
+                      </h3>
+                      <span className="text-[9px] text-muted-foreground/60 uppercase tracking-wider">scored by loopy ai</span>
+                    </div>
 
-                  {PILLARS.map((pillar, i) => {
-                    const Icon = pillar.icon;
-                    const score = rating[pillar.key as keyof LoopyRating] as number;
-                    const pct = (score / pillar.max) * 100;
+                    {PILLARS.map((pillar, i) => {
+                      const Icon = pillar.icon;
+                      const score = rating[pillar.key as keyof LoopyRating] as number;
+                      const pct = (score / pillar.max) * 100;
+                      const verdict = VERDICT_TAG(score, pillar.max);
 
-                    return (
-                      <motion.div
-                        key={pillar.key}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.4 + i * 0.1 }}
-                        className="space-y-1.5"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon size={14} className={pillar.color} />
-                            <span className="text-xs font-medium text-foreground">{pillar.label}</span>
+                      return (
+                        <motion.div
+                          key={pillar.key}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.4 + i * 0.1 }}
+                          className="space-y-2"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                              <div className="relative">
+                                <ScoreRing score={score} max={pillar.max} color={pillar.ringColor} size={36} />
+                                <Icon size={14} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 ${pillar.color}`} />
+                              </div>
+                              <div>
+                                <span className="text-xs font-bold text-foreground block">{pillar.label}</span>
+                                <span className="text-[10px] text-muted-foreground">{Math.round(pct)}%</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${verdict.color}`}>
+                                {verdict.label}
+                              </span>
+                              <span className="text-sm font-black text-foreground tabular-nums">
+                                {score}<span className="text-muted-foreground text-[10px] font-normal">/{pillar.max}</span>
+                              </span>
+                            </div>
                           </div>
-                          <span className="text-sm font-bold text-foreground">{score}<span className="text-muted-foreground text-[10px]">/{pillar.max}</span></span>
-                        </div>
-                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: animateScores ? `${pct}%` : 0 }}
-                            transition={{ duration: 0.8, delay: 0.1 * i, ease: 'easeOut' }}
-                            className={`h-full rounded-full ${pillar.bg}`}
-                            style={{ opacity: 0.85 }}
-                          />
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                          <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: animateScores ? `${pct}%` : 0 }}
+                              transition={{ duration: 1, delay: 0.1 * i, ease: 'easeOut' }}
+                              className={`h-full rounded-full ${pillar.bg} shadow-lg ${pillar.glow}`}
+                            />
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </motion.div>
 
-                {/* Strengths & Improvements */}
+                {/* ═══════ STRENGTHS & IMPROVEMENTS ═══════ */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
-                    className="bg-card border border-border rounded-2xl p-4 space-y-3"
+                    className="relative rounded-2xl overflow-hidden"
                   >
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                      <Star className="w-3.5 h-3.5" />
-                      Strengths
-                    </h3>
-                    <ul className="space-y-2">
-                      {rating.strengths.map((s, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-foreground">
-                          <span className="text-emerald-400 mt-0.5 shrink-0">✦</span>
-                          {s}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-emerald-500/20 to-border/40" />
+                    <div className="relative bg-card/95 rounded-2xl p-5 space-y-3">
+                      <h3 className="text-[11px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                        <Star className="w-3.5 h-3.5" />
+                        Strengths
+                      </h3>
+                      <ul className="space-y-2.5">
+                        {rating.strengths.map((s, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-foreground/90 leading-relaxed">
+                            <span className="text-emerald-400 mt-0.5 shrink-0">✦</span>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </motion.div>
 
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.7 }}
-                    className="bg-card border border-border rounded-2xl p-4 space-y-3"
+                    className="relative rounded-2xl overflow-hidden"
                   >
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      Level Up Tips
-                    </h3>
-                    <ul className="space-y-2">
-                      {rating.improvements.map((s, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-foreground">
-                          <span className="text-amber-400 mt-0.5 shrink-0">→</span>
-                          {s}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-amber-500/20 to-border/40" />
+                    <div className="relative bg-card/95 rounded-2xl p-5 space-y-3">
+                      <h3 className="text-[11px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        Level Up Tips
+                      </h3>
+                      <ul className="space-y-2.5">
+                        {rating.improvements.map((s, i) => (
+                          <li key={i} className="flex items-start gap-2 text-xs text-foreground/90 leading-relaxed">
+                            <span className="text-amber-400 mt-0.5 shrink-0">→</span>
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </motion.div>
                 </div>
 
-                {/* Detailed Feedback */}
+                {/* ═══════ DETAILED FEEDBACK ═══════ */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8 }}
-                  className="bg-card border border-border rounded-2xl p-4 sm:p-6"
+                  className="relative rounded-2xl overflow-hidden"
                 >
-                  <div className="flex items-start gap-3">
-                    <img src={loopyAvatar} alt="Loopy" className="w-10 h-10 rounded-full border border-primary shrink-0" />
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-xs font-bold text-foreground">Loopy</span>
-                        <Sparkles className="w-3 h-3 text-primary" />
+                  <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-primary/15 to-border/40" />
+                  <div className="relative bg-card/95 backdrop-blur-xl rounded-2xl p-5 sm:p-7">
+                    <div className="flex items-start gap-3">
+                      <div className="relative shrink-0">
+                        <img src={loopyAvatar} alt="Loopy" className="w-11 h-11 rounded-full border border-primary/40 shadow-[0_0_15px_hsl(var(--gold)/0.2)]" />
+                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-400 border-2 border-card flex items-center justify-center">
+                          <Sparkles className="w-2 h-2 text-white" />
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{rating.detailed_feedback}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <span className="text-xs font-black text-foreground">Loopy</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold uppercase tracking-wider">AI Judge</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{rating.detailed_feedback}</p>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
 
                 {/* Rate Another */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1 }}
-                >
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}>
                   <Button
                     onClick={handleReset}
                     variant="outline"
-                    className="w-full h-12 border-primary/30 text-primary hover:bg-primary/10 font-display uppercase tracking-wider"
+                    className="w-full h-13 border-primary/30 text-primary hover:bg-primary/10 font-display uppercase tracking-widest rounded-xl"
                   >
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Rate Another Edit
+                    Analyze Another Edit
                   </Button>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* History */}
+          {/* ═══════ HISTORY ═══════ */}
           {history.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="space-y-3"
-            >
-              <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2 px-1">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 mt-8">
+              <h2 className="text-[11px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 px-1">
                 <Clock className="w-3.5 h-3.5" />
                 Your Rating History
               </h2>
@@ -485,21 +778,21 @@ export default function LoopyPage() {
                     href={r.submission_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-card border border-border rounded-xl hover:border-primary/30 transition-colors group"
+                    className="flex items-center gap-3 p-3.5 bg-card/80 border border-border/50 rounded-xl hover:border-primary/30 transition-all group backdrop-blur-sm"
                   >
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${GRADE_COLORS[r.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center shrink-0`}>
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${GRADE_COLORS[r.grade] || 'from-gray-500 to-gray-400 text-white'} flex items-center justify-center shrink-0 shadow-lg`}>
                       <span className="text-sm font-display font-black">{r.grade}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-foreground truncate">{r.vibe_check}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-xs text-foreground font-medium truncate">{r.vibe_check}</p>
+                      <div className="flex items-center gap-2 mt-1">
                         <PlatformIcon platform={r.platform} size={10} />
-                        <span className="text-[10px] text-muted-foreground">{r.total_score}/100</span>
-                        <span className="text-[10px] text-muted-foreground">•</span>
+                        <span className="text-[10px] text-muted-foreground font-bold">{r.total_score}/100</span>
+                        <span className="text-[10px] text-muted-foreground/40">•</span>
                         <span className="text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                    <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
                   </a>
                 ))}
               </div>
