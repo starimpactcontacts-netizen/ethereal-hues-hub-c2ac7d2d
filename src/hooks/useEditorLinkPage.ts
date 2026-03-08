@@ -57,36 +57,61 @@ const defaultSettings: Omit<LinkPageSettings, "user_id"> = {
   view_count: 0,
 };
 
+const authErrorMessage = (fallback: string, error?: { code?: string; message?: string } | null) => {
+  const text = `${error?.code || ""} ${error?.message || ""}`.toLowerCase();
+  if (text.includes("42501") || text.includes("row-level security") || text.includes("jwt") || text.includes("permission denied")) {
+    return "Please sign in again to manage your links.";
+  }
+  return fallback;
+};
+
 export function useEditorLinkPage(userId?: string) {
   const [settings, setSettings] = useState<LinkPageSettings | null>(null);
   const [links, setLinks] = useState<EditorLink[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
-    if (!userId) return;
-    setLoading(true);
-
-    const [settingsRes, linksRes] = await Promise.all([
-      supabase
-        .from("editor_link_pages")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle(),
-      supabase
-        .from("editor_links")
-        .select("*")
-        .eq("user_id", userId)
-        .order("sort_order", { ascending: true }),
-    ]);
-
-    if (settingsRes.data) {
-      setSettings(settingsRes.data as unknown as LinkPageSettings);
-    } else {
-      setSettings({ ...defaultSettings, user_id: userId });
+    if (!userId) {
+      setSettings(null);
+      setLinks([]);
+      setLoading(false);
+      return;
     }
 
-    setLinks((linksRes.data as unknown as EditorLink[]) || []);
-    setLoading(false);
+    setLoading(true);
+
+    try {
+      const [settingsRes, linksRes] = await Promise.all([
+        supabase
+          .from("editor_link_pages")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle(),
+        supabase
+          .from("editor_links")
+          .select("*")
+          .eq("user_id", userId)
+          .order("sort_order", { ascending: true }),
+      ]);
+
+      if (settingsRes.error) {
+        toast.error(authErrorMessage("Failed to load page settings", settingsRes.error));
+      }
+
+      if (linksRes.error) {
+        toast.error(authErrorMessage("Failed to load links", linksRes.error));
+      }
+
+      if (settingsRes.data) {
+        setSettings(settingsRes.data as unknown as LinkPageSettings);
+      } else {
+        setSettings({ ...defaultSettings, user_id: userId });
+      }
+
+      setLinks((linksRes.data as unknown as EditorLink[]) || []);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
   useEffect(() => {
@@ -94,7 +119,10 @@ export function useEditorLinkPage(userId?: string) {
   }, [fetchData]);
 
   const saveSettings = async (updates: Partial<LinkPageSettings>) => {
-    if (!userId) return;
+    if (!userId) {
+      toast.error("Please sign in to edit your link page.");
+      return;
+    }
 
     const payload = { ...updates, user_id: userId, updated_at: new Date().toISOString() };
 
@@ -103,15 +131,19 @@ export function useEditorLinkPage(userId?: string) {
       : await supabase.from("editor_link_pages").insert(payload);
 
     if (error) {
-      toast.error("Failed to save settings");
+      toast.error(authErrorMessage("Failed to save settings", error));
       return;
     }
-    toast.success("Saved");
+
     await fetchData();
   };
 
   const addLink = async (link: { title: string; url: string; link_type?: string; embed_url?: string; description?: string }) => {
-    if (!userId) return;
+    if (!userId) {
+      toast.error("Please sign in to add links.");
+      return false;
+    }
+
     const { error } = await supabase.from("editor_links").insert({
       user_id: userId,
       title: link.title,
@@ -121,38 +153,62 @@ export function useEditorLinkPage(userId?: string) {
       description: link.description || null,
       sort_order: links.length,
     });
+
     if (error) {
-      toast.error("Failed to add link");
-      return;
+      toast.error(authErrorMessage("Failed to add link", error));
+      return false;
     }
+
     await fetchData();
+    return true;
   };
 
   const updateLink = async (linkId: string, updates: Partial<EditorLink>) => {
+    if (!userId) {
+      toast.error("Please sign in to edit links.");
+      return;
+    }
+
     const { error } = await supabase.from("editor_links").update(updates).eq("id", linkId);
     if (error) {
-      toast.error("Failed to update link");
+      toast.error(authErrorMessage("Failed to update link", error));
       return;
     }
     await fetchData();
   };
 
   const removeLink = async (linkId: string) => {
+    if (!userId) {
+      toast.error("Please sign in to remove links.");
+      return;
+    }
+
     const { error } = await supabase.from("editor_links").delete().eq("id", linkId);
     if (error) {
-      toast.error("Failed to remove link");
+      toast.error(authErrorMessage("Failed to remove link", error));
       return;
     }
     await fetchData();
   };
 
   const reorderLinks = async (reordered: EditorLink[]) => {
+    if (!userId) {
+      toast.error("Please sign in to reorder links.");
+      return;
+    }
+
     setLinks(reordered);
-    await Promise.all(
+    const updates = await Promise.all(
       reordered.map((link, i) =>
         supabase.from("editor_links").update({ sort_order: i }).eq("id", link.id)
       )
     );
+
+    const failed = updates.find((res) => res.error);
+    if (failed?.error) {
+      toast.error(authErrorMessage("Failed to reorder links", failed.error));
+      await fetchData();
+    }
   };
 
   return { settings, links, loading, saveSettings, addLink, updateLink, removeLink, reorderLinks, refetch: fetchData };
