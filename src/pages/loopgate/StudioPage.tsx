@@ -80,7 +80,9 @@ export default function StudioPage() {
         resolve(payload);
       };
 
-      const captureThumbnail = (): string | null => {
+      type ThumbnailCandidate = { url: string; score: number };
+
+      const captureThumbnail = (): ThumbnailCandidate | null => {
         if (vid.videoWidth === 0 || vid.videoHeight === 0) return null;
 
         const canvas = document.createElement("canvas");
@@ -116,14 +118,14 @@ export default function StudioPage() {
 
         const totalPixels = data.length / 4;
         const avgLuma = lumaSum / totalPixels;
-        const variance = lumaSqSum / totalPixels - avgLuma * avgLuma;
+        const variance = Math.max(0, lumaSqSum / totalPixels - avgLuma * avgLuma);
 
-        // Reject empty/near-black frames aggressively
-        if (maxLuma < 26) return null;
-        if (avgLuma < 10 && variance < 120) return null;
+        const url = canvas.toDataURL("image/jpeg", 0.78);
+        if (url.length < 900) return null;
 
-        const url = canvas.toDataURL("image/jpeg", 0.82);
-        return url.length > 1200 ? url : null;
+        // Prefer bright + detailed frames, but never discard valid frames as "too dark"
+        const score = avgLuma * 0.5 + variance * 0.95 + maxLuma * 0.2;
+        return { url, score };
       };
 
       const seekTo = (time: number) =>
@@ -166,32 +168,54 @@ export default function StudioPage() {
         const duration = Number.isFinite(vid.duration) ? vid.duration : 0;
         const resolution = vid.videoWidth > 0 && vid.videoHeight > 0 ? `${vid.videoWidth}x${vid.videoHeight}` : "";
 
+        // Ensure at least one decoded frame exists before timeline probing
+        if (vid.readyState < 2) {
+          try {
+            await new Promise<void>((resolveLoadedData) => {
+              vid.addEventListener("loadeddata", () => resolveLoadedData(), { once: true });
+            });
+          } catch {
+            // continue with probing anyway
+          }
+        }
+
         const d = Math.max(duration, 1);
-        const randomPrimary = d * (0.18 + Math.random() * 0.68);
-        const candidates = [randomPrimary, d * 0.5, d * 0.35, d * 0.72, Math.min(2.5, d * 0.25)];
+        const randomPoints = Array.from({ length: 6 }, () => d * (0.12 + Math.random() * 0.76));
+        const fixedPoints = [d * 0.18, d * 0.33, d * 0.5, d * 0.66, d * 0.82, Math.min(3, d * 0.25)];
+        const candidates = [...randomPoints, ...fixedPoints];
+
+        let bestShot: ThumbnailCandidate | null = null;
 
         for (const t of candidates) {
           try {
             await seekTo(t);
             await waitForPaint();
-            const thumb = captureThumbnail();
-            if (thumb) {
-              finish({ thumbnail: thumb, duration, resolution });
-              return;
+            const shot = captureThumbnail();
+            if (!shot) continue;
+
+            if (!bestShot || shot.score > bestShot.score) {
+              bestShot = shot;
             }
+
+            if (shot.score > 260) break;
           } catch {
             // try next point in timeline
           }
         }
 
+        if (bestShot) {
+          finish({ thumbnail: bestShot.url, duration, resolution });
+          return;
+        }
+
         // Final fallback: play a bit to force decoder to a real frame
         try {
           await vid.play();
-          await new Promise((r) => setTimeout(r, 260));
+          await new Promise((r) => setTimeout(r, 320));
           vid.pause();
           await waitForPaint();
-          const thumb = captureThumbnail();
-          finish({ thumbnail: thumb, duration, resolution });
+          const shot = captureThumbnail();
+          finish({ thumbnail: shot?.url ?? null, duration, resolution });
         } catch {
           finish({ thumbnail: null, duration, resolution });
         }
