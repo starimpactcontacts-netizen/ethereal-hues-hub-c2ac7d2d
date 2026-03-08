@@ -18,6 +18,16 @@ import loopyAvatar from '@/assets/loopy-avatar.png';
 
 type Platform = 'tiktok' | 'instagram' | 'youtube' | 'unknown';
 
+interface RatingMeta {
+  thumbnailUrl?: string;
+  authorName?: string;
+  videoTitle?: string;
+  viewCount?: string;
+  duration?: string;
+  hadThumbnail?: boolean;
+  tagCount?: number;
+}
+
 interface LoopyRating {
   emotion: number;
   creativity: number;
@@ -30,6 +40,7 @@ interface LoopyRating {
   improvements: string[];
   vibe_check: string;
   detailed_feedback: string;
+  _meta?: RatingMeta;
 }
 
 interface SavedRating {
@@ -607,6 +618,50 @@ export default function LoopyPage() {
                     </div>
                   </div>
                 </motion.div>
+
+                {/* ═══════ VIDEO CONTEXT CARD ═══════ */}
+                {rating._meta && (rating._meta.thumbnailUrl || rating._meta.authorName || rating._meta.videoTitle) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="relative rounded-2xl overflow-hidden"
+                  >
+                    <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-border/60 to-border/30" />
+                    <div className="relative bg-card/95 backdrop-blur-xl rounded-2xl p-4 sm:p-5">
+                      <div className="flex gap-4">
+                        {rating._meta.thumbnailUrl && (
+                          <div className="w-24 h-16 sm:w-32 sm:h-20 rounded-lg overflow-hidden shrink-0 border border-border/50">
+                            <img src={rating._meta.thumbnailUrl} alt="Video thumbnail" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0 space-y-1.5">
+                          {rating._meta.videoTitle && (
+                            <p className="text-xs font-bold text-foreground truncate">{rating._meta.videoTitle}</p>
+                          )}
+                          {rating._meta.authorName && (
+                            <p className="text-[11px] text-muted-foreground">by <span className="text-foreground font-medium">{rating._meta.authorName}</span></p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {rating._meta.viewCount && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <Eye className="w-3 h-3" /> {rating._meta.viewCount}
+                              </span>
+                            )}
+                            {rating._meta.duration && (
+                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <Clock className="w-3 h-3" /> {rating._meta.duration}
+                              </span>
+                            )}
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded border ${rating._meta.hadThumbnail ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/30' : 'text-amber-400 bg-amber-400/10 border-amber-400/30'} font-bold uppercase tracking-wider`}>
+                              {rating._meta.hadThumbnail ? '🖼️ Visual Analysis' : '📝 Metadata Only'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* ═══════ PILLAR SCORES ═══════ */}
                 <motion.div
