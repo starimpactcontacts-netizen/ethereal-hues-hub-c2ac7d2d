@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+// Studio NLE v2 — rebuilt with crop, undo/redo, canvas drag, pro timeline
 import { useNavigate } from "react-router-dom";
 import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
