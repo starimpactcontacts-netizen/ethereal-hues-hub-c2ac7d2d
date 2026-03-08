@@ -3520,12 +3520,37 @@ export default function OpsPanel() {
           </div>
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {crews.map((crew) => (
-              <div key={crew.id} className="bg-card border border-border rounded-lg p-3 flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-sm">{crew.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{crew.member_count} members • @{crew.owner_username}</p>
+              <div key={crew.id} className={`bg-card border rounded-lg p-3 flex items-center justify-between ${crew.is_featured ? 'border-primary/50' : 'border-border'}`}>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{crew.name}</p>
+                      {crew.is_featured && <Badge className="bg-primary/20 text-primary text-[8px]">FEATURED</Badge>}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{crew.member_count} members • @{crew.owner_username}</p>
+                  </div>
                 </div>
-                <button onClick={() => setDeletingCrewId(crew.id)} className="p-2 rounded-lg bg-destructive/20 text-destructive"><Trash2 size={14} /></button>
+                <div className="flex gap-1">
+                  <button 
+                    onClick={async () => {
+                      await supabase.from('crews').update({ is_featured: !crew.is_featured, featured_at: crew.is_featured ? null : new Date().toISOString() }).eq('id', crew.id);
+                      toast.success(crew.is_featured ? 'Unfeatured' : 'Featured!');
+                      fetchData();
+                    }} 
+                    className={`p-2 rounded-lg ${crew.is_featured ? 'bg-primary text-primary-foreground' : 'bg-muted/30 hover:bg-primary/20 text-primary'}`}
+                    title={crew.is_featured ? 'Unfeature' : 'Feature'}
+                  >
+                    <Trophy size={14} />
+                  </button>
+                  <button 
+                    onClick={() => navigate(`/units/${crew.id}`)} 
+                    className="p-2 rounded-lg bg-muted/30 hover:bg-muted/50"
+                    title="View unit"
+                  >
+                    <Eye size={14} />
+                  </button>
+                  <button onClick={() => setDeletingCrewId(crew.id)} className="p-2 rounded-lg bg-destructive/20 text-destructive"><Trash2 size={14} /></button>
+                </div>
               </div>
             ))}
           </div>
