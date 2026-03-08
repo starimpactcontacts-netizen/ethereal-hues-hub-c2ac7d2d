@@ -472,7 +472,7 @@ export default function LoginPage() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      {magicSubMethod === 'one-tap' ? <Sparkles className="mr-2 h-5 w-5" /> : <Lock className="mr-2 h-5 w-5" />}
+                      {magicSubMethod === 'one-tap' ? <GateIcon className="mr-2 h-5 w-5" /> : <Lock className="mr-2 h-5 w-5" />}
                       Send {magicSubMethod === 'one-tap' ? 'Magic Link' : 'Code'}
                     </>
                   )}
