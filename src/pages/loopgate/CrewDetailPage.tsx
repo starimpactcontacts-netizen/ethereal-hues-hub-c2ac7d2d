@@ -594,7 +594,7 @@ export default function CrewDetailPage() {
         <div className="mx-3 mb-3 space-y-2">
           {/* Free Tournament - The Red Button */}
           <button
-            onClick={() => navigate(`/arena?host=true&crew=${crewId}`)}
+            onClick={() => navigate(`/units/${crewId}/host-tournament`)}
             className="w-full group relative overflow-hidden rounded-lg p-3 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg, hsl(0 72% 51%), hsl(350 80% 40%))' }}
           >
@@ -615,7 +615,7 @@ export default function CrewDetailPage() {
 
           {/* Monetized Tournament */}
           <button
-            onClick={() => navigate(`/arena?host=true&crew=${crewId}&monetize=true`)}
+            onClick={() => navigate(`/units/${crewId}/host-tournament?monetize=true`)}
             className="w-full group relative overflow-hidden rounded-lg p-3 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg, hsl(160 84% 39%), hsl(160 84% 25%))' }}
           >

@@ -351,6 +351,7 @@ export default function App() {
               <Route path="/messages/:conversationId" element={<DirectMessagePage />} />
               <Route path="/connections" element={<ConnectionsPage />} />
               <Route path="/units/:crewId/settings" element={<CrewSettingsPage />} />
+              <Route path="/units/:crewId/host-tournament" element={<HostTournamentPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/inventory" element={<InventoryPage />} />
               
