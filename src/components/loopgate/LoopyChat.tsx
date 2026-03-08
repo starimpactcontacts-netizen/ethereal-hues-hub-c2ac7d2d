@@ -164,6 +164,13 @@ export default function LoopyChat() {
               </div>
               <button
                 onClick={() => { setOpen(false); navigate('/loopy'); }}
+                className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                title="Open Full View"
+              >
+                <Maximize2 className="w-4 h-4 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => { setOpen(false); navigate('/loopy/rate'); }}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all"
               >
                 <Star className="w-3 h-3 text-amber-400" />
