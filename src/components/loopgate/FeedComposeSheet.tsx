@@ -185,8 +185,9 @@ export default function FeedComposeSheet({ open, onClose, userProfile, onPost }:
                     "What's happening in the loop?"
                   }
                   autoFocus
-                  className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[200px]"
+                  className="w-full bg-transparent text-foreground text-[17px] placeholder:text-muted-foreground/40 resize-none focus:outline-none leading-relaxed min-h-[160px]"
                   maxLength={300}
+                  style={{ caretColor: 'hsl(var(--primary))' }}
                 />
 
                 {/* Media URL for edit_share */}
