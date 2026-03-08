@@ -269,12 +269,20 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                   className="flex items-center gap-1 px-2 py-1.5 rounded-full hover:bg-gradient-to-r hover:from-red-500/15 hover:to-blue-500/15 transition-colors group"
                   title="Challenge this editor to a 1v1"
                 >
-                  <Swords className="w-[15px] h-[15px] text-transparent bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text" style={{
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundImage: 'linear-gradient(135deg, #ef4444, #3b82f6)',
-                    filter: 'none',
-                  }} />
+                  <svg viewBox="0 0 24 24" className="w-[15px] h-[15px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <defs>
+                      <linearGradient id="swords-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#ef4444" />
+                        <stop offset="100%" stopColor="#3b82f6" />
+                      </linearGradient>
+                    </defs>
+                    <line x1="14.5" y1="17.5" x2="3" y2="6" stroke="url(#swords-grad)" />
+                    <line x1="13" y1="19" x2="7" y2="13" stroke="url(#swords-grad)" />
+                    <line x1="16" y1="14" x2="18" y2="12" stroke="url(#swords-grad)" />
+                    <line x1="9.5" y1="6.5" x2="21" y2="18" stroke="url(#swords-grad)" />
+                    <line x1="11" y1="5" x2="17" y2="11" stroke="url(#swords-grad)" />
+                    <line x1="8" y1="10" x2="6" y2="12" stroke="url(#swords-grad)" />
+                  </svg>
                 </button>
               )}
 
