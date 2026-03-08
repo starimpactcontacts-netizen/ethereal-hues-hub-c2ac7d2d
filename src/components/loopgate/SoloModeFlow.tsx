@@ -119,7 +119,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
           </button>
           <div className="flex-1">
             <h1 className="font-display text-lg flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-gold" />
+              <GateIcon className="w-4 h-4 text-gold" />
               Solo Mode
             </h1>
             <p className="text-[10px] text-muted-foreground">Pick a song · Get a theme · Edit · Get scored</p>
