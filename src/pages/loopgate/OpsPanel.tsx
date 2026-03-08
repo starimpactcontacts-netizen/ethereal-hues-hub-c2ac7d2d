@@ -3505,6 +3505,15 @@ export default function OpsPanel() {
         {/* ━━━ TOURNAMENT PROPOSALS (from unit owners) ━━━ */}
         <TournamentProposalsAdmin />
 
+        {/* ━━━ TOURNAMENT LIFECYCLE & EARNINGS ━━━ */}
+        <div className="mt-6">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-4">
+            <Zap size={14} className="text-emerald-400" />
+            Tournament Lifecycle & Revenue
+          </h2>
+          <TournamentLifecycleAdmin />
+        </div>
+
         {/* ━━━ FEED MODERATION ━━━ */}
         <FeedModerationAdmin />
 
