@@ -314,8 +314,8 @@ export default function HubPage() {
 
   return (
     <div className="min-h-screen bg-background pb-16 overflow-x-hidden relative">
-      {/* Gate lattice — Dubai Mall inspired geometric overlay */}
-      <GatePattern opacity={3} tileSize={100} className="z-0" />
+      {/* Gate lattice — subtle geometric texture */}
+      <GatePattern opacity={1.5} tileSize={48} className="z-0" />
       <LoopMonster />
       
       {/* Concentric Rings Pattern - Portal effect */}
