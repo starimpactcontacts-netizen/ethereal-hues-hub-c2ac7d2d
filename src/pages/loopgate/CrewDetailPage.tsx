@@ -561,15 +561,7 @@ export default function CrewDetailPage() {
                 <Settings className="w-3.5 h-3.5" />
               </button>
             )}
-            {isOwner && (
-              <button
-                onClick={() => navigate(`/arena?host=true&crew=${crewId}`)}
-                className="p-1.5 rounded-md hover:bg-primary/10 text-primary/40 hover:text-primary transition-colors"
-                title="Host Competition"
-              >
-                <Trophy className="w-3.5 h-3.5" />
-              </button>
-            )}
+            
             <div className="flex-1" />
             {isMember && myRole !== "owner" && (
               <AlertDialog>
