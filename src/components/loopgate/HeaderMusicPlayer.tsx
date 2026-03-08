@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge, Settings } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge, Settings, Search, Send } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -8,6 +8,8 @@ import { motion } from 'framer-motion';
 import { useUserPlaylist, UserPlaylistTrack } from '@/hooks/useUserPlaylist';
 import { useRadioSettings } from '@/hooks/useRadioSettings';
 import MyPlaylistTab from './MyPlaylistTab';
+import DeezerSearchTab from './DeezerSearchTab';
+import PitchToRadio from './PitchToRadio';
 import { useNavigate } from 'react-router-dom';
 
 interface Track {
@@ -18,10 +20,10 @@ interface Track {
   title: string;
   poster_url: string | null;
   is_priority?: boolean;
-  source: 'featured_drop' | 'radio_track';
+  source: 'featured_drop' | 'radio_track' | 'deezer';
 }
 
-type PlaylistMode = 'loopgate' | 'myplaylist';
+type TabMode = 'loopgate' | 'myplaylist' | 'search' | 'pitch';
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -101,13 +103,16 @@ export default function HeaderMusicPlayer() {
   const [pitchSemitones, setPitchSemitones] = useState(0);
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const [introPlayed, setIntroPlayed] = useState(false);
-  const [playlistMode, setPlaylistMode] = useState<PlaylistMode>('loopgate');
+  const [activeTab, setActiveTab] = useState<TabMode>('loopgate');
+  const [playlistMode, setPlaylistMode] = useState<'loopgate' | 'myplaylist' | 'deezer'>('loopgate');
   const [userId, setUserId] = useState<string | null>(null);
   const [myPlaylistIndex, setMyPlaylistIndex] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [deezerNowPlaying, setDeezerNowPlaying] = useState<{ url: string; title: string; artist: string; cover: string } | null>(null);
+  const [audioError, setAudioError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
-  const audioModeRef = useRef<PlaylistMode>('loopgate');
+  const audioModeRef = useRef<string>('loopgate');
 
   const { myTracks, loading: myLoading, uploading, uploadTrack, uploadCover, deleteTrack, togglePublic, playlistName, renamePlaylist } = useUserPlaylist(userId);
   const { settings, updateSetting } = useRadioSettings(userId);
@@ -124,17 +129,15 @@ export default function HeaderMusicPlayer() {
 
   const isMuted = volume === 0;
 
-  // Fetch tracks from both featured_drops AND radio_tracks, priority first
+  // Fetch tracks from both featured_drops AND radio_tracks
   useEffect(() => {
     const fetchTracks = async () => {
-      // Fetch admin radio tracks
       const { data: radioData } = await supabase
         .from('radio_tracks')
         .select('id, song_name, artist_name, audio_url, cover_url, is_priority, track_order')
         .order('is_priority', { ascending: false })
         .order('track_order', { ascending: true });
 
-      // Fetch featured drops
       const { data: dropData } = await supabase
         .from('featured_drops')
         .select('id, song_name, song_preview_url, title, poster_url')
@@ -163,13 +166,12 @@ export default function HeaderMusicPlayer() {
         source: 'featured_drop' as const,
       }));
 
-      // Priority tracks first, then shuffle the rest
       const priority = radioTracks.filter(t => t.is_priority);
       const nonPriority = shuffleArray([...radioTracks.filter(t => !t.is_priority), ...dropTracks]);
       setTracks([...priority, ...nonPriority]);
       if (priority.length > 0) {
         setCurrentIndex(0);
-      } else {
+      } else if (nonPriority.length > 0) {
         setCurrentIndex(Math.floor(Math.random() * nonPriority.length));
       }
     };
@@ -197,71 +199,92 @@ export default function HeaderMusicPlayer() {
     }
   }, []);
 
-  const playTrack = useCallback((track: Track) => {
+  const cleanupAudio = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.removeAttribute('src');
+      audioRef.current.load();
       audioRef.current = null;
     }
     stopProgressTracking();
-    audioModeRef.current = 'loopgate';
-    const a = new Audio(track.song_preview_url);
+  }, [stopProgressTracking]);
+
+  const playAudioUrl = useCallback((url: string, mode: string, onEnded: () => void) => {
+    cleanupAudio();
+    setAudioError(false);
+    setProgress(0);
+    audioModeRef.current = mode;
+
+    const a = new Audio(url);
     a.preload = 'auto';
     a.volume = volume;
     a.preservesPitch = false;
     a.playbackRate = playbackRate * Math.pow(2, pitchSemitones / 12);
     audioRef.current = a;
-    a.addEventListener('ended', () => {
+
+    a.addEventListener('ended', onEnded);
+    a.addEventListener('error', () => {
+      setAudioError(true);
+      setIsPlaying(false);
+      stopProgressTracking();
+    });
+
+    const tryPlay = () => {
+      a.play().then(() => {
+        setIsPlaying(true);
+        setAudioError(false);
+        startProgressTracking();
+      }).catch(() => {
+        // Autoplay blocked — will play on user interaction
+      });
+    };
+
+    if (a.readyState >= 2) {
+      tryPlay();
+    } else {
+      a.addEventListener('canplay', tryPlay, { once: true });
+    }
+  }, [volume, playbackRate, pitchSemitones, cleanupAudio, startProgressTracking, stopProgressTracking]);
+
+  const playTrack = useCallback((track: Track) => {
+    setPlaylistMode('loopgate');
+    setDeezerNowPlaying(null);
+    playAudioUrl(track.song_preview_url, 'loopgate', () => {
       setCurrentIndex(i => (i + 1) % tracks.length);
     });
-    // Play as soon as enough data is buffered
-    const tryPlay = () => {
-      a.play().then(() => {
-        setIsPlaying(true);
-        startProgressTracking();
-      }).catch(() => {});
-    };
-    if (a.readyState >= 2) {
-      tryPlay();
-    } else {
-      a.addEventListener('canplay', tryPlay, { once: true });
-    }
-  }, [volume, tracks.length, startProgressTracking, stopProgressTracking, playbackRate, pitchSemitones]);
+  }, [playAudioUrl, tracks.length]);
 
-  const playMyTrack = useCallback((track: UserPlaylistTrack) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    stopProgressTracking();
+  const playMyTrack = useCallback((track: UserPlaylistTrack, nextTracks: UserPlaylistTrack[], nextIdx: number) => {
     setPlaylistMode('myplaylist');
-    audioModeRef.current = 'myplaylist';
-    const a = new Audio(track.audio_url);
-    a.preload = 'auto';
-    a.volume = volume;
-    a.preservesPitch = false;
-    a.playbackRate = playbackRate * Math.pow(2, pitchSemitones / 12);
-    audioRef.current = a;
-    a.addEventListener('ended', () => {
-      setMyPlaylistIndex(i => {
-        const next = (i + 1) % myTracks.length;
-        if (myTracks[next]) {
-          setTimeout(() => playMyTrack(myTracks[next]), 50);
-        }
-        return next;
-      });
+    setDeezerNowPlaying(null);
+    playAudioUrl(track.audio_url, 'myplaylist', () => {
+      const next = (nextIdx + 1) % nextTracks.length;
+      if (nextTracks[next]) {
+        setMyPlaylistIndex(next);
+        // Use setTimeout to break the synchronous call chain
+        setTimeout(() => {
+          playAudioUrl(nextTracks[next].audio_url, 'myplaylist', () => {});
+        }, 50);
+      }
     });
-    const tryPlay = () => {
-      a.play().then(() => {
-        setIsPlaying(true);
-        startProgressTracking();
-      }).catch(() => {});
-    };
-    if (a.readyState >= 2) {
-      tryPlay();
-    } else {
-      a.addEventListener('canplay', tryPlay, { once: true });
+  }, [playAudioUrl]);
+
+  const playDeezerPreview = useCallback((url: string, title: string, artist: string, cover: string) => {
+    // If same track, toggle play/pause
+    if (deezerNowPlaying?.url === url && isPlaying) {
+      audioRef.current?.pause();
+      setIsPlaying(false);
+      stopProgressTracking();
+      return;
     }
-  }, [volume, myTracks, startProgressTracking, stopProgressTracking, playbackRate, pitchSemitones]);
+
+    setPlaylistMode('deezer');
+    setDeezerNowPlaying({ url, title, artist, cover });
+    playAudioUrl(url, 'deezer', () => {
+      setIsPlaying(false);
+      setProgress(0);
+    });
+  }, [playAudioUrl, deezerNowPlaying, isPlaying, stopProgressTracking]);
 
   const pause = useCallback(() => {
     audioRef.current?.pause();
@@ -272,17 +295,26 @@ export default function HeaderMusicPlayer() {
   const togglePlay = useCallback(() => {
     if (isPlaying) {
       pause();
-    } else if (playlistMode === 'myplaylist' && myTracks[myPlaylistIndex]) {
-      if (audioRef.current && audioRef.current.src && audioModeRef.current === 'myplaylist') {
+    } else if (playlistMode === 'deezer' && deezerNowPlaying) {
+      if (audioRef.current && audioModeRef.current === 'deezer') {
         audioRef.current.play().then(() => {
           setIsPlaying(true);
           startProgressTracking();
         }).catch(() => {});
       } else {
-        playMyTrack(myTracks[myPlaylistIndex]);
+        playDeezerPreview(deezerNowPlaying.url, deezerNowPlaying.title, deezerNowPlaying.artist, deezerNowPlaying.cover);
+      }
+    } else if (playlistMode === 'myplaylist' && myTracks[myPlaylistIndex]) {
+      if (audioRef.current && audioModeRef.current === 'myplaylist') {
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+          startProgressTracking();
+        }).catch(() => {});
+      } else {
+        playMyTrack(myTracks[myPlaylistIndex], myTracks, myPlaylistIndex);
       }
     } else if (current) {
-      if (audioRef.current && audioRef.current.src && audioModeRef.current === 'loopgate') {
+      if (audioRef.current && audioModeRef.current === 'loopgate') {
         audioRef.current.play().then(() => {
           setIsPlaying(true);
           startProgressTracking();
@@ -291,7 +323,7 @@ export default function HeaderMusicPlayer() {
         playTrack(current);
       }
     }
-  }, [isPlaying, pause, current, playTrack, playMyTrack, startProgressTracking, playlistMode, myTracks, myPlaylistIndex]);
+  }, [isPlaying, pause, current, playTrack, playMyTrack, playDeezerPreview, startProgressTracking, playlistMode, myTracks, myPlaylistIndex, deezerNowPlaying]);
 
   const skip = useCallback(() => {
     setProgress(0);
@@ -303,45 +335,31 @@ export default function HeaderMusicPlayer() {
     setCurrentIndex(i => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length]);
 
-  // Auto-play on first load (respects user settings)
+  // Auto-play on first load
   useEffect(() => {
     if (tracks.length > 0 && !hasAutoPlayed && current) {
       setHasAutoPlayed(true);
-
-      // Check if autoplay is disabled
       if (!settings.autoplay_enabled) return;
 
-      // Check if user wants their own playlist to play by default
       if (settings.default_playlist === 'myplaylist' && myTracks.length > 0) {
         setPlaylistMode('myplaylist');
+        setActiveTab('myplaylist');
         const startMyPlayback = async () => {
-          if (!introPlayed) {
-            setIntroPlayed(true);
-            await playIntroChime(volume);
-          }
-          playMyTrack(myTracks[0]);
+          if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
+          playMyTrack(myTracks[0], myTracks, 0);
         };
         startMyPlayback().catch(() => {});
         return;
       }
 
       const startPlayback = async () => {
-        if (!introPlayed) {
-          setIntroPlayed(true);
-          await playIntroChime(volume);
-        }
+        if (!introPlayed) { setIntroPlayed(true); await playIntroChime(volume); }
         playTrack(current);
       };
       startPlayback().catch(() => {
-        const unlock = () => {
-          startPlayback();
-          window.removeEventListener('click', unlock);
-          window.removeEventListener('touchstart', unlock);
-          window.removeEventListener('keydown', unlock);
-        };
+        const unlock = () => { startPlayback(); window.removeEventListener('click', unlock); window.removeEventListener('touchstart', unlock); };
         window.addEventListener('click', unlock, { once: true });
         window.addEventListener('touchstart', unlock, { once: true });
-        window.addEventListener('keydown', unlock, { once: true });
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -381,11 +399,31 @@ export default function HeaderMusicPlayer() {
   }, []);
 
   useEffect(() => () => {
-    audioRef.current?.pause();
-    stopProgressTracking();
-  }, [stopProgressTracking]);
+    cleanupAudio();
+  }, [cleanupAudio]);
+
+  // Get now-playing info regardless of mode
+  const nowPlayingName = playlistMode === 'deezer' ? deezerNowPlaying?.title
+    : playlistMode === 'myplaylist' ? (myTracks[myPlaylistIndex]?.track_name || 'No tracks')
+    : current?.song_name;
+  const nowPlayingArtist = playlistMode === 'deezer' ? deezerNowPlaying?.artist
+    : playlistMode === 'myplaylist' ? (myTracks[myPlaylistIndex]?.artist_name || '')
+    : (current?.artist_name || current?.title);
+  const nowPlayingCover = playlistMode === 'deezer' ? deezerNowPlaying?.cover
+    : playlistMode === 'myplaylist' ? myTracks[myPlaylistIndex]?.cover_url
+    : current?.poster_url;
+  const nowPlayingLabel = playlistMode === 'deezer' ? 'Deezer Preview'
+    : playlistMode === 'myplaylist' ? playlistName
+    : 'LOOPGATE Playlist';
 
   if (!tracks.length) return null;
+
+  const tabs: { key: TabMode; label: string; icon: React.ReactNode }[] = [
+    { key: 'loopgate', label: 'Radio', icon: <Radio size={11} /> },
+    { key: 'myplaylist', label: 'Mine', icon: <Music size={11} /> },
+    { key: 'search', label: 'Search', icon: <Search size={11} /> },
+    { key: 'pitch', label: 'Pitch', icon: <Send size={11} /> },
+  ];
 
   return (
     <Popover>
@@ -408,30 +446,25 @@ export default function HeaderMusicPlayer() {
           </svg>
         </button>
       </PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-72 bg-surface-0 border-border p-0 overflow-hidden">
-        {/* Tab Switcher */}
+      <PopoverContent side="bottom" align="start" className="w-80 bg-surface-0 border-border p-0 overflow-hidden">
+        {/* Tab Switcher — 4 tabs */}
         <div className="flex border-b border-border">
-          <button
-            onClick={() => setPlaylistMode('loopgate')}
-            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-              playlistMode === 'loopgate' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Radio size={12} className="inline mr-1 -mt-0.5" /> LOOPGATE
-          </button>
-          <button
-            onClick={() => setPlaylistMode('myplaylist')}
-            className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 ${
-              playlistMode === 'myplaylist' ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Music size={12} className="-mt-0.5" /> {playlistName?.toUpperCase() || 'MY PLAYLIST'}
-          </button>
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 py-2 text-[9px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1 ${
+                activeTab === tab.key ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`px-3 py-2 transition-colors ${showSettings ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`px-2.5 py-2 transition-colors ${showSettings ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            <Settings size={13} />
+            <Settings size={12} />
           </button>
         </div>
 
@@ -441,36 +474,23 @@ export default function HeaderMusicPlayer() {
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Radio Settings</p>
             <div className="flex items-center justify-between">
               <span className="text-xs text-foreground">Autoplay on open</span>
-              <Switch
-                checked={settings.autoplay_enabled}
-                onCheckedChange={(v) => updateSetting('autoplay_enabled', v)}
-                className="scale-75"
-              />
+              <Switch checked={settings.autoplay_enabled} onCheckedChange={(v) => updateSetting('autoplay_enabled', v)} className="scale-75" />
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-foreground">Default to My Playlist</span>
-              <Switch
-                checked={settings.default_playlist === 'myplaylist'}
-                onCheckedChange={(v) => updateSetting('default_playlist', v ? 'myplaylist' : 'loopgate')}
-                className="scale-75"
-              />
+              <Switch checked={settings.default_playlist === 'myplaylist'} onCheckedChange={(v) => updateSetting('default_playlist', v ? 'myplaylist' : 'loopgate')} className="scale-75" />
             </div>
           </div>
         )}
 
-        {/* Now Playing Hero */}
+        {/* Now Playing Hero — always visible */}
         <div className="relative">
-        {(() => {
-            const bgUrl = playlistMode === 'loopgate'
-              ? current?.poster_url
-              : myTracks[myPlaylistIndex]?.cover_url;
-            return bgUrl ? (
-              <div className="absolute inset-0 overflow-hidden">
-                <img src={bgUrl} alt="" className="w-full h-full object-cover opacity-20 blur-sm" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-0" />
-              </div>
-            ) : null;
-          })()}
+          {nowPlayingCover && (
+            <div className="absolute inset-0 overflow-hidden">
+              <img src={nowPlayingCover} alt="" className="w-full h-full object-cover opacity-20 blur-sm" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-0" />
+            </div>
+          )}
           <div className="relative p-4 pb-3">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex gap-[2px] items-end h-3">
@@ -487,19 +507,14 @@ export default function HeaderMusicPlayer() {
                 )}
               </div>
               <span className="text-[9px] uppercase tracking-[0.2em] text-emerald-500 font-bold">
-                {playlistMode === 'loopgate' ? 'LOOPGATE Playlist' : playlistName}
+                {nowPlayingLabel}
               </span>
-              {playlistMode === 'myplaylist' && userId && (
+              {activeTab === 'myplaylist' && playlistMode === 'myplaylist' && userId && (
                 editingName ? (
                   <form className="ml-1" onSubmit={(e) => { e.preventDefault(); renamePlaylist(nameInput); setEditingName(false); }}>
-                    <input
-                      autoFocus
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
+                    <input autoFocus value={nameInput} onChange={(e) => setNameInput(e.target.value)}
                       onBlur={() => { renamePlaylist(nameInput); setEditingName(false); }}
-                      maxLength={40}
-                      className="text-[9px] bg-transparent border-b border-emerald-500 text-foreground outline-none w-20"
-                    />
+                      maxLength={40} className="text-[9px] bg-transparent border-b border-emerald-500 text-foreground outline-none w-20" />
                   </form>
                 ) : (
                   <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="ml-1 text-muted-foreground hover:text-emerald-500">
@@ -508,33 +523,23 @@ export default function HeaderMusicPlayer() {
                 )
               )}
             </div>
-            <p className="text-sm font-display text-foreground truncate">
-              {playlistMode === 'loopgate'
-                ? current?.song_name
-                : (myTracks[myPlaylistIndex]?.track_name || 'No tracks yet')}
-            </p>
-            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-              {playlistMode === 'loopgate'
-                ? (current?.artist_name || current?.title)
-                : (myTracks[myPlaylistIndex]?.artist_name || '')}
-            </p>
+            <p className="text-sm font-display text-foreground truncate">{nowPlayingName || 'Nothing playing'}</p>
+            <p className="text-[10px] text-muted-foreground truncate mt-0.5">{nowPlayingArtist}</p>
+            {audioError && <p className="text-[9px] text-destructive mt-1">Failed to load audio</p>}
           </div>
         </div>
 
         {/* Seekable Progress Bar */}
         <div className="px-4 pb-1">
-          <Slider
-            value={[progress]}
+          <Slider value={[progress]}
             onValueChange={([v]) => {
               setProgress(v);
               if (audioRef.current && audioRef.current.duration && !isNaN(audioRef.current.duration)) {
                 audioRef.current.currentTime = (v / 100) * audioRef.current.duration;
               }
             }}
-            max={100}
-            step={0.5}
-            className="w-full [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none"
-          />
+            max={100} step={0.5}
+            className="w-full [&_[role=slider]]:h-3 [&_[role=slider]]:w-3 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none" />
         </div>
 
         {/* Controls */}
@@ -546,11 +551,11 @@ export default function HeaderMusicPlayer() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => {
+                setProgress(0);
                 if (playlistMode === 'myplaylist' && myTracks.length > 0) {
-                  setProgress(0);
                   const newIdx = (myPlaylistIndex - 1 + myTracks.length) % myTracks.length;
                   setMyPlaylistIndex(newIdx);
-                  playMyTrack(myTracks[newIdx]);
+                  playMyTrack(myTracks[newIdx], myTracks, newIdx);
                 } else { prev(); }
               }}
               className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
@@ -562,11 +567,11 @@ export default function HeaderMusicPlayer() {
             </button>
             <button
               onClick={() => {
+                setProgress(0);
                 if (playlistMode === 'myplaylist' && myTracks.length > 0) {
-                  setProgress(0);
                   const newIdx = (myPlaylistIndex + 1) % myTracks.length;
                   setMyPlaylistIndex(newIdx);
-                  playMyTrack(myTracks[newIdx]);
+                  playMyTrack(myTracks[newIdx], myTracks, newIdx);
                 } else { skip(); }
               }}
               className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
@@ -578,7 +583,7 @@ export default function HeaderMusicPlayer() {
           </button>
         </div>
 
-        {/* Volume Slider — mobile-safe with touch-none */}
+        {/* Volume */}
         <div className="px-4 pb-2 flex items-center gap-3">
           <VolumeX size={12} className="text-muted-foreground shrink-0" />
           <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
@@ -593,33 +598,28 @@ export default function HeaderMusicPlayer() {
               <Gauge size={11} className="text-muted-foreground" />
               <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Speed</span>
             </div>
-            <button
-              onClick={() => setPlaybackRate(1.0)}
+            <button onClick={() => setPlaybackRate(1.0)}
               className={`text-[9px] font-mono font-bold px-2 py-1 rounded transition-colors ${
                 playbackRate === 1.0 ? 'text-muted-foreground' : 'text-emerald-500 hover:text-emerald-400 bg-emerald-500/10'
-              }`}
-            >
+              }`}>
               {playbackRate < 1 ? '🌙' : playbackRate > 1 ? '⚡' : '•'} {playbackRate.toFixed(2)}x
             </button>
           </div>
           <div className="grid grid-cols-5 gap-1.5">
             {[0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0].map(rate => (
-              <button
-                key={rate}
-                onClick={() => setPlaybackRate(rate)}
+              <button key={rate} onClick={() => setPlaybackRate(rate)}
                 className={`text-[10px] font-mono py-2 rounded-md transition-colors tap-target ${
                   Math.abs(playbackRate - rate) < 0.01
                     ? 'text-emerald-500 bg-emerald-500/15 font-bold border border-emerald-500/30'
                     : 'text-muted-foreground bg-surface-2 hover:text-foreground hover:bg-surface-3 border border-transparent'
-                }`}
-              >
+                }`}>
                 {rate}x
               </button>
             ))}
           </div>
         </div>
 
-        {/* Pitcher — Real pitch shift in semitones — mobile-safe */}
+        {/* Pitcher */}
         <div className="px-4 pb-3">
           <div className="flex items-center gap-1 mb-1.5">
             <span className="text-[9px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
@@ -627,35 +627,26 @@ export default function HeaderMusicPlayer() {
               {pitchSemitones === 0 ? 'default' : `${pitchSemitones > 0 ? '+' : ''}${pitchSemitones} st`}
             </span>
             {pitchSemitones !== 0 && (
-              <button onClick={() => setPitchSemitones(0)} className="text-[8px] text-emerald-500 hover:text-emerald-400 font-bold ml-1">
-                reset
-              </button>
+              <button onClick={() => setPitchSemitones(0)} className="text-[8px] text-emerald-500 hover:text-emerald-400 font-bold ml-1">reset</button>
             )}
           </div>
           <div className="flex items-center gap-3">
             <span className="text-[9px] text-muted-foreground font-bold shrink-0">−8</span>
-            <Slider
-              value={[pitchSemitones]}
-              onValueChange={([v]) => setPitchSemitones(v)}
-              min={-8}
-              max={8}
-              step={1}
-              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none [&_[role=slider]]:select-none"
-            />
+            <Slider value={[pitchSemitones]} onValueChange={([v]) => setPitchSemitones(v)} min={-8} max={8} step={1}
+              className="flex-1 [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500 [&_[role=slider]]:touch-none [&_[role=slider]]:select-none" />
             <span className="text-[9px] text-muted-foreground font-bold shrink-0">+8</span>
           </div>
         </div>
 
-        {/* Track Lists */}
-        {playlistMode === 'loopgate' ? (
+        {/* Tab Content */}
+        {activeTab === 'loopgate' && (
           <div className="max-h-48 overflow-y-auto border-t border-border">
-            {tracks.slice(0, 15).map((track, i) => (
+            {tracks.slice(0, 20).map((track, i) => (
               <button key={track.id}
                 onClick={() => {
-                  setPlaylistMode('loopgate');
                   setProgress(0);
                   setCurrentIndex(i);
-                  if (!isPlaying) setTimeout(() => playTrack(track), 50);
+                  playTrack(track);
                 }}
                 className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                   i === currentIndex && playlistMode === 'loopgate' ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
@@ -688,7 +679,9 @@ export default function HeaderMusicPlayer() {
               </button>
             ))}
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'myplaylist' && (
           <MyPlaylistTab
             tracks={myTracks}
             loading={myLoading}
@@ -698,10 +691,9 @@ export default function HeaderMusicPlayer() {
             isLoggedIn={!!userId}
             onUpload={uploadTrack}
             onPlay={(track, idx) => {
-              setPlaylistMode('myplaylist');
               setMyPlaylistIndex(idx);
               setProgress(0);
-              playMyTrack(track);
+              playMyTrack(track, myTracks, idx);
             }}
             onDelete={deleteTrack}
             onTogglePublic={togglePublic}
@@ -709,7 +701,19 @@ export default function HeaderMusicPlayer() {
           />
         )}
 
-        {/* Link to full playlists page */}
+        {activeTab === 'search' && (
+          <DeezerSearchTab
+            onPlayPreview={playDeezerPreview}
+            currentPreviewUrl={deezerNowPlaying?.url || null}
+            isPlaying={isPlaying && playlistMode === 'deezer'}
+          />
+        )}
+
+        {activeTab === 'pitch' && (
+          <PitchToRadio userId={userId} />
+        )}
+
+        {/* Bottom link */}
         <button
           onClick={() => navigate('/playlists')}
           className="w-full flex items-center justify-center gap-1.5 py-2.5 border-t border-border text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-emerald-500 transition-colors"
