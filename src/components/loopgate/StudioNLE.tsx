@@ -481,18 +481,52 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     if (!vid || !canvas || !videoUrl) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     let running = true;
+
+    // Calculate crop dimensions
+    const getCropDimensions = (vw: number, vh: number) => {
+      const preset = CROP_PRESETS.find(p => p.id === cropPreset);
+      if (!preset || !preset.ratio) return { sx: 0, sy: 0, sw: vw, sh: vh, dw: vw, dh: vh };
+      const targetRatio = preset.ratio;
+      const sourceRatio = vw / vh;
+      let sx = 0, sy = 0, sw = vw, sh = vh;
+      if (sourceRatio > targetRatio) {
+        sw = Math.round(vh * targetRatio);
+        sx = Math.round((vw - sw) / 2);
+      } else {
+        sh = Math.round(vw / targetRatio);
+        sy = Math.round((vh - sh) / 2);
+      }
+      return { sx, sy, sw, sh, dw: sw, dh: sh };
+    };
+
     const draw = () => {
       if (!running) return;
       if (vid.videoWidth && vid.videoHeight) {
-        if (canvas.width !== vid.videoWidth || canvas.height !== vid.videoHeight) {
-          canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+        const crop = getCropDimensions(vid.videoWidth, vid.videoHeight);
+        
+        // Resize canvas to cropped output
+        if (canvas.width !== crop.dw || canvas.height !== crop.dh) {
+          canvas.width = crop.dw;
+          canvas.height = crop.dh;
         }
+        
+        ctx.save();
+        
+        // Apply rotation and flip transforms
+        if (rotation !== 0 || flipH || flipV) {
+          ctx.translate(crop.dw / 2, crop.dh / 2);
+          if (rotation !== 0) ctx.rotate((rotation * Math.PI) / 180);
+          ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+          ctx.translate(-crop.dw / 2, -crop.dh / 2);
+        }
+
         // Apply CSS-based filters (presets + basic grading)
         const adjFilter = buildAdjustFilter(adjustments);
         const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
         ctx.filter = combinedFilter;
-        ctx.drawImage(vid, 0, 0);
+        ctx.drawImage(vid, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, crop.dw, crop.dh);
         ctx.filter = "none";
+        ctx.restore();
 
         // Apply pixel-based adjustments (highlights, shadows, sharpen, vignette, etc.)
         if (hasAdjustments(adjustments)) {
@@ -516,12 +550,29 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             renderFullTextOverlay(ctx, canvas, overlay, vid.currentTime);
           }
         });
+
+        // Draw crop overlay guides when crop tool is active
+        if (cropPreset !== "free" && activeToolTab === "crop") {
+          ctx.strokeStyle = "rgba(124,106,255,0.3)";
+          ctx.lineWidth = 1;
+          // Rule of thirds
+          for (let i = 1; i <= 2; i++) {
+            ctx.beginPath();
+            ctx.moveTo((crop.dw / 3) * i, 0);
+            ctx.lineTo((crop.dw / 3) * i, crop.dh);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, (crop.dh / 3) * i);
+            ctx.lineTo(crop.dw, (crop.dh / 3) * i);
+            ctx.stroke();
+          }
+        }
       }
       animRef.current = requestAnimationFrame(draw);
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, cropPreset, rotation, flipH, flipV, activeToolTab]);
 
   // ─── Text Rendering Engine ───
   const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
