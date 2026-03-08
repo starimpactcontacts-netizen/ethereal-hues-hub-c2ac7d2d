@@ -1988,26 +1988,26 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
           </div>
 
           {/* Player controls */}
-          <div className="h-10 flex items-center px-3 gap-3 flex-shrink-0" style={{ background: "#141414", borderTop: "1px solid #1e1e1e" }}>
-            <span className="text-[10px] font-mono w-20" style={{ color: "#888" }}>{formatTimecode(currentTime, true)}</span>
-            <span style={{ color: "#333" }}>/</span>
-            <span className="text-[10px] font-mono w-20" style={{ color: "#555" }}>{formatTimecode(duration, true)}</span>
+          <div className="h-10 flex items-center px-3 gap-3 flex-shrink-0" style={{ background: "#0e0e12", borderTop: "1px solid #1a1a20" }}>
+            <span className="text-[10px] font-mono tracking-wider" style={{ color: ACCENT }}>{formatTimecode(currentTime, true)}</span>
+            <span className="text-[8px]" style={{ color: "#2a2a30" }}>/</span>
+            <span className="text-[10px] font-mono tracking-wider" style={{ color: "#444" }}>{formatTimecode(duration, true)}</span>
             <div className="flex-1" />
-            <button onClick={() => seekTo(trimStart)} className="p-1 rounded hover:bg-white/5"><SkipBack className="w-4 h-4" style={{ color: "#666" }} /></button>
-            <button onClick={togglePlay} className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/5" style={{ border: "1px solid #333" }}>
+            <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipBack className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+            <button onClick={togglePlay} className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105" style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, boxShadow: `0 0 20px ${ACCENT_GLOW}` }}>
               {playing ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white ml-0.5" />}
             </button>
-            <button onClick={() => seekTo(trimEnd)} className="p-1 rounded hover:bg-white/5"><SkipForward className="w-4 h-4" style={{ color: "#666" }} /></button>
+            <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipForward className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
             <div className="flex-1" />
-            <button onClick={() => setMuted(!muted)} className="p-1 rounded hover:bg-white/5">
-              {muted ? <VolumeX className="w-4 h-4" style={{ color: "#666" }} /> : <Volume2 className="w-4 h-4" style={{ color: "#666" }} />}
+            <button onClick={() => setMuted(!muted)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all">
+              {muted ? <VolumeX className="w-3.5 h-3.5" style={{ color: "#555" }} /> : <Volume2 className="w-3.5 h-3.5" style={{ color: "#555" }} />}
             </button>
             <button onClick={() => setSpeed(SPEED_OPTIONS[(SPEED_OPTIONS.indexOf(speed) + 1) % SPEED_OPTIONS.length])}
-              className="px-2 py-0.5 text-[10px] font-semibold rounded transition-all hover:bg-white/5" style={{ color: "#888" }}>
+              className="px-2 py-1 text-[9px] font-bold tracking-wider rounded-md transition-all hover:bg-white/5" style={{ color: "#777", border: "1px solid #1e1e24" }}>
               {speed}x
             </button>
-            <button onClick={() => setShowShortcuts(prev => !prev)} className="p-1 rounded hover:bg-white/5">
-              <Keyboard className="w-4 h-4" style={{ color: "#666" }} />
+            <button onClick={() => setShowShortcuts(prev => !prev)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all">
+              <Keyboard className="w-3.5 h-3.5" style={{ color: "#555" }} />
             </button>
           </div>
         </div>
