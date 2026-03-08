@@ -21,6 +21,8 @@ import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Users } from "lucide-react";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
+import LinkTreePreview from "@/components/loopgate/LinkTreePreview";
+import type { LinkPageSettings, EditorLink } from "@/hooks/useEditorLinkPage";
 
 interface PublicProfile {
   id: string;
