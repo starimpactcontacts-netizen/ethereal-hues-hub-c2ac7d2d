@@ -1030,11 +1030,20 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
+      ctx.save();
+      // Apply rotation/flip for export
+      if (rotation !== 0 || flipH || flipV) {
+        ctx.translate(exportW / 2, exportH / 2);
+        if (rotation !== 0) ctx.rotate((rotation * Math.PI) / 180);
+        ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+        ctx.translate(-exportW / 2, -exportH / 2);
+      }
       const adjFilter = buildAdjustFilter(adjustments);
       const combinedExportFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
       ctx.filter = combinedExportFilter;
-      ctx.drawImage(vid, 0, 0, exportW, exportH);
+      ctx.drawImage(vid, cropSx, cropSy, cropSw, cropSh, 0, 0, exportW, exportH);
       ctx.filter = "none";
+      ctx.restore();
       if (hasAdjustments(adjustments)) {
         applyCanvasAdjustments(ctx, canvas, adjustments);
       }
