@@ -1844,6 +1844,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   ["Effects", activeEffects.length > 0 ? `${activeEffects.length} active` : "None"],
                   ["Transition", activeTransition ? TRANSITIONS.find(t => t.id === activeTransition)?.label ?? "None" : "None"],
                   ["Text Layers", textOverlays.length > 0 ? `${textOverlays.length}` : "None"],
+                  ["Segments", segments.length > 0 ? `${segments.length} clips` : "1 clip"],
                 ].map(([label, val]) => (
                   <div key={label} className="flex justify-between items-start">
                     <span className="text-[10px]" style={{ color: "#666" }}>{label}:</span>
