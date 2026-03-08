@@ -26,7 +26,7 @@ function PayPalLogo({ className = "w-5 h-5" }: { className?: string }) {
 
 export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
   const { user } = useAuth();
-  const { earnings, payouts, availableBalance, requestPayout, refresh } = useEditorEarnings();
+  const { earnings, payouts, availableBalance, loading: earningsLoading, requestPayout, refresh } = useEditorEarnings();
   const [savedPaypal, setSavedPaypal] = useState('');
   const [paypalInput, setPaypalInput] = useState('');
   const [editingPaypal, setEditingPaypal] = useState(false);
