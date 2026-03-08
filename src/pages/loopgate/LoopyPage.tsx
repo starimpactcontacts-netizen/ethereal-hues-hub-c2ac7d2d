@@ -18,6 +18,16 @@ import loopyAvatar from '@/assets/loopy-avatar.png';
 
 type Platform = 'tiktok' | 'instagram' | 'youtube' | 'unknown';
 
+interface RatingMeta {
+  thumbnailUrl?: string;
+  authorName?: string;
+  videoTitle?: string;
+  viewCount?: string;
+  duration?: string;
+  hadThumbnail?: boolean;
+  tagCount?: number;
+}
+
 interface LoopyRating {
   emotion: number;
   creativity: number;
@@ -30,6 +40,7 @@ interface LoopyRating {
   improvements: string[];
   vibe_check: string;
   detailed_feedback: string;
+  _meta?: RatingMeta;
 }
 
 interface SavedRating {
