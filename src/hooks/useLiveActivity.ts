@@ -153,6 +153,13 @@ export function useLiveActivity(limit = 8) {
           .select('id, user_id, tournament_id, joined_at')
           .order('joined_at', { ascending: false })
           .limit(limit),
+        // New user signups (recent profiles)
+        supabase
+          .from('profiles')
+          .select('id, username, avatar_url, created_at')
+          .not('username', 'is', null)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .limit(limit),
       ]);
 
       // Collect user & event IDs for enrichment
