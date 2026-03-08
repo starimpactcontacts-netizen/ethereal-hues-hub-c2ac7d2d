@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, CheckCircle2, Pencil, Clock, XCircle, DollarSign, ChevronRight, Shield, HelpCircle, Settings, FileText, Mail } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useEditorEarnings } from '@/hooks/useCommissions';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -127,37 +128,66 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                 </button>
               </div>
 
-              {/* Balance Card — dark matte, not green */}
-              <div className="relative rounded-xl overflow-hidden mb-4">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#111] to-[#0a0a0a]" />
+              {/* CENTURION CARD */}
+              <div className="relative rounded-xl overflow-hidden mb-4" style={{ aspectRatio: '3.37/2.125' }}>
+                {/* Titanium matte base */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#111] to-[#0d0d0d]" />
+                {/* Subtle brushed-metal texture */}
+                <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.15) 1px, rgba(255,255,255,0.15) 2px)' }} />
+                {/* Top edge highlight */}
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                {/* Border */}
                 <div className="absolute inset-0 border border-white/[0.06] rounded-xl" />
 
-                <div className="relative p-5">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 mb-1">Available to Withdraw</p>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-[44px] font-black text-foreground leading-none tabular-nums" style={teko}>
-                      ${(availableBalance / 100).toFixed(2)}
-                    </span>
-                  </div>
-                  
-                  {/* Breakdown */}
-                  <div className="flex items-center gap-4 mt-4 pt-3 border-t border-white/[0.04]">
-                    <div>
-                      <p className="text-[7px] font-bold uppercase tracking-widest text-emerald-400/50">Total Earned</p>
-                      <p className="text-base font-black text-emerald-400/80 tabular-nums" style={teko}>${(earnings.earnings_cents / 100).toFixed(2)}</p>
+                <div className="relative p-5 h-full flex flex-col justify-between">
+                  {/* Top row: chip + brand */}
+                  <div className="flex items-start justify-between">
+                    {/* EMV Chip */}
+                    <div className="w-10 h-7 rounded-[4px] bg-gradient-to-br from-[#c9a84c] via-[#d4b85a] to-[#a88a3a] border border-[#8a7030]/40 shadow-sm">
+                      <div className="w-full h-full rounded-[4px]" style={{ 
+                        backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)' 
+                      }} />
                     </div>
-                    {earnings.pending_withdrawal_cents > 0 && (
+                    {/* Loopgate brand mark */}
+                    <div className="flex items-center gap-1.5">
+                      <GateIcon size={14} className="text-white/20" />
+                      <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/20" style={teko}>Loopgate</span>
+                    </div>
+                  </div>
+
+                  {/* Balance — center */}
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.25em] text-white/25 mb-0.5">Available Balance</p>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-white/30 text-lg font-bold" style={teko}>$</span>
+                      <span className="text-[40px] font-black text-white leading-none tabular-nums tracking-tight" style={teko}>
+                        {(availableBalance / 100).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom row: earned / pending / withdrawn */}
+                  <div className="flex items-end justify-between">
+                    <div className="flex items-center gap-5">
                       <div>
-                        <p className="text-[7px] font-bold uppercase tracking-widest text-amber-400/50">Pending</p>
-                        <p className="text-base font-black text-amber-400 tabular-nums" style={teko}>${(earnings.pending_withdrawal_cents / 100).toFixed(2)}</p>
+                        <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-white/15">Earned</p>
+                        <p className="text-sm font-black text-white/50 tabular-nums leading-tight" style={teko}>${(earnings.earnings_cents / 100).toFixed(2)}</p>
                       </div>
-                    )}
-                    {earnings.withdrawn_cents > 0 && (
-                      <div>
-                        <p className="text-[7px] font-bold uppercase tracking-widest text-muted-foreground/30">Withdrawn</p>
-                        <p className="text-base font-black text-muted-foreground/50 tabular-nums" style={teko}>${(earnings.withdrawn_cents / 100).toFixed(2)}</p>
-                      </div>
-                    )}
+                      {earnings.pending_withdrawal_cents > 0 && (
+                        <div>
+                          <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-amber-400/30">Pending</p>
+                          <p className="text-sm font-black text-amber-400/60 tabular-nums leading-tight" style={teko}>${(earnings.pending_withdrawal_cents / 100).toFixed(2)}</p>
+                        </div>
+                      )}
+                      {earnings.withdrawn_cents > 0 && (
+                        <div>
+                          <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-white/10">Paid</p>
+                          <p className="text-sm font-black text-white/25 tabular-nums leading-tight" style={teko}>${(earnings.withdrawn_cents / 100).toFixed(2)}</p>
+                        </div>
+                      )}
+                    </div>
+                    {/* Card type */}
+                    <p className="text-[8px] font-black uppercase tracking-[0.3em] text-white/10" style={teko}>Centurion</p>
                   </div>
                 </div>
               </div>
