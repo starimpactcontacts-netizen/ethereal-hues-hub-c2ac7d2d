@@ -392,7 +392,7 @@ export default function ProposeSanctionedTournament({
 
         <div>
           <label className="text-xs font-bold uppercase tracking-wider text-foreground mb-2 block">
-            <Sparkles className="w-3.5 h-3.5 inline mr-2" />
+            <GateIcon className="w-3.5 h-3.5 inline mr-2" />
             Edit Theme / Prompt
           </label>
           <Textarea

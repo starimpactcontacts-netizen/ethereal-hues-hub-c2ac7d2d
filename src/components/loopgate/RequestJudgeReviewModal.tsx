@@ -408,7 +408,7 @@ export default function RequestJudgeReviewModal({
 
               {/* XP Info */}
               <div className="bg-gold/5 border border-gold/20 rounded-lg p-3 flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-gold shrink-0 mt-0.5" />
+                <GateIcon className="w-4 h-4 text-gold shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground">
                   You'll earn <span className="text-gold font-bold">+10 XP</span> for submitting and{' '}
                   <span className="text-gold font-bold">+15 XP</span> when your review is complete!

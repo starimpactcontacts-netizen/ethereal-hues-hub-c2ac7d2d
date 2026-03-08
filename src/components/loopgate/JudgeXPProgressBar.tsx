@@ -57,7 +57,7 @@ export default function JudgeXPProgressBar({
       </div>
       {showPerk && nextPerk && !isMaxLevel && (
         <div className="flex items-center gap-1 mt-1.5">
-          <Sparkles size={10} className="text-purple-400" />
+          <GateIcon size={10} className="text-purple-400" />
           <span className="text-[9px] text-purple-400">
             Unlock at JLv{judgeLevel + 1}: {nextPerk}
           </span>

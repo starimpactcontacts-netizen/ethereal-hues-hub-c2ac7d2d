@@ -19,7 +19,7 @@ export default function PracticeModeCard({ onEnter }: PracticeModeCardProps) {
         <div className="flex items-start gap-4">
           {/* Icon */}
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/25 shrink-0">
-            <Sparkles className="w-6 h-6 text-background" />
+            <GateIcon className="w-6 h-6 text-background" />
           </div>
           
           {/* Text */}

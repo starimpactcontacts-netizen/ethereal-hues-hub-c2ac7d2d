@@ -57,7 +57,7 @@ export default function OpenArenaGuide({ isOpen, onClose }: OpenArenaGuideProps)
       bgColor: "bg-purple-500/10",
     },
     {
-      icon: Sparkles,
+      icon: GateIcon,
       title: "Bonus Rewards",
       description: "Later rounds often have higher Index rewards and bonus multipliers. Push through to maximize your earnings!",
       color: "text-gold",

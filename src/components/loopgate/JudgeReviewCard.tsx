@@ -142,7 +142,7 @@ const TEMPLATE_STYLES: Record<CardTemplate, {
     pillBg: 'bg-[#f0f0f0]',
     gradeBg: 'bg-black',
     gradeText: 'text-white',
-    icon: Sparkles,
+    icon: GateIcon,
     logoFilter: 'invert(1)',
   },
 };

@@ -82,7 +82,7 @@ function getTypeBadge(type: string, status?: string) {
   if (type === 'quick_fight') return { label: 'QUICK 1v1', icon: <Swords className="w-2.5 h-2.5" />, cls: 'text-red-400' };
   if (type === 'battle') return { label: '1v1', icon: <Swords className="w-2.5 h-2.5" />, cls: 'text-red-400' };
   if (type === 'judge_video') return { label: 'JUDGE', icon: <Video className="w-2.5 h-2.5" />, cls: 'text-purple-400' };
-  return { label: 'REVIEW', icon: <Sparkles className="w-2.5 h-2.5" />, cls: 'text-purple-400' };
+  return { label: 'REVIEW', icon: <GateIcon className="w-2.5 h-2.5" />, cls: 'text-purple-400' };
 }
 
 interface LoopFeedCardProps {

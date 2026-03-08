@@ -364,7 +364,7 @@ export default function OpenArenaForm({ config, onChange }: OpenArenaFormProps) 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs flex items-center gap-1">
-                      <Sparkles size={12} className="text-gold" />
+                      <GateIcon size={12} className="text-gold" />
                       Index Reward
                     </Label>
                     <Input

@@ -35,7 +35,7 @@ export default function PremiumStepsGuide({
         <div>
           <h3 className="font-display text-base flex items-center gap-2">
             <span>How to Enter</span>
-            <Sparkles className="w-4 h-4 text-purple-400" />
+            <GateIcon className="w-4 h-4 text-purple-400" />
           </h3>
           <p className="text-[10px] text-muted-foreground">Follow these steps to compete</p>
         </div>
