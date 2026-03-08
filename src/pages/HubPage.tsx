@@ -453,16 +453,15 @@ export default function HubPage() {
                           )}
                         </div>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
-                        <svg width="11" height="12" viewBox="0 0 44 48" fill="none" className="text-muted-foreground">
-                          {/* V behind — the large upside-down V from top */}
-                          <path d="M10 4L22 40L34 4" stroke="currentColor" strokeWidth="5" strokeLinecap="square" fill="none"/>
-                          {/* L in front — vertical stroke + horizontal foot with serif flick */}
-                          <path d="M4 4L4 40L18 40" stroke="currentColor" strokeWidth="5" strokeLinecap="square" fill="none"/>
-                          {/* Serif flick on L foot */}
-                          <path d="M16 40L20 44" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none"/>
+                      <div className="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
+                        <svg width="16" height="16" viewBox="0 0 44 48" fill="none" className="text-foreground">
+                          {/* V behind */}
+                          <path d="M12 2L22 38L32 2" stroke="currentColor" strokeWidth="6" strokeLinecap="square" fill="none"/>
+                          {/* L in front with background knockout */}
+                          <path d="M2 2L2 40L20 40" stroke="hsl(var(--background))" strokeWidth="11" strokeLinecap="square" fill="none"/>
+                          <path d="M2 2L2 40L20 40" stroke="currentColor" strokeWidth="5.5" strokeLinecap="square" fill="none"/>
                         </svg>
-                        <span className="font-display text-xs text-foreground">{profile?.level || 1}</span>
+                        <span className="font-display text-sm font-bold text-foreground">{profile?.level || 1}</span>
                       </div>
                     </div>
                     
