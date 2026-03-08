@@ -333,24 +333,24 @@ export default function LoopyPage() {
                         { icon: Brain, text: 'AI ANALYZES' },
                         { icon: BarChart3, text: 'GET SCORES' },
                       ].map((step, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1 py-2.5 bg-white/[0.03] border border-white/[0.04]">
-                          <step.icon className="w-3.5 h-3.5 text-white/20" />
-                          <span className="text-[10px] font-bold text-white/30 tracking-wider" style={TEKO}>{step.text}</span>
+                        <div key={i} className="flex flex-col items-center gap-1 py-2.5 bg-white/[0.06] border border-white/[0.08]">
+                          <step.icon className="w-3.5 h-3.5 text-white/40" />
+                          <span className="text-[10px] font-bold text-white/50 tracking-wider" style={TEKO}>{step.text}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* URL */}
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
-                        <Target className="w-3 h-3" /> EDIT URL <span className="text-red-500">*</span>
+                      <label className="text-[11px] font-bold text-white/60 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
+                        <Target className="w-3 h-3 text-purple-400" /> EDIT URL <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <Input
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}
                           placeholder="https://tiktok.com/@you/video/... or youtube/instagram"
-                          className="bg-[#0a0a0a] border-white/[0.08] h-12 text-sm text-white/80 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/15"
+                          className="bg-[#0a0a0a] border-white/[0.12] h-12 text-sm text-white/90 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/25"
                         />
                         {url && (
                           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-0.5 bg-purple-500/15 text-purple-400">
@@ -363,29 +363,29 @@ export default function LoopyPage() {
 
                     {/* Title */}
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
-                        <Award className="w-3 h-3" /> VIDEO TITLE
-                        <span className="text-white/15 text-[9px] normal-case tracking-normal font-normal">optional</span>
+                      <label className="text-[11px] font-bold text-white/60 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
+                        <Award className="w-3 h-3 text-purple-400" /> VIDEO TITLE
+                        <span className="text-white/30 text-[9px] normal-case tracking-normal font-normal">optional</span>
                       </label>
                       <Input
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="e.g., Demon Slayer AMV — Akeboshi"
-                        className="bg-[#0a0a0a] border-white/[0.08] h-11 text-sm text-white/80 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/15"
+                        className="bg-[#0a0a0a] border-white/[0.12] h-11 text-sm text-white/90 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/25"
                       />
                     </div>
 
                     {/* Notes */}
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
-                        <MessageSquare className="w-3 h-3" /> NOTES FOR LOOPY
-                        <span className="text-white/15 text-[9px] normal-case tracking-normal font-normal">optional</span>
+                      <label className="text-[11px] font-bold text-white/60 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
+                        <MessageSquare className="w-3 h-3 text-purple-400" /> NOTES FOR LOOPY
+                        <span className="text-white/30 text-[9px] normal-case tracking-normal font-normal">optional</span>
                       </label>
                       <Textarea
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="anything u want loopy to know — editing software, how long it took, what u tried new..."
-                        className="bg-[#0a0a0a] border-white/[0.08] resize-none h-20 text-sm text-white/80 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/15"
+                        className="bg-[#0a0a0a] border-white/[0.12] resize-none h-20 text-sm text-white/90 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/25"
                       />
                     </div>
 
@@ -425,10 +425,10 @@ export default function LoopyPage() {
                   {PILLARS.map((p) => {
                     const Icon = p.icon;
                     return (
-                      <div key={p.key} className="flex items-center gap-1 px-2 py-1 bg-white/[0.03] border border-white/[0.05]">
+                      <div key={p.key} className="flex items-center gap-1 px-2 py-1 bg-white/[0.05] border border-white/[0.08]">
                         <Icon className={`w-3 h-3 ${p.accent}`} />
-                        <span className="text-[10px] text-white/30 font-bold tracking-wider" style={TEKO}>{p.label}</span>
-                        <span className="text-[9px] text-white/15" style={TEKO}>/{p.max}</span>
+                        <span className="text-[10px] text-white/50 font-bold tracking-wider" style={TEKO}>{p.label}</span>
+                        <span className="text-[9px] text-white/25" style={TEKO}>/{p.max}</span>
                       </div>
                     );
                   })}
