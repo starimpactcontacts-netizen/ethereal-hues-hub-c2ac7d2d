@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DollarSign, Info, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 
 interface IndexEarnBadgeProps {
   size?: 'sm' | 'md';
