@@ -1914,7 +1914,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   onMouseLeave={canvasDrag.onMouseUp}
                 />
 
-                <AnimatePresence>
+                <AnimatePresence initial={false}>
                   {!playing && (
                     <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       onClick={togglePlay} className="absolute inset-0 flex items-center justify-center">
