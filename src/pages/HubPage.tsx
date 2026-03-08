@@ -455,7 +455,7 @@ export default function HubPage() {
                         </div>
                       </div>
                       <div className="absolute -bottom-1.5 -right-1.5 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
-                        <img src={lvMonogram} alt="Lv" className="w-4 h-4 object-contain opacity-90" />
+                        <img src={lvMonogram} alt="Lv" className="w-3 h-3 object-contain opacity-90" />
                         <span className="font-display text-sm font-bold text-foreground">{profile?.level || 1}</span>
                       </div>
                     </div>
