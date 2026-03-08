@@ -7,6 +7,7 @@ import { useLoopyChat } from '@/hooks/useLoopyChat';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoopyChat() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [showPulse, setShowPulse] = useState(true);
