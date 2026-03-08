@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Gauge, Settings, Search, Send, X } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Volume2, VolumeX, Radio, Shuffle, Music, ExternalLink, Pencil, Settings, Search, Send, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
