@@ -3,7 +3,7 @@ import { Heart, MessageCircle, Share2, Bookmark, Trash2, Trophy, ArrowUp, Link2,
 import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { FeedPostItem } from "@/hooks/useFeedPosts";
 import VerifiedBadge from "./VerifiedBadge";
 import { useAuth } from "@/hooks/useAuth";
