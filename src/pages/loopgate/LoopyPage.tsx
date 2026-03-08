@@ -454,7 +454,7 @@ export default function LoopyPage() {
                       <div className="w-7 h-7 shrink-0 mt-0.5">
                         <img src={loopyAvatar} alt="" className="w-7 h-7 rounded-full border border-white/10" />
                       </div>
-                      <div className="bg-white/[0.04] border border-white/[0.06] px-4 py-3 flex gap-1.5">
+                      <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl rounded-bl-md px-4 py-3 flex gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400/50 animate-bounce [animation-delay:0ms]" />
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400/50 animate-bounce [animation-delay:150ms]" />
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400/50 animate-bounce [animation-delay:300ms]" />
