@@ -217,9 +217,9 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
                   style={{ border: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: "rgba(124,106,255,0.06)" }}
+                    style={{ background: "hsl(0 0% 100% / 0.08)" }}
                   >
-                    <cap.icon className="w-3.5 h-3.5" style={{ color: "#7C6AFF" }} />
+                    <cap.icon className="w-3.5 h-3.5" style={{ color: MONO_ACCENT }} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[12px] font-semibold text-white/70 leading-tight">{cap.label}</p>
