@@ -400,24 +400,27 @@ export default function HeaderMusicPlayer() {
     </button>
   );
 
+  const TEKO = { fontFamily: 'Teko, sans-serif' };
+
   const playerContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[#0a0a0a]">
       {/* Tab Switcher */}
-      <div className="flex border-b border-border shrink-0">
+      <div className="flex border-b border-white/[0.06] shrink-0">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 min-h-[44px] ${
-              activeTab === tab.key ? 'text-emerald-500 border-b-2 border-emerald-500' : 'text-muted-foreground hover:text-foreground'
+            className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-1.5 min-h-[44px] ${
+              activeTab === tab.key ? 'text-emerald-400 border-b-2 border-emerald-400 bg-emerald-500/[0.04]' : 'text-white/30 hover:text-white/60'
             }`}
+            style={TEKO}
           >
             {tab.icon} {tab.label}
           </button>
         ))}
         <button
           onClick={() => setShowSettings(!showSettings)}
-          className={`px-3 py-3 transition-colors min-h-[44px] ${showSettings ? 'text-emerald-500' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`px-3 py-3 transition-colors min-h-[44px] ${showSettings ? 'text-emerald-400' : 'text-white/30 hover:text-white/60'}`}
         >
           <Settings size={14} />
         </button>
@@ -425,43 +428,43 @@ export default function HeaderMusicPlayer() {
 
       {/* Settings Panel */}
       {showSettings && userId && (
-        <div className="px-4 py-4 border-b border-border space-y-4 bg-surface-1/50 shrink-0">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Radio Settings</p>
+        <div className="px-4 py-4 border-b border-white/[0.06] space-y-4 bg-white/[0.02] shrink-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30" style={TEKO}>Radio Settings</p>
           <div className="flex items-center justify-between min-h-[44px]">
-            <span className="text-sm text-foreground">Autoplay on open</span>
+            <span className="text-sm text-white/70">Autoplay on open</span>
             <Switch checked={settings.autoplay_enabled} onCheckedChange={(v) => updateSetting('autoplay_enabled', v)} />
           </div>
           <div className="flex items-center justify-between min-h-[44px]">
-            <span className="text-sm text-foreground">Default to My Playlist</span>
+            <span className="text-sm text-white/70">Default to My Playlist</span>
             <Switch checked={settings.default_playlist === 'myplaylist'} onCheckedChange={(v) => updateSetting('default_playlist', v ? 'myplaylist' : 'loopgate')} />
           </div>
         </div>
       )}
 
       {/* Now Playing Hero */}
-      <div className="relative shrink-0">
+      <div className="relative shrink-0 overflow-hidden">
         {nowPlayingCover && (
           <div className="absolute inset-0 overflow-hidden">
-            <img src={nowPlayingCover} alt="" className="w-full h-full object-cover opacity-20 blur-sm" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-0" />
+            <img src={nowPlayingCover} alt="" className="w-full h-full object-cover opacity-15 blur-lg scale-110" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/60 to-[#0a0a0a]" />
           </div>
         )}
-        <div className="relative p-4 pb-3">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="relative p-5 pb-3">
+          <div className="flex items-center gap-2 mb-2.5">
             <div className="flex gap-[2px] items-end h-3">
               {isPlaying ? (
                 [0, 1, 2, 3].map(b => (
-                  <motion.div key={b} className="w-[2px] bg-emerald-500 rounded-full"
+                  <motion.div key={b} className="w-[2px] bg-emerald-400"
                     animate={{ height: ['3px', '12px', '3px'] }}
                     transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.12 }} />
                 ))
               ) : (
                 [0, 1, 2, 3].map(b => (
-                  <div key={b} className="w-[2px] h-[3px] bg-muted-foreground/40 rounded-full" />
+                  <div key={b} className="w-[2px] h-[3px] bg-white/15" />
                 ))
               )}
             </div>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-emerald-500 font-bold">
+            <span className="text-[10px] uppercase tracking-[0.25em] text-emerald-400 font-bold" style={TEKO}>
               {nowPlayingLabel}
             </span>
             {activeTab === 'myplaylist' && playlistMode === 'myplaylist' && userId && (
@@ -469,23 +472,23 @@ export default function HeaderMusicPlayer() {
                 <form className="ml-1" onSubmit={(e) => { e.preventDefault(); renamePlaylist(nameInput); setEditingName(false); }}>
                   <input autoFocus value={nameInput} onChange={(e) => setNameInput(e.target.value)}
                     onBlur={() => { renamePlaylist(nameInput); setEditingName(false); }}
-                    maxLength={40} className="text-[10px] bg-transparent border-b border-emerald-500 text-foreground outline-none w-24" />
+                    maxLength={40} className="text-[10px] bg-transparent border-b border-emerald-400 text-white outline-none w-24" />
                 </form>
               ) : (
-                <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="ml-1 p-1 text-muted-foreground hover:text-emerald-500">
+                <button onClick={() => { setNameInput(playlistName); setEditingName(true); }} className="ml-1 p-1 text-white/20 hover:text-emerald-400">
                   <Pencil size={10} />
                 </button>
               )
             )}
           </div>
-          <p className="text-base font-display text-foreground truncate">{nowPlayingName || 'Nothing playing'}</p>
-          <p className="text-xs text-muted-foreground truncate mt-0.5">{nowPlayingArtist}</p>
-          {audioError && <p className="text-xs text-destructive mt-1">Failed to load audio</p>}
+          <p className="text-lg font-black text-white truncate tracking-wide" style={TEKO}>{(nowPlayingName || 'Nothing playing').toUpperCase()}</p>
+          <p className="text-xs text-white/40 truncate mt-0.5">{nowPlayingArtist}</p>
+          {audioError && <p className="text-xs text-red-400 mt-1">Failed to load audio</p>}
         </div>
       </div>
 
       {/* Seekable Progress Bar */}
-      <div className="px-4 pb-2 shrink-0">
+      <div className="px-5 pb-2 shrink-0">
         <Slider value={[progress]}
           onValueChange={([v]) => {
             setProgress(v);
@@ -494,16 +497,17 @@ export default function HeaderMusicPlayer() {
             }
           }}
           max={100} step={0.5}
-          className="w-full [&_[role=slider]]:h-5 [&_[role=slider]]:w-5 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
+          className="w-full [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:bg-emerald-400 [&_[role=slider]]:border-0 [&_[role=slider]]:rounded-none [&_.range]:bg-emerald-400 [&_[data-orientation=horizontal]]:h-1" />
       </div>
 
-      {/* Controls */}
-      <div className="flex items-center justify-between px-4 py-3 shrink-0">
+      {/* Transport Controls */}
+      <div className="flex items-center justify-between px-5 py-3 shrink-0">
         <button onClick={toggleShuffle}
-          className={`p-3 rounded-full transition-colors ${shuffled ? 'text-emerald-500 bg-emerald-500/10' : 'text-muted-foreground hover:text-foreground'}`}>
-          <Shuffle size={18} />
+          className={`p-2.5 transition-colors ${shuffled ? 'text-emerald-400 bg-emerald-500/10' : 'text-white/25 hover:text-white/60'}`}
+          style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}>
+          <Shuffle size={16} />
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => {
               setProgress(0);
@@ -513,12 +517,13 @@ export default function HeaderMusicPlayer() {
                 playMyTrack(myTracks[newIdx], myTracks, newIdx);
               } else { prev(); }
             }}
-            className="p-3 text-muted-foreground hover:text-foreground transition-colors active:scale-90">
-            <SkipBack size={22} />
+            className="p-2 text-white/40 hover:text-white transition-colors active:scale-90">
+            <SkipBack size={20} />
           </button>
           <button onClick={togglePlay}
-            className="w-14 h-14 flex items-center justify-center rounded-full bg-emerald-500 text-black hover:bg-emerald-400 transition-all active:scale-95">
-            {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
+            className="w-14 h-14 flex items-center justify-center bg-emerald-400 text-black hover:bg-emerald-300 transition-all active:scale-95"
+            style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)' }}>
+            {isPlaying ? <Pause size={22} /> : <Play size={22} className="ml-0.5" />}
           </button>
           <button
             onClick={() => {
@@ -529,100 +534,104 @@ export default function HeaderMusicPlayer() {
                 playMyTrack(myTracks[newIdx], myTracks, newIdx);
               } else { skip(); }
             }}
-            className="p-3 text-muted-foreground hover:text-foreground transition-colors active:scale-90">
-            <SkipForward size={22} />
+            className="p-2 text-white/40 hover:text-white transition-colors active:scale-90">
+            <SkipForward size={20} />
           </button>
         </div>
-        <button onClick={toggleMute} className="p-3 rounded-full text-muted-foreground hover:text-foreground transition-colors">
-          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+        <button onClick={toggleMute} className="p-2.5 text-white/25 hover:text-white/60 transition-colors">
+          {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
       </div>
 
       {/* Volume */}
-      <div className="px-4 pb-3 flex items-center gap-3 shrink-0">
-        <VolumeX size={14} className="text-muted-foreground shrink-0" />
+      <div className="px-5 pb-3 flex items-center gap-3 shrink-0">
+        <VolumeX size={12} className="text-white/20 shrink-0" />
         <Slider value={[volume * 100]} onValueChange={([v]) => setVolume(v / 100)} max={100} step={1}
-          className="flex-1 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
-        <Volume2 size={14} className="text-muted-foreground shrink-0" />
+          className="flex-1 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:bg-emerald-400 [&_[role=slider]]:border-0 [&_[role=slider]]:rounded-none [&_.range]:bg-emerald-400 [&_[data-orientation=horizontal]]:h-1" />
+        <Volume2 size={12} className="text-white/20 shrink-0" />
       </div>
 
-      {/* Speed Presets */}
-      <div className="px-4 pb-2 shrink-0">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <Gauge size={13} className="text-muted-foreground" />
-            <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Speed</span>
-          </div>
-          <button onClick={() => setPlaybackRate(1.0)}
-            className={`text-[10px] font-mono font-bold px-2.5 py-1.5 rounded-lg transition-colors ${
-              playbackRate === 1.0 ? 'text-muted-foreground' : 'text-emerald-500 hover:text-emerald-400 bg-emerald-500/10'
-            }`}>
-            {playbackRate < 1 ? '🌙' : playbackRate > 1 ? '⚡' : '•'} {playbackRate.toFixed(2)}x
-          </button>
-        </div>
-        <div className="grid grid-cols-5 gap-2">
-          {[0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0].map(rate => (
-            <button key={rate} onClick={() => setPlaybackRate(rate)}
-              className={`text-xs font-mono py-3 rounded-xl transition-colors active:scale-95 ${
-                Math.abs(playbackRate - rate) < 0.01
-                  ? 'text-emerald-500 bg-emerald-500/15 font-bold border border-emerald-500/30'
-                  : 'text-muted-foreground bg-surface-2 hover:text-foreground hover:bg-surface-3 border border-transparent'
-              }`}>
-              {rate}x
+      {/* Speed + Pitch — compact row */}
+      <div className="px-5 pb-3 shrink-0 space-y-2.5">
+        {/* Speed */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/25" style={TEKO}>Speed</span>
+            <button onClick={() => setPlaybackRate(1.0)}
+              className={`text-[10px] font-bold px-2 py-0.5 transition-colors ${
+                playbackRate === 1.0 ? 'text-white/25' : 'text-emerald-400 bg-emerald-500/10'
+              }`} style={TEKO}>
+              {playbackRate.toFixed(2)}x
             </button>
-          ))}
+          </div>
+          <div className="grid grid-cols-5 gap-1">
+            {[0.5, 0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.5, 1.75, 2.0].map(rate => (
+              <button key={rate} onClick={() => setPlaybackRate(rate)}
+                className={`text-[11px] font-bold py-2 transition-colors active:scale-95 ${
+                  Math.abs(playbackRate - rate) < 0.01
+                    ? 'text-emerald-400 bg-emerald-500/15 border border-emerald-500/30'
+                    : 'text-white/30 bg-white/[0.03] hover:text-white/60 hover:bg-white/[0.06] border border-white/[0.04]'
+                }`}
+                style={TEKO}>
+                {rate}x
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Pitcher */}
-      <div className="px-4 pb-4 shrink-0">
-        <div className="flex items-center gap-1.5 mb-2">
-          <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">Pitcher</span>
-          <span className="text-[9px] text-muted-foreground/60 ml-auto">
-            {pitchSemitones === 0 ? 'default' : `${pitchSemitones > 0 ? '+' : ''}${pitchSemitones} st`}
-          </span>
-          {pitchSemitones !== 0 && (
-            <button onClick={() => setPitchSemitones(0)} className="text-[10px] text-emerald-500 hover:text-emerald-400 font-bold ml-1 p-1">reset</button>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground font-bold shrink-0">−8</span>
-          <Slider value={[pitchSemitones]} onValueChange={([v]) => setPitchSemitones(v)} min={-8} max={8} step={1}
-            className="flex-1 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:bg-emerald-500 [&_[role=slider]]:border-0 [&_.range]:bg-emerald-500" />
-          <span className="text-xs text-muted-foreground font-bold shrink-0">+8</span>
+        {/* Pitch */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-white/25" style={TEKO}>Pitch</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-white/20" style={TEKO}>
+                {pitchSemitones === 0 ? 'default' : `${pitchSemitones > 0 ? '+' : ''}${pitchSemitones} st`}
+              </span>
+              {pitchSemitones !== 0 && (
+                <button onClick={() => setPitchSemitones(0)} className="text-[10px] text-emerald-400 hover:text-emerald-300 font-bold" style={TEKO}>RESET</button>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-white/20 font-bold shrink-0" style={TEKO}>−8</span>
+            <Slider value={[pitchSemitones]} onValueChange={([v]) => setPitchSemitones(v)} min={-8} max={8} step={1}
+              className="flex-1 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4 [&_[role=slider]]:bg-emerald-400 [&_[role=slider]]:border-0 [&_[role=slider]]:rounded-none [&_.range]:bg-emerald-400 [&_[data-orientation=horizontal]]:h-1" />
+            <span className="text-[10px] text-white/20 font-bold shrink-0" style={TEKO}>+8</span>
+          </div>
         </div>
       </div>
 
       {/* Tab Content — scrollable area */}
       <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         {activeTab === 'loopgate' && (
-          <div className="border-t border-border">
+          <div className="border-t border-white/[0.06]">
             {tracks.slice(0, 20).map((track, i) => (
               <button key={track.id}
                 onClick={() => { setProgress(0); setCurrentIndex(i); playTrack(track); }}
-                className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors active:bg-emerald-500/15 ${
-                  i === currentIndex && playlistMode === 'loopgate' ? 'bg-emerald-500/10 text-emerald-400' : 'text-muted-foreground hover:text-foreground hover:bg-surface-1'
+                className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors active:bg-emerald-500/15 ${
+                  i === currentIndex && playlistMode === 'loopgate' ? 'bg-emerald-500/[0.08] border-l-2 border-emerald-400' : 'text-white/40 hover:text-white/70 hover:bg-white/[0.03] border-l-2 border-transparent'
                 }`}>
-                <div className="w-10 h-10 rounded-lg bg-surface-1 overflow-hidden shrink-0">
+                <div className="w-10 h-10 bg-white/[0.04] overflow-hidden shrink-0 border border-white/[0.06]"
+                  style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%)' }}>
                   {track.poster_url ? (
                     <img src={track.poster_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center"><Radio size={14} className="text-muted-foreground/50" /></div>
+                    <div className="w-full h-full flex items-center justify-center"><Radio size={14} className="text-white/15" /></div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{track.song_name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{track.artist_name || track.title}</p>
+                  <p className={`text-sm font-bold truncate ${i === currentIndex && playlistMode === 'loopgate' ? 'text-emerald-400' : 'text-white/60'}`} style={TEKO}>{track.song_name.toUpperCase()}</p>
+                  <p className="text-[10px] text-white/25 truncate">{track.artist_name || track.title}</p>
                 </div>
                 {track.is_priority && (
-                  <span className="text-[8px] font-bold text-emerald-500 bg-emerald-500/10 px-1.5 py-1 rounded-full shrink-0">⭐</span>
+                  <span className="text-[8px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 shrink-0 border border-emerald-500/20" style={TEKO}>PRIORITY</span>
                 )}
                 {i === currentIndex && playlistMode === 'loopgate' && isPlaying && (
                   <div className="flex gap-[2px] items-end h-4 shrink-0">
                     {[0, 1, 2].map(b => (
-                      <motion.div key={b} className="w-[3px] bg-emerald-500 rounded-full"
-                        animate={{ height: ['5px', '16px', '5px'] }}
-                        transition={{ duration: 0.6, repeat: Infinity, delay: b * 0.15 }} />
+                      <motion.div key={b} className="w-[2px] bg-emerald-400"
+                        animate={{ height: ['4px', '14px', '4px'] }}
+                        transition={{ duration: 0.5, repeat: Infinity, delay: b * 0.15 }} />
                     ))}
                   </div>
                 )}
@@ -667,9 +676,10 @@ export default function HeaderMusicPlayer() {
       {/* Bottom link */}
       <button
         onClick={() => { setOpen(false); navigate('/playlists'); }}
-        className="w-full flex items-center justify-center gap-1.5 py-3.5 border-t border-border text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-emerald-500 transition-colors shrink-0 min-h-[44px]"
+        className="w-full flex items-center justify-center gap-1.5 py-3 border-t border-white/[0.06] text-[10px] font-bold uppercase tracking-[0.2em] text-white/20 hover:text-emerald-400 transition-colors shrink-0 min-h-[44px]"
+        style={TEKO}
       >
-        <ExternalLink size={13} /> Browse Curated Playlists
+        <ExternalLink size={11} /> Browse Curated Playlists
       </button>
     </div>
   );
