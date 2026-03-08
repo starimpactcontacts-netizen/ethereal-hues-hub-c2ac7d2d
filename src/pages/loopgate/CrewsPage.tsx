@@ -449,8 +449,8 @@ export default function CrewsPage() {
         </div>
 
         {/* Tab Switch */}
-        <div className="px-4 mb-5">
-          <div className="inline-flex gap-1 p-1 bg-surface-1 rounded-lg">
+        <div className="px-4 sm:px-6 mb-6">
+          <div className="inline-flex gap-0 border border-border/20 rounded-lg overflow-hidden">
             {[
               { id: "discover" as const, label: "Discover", icon: Target },
               { id: "my-units" as const, label: "My Units", icon: Layers, count: (primaryCrew ? 1 : 0) + secondaryCrews.length },
@@ -458,16 +458,16 @@ export default function CrewsPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.1em] transition-all ${
                   activeTab === tab.id
-                    ? "bg-white text-background"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground/50 hover:text-foreground bg-transparent"
                 }`}
               >
-                <tab.icon className="w-4 h-4" />
+                <tab.icon className="w-3.5 h-3.5" />
                 {tab.label}
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-purple-500 text-white text-[9px] font-bold">
+                  <span className="ml-0.5 px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[8px] font-bold">
                     {tab.count}
                   </span>
                 )}
