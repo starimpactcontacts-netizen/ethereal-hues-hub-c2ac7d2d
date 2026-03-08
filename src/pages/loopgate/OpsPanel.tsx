@@ -3753,7 +3753,7 @@ export default function OpsPanel() {
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           ) : (
                             <>
-                              {item.item_type === 'cosmetic' && <Sparkles size={16} className="text-gold" />}
+                              {item.item_type === 'cosmetic' && <GateIcon size={16} className="text-gold" />}
                               {item.item_type === 'digital' && <Gift size={16} className="text-blue-400" />}
                               {item.item_type === 'physical' && <Package size={16} className="text-green-400" />}
                             </>
