@@ -42,50 +42,61 @@ function BalanceTicker() {
         onClick={() => setWalletOpen(true)}
         className="relative overflow-hidden rounded-xl cursor-pointer group"
       >
-        {/* Titanium matte base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#111] to-[#0d0d0d]" />
-        {/* Brushed metal texture */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.15) 1px, rgba(255,255,255,0.15) 2px)' }} />
-        {/* Top edge highlight */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        {/* Border */}
-        <div className="absolute inset-0 rounded-xl border border-white/[0.06] group-hover:border-white/[0.12] transition-colors" />
+        {/* Dark base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0f0f0f] via-[#0a0a0a] to-[#080808]" />
+        <div className="absolute inset-0 rounded-xl border border-white/[0.04]" />
 
-        {/* Content */}
-        <div className="relative flex items-center justify-between px-4 py-3.5">
-          {/* Left — chip + balance */}
-          <div className="flex items-center gap-3">
-            {/* EMV Chip */}
-            <div className="w-9 h-6 rounded-[3px] bg-gradient-to-br from-[#c9a84c] via-[#d4b85a] to-[#a88a3a] border border-[#8a7030]/40 shadow-sm shrink-0">
-              <div className="w-full h-full rounded-[3px]" style={{ 
-                backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)' 
-              }} />
-            </div>
-            <div>
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-white/30 text-sm font-bold" style={teko}>$</span>
-                <span className="text-2xl font-black text-white leading-none tabular-nums tracking-tight" style={teko}>{wholePart}</span>
-                <span className="text-base font-bold text-white/30 leading-none tabular-nums" style={teko}>.{centPart}</span>
+        <div className="relative flex items-center gap-5 px-4 py-4">
+          {/* Floating Centurion Card — tilted */}
+          <div className="shrink-0 relative" style={{ perspective: '600px' }}>
+            <div 
+              className="w-[88px] h-[56px] rounded-lg relative overflow-hidden shadow-2xl shadow-black/80"
+              style={{ transform: 'rotateY(-8deg) rotateX(4deg) rotateZ(-2deg)' }}
+            >
+              {/* Card surface */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#111] to-[#0d0d0d]" />
+              <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.15) 1px, rgba(255,255,255,0.15) 2px)' }} />
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+              <div className="absolute inset-0 border border-white/[0.08] rounded-lg" />
+              
+              <div className="relative p-2 h-full flex flex-col justify-between">
+                {/* Chip */}
+                <div className="w-6 h-4 rounded-[2px] bg-gradient-to-br from-[#c9a84c] via-[#d4b85a] to-[#a88a3a] border border-[#8a7030]/40">
+                  <div className="w-full h-full rounded-[2px]" style={{ 
+                    backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 3px)' 
+                  }} />
+                </div>
+                {/* Bottom brand */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[5px] font-black uppercase tracking-[0.2em] text-white/15" style={teko}>Loopgate</span>
+                  <span className="text-[4px] font-black uppercase tracking-[0.2em] text-white/10" style={teko}>Centurion</span>
+                </div>
               </div>
-              <p className="text-[7px] text-white/20 font-bold uppercase tracking-[0.2em] mt-0.5">Available</p>
             </div>
+            {/* Card shadow glow */}
+            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[70px] h-[8px] bg-white/[0.03] rounded-full blur-md" />
           </div>
 
-          {/* Right — earned + arrow */}
-          <div className="flex items-center gap-3">
-            {earnings.earnings_cents > 0 && (
-              <div className="text-right">
-                <p className="text-[10px] text-emerald-400/60 tabular-nums font-bold">${totalEarned}</p>
-                <p className="text-[7px] text-white/15 font-bold uppercase tracking-widest">Earned</p>
-              </div>
-            )}
-            <div className="w-7 h-7 rounded-full border border-white/[0.06] group-hover:border-white/[0.15] flex items-center justify-center transition-colors">
-              <ChevronRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/40 transition-colors" />
+          {/* Balance info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-[7px] text-white/20 font-bold uppercase tracking-[0.25em] mb-0.5">Available</p>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-white/25 text-sm font-bold" style={teko}>$</span>
+              <span className="text-3xl font-black text-white leading-none tabular-nums tracking-tight" style={teko}>{wholePart}</span>
+              <span className="text-lg font-bold text-white/25 leading-none tabular-nums" style={teko}>.{centPart}</span>
             </div>
+            {user && earnings.earnings_cents > 0 && (
+              <p className="text-[9px] text-emerald-400/50 font-bold tabular-nums mt-1">${totalEarned} <span className="text-white/15 uppercase tracking-widest text-[7px]">earned</span></p>
+            )}
+          </div>
+
+          {/* Arrow */}
+          <div className="w-7 h-7 rounded-full border border-white/[0.06] group-hover:border-white/[0.15] flex items-center justify-center transition-colors shrink-0">
+            <ChevronRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>
         </div>
       </motion.div>
-      <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />
+      {user && <WalletDrawer open={walletOpen} onClose={() => setWalletOpen(false)} />}
     </>
   );
 }
