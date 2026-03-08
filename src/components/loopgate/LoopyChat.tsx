@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { X, Send, Sparkles, Loader2, Plus, MessageSquare, Trash2, ChevronLeft } from 'lucide-react';
+import { X, Send, Sparkles, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useLoopyChat } from '@/hooks/useLoopyChat';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function LoopyChat() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [showPulse, setShowPulse] = useState(true);
@@ -220,6 +222,20 @@ export default function LoopyChat() {
                   <img src={loopyAvatar} alt="Loopy" className="w-16 h-16 rounded-full border-2 border-primary mx-auto mb-2" />
                   <p className="text-xs text-muted-foreground">wsg — what u need?</p>
                 </div>
+
+                {/* Rate My Edit — prominent CTA */}
+                <button
+                  onClick={() => { setOpen(false); navigate('/loopy'); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all text-left group"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-primary flex items-center justify-center shrink-0">
+                    <Star className="w-4 h-4 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Rate My Edit</p>
+                    <p className="text-[10px] text-muted-foreground">get instant AI scores & tips</p>
+                  </div>
+                </button>
 
                 <button
                   onClick={handleNewChat}
