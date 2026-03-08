@@ -40,44 +40,44 @@ function BalanceTicker() {
         whileTap={{ scale: 0.98 }}
         onClick={() => setWalletOpen(true)}
         className="relative overflow-hidden rounded-xl cursor-pointer group"
-        style={{ aspectRatio: '3.4/1' }}
       >
-        {/* Card background — deep emerald gradient like a premium debit card */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-[#041a12] to-black" />
+        {/* Card background — dark matte like a real card */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#0a0a0a]" />
         
-        {/* Subtle card texture */}
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(16,185,129,0.4) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(16,185,129,0.15) 0%, transparent 50%)' }} />
+        {/* Subtle metallic sheen */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)' }} />
         
-        {/* Top edge glow */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
-        
-        {/* Card border */}
-        <div className="absolute inset-0 rounded-xl border border-emerald-500/15 group-hover:border-emerald-500/30 transition-colors" />
+        {/* Border */}
+        <div className="absolute inset-0 rounded-xl border border-white/[0.06] group-hover:border-emerald-500/20 transition-colors" />
 
         {/* Content */}
-        <div className="relative h-full flex flex-col justify-between p-4">
-          {/* Top row — label + chip */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-5 rounded-sm bg-gradient-to-br from-gold/80 to-gold/40 border border-gold/30" />
-              <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-[0.2em]">Loopgate Balance</span>
+        <div className="relative flex items-center justify-between px-4 py-3.5">
+          {/* Left — balance */}
+          <div className="flex items-center gap-3">
+            {/* Card chip */}
+            <div className="w-8 h-6 rounded-[3px] bg-gradient-to-br from-gold/70 to-gold/30 border border-gold/20 shrink-0" style={{ backgroundImage: 'linear-gradient(135deg, rgba(255,215,0,0.6) 0%, rgba(255,215,0,0.2) 100%)' }}>
+              <div className="w-full h-full" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)' }} />
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-emerald-400/30 group-hover:text-emerald-400/60 transition-colors" />
-          </div>
-
-          {/* Bottom row — balance + earned */}
-          <div className="flex items-end justify-between">
             <div>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-emerald-400/60 text-lg font-bold">$</span>
-                <span className="font-display text-4xl font-black text-emerald-400 leading-none tabular-nums tracking-tight">{wholePart}</span>
-                <span className="font-display text-xl font-black text-emerald-400/60 leading-none tabular-nums">.{centPart}</span>
+                <span className="text-emerald-400/50 text-sm font-semibold">$</span>
+                <span className="font-display text-2xl font-black text-foreground leading-none tabular-nums">{wholePart}</span>
+                <span className="font-display text-base font-bold text-foreground/40 leading-none tabular-nums">.{centPart}</span>
               </div>
-              <p className="text-[8px] text-emerald-400/30 font-bold uppercase tracking-[0.2em] mt-1">Available to withdraw</p>
+              <p className="text-[7px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] mt-0.5">Available</p>
             </div>
-            <div className="text-right">
-              <p className="font-display text-sm text-emerald-400/40 tabular-nums font-bold">${totalEarned}</p>
-              <p className="text-[7px] text-emerald-400/20 font-bold uppercase tracking-widest">Total earned</p>
+          </div>
+
+          {/* Right — total earned + action */}
+          <div className="flex items-center gap-3">
+            {earnings.earnings_cents > 0 && (
+              <div className="text-right">
+                <p className="text-[10px] text-emerald-400/60 tabular-nums font-bold">${totalEarned}</p>
+                <p className="text-[7px] text-muted-foreground/30 font-bold uppercase tracking-widest">Earned</p>
+              </div>
+            )}
+            <div className="w-7 h-7 rounded-full border border-white/[0.06] group-hover:border-emerald-500/30 flex items-center justify-center transition-colors">
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-emerald-400/60 transition-colors" />
             </div>
           </div>
         </div>
