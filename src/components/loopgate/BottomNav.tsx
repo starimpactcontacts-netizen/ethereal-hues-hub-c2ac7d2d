@@ -46,7 +46,7 @@ export default function BottomNav() {
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background safe-bottom">
         {/* Top border with synced arena color glow */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-border" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/[0.04]" />
         {/* Core bright line — hue-synced, subtle */}
         <motion.div
           className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-[160px] h-[1px] opacity-25"
