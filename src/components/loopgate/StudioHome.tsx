@@ -347,7 +347,7 @@ function ProjectCard({
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-500" />
           ) : (
             <div className="w-full h-full flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, rgba(124,106,255,0.06), rgba(10,10,16,1) 60%)" }}
+              style={{ background: "linear-gradient(135deg, hsl(0 0% 100% / 0.12), hsl(0 0% 6%) 60%)" }}
             >
               <Film className="w-7 h-7 text-white/8" />
             </div>
