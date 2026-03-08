@@ -23,8 +23,10 @@ export default function LoopyChat() {
   const [showPulse, setShowPulse] = useState(true);
   const [view, setView] = useState<'menu' | 'chat' | 'history'>('menu');
   const [docked, setDocked] = useState(false);
+  const [dragY, setDragY] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
   const {
     conversations,
