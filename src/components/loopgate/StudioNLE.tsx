@@ -2049,29 +2049,29 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       </div>
 
       {/* ═══ TIMELINE ═══ */}
-      <div className="flex-shrink-0 flex flex-col" style={{ height: 170, background: "#141414", borderTop: "1px solid #2a2a2a" }}>
-        <div className="h-7 flex items-center px-3 gap-1.5 flex-shrink-0" style={{ borderBottom: "1px solid #1e1e1e" }}>
-          <button onClick={splitAtPlayhead} className="p-1 rounded hover:bg-white/5"><Scissors className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
-          <button className="p-1 rounded hover:bg-white/5"><Trash2 className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
-          <button className="p-1 rounded hover:bg-white/5"><Copy className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
-          <div className="w-px h-3.5 mx-1" style={{ background: "#2a2a2a" }} />
-          <button onClick={() => setMuted(!muted)} className="p-1 rounded hover:bg-white/5">
-            <Volume2 className="w-3.5 h-3.5" style={{ color: "#666" }} />
+      <div className="flex-shrink-0 flex flex-col" style={{ height: 170, background: "#0e0e12", borderTop: "1px solid #1e1e24" }}>
+        <div className="h-7 flex items-center px-3 gap-1 flex-shrink-0" style={{ borderBottom: "1px solid #1a1a20" }}>
+          <button onClick={splitAtPlayhead} className="p-1 rounded-md hover:bg-white/5 transition-all" title="Split (Scissors)"><Scissors className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+          <button className="p-1 rounded-md hover:bg-white/5 transition-all" title="Delete"><Trash2 className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+          <button className="p-1 rounded-md hover:bg-white/5 transition-all" title="Duplicate"><Copy className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+          <div className="w-px h-3.5 mx-1" style={{ background: "#1e1e24" }} />
+          <button onClick={() => setMuted(!muted)} className="p-1 rounded-md hover:bg-white/5 transition-all">
+            <Volume2 className="w-3.5 h-3.5" style={{ color: "#555" }} />
           </button>
           <div className="flex-1" />
-          <span className="text-[9px] font-mono" style={{ color: "#555" }}>
-            {formatTimecode(trimStart)} — {formatTimecode(trimEnd)}
+          <span className="text-[8px] font-mono font-bold tracking-wider" style={{ color: "#444" }}>
+            {formatTimecode(trimStart)} – {formatTimecode(trimEnd)}
           </span>
-          <div className="w-px h-3.5 mx-1" style={{ background: "#2a2a2a" }} />
+          <div className="w-px h-3.5 mx-1" style={{ background: "#1e1e24" }} />
           <div className="flex items-center gap-0.5">
             <button onClick={() => setTimelineZoom(Math.max(0.5, timelineZoom - 0.25))} className="p-0.5 rounded hover:bg-white/5">
-              <ZoomOut className="w-3 h-3" style={{ color: "#666" }} />
+              <ZoomOut className="w-3 h-3" style={{ color: "#555" }} />
             </button>
-            <div className="w-16 h-1 rounded-full mx-1 relative" style={{ background: "#2a2a2a" }}>
-              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${((timelineZoom - 0.5) / 3.5) * 100}%`, background: "#555" }} />
+            <div className="w-16 h-1 rounded-full mx-1 relative" style={{ background: "#1e1e24" }}>
+              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${((timelineZoom - 0.5) / 3.5) * 100}%`, background: ACCENT }} />
             </div>
             <button onClick={() => setTimelineZoom(Math.min(4, timelineZoom + 0.25))} className="p-0.5 rounded hover:bg-white/5">
-              <ZoomIn className="w-3 h-3" style={{ color: "#666" }} />
+              <ZoomIn className="w-3 h-3" style={{ color: "#555" }} />
             </button>
           </div>
         </div>
