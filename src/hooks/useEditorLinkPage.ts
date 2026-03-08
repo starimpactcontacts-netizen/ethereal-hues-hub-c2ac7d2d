@@ -141,7 +141,7 @@ export function useEditorLinkPage(userId?: string) {
   const addLink = async (link: { title: string; url: string; link_type?: string; embed_url?: string; description?: string }) => {
     if (!userId) {
       toast.error("Please sign in to add links.");
-      return;
+      return false;
     }
 
     const { error } = await supabase.from("editor_links").insert({
@@ -156,10 +156,11 @@ export function useEditorLinkPage(userId?: string) {
 
     if (error) {
       toast.error(authErrorMessage("Failed to add link", error));
-      return;
+      return false;
     }
 
     await fetchData();
+    return true;
   };
 
   const updateLink = async (linkId: string, updates: Partial<EditorLink>) => {
