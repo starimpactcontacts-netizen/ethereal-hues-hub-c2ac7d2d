@@ -6,7 +6,7 @@ import {
   Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
   Trophy, TrendingUp, Star, Clock, ChevronRight, ExternalLink,
   MessageSquare, RotateCcw, Brain, Shield, Target, Activity,
-  Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users
+  Award, BarChart3, Eye, Swords, DollarSign, ArrowRight, Sparkles, Users, AlertTriangle
 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import GatePattern from '@/components/loopgate/GatePattern';
