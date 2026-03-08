@@ -403,35 +403,35 @@ export default function HubPage() {
             animate={{ opacity: 1, y: 0 }}
             className="relative z-10"
           >
-             <div className={`overflow-hidden relative ${hasEquippedOG ? 'bg-[#0e0c06] border border-gold/20 shadow-[0_0_24px_-6px_hsl(var(--gold)/0.15)]' : 'bg-surface-1 border border-border/50'}`}>
-               {/* First Circle Skin — premium geometric pattern */}
+             <div className={`overflow-hidden relative rounded-xl ${hasEquippedOG ? 'bg-[#0c0a04] border border-gold/15' : 'bg-surface-1 border border-border/50'}`}>
+               {/* First Circle Skin — luxury prestige aesthetic */}
                {hasEquippedOG && (
                  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                   <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+                   {/* Subtle radial gold glow from center-top */}
+                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[200px] bg-[radial-gradient(ellipse_at_center,_hsl(var(--gold)/0.06)_0%,_transparent_70%)]" />
+                   
+                   {/* Fine diagonal crosshatch */}
+                   <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
                      <defs>
-                       <pattern id="fc-tile" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-                         <path d="M30 0 L60 30 L30 60 L0 30 Z" stroke="#C4A44A" strokeWidth="0.5" fill="none" opacity="0.12" />
-                         <path d="M30 10 L50 30 L30 50 L10 30 Z" stroke="#C4A44A" strokeWidth="0.3" fill="none" opacity="0.08" />
-                         <circle cx="30" cy="30" r="4" stroke="#C4A44A" strokeWidth="0.5" fill="none" opacity="0.14" />
-                         <circle cx="30" cy="30" r="1.2" fill="#C4A44A" opacity="0.18" />
-                         <circle cx="0" cy="0" r="0.8" fill="#C4A44A" opacity="0.12" />
-                         <circle cx="60" cy="0" r="0.8" fill="#C4A44A" opacity="0.12" />
-                         <circle cx="0" cy="60" r="0.8" fill="#C4A44A" opacity="0.12" />
-                         <circle cx="60" cy="60" r="0.8" fill="#C4A44A" opacity="0.12" />
-                         <line x1="0" y1="30" x2="60" y2="30" stroke="#C4A44A" strokeWidth="0.15" opacity="0.05" />
-                         <line x1="30" y1="0" x2="30" y2="60" stroke="#C4A44A" strokeWidth="0.15" opacity="0.05" />
+                       <pattern id="fc-hatch" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                         <line x1="0" y1="0" x2="0" y2="20" stroke="#C4A44A" strokeWidth="0.5" />
                        </pattern>
-                       <radialGradient id="fc-vignette" cx="50%" cy="35%" r="75%">
-                         <stop offset="0%" stopColor="transparent" />
-                         <stop offset="100%" stopColor="#0a0904" stopOpacity="0.6" />
-                       </radialGradient>
                      </defs>
-                     <rect width="100%" height="100%" fill="url(#fc-tile)" />
-                     <rect width="100%" height="100%" fill="url(#fc-vignette)" />
+                     <rect width="100%" height="100%" fill="url(#fc-hatch)" />
                    </svg>
-                   {/* Top + bottom gold accent lines */}
-                   <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/25 to-transparent" />
-                   <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/10 to-transparent" />
+                   
+                   {/* Edge vignette */}
+                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_40%,_#0c0a04_100%)]" />
+                   
+                   {/* Top accent line */}
+                   <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
+                   <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gold/8 to-transparent" />
+                   
+                   {/* Corner accents */}
+                   <div className="absolute top-3 left-3 w-3 h-3 border-t border-l border-gold/15" />
+                   <div className="absolute top-3 right-3 w-3 h-3 border-t border-r border-gold/15" />
+                   <div className="absolute bottom-3 left-3 w-3 h-3 border-b border-l border-gold/10" />
+                   <div className="absolute bottom-3 right-3 w-3 h-3 border-b border-r border-gold/10" />
                  </div>
                )}
                {/* Top Row: Avatar + Identity + Earnings/Index */}
