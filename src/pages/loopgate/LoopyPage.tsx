@@ -135,7 +135,7 @@ export default function LoopyPage() {
               <div className="px-3 pt-3">
                 <button
                   onClick={() => navigate('/loopy/rate')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20 hover:from-amber-500/20 hover:to-primary/20 transition-all text-left group"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20 rounded-lg hover:from-amber-500/20 hover:to-primary/20 transition-all text-left group"
                 >
                   <Star className="w-3.5 h-3.5 text-amber-400" />
                   <span className="text-[11px] font-bold text-white/60 tracking-wider" style={TEKO}>RATE MY EDIT</span>
