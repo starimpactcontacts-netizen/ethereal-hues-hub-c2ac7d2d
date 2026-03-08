@@ -1009,6 +1009,14 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
           );
         })}
         <div className="flex-1" />
+        {/* Undo/Redo */}
+        <button onClick={handleUndo} disabled={!canUndo} className="p-1.5 rounded-md transition-all hover:bg-white/5 disabled:opacity-20" title="Undo (⌘Z)">
+          <Undo className="w-4 h-4" style={{ color: "#aaa" }} />
+        </button>
+        <button onClick={handleRedo} disabled={!canRedo} className="p-1.5 rounded-md transition-all hover:bg-white/5 disabled:opacity-20" title="Redo (⌘⇧Z)">
+          <Redo className="w-4 h-4" style={{ color: "#aaa" }} />
+        </button>
+        <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
         <StudioSubmitButton />
         <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
         {state === "done" ? (
