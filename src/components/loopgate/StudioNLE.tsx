@@ -1111,19 +1111,19 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         <button onClick={handleRedo} disabled={!canRedo} className="p-1.5 rounded-md transition-all hover:bg-white/5 disabled:opacity-20" title="Redo (⌘⇧Z)">
           <Redo className="w-4 h-4" style={{ color: "#aaa" }} />
         </button>
-        <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
+        <div className="w-px h-5 mx-1" style={{ background: "#1e1e24" }} />
         <StudioSubmitButton />
-        <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
+        <div className="w-px h-5 mx-1" style={{ background: "#1e1e24" }} />
         {state === "done" ? (
           <button onClick={handleDownload}
-            className="h-8 px-5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: ACCENT, color: "#000" }}>
+            className="h-8 px-5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, color: "#fff", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
             <Download className="w-3.5 h-3.5" /> Save
           </button>
         ) : (
           <button onClick={startExport} disabled={state === "processing" || !activeMedia}
-            className="h-8 px-5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-30"
-            style={{ background: ACCENT, color: "#000" }}>
+            className="h-8 px-5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-30"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, color: "#fff", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
             {state === "processing" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
             {state === "processing" ? `${progress}%` : "Export"}
           </button>
