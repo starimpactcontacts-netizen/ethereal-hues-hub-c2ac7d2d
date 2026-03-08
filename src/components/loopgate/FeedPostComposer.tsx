@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Link2, Sparkles, ImagePlus } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -10,6 +10,8 @@ import MediaUploadButton from "./MediaUploadButton";
 interface FeedPostComposerProps {
   userProfile?: { username: string; avatar_url: string | null; league?: string; level?: number } | null;
   onPost: (content: string, postType: FeedPostItem['post_type'], mediaUrl?: string, mediaPlatform?: string, uploadedMediaUrl?: string, uploadedMediaType?: string) => Promise<void>;
+  /** On mobile, tapping opens full-screen sheet instead */
+  onMobileTap?: () => void;
 }
 
 const POST_TYPE_OPTIONS: { id: FeedPostItem['post_type']; label: string; icon: React.ReactNode }[] = [
@@ -20,7 +22,7 @@ const POST_TYPE_OPTIONS: { id: FeedPostItem['post_type']; label: string; icon: R
 
 const MAX_CHARS = 280;
 
-export default function FeedPostComposer({ userProfile, onPost }: FeedPostComposerProps) {
+export default function FeedPostComposer({ userProfile, onPost, onMobileTap }: FeedPostComposerProps) {
   const { user } = useAuth();
   const [content, setContent] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
@@ -30,6 +32,7 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [selectedGif, setSelectedGif] = useState<string | null>(null);
   const [uploadedMedia, setUploadedMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
 
   if (!user) return null;
 
@@ -70,13 +73,36 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
   const handleGifSelect = (gifUrl: string) => {
     setSelectedGif(gifUrl);
     setShowGifPicker(false);
-    setUploadedMedia(null); // Can't have both
+    setUploadedMedia(null);
   };
 
+  // Mobile: show a compact tappable bar that opens full-screen sheet
+  if (isMobile && onMobileTap) {
+    return (
+      <button
+        onClick={onMobileTap}
+        className="w-full border-b border-border/20 px-4 py-3 flex items-center gap-3 active:bg-muted/10 transition-colors"
+      >
+        <Avatar className="w-9 h-9 border border-border/30 shrink-0">
+          <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
+          <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
+            {(userProfile?.username || 'U')[0]?.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-[14px] text-muted-foreground/50 flex-1 text-left">
+          What's happening in the loop?
+        </span>
+        <span className="px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[12px] font-bold">
+          Loop
+        </span>
+      </button>
+    );
+  }
+
+  // Desktop: full inline composer
   return (
     <div className="border-b border-border/30 px-3 py-3">
       <div className="flex gap-2.5">
-        {/* Avatar */}
         <Avatar className="w-9 h-9 border border-border/50 shrink-0 mt-0.5">
           <AvatarImage src={userProfile?.avatar_url || undefined} className="object-cover" />
           <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">
@@ -84,7 +110,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
           </AvatarFallback>
         </Avatar>
 
-        {/* Input area */}
         <div className="flex-1 min-w-0">
           <textarea
             value={content}
@@ -100,7 +125,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
             maxLength={300}
           />
 
-          {/* Uploaded media / GIF preview */}
           {uploadedMedia && (
             <div className="mt-1">
               <MediaUploadButton
@@ -125,7 +149,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
           {(isFocused || content.length > 0 || selectedGif || uploadedMedia) && (
             <div className="flex items-center justify-between mb-2 mt-1">
               <div className="flex items-center gap-1">
-                {/* Media upload */}
                 {!uploadedMedia && !selectedGif && (
                   <MediaUploadButton
                     onUpload={(url, type) => { setUploadedMedia({ url, type }); setSelectedGif(null); }}
@@ -133,7 +156,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
                     onClear={() => {}}
                   />
                 )}
-                {/* GIF button */}
                 <button
                   onClick={() => setShowGifPicker(!showGifPicker)}
                   className={`px-2 py-1 rounded-full text-[10px] font-black tracking-tight transition-all ${
@@ -179,7 +201,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
                 transition={{ duration: 0.15 }}
                 className="overflow-hidden"
               >
-                {/* Post type chips */}
                 <div className="flex items-center gap-1.5 mb-2">
                   {POST_TYPE_OPTIONS.map(opt => (
                     <button
@@ -197,7 +218,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
                   ))}
                 </div>
 
-                {/* Media URL for edit_share */}
                 {postType === 'edit_share' && (
                   <input
                     value={mediaUrl}
@@ -207,7 +227,6 @@ export default function FeedPostComposer({ userProfile, onPost }: FeedPostCompos
                   />
                 )}
 
-                {/* GIF Picker */}
                 {showGifPicker && (
                   <div className="rounded-xl overflow-hidden border border-border mb-2">
                     <GifPicker

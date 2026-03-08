@@ -371,9 +371,9 @@ export default function FeedPage() {
 
           {/* ─── Feed Content ─── */}
           <div className="mx-auto max-w-xl lg:max-w-none pb-24 lg:pb-0">
-            {/* Inline composer */}
+            {/* Inline composer — mobile taps open full-screen sheet */}
             {user && (
-              <FeedPostComposer userProfile={userProfile} onPost={createPost} />
+              <FeedPostComposer userProfile={userProfile} onPost={createPost} onMobileTap={() => setShowCompose(true)} />
             )}
 
             {activeTab === 'posts' ? (
