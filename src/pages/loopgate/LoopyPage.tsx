@@ -363,9 +363,9 @@ export default function LoopyPage() {
 
                     {/* Title */}
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
-                        <Award className="w-3 h-3" /> VIDEO TITLE
-                        <span className="text-white/15 text-[9px] normal-case tracking-normal font-normal">optional</span>
+                      <label className="text-[11px] font-bold text-white/60 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
+                        <Award className="w-3 h-3 text-purple-400" /> VIDEO TITLE
+                        <span className="text-white/30 text-[9px] normal-case tracking-normal font-normal">optional</span>
                       </label>
                       <Input
                         value={title}
