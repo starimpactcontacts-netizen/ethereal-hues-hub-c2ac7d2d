@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight, ImagePlus, Upload, Link as LinkIcon, Pencil, Check, X } from "lucide-react";
+import { Play, Star, ExternalLink, Trophy, Clock, CheckCircle, RefreshCw, ArrowRight, ImagePlus, Upload, Link as LinkIcon, Pencil, Check, X, EyeOff, Eye } from "lucide-react";
 import { useUserSubmissions } from "@/hooks/useUserSubmissions";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
