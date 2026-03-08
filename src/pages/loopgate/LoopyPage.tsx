@@ -350,7 +350,7 @@ export default function LoopyPage() {
                           value={url}
                           onChange={(e) => setUrl(e.target.value)}
                           placeholder="https://tiktok.com/@you/video/... or youtube/instagram"
-                          className="bg-[#0a0a0a] border-white/[0.08] h-12 text-sm text-white/80 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/15"
+                          className="bg-[#0a0a0a] border-white/[0.12] h-12 text-sm text-white/90 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/25"
                         />
                         {url && (
                           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-0.5 bg-purple-500/15 text-purple-400">
