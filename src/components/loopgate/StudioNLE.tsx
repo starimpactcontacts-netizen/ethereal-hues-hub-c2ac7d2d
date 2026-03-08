@@ -14,8 +14,12 @@ import {
   MonitorPlay, FilmIcon, Circle, Wind,
   Sun, Lightbulb, Sunrise,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
-  RotateCw, Maximize, Minimize, Blend
+  RotateCw, Maximize, Minimize, Blend, GripVertical
 } from "lucide-react";
+import { useUndoRedo } from "./studio/useUndoRedo";
+import { useCanvasDrag } from "./studio/useCanvasDrag";
+import { useTimelineDrag } from "./studio/useTimelineDrag";
+import type { ClipSegment, EditorSnapshot } from "./studio/types";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
 import { Button } from "@/components/ui/button";
