@@ -196,7 +196,7 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
                   <div className="flex items-center gap-1.5 mt-1">
                     {["MP4", "MOV", "WEBM"].map(fmt => (
                       <span key={fmt} className="text-[8px] font-mono font-bold tracking-widest px-2 py-0.5 rounded"
-                        style={{ color: "rgba(124,106,255,0.5)", background: "rgba(124,106,255,0.06)", border: "1px solid rgba(124,106,255,0.08)" }}
+                         style={{ color: "hsl(0 0% 8%)", background: "hsl(0 0% 100% / 0.82)", border: "1px solid hsl(0 0% 100% / 0.25)" }}
                       >{fmt}</span>
                     ))}
                     <span className="text-[8px] text-white/15 ml-1">up to 2GB</span>
