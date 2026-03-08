@@ -251,9 +251,8 @@ export default function LinkTreeEditor() {
               <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Page Title</p>
               <Input
                 placeholder="My Link Page"
-                value={settings.page_title || ""}
-                onChange={(e) => setSettings({ ...settings, page_title: e.target.value })}
-                onBlur={() => saveSettings({ page_title: settings.page_title })}
+                defaultValue={settings.page_title || ""}
+                onBlur={(e) => saveSettings({ page_title: e.target.value })}
                 className="h-7 text-[11px]"
               />
             </div>
@@ -261,9 +260,8 @@ export default function LinkTreeEditor() {
               <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Bio</p>
               <textarea
                 placeholder="Tell the world about yourself..."
-                value={settings.bio || ""}
-                onChange={(e) => setSettings({ ...settings, bio: e.target.value })}
-                onBlur={() => saveSettings({ bio: settings.bio })}
+                defaultValue={settings.bio || ""}
+                onBlur={(e) => saveSettings({ bio: e.target.value })}
                 className="w-full h-16 px-2 py-1.5 text-[11px] bg-background border border-border rounded resize-none focus:outline-none focus:ring-1 focus:ring-gold/50"
                 maxLength={300}
               />
