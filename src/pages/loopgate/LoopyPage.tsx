@@ -380,8 +380,6 @@ export default function LoopyPage() {
                           ? 'bg-purple-600/30 text-white/90 border border-purple-500/20'
                           : 'bg-white/[0.04] text-white/70 border border-white/[0.06]'
                       }`}>
-                          : 'bg-white/[0.04] text-white/70 border border-white/[0.06]'
-                      }`}>
                         {msg.role === 'assistant' ? (
                           <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:my-1 [&>ul]:pl-4 [&>ol]:my-1 [&>ol]:pl-4 [&>li]:my-0.5 [&>strong]:text-white/90 [&>h1]:text-sm [&>h2]:text-sm [&>h3]:text-xs [&>code]:text-[11px] [&>code]:bg-white/[0.06] [&>code]:px-1 [&>code]:rounded">
                             <ReactMarkdown
@@ -414,6 +412,17 @@ export default function LoopyPage() {
                           <span className="inline-block w-1.5 h-4 bg-purple-400 ml-0.5 animate-pulse" />
                         )}
                       </div>
+                      {msg.role === 'user' && (
+                        <div className="w-7 h-7 shrink-0 mt-0.5">
+                          {userAvatar ? (
+                            <img src={userAvatar} alt={userName || 'You'} className="w-7 h-7 rounded-full border border-purple-500/30 object-cover" />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full border border-purple-500/30 bg-purple-600/30 flex items-center justify-center">
+                              <span className="text-[10px] font-bold text-white/70" style={TEKO}>{(userName || 'U')[0].toUpperCase()}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </motion.div>
                   ))}
 
