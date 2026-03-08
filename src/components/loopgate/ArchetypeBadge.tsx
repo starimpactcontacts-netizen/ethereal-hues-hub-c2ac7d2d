@@ -9,7 +9,7 @@ export const ARCHETYPES = [
   { id: 'sports', label: 'Sports Editor', icon: Trophy },
   { id: 'gaming', label: 'Gaming Editor', icon: Gamepad2 },
   { id: 'trailer', label: 'Trailer Editor', icon: Clapperboard },
-  { id: 'abstract', label: 'Abstract / FX Editor', icon: Sparkles },
+  { id: 'abstract', label: 'Abstract / FX Editor', icon: GateIcon },
   { id: 'meme', label: 'Meme / Shortform Editor', icon: Laugh },
 ] as const;
 

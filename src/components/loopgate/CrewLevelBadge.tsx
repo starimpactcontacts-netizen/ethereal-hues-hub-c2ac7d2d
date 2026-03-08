@@ -70,7 +70,7 @@ const BADGE_TIERS = {
     bg: "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-orange-500/20",
     border: "border-purple-400/60",
     text: "text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400",
-    icon: Sparkles,
+    icon: GateIcon,
     glow: "shadow-[0_0_20px_rgba(168,85,247,0.4),0_0_40px_rgba(236,72,153,0.2)]",
     label: "Legendary",
   },

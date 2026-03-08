@@ -49,7 +49,7 @@ export default function CrewChallengesPanel({ crewId }: CrewChallengesPanelProps
           </p>
         </div>
         <div className="bg-surface-1 border border-border rounded-lg p-3 text-center">
-          <Sparkles className="w-5 h-5 text-purple-400 mx-auto mb-1" />
+          <GateIcon className="w-5 h-5 text-purple-400 mx-auto mb-1" />
           <p className="text-lg font-bold text-gold">+{totalXP}</p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
             Total XP

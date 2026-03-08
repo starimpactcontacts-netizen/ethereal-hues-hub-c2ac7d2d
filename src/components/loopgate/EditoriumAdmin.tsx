@@ -43,7 +43,7 @@ interface UnitOption {
 }
 
 const ARTICLE_CATEGORIES = [
-  { value: 'feature', label: 'Feature', icon: Sparkles, color: '#cc0000' },
+  { value: 'feature', label: 'Feature', icon: GateIcon, color: '#cc0000' },
   { value: 'daily_cover', label: 'Daily Cover', icon: Crown, color: '#d4a020' },
   { value: 'press_release', label: 'Press Release', icon: Megaphone, color: '#2563eb' },
   { value: 'breaking', label: 'Breaking News', icon: Flame, color: '#ef4444' },

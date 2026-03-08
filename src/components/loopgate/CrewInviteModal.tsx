@@ -90,7 +90,7 @@ export default function CrewInviteModal({
 
           {/* XP Reward indicator */}
           <div className="flex items-center justify-center gap-1.5 text-xs text-gold mb-4">
-            <Sparkles className="w-3 h-3" />
+            <GateIcon className="w-3 h-3" />
             <span>They get +15 XP for joining</span>
           </div>
 

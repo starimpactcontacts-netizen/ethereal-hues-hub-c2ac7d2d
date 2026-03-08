@@ -31,7 +31,7 @@ function getLeagueBadge(league?: string) {
 
 function getPostTypeIndicator(type: string) {
   switch (type) {
-    case 'flex': return { icon: <Sparkles className="w-3 h-3 text-gold" />, label: 'FLEX' };
+    case 'flex': return { icon: <GateIcon className="w-3 h-3 text-gold" />, label: 'FLEX' };
     case 'edit_share': return { icon: <Link2 className="w-3 h-3 text-primary" />, label: 'EDIT' };
     case 'milestone': return { icon: <Trophy className="w-3 h-3 text-gold" />, label: 'MILESTONE' };
     default: return null;
