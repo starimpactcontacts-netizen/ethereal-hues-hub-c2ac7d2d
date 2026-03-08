@@ -333,9 +333,9 @@ export default function LoopyPage() {
                         { icon: Brain, text: 'AI ANALYZES' },
                         { icon: BarChart3, text: 'GET SCORES' },
                       ].map((step, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1 py-2.5 bg-white/[0.03] border border-white/[0.04]">
-                          <step.icon className="w-3.5 h-3.5 text-white/20" />
-                          <span className="text-[10px] font-bold text-white/30 tracking-wider" style={TEKO}>{step.text}</span>
+                        <div key={i} className="flex flex-col items-center gap-1 py-2.5 bg-white/[0.06] border border-white/[0.08]">
+                          <step.icon className="w-3.5 h-3.5 text-white/40" />
+                          <span className="text-[10px] font-bold text-white/50 tracking-wider" style={TEKO}>{step.text}</span>
                         </div>
                       ))}
                     </div>
