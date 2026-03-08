@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft } from 'lucide-react';
+import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft, Play, ExternalLink, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import SEO, { pageSEO } from '@/components/SEO';
 import editoriumLogo from '@/assets/editorium-logo.png';
 import EditoriumNewsletter from '@/components/loopgate/EditoriumNewsletter';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Article {
   id: string;
