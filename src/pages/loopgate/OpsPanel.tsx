@@ -2303,7 +2303,7 @@ export default function OpsPanel() {
         <section className="bg-gradient-to-r from-gold/5 to-transparent border border-gold/20 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gold flex items-center gap-2">
-              <Sparkles size={14} />
+               <GateIcon size={14} />
               Quick Actions
             </h2>
             <span className="text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded-full">
