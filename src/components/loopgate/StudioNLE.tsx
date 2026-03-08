@@ -237,6 +237,74 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     return fonts;
   }, [fontCategory, fontSearch]);
 
+  // ─── Canvas text dragging ───
+  const canvasDrag = useCanvasDrag({
+    canvasRef: canvasRef as React.RefObject<HTMLCanvasElement>,
+    textOverlays,
+    currentTime,
+    onUpdateOverlay: (id, updates) => setTextOverlays(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
+  });
+
+  // ─── Timeline dragging ───
+  const timelineDrag = useTimelineDrag({
+    timelineRef: timelineRef as React.RefObject<HTMLDivElement>,
+    duration,
+    onSeek: (t) => { const vid = videoRef.current; if (vid) { vid.currentTime = t; setCurrentTime(t); } },
+    onTrimStartChange: setTrimStart,
+    onTrimEndChange: setTrimEnd,
+    trimStart,
+    trimEnd,
+  });
+
+  // ─── Snapshot helper for undo ───
+  const getSnapshot = useCallback((): EditorSnapshot => ({
+    textOverlays,
+    trimStart,
+    trimEnd,
+    activeFilter: activeFilter.name,
+    activeEffects,
+    effectIntensities,
+    adjustments: adjustments as any,
+    speed,
+    segments,
+  }), [textOverlays, trimStart, trimEnd, activeFilter, activeEffects, effectIntensities, adjustments, speed, segments]);
+
+  const saveUndoSnapshot = useCallback(() => {
+    pushSnapshot(getSnapshot());
+  }, [pushSnapshot, getSnapshot]);
+
+  const handleUndo = useCallback(() => {
+    const prev = undoAction(getSnapshot());
+    if (!prev) return;
+    setTextOverlays(prev.textOverlays);
+    setTrimStart(prev.trimStart);
+    setTrimEnd(prev.trimEnd);
+    const filter = FILTER_PRESETS.find(f => f.name === prev.activeFilter);
+    if (filter) setActiveFilter(filter);
+    setActiveEffects(prev.activeEffects);
+    setEffectIntensities(prev.effectIntensities);
+    setAdjustments(prev.adjustments as any);
+    setSpeed(prev.speed);
+    setSegments(prev.segments);
+    toast.success("Undo");
+  }, [undoAction, getSnapshot]);
+
+  const handleRedo = useCallback(() => {
+    const next = redoAction(getSnapshot());
+    if (!next) return;
+    setTextOverlays(next.textOverlays);
+    setTrimStart(next.trimStart);
+    setTrimEnd(next.trimEnd);
+    const filter = FILTER_PRESETS.find(f => f.name === next.activeFilter);
+    if (filter) setActiveFilter(filter);
+    setActiveEffects(next.activeEffects);
+    setEffectIntensities(next.effectIntensities);
+    setAdjustments(next.adjustments as any);
+    setSpeed(next.speed);
+    setSegments(next.segments);
+    toast.success("Redo");
+  }, [redoAction, getSnapshot]);
+
   // ─── Load Fonts ───
   useEffect(() => {
     preconnectGoogleFonts();
