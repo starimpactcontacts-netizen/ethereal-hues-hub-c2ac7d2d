@@ -79,83 +79,139 @@ export default function StudioPage() {
     vid.muted = true;
     vid.preload = "auto";
     vid.playsInline = true;
+    vid.crossOrigin = "anonymous";
 
     let opened = false;
+    let safetyTimeout: ReturnType<typeof setTimeout> | null = null;
+
     const openEditor = () => {
       if (opened) return;
       opened = true;
+      if (safetyTimeout) clearTimeout(safetyTimeout);
       saveStudioProject(project);
       URL.revokeObjectURL(objUrl);
       setInitialFile(f);
       setEditorOpen(true);
     };
 
-    const captureThumbnail = () => {
+    const captureThumbnail = (): string | null => {
       try {
-        if (vid.videoWidth === 0 || vid.videoHeight === 0) return;
+        if (vid.videoWidth === 0 || vid.videoHeight === 0) return null;
+
         const canvas = document.createElement("canvas");
         canvas.width = 320;
-        canvas.height = Math.round(320 * (vid.videoHeight / vid.videoWidth));
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
-          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-          // Only save if it's actually a real image (not blank)
-          if (dataUrl.length > 500) {
-            project.thumbnail = dataUrl;
-          }
+        canvas.height = Math.max(180, Math.round(320 * (vid.videoHeight / vid.videoWidth)));
+
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return null;
+
+        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+
+        const sampleW = Math.min(48, canvas.width);
+        const sampleH = Math.min(28, canvas.height);
+        const imageData = ctx.getImageData(0, 0, sampleW, sampleH).data;
+
+        let lumaTotal = 0;
+        let brightPixels = 0;
+        const totalPixels = imageData.length / 4;
+
+        for (let i = 0; i < imageData.length; i += 4) {
+          const r = imageData[i];
+          const g = imageData[i + 1];
+          const b = imageData[i + 2];
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          lumaTotal += luma;
+          if (luma > 28) brightPixels += 1;
         }
+
+        const avgLuma = lumaTotal / totalPixels;
+        const brightRatio = brightPixels / totalPixels;
+
+        // Reject obviously black/empty frames
+        if (avgLuma < 12 || brightRatio < 0.015) return null;
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+        return dataUrl.length > 800 ? dataUrl : null;
       } catch (err) {
         console.warn("Thumbnail capture failed:", err);
+        return null;
       }
     };
 
-    vid.onloadedmetadata = () => {
-      project.duration = vid.duration;
+    const seekTo = (time: number) =>
+      new Promise<void>((resolve, reject) => {
+        const clamped = Math.max(0, Math.min(time, Math.max((vid.duration || 1) - 0.05, 0)));
+
+        let timeoutId: ReturnType<typeof setTimeout>;
+        const onSeeked = () => {
+          clearTimeout(timeoutId);
+          resolve();
+        };
+
+        vid.addEventListener("seeked", onSeeked, { once: true });
+
+        timeoutId = setTimeout(() => {
+          vid.removeEventListener("seeked", onSeeked);
+          reject(new Error("Seek timeout"));
+        }, 1400);
+
+        try {
+          vid.currentTime = clamped;
+        } catch (err) {
+          clearTimeout(timeoutId);
+          vid.removeEventListener("seeked", onSeeked);
+          reject(err);
+        }
+      });
+
+    const buildThumbnailTimes = (duration: number) => {
+      const d = Math.max(duration, 1);
+      const randomPrimary = Math.max(0.5, Math.min(d - 0.2, d * (0.15 + Math.random() * 0.7)));
+      return [
+        randomPrimary,
+        d * 0.5,
+        d * 0.35,
+        d * 0.7,
+        Math.min(2, d * 0.2),
+      ].filter((t, i, arr) => Number.isFinite(t) && t >= 0 && arr.indexOf(t) === i);
+    };
+
+    vid.onloadedmetadata = async () => {
+      project.duration = Number.isFinite(vid.duration) ? vid.duration : 0;
       project.resolution = `${vid.videoWidth}x${vid.videoHeight}`;
-      // Seek to ~25% of the video for a meaningful thumbnail
-      vid.currentTime = Math.max(0.5, vid.duration * 0.25);
-    };
 
-    vid.onseeked = () => {
-      // Wait for the frame to actually paint before capturing
-      const tryCapture = () => {
-        captureThumbnail();
-        if (!project.thumbnail) {
-          // Frame not ready yet, retry
-          setTimeout(() => { captureThumbnail(); openEditor(); }, 300);
-        } else {
-          openEditor();
-        }
-      };
+      const times = buildThumbnailTimes(project.duration || 1);
 
-      // Use requestVideoFrameCallback if available for precise frame timing
-      if ('requestVideoFrameCallback' in vid) {
-        (vid as any).requestVideoFrameCallback(() => tryCapture());
-      } else {
-        // Fallback: small delay to let the frame render
-        setTimeout(tryCapture, 200);
-      }
-    };
+      for (const t of times) {
+        try {
+          await seekTo(t);
 
-    // Fallback: if onseeked never fires, play briefly to force a frame
-    vid.onloadeddata = () => {
-      setTimeout(() => {
-        if (!opened) {
-          // Try playing briefly to force frame decode
-          vid.play().then(() => {
-            setTimeout(() => {
-              vid.pause();
-              captureThumbnail();
-              openEditor();
-            }, 300);
-          }).catch(() => {
-            captureThumbnail();
-            openEditor();
+          await new Promise<void>((resolve) => {
+            if ("requestVideoFrameCallback" in vid) {
+              (vid as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => void })
+                .requestVideoFrameCallback(() => resolve());
+            } else {
+              setTimeout(() => resolve(), 140);
+            }
           });
+
+          const candidate = captureThumbnail();
+          if (candidate) {
+            project.thumbnail = candidate;
+            break;
+          }
+        } catch {
+          // Try next timestamp
         }
-      }, 2500);
+      }
+
+      openEditor();
     };
+
+    // Hard fallback to guarantee user can still edit, even if metadata/seek flow fails
+    safetyTimeout = setTimeout(() => {
+      if (!opened) openEditor();
+    }, 5000);
 
     vid.onerror = () => openEditor();
   }, []);
