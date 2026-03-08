@@ -42,6 +42,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import loopRingsPattern from '@/assets/loop-rings-pattern.jpg';
+import lvMonogram from '@/assets/lv-monogram.png';
 import GatePattern from '@/components/loopgate/GatePattern';
 import EditoriumCarousel from '@/components/loopgate/EditoriumCarousel';
 import IndexEarnBadge from '@/components/loopgate/IndexEarnBadge';
@@ -453,14 +454,8 @@ export default function HubPage() {
                           )}
                         </div>
                       </div>
-                      <div className="absolute -bottom-1.5 -right-1.5 px-1.5 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
-                        <svg width="16" height="16" viewBox="0 0 44 48" fill="none" className="text-foreground">
-                          {/* V behind */}
-                          <path d="M12 2L22 38L32 2" stroke="currentColor" strokeWidth="6" strokeLinecap="square" fill="none"/>
-                          {/* L in front with background knockout */}
-                          <path d="M2 2L2 40L20 40" stroke="hsl(var(--background))" strokeWidth="11" strokeLinecap="square" fill="none"/>
-                          <path d="M2 2L2 40L20 40" stroke="currentColor" strokeWidth="5.5" strokeLinecap="square" fill="none"/>
-                        </svg>
+                      <div className="absolute -bottom-1.5 -right-1.5 px-1 py-0.5 rounded-md bg-background border border-border flex items-center justify-center shadow-lg gap-0.5">
+                        <img src={lvMonogram} alt="Lv" className="w-3.5 h-3.5 object-contain invert" />
                         <span className="font-display text-sm font-bold text-foreground">{profile?.level || 1}</span>
                       </div>
                     </div>
