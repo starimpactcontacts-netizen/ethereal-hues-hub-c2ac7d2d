@@ -590,6 +590,67 @@ export default function LoopyPage() {
                   </div>
                 </div>
 
+                {/* ═══════ CONVERSION CTA — REAL JUDGES ═══════ */}
+                {!user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2 }}
+                    className="relative overflow-hidden border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.08] to-purple-500/[0.04]"
+                    style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' }}
+                  >
+                    <div className="h-[2px] bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500" />
+                    <motion.div
+                      className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/20 to-transparent"
+                      animate={{ top: ['0%', '100%'] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+                    />
+                    <div className="relative p-5 text-center space-y-3">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/20">
+                        <Shield className="w-3 h-3 text-amber-400" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400" style={TEKO}>Not Satisfied?</span>
+                      </div>
+
+                      <h3 className="text-[28px] font-black text-white leading-none tracking-wide" style={TEKO}>
+                        GET RATED BY <span className="text-amber-400">REAL JUDGES</span>
+                      </h3>
+
+                      <p className="text-[12px] text-white/40 leading-relaxed max-w-xs mx-auto">
+                        Official Loopgate judges will publicly rate your edit for <span className="text-white/70 font-semibold">thousands of editors</span> to see. 
+                        Your QOI score goes on your permanent profile.
+                      </p>
+
+                      <div className="flex items-center justify-center gap-4 text-center">
+                        {[
+                          { val: 'PUBLIC', sub: 'RATING' },
+                          { val: 'OFFICIAL', sub: 'JUDGES' },
+                          { val: 'PERMANENT', sub: 'PROFILE' },
+                        ].map((s, i) => (
+                          <div key={i}>
+                            <span className="text-[12px] font-bold text-amber-400/80 tracking-wider" style={TEKO}>{s.val}</span>
+                            <span className="text-[8px] text-white/20 uppercase tracking-widest block" style={TEKO}>{s.sub}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <a
+                        href="/start"
+                        className="group relative inline-flex items-center justify-center gap-2 w-full h-12 overflow-hidden"
+                        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)' }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-amber-600 group-hover:from-amber-400 group-hover:to-amber-500 transition-all" />
+                        <div className="absolute top-0 left-0 right-0 h-[40%] bg-gradient-to-b from-white/15 to-transparent" />
+                        <div className="relative flex items-center gap-2">
+                          <GateIcon className="w-4 h-4 text-black" />
+                          <span className="text-[15px] font-bold text-black uppercase tracking-[0.2em]" style={TEKO}>Sign Up — Get Judged For Real</span>
+                        </div>
+                      </a>
+
+                      <p className="text-[9px] text-white/15">Free account • Takes 30 seconds</p>
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* Rate Another */}
                 <button
                   onClick={handleReset}
