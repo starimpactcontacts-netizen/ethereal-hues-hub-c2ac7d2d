@@ -91,6 +91,7 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "media", icon: FileVideo, label: "Media" },
   { id: "audio", icon: Music, label: "Audio" },
   { id: "text", icon: Type, label: "Text" },
+  { id: "crop", icon: Crop, label: "Crop" },
   { id: "effects", icon: Sparkles, label: "Effects" },
   { id: "transitions", icon: Layers, label: "Transitions" },
   { id: "filters", icon: Wand2, label: "Filters" },
