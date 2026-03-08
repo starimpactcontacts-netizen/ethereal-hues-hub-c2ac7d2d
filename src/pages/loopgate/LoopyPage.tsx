@@ -118,17 +118,16 @@ export default function LoopyPage() {
               animate={{ width: 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="hidden sm:flex flex-col border-r border-white/[0.06] bg-[#0a0a0a] relative z-10 overflow-hidden shrink-0"
+              className="hidden sm:flex flex-col border-r border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl relative z-10 overflow-hidden shrink-0"
             >
               {/* Sidebar header */}
               <div className="p-3 border-b border-white/[0.06]">
                 <button
                   onClick={handleNewChat}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] transition-all text-left group"
-                  style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg hover:bg-white/[0.07] hover:border-white/[0.12] transition-all text-left group"
                 >
-                  <Plus className="w-4 h-4 text-purple-400" />
-                  <span className="text-[12px] font-bold text-white/60 tracking-wider" style={TEKO}>NEW CHAT</span>
+                  <Plus className="w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                  <span className="text-[12px] font-bold text-white/60 tracking-wider group-hover:text-white/80 transition-colors" style={TEKO}>NEW CHAT</span>
                 </button>
               </div>
 
