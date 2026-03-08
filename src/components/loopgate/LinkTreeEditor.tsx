@@ -33,7 +33,7 @@ export default function LinkTreeEditor() {
 
   const displayTitle = settings.page_title || (profile as any)?.display_name || profile?.username || "My Links";
   const displayBio = settings.bio || "";
-  const linkUrl = `loopgate.io/u/${profile?.username || profile?.id}`;
+  const linkUrl = `loopgate.io/${profile?.username || profile?.id}`;
   const fullUrl = `${window.location.origin}/editor/${profile?.username || profile?.id}`;
 
   const handleAdd = async () => {
