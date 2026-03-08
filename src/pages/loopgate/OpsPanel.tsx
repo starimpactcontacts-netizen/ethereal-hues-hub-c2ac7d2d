@@ -2455,7 +2455,7 @@ export default function OpsPanel() {
                             )}
                             <span>•</span>
                             <span className="flex items-center gap-1">
-                              <Sparkles size={10} className="text-gold" />
+                              <GateIcon size={10} className="text-gold" />
                               {event.xp_reward || 50} XP
                             </span>
                           </div>
