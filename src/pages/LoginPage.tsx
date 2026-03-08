@@ -226,7 +226,7 @@ export default function LoginPage() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Sparkles className="h-4 w-4 inline mr-1.5 -mt-0.5" />
+              <GateIcon className="h-4 w-4 inline mr-1.5 -mt-0.5" />
               Magic
             </button>
           </div>
