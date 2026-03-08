@@ -1,11 +1,20 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { X, Send, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Send, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star, Swords, Trophy, Users, Zap } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { useNavigate } from 'react-router-dom';
 import loopyAvatar from '@/assets/loopy-avatar.png';
 import { useLoopyChat } from '@/hooks/useLoopyChat';
 import { useAuth } from '@/hooks/useAuth';
+import ReactMarkdown from 'react-markdown';
+
+const QUICK_ACTIONS = [
+  { label: '⚔️ Battle', msg: 'how do i start a battle?', icon: Swords },
+  { label: '⭐ Rate Edit', route: '/loopy', icon: Star },
+  { label: '🏆 Drops', msg: 'whats dropping rn?', icon: Trophy },
+  { label: '👥 Units', msg: 'tell me about units', icon: Users },
+  { label: '📈 My Stats', msg: 'whats my current stats looking like?', icon: Zap },
+];
 
 export default function LoopyChat() {
   const navigate = useNavigate();
@@ -30,31 +39,23 @@ export default function LoopyChat() {
     deleteConversation,
   } = useLoopyChat();
 
-  // Auto-scroll
+  const { user } = useAuth();
+  const isGuest = !user;
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, streaming]);
 
   useEffect(() => {
-    if (view === 'chat') {
-      setTimeout(() => inputRef.current?.focus(), 200);
-    }
+    if (view === 'chat') setTimeout(() => inputRef.current?.focus(), 200);
   }, [view]);
-
-  const { user } = useAuth();
-  const isGuest = !user;
 
   const handleOpen = async () => {
     setOpen(true);
     setShowPulse(false);
     setDocked(false);
     if (isGuest) {
-      // Guests skip menu, go straight to chat
-      if (!activeConversationId || messages.length === 0) {
-        await startNewChat();
-      }
+      if (!activeConversationId || messages.length === 0) await startNewChat();
       setView('chat');
     } else if (activeConversationId && messages.length > 0) {
       setView('chat');
@@ -63,105 +64,61 @@ export default function LoopyChat() {
     }
   };
 
-  const handleNewChat = async () => {
-    await startNewChat();
-    setView('chat');
-  };
+  const handleNewChat = async () => { await startNewChat(); setView('chat'); };
+  const handleContinue = async () => { await continueLastChat(); setView('chat'); };
+  const handleSelectConversation = async (convId: string) => { await loadMessages(convId); setView('chat'); };
 
-  const handleContinue = async () => {
-    await continueLastChat();
-    setView('chat');
-  };
-
-  const handleSelectConversation = async (convId: string) => {
-    await loadMessages(convId);
-    setView('chat');
-  };
-
-  const handleSend = () => {
-    const text = input.trim();
-    if (!text || streaming) return;
+  const handleSend = (text?: string) => {
+    const msg = (text || input).trim();
+    if (!msg || streaming) return;
     setInput('');
-    sendMessage(text);
+    sendMessage(msg);
   };
 
-  const handleDock = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setDocked(true);
-  };
-
+  const handleDock = (e: React.MouseEvent) => { e.stopPropagation(); setDocked(true); };
   const hasHistory = conversations.length > 0;
 
   return (
     <>
-      {/* ═══ DOCKED STATE — half face peeking from right edge ═══ */}
-      {/* ═══ DOCKED STATE — two cute paws gripping the right edge ═══ */}
+      {/* ═══ DOCKED STATE — paws ═══ */}
       <AnimatePresence>
         {!open && docked && (
           <motion.button
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 20, opacity: 0 }}
+            initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             onClick={() => setDocked(false)}
             className="fixed bottom-28 right-0 z-50 cursor-pointer group"
-            aria-label="Bring Loopy back"
           >
-            <motion.div
-              animate={{ x: [0, -3, 0] }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-              className="flex flex-col gap-6 items-end"
-            >
-              {/* Top paw — toes point left, arm goes right */}
-              <svg width="36" height="28" viewBox="0 0 36 28" fill="none" className="drop-shadow-md -mr-3">
-                {/* Arm going off right edge */}
-                <rect x="18" y="9" width="20" height="10" rx="5" fill="#fff" stroke="#555" strokeWidth="0.8" />
-                {/* Paw body */}
-                <ellipse cx="16" cy="14" rx="14" ry="12" fill="#fff" stroke="#555" strokeWidth="0.8" />
-                {/* Main pad */}
-                <ellipse cx="18" cy="15" rx="5.5" ry="5" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.7" />
-                {/* Toe beans — pointing left */}
-                <ellipse cx="7" cy="8" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
-                <ellipse cx="4" cy="14" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
-                <ellipse cx="7" cy="20" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
-              </svg>
-              {/* Bottom paw */}
-              <svg width="36" height="28" viewBox="0 0 36 28" fill="none" className="drop-shadow-md -mr-3">
-                <rect x="18" y="9" width="20" height="10" rx="5" fill="#fff" stroke="#555" strokeWidth="0.8" />
-                <ellipse cx="16" cy="14" rx="14" ry="12" fill="#fff" stroke="#555" strokeWidth="0.8" />
-                <ellipse cx="18" cy="15" rx="5.5" ry="5" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.7" />
-                <ellipse cx="7" cy="8" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
-                <ellipse cx="4" cy="14" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
-                <ellipse cx="7" cy="20" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
-              </svg>
+            <motion.div animate={{ x: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }} className="flex flex-col gap-6 items-end">
+              {[0, 1].map(i => (
+                <svg key={i} width="36" height="28" viewBox="0 0 36 28" fill="none" className="drop-shadow-md -mr-3">
+                  <rect x="18" y="9" width="20" height="10" rx="5" fill="#fff" stroke="#555" strokeWidth="0.8" />
+                  <ellipse cx="16" cy="14" rx="14" ry="12" fill="#fff" stroke="#555" strokeWidth="0.8" />
+                  <ellipse cx="18" cy="15" rx="5.5" ry="5" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.7" />
+                  <ellipse cx="7" cy="8" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
+                  <ellipse cx="4" cy="14" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
+                  <ellipse cx="7" cy="20" rx="3.5" ry="3" fill="#F9B4C2" stroke="#E8899A" strokeWidth="0.6" />
+                </svg>
+              ))}
             </motion.div>
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* ═══ FLOATING BUTTON with dismiss ═══ */}
+      {/* ═══ FLOATING BUTTON ═══ */}
       <AnimatePresence>
         {!open && !docked && (
           <div className="fixed bottom-28 right-3 z-50">
-            {/* Tiny X to dock/dismiss */}
             <motion.button
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              transition={{ delay: 0.2 }}
+              initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ delay: 0.2 }}
               onClick={handleDock}
               className="absolute -top-1.5 -left-1.5 z-10 w-5 h-5 rounded-full bg-muted border border-border flex items-center justify-center hover:bg-destructive/20 hover:border-destructive/40 transition-colors"
-              aria-label="Dismiss Loopy"
             >
               <X className="w-2.5 h-2.5 text-muted-foreground" />
             </motion.button>
-
             <motion.button
-              initial={{ scale: 0, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 20 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              initial={{ scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 20 }}
+              whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
               transition={{ type: 'spring', stiffness: 500, damping: 25 }}
               onClick={handleOpen}
               className="w-14 h-14 rounded-full bg-background border-2 border-primary shadow-lg shadow-primary/20 overflow-hidden"
@@ -182,19 +139,13 @@ export default function LoopyChat() {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0, y: 40, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 350, damping: 28, mass: 0.8 }}
-            className="fixed bottom-28 right-2 left-2 sm:left-auto sm:w-[360px] z-50 max-h-[65vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden"
+            className="fixed bottom-28 right-2 left-2 sm:left-auto sm:w-[380px] z-50 max-h-[70vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl shadow-black/40 overflow-hidden"
           >
             {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="flex items-center gap-2 px-3 py-2.5 bg-card border-b border-border"
-            >
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-card border-b border-border">
               {view !== 'menu' && !isGuest && (
                 <button onClick={() => setView('menu')} className="p-1 rounded-full hover:bg-muted transition-colors">
                   <ChevronLeft className="w-4 h-4 text-muted-foreground" />
@@ -205,10 +156,10 @@ export default function LoopyChat() {
                 <div className="flex items-center gap-1.5">
                   <span className="font-bold text-sm text-foreground">Loopy</span>
                   <GateIcon className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">AI</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500/30 to-primary/30 text-purple-300 font-bold tracking-wider">v1.1</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground truncate">
-                  {view === 'history' ? 'chat history' : 'your loopgate guide'}
+                  {view === 'history' ? 'chat history' : streaming ? 'thinking...' : 'loopgate oracle 🐱'}
                 </p>
               </div>
               <button
@@ -221,17 +172,16 @@ export default function LoopyChat() {
               <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-muted transition-colors">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
-            </motion.div>
+            </div>
 
             {/* MENU VIEW */}
             {view === 'menu' && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 space-y-2.5 min-h-[200px]">
                 <div className="text-center mb-4">
                   <img src={loopyAvatar} alt="Loopy" className="w-16 h-16 rounded-full border-2 border-primary mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">wsg — what u need?</p>
+                  <p className="text-xs text-muted-foreground">wsg — loopy 1.1 loaded up 🧠</p>
                 </div>
 
-                {/* Rate My Edit — prominent CTA */}
                 <button
                   onClick={() => { setOpen(false); navigate('/loopy'); }}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all text-left group"
@@ -241,7 +191,7 @@ export default function LoopyChat() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground">Rate My Edit</p>
-                    <p className="text-[10px] text-muted-foreground">get instant AI scores & tips</p>
+                    <p className="text-[10px] text-muted-foreground">instant AI diagnostic on any edit</p>
                   </div>
                 </button>
 
@@ -252,7 +202,7 @@ export default function LoopyChat() {
                   <Plus className="w-5 h-5 text-primary" />
                   <div>
                     <p className="text-sm font-medium text-foreground">New Chat</p>
-                    <p className="text-[10px] text-muted-foreground">start fresh</p>
+                    <p className="text-[10px] text-muted-foreground">ask me anything about loopgate</p>
                   </div>
                 </button>
 
@@ -268,11 +218,7 @@ export default function LoopyChat() {
                         <p className="text-[10px] text-muted-foreground truncate">{conversations[0]?.title}</p>
                       </div>
                     </button>
-
-                    <button
-                      onClick={() => setView('history')}
-                      className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors py-1.5"
-                    >
+                    <button onClick={() => setView('history')} className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors py-1.5">
                       View all chats ({conversations.length})
                     </button>
                   </>
@@ -289,10 +235,7 @@ export default function LoopyChat() {
                       <p className="text-sm text-foreground truncate">{conv.title}</p>
                       <p className="text-[10px] text-muted-foreground">{new Date(conv.updated_at).toLocaleDateString()}</p>
                     </button>
-                    <button
-                      onClick={() => deleteConversation(conv.id)}
-                      className="p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive/20 transition-all"
-                    >
+                    <button onClick={() => deleteConversation(conv.id)} className="p-1 rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive/20 transition-all">
                       <Trash2 className="w-3.5 h-3.5 text-destructive" />
                     </button>
                   </div>
@@ -324,18 +267,51 @@ export default function LoopyChat() {
                           {msg.role === 'assistant' && (
                             <img src={loopyAvatar} alt="" className="w-6 h-6 rounded-full border border-border mt-0.5 shrink-0" />
                           )}
-                          <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                          <div className={`max-w-[82%] px-3 py-2 rounded-2xl text-[13px] leading-relaxed ${
                             msg.role === 'user'
                               ? 'bg-primary text-primary-foreground rounded-br-md'
                               : 'bg-muted text-foreground rounded-bl-md'
                           }`}>
-                            {msg.content}
+                            {msg.role === 'assistant' ? (
+                              <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:my-1 [&>ul]:pl-4 [&>ol]:my-1 [&>ol]:pl-4 [&>li]:my-0.5 [&>strong]:text-foreground [&>h1]:text-sm [&>h2]:text-sm [&>h3]:text-xs [&>code]:text-[11px] [&>code]:bg-background/30 [&>code]:px-1 [&>code]:rounded">
+                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                              </div>
+                            ) : (
+                              msg.content
+                            )}
                             {streaming && i === messages.length - 1 && msg.role === 'assistant' && (
                               <span className="inline-block w-1.5 h-4 bg-current ml-0.5 animate-pulse" />
                             )}
                           </div>
                         </motion.div>
                       ))}
+
+                      {/* Quick action chips — show after greeting or when idle */}
+                      {messages.length <= 1 && !streaming && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="flex flex-wrap gap-1.5 pt-1"
+                        >
+                          {QUICK_ACTIONS.map((action) => (
+                            <button
+                              key={action.label}
+                              onClick={() => {
+                                if (action.route) {
+                                  setOpen(false);
+                                  navigate(action.route);
+                                } else if (action.msg) {
+                                  handleSend(action.msg);
+                                }
+                              }}
+                              className="px-2.5 py-1.5 rounded-full bg-white/[0.05] border border-border text-[11px] text-muted-foreground hover:text-foreground hover:bg-white/[0.08] hover:border-primary/30 transition-all"
+                            >
+                              {action.label}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
 
                       {streaming && (messages.length === 0 || messages[messages.length - 1]?.role === 'user') && (
                         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2 justify-start">
