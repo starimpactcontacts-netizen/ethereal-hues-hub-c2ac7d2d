@@ -190,7 +190,7 @@ export default function LoopyChat() {
                 </div>
 
                 <button
-                  onClick={() => { setOpen(false); navigate('/loopy'); }}
+                  onClick={() => { setOpen(false); navigate('/loopy/rate'); }}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all text-left group"
                 >
                   <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-primary flex items-center justify-center shrink-0">
@@ -199,6 +199,17 @@ export default function LoopyChat() {
                   <div>
                     <p className="text-sm font-bold text-foreground">Rate My Edit</p>
                     <p className="text-[10px] text-muted-foreground">instant AI diagnostic on any edit</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setOpen(false); navigate('/loopy'); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors text-left"
+                >
+                  <Maximize2 className="w-5 h-5 text-purple-400" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Full View</p>
+                    <p className="text-[10px] text-muted-foreground">open loopy in full page mode</p>
                   </div>
                 </button>
 
