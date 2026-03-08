@@ -24,6 +24,7 @@ import { useCanvasDrag } from "./studio/useCanvasDrag";
 import { useTimelineDrag } from "./studio/useTimelineDrag";
 import type { ClipSegment, EditorSnapshot } from "./studio/types";
 import { motion, AnimatePresence } from "framer-motion";
+import GatePattern from "@/components/loopgate/GatePattern";
 import StudioSubmitButton from "./StudioSubmitButton";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";

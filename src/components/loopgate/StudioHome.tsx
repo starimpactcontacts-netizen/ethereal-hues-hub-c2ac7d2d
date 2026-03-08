@@ -10,6 +10,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
 import StudioSubmitHub from "./StudioSubmitHub";
+import GatePattern from "./GatePattern";
 import { toast } from "sonner";
 import { deleteVideoFile } from "@/lib/studioFileStore";
 
