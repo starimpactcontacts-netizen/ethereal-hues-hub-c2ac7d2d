@@ -488,25 +488,35 @@ export default function HubPage() {
                     </div>
                   </button>
 
-                  {/* Earnings + Index — top right, compact */}
-                  <div className="flex flex-col gap-1.5 shrink-0">
-                    {/* Earnings */}
-                    <button onClick={() => setWalletOpen(true)} className="relative flex items-center gap-2 bg-background border border-border/50 rounded-md px-3 py-2 transition-all hover:border-emerald-400/40 cursor-pointer w-full text-left">
-                      <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span className="font-display text-base text-emerald-400 leading-none tabular-nums font-bold">
-                        {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
-                      </span>
-                      <ChevronRight className="w-3 h-3 text-emerald-400/40 shrink-0 ml-auto" />
+                  {/* Earnings + Index — top right, refined */}
+                  <div className="flex flex-col gap-1.5 shrink-0 min-w-[140px]">
+                    {/* Earnings — dual line: available + total */}
+                    <button onClick={() => setWalletOpen(true)} className="relative bg-background border border-emerald-500/20 hover:border-emerald-400/40 rounded-lg px-3 py-2 transition-all cursor-pointer w-full text-left">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span className="font-display text-lg text-emerald-400 leading-none tabular-nums font-bold">
+                            {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
+                          </span>
+                        </div>
+                        <ChevronRight className="w-3 h-3 text-emerald-400/30 shrink-0" />
+                      </div>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <span className="text-[8px] text-muted-foreground/50 font-bold uppercase tracking-wider">Available</span>
+                        <span className="text-[9px] text-emerald-400/40 tabular-nums font-semibold">
+                          ${(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} earned
+                        </span>
+                      </div>
                     </button>
                     {/* Index */}
                     <Link to="/shop" className="group">
-                      <div className="relative flex items-center gap-2 bg-background border border-border/50 hover:border-gold/40 rounded-md px-3 py-2 transition-all">
-                        <Coins className="w-4 h-4 text-gold shrink-0" />
-                        <span className="font-display text-base text-foreground leading-none tabular-nums font-bold">
+                      <div className="relative flex items-center gap-2 bg-background border border-border/50 hover:border-gold/40 rounded-lg px-3 py-2 transition-all">
+                        <Coins className="w-3.5 h-3.5 text-gold shrink-0" />
+                        <span className="font-display text-lg text-foreground leading-none tabular-nums font-bold">
                           {(profile as any)?.spendable_index || 0}
                         </span>
-                        <span className="text-[10px] text-gold/60 font-bold tracking-wider">IDX</span>
-                        <ShoppingBag className="w-3.5 h-3.5 text-gold/40 group-hover:text-gold transition-colors shrink-0" />
+                        <span className="text-[9px] text-gold/60 font-bold tracking-wider">IDX</span>
+                        <ShoppingBag className="w-3 h-3 text-gold/30 group-hover:text-gold transition-colors shrink-0 ml-auto" />
                       </div>
                     </Link>
                   </div>
