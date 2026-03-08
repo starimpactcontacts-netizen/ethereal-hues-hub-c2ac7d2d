@@ -118,17 +118,16 @@ export default function LoopyPage() {
               animate={{ width: 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="hidden sm:flex flex-col border-r border-white/[0.06] bg-[#0a0a0a] relative z-10 overflow-hidden shrink-0"
+              className="hidden sm:flex flex-col border-r border-white/[0.06] bg-[#0a0a0a]/90 backdrop-blur-xl relative z-10 overflow-hidden shrink-0"
             >
               {/* Sidebar header */}
               <div className="p-3 border-b border-white/[0.06]">
                 <button
                   onClick={handleNewChat}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] transition-all text-left group"
-                  style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)' }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg hover:bg-white/[0.07] hover:border-white/[0.12] transition-all text-left group"
                 >
-                  <Plus className="w-4 h-4 text-purple-400" />
-                  <span className="text-[12px] font-bold text-white/60 tracking-wider" style={TEKO}>NEW CHAT</span>
+                  <Plus className="w-4 h-4 text-purple-400 group-hover:text-purple-300 transition-colors" />
+                  <span className="text-[12px] font-bold text-white/60 tracking-wider group-hover:text-white/80 transition-colors" style={TEKO}>NEW CHAT</span>
                 </button>
               </div>
 
@@ -136,7 +135,7 @@ export default function LoopyPage() {
               <div className="px-3 pt-3">
                 <button
                   onClick={() => navigate('/loopy/rate')}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20 hover:from-amber-500/20 hover:to-primary/20 transition-all text-left group"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20 rounded-lg hover:from-amber-500/20 hover:to-primary/20 transition-all text-left group"
                 >
                   <Star className="w-3.5 h-3.5 text-amber-400" />
                   <span className="text-[11px] font-bold text-white/60 tracking-wider" style={TEKO}>RATE MY EDIT</span>
@@ -152,7 +151,7 @@ export default function LoopyPage() {
                     {conversations.map((conv) => (
                       <div
                         key={conv.id}
-                        className={`group flex items-center gap-2 px-2.5 py-2 rounded-sm hover:bg-white/[0.04] transition-colors cursor-pointer ${
+                        className={`group flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-white/[0.04] transition-all cursor-pointer ${
                           activeConversationId === conv.id ? 'bg-white/[0.06] border-l-2 border-purple-500' : ''
                         }`}
                       >
@@ -263,14 +262,14 @@ export default function LoopyPage() {
         {/* ═══ MAIN CHAT AREA ═══ */}
         <div className="flex-1 flex flex-col min-w-0 relative z-10">
           {/* Top bar */}
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-sm shrink-0">
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl shrink-0">
             {/* Sidebar toggle */}
             <button
               onClick={() => {
                 if (window.innerWidth < 640) setMobileSidebar(true);
                 else setSidebarOpen(!sidebarOpen);
               }}
-              className="p-1.5 hover:bg-white/[0.06] rounded transition-colors"
+              className="p-1.5 hover:bg-white/[0.06] rounded-lg transition-all active:scale-95"
             >
               {sidebarOpen ? <PanelLeftClose className="w-4 h-4 text-white/30 hidden sm:block" /> : <PanelLeft className="w-4 h-4 text-white/30 hidden sm:block" />}
               <Menu className="w-4 h-4 text-white/30 sm:hidden" />
@@ -289,10 +288,10 @@ export default function LoopyPage() {
             </div>
 
             {/* Quick nav links */}
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => navigate('/hub')}
-                className="flex items-center gap-1 px-2 py-1.5 hover:bg-white/[0.06] transition-all rounded"
+                className="flex items-center gap-1 px-2.5 py-1.5 hover:bg-white/[0.06] transition-all rounded-lg active:scale-95"
                 title="Back to Hub"
               >
                 <Home className="w-3.5 h-3.5 text-white/30" />
@@ -300,14 +299,14 @@ export default function LoopyPage() {
               </button>
               <button
                 onClick={() => navigate('/loopy/rate')}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-500/15 to-primary/15 border border-amber-500/25 hover:from-amber-500/25 hover:to-primary/25 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/15 to-primary/15 border border-amber-500/25 rounded-lg hover:from-amber-500/25 hover:to-primary/25 transition-all active:scale-95"
               >
                 <Star className="w-3 h-3 text-amber-400" />
                 <span className="text-[10px] font-bold text-white/60 tracking-wider" style={TEKO}>Rate Edit</span>
               </button>
               <button
                 onClick={() => navigate(-1)}
-                className="p-1.5 hover:bg-white/[0.06] rounded transition-colors ml-1"
+                className="p-1.5 hover:bg-white/[0.06] rounded-lg transition-all active:scale-95 ml-0.5"
                 title="Close"
               >
                 <X className="w-4 h-4 text-white/30" />
@@ -317,7 +316,7 @@ export default function LoopyPage() {
 
           {/* Messages area */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+            <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-5">
               {loadingHistory ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-6 h-6 animate-spin text-white/20" />
@@ -351,7 +350,7 @@ export default function LoopyPage() {
                               if (action.route) navigate(action.route);
                               else if (action.msg) handleSend(action.msg);
                             }}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-purple-500/20 transition-all text-[11px] text-white/40 hover:text-white/60"
+                            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-xl hover:bg-white/[0.06] hover:border-purple-500/20 transition-all text-[11px] text-white/40 hover:text-white/60 active:scale-95"
                           >
                             <action.icon className="w-3 h-3" />
                             {action.label}
@@ -375,10 +374,10 @@ export default function LoopyPage() {
                           <img src={loopyAvatar} alt="" className="w-7 h-7 rounded-full border border-white/10" />
                         </div>
                       )}
-                      <div className={`max-w-[75%] px-4 py-3 text-[13px] leading-relaxed ${
+                      <div className={`max-w-[80%] px-4 py-3 text-[13px] leading-relaxed ${
                         msg.role === 'user'
-                          ? 'bg-purple-600/30 text-white/90 border border-purple-500/20'
-                          : 'bg-white/[0.04] text-white/70 border border-white/[0.06]'
+                          ? 'bg-purple-600/25 text-white/90 border border-purple-500/15 rounded-2xl rounded-br-md'
+                          : 'bg-white/[0.04] text-white/70 border border-white/[0.06] rounded-2xl rounded-bl-md'
                       }`}>
                         {msg.role === 'assistant' ? (
                           <div className="prose prose-sm prose-invert max-w-none [&>p]:m-0 [&>p]:leading-relaxed [&>ul]:my-1 [&>ul]:pl-4 [&>ol]:my-1 [&>ol]:pl-4 [&>li]:my-0.5 [&>strong]:text-white/90 [&>h1]:text-sm [&>h2]:text-sm [&>h3]:text-xs [&>code]:text-[11px] [&>code]:bg-white/[0.06] [&>code]:px-1 [&>code]:rounded">
@@ -441,7 +440,7 @@ export default function LoopyPage() {
                             if (action.route) navigate(action.route);
                             else if (action.msg) handleSend(action.msg);
                           }}
-                          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] text-[11px] text-white/30 hover:text-white/50 hover:bg-white/[0.05] hover:border-purple-500/20 transition-all"
+                           className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-[11px] text-white/30 hover:text-white/50 hover:bg-white/[0.05] hover:border-purple-500/20 transition-all active:scale-95"
                         >
                           {action.label}
                         </button>
@@ -455,7 +454,7 @@ export default function LoopyPage() {
                       <div className="w-7 h-7 shrink-0 mt-0.5">
                         <img src={loopyAvatar} alt="" className="w-7 h-7 rounded-full border border-white/10" />
                       </div>
-                      <div className="bg-white/[0.04] border border-white/[0.06] px-4 py-3 flex gap-1.5">
+                      <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl rounded-bl-md px-4 py-3 flex gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400/50 animate-bounce [animation-delay:0ms]" />
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400/50 animate-bounce [animation-delay:150ms]" />
                         <span className="w-1.5 h-1.5 rounded-full bg-purple-400/50 animate-bounce [animation-delay:300ms]" />
@@ -468,9 +467,9 @@ export default function LoopyPage() {
           </div>
 
           {/* Input area */}
-          <div className="border-t border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-sm p-3 shrink-0">
+          <div className="border-t border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl p-3 sm:p-4 shrink-0">
             <div className="max-w-2xl mx-auto">
-              <div className="relative flex items-end gap-2 bg-white/[0.04] border border-white/[0.08] focus-within:border-purple-500/30 transition-colors px-3 py-2">
+              <div className="relative flex items-end gap-2 bg-white/[0.03] border border-white/[0.08] rounded-2xl focus-within:border-purple-500/25 focus-within:bg-white/[0.04] transition-all px-4 py-2.5">
                 <textarea
                   ref={inputRef}
                   value={input}
@@ -485,7 +484,7 @@ export default function LoopyPage() {
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || streaming}
-                  className="p-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-30 disabled:hover:bg-purple-600 transition-colors shrink-0"
+                  className="p-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-20 disabled:hover:bg-purple-600 transition-all rounded-xl shrink-0 active:scale-90"
                 >
                   {streaming ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
                 </button>
