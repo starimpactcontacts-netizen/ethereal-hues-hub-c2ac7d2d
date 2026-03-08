@@ -68,10 +68,24 @@ type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text
 type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop";
 type EffectIntensity = Record<string, number>;
 
-// Adobe Pro accent — Premiere/AE blue-purple
-const ACCENT = "#9999FF";
-const ACCENT_DIM = "rgba(153,153,255,0.10)";
-const ACCENT_BORDER = "rgba(153,153,255,0.22)";
+// Studio accent — refined blue-violet
+const ACCENT = "#7C6AFF";
+const ACCENT_DIM = "rgba(124,106,255,0.10)";
+const ACCENT_BORDER = "rgba(124,106,255,0.25)";
+const ACCENT_GLOW = "rgba(124,106,255,0.35)";
+
+// Crop/Aspect ratio presets
+type CropPreset = { id: string; label: string; icon: typeof Square; ratio: number | null; desc: string };
+const CROP_PRESETS: CropPreset[] = [
+  { id: "free", label: "Free", icon: Crop, ratio: null, desc: "No constraints" },
+  { id: "16:9", label: "16:9", icon: Monitor, ratio: 16 / 9, desc: "Landscape / YouTube" },
+  { id: "9:16", label: "9:16", icon: Smartphone, ratio: 9 / 16, desc: "Portrait / Reels / TikTok" },
+  { id: "4:3", label: "4:3", icon: RectangleHorizontal, ratio: 4 / 3, desc: "Classic TV" },
+  { id: "1:1", label: "1:1", icon: Square, ratio: 1, desc: "Square / Instagram" },
+  { id: "4:5", label: "4:5", icon: Smartphone, ratio: 4 / 5, desc: "Portrait / Feed" },
+  { id: "21:9", label: "21:9", icon: Monitor, ratio: 21 / 9, desc: "Ultrawide / Cinema" },
+  { id: "2.39:1", label: "2.39:1", icon: Film, ratio: 2.39, desc: "Anamorphic" },
+];
 
 const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "media", icon: FileVideo, label: "Media" },
