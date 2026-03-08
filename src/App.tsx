@@ -326,6 +326,7 @@ export default function App() {
               <Route path="/payouts" element={<PayoutsPage />} />
               <Route path="/solo-arena" element={<SoloArenaPage />} />
               <Route path="/mission/:id" element={<MissionLobbyPage />} />
+              <Route path="/loopy" element={<LoopyPage />} />
             </Route>
 
             {/* Protected routes - auth required */}
