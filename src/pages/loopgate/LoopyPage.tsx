@@ -304,7 +304,7 @@ export default function LoopyPage() {
                 <span className="text-[10px] font-bold text-white/60 tracking-wider" style={TEKO}>Rate Edit</span>
               </button>
               <button
-                onClick={() => navigate(-1 as any)}
+                onClick={() => navigate(-1)}
                 className="p-1.5 hover:bg-white/[0.06] rounded transition-colors ml-1"
                 title="Close"
               >
