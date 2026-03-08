@@ -373,48 +373,56 @@ export default function ProfilePage() {
 
       {/* ═══ CONTENT TABS ═══ */}
       <div className="px-4 mb-2">
-        {isAnyJudge ? (
-          <div className="flex gap-0.5 p-0.5 bg-surface-1 border border-border rounded-md">
-            <button
-              onClick={() => setActiveTab('edits')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                activeTab === 'edits' 
-                  ? 'bg-background text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Grid3X3 className="w-3 h-3" />
-              Edits
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                activeTab === 'reviews' 
-                  ? 'bg-gold/20 text-gold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Gavel className="w-3 h-3" />
-              Reviews
-            </button>
-            <button
-              onClick={() => setActiveTab('videos')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                activeTab === 'videos' 
-                  ? 'bg-purple-500/20 text-purple-400' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Video className="w-3 h-3" />
-              Videos
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1">
-            <Grid3X3 className="w-3 h-3 text-muted-foreground" />
-            <h2 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">My Edits</h2>
-          </div>
-        )}
+        <div className="flex gap-0.5 p-0.5 bg-surface-1 border border-border rounded-md">
+          <button
+            onClick={() => setActiveTab('edits')}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+              activeTab === 'edits' 
+                ? 'bg-background text-foreground' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Grid3X3 className="w-3 h-3" />
+            Edits
+          </button>
+          {isAnyJudge && (
+            <>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+                  activeTab === 'reviews' 
+                    ? 'bg-gold/20 text-gold' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Gavel className="w-3 h-3" />
+                Reviews
+              </button>
+              <button
+                onClick={() => setActiveTab('videos')}
+                className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+                  activeTab === 'videos' 
+                    ? 'bg-purple-500/20 text-purple-400' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Video className="w-3 h-3" />
+                Videos
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setActiveTab('links')}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+              activeTab === 'links' 
+                ? 'bg-gold/20 text-gold' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Link2 className="w-3 h-3" />
+            Links
+          </button>
+        </div>
       </div>
 
       {/* ═══ TAB CONTENT ═══ */}
@@ -431,6 +439,12 @@ export default function ProfilePage() {
       {activeTab === 'videos' && isAnyJudge && (
         <div className="px-4">
           <MyRatingVideos />
+        </div>
+      )}
+
+      {activeTab === 'links' && (
+        <div className="px-4">
+          <LinkTreeEditor />
         </div>
       )}
 
