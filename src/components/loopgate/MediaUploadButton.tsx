@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { ImagePlus, X, Loader2, Film } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 interface MediaUploadButtonProps {
   onUpload: (url: string, type: 'image' | 'video') => void;
