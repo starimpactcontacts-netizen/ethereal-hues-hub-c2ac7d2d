@@ -16,6 +16,7 @@ import loopgateLogo from '@/assets/loopgate-logo.png';
 import atlasStatue from '@/assets/atlas-statue.png';
 import loopgatePreviewDevices from '@/assets/loopgate-hero-mockup.png';
 import editoriumLogo from '@/assets/editorium-logo.png';
+import loopyAvatar from '@/assets/loopy-avatar.png';
 
 
 import clioShortlistBadge from '@/assets/clio-shortlist-badge.jpg';
