@@ -18,12 +18,6 @@ interface DeezerSearchTabProps {
   isPlaying: boolean;
 }
 
-const CORS_PROXIES = [
-  (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  (url: string) => url, // direct (may work in some environments)
-];
-
 export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPlaying }: DeezerSearchTabProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DeezerTrack[]>([]);
@@ -36,23 +30,29 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
     setLoading(true);
     setSearched(true);
 
-    const baseUrl = `https://api.deezer.com/search?q=${encodeURIComponent(q)}&limit=25`;
-
-    for (const proxy of CORS_PROXIES) {
-      try {
-        const res = await fetch(proxy(baseUrl));
-        if (!res.ok) continue;
-        const data = await res.json();
-        if (data.data && Array.isArray(data.data)) {
-          setResults(data.data.filter((t: DeezerTrack) => t.preview));
-          setLoading(false);
-          return;
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deezer-search`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ query: q, limit: 25 }),
         }
-      } catch {
-        continue;
+      );
+      const data = await res.json();
+      if (data.data && Array.isArray(data.data)) {
+        setResults(data.data.filter((t: DeezerTrack) => t.preview));
+      } else {
+        setResults([]);
       }
+    } catch (err) {
+      console.error('Deezer search failed:', err);
+      setResults([]);
     }
-    setResults([]);
     setLoading(false);
   };
 
