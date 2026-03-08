@@ -740,7 +740,7 @@ export default function HubPage() {
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
                     <UserRound className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Solo Edit
                   </span>
                   <span className="text-[10px] text-white/50 font-bold relative z-10">100+ IDX</span>
