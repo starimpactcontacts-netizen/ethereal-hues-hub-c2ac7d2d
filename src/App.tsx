@@ -276,6 +276,7 @@ export default function App() {
             <Route path="/support" element={<SupportPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/download" element={<DownloadPage />} />
+            <Route path="/install" element={<InstallPage />} />
             <Route path="/app" element={<AppPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/faq" element={<FAQPage />} />
