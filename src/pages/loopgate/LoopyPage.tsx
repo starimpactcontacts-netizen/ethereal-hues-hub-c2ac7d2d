@@ -385,7 +385,7 @@ export default function LoopyPage() {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="anything u want loopy to know — editing software, how long it took, what u tried new..."
-                        className="bg-[#0a0a0a] border-white/[0.08] resize-none h-20 text-sm text-white/80 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/15"
+                        className="bg-[#0a0a0a] border-white/[0.12] resize-none h-20 text-sm text-white/90 rounded-none focus:border-purple-500/40 focus:ring-1 focus:ring-purple-500/20 placeholder:text-white/25"
                       />
                     </div>
 
