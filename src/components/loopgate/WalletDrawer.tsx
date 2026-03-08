@@ -33,6 +33,9 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
   const [savingPaypal, setSavingPaypal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loadingPaypal, setLoadingPaypal] = useState(true);
+  const [showPrefs, setShowPrefs] = useState(false);
+  const [showPolicy, setShowPolicy] = useState(false);
+  const [payoutSpeed, setPayoutSpeed] = useState<'instant' | 'standard'>('instant');
 
   useEffect(() => {
     if (!user || !open) return;
@@ -262,27 +265,129 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                 </div>
               )}
 
-              {/* Settings & Support — trust signals */}
+              {/* Settings & Support */}
               <div className="border-t border-white/[0.04] pt-4 space-y-1">
                 <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/30 mb-2">Settings & Support</p>
                 
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
+                <button onClick={() => setShowPrefs(!showPrefs)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
                   <Settings className="w-3.5 h-3.5 text-muted-foreground/40" />
                   <span className="text-xs text-foreground/60 flex-1">Payout Preferences</span>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
+                  <ChevronRight className={`w-3 h-3 text-muted-foreground/20 transition-transform ${showPrefs ? 'rotate-90' : ''}`} />
                 </button>
 
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
+                <AnimatePresence>
+                  {showPrefs && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3 pb-3 pt-1 space-y-2">
+                        <p className="text-[9px] text-muted-foreground/40 uppercase tracking-widest font-bold">Payout Speed</p>
+                        <button
+                          onClick={() => setPayoutSpeed('instant')}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg border transition-colors text-left ${
+                            payoutSpeed === 'instant'
+                              ? 'border-emerald-500/30 bg-emerald-500/[0.05]'
+                              : 'border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03]'
+                          }`}
+                        >
+                          <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${
+                            payoutSpeed === 'instant' ? 'border-emerald-400' : 'border-muted-foreground/20'
+                          }`}>
+                            {payoutSpeed === 'instant' && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-foreground/80">Instant</p>
+                            <p className="text-[9px] text-muted-foreground/40">Processed within 24 hours</p>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => setPayoutSpeed('standard')}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg border transition-colors text-left ${
+                            payoutSpeed === 'standard'
+                              ? 'border-emerald-500/30 bg-emerald-500/[0.05]'
+                              : 'border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03]'
+                          }`}
+                        >
+                          <div className={`w-3 h-3 rounded-full border-2 flex items-center justify-center ${
+                            payoutSpeed === 'standard' ? 'border-emerald-400' : 'border-muted-foreground/20'
+                          }`}>
+                            {payoutSpeed === 'standard' && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-foreground/80">Standard</p>
+                            <p className="text-[9px] text-muted-foreground/40">Batched weekly on Fridays</p>
+                          </div>
+                        </button>
+                        <p className="text-[8px] text-muted-foreground/20 pt-1">Changes apply to your next withdrawal request.</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <button onClick={() => setShowPolicy(!showPolicy)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
                   <FileText className="w-3.5 h-3.5 text-muted-foreground/40" />
                   <span className="text-xs text-foreground/60 flex-1">Payout Policy</span>
-                  <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
+                  <ChevronRight className={`w-3 h-3 text-muted-foreground/20 transition-transform ${showPolicy ? 'rotate-90' : ''}`} />
                 </button>
 
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left">
+                <AnimatePresence>
+                  {showPolicy && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3 pb-3 pt-1 space-y-3">
+                        <div>
+                          <p className="text-[10px] font-bold text-foreground/60 mb-0.5">Minimum Withdrawal</p>
+                          <p className="text-[9px] text-muted-foreground/40">$5.00 minimum per payout request.</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-foreground/60 mb-0.5">Processing Time</p>
+                          <p className="text-[9px] text-muted-foreground/40">Instant payouts are reviewed and sent within 24 hours. Standard payouts are batched and processed every Friday.</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-foreground/60 mb-0.5">Chargebacks & Fraud</p>
+                          <p className="text-[9px] text-muted-foreground/40">Loopgate reserves the right to reverse payouts tied to fraudulent activity, duplicate submissions, or policy violations.</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-foreground/60 mb-0.5">Earnings Expiry</p>
+                          <p className="text-[9px] text-muted-foreground/40">Unclaimed earnings remain available for 12 months. After that, funds may be forfeited.</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-foreground/60 mb-0.5">Tax Responsibility</p>
+                          <p className="text-[9px] text-muted-foreground/40">You are responsible for reporting earnings to your local tax authority. Loopgate does not withhold taxes.</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <button 
+                  onClick={() => window.location.href = 'mailto:team@loopgate.io'}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
+                >
                   <Mail className="w-3.5 h-3.5 text-muted-foreground/40" />
                   <span className="text-xs text-foreground/60 flex-1">Contact Support</span>
                   <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
                 </button>
+
+                <a 
+                  href="https://discord.gg/loopgate" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/[0.03] transition-colors text-left"
+                >
+                  <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/40" />
+                  <span className="text-xs text-foreground/60 flex-1">Discord Community</span>
+                  <ChevronRight className="w-3 h-3 text-muted-foreground/20" />
+                </a>
               </div>
 
               {/* Trust footer */}
