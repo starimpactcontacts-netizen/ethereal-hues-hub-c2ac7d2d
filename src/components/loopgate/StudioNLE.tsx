@@ -1901,8 +1901,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
           {/* Tracks area */}
           <div className="flex-1 overflow-x-auto overflow-y-hidden relative" style={{ scrollbarWidth: "none" }}>
-            {/* Time ruler */}
-            <div className="h-4 flex items-end sticky top-0 z-10" style={{ borderBottom: "1px solid #1e1e1e", background: "#141414" }}>
+            {/* Time ruler — draggable playhead */}
+            <div
+              className="h-4 flex items-end sticky top-0 z-10 cursor-crosshair"
+              style={{ borderBottom: "1px solid #1e1e1e", background: "#141414" }}
+              onMouseDown={timelineDrag.startPlayheadDrag}
+            >
               {duration > 0 && Array.from({ length: Math.ceil(duration) + 1 }).map((_, i) => (
                 <div key={i} className="flex-shrink-0 relative" style={{ width: `${60 * timelineZoom}px` }}>
                   <div className="absolute bottom-0 left-0 w-px h-2" style={{ background: "#2a2a2a" }} />
@@ -1914,12 +1918,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             </div>
 
             {/* Video track */}
-            <div ref={timelineRef} onClick={handleTimelineClick} className="h-[33px] relative cursor-pointer" style={{ borderBottom: "1px solid #1a1a1a" }}>
-              {activeMedia && duration > 0 && (
+            <div ref={timelineRef} onMouseDown={timelineDrag.startPlayheadDrag} className="h-[33px] relative cursor-pointer" style={{ borderBottom: "1px solid #1a1a1a" }}>
+              {activeMedia && duration > 0 && segments.length === 0 && (
                 <div className="absolute top-1 bottom-1 rounded overflow-hidden flex"
                   style={{
-                    left: `${(trimStart / duration) * duration * 60 * timelineZoom}px`,
-                    width: `${((trimEnd - trimStart) / duration) * duration * 60 * timelineZoom}px`,
+                    left: `${trimStart * 60 * timelineZoom}px`,
+                    width: `${(trimEnd - trimStart) * 60 * timelineZoom}px`,
                     background: ACCENT_DIM,
                     border: `1px solid ${ACCENT_BORDER}`,
                   }}>
@@ -1928,10 +1932,53 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                       <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     </div>
                   ))}
-                  <div className="absolute inset-y-0 left-0 w-1 cursor-col-resize rounded-l transition-all" style={{ background: ACCENT }} />
-                  <div className="absolute inset-y-0 right-0 w-1 cursor-col-resize rounded-r transition-all" style={{ background: ACCENT }} />
+                  {/* Draggable trim handles */}
+                  <div
+                    className="absolute inset-y-0 left-0 w-2 cursor-col-resize rounded-l transition-all hover:w-3 z-10 flex items-center justify-center"
+                    style={{ background: ACCENT }}
+                    onMouseDown={(e) => { saveUndoSnapshot(); timelineDrag.startTrimDrag("trim-start", e); }}
+                  >
+                    <GripVertical className="w-2 h-2 text-black/50" />
+                  </div>
+                  <div
+                    className="absolute inset-y-0 right-0 w-2 cursor-col-resize rounded-r transition-all hover:w-3 z-10 flex items-center justify-center"
+                    style={{ background: ACCENT }}
+                    onMouseDown={(e) => { saveUndoSnapshot(); timelineDrag.startTrimDrag("trim-end", e); }}
+                  >
+                    <GripVertical className="w-2 h-2 text-black/50" />
+                  </div>
                 </div>
               )}
+
+              {/* Render segments after split */}
+              {activeMedia && duration > 0 && segments.length > 0 && segments.map((seg, idx) => (
+                <div key={seg.id}
+                  className="absolute top-1 bottom-1 rounded overflow-hidden flex group"
+                  style={{
+                    left: `${seg.sourceStart * 60 * timelineZoom}px`,
+                    width: `${(seg.sourceEnd - seg.sourceStart) * 60 * timelineZoom}px`,
+                    background: ACCENT_DIM,
+                    border: `1px solid ${ACCENT_BORDER}`,
+                    marginLeft: idx > 0 ? "1px" : "0",
+                  }}>
+                  <div className="flex-1 h-full overflow-hidden opacity-50" style={{ background: `hsl(${240 + idx * 30}, 60%, 25%)` }} />
+                  {/* Segment label */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-[7px] font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      {formatTimecode(seg.sourceStart)} – {formatTimecode(seg.sourceEnd)}
+                    </span>
+                  </div>
+                  {/* Delete segment button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteSegment(seg.id); }}
+                    className="absolute top-0 right-0 w-4 h-4 rounded-bl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    style={{ background: "rgba(239,68,68,0.8)" }}
+                  >
+                    <X className="w-2 h-2 text-white" />
+                  </button>
+                </div>
+              ))}
+
               {!activeMedia && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-[9px]" style={{ color: "#333" }}>Drag material here and start to create</span>
@@ -1976,11 +2023,13 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
               )}
             </div>
 
-            {/* Playhead */}
+            {/* Playhead — draggable */}
             {duration > 0 && (
-              <div className="absolute top-0 bottom-0 w-0.5 z-20 pointer-events-none"
-                style={{ left: `${(currentTime / duration) * duration * 60 * timelineZoom}px`, background: "white" }}>
-                <div className="absolute -top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full" style={{ background: "white", boxShadow: "0 0 4px rgba(255,255,255,0.5)" }} />
+              <div className="absolute top-0 bottom-0 w-0.5 z-20"
+                style={{ left: `${currentTime * 60 * timelineZoom}px`, background: "white", cursor: "col-resize" }}>
+                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-3 h-3 z-30 cursor-col-resize"
+                  style={{ background: "white", clipPath: "polygon(0 0, 100% 0, 50% 70%)", boxShadow: "0 0 6px rgba(255,255,255,0.5)" }}
+                />
               </div>
             )}
           </div>
