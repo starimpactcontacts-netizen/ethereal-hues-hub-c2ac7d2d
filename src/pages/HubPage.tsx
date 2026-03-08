@@ -748,7 +748,7 @@ export default function HubPage() {
               ) : qfIsSearching ? (
                 <>
                   <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Searching...
                   </span>
                   <span className="flex items-center gap-1 text-xs text-white/70 font-mono relative z-10">
