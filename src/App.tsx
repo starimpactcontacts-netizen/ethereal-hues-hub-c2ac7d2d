@@ -69,6 +69,7 @@ const RulesPage = lazy(() => import("./pages/RulesPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const DownloadPage = lazy(() => import("./pages/DownloadPage"));
+const InstallPage = lazy(() => import("./pages/loopgate/InstallPage"));
 const AppPage = lazy(() => import("./pages/AppPage"));
 const HowItWorksPage = lazy(() => import("./pages/HowItWorksPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
@@ -275,6 +276,7 @@ export default function App() {
             <Route path="/support" element={<SupportPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/download" element={<DownloadPage />} />
+            <Route path="/install" element={<InstallPage />} />
             <Route path="/app" element={<AppPage />} />
             <Route path="/how-it-works" element={<HowItWorksPage />} />
             <Route path="/faq" element={<FAQPage />} />
