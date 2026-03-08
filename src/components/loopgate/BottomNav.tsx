@@ -47,23 +47,16 @@ export default function BottomNav() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background safe-bottom">
         {/* Top border with synced arena color glow */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-border" />
-        {/* Core bright line — hue-synced */}
+        {/* Core bright line — hue-synced, subtle */}
         <motion.div
-          className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-[200px] h-[2px]"
-          style={{ background: "linear-gradient(90deg, transparent, #f59e0b, #ef4444, #a855f7, #06b6d4, transparent)" }}
+          className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-[160px] h-[1px] opacity-25"
+          style={{ background: "linear-gradient(90deg, transparent, #f59e0b, #a855f7, transparent)" }}
           animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
         />
-        {/* Soft spread glow — hue-synced */}
+        {/* Soft ambient glow */}
         <motion.div
-          className="absolute top-[-4px] left-1/2 -translate-x-1/2 w-[140px] h-[8px] blur-sm opacity-60"
-          style={{ background: "linear-gradient(90deg, transparent, #f59e0b, #ef4444, #a855f7, #06b6d4, transparent)" }}
-          animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-        />
-        {/* Wide ambient glow — hue-synced */}
-        <motion.div
-          className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-[100px] h-[16px] blur-md opacity-30"
+          className="absolute top-[-3px] left-1/2 -translate-x-1/2 w-[100px] h-[6px] blur-sm opacity-10"
           style={{ background: "radial-gradient(ellipse, #a855f7, transparent)" }}
           animate={{ filter: ["hue-rotate(0deg)", "hue-rotate(360deg)"] }}
           transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
