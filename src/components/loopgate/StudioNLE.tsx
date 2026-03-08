@@ -966,8 +966,23 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setState("processing"); setProgress(0);
     const quality = EXPORT_QUALITIES.find(q => q.id === exportQuality) ?? EXPORT_QUALITIES[2];
     const ctx = canvas.getContext("2d")!;
-    const exportW = Math.round(vid.videoWidth * quality.resolution);
-    const exportH = Math.round(vid.videoHeight * quality.resolution);
+    
+    // Calculate crop for export
+    const cropP = CROP_PRESETS.find(p => p.id === cropPreset);
+    let exportW: number, exportH: number;
+    let cropSx = 0, cropSy = 0, cropSw = vid.videoWidth, cropSh = vid.videoHeight;
+    if (cropP && cropP.ratio) {
+      const sourceRatio = vid.videoWidth / vid.videoHeight;
+      if (sourceRatio > cropP.ratio) {
+        cropSw = Math.round(vid.videoHeight * cropP.ratio);
+        cropSx = Math.round((vid.videoWidth - cropSw) / 2);
+      } else {
+        cropSh = Math.round(vid.videoWidth / cropP.ratio);
+        cropSy = Math.round((vid.videoHeight - cropSh) / 2);
+      }
+    }
+    exportW = Math.round(cropSw * quality.resolution);
+    exportH = Math.round(cropSh * quality.resolution);
     canvas.width = exportW; canvas.height = exportH;
     const stream = canvas.captureStream(quality.fps);
 
