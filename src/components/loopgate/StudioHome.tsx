@@ -147,7 +147,7 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
             {isMobile ? "New" : "New Project"}
           </button>
         </div>
-        <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(124,106,255,0.15), transparent)" }} />
+        <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.18), transparent)" }} />
       </div>
 
       {/* ═══════════════════ SUBMIT HUB ═══════════════════ */}
