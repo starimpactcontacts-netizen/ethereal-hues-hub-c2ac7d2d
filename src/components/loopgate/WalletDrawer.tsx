@@ -134,21 +134,29 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent" />
 
                 <div className="relative p-5">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/70 mb-1">Available Balance</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/70 mb-1">Available to Withdraw</p>
                   <div className="flex items-baseline gap-1">
                     <span className="text-5xl font-black text-emerald-400" style={teko}>
                       ${(availableBalance / 100).toFixed(2)}
                     </span>
                   </div>
-                  <div className="flex gap-4 mt-3 pt-3 border-t border-emerald-500/10">
+                  
+                  {/* Breakdown stats */}
+                  <div className="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-emerald-500/10">
                     <div>
-                      <p className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/50">Total Earned</p>
-                      <p className="text-sm font-bold text-foreground/70" style={teko}>${(earnings.earnings_cents / 100).toFixed(2)}</p>
+                      <p className="text-[8px] font-bold uppercase tracking-widest text-emerald-400/40">Total Earned</p>
+                      <p className="text-lg font-black text-emerald-400/80" style={teko}>${(earnings.earnings_cents / 100).toFixed(2)}</p>
                     </div>
                     {earnings.pending_withdrawal_cents > 0 && (
                       <div>
                         <p className="text-[8px] font-bold uppercase tracking-widest text-amber-400/50">Pending</p>
-                        <p className="text-sm font-bold text-amber-400" style={teko}>${(earnings.pending_withdrawal_cents / 100).toFixed(2)}</p>
+                        <p className="text-lg font-black text-amber-400" style={teko}>${(earnings.pending_withdrawal_cents / 100).toFixed(2)}</p>
+                      </div>
+                    )}
+                    {earnings.withdrawn_cents > 0 && (
+                      <div>
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-foreground/30">Withdrawn</p>
+                        <p className="text-lg font-black text-foreground/50" style={teko}>${(earnings.withdrawn_cents / 100).toFixed(2)}</p>
                       </div>
                     )}
                   </div>
