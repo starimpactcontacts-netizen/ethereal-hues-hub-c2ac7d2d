@@ -14,7 +14,9 @@ import {
   MonitorPlay, FilmIcon, Circle, Wind,
   Sun, Lightbulb, Sunrise,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
-  RotateCw, Maximize, Minimize, Blend, GripVertical
+  RotateCw, Maximize, Minimize, Blend, GripVertical,
+  Crop, FlipVertical, RectangleHorizontal, Square, Smartphone, Monitor,
+  Ratio
 } from "lucide-react";
 import { useUndoRedo } from "./studio/useUndoRedo";
 import { useCanvasDrag } from "./studio/useCanvasDrag";
@@ -63,18 +65,33 @@ type TextOverlay = {
 };
 type MediaItem = { id: string; file: File; url: string; thumbnail: string; duration: number; name: string; type: "video" | "audio" | "image" };
 type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text" | "effect"; visible: boolean; locked: boolean };
-type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale";
+type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop";
 type EffectIntensity = Record<string, number>;
 
-// Adobe Pro accent — Premiere/AE blue-purple
-const ACCENT = "#9999FF";
-const ACCENT_DIM = "rgba(153,153,255,0.10)";
-const ACCENT_BORDER = "rgba(153,153,255,0.22)";
+// Studio accent — refined blue-violet
+const ACCENT = "#7C6AFF";
+const ACCENT_DIM = "rgba(124,106,255,0.10)";
+const ACCENT_BORDER = "rgba(124,106,255,0.25)";
+const ACCENT_GLOW = "rgba(124,106,255,0.35)";
+
+// Crop/Aspect ratio presets
+type CropPreset = { id: string; label: string; icon: typeof Square; ratio: number | null; desc: string };
+const CROP_PRESETS: CropPreset[] = [
+  { id: "free", label: "Free", icon: Crop, ratio: null, desc: "No constraints" },
+  { id: "16:9", label: "16:9", icon: Monitor, ratio: 16 / 9, desc: "Landscape / YouTube" },
+  { id: "9:16", label: "9:16", icon: Smartphone, ratio: 9 / 16, desc: "Portrait / Reels / TikTok" },
+  { id: "4:3", label: "4:3", icon: RectangleHorizontal, ratio: 4 / 3, desc: "Classic TV" },
+  { id: "1:1", label: "1:1", icon: Square, ratio: 1, desc: "Square / Instagram" },
+  { id: "4:5", label: "4:5", icon: Smartphone, ratio: 4 / 5, desc: "Portrait / Feed" },
+  { id: "21:9", label: "21:9", icon: Monitor, ratio: 21 / 9, desc: "Ultrawide / Cinema" },
+  { id: "2.39:1", label: "2.39:1", icon: Film, ratio: 2.39, desc: "Anamorphic" },
+];
 
 const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "media", icon: FileVideo, label: "Media" },
   { id: "audio", icon: Music, label: "Audio" },
   { id: "text", icon: Type, label: "Text" },
+  { id: "crop", icon: Crop, label: "Crop" },
   { id: "effects", icon: Sparkles, label: "Effects" },
   { id: "transitions", icon: Layers, label: "Transitions" },
   { id: "filters", icon: Wand2, label: "Filters" },
@@ -214,6 +231,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
   // Clip segments for splitting
   const [segments, setSegments] = useState<ClipSegment[]>([]);
+
+  // Crop/Transform state
+  const [cropPreset, setCropPreset] = useState<string>("free");
+  const [rotation, setRotation] = useState(0); // degrees
+  const [flipH, setFlipH] = useState(false);
+  const [flipV, setFlipV] = useState(false);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
@@ -458,18 +481,52 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     if (!vid || !canvas || !videoUrl) return;
     const ctx = canvas.getContext("2d"); if (!ctx) return;
     let running = true;
+
+    // Calculate crop dimensions
+    const getCropDimensions = (vw: number, vh: number) => {
+      const preset = CROP_PRESETS.find(p => p.id === cropPreset);
+      if (!preset || !preset.ratio) return { sx: 0, sy: 0, sw: vw, sh: vh, dw: vw, dh: vh };
+      const targetRatio = preset.ratio;
+      const sourceRatio = vw / vh;
+      let sx = 0, sy = 0, sw = vw, sh = vh;
+      if (sourceRatio > targetRatio) {
+        sw = Math.round(vh * targetRatio);
+        sx = Math.round((vw - sw) / 2);
+      } else {
+        sh = Math.round(vw / targetRatio);
+        sy = Math.round((vh - sh) / 2);
+      }
+      return { sx, sy, sw, sh, dw: sw, dh: sh };
+    };
+
     const draw = () => {
       if (!running) return;
       if (vid.videoWidth && vid.videoHeight) {
-        if (canvas.width !== vid.videoWidth || canvas.height !== vid.videoHeight) {
-          canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
+        const crop = getCropDimensions(vid.videoWidth, vid.videoHeight);
+        
+        // Resize canvas to cropped output
+        if (canvas.width !== crop.dw || canvas.height !== crop.dh) {
+          canvas.width = crop.dw;
+          canvas.height = crop.dh;
         }
+        
+        ctx.save();
+        
+        // Apply rotation and flip transforms
+        if (rotation !== 0 || flipH || flipV) {
+          ctx.translate(crop.dw / 2, crop.dh / 2);
+          if (rotation !== 0) ctx.rotate((rotation * Math.PI) / 180);
+          ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+          ctx.translate(-crop.dw / 2, -crop.dh / 2);
+        }
+
         // Apply CSS-based filters (presets + basic grading)
         const adjFilter = buildAdjustFilter(adjustments);
         const combinedFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
         ctx.filter = combinedFilter;
-        ctx.drawImage(vid, 0, 0);
+        ctx.drawImage(vid, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, crop.dw, crop.dh);
         ctx.filter = "none";
+        ctx.restore();
 
         // Apply pixel-based adjustments (highlights, shadows, sharpen, vignette, etc.)
         if (hasAdjustments(adjustments)) {
@@ -493,12 +550,29 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             renderFullTextOverlay(ctx, canvas, overlay, vid.currentTime);
           }
         });
+
+        // Draw crop overlay guides when crop tool is active
+        if (cropPreset !== "free" && activeToolTab === "crop") {
+          ctx.strokeStyle = "rgba(124,106,255,0.3)";
+          ctx.lineWidth = 1;
+          // Rule of thirds
+          for (let i = 1; i <= 2; i++) {
+            ctx.beginPath();
+            ctx.moveTo((crop.dw / 3) * i, 0);
+            ctx.lineTo((crop.dw / 3) * i, crop.dh);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, (crop.dh / 3) * i);
+            ctx.lineTo(crop.dw, (crop.dh / 3) * i);
+            ctx.stroke();
+          }
+        }
       }
       animRef.current = requestAnimationFrame(draw);
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, effectIntensities, activeTransition, transitionDuration, duration, adjustments, cropPreset, rotation, flipH, flipV, activeToolTab]);
 
   // ─── Text Rendering Engine ───
   const renderFullTextOverlay = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, overlay: TextOverlay, time: number) => {
@@ -892,8 +966,23 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setState("processing"); setProgress(0);
     const quality = EXPORT_QUALITIES.find(q => q.id === exportQuality) ?? EXPORT_QUALITIES[2];
     const ctx = canvas.getContext("2d")!;
-    const exportW = Math.round(vid.videoWidth * quality.resolution);
-    const exportH = Math.round(vid.videoHeight * quality.resolution);
+    
+    // Calculate crop for export
+    const cropP = CROP_PRESETS.find(p => p.id === cropPreset);
+    let exportW: number, exportH: number;
+    let cropSx = 0, cropSy = 0, cropSw = vid.videoWidth, cropSh = vid.videoHeight;
+    if (cropP && cropP.ratio) {
+      const sourceRatio = vid.videoWidth / vid.videoHeight;
+      if (sourceRatio > cropP.ratio) {
+        cropSw = Math.round(vid.videoHeight * cropP.ratio);
+        cropSx = Math.round((vid.videoWidth - cropSw) / 2);
+      } else {
+        cropSh = Math.round(vid.videoWidth / cropP.ratio);
+        cropSy = Math.round((vid.videoHeight - cropSh) / 2);
+      }
+    }
+    exportW = Math.round(cropSw * quality.resolution);
+    exportH = Math.round(cropSh * quality.resolution);
     canvas.width = exportW; canvas.height = exportH;
     const stream = canvas.captureStream(quality.fps);
 
@@ -941,11 +1030,20 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
       if (vid.currentTime >= trimEnd || vid.ended) { vid.pause(); recorder.stop(); return; }
+      ctx.save();
+      // Apply rotation/flip for export
+      if (rotation !== 0 || flipH || flipV) {
+        ctx.translate(exportW / 2, exportH / 2);
+        if (rotation !== 0) ctx.rotate((rotation * Math.PI) / 180);
+        ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+        ctx.translate(-exportW / 2, -exportH / 2);
+      }
       const adjFilter = buildAdjustFilter(adjustments);
       const combinedExportFilter = [computedFilter, adjFilter].filter(f => f !== "none").join(" ") || "none";
       ctx.filter = combinedExportFilter;
-      ctx.drawImage(vid, 0, 0, exportW, exportH);
+      ctx.drawImage(vid, cropSx, cropSy, cropSw, cropSh, 0, 0, exportW, exportH);
       ctx.filter = "none";
+      ctx.restore();
       if (hasAdjustments(adjustments)) {
         applyCanvasAdjustments(ctx, canvas, adjustments);
       }
@@ -970,7 +1068,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration, adjustments]);
+  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration, adjustments, cropPreset, rotation, flipH, flipV]);
 
   const handleDownload = () => {
     if (!resultUrl || !activeMedia) return;
@@ -981,26 +1079,27 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
   // ─── RENDER ───
   return (
-    <div className="h-full flex flex-col overflow-hidden select-none" style={{ background: "#0a0a0a" }}>
+    <div className="h-full flex flex-col overflow-hidden select-none" style={{ background: "#09090c", fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* ═══ TOP TOOLBAR ═══ */}
-      <div className="h-11 flex items-center px-2 gap-1 flex-shrink-0 z-20" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
-        <button onClick={() => onBack ? onBack() : navigate("/hub")} className="p-1.5 rounded-md transition-all hover:bg-white/5 mr-1" title="Back to Loopgate">
-          <ArrowLeft className="w-4 h-4" style={{ color: "#aaa" }} />
+      <div className="h-11 flex items-center px-2 gap-0.5 flex-shrink-0 z-20" style={{ background: "#111114", borderBottom: "1px solid #1e1e24" }}>
+        <button onClick={() => onBack ? onBack() : navigate("/hub")} className="p-1.5 rounded-lg transition-all hover:bg-white/5 mr-1" title="Back to Loopgate">
+          <ArrowLeft className="w-4 h-4" style={{ color: "#888" }} />
         </button>
-        <div className="w-px h-5 mr-1" style={{ background: "#2a2a2a" }} />
+        <div className="w-px h-5 mr-1" style={{ background: "#1e1e24" }} />
         {TOOL_TABS.map((tab) => {
           const isActive = activeToolTab === tab.id;
           return (
             <button key={tab.id}
               onClick={() => setActiveToolTab(isActive ? null : tab.id)}
-              className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-md transition-all duration-150"
+              className="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg transition-all duration-200 relative"
               style={{
-                color: isActive ? ACCENT : "#8a8a8a",
+                color: isActive ? ACCENT : "#666",
                 background: isActive ? ACCENT_DIM : "transparent",
               }}>
               <tab.icon className="w-4 h-4" />
-              <span className="text-[9px] font-medium">{tab.label}</span>
+              <span className="text-[8px] font-semibold tracking-wide">{tab.label}</span>
+              {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full" style={{ background: ACCENT }} />}
             </button>
           );
         })}
@@ -1012,19 +1111,19 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         <button onClick={handleRedo} disabled={!canRedo} className="p-1.5 rounded-md transition-all hover:bg-white/5 disabled:opacity-20" title="Redo (⌘⇧Z)">
           <Redo className="w-4 h-4" style={{ color: "#aaa" }} />
         </button>
-        <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
+        <div className="w-px h-5 mx-1" style={{ background: "#1e1e24" }} />
         <StudioSubmitButton />
-        <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
+        <div className="w-px h-5 mx-1" style={{ background: "#1e1e24" }} />
         {state === "done" ? (
           <button onClick={handleDownload}
-            className="h-8 px-5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: ACCENT, color: "#000" }}>
+            className="h-8 px-5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, color: "#fff", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
             <Download className="w-3.5 h-3.5" /> Save
           </button>
         ) : (
           <button onClick={startExport} disabled={state === "processing" || !activeMedia}
-            className="h-8 px-5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-30"
-            style={{ background: ACCENT, color: "#000" }}>
+            className="h-8 px-5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90 disabled:opacity-30"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, color: "#fff", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
             {state === "processing" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
             {state === "processing" ? `${progress}%` : "Export"}
           </button>
@@ -1044,19 +1143,19 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
               className="flex-shrink-0 overflow-hidden flex flex-col"
-              style={{ background: "#1a1a1a", borderRight: "1px solid #2a2a2a" }}
+              style={{ background: "#111114", borderRight: "1px solid #1e1e24" }}
             >
-              <div className="flex items-center h-9 px-3 flex-shrink-0" style={{ borderBottom: "1px solid #222" }}>
-                <span className="text-xs font-semibold" style={{ color: "#e0e0e0" }}>
+              <div className="flex items-center h-9 px-3 flex-shrink-0" style={{ borderBottom: "1px solid #1e1e24" }}>
+                <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: "#999" }}>
                   {TOOL_TABS.find(t => t.id === activeToolTab)?.label}
                 </span>
                 <div className="flex-1" />
-                <button onClick={() => setActiveToolTab(null)} className="p-1 rounded hover:bg-white/5 transition-all">
-                  <X className="w-3.5 h-3.5" style={{ color: "#666" }} />
+                <button onClick={() => setActiveToolTab(null)} className="p-1 rounded-lg hover:bg-white/5 transition-all">
+                  <X className="w-3.5 h-3.5" style={{ color: "#555" }} />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+              <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "thin", scrollbarColor: "#2a2a30 transparent" }}>
 
                 {/* ════════ MEDIA ════════ */}
                 {activeToolTab === "media" && (
@@ -1101,7 +1200,95 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
-                {/* ════════ TEXT — Full Editor ════════ */}
+                {/* ════════ CROP / TRANSFORM ════════ */}
+                {activeToolTab === "crop" && (
+                  <>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#666" }}>Aspect Ratio</span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {CROP_PRESETS.map((preset) => {
+                          const isActive = cropPreset === preset.id;
+                          const Icon = preset.icon;
+                          return (
+                            <button key={preset.id}
+                              onClick={() => setCropPreset(isActive ? "free" : preset.id)}
+                              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all"
+                              style={{
+                                background: isActive ? ACCENT_DIM : "#151515",
+                                border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                              }}>
+                              <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: isActive ? ACCENT : "#555" }} />
+                              <div className="text-left">
+                                <span className="text-[11px] font-semibold block" style={{ color: isActive ? ACCENT : "#bbb" }}>{preset.label}</span>
+                                <span className="text-[8px] block" style={{ color: "#555" }}>{preset.desc}</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Rotation */}
+                    <div className="space-y-2 pt-2" style={{ borderTop: "1px solid #222" }}>
+                      <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#666" }}>Rotation</span>
+                      <div className="flex items-center gap-2">
+                        <Slider value={[rotation]} onValueChange={v => setRotation(v[0])} min={-180} max={180} step={1} className="flex-1" />
+                        <span className="text-[10px] font-mono w-10 text-right" style={{ color: "#888" }}>{rotation}°</span>
+                      </div>
+                      <div className="flex gap-1.5">
+                        {[-90, 0, 90, 180].map(deg => (
+                          <button key={deg} onClick={() => setRotation(deg)}
+                            className="flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all"
+                            style={{
+                              background: rotation === deg ? ACCENT_DIM : "#151515",
+                              border: rotation === deg ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                              color: rotation === deg ? ACCENT : "#666",
+                            }}>
+                            {deg === 0 ? "0°" : `${deg}°`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Flip */}
+                    <div className="space-y-2 pt-2" style={{ borderTop: "1px solid #222" }}>
+                      <span className="text-[10px] font-semibold tracking-wide uppercase" style={{ color: "#666" }}>Flip</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => setFlipH(!flipH)}
+                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all"
+                          style={{
+                            background: flipH ? ACCENT_DIM : "#151515",
+                            border: flipH ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                            color: flipH ? ACCENT : "#666",
+                          }}>
+                          <FlipHorizontal className="w-4 h-4" />
+                          <span className="text-[10px] font-medium">Horizontal</span>
+                        </button>
+                        <button onClick={() => setFlipV(!flipV)}
+                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all"
+                          style={{
+                            background: flipV ? ACCENT_DIM : "#151515",
+                            border: flipV ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                            color: flipV ? ACCENT : "#666",
+                          }}>
+                          <FlipVertical className="w-4 h-4" />
+                          <span className="text-[10px] font-medium">Vertical</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Reset */}
+                    {(cropPreset !== "free" || rotation !== 0 || flipH || flipV) && (
+                      <button onClick={() => { setCropPreset("free"); setRotation(0); setFlipH(false); setFlipV(false); }}
+                        className="w-full py-2 text-[10px] font-medium rounded-lg transition-all hover:bg-red-500/10"
+                        style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
+                        Reset Transform
+                      </button>
+                    )}
+                  </>
+                )}
+
+
                 {activeToolTab === "text" && (
                   <>
                     {/* Text input */}
@@ -1695,20 +1882,23 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         </AnimatePresence>
 
         {/* ─── CENTER: Player ─── */}
-        <div className="flex-1 flex flex-col min-w-0" style={{ background: "#0a0a0a" }}>
-          <div className="h-8 flex items-center px-3 flex-shrink-0" style={{ background: "#141414", borderBottom: "1px solid #1e1e1e" }}>
-            <span className="text-[11px] font-medium" style={{ color: "#888" }}>Player</span>
+        <div className="flex-1 flex flex-col min-w-0" style={{ background: "#09090c" }}>
+          <div className="h-7 flex items-center px-3 flex-shrink-0" style={{ background: "#0e0e12", borderBottom: "1px solid #1a1a20" }}>
+            <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#444" }}>Preview</span>
+            {cropPreset !== "free" && (
+              <span className="ml-2 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wide" style={{ background: "rgba(124,106,255,0.1)", color: ACCENT, border: `1px solid ${ACCENT_BORDER}` }}>{cropPreset}</span>
+            )}
             {activeFilter.name !== "none" && (
-              <span className="ml-2 px-1.5 py-0.5 rounded text-[8px] font-medium" style={{ background: ACCENT_DIM, color: ACCENT }}>{activeFilter.label}</span>
+              <span className="ml-1.5 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wide" style={{ background: ACCENT_DIM, color: ACCENT, border: `1px solid ${ACCENT_BORDER}` }}>{activeFilter.label}</span>
             )}
             {activeTransition && (
-              <span className="ml-1 px-1.5 py-0.5 rounded text-[8px] font-medium" style={{ background: "rgba(251,191,36,0.1)", color: "#fbbf24" }}>
+              <span className="ml-1 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wide" style={{ background: "rgba(251,191,36,0.08)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>
                 {TRANSITIONS.find(t => t.id === activeTransition)?.label}
               </span>
             )}
           </div>
 
-          <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0" style={{ background: "#0a0a0a" }}>
+          <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0" style={{ background: "#09090c" }}>
             {videoUrl ? (
               <>
                 <video ref={videoRef} src={videoUrl} className="hidden" playsInline preload="auto" />
@@ -1798,53 +1988,56 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
           </div>
 
           {/* Player controls */}
-          <div className="h-10 flex items-center px-3 gap-3 flex-shrink-0" style={{ background: "#141414", borderTop: "1px solid #1e1e1e" }}>
-            <span className="text-[10px] font-mono w-20" style={{ color: "#888" }}>{formatTimecode(currentTime, true)}</span>
-            <span style={{ color: "#333" }}>/</span>
-            <span className="text-[10px] font-mono w-20" style={{ color: "#555" }}>{formatTimecode(duration, true)}</span>
+          <div className="h-10 flex items-center px-3 gap-3 flex-shrink-0" style={{ background: "#0e0e12", borderTop: "1px solid #1a1a20" }}>
+            <span className="text-[10px] font-mono tracking-wider" style={{ color: ACCENT }}>{formatTimecode(currentTime, true)}</span>
+            <span className="text-[8px]" style={{ color: "#2a2a30" }}>/</span>
+            <span className="text-[10px] font-mono tracking-wider" style={{ color: "#444" }}>{formatTimecode(duration, true)}</span>
             <div className="flex-1" />
-            <button onClick={() => seekTo(trimStart)} className="p-1 rounded hover:bg-white/5"><SkipBack className="w-4 h-4" style={{ color: "#666" }} /></button>
-            <button onClick={togglePlay} className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/5" style={{ border: "1px solid #333" }}>
+            <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipBack className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+            <button onClick={togglePlay} className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105" style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, boxShadow: `0 0 20px ${ACCENT_GLOW}` }}>
               {playing ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white ml-0.5" />}
             </button>
-            <button onClick={() => seekTo(trimEnd)} className="p-1 rounded hover:bg-white/5"><SkipForward className="w-4 h-4" style={{ color: "#666" }} /></button>
+            <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipForward className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
             <div className="flex-1" />
-            <button onClick={() => setMuted(!muted)} className="p-1 rounded hover:bg-white/5">
-              {muted ? <VolumeX className="w-4 h-4" style={{ color: "#666" }} /> : <Volume2 className="w-4 h-4" style={{ color: "#666" }} />}
+            <button onClick={() => setMuted(!muted)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all">
+              {muted ? <VolumeX className="w-3.5 h-3.5" style={{ color: "#555" }} /> : <Volume2 className="w-3.5 h-3.5" style={{ color: "#555" }} />}
             </button>
             <button onClick={() => setSpeed(SPEED_OPTIONS[(SPEED_OPTIONS.indexOf(speed) + 1) % SPEED_OPTIONS.length])}
-              className="px-2 py-0.5 text-[10px] font-semibold rounded transition-all hover:bg-white/5" style={{ color: "#888" }}>
+              className="px-2 py-1 text-[9px] font-bold tracking-wider rounded-md transition-all hover:bg-white/5" style={{ color: "#777", border: "1px solid #1e1e24" }}>
               {speed}x
             </button>
-            <button onClick={() => setShowShortcuts(prev => !prev)} className="p-1 rounded hover:bg-white/5">
-              <Keyboard className="w-4 h-4" style={{ color: "#666" }} />
+            <button onClick={() => setShowShortcuts(prev => !prev)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all">
+              <Keyboard className="w-3.5 h-3.5" style={{ color: "#555" }} />
             </button>
           </div>
         </div>
 
         {/* ─── RIGHT PANEL — Details ─── */}
-        <div className="w-[260px] flex-shrink-0 flex flex-col" style={{ background: "#1a1a1a", borderLeft: "1px solid #2a2a2a" }}>
-          <div className="h-8 flex items-center px-3" style={{ borderBottom: "1px solid #222" }}>
-            <span className="text-[11px] font-medium" style={{ color: ACCENT }}>Details</span>
+        <div className="w-[260px] flex-shrink-0 flex flex-col" style={{ background: "#131316", borderLeft: "1px solid #1e1e24" }}>
+          <div className="h-8 flex items-center px-3" style={{ borderBottom: "1px solid #1e1e24" }}>
+            <span className="text-[10px] font-semibold tracking-widest uppercase" style={{ color: ACCENT }}>Details</span>
           </div>
-          <div className="flex-1 p-3 space-y-3 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+          <div className="flex-1 p-3 space-y-1 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
             {activeMedia ? (
-              <div className="space-y-2.5">
+              <div className="space-y-0">
                 {[
                   ["Name", activeMedia.name],
                   ["Duration", formatTimecode(activeMedia.duration)],
                   ["Type", activeMedia.type.toUpperCase()],
                   ["Trim", `${formatTimecode(trimStart)} — ${formatTimecode(trimEnd)}`],
                   ["Speed", `${speed}x`],
+                  ["Crop", cropPreset === "free" ? "None" : cropPreset],
+                  ["Rotation", rotation !== 0 ? `${rotation}°` : "None"],
+                  ["Flip", flipH || flipV ? [flipH && "H", flipV && "V"].filter(Boolean).join("+") : "None"],
                   ["Filter", activeFilter.label],
                   ["Effects", activeEffects.length > 0 ? `${activeEffects.length} active` : "None"],
                   ["Transition", activeTransition ? TRANSITIONS.find(t => t.id === activeTransition)?.label ?? "None" : "None"],
                   ["Text Layers", textOverlays.length > 0 ? `${textOverlays.length}` : "None"],
                   ["Segments", segments.length > 0 ? `${segments.length} clips` : "1 clip"],
                 ].map(([label, val]) => (
-                  <div key={label} className="flex justify-between items-start">
-                    <span className="text-[10px]" style={{ color: "#666" }}>{label}:</span>
-                    <span className="text-[10px] font-medium text-right max-w-[140px] truncate" style={{ color: "#ccc" }}>{val}</span>
+                  <div key={label} className="flex justify-between items-center py-1.5" style={{ borderBottom: "1px solid #1a1a1e" }}>
+                    <span className="text-[10px] font-medium" style={{ color: "#555" }}>{label}</span>
+                    <span className="text-[10px] font-semibold text-right max-w-[140px] truncate" style={{ color: "#c0c0c8" }}>{val}</span>
                   </div>
                 ))}
               </div>
@@ -1856,29 +2049,29 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       </div>
 
       {/* ═══ TIMELINE ═══ */}
-      <div className="flex-shrink-0 flex flex-col" style={{ height: 170, background: "#141414", borderTop: "1px solid #2a2a2a" }}>
-        <div className="h-7 flex items-center px-3 gap-1.5 flex-shrink-0" style={{ borderBottom: "1px solid #1e1e1e" }}>
-          <button onClick={splitAtPlayhead} className="p-1 rounded hover:bg-white/5"><Scissors className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
-          <button className="p-1 rounded hover:bg-white/5"><Trash2 className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
-          <button className="p-1 rounded hover:bg-white/5"><Copy className="w-3.5 h-3.5" style={{ color: "#666" }} /></button>
-          <div className="w-px h-3.5 mx-1" style={{ background: "#2a2a2a" }} />
-          <button onClick={() => setMuted(!muted)} className="p-1 rounded hover:bg-white/5">
-            <Volume2 className="w-3.5 h-3.5" style={{ color: "#666" }} />
+      <div className="flex-shrink-0 flex flex-col" style={{ height: 170, background: "#0e0e12", borderTop: "1px solid #1e1e24" }}>
+        <div className="h-7 flex items-center px-3 gap-1 flex-shrink-0" style={{ borderBottom: "1px solid #1a1a20" }}>
+          <button onClick={splitAtPlayhead} className="p-1 rounded-md hover:bg-white/5 transition-all" title="Split (Scissors)"><Scissors className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+          <button className="p-1 rounded-md hover:bg-white/5 transition-all" title="Delete"><Trash2 className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+          <button className="p-1 rounded-md hover:bg-white/5 transition-all" title="Duplicate"><Copy className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
+          <div className="w-px h-3.5 mx-1" style={{ background: "#1e1e24" }} />
+          <button onClick={() => setMuted(!muted)} className="p-1 rounded-md hover:bg-white/5 transition-all">
+            <Volume2 className="w-3.5 h-3.5" style={{ color: "#555" }} />
           </button>
           <div className="flex-1" />
-          <span className="text-[9px] font-mono" style={{ color: "#555" }}>
-            {formatTimecode(trimStart)} — {formatTimecode(trimEnd)}
+          <span className="text-[8px] font-mono font-bold tracking-wider" style={{ color: "#444" }}>
+            {formatTimecode(trimStart)} – {formatTimecode(trimEnd)}
           </span>
-          <div className="w-px h-3.5 mx-1" style={{ background: "#2a2a2a" }} />
+          <div className="w-px h-3.5 mx-1" style={{ background: "#1e1e24" }} />
           <div className="flex items-center gap-0.5">
             <button onClick={() => setTimelineZoom(Math.max(0.5, timelineZoom - 0.25))} className="p-0.5 rounded hover:bg-white/5">
-              <ZoomOut className="w-3 h-3" style={{ color: "#666" }} />
+              <ZoomOut className="w-3 h-3" style={{ color: "#555" }} />
             </button>
-            <div className="w-16 h-1 rounded-full mx-1 relative" style={{ background: "#2a2a2a" }}>
-              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${((timelineZoom - 0.5) / 3.5) * 100}%`, background: "#555" }} />
+            <div className="w-16 h-1 rounded-full mx-1 relative" style={{ background: "#1e1e24" }}>
+              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${((timelineZoom - 0.5) / 3.5) * 100}%`, background: ACCENT }} />
             </div>
             <button onClick={() => setTimelineZoom(Math.min(4, timelineZoom + 0.25))} className="p-0.5 rounded hover:bg-white/5">
-              <ZoomIn className="w-3 h-3" style={{ color: "#666" }} />
+              <ZoomIn className="w-3 h-3" style={{ color: "#555" }} />
             </button>
           </div>
         </div>

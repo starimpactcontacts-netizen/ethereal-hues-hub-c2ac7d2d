@@ -49,7 +49,7 @@ export type TimelineTrack = {
   locked: boolean;
 };
 
-export type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale";
+export type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop";
 export type EffectIntensity = Record<string, number>;
 
 export type EditorSnapshot = {
