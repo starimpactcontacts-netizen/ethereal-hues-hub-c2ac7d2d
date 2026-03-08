@@ -889,7 +889,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setUpscaleState("idle"); setUpscaleProgress(0); setUpscaleDims(null);
   };
 
-  // ─── Export ───
+  // ─── Export (with native audio preservation) ───
   const startExport = useCallback(async () => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !activeMedia) return;
@@ -900,26 +900,47 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     const exportH = Math.round(vid.videoHeight * quality.resolution);
     canvas.width = exportW; canvas.height = exportH;
     const stream = canvas.captureStream(quality.fps);
+
+    // Capture native video audio
+    const audioCtx = new AudioContext();
+    const dest = audioCtx.createMediaStreamDestination();
+    let hasAudioSource = false;
+
+    try {
+      // Get audio from the video element itself
+      const vidSource = audioCtx.createMediaElementSource(vid);
+      vidSource.connect(dest);
+      vidSource.connect(audioCtx.destination); // Also hear it during export
+      hasAudioSource = true;
+    } catch {
+      // Video may not have audio track, continue silently
+    }
+
+    // Mix in custom audio file if present
     if (audioFile) {
       try {
-        const audioCtx = new AudioContext();
         const buf = await audioFile.arrayBuffer();
         const decoded = await audioCtx.decodeAudioData(buf);
         const source = audioCtx.createBufferSource();
         source.buffer = decoded;
-        const dest = audioCtx.createMediaStreamDestination();
         source.connect(dest);
-        dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
         source.start(0);
+        hasAudioSource = true;
       } catch { /* audio error, continue without */ }
     }
+
+    // Add audio tracks to the stream
+    if (hasAudioSource) {
+      dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+    }
+
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
     const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: quality.bitrate });
     const chunks: Blob[] = [];
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
+    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => { audioCtx.close(); resolve(new Blob(chunks, { type: mimeType })); }; });
     recorder.start(100);
-    vid.currentTime = trimStart; vid.muted = true; vid.playbackRate = 1;
+    vid.currentTime = trimStart; vid.muted = false; vid.playbackRate = 1;
     await vid.play().catch(() => {});
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
