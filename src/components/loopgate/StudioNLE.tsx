@@ -1961,7 +1961,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             )}
 
             {/* Shortcuts overlay */}
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {showShortcuts && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                   className="absolute inset-0 z-30 flex items-center justify-center p-8" style={{ background: "rgba(0,0,0,0.9)" }}>

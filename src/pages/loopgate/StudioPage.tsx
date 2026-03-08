@@ -378,7 +378,9 @@ export default function StudioPage() {
           {isMobile ? (
             <div className={`min-h-screen bg-background pb-24 px-4 space-y-3 ${activeMission && !missionDismissed ? 'pt-14' : 'pt-4'}`}>
               {soloId && <SoloModeBanner soloId={soloId} />}
-              <QuickClipEditor initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); setActiveProjectId(null); }} />
+              <StudioCrashBoundary onReset={handleCloseEditor}>
+                <QuickClipEditor initialFile={initialFile} onBack={handleCloseEditor} />
+              </StudioCrashBoundary>
             </div>
           ) : (
             <div className={`flex flex-col h-screen ${activeMission && !missionDismissed ? 'pt-10' : ''}`}>
@@ -388,7 +390,9 @@ export default function StudioPage() {
                 </div>
               )}
               <div className="flex-1 min-h-0">
-                <StudioNLE initialFile={initialFile} onBack={() => { setEditorOpen(false); setInitialFile(null); setActiveProjectId(null); }} />
+                <StudioCrashBoundary onReset={handleCloseEditor}>
+                  <StudioNLE initialFile={initialFile} onBack={handleCloseEditor} />
+                </StudioCrashBoundary>
               </div>
             </div>
           )}

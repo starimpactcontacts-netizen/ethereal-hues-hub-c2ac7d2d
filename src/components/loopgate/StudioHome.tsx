@@ -404,7 +404,7 @@ function ProjectCard({
         <MoreVertical className="w-3 h-3" />
       </button>
 
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {contextMenu === project.id && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
