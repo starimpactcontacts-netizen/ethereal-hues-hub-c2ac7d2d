@@ -393,6 +393,8 @@ export default function App() {
             <Route path="/crews/*" element={<CrewsRedirect />} />
 
             {/* 404 - public */}
+            {/* Clean username links: loopgate.io/username */}
+            <Route path="/:username" element={<UsernameLookupPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>
