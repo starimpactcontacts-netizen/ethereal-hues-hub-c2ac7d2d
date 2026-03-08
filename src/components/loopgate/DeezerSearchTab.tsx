@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Search, Play, Pause, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DeezerTrack {
   id: number;
@@ -18,42 +19,53 @@ interface DeezerSearchTabProps {
   isPlaying: boolean;
 }
 
+type DeezerSearchResponse = { data?: DeezerTrack[] } | DeezerTrack[];
+
 export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPlaying }: DeezerSearchTabProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<DeezerTrack[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const search = async (q: string) => {
-    if (!q.trim()) return;
+    const clean = q.trim();
+    if (!clean) {
+      setResults([]);
+      setSearched(false);
+      setErrorMessage(null);
+      return;
+    }
+
     setLoading(true);
     setSearched(true);
+    setErrorMessage(null);
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deezer-search`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ query: q, limit: 25 }),
-        }
-      );
-      const data = await res.json();
-      if (data.data && Array.isArray(data.data)) {
-        setResults(data.data.filter((t: DeezerTrack) => t.preview));
-      } else {
-        setResults([]);
+      const { data, error } = await supabase.functions.invoke('deezer-search', {
+        body: { query: clean, limit: 25 },
+      });
+
+      if (error) {
+        throw error;
       }
+
+      const payload = data as DeezerSearchResponse | null;
+      const tracks = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+
+      setResults(tracks.filter((t) => Boolean(t?.preview)));
     } catch (err) {
       console.error('Deezer search failed:', err);
+      setErrorMessage('Search failed. Try again.');
       setResults([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
@@ -70,8 +82,15 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search any song globally..."
             enterKeyHint="search"
-            className="w-full bg-surface-1 border border-border/30 rounded-xl pl-10 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
+            className="w-full bg-surface-1 border border-border/30 rounded-xl pl-10 pr-24 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
           />
+          <button
+            type="submit"
+            disabled={loading || !query.trim()}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-8 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Search'}
+          </button>
         </form>
         <p className="text-[9px] text-muted-foreground/40 mt-1.5 text-center">
           Powered by Deezer · 30s previews · Free worldwide
@@ -88,8 +107,10 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
 
         {!loading && searched && results.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">No results found</p>
-            <p className="text-xs text-muted-foreground/50 mt-1">Try a different search term</p>
+            <p className="text-sm text-muted-foreground">{errorMessage || 'No results found'}</p>
+            <p className="text-xs text-muted-foreground/50 mt-1">
+              {errorMessage ? 'Please try again in a few seconds.' : 'Try a different search term'}
+            </p>
           </div>
         )}
 
@@ -145,3 +166,4 @@ export default function DeezerSearchTab({ onPlayPreview, currentPreviewUrl, isPl
     </div>
   );
 }
+
