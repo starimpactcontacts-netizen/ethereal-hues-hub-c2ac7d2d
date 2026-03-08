@@ -1143,19 +1143,19 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
               exit={{ width: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
               className="flex-shrink-0 overflow-hidden flex flex-col"
-              style={{ background: "#1a1a1a", borderRight: "1px solid #2a2a2a" }}
+              style={{ background: "#111114", borderRight: "1px solid #1e1e24" }}
             >
-              <div className="flex items-center h-9 px-3 flex-shrink-0" style={{ borderBottom: "1px solid #222" }}>
-                <span className="text-xs font-semibold" style={{ color: "#e0e0e0" }}>
+              <div className="flex items-center h-9 px-3 flex-shrink-0" style={{ borderBottom: "1px solid #1e1e24" }}>
+                <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color: "#999" }}>
                   {TOOL_TABS.find(t => t.id === activeToolTab)?.label}
                 </span>
                 <div className="flex-1" />
-                <button onClick={() => setActiveToolTab(null)} className="p-1 rounded hover:bg-white/5 transition-all">
-                  <X className="w-3.5 h-3.5" style={{ color: "#666" }} />
+                <button onClick={() => setActiveToolTab(null)} className="p-1 rounded-lg hover:bg-white/5 transition-all">
+                  <X className="w-3.5 h-3.5" style={{ color: "#555" }} />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}>
+              <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ scrollbarWidth: "thin", scrollbarColor: "#2a2a30 transparent" }}>
 
                 {/* ════════ MEDIA ════════ */}
                 {activeToolTab === "media" && (
