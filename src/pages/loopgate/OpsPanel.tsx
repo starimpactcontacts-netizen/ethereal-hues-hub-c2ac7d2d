@@ -3103,7 +3103,7 @@ export default function OpsPanel() {
 
           {gqtSubmissions.length === 0 ? (
             <div className="bg-card border border-border rounded-lg p-6 text-center">
-              <Sparkles className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+               <GateIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">No GQT submissions yet</p>
             </div>
           ) : (
