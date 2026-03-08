@@ -45,6 +45,8 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
+  const [showChallengeConfirm, setShowChallengeConfirm] = useState(false);
+  const [challengeLoading, setChallengeLoading] = useState(false);
   const isOwn = user?.id === post.user_id;
 
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
