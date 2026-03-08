@@ -1716,7 +1716,15 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             {videoUrl ? (
               <>
                 <video ref={videoRef} src={videoUrl} className="hidden" playsInline preload="auto" />
-                <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
+                <canvas
+                  ref={canvasRef}
+                  className="max-w-full max-h-full object-contain"
+                  style={{ cursor: canvasDrag.isDragging() ? "grabbing" : "default" }}
+                  onMouseDown={canvasDrag.onMouseDown}
+                  onMouseMove={canvasDrag.onMouseMove}
+                  onMouseUp={canvasDrag.onMouseUp}
+                  onMouseLeave={canvasDrag.onMouseUp}
+                />
 
                 <AnimatePresence>
                   {!playing && (
