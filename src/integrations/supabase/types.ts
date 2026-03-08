@@ -5202,6 +5202,42 @@ export type Database = {
           },
         ]
       }
+      radio_pitches: {
+        Row: {
+          artist_name: string
+          created_at: string
+          genre: string | null
+          id: string
+          link: string
+          message: string | null
+          song_name: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          artist_name: string
+          created_at?: string
+          genre?: string | null
+          id?: string
+          link: string
+          message?: string | null
+          song_name: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          artist_name?: string
+          created_at?: string
+          genre?: string | null
+          id?: string
+          link?: string
+          message?: string | null
+          song_name?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       radio_tracks: {
         Row: {
           added_by: string | null
