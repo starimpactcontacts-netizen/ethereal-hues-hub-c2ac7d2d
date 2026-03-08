@@ -3344,7 +3344,7 @@ export default function OpsPanel() {
               <TabsContent value="scored">
                 {gqtSubmissions.filter(s => s.status === 'scored').length === 0 ? (
                   <div className="bg-card border border-border rounded-lg p-6 text-center">
-                    <Sparkles className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <GateIcon className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
                     <p className="text-sm text-muted-foreground">No scored submissions yet</p>
                   </div>
                 ) : (
