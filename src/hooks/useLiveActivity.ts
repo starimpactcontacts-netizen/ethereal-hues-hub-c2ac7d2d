@@ -175,6 +175,7 @@ export function useLiveActivity(limit = 8) {
       const gqtData = gqtRes.data || [];
       const connectionData = connectionsRes.data || [];
       const tournamentJoinData = tournamentJoinsRes.data || [];
+      const newUserData = (newUsersRes as any).data || [];
 
       const userIds = [...new Set([
         ...roundData.map(r => r.user_id),
