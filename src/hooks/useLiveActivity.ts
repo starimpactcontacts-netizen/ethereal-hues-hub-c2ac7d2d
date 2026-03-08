@@ -82,7 +82,7 @@ export function useLiveActivity(limit = 8) {
   const fetch = useCallback(async () => {
     try {
       // Fetch all activity sources in parallel
-      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes, featSubsRes, crewJoinsRes, hostedEntriesRes, quickFightsRes, gqtRes, connectionsRes, tournamentJoinsRes] = await Promise.all([
+      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes, featSubsRes, crewJoinsRes, hostedEntriesRes, quickFightsRes, gqtRes, connectionsRes, tournamentJoinsRes, newUsersRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, user_id, event_id, qoi_score, submitted_at')
