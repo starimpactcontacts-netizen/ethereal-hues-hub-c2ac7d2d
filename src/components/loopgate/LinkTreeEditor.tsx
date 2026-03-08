@@ -82,12 +82,14 @@ export default function LinkTreeEditor() {
     let url = newUrl.trim();
     if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
 
-    await addLink({
+    const added = await addLink({
       title: newTitle.trim(),
       url,
       link_type: newType,
       embed_url: newType === "embed" ? url : undefined,
     });
+
+    if (!added) return;
 
     setNewTitle("");
     setNewUrl("");
