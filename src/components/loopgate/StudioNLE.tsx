@@ -1081,7 +1081,10 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
   // ─── RENDER ───
   return (
-    <div className="h-full flex flex-col overflow-hidden select-none" style={{ background: "#09090c", fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="relative h-full overflow-hidden" style={{ background: "linear-gradient(160deg, hsl(0 0% 2%) 0%, hsl(0 0% 4%) 42%, hsl(0 0% 1%) 100%)" }}>
+      <GatePattern className="absolute inset-0 z-0" opacity={3} color="white" tileSize={54} />
+      <div className="pointer-events-none absolute inset-0 z-0" style={{ background: "radial-gradient(110% 100% at 10% 0%, hsl(0 0% 100% / 0.09) 0%, transparent 42%)" }} />
+      <div className="relative z-10 h-full flex flex-col overflow-hidden select-none" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* ═══ TOP TOOLBAR ═══ */}
       <div className="h-11 flex items-center px-2 gap-0.5 flex-shrink-0 z-20" style={{ background: "#111114", borderBottom: "1px solid #1e1e24" }}>

@@ -119,7 +119,10 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
   const hasProjects = recentProjects.length > 0;
 
   return (
-    <div className="min-h-screen" style={{ background: "#06060a" }}>
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      <GatePattern className="absolute inset-0 z-0" opacity={4} color="white" tileSize={56} />
+      <div className="pointer-events-none absolute inset-0 z-0" style={{ background: "radial-gradient(120% 100% at 15% 0%, hsl(0 0% 100% / 0.08) 0%, transparent 45%), linear-gradient(165deg, hsl(0 0% 2%) 0%, hsl(0 0% 4%) 40%, hsl(0 0% 1%) 100%)" }} />
+      <div className="relative z-10">
 
       {/* ═══════════════════ TOP BAR ═══════════════════ */}
       <div className="sticky top-0 z-30" style={{ background: "rgba(6,6,10,0.92)", backdropFilter: "blur(24px) saturate(1.6)" }}>
