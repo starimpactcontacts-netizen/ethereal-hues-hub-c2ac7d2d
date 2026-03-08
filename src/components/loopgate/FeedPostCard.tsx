@@ -11,6 +11,9 @@ import RichMessageContent from "./RichMessageContent";
 import LoopReactions from "./LoopReactions";
 import { useState, memo } from "react";
 import { ReactionGroup } from "@/hooks/useLoopReactions";
+import { createBattle } from "@/hooks/useBattles";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface FeedPostCardProps {
   post: FeedPostItem;
