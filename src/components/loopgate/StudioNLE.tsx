@@ -2230,6 +2230,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
       <input ref={fileInputRef} type="file" accept="video/*,image/*,audio/*" multiple onChange={handleFileSelect} className="hidden" />
       <input ref={audioInputRef} type="file" accept="audio/*" onChange={handleAudioSelect} className="hidden" />
+      </div>
     </div>
   );
 }
