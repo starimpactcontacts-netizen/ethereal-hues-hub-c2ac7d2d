@@ -133,11 +133,11 @@ export default function SubmissionGrid({ userId }: SubmissionGridProps) {
           const gradient = platformColors[submission.platform] || "from-gray-600 to-gray-400";
           const isScored = submission.status === 'scored' && submission.qoi_score;
           
-          return (
+            return (
             <motion.button
               key={submission.id}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: submission.is_hidden ? 0.4 : 1 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => setSelectedSubmission(submission.id)}
               className="relative aspect-[9/16] overflow-hidden group"
