@@ -732,7 +732,7 @@ export default function HubPage() {
                   }
                 }
               }}
-              className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-5 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
+              className="flex-1 relative overflow-hidden flex items-center justify-center gap-3 px-6 py-6 bg-red-600 hover:bg-red-500 transition-colors touch-manipulation select-none"
             >
               <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
               {quickAction === 'solo' ? (
@@ -740,7 +740,7 @@ export default function HubPage() {
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
                     <UserRound className="w-4 h-4 text-white" />
                   </div>
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Solo Edit
                   </span>
                   <span className="text-[10px] text-white/50 font-bold relative z-10">100+ IDX</span>
@@ -748,7 +748,7 @@ export default function HubPage() {
               ) : qfIsSearching ? (
                 <>
                   <Loader2 className="w-5 h-5 text-white animate-spin relative z-10" />
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Searching...
                   </span>
                   <span className="flex items-center gap-1 text-xs text-white/70 font-mono relative z-10">
@@ -759,14 +759,14 @@ export default function HubPage() {
               ) : qfActiveFight ? (
                 <>
                   <Swords className="w-5 h-5 text-white relative z-10" />
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Return to Fight
                   </span>
                 </>
               ) : (
                 <>
                   <Zap className="w-5 h-5 text-white relative z-10" />
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Quick Edit Battle
                   </span>
                   <span className="text-[10px] text-white/50 font-bold relative z-10">+20 IDX</span>
@@ -777,7 +777,7 @@ export default function HubPage() {
             {/* Dropdown toggle */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative overflow-hidden flex items-center justify-center px-4 py-5 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/50">
+                <button className="relative overflow-hidden flex items-center justify-center px-5 py-6 bg-red-700 hover:bg-red-600 transition-colors touch-manipulation select-none border-l border-red-900/50">
                   <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
                   <ChevronDown className="w-5 h-5 text-white/70 relative z-10" />
                 </button>
