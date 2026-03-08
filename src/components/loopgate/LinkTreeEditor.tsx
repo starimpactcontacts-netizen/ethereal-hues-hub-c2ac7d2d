@@ -386,7 +386,7 @@ export default function LinkTreeEditor() {
               onKeyDown={e => e.key === "Enter" && handleAdd()}
             />
             <div className="flex gap-1.5">
-              <button onClick={async () => { const ok = await handleAdd(); if (!ok) return; }} className="flex-1 h-8 text-[10px] font-semibold rounded-lg hover:opacity-90 transition-opacity text-background" style={{ backgroundColor: accentColor }}>
+              <button onClick={handleAdd} className="flex-1 h-8 text-[10px] font-semibold rounded-lg hover:opacity-90 transition-opacity text-background" style={{ backgroundColor: accentColor }}>
                 Add Link
               </button>
               <button onClick={() => { setAdding(false); setNewTitle(""); setNewUrl(""); }} className="h-8 px-4 text-[10px] text-muted-foreground hover:text-foreground transition-colors">
