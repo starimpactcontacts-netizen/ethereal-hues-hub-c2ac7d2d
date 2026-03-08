@@ -303,11 +303,11 @@ function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: stri
   return (
     <div className="mb-4">
       <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4" style={{ color: "#7C6AFF" }} />
+        <Icon className="w-4 h-4" style={{ color: MONO_ACCENT }} />
         <h2 className="font-bold text-white/90 tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "22px", letterSpacing: "0.03em" }}>{title.toUpperCase()}</h2>
       </div>
       <p className="text-[11px] text-white/25 ml-6">{subtitle}</p>
-      <div className="mt-3 h-px" style={{ background: "linear-gradient(90deg, rgba(124,106,255,0.2), transparent 60%)" }} />
+      <div className="mt-3 h-px" style={{ background: "linear-gradient(90deg, hsl(0 0% 100% / 0.24), transparent 60%)" }} />
     </div>
   );
 }
