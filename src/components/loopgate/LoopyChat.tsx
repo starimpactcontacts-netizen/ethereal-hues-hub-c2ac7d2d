@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star, Swords, Trophy, Users, Zap } from 'lucide-react';
+import { X, Send, Loader2, Plus, MessageSquare, Trash2, ChevronLeft, Star, Swords, Trophy, Users, Zap, Maximize2 } from 'lucide-react';
 import GateIcon from '@/components/loopgate/GateIcon';
 import { useNavigate } from 'react-router-dom';
 import loopyAvatar from '@/assets/loopy-avatar.png';
@@ -10,7 +10,7 @@ import ReactMarkdown from 'react-markdown';
 
 const QUICK_ACTIONS = [
   { label: '⚔️ Battle', msg: 'how do i start a battle?', icon: Swords },
-  { label: '⭐ Rate Edit', route: '/loopy', icon: Star },
+  { label: '⭐ Rate Edit', route: '/loopy/rate', icon: Star },
   { label: '🏆 Drops', msg: 'whats dropping rn?', icon: Trophy },
   { label: '👥 Units', msg: 'tell me about units', icon: Users },
   { label: '📈 My Stats', msg: 'whats my current stats looking like?', icon: Zap },
@@ -164,6 +164,13 @@ export default function LoopyChat() {
               </div>
               <button
                 onClick={() => { setOpen(false); navigate('/loopy'); }}
+                className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                title="Open Full View"
+              >
+                <Maximize2 className="w-4 h-4 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => { setOpen(false); navigate('/loopy/rate'); }}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all"
               >
                 <Star className="w-3 h-3 text-amber-400" />
@@ -183,7 +190,7 @@ export default function LoopyChat() {
                 </div>
 
                 <button
-                  onClick={() => { setOpen(false); navigate('/loopy'); }}
+                  onClick={() => { setOpen(false); navigate('/loopy/rate'); }}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all text-left group"
                 >
                   <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-primary flex items-center justify-center shrink-0">
@@ -192,6 +199,17 @@ export default function LoopyChat() {
                   <div>
                     <p className="text-sm font-bold text-foreground">Rate My Edit</p>
                     <p className="text-[10px] text-muted-foreground">instant AI diagnostic on any edit</p>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => { setOpen(false); navigate('/loopy'); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 transition-colors text-left"
+                >
+                  <Maximize2 className="w-5 h-5 text-purple-400" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Full View</p>
+                    <p className="text-[10px] text-muted-foreground">open loopy in full page mode</p>
                   </div>
                 </button>
 
