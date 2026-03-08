@@ -51,6 +51,12 @@ export default function StudioPage() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleCloseEditor = useCallback(() => {
+    setEditorOpen(false);
+    setInitialFile(null);
+    setActiveProjectId(null);
+  }, []);
+
   const handleNewProject = useCallback(() => {
     const input = fileInputRef.current;
     if (!input) return;
