@@ -633,7 +633,7 @@ export default function LandingPage() {
                     </div>
                     {/* Loopy feedback */}
                     <div className="mt-5 flex items-start gap-2.5 bg-surface-1 border border-border/50 px-4 py-3">
-                      <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                      <GateIcon className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
                       <p className="text-[11px] text-muted-foreground leading-relaxed">
                         "the color grading goes crazy tbh, sync is hitting on beat drops. identity could use more signature moves tho — u got potential fr"
                       </p>
