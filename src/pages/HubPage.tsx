@@ -766,7 +766,7 @@ export default function HubPage() {
               ) : (
                 <>
                   <Zap className="w-5 h-5 text-white relative z-10" />
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Quick Edit Battle
                   </span>
                   <span className="text-[10px] text-white/50 font-bold relative z-10">+20 IDX</span>
