@@ -68,6 +68,12 @@ const connectionVerbs = [
 const tournamentJoinVerbs = [
   'registered for', 'signed up for', 'entered', 'joined the tournament',
 ];
+const newUserVerbs = [
+  'entered the gate', 'just arrived at Loopgate', 'walked through the gate', 'breached the perimeter', 'unlocked Loopgate',
+];
+const profileUpdateVerbs = [
+  'updated their profile', 'leveled up', 'changed their identity',
+];
 
 export function useLiveActivity(limit = 8) {
   const [items, setItems] = useState<LiveActivityItem[]>([]);
