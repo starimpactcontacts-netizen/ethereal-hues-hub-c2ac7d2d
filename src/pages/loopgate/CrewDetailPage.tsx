@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Settings, Shield, Crown, Users, Star, Zap, Share2, LogOut,
-  Hash, Megaphone, BookOpen, Lock, ChevronRight, Trophy, Plus, MessageCircle
+  Hash, Megaphone, BookOpen, Lock, ChevronRight, Trophy, Plus, MessageCircle,
+  DollarSign, Eye, UserPlus
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,7 +15,7 @@ import { useCrewEditorSystem } from "@/hooks/useCrewEditorSystem";
 import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
 import ChannelChatView from "@/components/loopgate/ChannelChatView";
@@ -29,6 +30,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 
 interface Crew {
   id: string;
@@ -91,42 +98,57 @@ function ChannelCategory({
   activeChannelId,
   unreadCounts,
   onSelectChannel,
+  isStaff,
+  onAddChannel,
 }: {
   category: string;
   channels: CrewChannel[];
   activeChannelId: string | null;
   unreadCounts: Record<string, number>;
   onSelectChannel: (id: string) => void;
+  isStaff?: boolean;
+  onAddChannel?: (category: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const totalUnread = channels.reduce((sum, ch) => sum + (unreadCounts[ch.id] || 0), 0);
 
   return (
     <div className="mt-1">
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center gap-0.5 px-2 py-1 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-      >
-        <ChevronRight className={cn("w-3 h-3 transition-transform duration-150", !collapsed && "rotate-90")} />
-        <span className="flex-1 text-left">{category}</span>
-        {collapsed && totalUnread > 0 && (
-          <span className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 rounded-full font-bold">
-            {totalUnread}
-          </span>
+      <div className="flex items-center">
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="flex-1 flex items-center gap-0.5 px-2 py-1 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+        >
+          <ChevronRight className={cn("w-3 h-3 transition-transform duration-150", !collapsed && "rotate-90")} />
+          <span className="flex-1 text-left">{category}</span>
+          {collapsed && totalUnread > 0 && (
+            <span className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+              {totalUnread}
+            </span>
+          )}
+        </button>
+        {isStaff && onAddChannel && (
+          <button
+            onClick={() => onAddChannel(category)}
+            className="p-1 mr-1 rounded hover:bg-muted/30 text-muted-foreground/30 hover:text-muted-foreground transition-colors"
+            title="Add channel"
+          >
+            <Plus className="w-3 h-3" />
+          </button>
         )}
-      </button>
+      </div>
 
       <AnimatePresence initial={false}>
         {!collapsed && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            initial={{ height: 0 }}
+            animate={{ height: "auto" }}
+            exit={{ height: 0 }}
             transition={{ duration: 0.12 }}
             className="overflow-hidden"
           >
             {channels
-              .sort((a, b) => a.channel_order - b.channel_order)
+              .sort((a, b) => (a.channel_order ?? 0) - (b.channel_order ?? 0))
               .map((channel) => {
                 const unread = unreadCounts[channel.id] || 0;
                 const icon = CHANNEL_ICONS[channel.channel_type] || CHANNEL_ICONS.text;
@@ -165,6 +187,140 @@ function ChannelCategory({
   );
 }
 
+// Create channel dialog
+function CreateChannelDialog({
+  open,
+  onOpenChange,
+  defaultCategory,
+  onSubmit,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  defaultCategory: string;
+  onSubmit: (name: string, category: string, type: string) => void;
+}) {
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState(defaultCategory);
+  const [type, setType] = useState("text");
+
+  useEffect(() => {
+    if (open) {
+      setName("");
+      setCategory(defaultCategory);
+      setType("text");
+    }
+  }, [open, defaultCategory]);
+
+  const handleSubmit = () => {
+    if (!name.trim()) return;
+    const slug = name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    onSubmit(slug, category, type);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Create Channel</DialogTitle>
+          <DialogDescription>Add a new channel to your unit.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 pt-2">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Channel Name</label>
+            <div className="flex items-center gap-1.5 bg-muted/30 rounded-lg px-3">
+              <Hash className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+              <Input
+                placeholder="new-channel"
+                value={name}
+                onChange={(e) => setName(e.target.value.toLowerCase().replace(/\s/g, "-"))}
+                className="bg-transparent border-0 focus-visible:ring-0 text-sm h-9"
+                maxLength={32}
+                autoFocus
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Category</label>
+            <Input
+              placeholder="General"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="text-sm h-9"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1 block">Type</label>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text"><div className="flex items-center gap-2"><Hash className="w-3.5 h-3.5" /> Text</div></SelectItem>
+                <SelectItem value="announcement"><div className="flex items-center gap-2"><Megaphone className="w-3.5 h-3.5" /> Announcement</div></SelectItem>
+                <SelectItem value="rules"><div className="flex items-center gap-2"><BookOpen className="w-3.5 h-3.5" /> Rules</div></SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleSubmit} disabled={!name.trim()} className="w-full" size="sm">
+            Create Channel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Tournament earnings display for owners
+function TournamentEarnings({ crewId }: { crewId: string }) {
+  const [earnings, setEarnings] = useState({ totalEarnings: 0, totalViews: 0, totalParticipants: 0, compCount: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEarnings = async () => {
+      const { data } = await (supabase as any)
+        .from("hosted_competitions")
+        .select("id, view_count, participant_count, host_earnings_cents, status")
+        .eq("crew_id", crewId);
+
+      if (data && Array.isArray(data)) {
+        const results = data as any[];
+        const totalEarnings = results.reduce((s: number, c: any) => s + (c.host_earnings_cents || 0), 0);
+        const totalViews = results.reduce((s: number, c: any) => s + (c.view_count || 0), 0);
+        const totalParticipants = results.reduce((s: number, c: any) => s + (c.participant_count || 0), 0);
+        setEarnings({ totalEarnings, totalViews, totalParticipants, compCount: results.length });
+      }
+      setLoading(false);
+    };
+    fetchEarnings();
+  }, [crewId]);
+
+  if (loading || earnings.compCount === 0) return null;
+
+  return (
+    <div className="mx-3 mb-2 p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <DollarSign className="w-3 h-3 text-emerald-400" />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Tournament Revenue</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 text-center">
+        <div>
+          <p className="text-sm font-black text-emerald-400">${(earnings.totalEarnings / 100).toFixed(2)}</p>
+          <p className="text-[9px] text-muted-foreground/50">Earned</p>
+        </div>
+        <div>
+          <p className="text-sm font-black text-foreground/70">{earnings.totalViews.toLocaleString()}</p>
+          <p className="text-[9px] text-muted-foreground/50">Views</p>
+        </div>
+        <div>
+          <p className="text-sm font-black text-foreground/70">{earnings.totalParticipants}</p>
+          <p className="text-[9px] text-muted-foreground/50">Competitors</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CrewDetailPage() {
   const { crewId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -181,11 +337,13 @@ export default function CrewDetailPage() {
   const [mobileView, setMobileView] = useState<"channels" | "chat">("channels");
   const [permissionsChannel, setPermissionsChannel] = useState<CrewChannel | null>(null);
   const [crewLevel, setCrewLevel] = useState(1);
+  const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [createChannelCategory, setCreateChannelCategory] = useState("General");
 
   const isMobile = useIsMobile();
   const activeChannelId = searchParams.get("channel");
 
-  const { channels, channelsByCategory, loading: channelsLoading, updateChannel } = useCrewChannels(crewId);
+  const { channels, channelsByCategory, loading: channelsLoading, createChannel, updateChannel, deleteChannel, refresh: refreshChannels } = useCrewChannels(crewId);
   const { unreadCounts, markChannelAsRead } = useChannelUnread(crewId);
   const { tiers } = useCrewEditorSystem(crewId || "");
   const { onlineCount } = useCrewPresence(crewId);
@@ -200,24 +358,19 @@ export default function CrewDetailPage() {
     if (!crewId) return;
     const fetchCrewData = async () => {
       setLoading(true);
-      const { data: crewData, error: crewError } = await supabase
-        .from("crews")
-        .select("*")
-        .eq("id", crewId)
-        .single();
+      const [crewResult, membersResult] = await Promise.all([
+        supabase.from("crews").select("*").eq("id", crewId).single(),
+        supabase.from("crew_members").select("user_id, role").eq("crew_id", crewId),
+      ]);
 
-      if (crewError || !crewData) {
+      if (crewResult.error || !crewResult.data) {
         navigate("/units");
         return;
       }
-      setCrew(crewData as Crew);
+      setCrew(crewResult.data as Crew);
 
-      const { data: membersData } = await supabase
-        .from("crew_members")
-        .select("user_id, role")
-        .eq("crew_id", crewId);
-
-      if (membersData) {
+      const membersData = membersResult.data || [];
+      if (membersData.length > 0) {
         const memberIds = membersData.map((m) => m.user_id);
         const { data: profiles } = await supabase
           .from("profiles")
@@ -231,7 +384,6 @@ export default function CrewDetailPage() {
         }));
         setMembers(membersWithProfiles);
 
-        // Crew level
         const totalXP = profiles?.reduce((sum, p) => sum + (p.xp || 0), 0) || 0;
         setCrewLevel(calculateCrewLevel(totalXP));
 
@@ -309,6 +461,22 @@ export default function CrewDetailPage() {
     }
   };
 
+  const handleCreateChannel = useCallback(async (name: string, category: string, type: string) => {
+    await createChannel({
+      name,
+      category,
+      channel_type: type as "text" | "announcement" | "rules",
+      category_order: Object.keys(channelsByCategory).indexOf(category) >= 0 
+        ? (channelsByCategory[category]?.[0]?.category_order ?? 0) 
+        : Object.keys(channelsByCategory).length,
+    });
+  }, [createChannel, channelsByCategory]);
+
+  const handleAddChannelToCategory = useCallback((category: string) => {
+    setCreateChannelCategory(category);
+    setShowCreateChannel(true);
+  }, []);
+
   if (loading || channelsLoading || !crew) {
     return (
       <PageTransition>
@@ -324,12 +492,11 @@ export default function CrewDetailPage() {
   const canAccessSettings = isOwner || isAdmin || isDev;
   const isMember = !!myRole;
 
-  // ━━━ SIDEBAR CONTENT (shared between mobile channel list & desktop sidebar) ━━━
+  // ━━━ SIDEBAR CONTENT ━━━
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-card">
       {/* Unit Identity Header */}
       <div className="shrink-0 border-b border-border/30">
-        {/* Mini banner */}
         <div className="h-20 relative overflow-hidden">
           {crew.banner_url ? (
             <img src={crew.banner_url} alt="" className="w-full h-full object-cover" />
@@ -339,7 +506,6 @@ export default function CrewDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-card" />
         </div>
 
-        {/* Identity */}
         <div className="px-3 pb-3 -mt-6 relative z-10">
           <div className="flex items-end gap-2.5 mb-2">
             <div className="w-11 h-11 rounded-lg bg-card border-2 border-card overflow-hidden shrink-0 shadow-lg">
@@ -356,12 +522,11 @@ export default function CrewDetailPage() {
                 <h2 className="text-base font-black uppercase tracking-wide leading-none truncate" style={teko}>
                   {crew.name}
                 </h2>
-                {crew.is_featured && <Star className="w-3 h-3 text-gold fill-gold shrink-0" />}
+                {crew.is_featured && <Star className="w-3 h-3 text-primary fill-primary shrink-0" />}
               </div>
             </div>
           </div>
 
-          {/* Compact stats */}
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground/50">
             <span className="flex items-center gap-1">
               <CrewLevelBadge level={crewLevel} size="xs" />
@@ -371,8 +536,8 @@ export default function CrewDetailPage() {
               <span className="text-foreground/60 font-semibold">{members.length}</span>
             </span>
             <span className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-green-400 font-semibold">{onlineCount}</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <span className="text-emerald-400 font-semibold">{onlineCount}</span>
             </span>
           </div>
 
@@ -399,7 +564,7 @@ export default function CrewDetailPage() {
             {isOwner && (
               <button
                 onClick={() => navigate(`/arena?host=true&crew=${crewId}`)}
-                className="p-1.5 rounded-md hover:bg-gold/10 text-gold/40 hover:text-gold transition-colors"
+                className="p-1.5 rounded-md hover:bg-primary/10 text-primary/40 hover:text-primary transition-colors"
                 title="Host Competition"
               >
                 <Trophy className="w-3.5 h-3.5" />
@@ -429,27 +594,46 @@ export default function CrewDetailPage() {
         </div>
       </div>
 
+      {/* Tournament Earnings for owners */}
+      {isOwner && crewId && <TournamentEarnings crewId={crewId} />}
+
       {/* Channels */}
-      <div className="flex-1 overflow-y-auto py-1">
+      <div className="flex-1 overflow-y-auto py-1 overscroll-contain">
         {isMember ? (
-          Object.entries(channelsByCategory)
-            .sort(([, a], [, b]) => {
-              const aOrder = a[0]?.category_order ?? 99;
-              const bOrder = b[0]?.category_order ?? 99;
-              return aOrder - bOrder;
-            })
-            .map(([category, categoryChannels]) => (
-              <ChannelCategory
-                key={category}
-                category={category}
-                channels={categoryChannels}
-                activeChannelId={activeChannelId}
-                unreadCounts={unreadCounts}
-                onSelectChannel={handleSelectChannel}
-              />
-            ))
+          <>
+            {Object.entries(channelsByCategory)
+              .sort(([, a], [, b]) => {
+                const aOrder = a[0]?.category_order ?? 99;
+                const bOrder = b[0]?.category_order ?? 99;
+                return aOrder - bOrder;
+              })
+              .map(([category, categoryChannels]) => (
+                <ChannelCategory
+                  key={category}
+                  category={category}
+                  channels={categoryChannels}
+                  activeChannelId={activeChannelId}
+                  unreadCounts={unreadCounts}
+                  onSelectChannel={handleSelectChannel}
+                  isStaff={isStaff}
+                  onAddChannel={handleAddChannelToCategory}
+                />
+              ))}
+            {/* Add category button for staff */}
+            {isStaff && (
+              <button
+                onClick={() => {
+                  setCreateChannelCategory("");
+                  setShowCreateChannel(true);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 mt-1 text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Add Channel</span>
+              </button>
+            )}
+          </>
         ) : (
-          /* Non-member view — show unit info + join */
           <div className="p-4 space-y-4">
             <p className="text-xs text-muted-foreground/70 leading-relaxed">
               {crew.description || "A competitive editing unit on Loopgate."}
@@ -468,7 +652,6 @@ export default function CrewDetailPage() {
               </Button>
             )}
 
-            {/* Show channel names as preview */}
             <div className="space-y-0.5 opacity-50">
               <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground/50 px-1 mb-1">Channels</p>
               {channels.slice(0, 6).map((ch) => (
@@ -502,9 +685,9 @@ export default function CrewDetailPage() {
           {mobileView === "channels" ? (
             <motion.div
               key="channels"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -20, opacity: 0 }}
+              initial={{ x: -20 }}
+              animate={{ x: 0 }}
+              exit={{ x: -20 }}
               transition={{ duration: 0.15 }}
               className="flex flex-col h-full"
             >
@@ -512,7 +695,7 @@ export default function CrewDetailPage() {
               <div className="bg-card/95 backdrop-blur-md border-b border-border/30 shrink-0 px-3 py-2.5 flex items-center gap-2.5">
                 <button
                   onClick={() => navigate("/units")}
-                  className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors touch-manipulation"
                 >
                   <ArrowLeft className="w-5 h-5 text-muted-foreground" />
                 </button>
@@ -525,16 +708,16 @@ export default function CrewDetailPage() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto overscroll-contain">
                 <SidebarContent />
               </div>
             </motion.div>
           ) : (
             <motion.div
               key="chat"
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 20, opacity: 0 }}
+              initial={{ x: 20 }}
+              animate={{ x: 0 }}
+              exit={{ x: 20 }}
               transition={{ duration: 0.15 }}
               className="flex flex-col h-full"
             >
@@ -577,6 +760,22 @@ export default function CrewDetailPage() {
             />
           )}
         </AnimatePresence>
+
+        <CreateChannelDialog
+          open={showCreateChannel}
+          onOpenChange={setShowCreateChannel}
+          defaultCategory={createChannelCategory}
+          onSubmit={handleCreateChannel}
+        />
+
+        {crew && (
+          <CrewInviteModal
+            open={showInviteModal}
+            onOpenChange={setShowInviteModal}
+            crewName={crew.name}
+            crewId={crew.id}
+          />
+        )}
       </div>
     );
   }
@@ -592,7 +791,6 @@ export default function CrewDetailPage() {
     >
       {/* Sidebar */}
       <div className="w-60 border-r border-border/20 flex flex-col shrink-0">
-        {/* Back to units */}
         <div className="px-3 py-2 border-b border-border/20 flex items-center gap-2">
           <button onClick={() => navigate("/units")} className="p-1 rounded hover:bg-muted/30 transition-colors">
             <ArrowLeft className="w-4 h-4 text-muted-foreground/50" />
@@ -622,7 +820,6 @@ export default function CrewDetailPage() {
           }
         />
       ) : !isMember ? (
-        /* Non-member view — outsider perspective */
         <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
           <div className="w-20 h-20 rounded-xl bg-muted/20 overflow-hidden mb-5 shadow-lg">
             {crew.avatar_url ? (
@@ -639,7 +836,7 @@ export default function CrewDetailPage() {
           </p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground/40 mb-8">
             <span className="flex items-center gap-1.5"><Users className="w-4 h-4" /> {members.length} members</span>
-            <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-green-500" /> {onlineCount} online</span>
+            <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /> {onlineCount} online</span>
           </div>
           {user ? (
             <Button onClick={handleJoinCrew} className="bg-foreground text-background hover:bg-foreground/90 font-bold px-8 h-11 text-sm">
@@ -661,9 +858,9 @@ export default function CrewDetailPage() {
       <AnimatePresence>
         {showMembers && isMember && (
           <motion.div
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 224, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
+            initial={{ width: 0 }}
+            animate={{ width: 224 }}
+            exit={{ width: 0 }}
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
@@ -688,6 +885,14 @@ export default function CrewDetailPage() {
           />
         )}
       </AnimatePresence>
+
+      {/* Create Channel Dialog */}
+      <CreateChannelDialog
+        open={showCreateChannel}
+        onOpenChange={setShowCreateChannel}
+        defaultCategory={createChannelCategory}
+        onSubmit={handleCreateChannel}
+      />
 
       {/* Invite Modal */}
       {crew && (
