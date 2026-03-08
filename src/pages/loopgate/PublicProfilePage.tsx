@@ -239,6 +239,14 @@ export default function PublicProfilePage() {
       
       setRealStats({ totalEvents, winRate, totalWins });
 
+      // Fetch link page
+      const [linkPageRes, linksRes] = await Promise.all([
+        supabase.from("editor_link_pages").select("*").eq("user_id", profileData.id).eq("is_published", true).maybeSingle(),
+        supabase.from("editor_links").select("*").eq("user_id", profileData.id).eq("is_active", true).order("sort_order", { ascending: true }),
+      ]);
+      if (linkPageRes.data) setLinkPageSettings(linkPageRes.data as unknown as LinkPageSettings);
+      if (linksRes.data) setEditorLinks(linksRes.data as unknown as EditorLink[]);
+
       setLoading(false);
     };
 
