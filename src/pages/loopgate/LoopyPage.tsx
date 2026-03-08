@@ -484,7 +484,7 @@ export default function LoopyPage() {
                 <button
                   onClick={() => handleSend()}
                   disabled={!input.trim() || streaming}
-                  className="p-2 bg-purple-600 hover:bg-purple-500 disabled:opacity-30 disabled:hover:bg-purple-600 transition-colors shrink-0"
+                  className="p-2.5 bg-purple-600 hover:bg-purple-500 disabled:opacity-20 disabled:hover:bg-purple-600 transition-all rounded-xl shrink-0 active:scale-90"
                 >
                   {streaming ? <Loader2 className="w-4 h-4 text-white animate-spin" /> : <Send className="w-4 h-4 text-white" />}
                 </button>
