@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft, Settings, Shield, Crown, Users, Star, Zap, Share2, LogOut,
-  Hash, Megaphone, BookOpen, Lock, ChevronRight, Trophy, Plus, MessageCircle
+  Hash, Megaphone, BookOpen, Lock, ChevronRight, Trophy, Plus, MessageCircle,
+  DollarSign
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +16,7 @@ import { useCrewPresence } from "@/hooks/useCrewPresence";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 import PageTransition from "@/components/loopgate/PageTransition";
 import CrewInviteModal from "@/components/loopgate/CrewInviteModal";
 import ChannelChatView from "@/components/loopgate/ChannelChatView";
@@ -29,6 +31,12 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 
 interface Crew {
   id: string;
