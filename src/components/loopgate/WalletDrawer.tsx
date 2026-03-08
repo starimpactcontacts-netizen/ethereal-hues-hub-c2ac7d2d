@@ -345,8 +345,8 @@ export default function WalletDrawer({ open, onClose }: WalletDrawerProps) {
                     >
                       <div className="px-3 pb-3 pt-1 space-y-3">
                         <div>
-                          <p className="text-[10px] font-bold text-foreground/60 mb-0.5">Minimum Withdrawal</p>
-                          <p className="text-[9px] text-muted-foreground/40">$5.00 minimum per payout request.</p>
+                          <p className="text-[10px] font-bold text-foreground/60 mb-0.5">No Minimums</p>
+                          <p className="text-[9px] text-muted-foreground/40">Withdraw any amount, anytime. No minimum payout threshold.</p>
                         </div>
                         <div>
                           <p className="text-[10px] font-bold text-foreground/60 mb-0.5">Processing Time</p>
