@@ -389,7 +389,7 @@ export default function LoginPage() {
                     className="w-full p-4 rounded-lg bg-surface-1 border border-border hover:border-gold/50 transition-all text-left flex items-center gap-4"
                   >
                     <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center">
-                      <Sparkles className="h-6 w-6 text-gold" />
+                      <GateIcon className="h-6 w-6 text-gold" />
                     </div>
                     <div>
                       <p className="font-medium">One-Tap Magic Link</p>
