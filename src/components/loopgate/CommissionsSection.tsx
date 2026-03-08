@@ -41,43 +41,45 @@ function BalanceTicker() {
         onClick={() => setWalletOpen(true)}
         className="relative overflow-hidden rounded-xl cursor-pointer group"
       >
-        {/* Card background — dark matte like a real card */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a0a0a] via-[#111] to-[#0a0a0a]" />
-        
-        {/* Subtle metallic sheen */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.08) 50%, transparent 70%)' }} />
-        
+        {/* Titanium matte base */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#111] to-[#0d0d0d]" />
+        {/* Brushed metal texture */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.15) 1px, rgba(255,255,255,0.15) 2px)' }} />
+        {/* Top edge highlight */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         {/* Border */}
-        <div className="absolute inset-0 rounded-xl border border-white/[0.06] group-hover:border-emerald-500/20 transition-colors" />
+        <div className="absolute inset-0 rounded-xl border border-white/[0.06] group-hover:border-white/[0.12] transition-colors" />
 
         {/* Content */}
         <div className="relative flex items-center justify-between px-4 py-3.5">
-          {/* Left — balance */}
+          {/* Left — chip + balance */}
           <div className="flex items-center gap-3">
-            {/* Card chip */}
-            <div className="w-8 h-6 rounded-[3px] bg-gradient-to-br from-gold/70 to-gold/30 border border-gold/20 shrink-0" style={{ backgroundImage: 'linear-gradient(135deg, rgba(255,215,0,0.6) 0%, rgba(255,215,0,0.2) 100%)' }}>
-              <div className="w-full h-full" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)' }} />
+            {/* EMV Chip */}
+            <div className="w-9 h-6 rounded-[3px] bg-gradient-to-br from-[#c9a84c] via-[#d4b85a] to-[#a88a3a] border border-[#8a7030]/40 shadow-sm shrink-0">
+              <div className="w-full h-full rounded-[3px]" style={{ 
+                backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 4px, rgba(0,0,0,0.08) 4px, rgba(0,0,0,0.08) 5px), repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px)' 
+              }} />
             </div>
             <div>
               <div className="flex items-baseline gap-0.5">
-                <span className="text-emerald-400/50 text-sm font-semibold">$</span>
-                <span className="font-display text-2xl font-black text-foreground leading-none tabular-nums">{wholePart}</span>
-                <span className="font-display text-base font-bold text-foreground/40 leading-none tabular-nums">.{centPart}</span>
+                <span className="text-white/30 text-sm font-bold" style={teko}>$</span>
+                <span className="text-2xl font-black text-white leading-none tabular-nums tracking-tight" style={teko}>{wholePart}</span>
+                <span className="text-base font-bold text-white/30 leading-none tabular-nums" style={teko}>.{centPart}</span>
               </div>
-              <p className="text-[7px] text-muted-foreground/40 font-bold uppercase tracking-[0.2em] mt-0.5">Available</p>
+              <p className="text-[7px] text-white/20 font-bold uppercase tracking-[0.2em] mt-0.5">Available</p>
             </div>
           </div>
 
-          {/* Right — total earned + action */}
+          {/* Right — earned + arrow */}
           <div className="flex items-center gap-3">
             {earnings.earnings_cents > 0 && (
               <div className="text-right">
                 <p className="text-[10px] text-emerald-400/60 tabular-nums font-bold">${totalEarned}</p>
-                <p className="text-[7px] text-muted-foreground/30 font-bold uppercase tracking-widest">Earned</p>
+                <p className="text-[7px] text-white/15 font-bold uppercase tracking-widest">Earned</p>
               </div>
             )}
-            <div className="w-7 h-7 rounded-full border border-white/[0.06] group-hover:border-emerald-500/30 flex items-center justify-center transition-colors">
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-emerald-400/60 transition-colors" />
+            <div className="w-7 h-7 rounded-full border border-white/[0.06] group-hover:border-white/[0.15] flex items-center justify-center transition-colors">
+              <ChevronRight className="w-3.5 h-3.5 text-white/20 group-hover:text-white/40 transition-colors" />
             </div>
           </div>
         </div>
