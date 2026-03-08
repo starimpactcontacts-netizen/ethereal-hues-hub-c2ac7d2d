@@ -1262,29 +1262,43 @@ export default function HubPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
-        className="mt-3"
+        className="mt-3 space-y-4"
       >
-        {/* Section Header */}
-        <div className="px-4 mb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-5 bg-gold rounded-full" />
-              <h2 className="font-display text-lg text-foreground">EXPLORE</h2>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        {/* Trending Loops */}
+        <div>
+          <div className="px-4 mb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-5 bg-gold rounded-full" />
+                <h2 className="font-display text-lg text-foreground">TRENDING</h2>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+              <Link to="/loop" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+                VIEW ALL <ArrowRight size={10} />
+              </Link>
             </div>
-            <Link to="/feed" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
-              VIEW ALL <ArrowRight size={10} />
-            </Link>
           </div>
+          <TrendingLoops limit={10} />
         </div>
 
-        {/* Grid */}
-        <div className="mx-4 overflow-hidden rounded-sm border border-border/30">
-          <ExploreGrid limit={12} />
+        {/* Editorium Picks */}
+        <div>
+          <div className="px-4 mb-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-5 bg-red-500 rounded-full" />
+                <h2 className="font-display text-lg text-foreground">EDITOR'S PICKS</h2>
+              </div>
+              <Link to="/editorium" className="text-[9px] text-muted-foreground hover:text-gold transition-colors flex items-center gap-1">
+                EDITORIUM <ArrowRight size={10} />
+              </Link>
+            </div>
+          </div>
+          <EditoriumPicks limit={10} />
         </div>
 
         {/* Live Activity Log */}
-        <div className="mx-4 mt-2 bg-surface-1/40 border border-border/30 p-3">
+        <div className="mx-4 bg-surface-1/40 border border-border/30 p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-3.5 h-3.5 text-gold" />
