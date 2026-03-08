@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown, Brain, Sparkles, Heart, Lightbulb, Music, Fingerprint, Zap, BarChart3 } from 'lucide-react';
+import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown, Brain, Heart, Lightbulb, Music, Fingerprint, Zap, BarChart3 } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
@@ -632,7 +633,7 @@ export default function LandingPage() {
                     </div>
                     {/* Loopy feedback */}
                     <div className="mt-5 flex items-start gap-2.5 bg-surface-1 border border-border/50 px-4 py-3">
-                      <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                      <GateIcon className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
                       <p className="text-[11px] text-muted-foreground leading-relaxed">
                         "the color grading goes crazy tbh, sync is hitting on beat drops. identity could use more signature moves tho — u got potential fr"
                       </p>
@@ -669,7 +670,7 @@ export default function LandingPage() {
                       whileTap={{ scale: 0.97 }}
                       className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-display text-sm uppercase tracking-[0.15em] shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-shadow"
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <GateIcon className="w-4 h-4" />
                       Rate My Edit — Free
                     </motion.div>
                   </Link>

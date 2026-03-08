@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import {
-  Sparkles, Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
+  Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
   Trophy, TrendingUp, ArrowDown, Star, Clock, ChevronRight, ExternalLink,
   MessageSquare, RotateCcw, Brain, Scan, Shield, Target, Activity,
   ChevronDown, Award, BarChart3, Eye
 } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -405,7 +406,7 @@ export default function LoopyPage() {
                           </>
                         ) : (
                           <>
-                            <Sparkles className="w-4 h-4 text-white" />
+                            <GateIcon className="w-4 h-4 text-white" />
                             <span className="text-[16px] font-bold text-white uppercase tracking-[0.2em]" style={TEKO}>Analyze My Edit</span>
                           </>
                         )}
@@ -576,7 +577,7 @@ export default function LoopyPage() {
                     <div className="relative shrink-0">
                       <img src={loopyAvatar} alt="Loopy" className="w-10 h-10 border border-white/10" />
                       <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border border-[#111] flex items-center justify-center">
-                        <Sparkles className="w-2 h-2 text-white" />
+                        <GateIcon className="w-2 h-2 text-white" />
                       </div>
                     </div>
                     <div className="flex-1">
