@@ -1079,26 +1079,27 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
   // ─── RENDER ───
   return (
-    <div className="h-full flex flex-col overflow-hidden select-none" style={{ background: "#0a0a0a" }}>
+    <div className="h-full flex flex-col overflow-hidden select-none" style={{ background: "#09090c", fontFamily: "'Inter', system-ui, sans-serif" }}>
 
       {/* ═══ TOP TOOLBAR ═══ */}
-      <div className="h-11 flex items-center px-2 gap-1 flex-shrink-0 z-20" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
-        <button onClick={() => onBack ? onBack() : navigate("/hub")} className="p-1.5 rounded-md transition-all hover:bg-white/5 mr-1" title="Back to Loopgate">
-          <ArrowLeft className="w-4 h-4" style={{ color: "#aaa" }} />
+      <div className="h-11 flex items-center px-2 gap-0.5 flex-shrink-0 z-20" style={{ background: "#111114", borderBottom: "1px solid #1e1e24" }}>
+        <button onClick={() => onBack ? onBack() : navigate("/hub")} className="p-1.5 rounded-lg transition-all hover:bg-white/5 mr-1" title="Back to Loopgate">
+          <ArrowLeft className="w-4 h-4" style={{ color: "#888" }} />
         </button>
-        <div className="w-px h-5 mr-1" style={{ background: "#2a2a2a" }} />
+        <div className="w-px h-5 mr-1" style={{ background: "#1e1e24" }} />
         {TOOL_TABS.map((tab) => {
           const isActive = activeToolTab === tab.id;
           return (
             <button key={tab.id}
               onClick={() => setActiveToolTab(isActive ? null : tab.id)}
-              className="flex flex-col items-center gap-0.5 py-1 px-3 rounded-md transition-all duration-150"
+              className="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-lg transition-all duration-200 relative"
               style={{
-                color: isActive ? ACCENT : "#8a8a8a",
+                color: isActive ? ACCENT : "#666",
                 background: isActive ? ACCENT_DIM : "transparent",
               }}>
               <tab.icon className="w-4 h-4" />
-              <span className="text-[9px] font-medium">{tab.label}</span>
+              <span className="text-[8px] font-semibold tracking-wide">{tab.label}</span>
+              {isActive && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-[2px] rounded-full" style={{ background: ACCENT }} />}
             </button>
           );
         })}
