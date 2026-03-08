@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import {
-  Sparkles, Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
+  Send, Loader2, Heart, Lightbulb, Music, Fingerprint, Zap,
   Trophy, TrendingUp, ArrowDown, Star, Clock, ChevronRight, ExternalLink,
   MessageSquare, RotateCcw, Brain, Scan, Shield, Target, Activity,
   ChevronDown, Award, BarChart3, Eye
 } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { SiTiktok, SiInstagram, SiYoutube } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

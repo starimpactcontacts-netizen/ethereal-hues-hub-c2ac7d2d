@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown, Brain, Sparkles, Heart, Lightbulb, Music, Fingerprint, Zap, BarChart3 } from 'lucide-react';
+import { ArrowRight, Swords, Gavel, Smartphone, Shield, Eye, Award, Play, ChevronDown, Brain, Heart, Lightbulb, Music, Fingerprint, Zap, BarChart3 } from 'lucide-react';
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import LandingHeader from '@/components/loopgate/LandingHeader';
