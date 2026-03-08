@@ -494,7 +494,7 @@ export default function HubPage() {
                     <button onClick={() => setWalletOpen(true)} className="relative flex items-center gap-2 bg-background border border-border/50 rounded-md px-3 py-2 transition-all hover:border-emerald-400/40 cursor-pointer w-full text-left">
                       <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
                       <span className="font-display text-base text-emerald-400 leading-none tabular-nums font-bold">
-                        {Number((profile as any)?.earnings_balance || 0).toFixed(2)}
+                        {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
                       </span>
                       <ChevronRight className="w-3 h-3 text-emerald-400/40 shrink-0 ml-auto" />
                     </button>

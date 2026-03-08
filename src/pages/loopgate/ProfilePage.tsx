@@ -278,7 +278,7 @@ export default function ProfilePage() {
               </div>
               <div className="text-center px-1.5">
                 <div className="flex items-center gap-0.5 justify-center">
-                  <p className="font-display text-base text-emerald-400">${Number((profile as any)?.earnings_balance || 0).toFixed(2)}</p>
+                  <p className="font-display text-base text-emerald-400">${(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}</p>
                   <IndexEarnBadge size="sm" hideDollar />
                 </div>
                 <p className="text-[8px] text-emerald-400/60 uppercase">Earnings</p>
