@@ -4441,6 +4441,71 @@ export type Database = {
           },
         ]
       }
+      loopy_ratings: {
+        Row: {
+          created_at: string
+          creativity_score: number | null
+          detailed_feedback: string | null
+          emotion_score: number | null
+          execution_score: number | null
+          grade: string | null
+          id: string
+          identity_score: number | null
+          improvements: string[] | null
+          platform: string | null
+          strengths: string[] | null
+          submission_url: string
+          sync_score: number | null
+          total_score: number | null
+          user_id: string
+          vibe_check: string | null
+        }
+        Insert: {
+          created_at?: string
+          creativity_score?: number | null
+          detailed_feedback?: string | null
+          emotion_score?: number | null
+          execution_score?: number | null
+          grade?: string | null
+          id?: string
+          identity_score?: number | null
+          improvements?: string[] | null
+          platform?: string | null
+          strengths?: string[] | null
+          submission_url: string
+          sync_score?: number | null
+          total_score?: number | null
+          user_id: string
+          vibe_check?: string | null
+        }
+        Update: {
+          created_at?: string
+          creativity_score?: number | null
+          detailed_feedback?: string | null
+          emotion_score?: number | null
+          execution_score?: number | null
+          grade?: string | null
+          id?: string
+          identity_score?: number | null
+          improvements?: string[] | null
+          platform?: string | null
+          strengths?: string[] | null
+          submission_url?: string
+          sync_score?: number | null
+          total_score?: number | null
+          user_id?: string
+          vibe_check?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loopy_ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           email: string
