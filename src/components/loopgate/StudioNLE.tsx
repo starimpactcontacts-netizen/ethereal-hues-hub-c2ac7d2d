@@ -70,11 +70,11 @@ type TimelineTrack = { id: string; name: string; type: "video" | "audio" | "text
 type ToolTab = "media" | "audio" | "text" | "effects" | "transitions" | "filters" | "adjust" | "export" | "upscale" | "crop";
 type EffectIntensity = Record<string, number>;
 
-// Studio accent — refined blue-violet
-const ACCENT = "#7C6AFF";
-const ACCENT_DIM = "rgba(124,106,255,0.10)";
-const ACCENT_BORDER = "rgba(124,106,255,0.25)";
-const ACCENT_GLOW = "rgba(124,106,255,0.35)";
+// Studio accent — monochrome premium
+const ACCENT = "hsl(0 0% 95%)";
+const ACCENT_DIM = "hsl(0 0% 100% / 0.08)";
+const ACCENT_BORDER = "hsl(0 0% 100% / 0.22)";
+const ACCENT_GLOW = "hsl(0 0% 100% / 0.25)";
 
 // Crop/Aspect ratio presets
 type CropPreset = { id: string; label: string; icon: typeof Square; ratio: number | null; desc: string };
