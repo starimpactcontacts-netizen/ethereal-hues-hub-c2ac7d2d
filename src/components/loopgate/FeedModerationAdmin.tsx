@@ -101,13 +101,9 @@ export default function FeedModerationAdmin() {
         {displayPosts.map((post) => (
           <div key={post.id} className="bg-card border border-border rounded-lg p-3 flex items-start gap-3">
             <div className="w-7 h-7 rounded-full bg-muted/50 overflow-hidden flex-shrink-0">
-              {post.avatar_url ? (
-                <img src={post.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground font-bold">
-                  {post.username?.[0]?.toUpperCase()}
-                </div>
-              )}
+              <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground font-bold">
+                {post.username?.[0]?.toUpperCase()}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
