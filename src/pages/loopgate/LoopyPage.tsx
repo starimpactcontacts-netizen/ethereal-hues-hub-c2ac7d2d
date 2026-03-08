@@ -25,8 +25,10 @@ const QUICK_ACTIONS = [
 
 export default function LoopyPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const isGuest = !user;
+  const userAvatar = profile?.avatar_url;
+  const userName = profile?.username;
 
   const {
     conversations,
