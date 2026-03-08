@@ -406,7 +406,7 @@ export default function LoopyPage() {
                           </>
                         ) : (
                           <>
-                            <Sparkles className="w-4 h-4 text-white" />
+                            <GateIcon className="w-4 h-4 text-white" />
                             <span className="text-[16px] font-bold text-white uppercase tracking-[0.2em]" style={TEKO}>Analyze My Edit</span>
                           </>
                         )}
