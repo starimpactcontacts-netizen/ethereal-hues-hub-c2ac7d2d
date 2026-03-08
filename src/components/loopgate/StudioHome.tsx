@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Clock, Film, Trash2, ChevronLeft, MoreVertical,
-  Video, Layers, Import, Scissors, Type, Music,
-  Wand2, Zap, Monitor, Smartphone, Ratio, Keyboard,
-  ExternalLink, Bug, Sparkles, Play, Upload,
-  Crop, SlidersHorizontal, Palette, Grid3x3
+  Layers, Scissors, Type, Music, Play, Upload,
+  Crop, SlidersHorizontal, Palette, ExternalLink, Bug, Sparkles,
+  Wand2, ArrowRight
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ActiveSoloBanner from "./ActiveSoloBanner";
@@ -69,12 +68,12 @@ function formatDuration(sec: number): string {
 }
 
 const CAPABILITIES = [
-  { icon: Scissors, label: "Trim & Split", color: "#7C6AFF" },
-  { icon: Palette, label: "24+ Filters", color: "#FF6B9D" },
-  { icon: Type, label: "50+ Fonts", color: "#00D4AA" },
-  { icon: Music, label: "Audio Mix", color: "#FFB84D" },
-  { icon: Crop, label: "Crop & Transform", color: "#6BBBFF" },
-  { icon: SlidersHorizontal, label: "Color Grade", color: "#FF6B6B" },
+  { icon: Scissors, label: "Trim & Split", desc: "Frame-perfect cuts" },
+  { icon: Palette, label: "24+ Filters", desc: "Cinema-grade LUTs" },
+  { icon: Type, label: "50+ Fonts", desc: "Animated text overlays" },
+  { icon: Music, label: "Audio Mix", desc: "Multi-track mixing" },
+  { icon: Crop, label: "Crop & Transform", desc: "9:16, 4:3, custom" },
+  { icon: SlidersHorizontal, label: "Color Grade", desc: "13-point grading" },
 ];
 
 interface StudioHomeProps {
@@ -101,142 +100,141 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
     toast.success("Project deleted");
   };
 
-  // Drag & drop on import area
   const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setIsDragOver(true); }, []);
   const handleDragLeave = useCallback(() => setIsDragOver(false), []);
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     const f = e.dataTransfer.files?.[0];
-    if (f && f.type.startsWith("video/")) {
-      // Trigger new project flow with this file
-      onNewProject();
-    }
+    if (f && f.type.startsWith("video/")) onNewProject();
   }, [onNewProject]);
 
   const recentProjects = projects.slice(0, 6);
+  const hasProjects = recentProjects.length > 0;
 
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #08080c 0%, #0c0c14 50%, #08080c 100%)" }}>
-      {/* ═══ SUBMISSION HUB ═══ */}
-      <div className={`${isMobile ? "px-3 pt-3" : "max-w-[1200px] mx-auto px-8 pt-4"}`}>
-        <StudioSubmitHub />
-      </div>
+    <div className="min-h-screen" style={{ background: "#06060a" }}>
 
-      {/* ═══ HEADER ═══ */}
-      <div className="sticky top-0 z-30 border-b border-white/[0.04]"
-        style={{ background: "rgba(8,8,12,0.85)", backdropFilter: "blur(20px) saturate(1.4)" }}
-      >
-        <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "max-w-[1200px] mx-auto px-8 py-3"}`}>
+      {/* ═══════════════════ TOP BAR ═══════════════════ */}
+      <div className="sticky top-0 z-30" style={{ background: "rgba(6,6,10,0.92)", backdropFilter: "blur(24px) saturate(1.6)" }}>
+        <div className={`flex items-center justify-between ${isMobile ? "px-4 py-3" : "max-w-[1100px] mx-auto px-6 py-3"}`}>
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate("/hub")} className="p-1.5 rounded-lg hover:bg-white/[0.05] transition-colors">
-              <ChevronLeft className="w-4 h-4 text-white/40" />
+            <button onClick={() => navigate("/hub")} className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors">
+              <ChevronLeft className="w-4 h-4 text-white/30" />
             </button>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)" }}
-              >
-                <Layers className="w-3 h-3 text-white" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)" }}>
+                <Layers className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="font-semibold text-white/90 text-sm tracking-tight">Studio</span>
-              <span className="text-[8px] font-bold tracking-[0.2em] uppercase px-1.5 py-0.5 rounded-sm"
-                style={{ color: "#7C6AFF", background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.15)" }}
+              <span className="font-bold text-white/90 text-[15px] tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "20px", letterSpacing: "0.04em" }}>STUDIO</span>
+              <span className="text-[7px] font-bold tracking-[0.25em] uppercase px-1.5 py-0.5 rounded"
+                style={{ color: "#7C6AFF", background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.12)" }}
               >NLE</span>
             </div>
           </div>
-
           <button
             onClick={onNewProject}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all hover:brightness-110 active:scale-95"
-            style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 4px 20px rgba(124,106,255,0.3)" }}
+            style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 4px 20px rgba(124,106,255,0.25)" }}
           >
             <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
             {isMobile ? "New" : "New Project"}
           </button>
         </div>
+        <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(124,106,255,0.15), transparent)" }} />
       </div>
 
-      {/* ═══ MAIN ═══ */}
-      <div className={`${isMobile ? "px-4 py-5 space-y-5" : "max-w-[1200px] mx-auto px-8 py-8 space-y-8"}`}>
+      {/* ═══════════════════ SUBMIT HUB ═══════════════════ */}
+      <div className={`${isMobile ? "px-3 pt-3" : "max-w-[1100px] mx-auto px-6 pt-5"}`}>
+        <StudioSubmitHub />
+      </div>
+
+      {/* ═══════════════════ CONTENT ═══════════════════ */}
+      <div className={`${isMobile ? "px-4 pt-5 pb-20" : "max-w-[1100px] mx-auto px-6 pt-8 pb-20"}`}>
 
         {/* Active Solo */}
         <ActiveSoloBanner />
 
-        {/* ═══ IMPORT HERO ═══ */}
-        <div
-          ref={dropRef}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <motion.button
-            onClick={onNewProject}
-            whileTap={{ scale: 0.98 }}
-            whileHover={{ scale: 1.002 }}
-            className={`w-full rounded-2xl overflow-hidden relative group cursor-pointer ${isMobile ? "py-12" : "py-16"}`}
-            style={{
-              background: isDragOver
-                ? "linear-gradient(135deg, rgba(124,106,255,0.15) 0%, rgba(20,20,28,0.9) 50%, rgba(124,106,255,0.1) 100%)"
-                : "linear-gradient(135deg, rgba(124,106,255,0.04) 0%, rgba(12,12,20,0.9) 50%, rgba(124,106,255,0.03) 100%)",
-              border: isDragOver ? "2px dashed rgba(124,106,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
-              transition: "all 0.3s ease",
-            }}
-          >
-            {/* Subtle animated gradient blob */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000"
-              style={{ background: "radial-gradient(circle, rgba(124,106,255,0.08), transparent 70%)" }}
+        {/* ═══════════════════ SECTION: CREATE ═══════════════════ */}
+        <section className={`${isMobile ? "mb-8" : "mb-12"}`}>
+          <SectionHeader icon={Plus} title="Create" subtitle="Start a new editing project" />
+
+          <div className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}>
+            {/* Import Hero */}
+            <div ref={dropRef} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}>
+              <motion.button
+                onClick={onNewProject}
+                whileTap={{ scale: 0.98 }}
+                className="w-full rounded-2xl overflow-hidden relative group cursor-pointer h-full min-h-[200px] flex flex-col items-center justify-center gap-4 p-8 text-left"
+                style={{
+                  background: isDragOver
+                    ? "linear-gradient(135deg, rgba(124,106,255,0.12), rgba(10,10,16,0.95))"
+                    : "linear-gradient(160deg, rgba(124,106,255,0.05) 0%, rgba(10,10,16,0.95) 40%)",
+                  border: isDragOver ? "2px dashed rgba(124,106,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                  style={{ background: "radial-gradient(circle, rgba(124,106,255,0.06), transparent 70%)" }}
+                />
+                <div className="relative flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105"
+                    style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 12px 40px rgba(124,106,255,0.25)" }}
+                  >
+                    <Upload className="w-6 h-6 text-white" strokeWidth={2} />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-white text-[15px] tracking-tight">Import Video</p>
+                    <p className="text-[11px] text-white/25 mt-1">Drag & drop or click to browse</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {["MP4", "MOV", "WEBM"].map(fmt => (
+                      <span key={fmt} className="text-[8px] font-mono font-bold tracking-widest px-2 py-0.5 rounded"
+                        style={{ color: "rgba(124,106,255,0.5)", background: "rgba(124,106,255,0.06)", border: "1px solid rgba(124,106,255,0.08)" }}
+                      >{fmt}</span>
+                    ))}
+                    <span className="text-[8px] text-white/15 ml-1">up to 2GB</span>
+                  </div>
+                </div>
+              </motion.button>
+            </div>
+
+            {/* Capabilities Grid */}
+            <div className="grid grid-cols-2 gap-2">
+              {CAPABILITIES.map((cap, i) => (
+                <motion.div
+                  key={cap.label}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * i, duration: 0.3 }}
+                  className="flex items-start gap-3 p-3.5 rounded-xl transition-colors hover:bg-white/[0.025]"
+                  style={{ border: "1px solid rgba(255,255,255,0.04)" }}
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: "rgba(124,106,255,0.06)" }}
+                  >
+                    <cap.icon className="w-3.5 h-3.5" style={{ color: "#7C6AFF" }} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-semibold text-white/70 leading-tight">{cap.label}</p>
+                    <p className="text-[10px] text-white/20 mt-0.5">{cap.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════ SECTION: RECENT PROJECTS ═══════════════════ */}
+        {hasProjects && (
+          <section className={`${isMobile ? "mb-8" : "mb-12"}`}>
+            <SectionHeader
+              icon={Clock}
+              title="Recent Projects"
+              subtitle={`${projects.length} project${projects.length !== 1 ? "s" : ""} saved locally`}
             />
 
-            <div className="relative flex flex-col items-center gap-4">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105"
-                  style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 12px 40px rgba(124,106,255,0.3)" }}
-                >
-                  <Upload className="w-7 h-7 text-white" strokeWidth={2} />
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-white text-base tracking-tight">Import Video</p>
-                <p className="text-xs text-white/30 mt-1">Drag & drop or click to browse</p>
-              </div>
-              <div className="flex items-center gap-2">
-                {["MP4", "MOV", "WEBM"].map(fmt => (
-                  <span key={fmt} className="text-[9px] font-mono font-bold tracking-widest px-2 py-1 rounded-md"
-                    style={{ color: "rgba(124,106,255,0.6)", background: "rgba(124,106,255,0.06)", border: "1px solid rgba(124,106,255,0.1)" }}
-                  >{fmt}</span>
-                ))}
-                <span className="text-[9px] text-white/20 font-medium ml-1">up to 2GB</span>
-              </div>
-            </div>
-          </motion.button>
-        </div>
-
-        {/* ═══ CAPABILITIES ROW ═══ */}
-        <div className={`grid gap-2 ${isMobile ? "grid-cols-3" : "grid-cols-6"}`}>
-          {CAPABILITIES.map(cap => (
-            <div key={cap.label} className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl transition-colors hover:bg-white/[0.02]"
-              style={{ border: "1px solid rgba(255,255,255,0.04)" }}
-            >
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${cap.color}12` }}>
-                <cap.icon className="w-4 h-4" style={{ color: cap.color }} />
-              </div>
-              <span className="text-[10px] font-medium text-white/40 text-center">{cap.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* ═══ RECENT PROJECTS ═══ */}
-        {recentProjects.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-white/20" />
-                <h2 className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em]">Recent Projects</h2>
-              </div>
-              <span className="text-[10px] text-white/15 font-medium">{projects.length} project{projects.length !== 1 ? "s" : ""}</span>
-            </div>
-
-            <div className={`grid gap-3 ${isMobile ? "grid-cols-2" : "grid-cols-3"}`}>
+            <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-3"}`}>
               {recentProjects.map((project, i) => (
                 <ProjectCard
                   key={project.id}
@@ -249,54 +247,66 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
                 />
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* ═══ PRO EDITORS ═══ */}
-        <div className="rounded-xl p-4" style={{ background: "rgba(255,255,255,0.015)", border: "1px solid rgba(255,255,255,0.04)" }}>
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-white/20" />
-            <h3 className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Pro Editors</h3>
-          </div>
-          <div className={`grid gap-2 ${isMobile ? "grid-cols-2" : "grid-cols-4"}`}>
+        {/* ═══════════════════ SECTION: RESOURCES ═══════════════════ */}
+        <section>
+          <SectionHeader icon={Sparkles} title="Resources" subtitle="Pro-grade editing tools & links" />
+
+          <div className={`grid gap-2.5 ${isMobile ? "grid-cols-1" : "grid-cols-2"}`}>
             {[
-              { name: "CapCut", url: "https://www.capcut.com", desc: "Free, mobile + desktop", color: "#00E5FF" },
-              { name: "DaVinci Resolve", url: "https://www.blackmagicdesign.com/products/davinciresolve", desc: "Pro-grade, free tier", color: "#FF6B35" },
-              { name: "Premiere Pro", url: "https://www.adobe.com/products/premiere.html", desc: "Industry standard", color: "#9B8AFF" },
-              { name: "After Effects", url: "https://www.adobe.com/products/aftereffects.html", desc: "Motion & VFX", color: "#CF96FD" },
+              { name: "CapCut", url: "https://www.capcut.com", desc: "Free, mobile + desktop", accent: "#00E5FF" },
+              { name: "DaVinci Resolve", url: "https://www.blackmagicdesign.com/products/davinciresolve", desc: "Pro-grade, free tier", accent: "#FF6B35" },
+              { name: "Premiere Pro", url: "https://www.adobe.com/products/premiere.html", desc: "Industry standard", accent: "#9B8AFF" },
+              { name: "After Effects", url: "https://www.adobe.com/products/aftereffects.html", desc: "Motion & VFX", accent: "#CF96FD" },
             ].map(editor => (
               <a key={editor.name} href={editor.url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 p-2.5 rounded-lg transition-all hover:bg-white/[0.03] group/link"
+                className="flex items-center gap-3 p-3.5 rounded-xl transition-all hover:bg-white/[0.03] group/link"
                 style={{ border: "1px solid rgba(255,255,255,0.04)" }}
               >
-                <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: `${editor.color}10` }}>
-                  <ExternalLink className="w-3 h-3" style={{ color: editor.color }} />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${editor.accent}0A` }}>
+                  <ExternalLink className="w-3.5 h-3.5" style={{ color: editor.accent }} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-white/50 group-hover/link:text-white/80 transition-colors">{editor.name}</p>
-                  <p className="text-[9px] text-white/20 truncate">{editor.desc}</p>
+                  <p className="text-[12px] font-semibold text-white/50 group-hover/link:text-white/80 transition-colors">{editor.name}</p>
+                  <p className="text-[10px] text-white/20">{editor.desc}</p>
                 </div>
+                <ArrowRight className="w-3 h-3 text-white/10 group-hover/link:text-white/30 transition-colors flex-shrink-0" />
               </a>
             ))}
           </div>
 
-          <div className="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg"
-            style={{ background: "rgba(255,180,0,0.03)", border: "1px solid rgba(255,180,0,0.06)" }}
+          {/* Bug report */}
+          <div className="mt-4 flex items-center gap-2 px-4 py-2.5 rounded-lg"
+            style={{ background: "rgba(255,180,0,0.02)", border: "1px solid rgba(255,180,0,0.05)" }}
           >
-            <Bug className="w-3 h-3 text-amber-500/40 flex-shrink-0" />
-            <p className="text-[9px] text-white/25">
-              Found a bug? <span className="text-amber-500/50 font-medium">Report it in your Unit chat or DMs</span>
+            <Bug className="w-3 h-3 text-amber-500/30 flex-shrink-0" />
+            <p className="text-[10px] text-white/20">
+              Found a bug? <span className="text-amber-500/40 font-medium">Report it in your Unit chat or DMs</span>
             </p>
           </div>
-        </div>
-
-        <div className="h-8" />
+        </section>
       </div>
     </div>
   );
 }
 
-/* ═══ PROJECT CARD ═══ */
+/* ═══════════════════ SECTION HEADER ═══════════════════ */
+function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
+  return (
+    <div className="mb-4">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className="w-4 h-4" style={{ color: "#7C6AFF" }} />
+        <h2 className="font-bold text-white/90 tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "22px", letterSpacing: "0.03em" }}>{title.toUpperCase()}</h2>
+      </div>
+      <p className="text-[11px] text-white/25 ml-6">{subtitle}</p>
+      <div className="mt-3 h-px" style={{ background: "linear-gradient(90deg, rgba(124,106,255,0.2), transparent 60%)" }} />
+    </div>
+  );
+}
+
+/* ═══════════════════ PROJECT CARD ═══════════════════ */
 function ProjectCard({
   project, index, contextMenu, setContextMenu, onOpen, onDelete,
 }: {
@@ -313,87 +323,75 @@ function ProjectCard({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
+      transition={{ delay: index * 0.04, duration: 0.3 }}
       className="group relative"
     >
       <button
         onClick={() => onOpen(project)}
-        className="w-full text-left rounded-xl overflow-hidden transition-all duration-300"
+        className="w-full text-left rounded-xl overflow-hidden transition-all duration-300 hover:border-[rgba(124,106,255,0.25)] hover:shadow-[0_8px_40px_rgba(124,106,255,0.08)] hover:-translate-y-0.5"
         style={{
           background: "rgba(255,255,255,0.02)",
           border: "1px solid rgba(255,255,255,0.05)",
         }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.borderColor = "rgba(124,106,255,0.3)";
-          (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 40px rgba(124,106,255,0.1)";
-          (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.05)";
-          (e.currentTarget as HTMLElement).style.boxShadow = "none";
-          (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-        }}
       >
-        {/* Thumbnail area */}
+        {/* Thumbnail */}
         <div className="aspect-video relative overflow-hidden">
           {hasThumbnail ? (
             <img src={project.thumbnail!} alt={project.name}
-              className="w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.03] transition-all duration-500" />
           ) : (
             <div className="w-full h-full flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, rgba(124,106,255,0.08) 0%, rgba(12,12,20,1) 60%, rgba(124,106,255,0.04) 100%)" }}
+              style={{ background: "linear-gradient(135deg, rgba(124,106,255,0.06), rgba(10,10,16,1) 60%)" }}
             >
-              <Film className="w-8 h-8 text-white/10" />
+              <Film className="w-7 h-7 text-white/8" />
             </div>
           )}
 
-          {/* Duration badge */}
           {project.duration > 0 && (
-            <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold text-white/90"
+            <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[10px] font-mono font-bold text-white/90"
               style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}
             >
               {formatDuration(project.duration)}
             </div>
           )}
 
-          {/* Resolution badge */}
           {project.resolution && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md text-[8px] font-bold tracking-wider"
+            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider"
               style={{ color: "#7C6AFF", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
             >
               {project.resolution.includes("1920") ? "1080p" : project.resolution.includes("3840") ? "4K" : project.resolution.includes("1280") ? "720p" : project.resolution.split("x")[1] + "p"}
             </div>
           )}
 
-          {/* Hover play overlay */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-all duration-300">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm"
-              style={{ background: "rgba(124,106,255,0.9)", boxShadow: "0 4px 24px rgba(124,106,255,0.5)" }}
+          {/* Play overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/25 opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm"
+              style={{ background: "rgba(124,106,255,0.85)", boxShadow: "0 4px 20px rgba(124,106,255,0.4)" }}
             >
-              <Play className="w-5 h-5 text-white ml-0.5" fill="white" />
+              <Play className="w-4 h-4 text-white ml-0.5" fill="white" />
             </div>
           </div>
         </div>
 
         {/* Info */}
         <div className="p-3">
-          <p className="text-[13px] font-semibold text-white/85 truncate leading-tight">{project.name}</p>
+          <p className="text-[12px] font-semibold text-white/80 truncate leading-tight">{project.name}</p>
           <div className="flex items-center gap-1.5 mt-1.5">
-            <span className="text-[10px] text-white/25 font-medium">{formatTimeAgo(project.lastModified)}</span>
+            <span className="text-[10px] text-white/20 font-medium">{formatTimeAgo(project.lastModified)}</span>
             {project.fileSize > 0 && (
               <>
-                <span className="text-white/10">·</span>
-                <span className="text-[10px] text-white/25 font-medium">{formatFileSize(project.fileSize)}</span>
+                <span className="text-white/8">·</span>
+                <span className="text-[10px] text-white/20 font-medium">{formatFileSize(project.fileSize)}</span>
               </>
             )}
           </div>
         </div>
       </button>
 
-      {/* Context menu trigger */}
+      {/* Context menu */}
       <button
         onClick={(e) => { e.stopPropagation(); setContextMenu(contextMenu === project.id ? null : project.id); }}
-        className="absolute top-2 right-2 p-1.5 rounded-md text-white/30 hover:text-white/80 opacity-0 group-hover:opacity-100 transition-all z-10"
+        className="absolute top-2 right-2 p-1.5 rounded-md text-white/25 hover:text-white/70 opacity-0 group-hover:opacity-100 transition-all z-10"
         style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
       >
         <MoreVertical className="w-3 h-3" />
@@ -406,7 +404,7 @@ function ProjectCard({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             className="absolute top-10 right-2 z-20 rounded-lg shadow-2xl overflow-hidden"
-            style={{ background: "rgba(16,16,22,0.95)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(16px)" }}
+            style={{ background: "rgba(14,14,20,0.95)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(16px)" }}
           >
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}
