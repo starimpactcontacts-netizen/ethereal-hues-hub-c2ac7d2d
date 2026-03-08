@@ -302,15 +302,15 @@ export default function FeedPage() {
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 text-center py-3 text-[13px] font-bold transition-colors relative ${
-                      activeTab === tab.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground/60 hover:bg-muted/5'
+                    className={`flex-1 text-center py-3 text-[13px] transition-colors relative ${
+                      activeTab === tab.key ? 'text-foreground font-bold' : 'text-muted-foreground font-semibold hover:text-foreground/60 hover:bg-muted/5'
                     }`}
                   >
                     {tab.label}
                     {activeTab === tab.key && (
                       <motion.div
                         layoutId="loopTab"
-                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] bg-primary rounded-full"
+                        className="absolute bottom-0 left-1/4 right-1/4 h-[3px] bg-primary rounded-full"
                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
                       />
                     )}
