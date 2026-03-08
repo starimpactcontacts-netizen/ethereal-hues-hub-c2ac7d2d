@@ -381,20 +381,22 @@ export default function CrewsPage() {
     { id: "top" as const, label: "Top" },
   ];
 
+  const teko = { fontFamily: 'Teko, sans-serif' };
+
   return (
     <PageTransition>
       <div className="min-h-screen bg-background pb-24">
-        {/* Header */}
-        <div className="sticky top-0 z-50 bg-surface-0/95 backdrop-blur-md border-b border-border/50">
-          <div className="px-4 py-3 flex items-center justify-between">
+        {/* Header — minimal, authoritative */}
+        <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/20">
+          <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-70" />
-              <span className="text-sm font-medium text-muted-foreground">/units</span>
+              <img src={loopgateLogo} alt="LOOPGATE" className="h-4 opacity-50" />
+              <span className="text-[11px] font-medium text-muted-foreground/40 tracking-wider uppercase">/units</span>
             </div>
             <Button
               size="sm"
               onClick={() => navigate("/units/create")}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold h-8"
+              className="bg-foreground text-background hover:bg-foreground/90 font-bold h-8 text-xs"
             >
               <Plus className="w-3.5 h-3.5 mr-1" />
               Create
@@ -402,16 +404,16 @@ export default function CrewsPage() {
           </div>
           
           {/* Category Tabs + Search */}
-          <div className="px-4 pb-3 flex items-center gap-4">
-            <div className="flex items-center gap-4">
+          <div className="px-4 sm:px-6 pb-3 flex items-center gap-4">
+            <div className="flex items-center gap-5">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`text-sm font-medium pb-1 border-b-2 transition-colors ${
+                  className={`text-xs font-bold uppercase tracking-[0.1em] pb-1 border-b-2 transition-all ${
                     activeCategory === cat.id
-                      ? "text-white border-gold"
-                      : "text-muted-foreground border-transparent hover:text-foreground"
+                      ? "text-foreground border-foreground"
+                      : "text-muted-foreground/40 border-transparent hover:text-muted-foreground"
                   }`}
                 >
                   {cat.label}
@@ -422,26 +424,26 @@ export default function CrewsPage() {
             <div className="flex-1" />
             
             <div className="relative w-40">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/30" />
               <input
                 type="text"
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-surface-1 border border-border/50 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-purple-500/50"
+                className="w-full bg-muted/10 border border-border/20 rounded-lg pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-foreground/20 transition-colors"
               />
             </div>
           </div>
         </div>
 
-        {/* Hero */}
-        <div className="px-4 pt-6 pb-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-display text-4xl sm:text-5xl tracking-wide text-white leading-none mb-2">
-              FIND YOUR UNIT
+        {/* Hero — bold, short */}
+        <div className="px-4 sm:px-6 pt-8 pb-6">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-5xl sm:text-6xl font-black uppercase tracking-wide text-foreground leading-[0.9] mb-2" style={teko}>
+              FIND YOUR<br />UNIT
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Compete together. Climb together.
+            <p className="text-xs text-muted-foreground/40 tracking-wider uppercase font-medium">
+              Compete together · Climb together
             </p>
           </motion.div>
         </div>
