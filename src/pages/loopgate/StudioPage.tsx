@@ -55,166 +55,178 @@ export default function StudioPage() {
     input.click();
   }, []);
 
+  const extractProjectMetadata = useCallback(async (file: File): Promise<Pick<StudioProject, "thumbnail" | "duration" | "resolution">> => {
+    const objUrl = URL.createObjectURL(file);
+    const vid = document.createElement("video");
+    vid.src = objUrl;
+    vid.muted = true;
+    vid.preload = "auto";
+    vid.playsInline = true;
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const timeoutId = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        URL.revokeObjectURL(objUrl);
+        resolve({ thumbnail: null, duration: 0, resolution: "" });
+      }, 7000);
+
+      const finish = (payload: Pick<StudioProject, "thumbnail" | "duration" | "resolution">) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        URL.revokeObjectURL(objUrl);
+        resolve(payload);
+      };
+
+      const captureThumbnail = (): string | null => {
+        if (vid.videoWidth === 0 || vid.videoHeight === 0) return null;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = Math.max(180, Math.round(320 * (vid.videoHeight / vid.videoWidth)));
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return null;
+
+        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+
+        const sampleCanvas = document.createElement("canvas");
+        sampleCanvas.width = 96;
+        sampleCanvas.height = 54;
+        const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
+        if (!sampleCtx) return null;
+
+        sampleCtx.drawImage(canvas, 0, 0, sampleCanvas.width, sampleCanvas.height);
+        const data = sampleCtx.getImageData(0, 0, sampleCanvas.width, sampleCanvas.height).data;
+
+        let lumaSum = 0;
+        let lumaSqSum = 0;
+        let maxLuma = 0;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          lumaSum += luma;
+          lumaSqSum += luma * luma;
+          if (luma > maxLuma) maxLuma = luma;
+        }
+
+        const totalPixels = data.length / 4;
+        const avgLuma = lumaSum / totalPixels;
+        const variance = lumaSqSum / totalPixels - avgLuma * avgLuma;
+
+        // Reject empty/near-black frames aggressively
+        if (maxLuma < 26) return null;
+        if (avgLuma < 10 && variance < 120) return null;
+
+        const url = canvas.toDataURL("image/jpeg", 0.82);
+        return url.length > 1200 ? url : null;
+      };
+
+      const seekTo = (time: number) =>
+        new Promise<void>((resolveSeek, rejectSeek) => {
+          const duration = Number.isFinite(vid.duration) ? vid.duration : 0;
+          const target = Math.max(0, Math.min(time, Math.max(duration - 0.05, 0)));
+
+          let seekTimeout: ReturnType<typeof setTimeout>;
+          const onSeeked = () => {
+            clearTimeout(seekTimeout);
+            resolveSeek();
+          };
+
+          vid.addEventListener("seeked", onSeeked, { once: true });
+
+          seekTimeout = setTimeout(() => {
+            vid.removeEventListener("seeked", onSeeked);
+            rejectSeek(new Error("seek timeout"));
+          }, 1500);
+
+          try {
+            vid.currentTime = target;
+          } catch (err) {
+            clearTimeout(seekTimeout);
+            vid.removeEventListener("seeked", onSeeked);
+            rejectSeek(err);
+          }
+        });
+
+      const waitForPaint = () =>
+        new Promise<void>((resolvePaint) => {
+          if ("requestVideoFrameCallback" in vid) {
+            (vid as any).requestVideoFrameCallback(() => resolvePaint());
+          } else {
+            setTimeout(() => resolvePaint(), 140);
+          }
+        });
+
+      vid.onloadedmetadata = async () => {
+        const duration = Number.isFinite(vid.duration) ? vid.duration : 0;
+        const resolution = vid.videoWidth > 0 && vid.videoHeight > 0 ? `${vid.videoWidth}x${vid.videoHeight}` : "";
+
+        const d = Math.max(duration, 1);
+        const randomPrimary = d * (0.18 + Math.random() * 0.68);
+        const candidates = [randomPrimary, d * 0.5, d * 0.35, d * 0.72, Math.min(2.5, d * 0.25)];
+
+        for (const t of candidates) {
+          try {
+            await seekTo(t);
+            await waitForPaint();
+            const thumb = captureThumbnail();
+            if (thumb) {
+              finish({ thumbnail: thumb, duration, resolution });
+              return;
+            }
+          } catch {
+            // try next point in timeline
+          }
+        }
+
+        // Final fallback: play a bit to force decoder to a real frame
+        try {
+          await vid.play();
+          await new Promise((r) => setTimeout(r, 260));
+          vid.pause();
+          await waitForPaint();
+          const thumb = captureThumbnail();
+          finish({ thumbnail: thumb, duration, resolution });
+        } catch {
+          finish({ thumbnail: null, duration, resolution });
+        }
+      };
+
+      vid.onerror = () => finish({ thumbnail: null, duration: 0, resolution: "" });
+    });
+  }, []);
+
   const handleFileSelected = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
     if (f.size > 2 * 1024 * 1024 * 1024) { toast.error("Max 2GB"); return; }
 
-    // Save as a project
-    const project: StudioProject = {
-      id: crypto.randomUUID(),
-      name: f.name.replace(/\.[^/.]+$/, ""),
-      thumbnail: null,
-      lastModified: Date.now(),
-      duration: 0,
-      resolution: "",
-      fileSize: f.size,
-    };
+    const projectId = crypto.randomUUID();
 
-    // Generate thumbnail from video
-    const vid = document.createElement("video");
-    const objUrl = URL.createObjectURL(f);
-    vid.src = objUrl;
-    vid.muted = true;
-    vid.preload = "auto";
-    vid.playsInline = true;
-    vid.crossOrigin = "anonymous";
+    void (async () => {
+      const metadata = await extractProjectMetadata(f);
 
-    let opened = false;
-    let safetyTimeout: ReturnType<typeof setTimeout> | null = null;
+      const project: StudioProject = {
+        id: projectId,
+        name: f.name.replace(/\.[^/.]+$/, ""),
+        thumbnail: metadata.thumbnail,
+        lastModified: Date.now(),
+        duration: metadata.duration,
+        resolution: metadata.resolution,
+        fileSize: f.size,
+      };
 
-    const openEditor = () => {
-      if (opened) return;
-      opened = true;
-      if (safetyTimeout) clearTimeout(safetyTimeout);
       saveStudioProject(project);
-      URL.revokeObjectURL(objUrl);
       setInitialFile(f);
       setEditorOpen(true);
-    };
-
-    const captureThumbnail = (): string | null => {
-      try {
-        if (vid.videoWidth === 0 || vid.videoHeight === 0) return null;
-
-        const canvas = document.createElement("canvas");
-        canvas.width = 320;
-        canvas.height = Math.max(180, Math.round(320 * (vid.videoHeight / vid.videoWidth)));
-
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) return null;
-
-        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
-
-        const sampleW = Math.min(48, canvas.width);
-        const sampleH = Math.min(28, canvas.height);
-        const imageData = ctx.getImageData(0, 0, sampleW, sampleH).data;
-
-        let lumaTotal = 0;
-        let brightPixels = 0;
-        const totalPixels = imageData.length / 4;
-
-        for (let i = 0; i < imageData.length; i += 4) {
-          const r = imageData[i];
-          const g = imageData[i + 1];
-          const b = imageData[i + 2];
-          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          lumaTotal += luma;
-          if (luma > 28) brightPixels += 1;
-        }
-
-        const avgLuma = lumaTotal / totalPixels;
-        const brightRatio = brightPixels / totalPixels;
-
-        // Reject obviously black/empty frames
-        if (avgLuma < 12 || brightRatio < 0.015) return null;
-
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
-        return dataUrl.length > 800 ? dataUrl : null;
-      } catch (err) {
-        console.warn("Thumbnail capture failed:", err);
-        return null;
-      }
-    };
-
-    const seekTo = (time: number) =>
-      new Promise<void>((resolve, reject) => {
-        const clamped = Math.max(0, Math.min(time, Math.max((vid.duration || 1) - 0.05, 0)));
-
-        let timeoutId: ReturnType<typeof setTimeout>;
-        const onSeeked = () => {
-          clearTimeout(timeoutId);
-          resolve();
-        };
-
-        vid.addEventListener("seeked", onSeeked, { once: true });
-
-        timeoutId = setTimeout(() => {
-          vid.removeEventListener("seeked", onSeeked);
-          reject(new Error("Seek timeout"));
-        }, 1400);
-
-        try {
-          vid.currentTime = clamped;
-        } catch (err) {
-          clearTimeout(timeoutId);
-          vid.removeEventListener("seeked", onSeeked);
-          reject(err);
-        }
-      });
-
-    const buildThumbnailTimes = (duration: number) => {
-      const d = Math.max(duration, 1);
-      const randomPrimary = Math.max(0.5, Math.min(d - 0.2, d * (0.15 + Math.random() * 0.7)));
-      return [
-        randomPrimary,
-        d * 0.5,
-        d * 0.35,
-        d * 0.7,
-        Math.min(2, d * 0.2),
-      ].filter((t, i, arr) => Number.isFinite(t) && t >= 0 && arr.indexOf(t) === i);
-    };
-
-    vid.onloadedmetadata = async () => {
-      project.duration = Number.isFinite(vid.duration) ? vid.duration : 0;
-      project.resolution = `${vid.videoWidth}x${vid.videoHeight}`;
-
-      const times = buildThumbnailTimes(project.duration || 1);
-
-      for (const t of times) {
-        try {
-          await seekTo(t);
-
-          await new Promise<void>((resolve) => {
-            if ("requestVideoFrameCallback" in vid) {
-              (vid as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => void })
-                .requestVideoFrameCallback(() => resolve());
-            } else {
-              setTimeout(() => resolve(), 140);
-            }
-          });
-
-          const candidate = captureThumbnail();
-          if (candidate) {
-            project.thumbnail = candidate;
-            break;
-          }
-        } catch {
-          // Try next timestamp
-        }
-      }
-
-      openEditor();
-    };
-
-    // Hard fallback to guarantee user can still edit, even if metadata/seek flow fails
-    safetyTimeout = setTimeout(() => {
-      if (!opened) openEditor();
-    }, 5000);
-
-    vid.onerror = () => openEditor();
-  }, []);
+    })();
+  }, [extractProjectMetadata]);
 
   const [pendingProject, setPendingProject] = useState<StudioProject | null>(null);
   const reimportInputRef = useRef<HTMLInputElement>(null);
@@ -238,11 +250,30 @@ export default function StudioPage() {
     const f = e.target.files?.[0];
     if (!f) return;
     if (!f.type.startsWith("video/")) { toast.error("Please select a video file"); return; }
-    // Close dialog, open editor with the re-selected file
+
+    const projectToRefresh = pendingProject;
+
+    // Close dialog + reopen editor immediately
     setPendingProject(null);
     setInitialFile(f);
     setEditorOpen(true);
-  }, []);
+
+    // Refresh saved metadata/thumbnail for existing project card
+    if (!projectToRefresh) return;
+
+    void (async () => {
+      const metadata = await extractProjectMetadata(f);
+      saveStudioProject({
+        ...projectToRefresh,
+        name: projectToRefresh.name || f.name.replace(/\.[^/.]+$/, ""),
+        thumbnail: metadata.thumbnail,
+        duration: metadata.duration,
+        resolution: metadata.resolution,
+        fileSize: f.size,
+        lastModified: Date.now(),
+      });
+    })();
+  }, [extractProjectMetadata, pendingProject]);
 
   return (
     <>
