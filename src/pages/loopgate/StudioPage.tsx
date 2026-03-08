@@ -113,22 +113,48 @@ export default function StudioPage() {
     vid.onloadedmetadata = () => {
       project.duration = vid.duration;
       project.resolution = `${vid.videoWidth}x${vid.videoHeight}`;
-      vid.currentTime = Math.min(2, vid.duration * 0.15);
+      // Seek to ~25% of the video for a meaningful thumbnail
+      vid.currentTime = Math.max(0.5, vid.duration * 0.25);
     };
 
     vid.onseeked = () => {
-      captureThumbnail();
-      openEditor();
+      // Wait for the frame to actually paint before capturing
+      const tryCapture = () => {
+        captureThumbnail();
+        if (!project.thumbnail) {
+          // Frame not ready yet, retry
+          setTimeout(() => { captureThumbnail(); openEditor(); }, 300);
+        } else {
+          openEditor();
+        }
+      };
+
+      // Use requestVideoFrameCallback if available for precise frame timing
+      if ('requestVideoFrameCallback' in vid) {
+        (vid as any).requestVideoFrameCallback(() => tryCapture());
+      } else {
+        // Fallback: small delay to let the frame render
+        setTimeout(tryCapture, 200);
+      }
     };
 
-    // Fallback: if onseeked never fires, still open after 3s
+    // Fallback: if onseeked never fires, play briefly to force a frame
     vid.onloadeddata = () => {
       setTimeout(() => {
         if (!opened) {
-          captureThumbnail();
-          openEditor();
+          // Try playing briefly to force frame decode
+          vid.play().then(() => {
+            setTimeout(() => {
+              vid.pause();
+              captureThumbnail();
+              openEditor();
+            }, 300);
+          }).catch(() => {
+            captureThumbnail();
+            openEditor();
+          });
         }
-      }, 2000);
+      }, 2500);
     };
 
     vid.onerror = () => openEditor();
