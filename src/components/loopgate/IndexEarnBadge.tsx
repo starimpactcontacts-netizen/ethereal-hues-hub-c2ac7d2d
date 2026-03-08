@@ -24,7 +24,7 @@ export default function IndexEarnBadge({ size = 'sm', hideDollar = false }: Inde
       <AnimatePresence>
         {showInfo && (
           <>
-            <div className="fixed inset-0 z-50" onClick={() => setShowInfo(false)} />
+            <div className="fixed inset-0 z-[99] bg-black/60" onClick={() => setShowInfo(false)} />
             <motion.div
               initial={{ opacity: 0, y: 4, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
