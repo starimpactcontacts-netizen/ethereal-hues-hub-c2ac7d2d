@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Plus, Minus, Zap, Trophy, Clock, Eye, EyeOff, Users, Target, Percent, ChevronDown, ChevronUp, Sparkles, Settings2 } from "lucide-react";
+import { Plus, Minus, Zap, Trophy, Clock, Eye, EyeOff, Users, Target, Percent, ChevronDown, ChevronUp, Settings2 } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";

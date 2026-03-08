@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Sparkles, ChevronRight, Flame, Shield } from "lucide-react";
+import { ChevronRight, Flame, Shield } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 
 interface PracticeModeCardProps {
   onEnter: () => void;

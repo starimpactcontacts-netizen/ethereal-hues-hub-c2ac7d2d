@@ -4,7 +4,8 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, Users, Sparkles } from "lucide-react";
+import { Copy, Check, Users } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import loopgateLogo from "@/assets/loopgate-wordmark.png";

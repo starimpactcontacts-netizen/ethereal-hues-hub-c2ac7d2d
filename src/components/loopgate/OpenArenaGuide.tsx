@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { X, Zap, Trophy, Users, Target, Sparkles, ArrowRight, Info } from "lucide-react";
+import { X, Zap, Trophy, Users, Target, ArrowRight, Info } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface OpenArenaGuideProps {

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, Users, Trophy, BarChart3, Star, Sparkles, Bell, ChevronRight } from "lucide-react";
+import { Building2, Users, Trophy, BarChart3, Star, Bell, ChevronRight } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 

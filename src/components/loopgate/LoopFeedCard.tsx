@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Star, Trophy, MessageCircle, Share2, ExternalLink, Sparkles, Swords, Video, Heart, Bookmark, BarChart3 } from "lucide-react";
+import { Star, Trophy, MessageCircle, Share2, ExternalLink, Swords, Video, Heart, Bookmark, BarChart3 } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";

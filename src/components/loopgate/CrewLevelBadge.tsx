@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Shield, Crown, Star, Zap, Gem, Sparkles } from "lucide-react";
+import { Shield, Crown, Star, Zap, Gem } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { motion } from "framer-motion";
 
 interface CrewLevelBadgeProps {

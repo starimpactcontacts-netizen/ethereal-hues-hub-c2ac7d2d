@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X, Sparkles, Link2, Globe } from "lucide-react";
+import { X, Link2, Globe } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import GifPicker from "./GifPicker";
 import MediaUploadButton from "./MediaUploadButton";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";

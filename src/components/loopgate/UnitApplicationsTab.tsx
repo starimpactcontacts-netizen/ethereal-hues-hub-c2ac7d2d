@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Sparkles, Shield, Upload, ImagePlus } from "lucide-react";
+import { Award, Check, X, Clock, ChevronRight, Plus, ExternalLink, Star, Crown, Shield, Upload, ImagePlus } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

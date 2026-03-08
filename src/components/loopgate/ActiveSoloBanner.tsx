@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Music, Trophy, Send, Clock, Info, X, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import { Music, Trophy, Send, Clock, Info, X, Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { useSoloMode } from "@/hooks/useSoloMode";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";

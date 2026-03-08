@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Shield, Users, Clock, Trophy, ChevronDown, FileText, Sparkles, Swords, ImagePlus, X } from "lucide-react";
+import { ArrowLeft, Shield, Users, Clock, Trophy, ChevronDown, FileText, Swords, ImagePlus, X } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

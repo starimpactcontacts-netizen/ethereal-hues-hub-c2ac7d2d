@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Crown, CheckCircle2, Sparkles } from "lucide-react";
+import { Crown, CheckCircle2 } from "lucide-react";
+import GateIcon from '@/components/loopgate/GateIcon';
 import RichMessageContent from "./RichMessageContent";
 
 interface PremiumStep {
