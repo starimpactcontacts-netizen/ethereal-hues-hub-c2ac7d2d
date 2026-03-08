@@ -174,18 +174,18 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
                 className="w-full rounded-2xl overflow-hidden relative group cursor-pointer h-full min-h-[200px] flex flex-col items-center justify-center gap-4 p-8 text-left"
                 style={{
                   background: isDragOver
-                    ? "linear-gradient(135deg, rgba(124,106,255,0.12), rgba(10,10,16,0.95))"
-                    : "linear-gradient(160deg, rgba(124,106,255,0.05) 0%, rgba(10,10,16,0.95) 40%)",
-                  border: isDragOver ? "2px dashed rgba(124,106,255,0.5)" : "1px solid rgba(255,255,255,0.06)",
+                    ? "linear-gradient(135deg, hsl(0 0% 100% / 0.12), hsl(0 0% 4% / 0.96))"
+                    : "linear-gradient(160deg, hsl(0 0% 100% / 0.06) 0%, hsl(0 0% 4% / 0.96) 42%)",
+                  border: isDragOver ? `2px dashed ${MONO_ACCENT_BORDER}` : "1px solid hsl(0 0% 100% / 0.08)",
                   transition: "all 0.3s ease",
                 }}
               >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-                  style={{ background: "radial-gradient(circle, rgba(124,106,255,0.06), transparent 70%)" }}
+                  style={{ background: "radial-gradient(circle, hsl(0 0% 100% / 0.1), transparent 70%)" }}
                 />
                 <div className="relative flex flex-col items-center gap-3">
                   <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105"
-                    style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 12px 40px rgba(124,106,255,0.25)" }}
+                    style={{ background: "linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 74%))", boxShadow: "0 12px 40px hsl(0 0% 100% / 0.25)" }}
                   >
                     <Upload className="w-6 h-6 text-white" strokeWidth={2} />
                   </div>
