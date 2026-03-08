@@ -29,7 +29,7 @@ export default function IndexEarnBadge({ size = 'sm', hideDollar = false }: Inde
               initial={{ opacity: 0, y: 4, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 4, scale: 0.95 }}
-              className="absolute z-50 top-full mt-2 right-0 w-56 bg-surface-1 border border-gold/30 shadow-xl shadow-black/40 p-3"
+              className="fixed z-[100] left-4 right-4 bottom-20 sm:absolute sm:left-auto sm:right-0 sm:bottom-auto sm:top-full sm:mt-2 sm:w-64 bg-surface-1 border border-gold/30 shadow-2xl shadow-black/60 p-4 rounded-lg"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">

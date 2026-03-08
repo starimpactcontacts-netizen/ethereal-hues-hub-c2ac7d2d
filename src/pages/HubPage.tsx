@@ -490,18 +490,27 @@ export default function HubPage() {
                   </button>
 
                   {/* Earnings + Index — top right */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <button onClick={() => setWalletOpen(true)} className="flex items-center gap-0.5 group">
-                      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="font-display text-base tabular-nums font-bold text-emerald-400 leading-none">
-                        {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
+                  <div className="flex flex-col gap-1.5 shrink-0 items-end">
+                    {/* Earnings — prominent real money display */}
+                    <button onClick={() => setWalletOpen(true)} className="flex flex-col items-end group">
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="w-4 h-4 text-emerald-400" />
+                        <span className="font-display text-xl tabular-nums font-bold text-emerald-400 leading-none">
+                          {(Math.max(0, ((profile as any)?.earnings_cents || 0) - ((profile as any)?.pending_withdrawal_cents || 0) - ((profile as any)?.withdrawn_cents || 0)) / 100).toFixed(2)}
+                        </span>
+                      </div>
+                      <span className="text-[8px] text-emerald-400/50 font-semibold uppercase tracking-wider mt-0.5">
+                        ${(((profile as any)?.earnings_cents || 0) / 100).toFixed(2)} earned
                       </span>
                     </button>
-                    <Link to="/index" className="flex items-center gap-0.5">
+                    {/* Index */}
+                    <Link to="/index" className="flex items-center gap-1.5">
+                      <IndexEarnBadge size="sm" hideDollar />
                       <Coins className="w-3.5 h-3.5 text-gold" />
-                      <span className="font-display text-base tabular-nums font-bold text-foreground/80 leading-none">
+                      <span className="font-display text-sm tabular-nums font-bold text-foreground/80 leading-none">
                         {profile?.global_index_score || 0}
                       </span>
+                      <span className="text-[8px] text-gold/50 font-bold tracking-wider">IDX</span>
                     </Link>
                   </div>
                 </div>
