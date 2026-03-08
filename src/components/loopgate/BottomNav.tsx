@@ -43,7 +43,12 @@ export default function BottomNav() {
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background safe-bottom">
+        {/* Top border with center glow reflecting arena button */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-border" />
+        <div className="absolute top-[-1px] left-1/2 -translate-x-1/2 w-[200px] h-[2px] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+        <div className="absolute top-[-4px] left-1/2 -translate-x-1/2 w-[120px] h-[8px] bg-gradient-to-r from-transparent via-white/20 to-transparent blur-sm" />
+        <div className="absolute top-[-8px] left-1/2 -translate-x-1/2 w-[80px] h-[16px] bg-white/[0.06] blur-md" />
         <div className="grid grid-cols-5 h-16 max-w-lg mx-auto">
           {/* Left side items (Hub, Loop) */}
           {navItems.slice(0, 2).map((item) => (
