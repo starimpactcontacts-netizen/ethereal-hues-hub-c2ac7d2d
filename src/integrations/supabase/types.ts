@@ -3588,8 +3588,10 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           community_url: string | null
+          cpm_rate_cents: number
           created_at: string
           description: string | null
+          earnings_last_calculated_at: string | null
           featured_at: string | null
           format: string
           host_avatar_url: string | null
@@ -3614,6 +3616,7 @@ export type Database = {
           slug: string | null
           status: string
           submission_deadline: string
+          total_payout_cents: number
           updated_at: string
           view_count: number | null
         }
@@ -3621,8 +3624,10 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           community_url?: string | null
+          cpm_rate_cents?: number
           created_at?: string
           description?: string | null
+          earnings_last_calculated_at?: string | null
           featured_at?: string | null
           format?: string
           host_avatar_url?: string | null
@@ -3647,6 +3652,7 @@ export type Database = {
           slug?: string | null
           status?: string
           submission_deadline: string
+          total_payout_cents?: number
           updated_at?: string
           view_count?: number | null
         }
@@ -3654,8 +3660,10 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           community_url?: string | null
+          cpm_rate_cents?: number
           created_at?: string
           description?: string | null
+          earnings_last_calculated_at?: string | null
           featured_at?: string | null
           format?: string
           host_avatar_url?: string | null
@@ -3680,6 +3688,7 @@ export type Database = {
           slug?: string | null
           status?: string
           submission_deadline?: string
+          total_payout_cents?: number
           updated_at?: string
           view_count?: number | null
         }
@@ -5721,6 +5730,7 @@ export type Database = {
           challenged_crew_avatar_url: string | null
           challenged_crew_id: string | null
           challenged_crew_name: string | null
+          completed_at: string | null
           created_at: string
           crew_avatar_url: string | null
           crew_id: string
@@ -5732,6 +5742,8 @@ export type Database = {
           format_type: string
           id: string
           index_prize: number | null
+          judging_close_at: string | null
+          judging_open_at: string | null
           max_players: number
           min_players: number
           name: string
@@ -5750,6 +5762,8 @@ export type Database = {
           start_date: string | null
           status: string
           submission_deadline: string | null
+          submissions_close_at: string | null
+          submissions_open_at: string | null
           theme: string | null
           third_place_index: number | null
           tournament_mode: string
@@ -5765,6 +5779,7 @@ export type Database = {
           challenged_crew_avatar_url?: string | null
           challenged_crew_id?: string | null
           challenged_crew_name?: string | null
+          completed_at?: string | null
           created_at?: string
           crew_avatar_url?: string | null
           crew_id: string
@@ -5776,6 +5791,8 @@ export type Database = {
           format_type?: string
           id?: string
           index_prize?: number | null
+          judging_close_at?: string | null
+          judging_open_at?: string | null
           max_players?: number
           min_players?: number
           name: string
@@ -5794,6 +5811,8 @@ export type Database = {
           start_date?: string | null
           status?: string
           submission_deadline?: string | null
+          submissions_close_at?: string | null
+          submissions_open_at?: string | null
           theme?: string | null
           third_place_index?: number | null
           tournament_mode?: string
@@ -5809,6 +5828,7 @@ export type Database = {
           challenged_crew_avatar_url?: string | null
           challenged_crew_id?: string | null
           challenged_crew_name?: string | null
+          completed_at?: string | null
           created_at?: string
           crew_avatar_url?: string | null
           crew_id?: string
@@ -5820,6 +5840,8 @@ export type Database = {
           format_type?: string
           id?: string
           index_prize?: number | null
+          judging_close_at?: string | null
+          judging_open_at?: string | null
           max_players?: number
           min_players?: number
           name?: string
@@ -5838,6 +5860,8 @@ export type Database = {
           start_date?: string | null
           status?: string
           submission_deadline?: string | null
+          submissions_close_at?: string | null
+          submissions_open_at?: string | null
           theme?: string | null
           third_place_index?: number | null
           tournament_mode?: string
