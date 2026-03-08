@@ -2006,6 +2006,63 @@ export type Database = {
           },
         ]
       }
+      editorium_indexed_edits: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          featured_date: string
+          headline: string | null
+          id: string
+          indexed_by: string | null
+          is_active: boolean
+          platform: string
+          qoi_score: number | null
+          source: string
+          source_label: string | null
+          submission_url: string
+          thumbnail_url: string | null
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          featured_date?: string
+          headline?: string | null
+          id?: string
+          indexed_by?: string | null
+          is_active?: boolean
+          platform?: string
+          qoi_score?: number | null
+          source?: string
+          source_label?: string | null
+          submission_url: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          featured_date?: string
+          headline?: string | null
+          id?: string
+          indexed_by?: string | null
+          is_active?: boolean
+          platform?: string
+          qoi_score?: number | null
+          source?: string
+          source_label?: string | null
+          submission_url?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       email_notifications_log: {
         Row: {
           email_type: string
