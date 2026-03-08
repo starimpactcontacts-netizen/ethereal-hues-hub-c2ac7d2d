@@ -277,13 +277,14 @@ function TournamentEarnings({ crewId }: { crewId: string }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchEarnings = async () => {
       const { data } = await supabase
-        .from("hosted_competitions")
+        .from("hosted_competitions" as any)
         .select("id, view_count, participant_count, host_earnings_cents, status")
         .eq("crew_id", crewId);
 
       if (data) {
+        const results = data as { id: string; view_count: number; participant_count: number; host_earnings_cents: number; status: string }[];
         const totalEarnings = data.reduce((s, c) => s + (c.host_earnings_cents || 0), 0);
         const totalViews = data.reduce((s, c) => s + (c.view_count || 0), 0);
         const totalParticipants = data.reduce((s, c) => s + (c.participant_count || 0), 0);
