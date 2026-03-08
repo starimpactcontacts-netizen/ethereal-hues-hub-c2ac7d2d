@@ -342,9 +342,16 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         case "j": seekTo(Math.max(0, currentTime - 5)); break;
         case "k": togglePlay(); break;
         case "l": seekTo(Math.min(duration, currentTime + 5)); break;
-        case "i": setTrimStart(currentTime); toast.success("In point set"); break;
-        case "o": setTrimEnd(currentTime); toast.success("Out point set"); break;
+        case "i": saveUndoSnapshot(); setTrimStart(currentTime); toast.success("In point set"); break;
+        case "o": saveUndoSnapshot(); setTrimEnd(currentTime); toast.success("Out point set"); break;
         case "s": if (e.ctrlKey || e.metaKey) { e.preventDefault(); startExport(); } break;
+        case "z":
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            if (e.shiftKey) handleRedo();
+            else handleUndo();
+          }
+          break;
         case "m": setMuted(prev => !prev); break;
         case "[": setSpeed(prev => SPEED_OPTIONS[Math.max(0, SPEED_OPTIONS.indexOf(prev) - 1)]); break;
         case "]": setSpeed(prev => SPEED_OPTIONS[Math.min(SPEED_OPTIONS.length - 1, SPEED_OPTIONS.indexOf(prev) + 1)]); break;
@@ -355,7 +362,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [currentTime, duration, trimStart, trimEnd, playing]);
+  }, [currentTime, duration, trimStart, trimEnd, playing, handleUndo, handleRedo, saveUndoSnapshot]);
 
   // ─── File Handling ───
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
