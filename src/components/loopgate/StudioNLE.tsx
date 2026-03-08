@@ -209,9 +209,11 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [adjustments, setAdjustments] = useState<AdjustmentValues>({ ...DEFAULT_ADJUSTMENTS });
   const [openSections, setOpenSections] = useState<Record<AdjustSection, boolean>>({ color: true, lightness: true, effects: true });
 
-  // Undo/Redo (simplified — just track key states)
-  const [undoStack, setUndoStack] = useState<string[]>([]);
-  const [redoStack, setRedoStack] = useState<string[]>([]);
+  // Undo/Redo system
+  const { pushSnapshot, undo: undoAction, redo: redoAction, canUndo, canRedo } = useUndoRedo<EditorSnapshot>();
+
+  // Clip segments for splitting
+  const [segments, setSegments] = useState<ClipSegment[]>([]);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
