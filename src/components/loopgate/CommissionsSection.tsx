@@ -47,34 +47,36 @@ function BalanceTicker() {
         <div className="absolute inset-0 rounded-xl border border-white/[0.04]" />
 
         <div className="relative flex items-center gap-5 px-4 py-4">
-          {/* Floating Centurion Card — tilted */}
+          {/* Floating Centurion Card — white-to-black gradient, no border */}
           <div className="shrink-0 relative" style={{ perspective: '600px' }}>
             <div 
-              className="w-[88px] h-[56px] rounded-lg relative overflow-hidden shadow-2xl shadow-black/80"
-              style={{ transform: 'rotateY(-8deg) rotateX(4deg) rotateZ(-2deg)' }}
+              className="w-[100px] h-[64px] rounded-lg relative overflow-hidden"
+              style={{ 
+                transform: 'rotateY(-8deg) rotateX(4deg) rotateZ(-2deg)',
+                boxShadow: '0 8px 30px -4px rgba(0,0,0,0.8), 0 2px 8px rgba(255,255,255,0.03)'
+              }}
             >
-              {/* Card surface */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#111] to-[#0d0d0d]" />
-              <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.15) 1px, rgba(255,255,255,0.15) 2px)' }} />
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-              <div className="absolute inset-0 border border-white/[0.08] rounded-lg" />
+              {/* Card surface — white to black gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-[#222] to-[#0a0a0a]" />
+              <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,0.12) 1px, rgba(255,255,255,0.12) 2px)' }} />
+              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-white/30 via-white/10 to-transparent" />
               
-              <div className="relative p-2 h-full flex flex-col justify-between">
+              <div className="relative p-2.5 h-full flex flex-col justify-between">
                 {/* Chip */}
-                <div className="w-6 h-4 rounded-[2px] bg-gradient-to-br from-[#c9a84c] via-[#d4b85a] to-[#a88a3a] border border-[#8a7030]/40">
+                <div className="w-7 h-5 rounded-[2px] bg-gradient-to-br from-[#c9a84c] via-[#d4b85a] to-[#a88a3a] border border-[#8a7030]/30">
                   <div className="w-full h-full rounded-[2px]" style={{ 
                     backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px), repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 3px)' 
                   }} />
                 </div>
                 {/* Bottom brand */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[5px] font-black uppercase tracking-[0.2em] text-white/15" style={teko}>Loopgate</span>
-                  <span className="text-[4px] font-black uppercase tracking-[0.2em] text-white/10" style={teko}>Centurion</span>
+                  <span className="text-[5px] font-black uppercase tracking-[0.2em] text-white/25" style={teko}>Loopgate</span>
+                  <span className="text-[4px] font-black uppercase tracking-[0.2em] text-white/15" style={teko}>Centurion</span>
                 </div>
               </div>
             </div>
-            {/* Card shadow glow */}
-            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[70px] h-[8px] bg-white/[0.03] rounded-full blur-md" />
+            {/* Shadow underneath */}
+            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[80px] h-[10px] bg-white/[0.04] rounded-full blur-lg" />
           </div>
 
           {/* Balance info */}
