@@ -25,6 +25,7 @@ import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
 import RadioAdmin from "@/components/loopgate/RadioAdmin";
 import MissionAdmin from "@/components/loopgate/MissionAdmin";
+import OpsAdminDashboard from "@/components/loopgate/OpsAdminDashboard";
 
 interface RealEvent {
   id: string;
@@ -2299,6 +2300,9 @@ export default function OpsPanel() {
       </header>
 
       <div className="p-4 space-y-6">
+        {/* ━━━ PLATFORM DASHBOARD ━━━ */}
+        <OpsAdminDashboard />
+
         {/* Quick Actions - Hyper Growth Mode */}
         <section className="bg-gradient-to-r from-gold/5 to-transparent border border-gold/20 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
