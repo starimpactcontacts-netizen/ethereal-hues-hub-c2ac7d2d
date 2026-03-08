@@ -332,43 +332,173 @@ export default function EditoriumAdmin() {
   const [editSearchResults, setEditSearchResults] = useState<any[]>([]);
   const [searchingEdits, setSearchingEdits] = useState(false);
   const [showEditIndexer, setShowEditIndexer] = useState(false);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualForm, setManualForm] = useState({ username: '', submission_url: '', platform: 'tiktok', thumbnail_url: '', qoi_score: '', headline: '' });
+  const [savingManual, setSavingManual] = useState(false);
 
   useEffect(() => {
     if (showEditIndexer) fetchIndexedEdits();
   }, [showEditIndexer]);
 
   async function fetchIndexedEdits() {
-    const { data } = await (supabase
-      .from('featured_submissions')
-      .select('*') as any)
-      .eq('is_editorium_indexed', true)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    const { data } = await supabase
+      .from('editorium_indexed_edits')
+      .select('*')
+      .eq('is_active', true)
+      .order('featured_date', { ascending: false })
+      .limit(30);
     if (data) setIndexedEdits(data);
   }
 
   async function searchEditsForIndex() {
     if (!editSearchQuery.trim()) return;
     setSearchingEdits(true);
-    const { data } = await supabase
-      .from('featured_submissions')
-      .select('*')
-      .or(`username.ilike.%${editSearchQuery}%,submission_url.ilike.%${editSearchQuery}%`)
-      .not('rating', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(20);
-    setEditSearchResults(data || []);
+    const q = editSearchQuery.trim();
+
+    // Search across ALL sources in parallel
+    const [featuredRes, roundRes, eventRes, battleRes] = await Promise.all([
+      supabase.from('featured_submissions').select('id, user_id, username, avatar_url, submission_url, platform, thumbnail_url, qoi_score, created_at')
+        .or(`username.ilike.%${q}%,submission_url.ilike.%${q}%`)
+        .order('created_at', { ascending: false }).limit(10),
+      supabase.from('round_participations').select('id, user_id, submission_url, platform, thumbnail_url, qoi_score, submitted_at, round_number')
+        .not('submission_url', 'is', null)
+        .ilike('submission_url', `%${q}%`)
+        .order('submitted_at', { ascending: false, nullsFirst: false }).limit(10),
+      supabase.from('event_participations').select('id, user_id, submission_url, platform, thumbnail_url, qoi_score, submitted_at')
+        .not('submission_url', 'is', null)
+        .ilike('submission_url', `%${q}%`)
+        .order('submitted_at', { ascending: false, nullsFirst: false }).limit(10),
+      supabase.from('battles').select('id, challenger_id, challenger_username, challenger_avatar_url, challenger_submission_url, challenger_submission_platform, challenger_thumbnail_url, challenger_score, opponent_id, opponent_username, opponent_avatar_url, opponent_submission_url, opponent_submission_platform, opponent_thumbnail_url, opponent_score, created_at')
+        .or(`challenger_username.ilike.%${q}%,opponent_username.ilike.%${q}%,challenger_submission_url.ilike.%${q}%,opponent_submission_url.ilike.%${q}%`)
+        .order('created_at', { ascending: false }).limit(10),
+    ]);
+
+    // Collect user IDs for profile lookup
+    const userIds = new Set<string>();
+    (roundRes.data || []).forEach(r => userIds.add(r.user_id));
+    (eventRes.data || []).forEach(r => userIds.add(r.user_id));
+
+    const profileIds = Array.from(userIds);
+    const { data: profiles } = profileIds.length > 0
+      ? await supabase.from('profiles').select('id, username, avatar_url').in('id', profileIds)
+      : { data: [] };
+    const pMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    // Normalize all results
+    const results: any[] = [];
+    const seen = new Set<string>();
+
+    (featuredRes.data || []).forEach(d => {
+      if (seen.has(d.submission_url)) return;
+      seen.add(d.submission_url);
+      results.push({ user_id: d.user_id, username: d.username, avatar_url: d.avatar_url, submission_url: d.submission_url, platform: d.platform || 'tiktok', thumbnail_url: d.thumbnail_url, qoi_score: d.qoi_score, source: 'drop', source_label: 'Drop', created_at: d.created_at });
+    });
+
+    (roundRes.data || []).forEach(r => {
+      if (!r.submission_url || seen.has(r.submission_url)) return;
+      seen.add(r.submission_url);
+      const p = pMap.get(r.user_id);
+      results.push({ user_id: r.user_id, username: p?.username || 'editor', avatar_url: p?.avatar_url, submission_url: r.submission_url, platform: r.platform || 'tiktok', thumbnail_url: r.thumbnail_url, qoi_score: r.qoi_score, source: 'competition', source_label: `Round ${r.round_number || ''}`, created_at: r.submitted_at });
+    });
+
+    (eventRes.data || []).forEach(e => {
+      if (!e.submission_url || seen.has(e.submission_url)) return;
+      seen.add(e.submission_url);
+      const p = pMap.get(e.user_id);
+      results.push({ user_id: e.user_id, username: p?.username || 'editor', avatar_url: p?.avatar_url, submission_url: e.submission_url, platform: e.platform || 'tiktok', thumbnail_url: e.thumbnail_url, qoi_score: e.qoi_score, source: 'arena', source_label: 'Arena', created_at: e.submitted_at });
+    });
+
+    (battleRes.data || []).forEach(b => {
+      if (b.challenger_submission_url && !seen.has(b.challenger_submission_url)) {
+        seen.add(b.challenger_submission_url);
+        results.push({ user_id: b.challenger_id, username: b.challenger_username || 'editor', avatar_url: b.challenger_avatar_url, submission_url: b.challenger_submission_url, platform: b.challenger_submission_platform || 'tiktok', thumbnail_url: b.challenger_thumbnail_url, qoi_score: b.challenger_score, source: 'battle', source_label: '1v1', created_at: b.created_at });
+      }
+      if (b.opponent_submission_url && b.opponent_id && !seen.has(b.opponent_submission_url)) {
+        seen.add(b.opponent_submission_url);
+        results.push({ user_id: b.opponent_id, username: b.opponent_username || 'editor', avatar_url: b.opponent_avatar_url, submission_url: b.opponent_submission_url, platform: b.opponent_submission_platform || 'tiktok', thumbnail_url: b.opponent_thumbnail_url, qoi_score: b.opponent_score, source: 'battle', source_label: '1v1', created_at: b.created_at });
+      }
+    });
+
+    // Also search by username across profiles if we had URL-only matches
+    if (results.length === 0) {
+      const { data: profileHits } = await supabase.from('profiles').select('id, username, avatar_url').ilike('username', `%${q}%`).limit(10);
+      if (profileHits && profileHits.length > 0) {
+        const pIds = profileHits.map(p => p.id);
+        const pHitMap = new Map(profileHits.map(p => [p.id, p]));
+        // Search featured_submissions for these users
+        const { data: userSubs } = await supabase.from('featured_submissions').select('*').in('user_id', pIds).order('created_at', { ascending: false }).limit(20);
+        (userSubs || []).forEach(d => {
+          if (seen.has(d.submission_url)) return;
+          seen.add(d.submission_url);
+          const p = pHitMap.get(d.user_id);
+          results.push({ user_id: d.user_id, username: d.username || p?.username || 'editor', avatar_url: d.avatar_url || p?.avatar_url, submission_url: d.submission_url, platform: d.platform || 'tiktok', thumbnail_url: d.thumbnail_url, qoi_score: d.qoi_score, source: 'drop', source_label: 'Drop', created_at: d.created_at });
+        });
+        // Also search event_participations
+        const { data: userEvents } = await supabase.from('event_participations').select('id, user_id, submission_url, platform, thumbnail_url, qoi_score, submitted_at').in('user_id', pIds).not('submission_url', 'is', null).order('submitted_at', { ascending: false, nullsFirst: false }).limit(20);
+        (userEvents || []).forEach(e => {
+          if (!e.submission_url || seen.has(e.submission_url)) return;
+          seen.add(e.submission_url);
+          const p = pHitMap.get(e.user_id);
+          results.push({ user_id: e.user_id, username: p?.username || 'editor', avatar_url: p?.avatar_url, submission_url: e.submission_url, platform: e.platform || 'tiktok', thumbnail_url: e.thumbnail_url, qoi_score: e.qoi_score, source: 'arena', source_label: 'Arena', created_at: e.submitted_at });
+        });
+      }
+    }
+
+    setEditSearchResults(results);
     setSearchingEdits(false);
   }
 
-  async function toggleEditIndex(edit: any) {
-    const newVal = !edit.is_editorium_indexed;
-    await supabase.from('featured_submissions').update({ is_editorium_indexed: newVal } as any).eq('id', edit.id);
-    toast.success(newVal ? 'Edit indexed on Editorium' : 'Edit removed from Editorium');
-    fetchIndexedEdits();
-    if (editSearchResults.length > 0) {
-      setEditSearchResults(prev => prev.map(e => e.id === edit.id ? { ...e, is_editorium_indexed: newVal } : e));
+  async function indexEdit(edit: any) {
+    const { error } = await supabase.from('editorium_indexed_edits').insert({
+      user_id: edit.user_id,
+      username: edit.username,
+      avatar_url: edit.avatar_url || null,
+      submission_url: edit.submission_url,
+      platform: edit.platform || 'tiktok',
+      thumbnail_url: edit.thumbnail_url || null,
+      qoi_score: edit.qoi_score || null,
+      source: edit.source || 'manual',
+      source_label: edit.source_label || null,
+      headline: edit.headline || null,
+    });
+    if (error) {
+      toast.error('Failed to index: ' + error.message);
+    } else {
+      toast.success(`@${edit.username}'s edit indexed on Editorium 🔥`);
+      fetchIndexedEdits();
     }
+  }
+
+  async function removeIndexedEdit(id: string) {
+    await supabase.from('editorium_indexed_edits').update({ is_active: false }).eq('id', id);
+    toast.success('Edit removed from Editorium');
+    fetchIndexedEdits();
+  }
+
+  async function saveManualEdit() {
+    if (!manualForm.username.trim() || !manualForm.submission_url.trim()) {
+      toast.error('Username and URL are required');
+      return;
+    }
+    setSavingManual(true);
+    // Try to find user profile
+    const { data: profile } = await supabase.from('profiles').select('id, username, avatar_url').ilike('username', manualForm.username.trim()).single();
+    
+    await indexEdit({
+      user_id: profile?.id || '00000000-0000-0000-0000-000000000000',
+      username: profile?.username || manualForm.username.trim(),
+      avatar_url: profile?.avatar_url || null,
+      submission_url: manualForm.submission_url.trim(),
+      platform: manualForm.platform,
+      thumbnail_url: manualForm.thumbnail_url.trim() || null,
+      qoi_score: manualForm.qoi_score ? parseFloat(manualForm.qoi_score) : null,
+      source: 'manual',
+      source_label: 'Featured',
+      headline: manualForm.headline.trim() || null,
+    });
+    setManualForm({ username: '', submission_url: '', platform: 'tiktok', thumbnail_url: '', qoi_score: '', headline: '' });
+    setManualMode(false);
+    setSavingManual(false);
   }
 
   return (
@@ -386,14 +516,14 @@ export default function EditoriumAdmin() {
         </button>
       </div>
 
-      {/* ═══ EDIT INDEXER — Feature edits on Editorium ═══ */}
+      {/* ═══ EDIT INDEXER — Feature ANY edit on Editorium ═══ */}
       <div className="p-3 bg-surface-1 border border-purple-500/20">
         <button onClick={() => setShowEditIndexer(!showEditIndexer)} className="flex items-center justify-between w-full">
           <div className="flex items-center gap-2">
             <Video className="w-4 h-4 text-purple-400" />
-            <span className="text-xs font-bold text-purple-400">Index Edits on Editorium</span>
+            <span className="text-xs font-bold text-purple-400">Edit of the Day — Index on Editorium</span>
             <span className="text-[9px] px-1.5 py-0.5 bg-purple-500/10 text-purple-300 border border-purple-500/20">
-              {indexedEdits.length} indexed
+              {indexedEdits.length} live
             </span>
           </div>
           {showEditIndexer ? <ChevronUp className="w-3.5 h-3.5 text-purple-400" /> : <ChevronDown className="w-3.5 h-3.5 text-purple-400" />}
@@ -401,72 +531,120 @@ export default function EditoriumAdmin() {
         
         {showEditIndexer && (
           <div className="mt-3 space-y-3">
-            {/* Search for edits */}
+            {/* Mode toggle */}
             <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
-                <input
-                  value={editSearchQuery}
-                  onChange={e => setEditSearchQuery(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && searchEditsForIndex()}
-                  placeholder="Search by username or URL..."
-                  className="w-full h-8 pl-8 pr-3 text-[11px] bg-surface-0 border border-border text-foreground"
-                />
-              </div>
-              <button onClick={searchEditsForIndex} disabled={searchingEdits} className="px-3 h-8 text-[10px] font-bold bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/20">
-                {searchingEdits ? '...' : 'Search'}
+              <button onClick={() => setManualMode(false)} className={`px-3 py-1.5 text-[10px] font-bold border transition-colors ${!manualMode ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-surface-0 text-muted-foreground border-border'}`}>
+                Search Existing Edits
+              </button>
+              <button onClick={() => setManualMode(true)} className={`px-3 py-1.5 text-[10px] font-bold border transition-colors ${manualMode ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-surface-0 text-muted-foreground border-border'}`}>
+                + Add Any Edit (Manual)
               </button>
             </div>
 
-            {/* Search results */}
-            {editSearchResults.length > 0 && (
-              <div className="space-y-1">
-                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Search Results</p>
-                {editSearchResults.map(edit => (
-                  <div key={edit.id} className="flex items-center gap-2 p-2 bg-surface-0 border border-border/40">
-                    {edit.thumbnail_url ? (
-                      <img src={edit.thumbnail_url} alt="" className="w-12 h-8 object-cover shrink-0" />
-                    ) : (
-                      <div className="w-12 h-8 bg-surface-2 shrink-0 flex items-center justify-center">
-                        <Video className="w-3 h-3 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-medium text-foreground truncate">@{edit.username}</p>
-                      <div className="flex items-center gap-2">
-                        {edit.rating && <span className="text-[9px] font-bold text-gold">{edit.rating}</span>}
-                        <span className="text-[9px] text-muted-foreground">{edit.platform || 'unknown'}</span>
-                        <a href={edit.submission_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-purple-400 hover:underline flex items-center gap-0.5">
-                          View <ExternalLink className="w-2 h-2" />
-                        </a>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => toggleEditIndex(edit)}
-                      className={`px-2 py-1 text-[9px] font-bold transition-colors ${
-                        edit.is_editorium_indexed
-                          ? 'bg-purple-500/30 text-purple-300 border border-purple-500/30'
-                          : 'bg-surface-2 text-muted-foreground border border-border hover:border-purple-500/50'
-                      }`}
-                    >
-                      {edit.is_editorium_indexed ? '✓ Indexed' : 'Index'}
-                    </button>
+            {!manualMode ? (
+              <>
+                {/* Search across ALL sources */}
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
+                    <input
+                      value={editSearchQuery}
+                      onChange={e => setEditSearchQuery(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && searchEditsForIndex()}
+                      placeholder="Search by username or URL across all sources..."
+                      className="w-full h-8 pl-8 pr-3 text-[11px] bg-surface-0 border border-border text-foreground"
+                    />
                   </div>
-                ))}
+                  <button onClick={searchEditsForIndex} disabled={searchingEdits} className="px-3 h-8 text-[10px] font-bold bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/20">
+                    {searchingEdits ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Search All'}
+                  </button>
+                </div>
+                <p className="text-[9px] text-muted-foreground">Searches: Drops, Competitions, Arena, Battles, Tournaments</p>
+
+                {/* Search results */}
+                {editSearchResults.length > 0 && (
+                  <div className="space-y-1 max-h-[300px] overflow-y-auto">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-wider">{editSearchResults.length} Results</p>
+                    {editSearchResults.map((edit, i) => (
+                      <div key={`${edit.submission_url}-${i}`} className="flex items-center gap-2 p-2 bg-surface-0 border border-border/40">
+                        {edit.thumbnail_url ? (
+                          <img src={edit.thumbnail_url} alt="" className="w-14 h-9 object-cover shrink-0" />
+                        ) : (
+                          <div className="w-14 h-9 bg-surface-2 shrink-0 flex items-center justify-center">
+                            <Video className="w-3 h-3 text-muted-foreground/30" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-medium text-foreground truncate">@{edit.username}</p>
+                          <div className="flex items-center gap-2">
+                            {edit.qoi_score != null && <span className="text-[9px] font-bold text-gold">{Math.round(edit.qoi_score)} QOI</span>}
+                            <span className="text-[9px] px-1 py-0.5 bg-surface-2 text-muted-foreground">{edit.source_label}</span>
+                            <span className="text-[9px] text-muted-foreground">{edit.platform}</span>
+                            <a href={edit.submission_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-purple-400 hover:underline flex items-center gap-0.5">
+                              View <ExternalLink className="w-2 h-2" />
+                            </a>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => indexEdit(edit)}
+                          className="px-2.5 py-1 text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/40 transition-colors"
+                        >
+                          Index ✦
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {editSearchResults.length === 0 && editSearchQuery && !searchingEdits && (
+                  <p className="text-[10px] text-muted-foreground text-center py-3">No results. Try a different username or switch to Manual mode to add any URL.</p>
+                )}
+              </>
+            ) : (
+              /* Manual add form */
+              <div className="space-y-2 p-3 bg-surface-0 border border-border/40">
+                <p className="text-[10px] text-purple-300 font-bold">Add any edit — paste any URL from any editor</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={manualForm.username} onChange={e => setManualForm(f => ({...f, username: e.target.value}))} placeholder="Username *" className="h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
+                  <select value={manualForm.platform} onChange={e => setManualForm(f => ({...f, platform: e.target.value}))} className="h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground">
+                    <option value="tiktok">TikTok</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="instagram">Instagram</option>
+                  </select>
+                </div>
+                <input value={manualForm.submission_url} onChange={e => setManualForm(f => ({...f, submission_url: e.target.value}))} placeholder="Video URL * (TikTok, YouTube, IG)" className="w-full h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
+                <input value={manualForm.thumbnail_url} onChange={e => setManualForm(f => ({...f, thumbnail_url: e.target.value}))} placeholder="Thumbnail URL (optional)" className="w-full h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={manualForm.qoi_score} onChange={e => setManualForm(f => ({...f, qoi_score: e.target.value}))} placeholder="QOI Score (optional)" type="number" className="h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
+                  <input value={manualForm.headline} onChange={e => setManualForm(f => ({...f, headline: e.target.value}))} placeholder="Headline (optional)" className="h-7 px-2 text-[11px] bg-surface-1 border border-border text-foreground" />
+                </div>
+                <button onClick={saveManualEdit} disabled={savingManual} className="w-full h-8 text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/40 transition-colors">
+                  {savingManual ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : 'Index This Edit on Editorium ✦'}
+                </button>
               </div>
             )}
 
             {/* Currently indexed */}
             {indexedEdits.length > 0 && (
               <div className="space-y-1">
-                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Currently Indexed</p>
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider">Currently Live on Editorium ({indexedEdits.length})</p>
                 {indexedEdits.map(edit => (
                   <div key={edit.id} className="flex items-center gap-2 p-2 bg-purple-500/5 border border-purple-500/10">
+                    {edit.thumbnail_url ? (
+                      <img src={edit.thumbnail_url} alt="" className="w-10 h-7 object-cover shrink-0" />
+                    ) : (
+                      <div className="w-10 h-7 bg-surface-2 shrink-0 flex items-center justify-center">
+                        <Video className="w-2.5 h-2.5 text-muted-foreground/30" />
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] font-medium text-foreground truncate">@{edit.username}</p>
-                      <span className="text-[9px] text-muted-foreground">{edit.rating || 'Unrated'} · {edit.platform || 'unknown'}</span>
+                      <div className="flex items-center gap-2">
+                        {edit.qoi_score != null && <span className="text-[9px] font-bold text-gold">{Math.round(edit.qoi_score)}</span>}
+                        <span className="text-[9px] text-muted-foreground">{edit.source_label || edit.source} · {edit.platform}</span>
+                        <span className="text-[9px] text-muted-foreground">{edit.featured_date}</span>
+                      </div>
                     </div>
-                    <button onClick={() => toggleEditIndex(edit)} className="px-2 py-1 text-[9px] text-red-400 hover:bg-red-500/10 border border-border transition-colors">
+                    <button onClick={() => removeIndexedEdit(edit.id)} className="px-2 py-1 text-[9px] text-red-400 hover:bg-red-500/10 border border-border transition-colors">
                       Remove
                     </button>
                   </div>

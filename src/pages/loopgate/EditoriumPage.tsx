@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft } from 'lucide-react';
+import { Clock, Eye, ArrowRight, TrendingUp, Search, Flame, Newspaper, Users2, Sparkles, Film, Gamepad2, Music, Zap, Crown, Megaphone, ArrowLeft, Play, ExternalLink, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import SEO, { pageSEO } from '@/components/SEO';
 import editoriumLogo from '@/assets/editorium-logo.png';
 import EditoriumNewsletter from '@/components/loopgate/EditoriumNewsletter';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Article {
   id: string;
@@ -38,10 +39,22 @@ export default function EditoriumPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [indexedEdits, setIndexedEdits] = useState<any[]>([]);
 
   useEffect(() => {
     fetchArticles();
+    fetchIndexedEdits();
   }, []);
+
+  async function fetchIndexedEdits() {
+    const { data } = await supabase
+      .from('editorium_indexed_edits')
+      .select('*')
+      .eq('is_active', true)
+      .order('featured_date', { ascending: false })
+      .limit(20);
+    if (data) setIndexedEdits(data);
+  }
 
   useEffect(() => {
     document.documentElement.classList.add('editorium-active');
@@ -348,7 +361,100 @@ export default function EditoriumPage() {
 
           <div className="max-w-5xl mx-auto px-4 pt-8">
 
-            {/* ═══ DAILY COVER / HERO ═══ */}
+            {/* ═══ EDITORIUM INDEXED EDITS — Best Edits Showcase ═══ */}
+            {indexedEdits.length > 0 && (
+              <div className="mb-10">
+                <div className="flex items-center gap-2 mb-5" style={{ borderBottom: '2px solid #111', paddingBottom: '8px' }}>
+                  <Star className="w-4 h-4" style={{ color: '#cc0000' }} />
+                  <h3 className="font-display text-lg" style={{ color: '#111', letterSpacing: '0.05em' }}>Best Edits in the World</h3>
+                  <span className="ml-auto" style={{ fontSize: '10px', color: '#999' }}>{indexedEdits.length} indexed</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {indexedEdits.map((edit, i) => {
+                    const ytMatch = edit.submission_url?.match(
+                      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+                    );
+                    const thumbUrl = edit.thumbnail_url || (ytMatch ? `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg` : null);
+                    const platformLabel = edit.platform === 'tiktok' ? 'TikTok' : edit.platform === 'youtube' ? 'YouTube' : edit.platform === 'instagram' ? 'Instagram' : edit.platform;
+
+                    return (
+                      <motion.a
+                        key={edit.id}
+                        href={edit.submission_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="group block"
+                      >
+                        {/* Thumbnail */}
+                        <div className="relative aspect-[16/9] overflow-hidden" style={{ backgroundColor: '#f0f0f0' }}>
+                          {thumbUrl ? (
+                            <img src={thumbUrl} alt={`@${edit.username}'s edit`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-1" style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)' }}>
+                              <img src={editoriumLogo} alt="" className="w-10 opacity-20" />
+                              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 700, letterSpacing: '0.1em' }}>@{edit.username}</span>
+                            </div>
+                          )}
+                          {/* Play overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
+                              <Play className="w-6 h-6 ml-0.5" style={{ color: '#fff' }} fill="#fff" />
+                            </div>
+                          </div>
+                          {/* Platform badge */}
+                          <div className="absolute top-2 right-2 px-2 py-0.5" style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', fontSize: '9px', color: '#fff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {platformLabel}
+                          </div>
+                          {/* QOI badge */}
+                          {edit.qoi_score != null && edit.qoi_score > 0 && (
+                            <div className="absolute bottom-2 right-2 px-2.5 py-1 flex items-center gap-1" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+                              <span style={{ fontSize: '16px', fontWeight: 800, color: edit.qoi_score >= 70 ? '#d4a020' : '#fff', fontFamily: 'monospace' }}>
+                                {Math.round(edit.qoi_score)}
+                              </span>
+                              <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', fontWeight: 600 }}>QOI</span>
+                            </div>
+                          )}
+                          {/* Gradient */}
+                          <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.5))' }} />
+                        </div>
+
+                        {/* Info */}
+                        <div className="pt-3">
+                          {edit.headline && (
+                            <p className="font-display text-sm leading-snug line-clamp-1 group-hover:underline mb-1" style={{ color: '#111', textDecorationColor: '#cc0000' }}>
+                              {edit.headline}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <Avatar className="w-5 h-5">
+                              <AvatarImage src={edit.avatar_url || ''} />
+                              <AvatarFallback style={{ fontSize: '8px', backgroundColor: '#eee', color: '#666', fontWeight: 700 }}>
+                                {edit.username?.[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span style={{ fontSize: '12px', fontWeight: 700, color: '#111' }}>@{edit.username}</span>
+                            {edit.source_label && (
+                              <span style={{ fontSize: '9px', color: '#cc0000', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>{edit.source_label}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1" style={{ fontSize: '10px', color: '#999' }}>
+                            <span>{formatDistanceToNow(new Date(edit.created_at), { addSuffix: true })}</span>
+                            <span className="flex items-center gap-0.5">
+                              <ExternalLink className="w-2.5 h-2.5" />
+                              Watch on {platformLabel}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {dailyCover && (
               <Link to={`/editorium/${dailyCover.slug}`} className="block group mb-10" onClick={() => handleArticleClick(dailyCover)}>
                 <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden">
