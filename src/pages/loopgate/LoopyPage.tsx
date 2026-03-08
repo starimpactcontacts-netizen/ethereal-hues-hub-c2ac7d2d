@@ -286,13 +286,31 @@ export default function LoopyPage() {
               </span>
             </div>
 
-            <button
-              onClick={() => navigate('/loopy/rate')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-500/15 to-primary/15 border border-amber-500/25 hover:from-amber-500/25 hover:to-primary/25 transition-all shrink-0"
-            >
-              <Star className="w-3 h-3 text-amber-400" />
-              <span className="text-[10px] font-bold text-white/60 tracking-wider" style={TEKO}>Rate Edit</span>
-            </button>
+            {/* Quick nav links */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                onClick={() => navigate('/hub')}
+                className="flex items-center gap-1 px-2 py-1.5 hover:bg-white/[0.06] transition-all rounded"
+                title="Back to Hub"
+              >
+                <Home className="w-3.5 h-3.5 text-white/30" />
+                <span className="text-[10px] font-bold text-white/30 tracking-wider hidden sm:block" style={TEKO}>Hub</span>
+              </button>
+              <button
+                onClick={() => navigate('/loopy/rate')}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-500/15 to-primary/15 border border-amber-500/25 hover:from-amber-500/25 hover:to-primary/25 transition-all"
+              >
+                <Star className="w-3 h-3 text-amber-400" />
+                <span className="text-[10px] font-bold text-white/60 tracking-wider" style={TEKO}>Rate Edit</span>
+              </button>
+              <button
+                onClick={() => navigate(-1 as any)}
+                className="p-1.5 hover:bg-white/[0.06] rounded transition-colors ml-1"
+                title="Close"
+              >
+                <X className="w-4 h-4 text-white/30" />
+              </button>
+            </div>
           </div>
 
           {/* Messages area */}
