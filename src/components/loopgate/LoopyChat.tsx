@@ -223,6 +223,20 @@ export default function LoopyChat() {
                   <p className="text-xs text-muted-foreground">wsg — what u need?</p>
                 </div>
 
+                {/* Rate My Edit — prominent CTA */}
+                <button
+                  onClick={() => { setOpen(false); navigate('/loopy'); }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all text-left group"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-primary flex items-center justify-center shrink-0">
+                    <Star className="w-4 h-4 text-black" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Rate My Edit</p>
+                    <p className="text-[10px] text-muted-foreground">get instant AI scores & tips</p>
+                  </div>
+                </button>
+
                 <button
                   onClick={handleNewChat}
                   className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-colors text-left"
