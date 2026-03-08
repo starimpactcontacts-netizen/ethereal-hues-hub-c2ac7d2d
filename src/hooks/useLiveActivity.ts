@@ -11,7 +11,7 @@ export interface LiveActivityItem {
   score?: number | null;
   earned_cents?: number | null;
   timestamp: string;
-  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry' | 'quick_fight' | 'gqt' | 'tournament_join' | 'earning';
+  type: 'submission' | 'review' | 'battle' | 'judge_video' | 'connection' | 'featured_sub' | 'crew_join' | 'hosted_entry' | 'quick_fight' | 'gqt' | 'tournament_join' | 'earning' | 'new_user' | 'profile_update';
 }
 
 // Randomized action text for variety
@@ -68,6 +68,12 @@ const connectionVerbs = [
 const tournamentJoinVerbs = [
   'registered for', 'signed up for', 'entered', 'joined the tournament',
 ];
+const newUserVerbs = [
+  'entered the gate', 'just arrived at Loopgate', 'walked through the gate', 'breached the perimeter', 'unlocked Loopgate',
+];
+const profileUpdateVerbs = [
+  'updated their profile', 'leveled up', 'changed their identity',
+];
 
 export function useLiveActivity(limit = 8) {
   const [items, setItems] = useState<LiveActivityItem[]>([]);
@@ -76,7 +82,7 @@ export function useLiveActivity(limit = 8) {
   const fetch = useCallback(async () => {
     try {
       // Fetch all activity sources in parallel
-      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes, featSubsRes, crewJoinsRes, hostedEntriesRes, quickFightsRes, gqtRes, connectionsRes, tournamentJoinsRes] = await Promise.all([
+      const [roundsRes, eventsRes, reviewsRes, battlesRes, judgeVidsRes, featSubsRes, crewJoinsRes, hostedEntriesRes, quickFightsRes, gqtRes, connectionsRes, tournamentJoinsRes, newUsersRes] = await Promise.all([
         supabase
           .from('round_participations')
           .select('id, user_id, event_id, qoi_score, submitted_at')
@@ -147,6 +153,13 @@ export function useLiveActivity(limit = 8) {
           .select('id, user_id, tournament_id, joined_at')
           .order('joined_at', { ascending: false })
           .limit(limit),
+        // New user signups (recent profiles)
+        supabase
+          .from('profiles')
+          .select('id, username, avatar_url, created_at')
+          .not('username', 'is', null)
+          .order('created_at', { ascending: false, nullsFirst: false })
+          .limit(limit),
       ]);
 
       // Collect user & event IDs for enrichment
@@ -162,6 +175,7 @@ export function useLiveActivity(limit = 8) {
       const gqtData = gqtRes.data || [];
       const connectionData = connectionsRes.data || [];
       const tournamentJoinData = tournamentJoinsRes.data || [];
+      const newUserData = (newUsersRes as any).data || [];
 
       const userIds = [...new Set([
         ...roundData.map(r => r.user_id),
@@ -416,6 +430,23 @@ export function useLiveActivity(limit = 8) {
         });
       });
 
+      // New user signups — "entered the gate"
+      newUserData.forEach((u: any) => {
+        if (u.username && u.created_at) {
+          all.push({
+            id: `newuser-${u.id}`,
+            user_id: u.id,
+            username: u.username,
+            avatar_url: u.avatar_url || null,
+            action: pick(newUserVerbs),
+            target: '',
+            score: null,
+            timestamp: u.created_at,
+            type: 'new_user',
+          });
+        }
+      });
+
       // Sort by timestamp, dedup by user+action combo
       all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       const seen = new Set<string>();
@@ -452,6 +483,7 @@ export function useLiveActivity(limit = 8) {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'gatekeeper_submissions' }, () => fetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'connections' }, () => fetch())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sanctioned_tournament_participants' }, () => fetch())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, () => fetch())
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };

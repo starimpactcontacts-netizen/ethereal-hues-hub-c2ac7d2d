@@ -64,10 +64,30 @@ const actionColors: Record<string, string> = {
   gqt: 'text-amber-400',
   tournament_join: 'text-cyan-400',
   earning: 'text-emerald-400',
+  new_user: 'text-emerald-300',
+  profile_update: 'text-sky-400',
+};
+
+const typeLabels: Record<string, string> = {
+  submission: 'SUB',
+  review: 'REVIEW',
+  battle: 'BATTLE',
+  judge_video: 'VIDEO',
+  connection: 'LINK',
+  featured_sub: 'DROP',
+  crew_join: 'UNIT',
+  hosted_entry: 'COMP',
+  quick_fight: 'QF',
+  gqt: 'GQT',
+  tournament_join: 'TOURNEY',
+  earning: 'EARN',
+  new_user: 'GATE',
+  profile_update: 'PROFILE',
 };
 
 function HubLiveFeed() {
-  const { items, loading } = useLiveActivity(5);
+  const { items, loading } = useLiveActivity(20);
+  const [isOpen, setIsOpen] = useState(false);
 
   if (loading) {
     return (
@@ -77,39 +97,64 @@ function HubLiveFeed() {
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <p className="text-xs text-muted-foreground text-center py-3">No recent activity yet</p>
-    );
-  }
+  const displayItems = isOpen ? items : items.slice(0, 3);
 
   return (
-    <div className="space-y-0">
+    <div>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between py-2 group"
+      >
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-3.5 h-3.5 text-gold" />
+          <span className="text-[9px] text-foreground font-bold uppercase tracking-[0.2em]" style={{ fontFamily: 'Teko, sans-serif', fontSize: '13px' }}>
+            Signal Feed
+          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[8px] text-muted-foreground/60 font-mono">{items.length} signals</span>
+        </div>
+        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
       <AnimatePresence initial={false}>
-        {items.map((item, i) => (
+        {displayItems.map((item, i) => (
           <motion.div
             key={item.id}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, delay: i * 0.03 }}
-            className={`flex items-center gap-2 py-1.5 text-[10px] border-b border-border/20 last:border-0 ${item.type === 'earning' ? 'bg-emerald-500/5' : ''}`}
+            transition={{ duration: 0.15, delay: i * 0.02 }}
+            className={`flex items-center gap-1.5 py-1 text-[10px] border-b border-border/10 last:border-0 ${item.type === 'earning' ? 'bg-emerald-500/5' : ''}`}
           >
-            <span className="text-foreground font-semibold truncate max-w-[80px]">{item.username}</span>
-            <span className={`shrink-0 ${item.type === 'earning' ? 'text-emerald-400 font-bold' : 'text-muted-foreground'}`}>{item.action}</span>
-            <span className={`${actionColors[item.type] || 'text-gold'} truncate flex-1 font-medium`}>{item.target}</span>
+            <span className={`text-[7px] font-mono px-1 py-0.5 rounded-sm ${actionColors[item.type] || 'text-gold'} bg-white/[0.03] shrink-0`}>
+              {typeLabels[item.type] || 'SYS'}
+            </span>
+            <span className="text-foreground font-semibold truncate max-w-[70px]">{item.username}</span>
+            <span className={`shrink-0 ${item.type === 'earning' ? 'text-emerald-400 font-bold' : 'text-muted-foreground/70'}`}>{item.action}</span>
+            {item.target && (
+              <span className={`${actionColors[item.type] || 'text-gold'} truncate flex-1 font-medium`}>{item.target}</span>
+            )}
             {item.earned_cents != null && item.earned_cents > 0 && (
               <span className="text-emerald-400 font-black shrink-0">${(item.earned_cents / 100).toFixed(2)}</span>
             )}
             {item.score != null && item.score > 0 && item.type !== 'earning' && (
               <span className="text-gold font-bold shrink-0">{Math.round(item.score)}</span>
             )}
-            <span className="text-muted-foreground/50 shrink-0">
+            <span className="text-muted-foreground/40 shrink-0 font-mono text-[8px]">
               {formatDistanceToNow(new Date(item.timestamp), { addSuffix: false })}
             </span>
           </motion.div>
         ))}
       </AnimatePresence>
+
+      {!isOpen && items.length > 3 && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="w-full text-center text-[8px] text-muted-foreground/50 hover:text-muted-foreground py-1 font-mono uppercase tracking-widest"
+        >
+          + {items.length - 3} more signals
+        </button>
+      )}
     </div>
   );
 }
@@ -1297,15 +1342,8 @@ export default function HubPage() {
           <EditoriumPicks limit={10} />
         </div>
 
-        {/* Live Activity Log */}
-        <div className="mx-4 bg-surface-1/40 border border-border/30 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-3.5 h-3.5 text-gold" />
-              <span className="text-[9px] text-foreground font-semibold uppercase tracking-wider">Live Activity</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
-          </div>
+        {/* Signal Feed — collapsible live activity */}
+        <div className="mx-4 bg-surface-1/30 border border-border/20 px-3 py-1">
           <HubLiveFeed />
         </div>
       </motion.div>
