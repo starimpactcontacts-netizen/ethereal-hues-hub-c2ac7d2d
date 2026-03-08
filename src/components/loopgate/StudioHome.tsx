@@ -129,19 +129,19 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
               <ChevronLeft className="w-4 h-4 text-white/30" />
             </button>
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)" }}>
-                <Layers className="w-3.5 h-3.5 text-white" />
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 68%))" }}>
+                <Layers className="w-3.5 h-3.5 text-black" />
               </div>
               <span className="font-bold text-white/90 text-[15px] tracking-tight" style={{ fontFamily: "'Teko', sans-serif", fontSize: "20px", letterSpacing: "0.04em" }}>STUDIO</span>
               <span className="text-[7px] font-bold tracking-[0.25em] uppercase px-1.5 py-0.5 rounded"
-                style={{ color: "#7C6AFF", background: "rgba(124,106,255,0.08)", border: "1px solid rgba(124,106,255,0.12)" }}
+                style={{ color: MONO_ACCENT, background: MONO_ACCENT_DIM, border: `1px solid ${MONO_ACCENT_BORDER}` }}
               >NLE</span>
             </div>
           </div>
           <button
             onClick={onNewProject}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white transition-all hover:brightness-110 active:scale-95"
-            style={{ background: "linear-gradient(135deg, #7C6AFF, #5B4FCC)", boxShadow: "0 4px 20px rgba(124,106,255,0.25)" }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-black transition-all hover:brightness-110 active:scale-95"
+            style={{ background: "linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 72%))", boxShadow: "0 4px 20px hsl(0 0% 100% / 0.2)" }}
           >
             <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
             {isMobile ? "New" : "New Project"}
