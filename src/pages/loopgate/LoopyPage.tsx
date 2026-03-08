@@ -25,8 +25,10 @@ const QUICK_ACTIONS = [
 
 export default function LoopyPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const isGuest = !user;
+  const userAvatar = profile?.avatar_url;
+  const userName = profile?.username;
 
   const {
     conversations,
@@ -410,6 +412,17 @@ export default function LoopyPage() {
                           <span className="inline-block w-1.5 h-4 bg-purple-400 ml-0.5 animate-pulse" />
                         )}
                       </div>
+                      {msg.role === 'user' && (
+                        <div className="w-7 h-7 shrink-0 mt-0.5">
+                          {userAvatar ? (
+                            <img src={userAvatar} alt={userName || 'You'} className="w-7 h-7 rounded-full border border-purple-500/30 object-cover" />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full border border-purple-500/30 bg-purple-600/30 flex items-center justify-center">
+                              <span className="text-[10px] font-bold text-white/70" style={TEKO}>{(userName || 'U')[0].toUpperCase()}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </motion.div>
                   ))}
 
