@@ -1119,7 +1119,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         {state === "done" ? (
           <button onClick={handleDownload}
             className="h-8 px-5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all hover:opacity-90"
-            style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, color: "#fff", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, hsl(0 0% 70%))`, color: "hsl(0 0% 5%)", boxShadow: `0 0 16px ${ACCENT_GLOW}` }}>
             <Download className="w-3.5 h-3.5" /> Save
           </button>
         ) : (
