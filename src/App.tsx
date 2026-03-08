@@ -285,6 +285,7 @@ export default function App() {
             <Route path="/faq" element={<FAQPage />} />
             <Route path="/join/:crewSlug" element={<JoinCrewPage />} />
             <Route path="/u/:username" element={<UsernameLookupPage />} />
+            <Route path="/:username" element={<UsernameLookupPage />} />
             <Route path="/start" element={<StartPage />} />
             
             {/* Guest-accessible routes (can browse, need login to participate) */}
