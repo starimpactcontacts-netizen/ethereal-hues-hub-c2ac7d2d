@@ -30,10 +30,9 @@ function BalanceTicker() {
   const { user } = useAuth();
   const { availableBalance, earnings } = useEditorEarnings();
   const [walletOpen, setWalletOpen] = useState(false);
-  if (!user) return null;
 
-  const totalEarned = (earnings.earnings_cents / 100).toFixed(2);
-  const available = (availableBalance / 100).toFixed(2);
+  const totalEarned = user ? (earnings.earnings_cents / 100).toFixed(2) : '0.00';
+  const available = user ? (availableBalance / 100).toFixed(2) : '0.00';
   const [wholePart, centPart] = available.split('.');
 
   return (
