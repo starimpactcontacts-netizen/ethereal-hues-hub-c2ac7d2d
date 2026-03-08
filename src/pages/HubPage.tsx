@@ -759,7 +759,7 @@ export default function HubPage() {
               ) : qfActiveFight ? (
                 <>
                   <Swords className="w-5 h-5 text-white relative z-10" />
-                  <span className="text-[22px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+                   <span className="text-[26px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
                     Return to Fight
                   </span>
                 </>
