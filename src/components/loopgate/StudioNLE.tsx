@@ -14,8 +14,12 @@ import {
   MonitorPlay, FilmIcon, Circle, Wind,
   Sun, Lightbulb, Sunrise,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
-  RotateCw, Maximize, Minimize, Blend
+  RotateCw, Maximize, Minimize, Blend, GripVertical
 } from "lucide-react";
+import { useUndoRedo } from "./studio/useUndoRedo";
+import { useCanvasDrag } from "./studio/useCanvasDrag";
+import { useTimelineDrag } from "./studio/useTimelineDrag";
+import type { ClipSegment, EditorSnapshot } from "./studio/types";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
 import { Button } from "@/components/ui/button";
@@ -205,9 +209,11 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [adjustments, setAdjustments] = useState<AdjustmentValues>({ ...DEFAULT_ADJUSTMENTS });
   const [openSections, setOpenSections] = useState<Record<AdjustSection, boolean>>({ color: true, lightness: true, effects: true });
 
-  // Undo/Redo (simplified — just track key states)
-  const [undoStack, setUndoStack] = useState<string[]>([]);
-  const [redoStack, setRedoStack] = useState<string[]>([]);
+  // Undo/Redo system
+  const { pushSnapshot, undo: undoAction, redo: redoAction, canUndo, canRedo } = useUndoRedo<EditorSnapshot>();
+
+  // Clip segments for splitting
+  const [segments, setSegments] = useState<ClipSegment[]>([]);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
@@ -230,6 +236,74 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     }
     return fonts;
   }, [fontCategory, fontSearch]);
+
+  // ─── Canvas text dragging ───
+  const canvasDrag = useCanvasDrag({
+    canvasRef: canvasRef as React.RefObject<HTMLCanvasElement>,
+    textOverlays,
+    currentTime,
+    onUpdateOverlay: (id, updates) => setTextOverlays(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t)),
+  });
+
+  // ─── Timeline dragging ───
+  const timelineDrag = useTimelineDrag({
+    timelineRef: timelineRef as React.RefObject<HTMLDivElement>,
+    duration,
+    onSeek: (t) => { const vid = videoRef.current; if (vid) { vid.currentTime = t; setCurrentTime(t); } },
+    onTrimStartChange: setTrimStart,
+    onTrimEndChange: setTrimEnd,
+    trimStart,
+    trimEnd,
+  });
+
+  // ─── Snapshot helper for undo ───
+  const getSnapshot = useCallback((): EditorSnapshot => ({
+    textOverlays,
+    trimStart,
+    trimEnd,
+    activeFilter: activeFilter.name,
+    activeEffects,
+    effectIntensities,
+    adjustments: adjustments as any,
+    speed,
+    segments,
+  }), [textOverlays, trimStart, trimEnd, activeFilter, activeEffects, effectIntensities, adjustments, speed, segments]);
+
+  const saveUndoSnapshot = useCallback(() => {
+    pushSnapshot(getSnapshot());
+  }, [pushSnapshot, getSnapshot]);
+
+  const handleUndo = useCallback(() => {
+    const prev = undoAction(getSnapshot());
+    if (!prev) return;
+    setTextOverlays(prev.textOverlays);
+    setTrimStart(prev.trimStart);
+    setTrimEnd(prev.trimEnd);
+    const filter = FILTER_PRESETS.find(f => f.name === prev.activeFilter);
+    if (filter) setActiveFilter(filter);
+    setActiveEffects(prev.activeEffects);
+    setEffectIntensities(prev.effectIntensities);
+    setAdjustments(prev.adjustments as any);
+    setSpeed(prev.speed);
+    setSegments(prev.segments);
+    toast.success("Undo");
+  }, [undoAction, getSnapshot]);
+
+  const handleRedo = useCallback(() => {
+    const next = redoAction(getSnapshot());
+    if (!next) return;
+    setTextOverlays(next.textOverlays);
+    setTrimStart(next.trimStart);
+    setTrimEnd(next.trimEnd);
+    const filter = FILTER_PRESETS.find(f => f.name === next.activeFilter);
+    if (filter) setActiveFilter(filter);
+    setActiveEffects(next.activeEffects);
+    setEffectIntensities(next.effectIntensities);
+    setAdjustments(next.adjustments as any);
+    setSpeed(next.speed);
+    setSegments(next.segments);
+    toast.success("Redo");
+  }, [redoAction, getSnapshot]);
 
   // ─── Load Fonts ───
   useEffect(() => {
@@ -268,9 +342,16 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         case "j": seekTo(Math.max(0, currentTime - 5)); break;
         case "k": togglePlay(); break;
         case "l": seekTo(Math.min(duration, currentTime + 5)); break;
-        case "i": setTrimStart(currentTime); toast.success("In point set"); break;
-        case "o": setTrimEnd(currentTime); toast.success("Out point set"); break;
+        case "i": saveUndoSnapshot(); setTrimStart(currentTime); toast.success("In point set"); break;
+        case "o": saveUndoSnapshot(); setTrimEnd(currentTime); toast.success("Out point set"); break;
         case "s": if (e.ctrlKey || e.metaKey) { e.preventDefault(); startExport(); } break;
+        case "z":
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            if (e.shiftKey) handleRedo();
+            else handleUndo();
+          }
+          break;
         case "m": setMuted(prev => !prev); break;
         case "[": setSpeed(prev => SPEED_OPTIONS[Math.max(0, SPEED_OPTIONS.indexOf(prev) - 1)]); break;
         case "]": setSpeed(prev => SPEED_OPTIONS[Math.min(SPEED_OPTIONS.length - 1, SPEED_OPTIONS.indexOf(prev) + 1)]); break;
@@ -281,7 +362,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [currentTime, duration, trimStart, trimEnd, playing]);
+  }, [currentTime, duration, trimStart, trimEnd, playing, handleUndo, handleRedo, saveUndoSnapshot]);
 
   // ─── File Handling ───
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -660,12 +741,8 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     vid.currentTime = clamped; setCurrentTime(clamped);
   }, [duration]);
 
-  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!timelineRef.current || !duration) return;
-    const rect = timelineRef.current.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    seekTo(pct * duration);
-  };
+  // handleTimelineClick replaced by useTimelineDrag
+
 
   const addTextOverlay = () => {
     if (!textInput.trim()) return;
@@ -686,6 +763,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       startTime: trimStart,
       endTime: trimEnd,
     };
+    saveUndoSnapshot();
     setTextOverlays((prev) => [...prev, overlay]);
     setTextInput(""); toast.success("Text overlay added");
   };
@@ -695,13 +773,47 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   };
 
   const removeTextOverlay = (id: string) => {
+    saveUndoSnapshot();
     setTextOverlays((prev) => prev.filter((t) => t.id !== id));
     if (editingTextId === id) setEditingTextId(null);
   };
 
   const splitAtPlayhead = () => {
     if (!activeMedia || currentTime <= trimStart || currentTime >= trimEnd) return;
+    saveUndoSnapshot();
+    
+    // If no segments yet, create the initial segment
+    if (segments.length === 0) {
+      const seg: ClipSegment = {
+        id: crypto.randomUUID(),
+        mediaId: activeMedia.id,
+        sourceStart: trimStart,
+        sourceEnd: trimEnd,
+        trackPosition: 0,
+        duration: trimEnd - trimStart,
+      };
+      // Split into two segments
+      const seg1: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceEnd: currentTime, duration: currentTime - trimStart };
+      const seg2: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceStart: currentTime, trackPosition: currentTime - trimStart, duration: trimEnd - currentTime };
+      setSegments([seg1, seg2]);
+    } else {
+      // Find the segment that contains the playhead
+      const segIdx = segments.findIndex(s => currentTime >= s.sourceStart && currentTime < s.sourceEnd);
+      if (segIdx === -1) return;
+      const seg = segments[segIdx];
+      const seg1: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceEnd: currentTime, duration: currentTime - seg.sourceStart };
+      const seg2: ClipSegment = { ...seg, id: crypto.randomUUID(), sourceStart: currentTime, trackPosition: seg.trackPosition + (currentTime - seg.sourceStart), duration: seg.sourceEnd - currentTime };
+      const newSegments = [...segments];
+      newSegments.splice(segIdx, 1, seg1, seg2);
+      setSegments(newSegments);
+    }
     toast.success(`Split at ${formatTimecode(currentTime, true)}`);
+  };
+
+  const deleteSegment = (segId: string) => {
+    saveUndoSnapshot();
+    setSegments(prev => prev.filter(s => s.id !== segId));
+    toast.success("Segment deleted");
   };
 
   const resetColorGrading = () => { setBrightness(100); setContrast(100); setSaturation(100); setHueRotate(0); setAdjustments({ ...DEFAULT_ADJUSTMENTS }); };
@@ -773,7 +885,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setUpscaleState("idle"); setUpscaleProgress(0); setUpscaleDims(null);
   };
 
-  // ─── Export ───
+  // ─── Export (with native audio preservation) ───
   const startExport = useCallback(async () => {
     const vid = videoRef.current; const canvas = canvasRef.current;
     if (!vid || !canvas || !activeMedia) return;
@@ -784,26 +896,47 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     const exportH = Math.round(vid.videoHeight * quality.resolution);
     canvas.width = exportW; canvas.height = exportH;
     const stream = canvas.captureStream(quality.fps);
+
+    // Capture native video audio
+    const audioCtx = new AudioContext();
+    const dest = audioCtx.createMediaStreamDestination();
+    let hasAudioSource = false;
+
+    try {
+      // Get audio from the video element itself
+      const vidSource = audioCtx.createMediaElementSource(vid);
+      vidSource.connect(dest);
+      vidSource.connect(audioCtx.destination); // Also hear it during export
+      hasAudioSource = true;
+    } catch {
+      // Video may not have audio track, continue silently
+    }
+
+    // Mix in custom audio file if present
     if (audioFile) {
       try {
-        const audioCtx = new AudioContext();
         const buf = await audioFile.arrayBuffer();
         const decoded = await audioCtx.decodeAudioData(buf);
         const source = audioCtx.createBufferSource();
         source.buffer = decoded;
-        const dest = audioCtx.createMediaStreamDestination();
         source.connect(dest);
-        dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
         source.start(0);
+        hasAudioSource = true;
       } catch { /* audio error, continue without */ }
     }
+
+    // Add audio tracks to the stream
+    if (hasAudioSource) {
+      dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+    }
+
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
     const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: quality.bitrate });
     const chunks: Blob[] = [];
     recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType })); });
+    const resultPromise = new Promise<Blob>((resolve) => { recorder.onstop = () => { audioCtx.close(); resolve(new Blob(chunks, { type: mimeType })); }; });
     recorder.start(100);
-    vid.currentTime = trimStart; vid.muted = true; vid.playbackRate = 1;
+    vid.currentTime = trimStart; vid.muted = false; vid.playbackRate = 1;
     await vid.play().catch(() => {});
     const exportDuration = trimEnd - trimStart;
     const drawLoop = () => {
@@ -872,6 +1005,14 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
           );
         })}
         <div className="flex-1" />
+        {/* Undo/Redo */}
+        <button onClick={handleUndo} disabled={!canUndo} className="p-1.5 rounded-md transition-all hover:bg-white/5 disabled:opacity-20" title="Undo (⌘Z)">
+          <Undo className="w-4 h-4" style={{ color: "#aaa" }} />
+        </button>
+        <button onClick={handleRedo} disabled={!canRedo} className="p-1.5 rounded-md transition-all hover:bg-white/5 disabled:opacity-20" title="Redo (⌘⇧Z)">
+          <Redo className="w-4 h-4" style={{ color: "#aaa" }} />
+        </button>
+        <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
         <StudioSubmitButton />
         <div className="w-px h-5 mx-1" style={{ background: "#2a2a2a" }} />
         {state === "done" ? (
@@ -1571,7 +1712,15 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             {videoUrl ? (
               <>
                 <video ref={videoRef} src={videoUrl} className="hidden" playsInline preload="auto" />
-                <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
+                <canvas
+                  ref={canvasRef}
+                  className="max-w-full max-h-full object-contain"
+                  style={{ cursor: canvasDrag.isDragging() ? "grabbing" : "default" }}
+                  onMouseDown={canvasDrag.onMouseDown}
+                  onMouseMove={canvasDrag.onMouseMove}
+                  onMouseUp={canvasDrag.onMouseUp}
+                  onMouseLeave={canvasDrag.onMouseUp}
+                />
 
                 <AnimatePresence>
                   {!playing && (
@@ -1633,8 +1782,8 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                       {[
                         ["Space", "Play / Pause"], ["← →", "Seek ±1s"], ["Shift+← →", "Seek ±5s"],
                         ["J / K / L", "Back / Play / Fwd"], ["I", "Set In Point"], ["O", "Set Out Point"],
-                        ["M", "Toggle Mute"], ["[ ]", "Speed ↓ / ↑"], ["⌘S", "Export"],
-                        ["?", "Shortcuts"],
+                        ["⌘Z", "Undo"], ["⌘⇧Z", "Redo"], ["M", "Toggle Mute"],
+                        ["[ ]", "Speed ↓ / ↑"], ["⌘S", "Export"], ["?", "Shortcuts"],
                       ].map(([key, desc]) => (
                         <div key={key} className="flex items-center gap-3">
                           <kbd className="px-2 py-0.5 rounded font-mono text-[10px] min-w-[44px] text-center" style={{ background: "#222", border: "1px solid #333", color: ACCENT }}>{key}</kbd>
@@ -1691,6 +1840,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   ["Effects", activeEffects.length > 0 ? `${activeEffects.length} active` : "None"],
                   ["Transition", activeTransition ? TRANSITIONS.find(t => t.id === activeTransition)?.label ?? "None" : "None"],
                   ["Text Layers", textOverlays.length > 0 ? `${textOverlays.length}` : "None"],
+                  ["Segments", segments.length > 0 ? `${segments.length} clips` : "1 clip"],
                 ].map(([label, val]) => (
                   <div key={label} className="flex justify-between items-start">
                     <span className="text-[10px]" style={{ color: "#666" }}>{label}:</span>
@@ -1748,8 +1898,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
 
           {/* Tracks area */}
           <div className="flex-1 overflow-x-auto overflow-y-hidden relative" style={{ scrollbarWidth: "none" }}>
-            {/* Time ruler */}
-            <div className="h-4 flex items-end sticky top-0 z-10" style={{ borderBottom: "1px solid #1e1e1e", background: "#141414" }}>
+            {/* Time ruler — draggable playhead */}
+            <div
+              className="h-4 flex items-end sticky top-0 z-10 cursor-crosshair"
+              style={{ borderBottom: "1px solid #1e1e1e", background: "#141414" }}
+              onMouseDown={timelineDrag.startPlayheadDrag}
+            >
               {duration > 0 && Array.from({ length: Math.ceil(duration) + 1 }).map((_, i) => (
                 <div key={i} className="flex-shrink-0 relative" style={{ width: `${60 * timelineZoom}px` }}>
                   <div className="absolute bottom-0 left-0 w-px h-2" style={{ background: "#2a2a2a" }} />
@@ -1761,12 +1915,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             </div>
 
             {/* Video track */}
-            <div ref={timelineRef} onClick={handleTimelineClick} className="h-[33px] relative cursor-pointer" style={{ borderBottom: "1px solid #1a1a1a" }}>
-              {activeMedia && duration > 0 && (
+            <div ref={timelineRef} onMouseDown={timelineDrag.startPlayheadDrag} className="h-[33px] relative cursor-pointer" style={{ borderBottom: "1px solid #1a1a1a" }}>
+              {activeMedia && duration > 0 && segments.length === 0 && (
                 <div className="absolute top-1 bottom-1 rounded overflow-hidden flex"
                   style={{
-                    left: `${(trimStart / duration) * duration * 60 * timelineZoom}px`,
-                    width: `${((trimEnd - trimStart) / duration) * duration * 60 * timelineZoom}px`,
+                    left: `${trimStart * 60 * timelineZoom}px`,
+                    width: `${(trimEnd - trimStart) * 60 * timelineZoom}px`,
                     background: ACCENT_DIM,
                     border: `1px solid ${ACCENT_BORDER}`,
                   }}>
@@ -1775,10 +1929,53 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                       <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     </div>
                   ))}
-                  <div className="absolute inset-y-0 left-0 w-1 cursor-col-resize rounded-l transition-all" style={{ background: ACCENT }} />
-                  <div className="absolute inset-y-0 right-0 w-1 cursor-col-resize rounded-r transition-all" style={{ background: ACCENT }} />
+                  {/* Draggable trim handles */}
+                  <div
+                    className="absolute inset-y-0 left-0 w-2 cursor-col-resize rounded-l transition-all hover:w-3 z-10 flex items-center justify-center"
+                    style={{ background: ACCENT }}
+                    onMouseDown={(e) => { saveUndoSnapshot(); timelineDrag.startTrimDrag("trim-start", e); }}
+                  >
+                    <GripVertical className="w-2 h-2 text-black/50" />
+                  </div>
+                  <div
+                    className="absolute inset-y-0 right-0 w-2 cursor-col-resize rounded-r transition-all hover:w-3 z-10 flex items-center justify-center"
+                    style={{ background: ACCENT }}
+                    onMouseDown={(e) => { saveUndoSnapshot(); timelineDrag.startTrimDrag("trim-end", e); }}
+                  >
+                    <GripVertical className="w-2 h-2 text-black/50" />
+                  </div>
                 </div>
               )}
+
+              {/* Render segments after split */}
+              {activeMedia && duration > 0 && segments.length > 0 && segments.map((seg, idx) => (
+                <div key={seg.id}
+                  className="absolute top-1 bottom-1 rounded overflow-hidden flex group"
+                  style={{
+                    left: `${seg.sourceStart * 60 * timelineZoom}px`,
+                    width: `${(seg.sourceEnd - seg.sourceStart) * 60 * timelineZoom}px`,
+                    background: ACCENT_DIM,
+                    border: `1px solid ${ACCENT_BORDER}`,
+                    marginLeft: idx > 0 ? "1px" : "0",
+                  }}>
+                  <div className="flex-1 h-full overflow-hidden opacity-50" style={{ background: `hsl(${240 + idx * 30}, 60%, 25%)` }} />
+                  {/* Segment label */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-[7px] font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      {formatTimecode(seg.sourceStart)} – {formatTimecode(seg.sourceEnd)}
+                    </span>
+                  </div>
+                  {/* Delete segment button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); deleteSegment(seg.id); }}
+                    className="absolute top-0 right-0 w-4 h-4 rounded-bl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    style={{ background: "rgba(239,68,68,0.8)" }}
+                  >
+                    <X className="w-2 h-2 text-white" />
+                  </button>
+                </div>
+              ))}
+
               {!activeMedia && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-[9px]" style={{ color: "#333" }}>Drag material here and start to create</span>
@@ -1823,11 +2020,13 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
               )}
             </div>
 
-            {/* Playhead */}
+            {/* Playhead — draggable */}
             {duration > 0 && (
-              <div className="absolute top-0 bottom-0 w-0.5 z-20 pointer-events-none"
-                style={{ left: `${(currentTime / duration) * duration * 60 * timelineZoom}px`, background: "white" }}>
-                <div className="absolute -top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full" style={{ background: "white", boxShadow: "0 0 4px rgba(255,255,255,0.5)" }} />
+              <div className="absolute top-0 bottom-0 w-0.5 z-20"
+                style={{ left: `${currentTime * 60 * timelineZoom}px`, background: "white", cursor: "col-resize" }}>
+                <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-3 h-3 z-30 cursor-col-resize"
+                  style={{ background: "white", clipPath: "polygon(0 0, 100% 0, 50% 70%)", boxShadow: "0 0 6px rgba(255,255,255,0.5)" }}
+                />
               </div>
             )}
           </div>
