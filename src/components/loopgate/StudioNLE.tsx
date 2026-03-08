@@ -1996,7 +1996,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
             <span className="text-[10px] font-mono tracking-wider" style={{ color: "#444" }}>{formatTimecode(duration, true)}</span>
             <div className="flex-1" />
             <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipBack className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
-            <button onClick={togglePlay} className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105" style={{ background: `linear-gradient(135deg, ${ACCENT}, #a78bfa)`, boxShadow: `0 0 20px ${ACCENT_GLOW}` }}>
+            <button onClick={togglePlay} className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:scale-105" style={{ background: `linear-gradient(135deg, ${ACCENT}, hsl(0 0% 70%))`, boxShadow: `0 0 20px ${ACCENT_GLOW}` }}>
               {playing ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-white ml-0.5" />}
             </button>
             <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-lg hover:bg-white/5 transition-all"><SkipForward className="w-3.5 h-3.5" style={{ color: "#555" }} /></button>
