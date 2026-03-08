@@ -1068,7 +1068,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration, adjustments]);
+  }, [activeMedia, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, effectIntensities, exportQuality, activeTransition, transitionDuration, adjustments, cropPreset, rotation, flipH, flipV]);
 
   const handleDownload = () => {
     if (!resultUrl || !activeMedia) return;
