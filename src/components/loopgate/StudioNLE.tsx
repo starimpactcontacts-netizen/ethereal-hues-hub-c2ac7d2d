@@ -1136,7 +1136,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
       <div className="flex-1 flex min-h-0">
 
         {/* ─── LEFT PANEL ─── */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {activeToolTab && (
             <motion.div
               key={activeToolTab}
