@@ -14,7 +14,9 @@ import {
   MonitorPlay, FilmIcon, Circle, Wind,
   Sun, Lightbulb, Sunrise,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
-  RotateCw, Maximize, Minimize, Blend, GripVertical
+  RotateCw, Maximize, Minimize, Blend, GripVertical,
+  Crop, FlipVertical, RectangleHorizontal, Square, Smartphone, Monitor,
+  Ratio
 } from "lucide-react";
 import { useUndoRedo } from "./studio/useUndoRedo";
 import { useCanvasDrag } from "./studio/useCanvasDrag";
