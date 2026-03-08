@@ -670,7 +670,7 @@ export default function LandingPage() {
                       whileTap={{ scale: 0.97 }}
                       className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-display text-sm uppercase tracking-[0.15em] shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-shadow"
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <GateIcon className="w-4 h-4" />
                       Rate My Edit — Free
                     </motion.div>
                   </Link>
