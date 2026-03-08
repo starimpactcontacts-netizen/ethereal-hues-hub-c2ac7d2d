@@ -22,6 +22,7 @@ import ChannelChatView from "@/components/loopgate/ChannelChatView";
 import ChannelMembersList from "@/components/loopgate/ChannelMembersList";
 import ChannelSettingsPage from "@/components/loopgate/ChannelSettingsPage";
 import CrewLevelBadge from "@/components/loopgate/CrewLevelBadge";
+import HostEarningsDashboard from "@/components/loopgate/HostEarningsDashboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
