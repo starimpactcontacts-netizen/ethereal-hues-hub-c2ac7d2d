@@ -690,10 +690,10 @@ export default function HeaderMusicPlayer() {
       <>
         {triggerButton}
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetContent side="bottom" className="h-[92vh] rounded-t-2xl px-0 pt-0 pb-0 overflow-hidden flex flex-col">
+          <SheetContent side="bottom" className="h-[92vh] rounded-t-2xl px-0 pt-0 pb-0 overflow-hidden flex flex-col bg-[#0a0a0a] border-white/[0.06]">
             <VisuallyHidden><SheetTitle>Radio Player</SheetTitle></VisuallyHidden>
             <div className="flex justify-center py-2 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+              <div className="w-10 h-1 bg-white/10" />
             </div>
             {playerContent}
           </SheetContent>
@@ -705,7 +705,7 @@ export default function HeaderMusicPlayer() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
-      <PopoverContent side="bottom" align="start" className="w-96 bg-surface-0 border-border p-0 overflow-hidden max-h-[85vh] flex flex-col">
+      <PopoverContent side="bottom" align="start" className="w-96 bg-[#0a0a0a] border-white/[0.08] p-0 overflow-hidden max-h-[85vh] flex flex-col">
         {playerContent}
       </PopoverContent>
     </Popover>
