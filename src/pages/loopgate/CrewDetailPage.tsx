@@ -340,6 +340,7 @@ export default function CrewDetailPage() {
   const [crewLevel, setCrewLevel] = useState(1);
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [createChannelCategory, setCreateChannelCategory] = useState("General");
+  const [showEarnings, setShowEarnings] = useState(false);
 
   const isMobile = useIsMobile();
   const activeChannelId = searchParams.get("channel");
