@@ -151,7 +151,7 @@ export default function LoopyPage() {
                     {conversations.map((conv) => (
                       <div
                         key={conv.id}
-                        className={`group flex items-center gap-2 px-2.5 py-2 rounded-sm hover:bg-white/[0.04] transition-colors cursor-pointer ${
+                        className={`group flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-white/[0.04] transition-all cursor-pointer ${
                           activeConversationId === conv.id ? 'bg-white/[0.06] border-l-2 border-purple-500' : ''
                         }`}
                       >
