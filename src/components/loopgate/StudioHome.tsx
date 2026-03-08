@@ -334,7 +334,7 @@ function ProjectCard({
     >
       <button
         onClick={() => onOpen(project)}
-        className="w-full text-left rounded-xl overflow-hidden transition-all duration-300 hover:border-[rgba(124,106,255,0.25)] hover:shadow-[0_8px_40px_rgba(124,106,255,0.08)] hover:-translate-y-0.5"
+        className="w-full text-left rounded-xl overflow-hidden transition-all duration-300 hover:border-[hsl(0_0%_100%_/_0.3)] hover:shadow-[0_8px_40px_hsl(0_0%_100%_/_0.08)] hover:-translate-y-0.5"
         style={{
           background: "rgba(255,255,255,0.02)",
           border: "1px solid rgba(255,255,255,0.05)",
