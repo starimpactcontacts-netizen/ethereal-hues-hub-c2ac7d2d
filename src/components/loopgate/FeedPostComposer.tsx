@@ -53,14 +53,10 @@ export default function FeedPostComposer({ userProfile, onPost, onMobileTap }: F
     setSubmitting(true);
     const finalContent = selectedGif ? (content.trim() ? `${content.trim()} ${selectedGif}` : selectedGif) : content.trim();
     const platform = mediaUrl ? detectPlatform(mediaUrl) : undefined;
-    await onPost(
-      finalContent,
-      postType,
-      mediaUrl.trim() || undefined,
-      platform,
-      uploadedMedia?.url,
-      uploadedMedia?.type,
-    );
+    
+    // Save values then reset immediately for snappy UX
+    const saved = { content: finalContent, postType, mediaUrl: mediaUrl.trim() || undefined, platform, uploadedMedia: uploadedMedia ? { ...uploadedMedia } : null };
+    
     setContent("");
     setMediaUrl("");
     setPostType('text');
@@ -69,6 +65,9 @@ export default function FeedPostComposer({ userProfile, onPost, onMobileTap }: F
     setUploadedMedia(null);
     setShowGifPicker(false);
     setSubmitting(false);
+
+    // Fire in background
+    await onPost(saved.content, saved.postType, saved.mediaUrl, saved.platform, saved.uploadedMedia?.url, saved.uploadedMedia?.type);
   };
 
   const handleGifSelect = (gifUrl: string) => {
