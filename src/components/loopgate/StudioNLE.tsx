@@ -1882,20 +1882,23 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
         </AnimatePresence>
 
         {/* ─── CENTER: Player ─── */}
-        <div className="flex-1 flex flex-col min-w-0" style={{ background: "#0a0a0a" }}>
-          <div className="h-8 flex items-center px-3 flex-shrink-0" style={{ background: "#141414", borderBottom: "1px solid #1e1e1e" }}>
-            <span className="text-[11px] font-medium" style={{ color: "#888" }}>Player</span>
+        <div className="flex-1 flex flex-col min-w-0" style={{ background: "#09090c" }}>
+          <div className="h-7 flex items-center px-3 flex-shrink-0" style={{ background: "#0e0e12", borderBottom: "1px solid #1a1a20" }}>
+            <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: "#444" }}>Preview</span>
+            {cropPreset !== "free" && (
+              <span className="ml-2 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wide" style={{ background: "rgba(124,106,255,0.1)", color: ACCENT, border: `1px solid ${ACCENT_BORDER}` }}>{cropPreset}</span>
+            )}
             {activeFilter.name !== "none" && (
-              <span className="ml-2 px-1.5 py-0.5 rounded text-[8px] font-medium" style={{ background: ACCENT_DIM, color: ACCENT }}>{activeFilter.label}</span>
+              <span className="ml-1.5 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wide" style={{ background: ACCENT_DIM, color: ACCENT, border: `1px solid ${ACCENT_BORDER}` }}>{activeFilter.label}</span>
             )}
             {activeTransition && (
-              <span className="ml-1 px-1.5 py-0.5 rounded text-[8px] font-medium" style={{ background: "rgba(251,191,36,0.1)", color: "#fbbf24" }}>
+              <span className="ml-1 px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wide" style={{ background: "rgba(251,191,36,0.08)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>
                 {TRANSITIONS.find(t => t.id === activeTransition)?.label}
               </span>
             )}
           </div>
 
-          <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0" style={{ background: "#0a0a0a" }}>
+          <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0" style={{ background: "#09090c" }}>
             {videoUrl ? (
               <>
                 <video ref={videoRef} src={videoUrl} className="hidden" playsInline preload="auto" />
