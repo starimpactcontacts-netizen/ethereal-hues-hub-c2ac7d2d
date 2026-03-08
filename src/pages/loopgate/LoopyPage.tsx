@@ -342,8 +342,8 @@ export default function LoopyPage() {
 
                     {/* URL */}
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-white/30 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
-                        <Target className="w-3 h-3" /> EDIT URL <span className="text-red-500">*</span>
+                      <label className="text-[11px] font-bold text-white/60 uppercase tracking-[0.15em] flex items-center gap-1.5" style={TEKO}>
+                        <Target className="w-3 h-3 text-purple-400" /> EDIT URL <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <Input
