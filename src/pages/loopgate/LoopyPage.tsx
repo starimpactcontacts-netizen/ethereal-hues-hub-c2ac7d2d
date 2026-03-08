@@ -288,10 +288,10 @@ export default function LoopyPage() {
             </div>
 
             {/* Quick nav links */}
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => navigate('/hub')}
-                className="flex items-center gap-1 px-2 py-1.5 hover:bg-white/[0.06] transition-all rounded"
+                className="flex items-center gap-1 px-2.5 py-1.5 hover:bg-white/[0.06] transition-all rounded-lg active:scale-95"
                 title="Back to Hub"
               >
                 <Home className="w-3.5 h-3.5 text-white/30" />
@@ -299,14 +299,14 @@ export default function LoopyPage() {
               </button>
               <button
                 onClick={() => navigate('/loopy/rate')}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-500/15 to-primary/15 border border-amber-500/25 hover:from-amber-500/25 hover:to-primary/25 transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500/15 to-primary/15 border border-amber-500/25 rounded-lg hover:from-amber-500/25 hover:to-primary/25 transition-all active:scale-95"
               >
                 <Star className="w-3 h-3 text-amber-400" />
                 <span className="text-[10px] font-bold text-white/60 tracking-wider" style={TEKO}>Rate Edit</span>
               </button>
               <button
                 onClick={() => navigate(-1)}
-                className="p-1.5 hover:bg-white/[0.06] rounded transition-colors ml-1"
+                className="p-1.5 hover:bg-white/[0.06] rounded-lg transition-all active:scale-95 ml-0.5"
                 title="Close"
               >
                 <X className="w-4 h-4 text-white/30" />
