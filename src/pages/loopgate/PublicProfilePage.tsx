@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, ExternalLink, Loader2, Globe, Share2, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,8 @@ import ConnectButton from "@/components/loopgate/ConnectButton";
 import { Users } from "lucide-react";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
+import LinkTreePreview from "@/components/loopgate/LinkTreePreview";
+import type { LinkPageSettings, EditorLink } from "@/hooks/useEditorLinkPage";
 
 interface PublicProfile {
   id: string;
@@ -87,6 +89,8 @@ export default function PublicProfilePage() {
    const [videoCount, setVideoCount] = useState(0);
    const [isJudge, setIsJudge] = useState(false);
    const [realStats, setRealStats] = useState<{ totalEvents: number; winRate: number; totalWins: number }>({ totalEvents: 0, winRate: 0, totalWins: 0 });
+  const [linkPageSettings, setLinkPageSettings] = useState<LinkPageSettings | null>(null);
+  const [editorLinks, setEditorLinks] = useState<EditorLink[]>([]);
   const { hasEquippedOG } = useEquippedBadges(resolvedUserId || undefined);
 
   useEffect(() => {
@@ -234,6 +238,14 @@ export default function PublicProfilePage() {
       const winRate = totalEvents > 0 ? (totalWins / totalEvents) * 100 : 0;
       
       setRealStats({ totalEvents, winRate, totalWins });
+
+      // Fetch link page
+      const [linkPageRes, linksRes] = await Promise.all([
+        supabase.from("editor_link_pages").select("*").eq("user_id", profileData.id).eq("is_published", true).maybeSingle(),
+        supabase.from("editor_links").select("*").eq("user_id", profileData.id).eq("is_active", true).order("sort_order", { ascending: true }),
+      ]);
+      if (linkPageRes.data) setLinkPageSettings(linkPageRes.data as unknown as LinkPageSettings);
+      if (linksRes.data) setEditorLinks(linksRes.data as unknown as EditorLink[]);
 
       setLoading(false);
     };
@@ -532,67 +544,57 @@ export default function PublicProfilePage() {
       ) : activeTab === 'edits' ? (
         <SubmissionGrid userId={resolvedUserId || ''} />
       ) : activeTab === 'links' ? (
-        <div className="px-4 py-6 space-y-4">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Connected Platforms</p>
-          <div className="space-y-3">
-            {platforms.map((p) => {
-              const PlatformIcon = p.platform === 'tiktok' ? SiTiktok 
-                : p.platform === 'instagram' ? SiInstagram 
-                : p.platform === 'youtube' ? SiYoutube 
-                : Globe;
-              const platformColor = p.platform === 'tiktok' ? 'group-hover:text-white' 
-                : p.platform === 'instagram' ? 'group-hover:text-pink-500' 
-                : p.platform === 'youtube' ? 'group-hover:text-red-500' 
-                : 'group-hover:text-white';
-              
-              return (
-                <a
-                  key={p.id}
-                  href={p.platform_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all"
-                >
-                  <div className={`w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground ${platformColor} transition-colors`}>
-                    <PlatformIcon size={20} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">
-                      {platformLabels[p.platform] || p.platform}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      @{p.platform_username}
-                    </p>
-                  </div>
-                  <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
-                </a>
-              );
-            })}
+        linkPageSettings ? (
+          <LinkTreePreview
+            settings={linkPageSettings}
+            links={editorLinks}
+            profile={profile}
+            isPublic
+            platforms={platforms}
+            stats={{ classLetter: editorClass.letter, indexScore: profile.global_index_score || 0, rank: rank || 0 }}
+          />
+        ) : (
+          <div className="px-4 py-6 space-y-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Connected Platforms</p>
+            <div className="space-y-3">
+              {platforms.map((p) => {
+                const PlatformIcon = p.platform === 'tiktok' ? SiTiktok 
+                  : p.platform === 'instagram' ? SiInstagram 
+                  : p.platform === 'youtube' ? SiYoutube 
+                  : Globe;
+                const platformColor = p.platform === 'tiktok' ? 'group-hover:text-white' 
+                  : p.platform === 'instagram' ? 'group-hover:text-pink-500' 
+                  : p.platform === 'youtube' ? 'group-hover:text-red-500' 
+                  : 'group-hover:text-white';
+                
+                return (
+                  <a key={p.id} href={p.platform_url} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all">
+                    <div className={`w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground ${platformColor} transition-colors`}>
+                      <PlatformIcon size={20} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">{platformLabels[p.platform] || p.platform}</p>
+                      <p className="text-xs text-muted-foreground truncate">@{p.platform_username}</p>
+                    </div>
+                    <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+                  </a>
+                );
+              })}
+            </div>
+            {profile.portfolio_url && (
+              <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all mt-4">
+                <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground group-hover:text-gold transition-colors">
+                  <Globe size={20} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">Portfolio</p>
+                  <p className="text-xs text-muted-foreground truncate">{profile.portfolio_url.replace(/^https?:\/\//, '').split('/')[0]}</p>
+                </div>
+                <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
+              </a>
+            )}
           </div>
-          
-          {/* Portfolio link if exists */}
-          {profile.portfolio_url && (
-            <a
-              href={profile.portfolio_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-center gap-4 p-4 bg-surface-1 border border-border hover:border-gold/30 transition-all mt-4"
-            >
-              <div className="w-10 h-10 rounded-full bg-surface-2 flex items-center justify-center text-muted-foreground group-hover:text-gold transition-colors">
-                <Globe size={20} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-foreground group-hover:text-gold transition-colors">
-                  Portfolio
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {profile.portfolio_url.replace(/^https?:\/\//, '').split('/')[0]}
-                </p>
-              </div>
-              <ExternalLink size={16} className="text-muted-foreground group-hover:text-gold transition-colors" />
-            </a>
-          )}
-        </div>
+        )
       ) : (
         <div className="px-4 py-6 space-y-6">
           {/* League & Stats Grid */}

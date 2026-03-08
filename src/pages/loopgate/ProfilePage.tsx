@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users } from "lucide-react";
+import { Camera, Zap, Lock, ArrowRight, Share2, Settings, BarChart3, Grid3X3, ChevronRight, Crown, Shield, Gavel, Video, Users, Link2 } from "lucide-react";
 import GateIcon from '@/components/loopgate/GateIcon';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import IndexEarnBadge from "@/components/loopgate/IndexEarnBadge";
 import ProfileInventoryLink from "@/components/loopgate/ProfileInventoryLink";
 import { useEquippedBadges } from "@/hooks/useEquippedBadges";
+import LinkTreeEditor from "@/components/loopgate/LinkTreeEditor";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export default function ProfilePage() {
   const { isAnyJudge } = useUserRoles(profile?.id);
   const { hasEquippedOG } = useEquippedBadges(profile?.id);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos'>('edits');
+  const [activeTab, setActiveTab] = useState<'edits' | 'reviews' | 'videos' | 'links'>('edits');
   
   // Set default tab to videos for judges once roles load
   useEffect(() => {
@@ -372,48 +373,56 @@ export default function ProfilePage() {
 
       {/* ═══ CONTENT TABS ═══ */}
       <div className="px-4 mb-2">
-        {isAnyJudge ? (
-          <div className="flex gap-0.5 p-0.5 bg-surface-1 border border-border rounded-md">
-            <button
-              onClick={() => setActiveTab('edits')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                activeTab === 'edits' 
-                  ? 'bg-background text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Grid3X3 className="w-3 h-3" />
-              Edits
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                activeTab === 'reviews' 
-                  ? 'bg-gold/20 text-gold' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Gavel className="w-3 h-3" />
-              Reviews
-            </button>
-            <button
-              onClick={() => setActiveTab('videos')}
-              className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
-                activeTab === 'videos' 
-                  ? 'bg-purple-500/20 text-purple-400' 
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <Video className="w-3 h-3" />
-              Videos
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-1">
-            <Grid3X3 className="w-3 h-3 text-muted-foreground" />
-            <h2 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">My Edits</h2>
-          </div>
-        )}
+        <div className="flex gap-0.5 p-0.5 bg-surface-1 border border-border rounded-md">
+          <button
+            onClick={() => setActiveTab('edits')}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+              activeTab === 'edits' 
+                ? 'bg-background text-foreground' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Grid3X3 className="w-3 h-3" />
+            Edits
+          </button>
+          {isAnyJudge && (
+            <>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+                  activeTab === 'reviews' 
+                    ? 'bg-gold/20 text-gold' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Gavel className="w-3 h-3" />
+                Reviews
+              </button>
+              <button
+                onClick={() => setActiveTab('videos')}
+                className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+                  activeTab === 'videos' 
+                    ? 'bg-purple-500/20 text-purple-400' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Video className="w-3 h-3" />
+                Videos
+              </button>
+            </>
+          )}
+          <button
+            onClick={() => setActiveTab('links')}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 text-[10px] font-medium rounded transition-colors ${
+              activeTab === 'links' 
+                ? 'bg-gold/20 text-gold' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Link2 className="w-3 h-3" />
+            Links
+          </button>
+        </div>
       </div>
 
       {/* ═══ TAB CONTENT ═══ */}
@@ -430,6 +439,12 @@ export default function ProfilePage() {
       {activeTab === 'videos' && isAnyJudge && (
         <div className="px-4">
           <MyRatingVideos />
+        </div>
+      )}
+
+      {activeTab === 'links' && (
+        <div className="px-4">
+          <LinkTreeEditor />
         </div>
       )}
 

@@ -1914,6 +1914,129 @@ export type Database = {
           },
         ]
       }
+      editor_link_pages: {
+        Row: {
+          accent_color: string | null
+          bg_color: string | null
+          bg_gradient_from: string | null
+          bg_gradient_to: string | null
+          bg_image_url: string | null
+          bg_type: string
+          bio: string | null
+          card_style: string | null
+          created_at: string
+          custom_avatar_url: string | null
+          custom_css: string | null
+          id: string
+          is_published: boolean | null
+          page_title: string | null
+          show_avatar: boolean | null
+          show_socials: boolean | null
+          show_stats: boolean | null
+          text_color: string | null
+          updated_at: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          accent_color?: string | null
+          bg_color?: string | null
+          bg_gradient_from?: string | null
+          bg_gradient_to?: string | null
+          bg_image_url?: string | null
+          bg_type?: string
+          bio?: string | null
+          card_style?: string | null
+          created_at?: string
+          custom_avatar_url?: string | null
+          custom_css?: string | null
+          id?: string
+          is_published?: boolean | null
+          page_title?: string | null
+          show_avatar?: boolean | null
+          show_socials?: boolean | null
+          show_stats?: boolean | null
+          text_color?: string | null
+          updated_at?: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          accent_color?: string | null
+          bg_color?: string | null
+          bg_gradient_from?: string | null
+          bg_gradient_to?: string | null
+          bg_image_url?: string | null
+          bg_type?: string
+          bio?: string | null
+          card_style?: string | null
+          created_at?: string
+          custom_avatar_url?: string | null
+          custom_css?: string | null
+          id?: string
+          is_published?: boolean | null
+          page_title?: string | null
+          show_avatar?: boolean | null
+          show_socials?: boolean | null
+          show_stats?: boolean | null
+          text_color?: string | null
+          updated_at?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      editor_links: {
+        Row: {
+          click_count: number | null
+          created_at: string
+          description: string | null
+          embed_url: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          link_type: string | null
+          sort_order: number | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          click_count?: number | null
+          created_at?: string
+          description?: string | null
+          embed_url?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          link_type?: string | null
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          click_count?: number | null
+          created_at?: string
+          description?: string | null
+          embed_url?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          link_type?: string | null
+          sort_order?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       editorium_articles: {
         Row: {
           author_name: string
