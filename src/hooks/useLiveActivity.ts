@@ -430,6 +430,23 @@ export function useLiveActivity(limit = 8) {
         });
       });
 
+      // New user signups — "entered the gate"
+      newUserData.forEach((u: any) => {
+        if (u.username && u.created_at) {
+          all.push({
+            id: `newuser-${u.id}`,
+            user_id: u.id,
+            username: u.username,
+            avatar_url: u.avatar_url || null,
+            action: pick(newUserVerbs),
+            target: '',
+            score: null,
+            timestamp: u.created_at,
+            type: 'new_user',
+          });
+        }
+      });
+
       // Sort by timestamp, dedup by user+action combo
       all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       const seen = new Set<string>();
