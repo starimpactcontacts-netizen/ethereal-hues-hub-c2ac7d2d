@@ -210,6 +210,13 @@ export default function LoopyChat() {
                   {view === 'history' ? 'chat history' : 'your loopgate guide'}
                 </p>
               </div>
+              <button
+                onClick={() => { setOpen(false); navigate('/loopy'); }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-primary/20 border border-amber-500/30 hover:from-amber-500/30 hover:to-primary/30 transition-all"
+              >
+                <Star className="w-3 h-3 text-amber-400" />
+                <span className="text-[10px] font-bold text-foreground">Rate</span>
+              </button>
               <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-muted transition-colors">
                 <X className="w-4 h-4 text-muted-foreground" />
               </button>
