@@ -3501,170 +3501,21 @@ export default function OpsPanel() {
           )}
         </section>
 
-        {/* Admin: House Management */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Home size={14} className="text-gold" />
-              House Management
-            </h2>
-            <span className="text-xs text-gold">{houseApplications.length} pending</span>
-          </div>
+        {/* ━━━ TOURNAMENT PROPOSALS (from unit owners) ━━━ */}
+        <TournamentProposalsAdmin />
 
-          {/* House Applications */}
-          {houseApplications.length > 0 && (
-            <div className="mb-4">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Applications</p>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {houseApplications.map((app) => (
-                  <div key={app.id} className="bg-card border border-gold/30 rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-sm">@{app.username}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          Applying to {app.house_name} • {new Date(app.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleRejectHouseApplication(app.id)}
-                          disabled={actionLoading}
-                          className="p-2 bg-destructive/20 text-destructive rounded-lg"
-                          title="Reject"
-                        >
-                          <X size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleApproveHouseApplication(app)}
-                          disabled={actionLoading}
-                          className="p-2 bg-green-500/20 text-green-400 rounded-lg"
-                          title="Approve"
-                        >
-                          <Check size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* ━━━ HOSTED COMP MANAGEMENT ━━━ */}
+        <HostedCompManagement />
 
-          {/* Houses List */}
-          <div className="space-y-2">
-            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">All Houses</p>
-            <div className="space-y-2 max-h-64 overflow-y-auto">
-              {houses.map((house) => (
-                <div 
-                  key={house.id} 
-                  className={`bg-card border rounded-lg p-3 cursor-pointer transition-colors ${
-                    selectedHouseId === house.id ? 'border-gold' : 'border-border hover:border-gold/50'
-                  }`}
-                  onClick={() => fetchHouseMembers(house.id)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        house.type === 'prestige' ? 'bg-gold/20' : 'bg-surface-2'
-                      }`}>
-                        {house.type === 'prestige' ? (
-                          <Crown size={14} className="text-gold" />
-                        ) : (
-                          <Home size={14} className="text-muted-foreground" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold text-sm">{house.name}</p>
-                          {house.type === 'prestige' && (
-                            <Badge className="bg-gold/20 text-gold text-[8px] border border-gold/50">PRESTIGE</Badge>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">
-                          {house.member_count} members • Index: <span className="text-gold">{house.house_index}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      {house.type === 'prestige' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedHouseId(house.id);
-                            setShowInviteModal(true);
-                          }}
-                          className="p-2 rounded-lg bg-gold/20 text-gold hover:bg-gold/30"
-                          title="Invite user"
-                        >
-                          <UserPlus size={14} />
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          fetchHouseMembers(house.id);
-                        }}
-                        className="p-2 rounded-lg bg-surface-1 hover:bg-surface-2"
-                        title="View members"
-                      >
-                        <Users size={14} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* ━━━ FEED MODERATION ━━━ */}
+        <FeedModerationAdmin />
 
-          {/* Selected House Members */}
-          {selectedHouseId && houseMembers.length > 0 && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Members of {houses.find(h => h.id === selectedHouseId)?.name}
-                </p>
-                {houses.find(h => h.id === selectedHouseId)?.type === 'prestige' && (
-                  <button
-                    onClick={() => setShowInviteModal(true)}
-                    className="flex items-center gap-1 text-[10px] text-gold hover:underline"
-                  >
-                    <UserPlus size={12} />
-                    Invite
-                  </button>
-                )}
-              </div>
-              <div className="space-y-1 max-h-48 overflow-y-auto bg-surface-1 rounded-lg p-2">
-                {houseMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-surface-2">
-                    <div>
-                      <p className="text-sm font-medium">@{member.username}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        Index: {member.global_index_score?.toFixed(1) || '0'} • {member.role}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveHouseMember(member.id, member.user_id)}
-                      disabled={removingMemberId === member.id}
-                      className="p-1.5 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30"
-                      title="Remove member"
-                    >
-                      {removingMemberId === member.id ? (
-                        <div className="w-3 h-3 border border-destructive border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <X size={12} />
-                      )}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
+        {/* ━━━ GROWTH ANALYTICS ━━━ */}
+        <PlatformAnalyticsAdmin />
 
         {/* Admin: League Applications */}
         <LeagueApplicationsAdmin />
 
-        {/* Admin: Unit Management */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Unit Management</h2>
