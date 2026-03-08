@@ -23,6 +23,8 @@ interface ArenaDrop {
   instant_payout: boolean;
 }
 
+const teko: React.CSSProperties = { fontFamily: "'Teko', sans-serif" };
+
 /* ── Balance Ticker ── */
 function BalanceTicker() {
   const { user } = useAuth();
