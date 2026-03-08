@@ -146,7 +146,7 @@ export default function SoloModeFlow({ onBack }: { onBack: () => void }) {
                 <div className="space-y-1.5">
                   {[
                     { step: "1", text: "Pick a featured song below", icon: <Music className="w-3 h-3" /> },
-                    { step: "2", text: "Get assigned a random editing theme", icon: <Sparkles className="w-3 h-3" /> },
+                    { step: "2", text: "Get assigned a random editing theme", icon: <GateIcon className="w-3 h-3" /> },
                     { step: "3", text: "Edit your video and submit", icon: <Zap className="w-3 h-3" /> },
                     { step: "4", text: "A judge scores your work — earn up to 100+ Index", icon: <Trophy className="w-3 h-3" /> },
                   ].map(s => (
