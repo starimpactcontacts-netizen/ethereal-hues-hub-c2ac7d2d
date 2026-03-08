@@ -588,6 +588,21 @@ export default function CrewDetailPage() {
 
       {/* Tournament Earnings for owners */}
       {isOwner && crewId && <TournamentEarnings crewId={crewId} />}
+      
+      {/* Full Earnings Dashboard (expandable) */}
+      {isOwner && crewId && showEarnings && (
+        <div className="mx-3 mb-2">
+          <HostEarningsDashboard crewId={crewId} />
+        </div>
+      )}
+      {isOwner && crewId && (
+        <button
+          onClick={() => setShowEarnings(!showEarnings)}
+          className="mx-3 mb-2 w-[calc(100%-24px)] py-1.5 text-[10px] uppercase tracking-widest text-emerald-400 font-bold hover:text-emerald-300 transition-colors"
+        >
+          {showEarnings ? "Hide Details" : "View Full Earnings Dashboard →"}
+        </button>
+      )}
 
       {/* ━━━ OWNER ACTION BUTTONS ━━━ */}
       {isOwner && crewId && (
