@@ -297,7 +297,7 @@ export default function RequestJudgeReviewModal({
                           }`}
                         >
                           <div className="w-6 h-6 rounded-full bg-surface-1 flex items-center justify-center">
-                            <Sparkles size={12} className="text-gold" />
+                            <GateIcon size={12} className="text-gold" />
                           </div>
                           <span className="text-sm">Auto-match</span>
                         </button>
