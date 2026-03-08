@@ -260,14 +260,6 @@ const FeedPostCard = memo(function FeedPostCard({ post, isLiked, isBookmarked, o
                         is_system: true,
                         data: { battle_id: result.battleId, challenger: myProfile.username, opponent: post.username },
                       });
-                      // Also post as a comment on the original post
-                      await supabase.from('feed_comments').insert({
-                        post_id: post.id,
-                        user_id: user.id,
-                        username: myProfile.username,
-                        avatar_url: myProfile.avatar_url,
-                        content: `⚔️ challenged @${post.username} to a 1v1 battle!`,
-                      });
                       toast.success('Battle challenge sent!');
                       navigate(`/battle/${result.battleId}`);
                     } else {
