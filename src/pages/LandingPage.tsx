@@ -562,6 +562,123 @@ export default function LandingPage() {
         </section>
 
 
+
+        {/* ═══════════════ FEATURE 5: LOOPY AI RATING ═══════════════ */}
+        <section className="relative py-24 sm:py-32 overflow-hidden border-t border-border/50">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-purple-950/[0.03] to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,hsl(var(--gold)/0.03),transparent)]" />
+          <div className="max-w-6xl mx-auto px-6 relative z-10">
+            <div className="grid md:grid-cols-5 gap-10 md:gap-16 items-center">
+              {/* AI Rating Card Mockup — 3 cols */}
+              <motion.div
+                className="md:col-span-3"
+                initial={{ opacity: 0, x: -60 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="border border-purple-500/15 bg-surface-0 overflow-hidden relative">
+                  <div className="h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
+                  <div className="px-5 py-3.5 flex items-center justify-between border-b border-border/50">
+                    <div className="flex items-center gap-2.5">
+                      <img src={loopyAvatar} alt="Loopy AI" className="w-6 h-6 rounded-full border border-purple-500/30" />
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400">Loopy AI Diagnostic</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[10px] text-emerald-400 font-bold">Live</span>
+                    </div>
+                  </div>
+                  <div className="p-6 sm:p-8">
+                    <div className="flex items-start gap-6 sm:gap-8">
+                      {/* Grade */}
+                      <div className="text-center flex-shrink-0">
+                        <motion.div
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-400 flex items-center justify-center mb-2 shadow-lg shadow-emerald-500/20"
+                          whileInView={{ scale: [0.8, 1.05, 1] }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.6, delay: 0.4 }}
+                        >
+                          <span className="font-display text-4xl sm:text-5xl text-white font-black">A</span>
+                        </motion.div>
+                        <p className="font-display text-lg text-foreground">78/100</p>
+                        <p className="text-[9px] text-purple-400 uppercase tracking-wider font-bold italic">"clean work ngl"</p>
+                      </div>
+                      {/* 5 Pillar Bars */}
+                      <div className="flex-1 space-y-3 pt-1">
+                        {[
+                          { label: 'Emotion', score: 12, max: 15, color: 'bg-pink-500', icon: Heart },
+                          { label: 'Creativity', score: 19, max: 25, color: 'bg-amber-500', icon: Lightbulb },
+                          { label: 'Sync', score: 21, max: 25, color: 'bg-purple-500', icon: Music },
+                          { label: 'Identity', score: 7, max: 10, color: 'bg-cyan-500', icon: Fingerprint },
+                          { label: 'Execution', score: 19, max: 25, color: 'bg-green-500', icon: Zap },
+                        ].map((p, i) => (
+                          <div key={p.label} className="flex items-center gap-2.5">
+                            <p.icon className="w-3 h-3 text-muted-foreground shrink-0" />
+                            <span className="text-[11px] text-muted-foreground w-16 text-right">{p.label}</span>
+                            <div className="flex-1 h-1.5 bg-surface-2 rounded-full overflow-hidden">
+                              <motion.div
+                                className={`h-full ${p.color} rounded-full`}
+                                initial={{ width: 0 }}
+                                whileInView={{ width: `${(p.score / p.max) * 100}%` }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 1, delay: 0.3 + i * 0.1 }}
+                              />
+                            </div>
+                            <span className="text-[10px] font-bold text-foreground w-10 text-right">{p.score}/{p.max}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Loopy feedback */}
+                    <div className="mt-5 flex items-start gap-2.5 bg-surface-1 border border-border/50 px-4 py-3">
+                      <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        "the color grading goes crazy tbh, sync is hitting on beat drops. identity could use more signature moves tho — u got potential fr"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Text — 2 cols */}
+              <motion.div
+                className="md:col-span-2 text-center md:text-left"
+                initial="hidden" whileInView="visible" viewport={{ once: true }}
+              >
+                <motion.span variants={fadeUp} custom={0} className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.3em] uppercase text-purple-400 mb-4">
+                  <Brain className="w-3.5 h-3.5" /> AI Rating
+                </motion.span>
+                <motion.h2 variants={fadeUp} custom={1} className="font-display text-4xl sm:text-5xl md:text-6xl leading-[0.85] mb-5">
+                  AI THAT<br />RATES YOUR<br /><span className="text-purple-400">EDITS</span>
+                </motion.h2>
+                <motion.p variants={fadeUp} custom={2} className="text-muted-foreground text-base leading-relaxed mb-6">
+                  Drop any TikTok, YouTube, or Instagram edit link. Loopy fetches the thumbnail, scrapes metadata, and runs a full multimodal AI diagnostic across 5 QOI pillars — instantly. Free.
+                </motion.p>
+                <motion.ul variants={fadeUp} custom={3} className="space-y-2 mb-8">
+                  {['Multimodal AI visual analysis', 'Real metadata extraction', '5-pillar QOI diagnostic', 'Personalized improvement tips', 'Full rating history'].map(f => (
+                    <li key={f} className="flex items-center gap-2.5 text-sm text-foreground/70 md:justify-start justify-center">
+                      <div className="w-1 h-1 rounded-full bg-purple-400" /> {f}
+                    </li>
+                  ))}
+                </motion.ul>
+                <motion.div variants={fadeUp} custom={4}>
+                  <Link to="/loopy">
+                    <motion.div
+                      whileHover={{ scale: 1.03, y: -1 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-display text-sm uppercase tracking-[0.15em] shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 transition-shadow"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      Rate My Edit — Free
+                    </motion.div>
+                  </Link>
+                </motion.div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
         {/* ═══════════════ DOWNLOAD STRIP ═══════════════ */}
         <section className="border-y border-border bg-surface-0 py-16 sm:py-20 px-6">
           <div className="max-w-4xl mx-auto text-center">
