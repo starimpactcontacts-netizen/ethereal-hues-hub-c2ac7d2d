@@ -96,6 +96,7 @@ export default function StudioHome({ onNewProject, onOpenProject }: StudioHomePr
 
   const handleDelete = (id: string) => {
     deleteStudioProject(id);
+    deleteVideoFile(id).catch(() => {}); // Clean up IndexedDB too
     setProjects(prev => prev.filter(p => p.id !== id));
     setContextMenu(null);
     toast.success("Project deleted");
