@@ -74,34 +74,64 @@ export default function StudioPage() {
 
     // Generate thumbnail from video
     const vid = document.createElement("video");
-    vid.src = URL.createObjectURL(f);
+    const objUrl = URL.createObjectURL(f);
+    vid.src = objUrl;
     vid.muted = true;
     vid.preload = "auto";
+    vid.playsInline = true;
+
+    let opened = false;
+    const openEditor = () => {
+      if (opened) return;
+      opened = true;
+      saveStudioProject(project);
+      URL.revokeObjectURL(objUrl);
+      setInitialFile(f);
+      setEditorOpen(true);
+    };
+
+    const captureThumbnail = () => {
+      try {
+        if (vid.videoWidth === 0 || vid.videoHeight === 0) return;
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = Math.round(320 * (vid.videoHeight / vid.videoWidth));
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+          // Only save if it's actually a real image (not blank)
+          if (dataUrl.length > 500) {
+            project.thumbnail = dataUrl;
+          }
+        }
+      } catch (err) {
+        console.warn("Thumbnail capture failed:", err);
+      }
+    };
+
     vid.onloadedmetadata = () => {
       project.duration = vid.duration;
       project.resolution = `${vid.videoWidth}x${vid.videoHeight}`;
-      vid.currentTime = Math.min(1, vid.duration * 0.1);
+      vid.currentTime = Math.min(2, vid.duration * 0.15);
     };
+
     vid.onseeked = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 320;
-      canvas.height = Math.round(320 * (vid.videoHeight / vid.videoWidth));
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
-        project.thumbnail = canvas.toDataURL("image/jpeg", 0.6);
-      }
-      saveStudioProject(project);
-      URL.revokeObjectURL(vid.src);
-      setInitialFile(f);
-      setEditorOpen(true);
+      captureThumbnail();
+      openEditor();
     };
-    vid.onerror = () => {
-      // Still open even if thumbnail fails
-      saveStudioProject(project);
-      setInitialFile(f);
-      setEditorOpen(true);
+
+    // Fallback: if onseeked never fires, still open after 3s
+    vid.onloadeddata = () => {
+      setTimeout(() => {
+        if (!opened) {
+          captureThumbnail();
+          openEditor();
+        }
+      }, 2000);
     };
+
+    vid.onerror = () => openEditor();
   }, []);
 
   const [pendingProject, setPendingProject] = useState<StudioProject | null>(null);
