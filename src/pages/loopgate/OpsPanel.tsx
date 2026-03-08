@@ -25,6 +25,7 @@ import FeaturedArtistAdmin from "@/components/loopgate/FeaturedArtistAdmin";
 import EditoriumAdmin from "@/components/loopgate/EditoriumAdmin";
 import RadioAdmin from "@/components/loopgate/RadioAdmin";
 import MissionAdmin from "@/components/loopgate/MissionAdmin";
+import OpsAdminDashboard from "@/components/loopgate/OpsAdminDashboard";
 
 interface RealEvent {
   id: string;
