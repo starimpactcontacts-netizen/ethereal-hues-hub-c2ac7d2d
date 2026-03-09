@@ -306,22 +306,81 @@ export default function MissionLobbyPage() {
         </div>
       </div>
 
-      {/* ═══ OFFICIAL EVENT QUICK LINK ═══ */}
+      {/* ═══ ENTER LOBBY — Big CTA to Official Event ═══ */}
       {officialEvent && (
-        <div className="px-4 -mt-1 relative z-10 mb-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="px-4 -mt-2 relative z-10 mb-3"
+        >
           <Link to={`/drop/${officialEvent.id}`}>
-            <div className="bg-emerald-950/60 border border-emerald-500/40 overflow-hidden hover:border-emerald-400/60 transition-all group flex items-center gap-3 px-3 py-2">
-              <Swords className="w-4 h-4 text-emerald-400 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Your edit enters this event →</span>
-                <p className="text-[10px] text-foreground/50 truncate">
-                  <span className="text-emerald-400 font-bold">{officialEvent.title}</span> — <span className="text-emerald-400 font-black">${officialEvent.prize_usd} prize</span>
+            <div 
+              className="relative overflow-hidden group"
+              style={{ boxShadow: '0 0 30px rgba(16, 185, 129, 0.15), 0 0 60px rgba(16, 185, 129, 0.08)' }}
+            >
+              {/* Background */}
+              {officialEvent.poster_url ? (
+                <div 
+                  className="absolute inset-0 bg-cover bg-center scale-105 group-hover:scale-110 transition-transform duration-700"
+                  style={{ backgroundImage: `url(${officialEvent.poster_url})` }}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 via-background to-emerald-950/50" />
+              )}
+              
+              {/* Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/50 via-transparent to-emerald-950/30" />
+              
+              {/* Scanlines */}
+              <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 3px)' }} />
+              
+              {/* Border glow */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
+              
+              {/* Content */}
+              <div className="relative px-4 py-4 flex items-center gap-4">
+                {/* Left - Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Swords className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.15em]">Battle Royale</span>
+                  </div>
+                  <h3 style={teko} className="text-[17px] text-white leading-tight truncate tracking-wide">
+                    {officialEvent.title}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <DollarSign className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[12px] font-black text-emerald-400">${officialEvent.prize_usd} Prize</span>
+                  </div>
+                </div>
+                
+                {/* Right - ENTER LOBBY button */}
+                <div className="shrink-0">
+                  <div className="relative bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 px-5 py-2.5 group-hover:from-emerald-500 group-hover:via-emerald-400 group-hover:to-emerald-500 transition-all shadow-lg shadow-emerald-900/40">
+                    <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.15] to-transparent pointer-events-none" />
+                    <div className="flex items-center gap-2 relative z-10">
+                      <Target className="w-4 h-4 text-white drop-shadow" />
+                      <span style={teko} className="text-[15px] text-white uppercase tracking-wider drop-shadow">
+                        Enter Lobby
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Auto-queue notice */}
+              <div className="relative bg-emerald-950/80 border-t border-emerald-500/20 px-4 py-2 flex items-center gap-2">
+                <Sparkles className="w-3 h-3 text-emerald-400/60 shrink-0" />
+                <p className="text-[9px] text-emerald-400/70">
+                  <span className="font-bold text-emerald-400/90">Submissions auto-enter lobby queue</span> — rated C+ or higher joins the competition
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-emerald-400/50 group-hover:text-emerald-400 transition-colors shrink-0" />
             </div>
           </Link>
-        </div>
+        </motion.div>
       )}
 
       {/* ═══ SUBMISSION AREA ═══ */}
