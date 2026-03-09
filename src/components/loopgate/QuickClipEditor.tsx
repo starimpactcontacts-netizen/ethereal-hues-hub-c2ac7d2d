@@ -171,6 +171,15 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   const [flipH, setFlipH] = useState(false);
   const [flipV, setFlipV] = useState(false);
 
+  // ═══ TRANSFORM v2.0 — StretchTok Ready ═══
+  const [scaleX, setScaleX] = useState(1.0);
+  const [scaleY, setScaleY] = useState(1.0);
+  const [posX, setPosX] = useState(0.5);   // 0-1 normalized (0.5 = center)
+  const [posY, setPosY] = useState(0.5);
+  const [videoOpacity, setVideoOpacity] = useState(1.0);
+  const [freeRotation, setFreeRotation] = useState(0); // -180 to 180
+  const [scaleLocked, setScaleLocked] = useState(true);
+
   // Speed Curves (v1.5)
   const [activeSpeedCurve, setActiveSpeedCurve] = useState<SpeedCurve | null>(null);
 
