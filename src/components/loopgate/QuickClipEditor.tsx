@@ -141,6 +141,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   const [speed, setSpeed] = useState(1);
   const [muted, setMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!initialFile);
+  const [autoEditOpen, setAutoEditOpen] = useState(false);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [activeEffects, setActiveEffects] = useState<string[]>([]);
   const [activeTransition, setActiveTransition] = useState<string | null>(null);
