@@ -2040,6 +2040,45 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           )}
         </AnimatePresence>
 
+        {/* AI Brain — Advanced AI Panel */}
+        <StudioAIBrain
+          open={aiBrainOpen}
+          onClose={() => setAiBrainOpen(false)}
+          editSnapshot={{
+            duration: trimEnd - trimStart,
+            originalDuration: duration,
+            filter: activeFilter.name,
+            effects: activeEffects,
+            speed,
+            textCount: textOverlays.length,
+            transition: activeTransition,
+            hasAdjustments: hasAdjustments(adjustments),
+            cropPreset: cropPreset,
+            keyframeCount: Object.values(keyframeData).flat().length,
+            maskCount: masks.length,
+            blendMode,
+            stickerCount: stickerOverlays.length,
+            hasAudio: !!audioFile,
+            motionTemplates: appliedTemplates.length,
+            chromaEnabled,
+            stabilized: stabilizer.enabled,
+          }}
+          onApplyTrim={(start, end) => {
+            setTrimStart(start);
+            setTrimEnd(end);
+          }}
+          onAddMarkers={(markers) => {
+            const newMarkers = markers.map(m => ({
+              id: crypto.randomUUID(),
+              time: m.time,
+              color: "#FFD700",
+              label: m.label,
+              type: "beat" as const,
+            }));
+            setTimelineMarkers(prev => [...prev, ...newMarkers]);
+          }}
+        />
+
         {/* Auto-Edit Wizard overlay (from empty state) */}
         {autoEditOpen && (
           <AutoEditWizard
