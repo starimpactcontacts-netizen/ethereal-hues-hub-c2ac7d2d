@@ -20,6 +20,13 @@ import MobileAITools from "./studio/MobileAITools";
 import GestureTimeline from "./studio/GestureTimeline";
 import KeyframeEditor, { interpolateKeyframes, type Keyframe, type KeyframedProperty } from "./studio/KeyframeEditor";
 import BlendModePanel, { BLEND_MODES, OVERLAY_PRESETS, applyOverlay, type BlendMode, type OverlayPreset } from "./studio/BlendModes";
+import ColorScopes from "./studio/ColorScopes";
+import MaskingPanel, { renderMaskToCanvas, type Mask, type MaskShape, DEFAULT_MASK } from "./studio/MaskingPanel";
+import AudioFXPanel, { DEFAULT_AUDIO_FX, type AudioFXState } from "./studio/AudioFXPanel";
+import MotionTemplatesPanel, { MOTION_TEMPLATES, renderMotionTemplate, type AppliedTemplate } from "./studio/MotionTemplates";
+import CompositorPanel, { renderCompositorLayers, DEFAULT_PIP, type CompositorLayer } from "./studio/CompositorPanel";
+import { LUT_PRESETS, applyLUTPreset, type LUT3D } from "@/lib/studioColorScience";
+import { MotionSmoother, estimateMotion, applyStabilization, DEFAULT_STABILIZER, type StabilizerConfig } from "@/lib/studioStabilizer";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
