@@ -5,13 +5,13 @@
 import {
   Scissors, Crop, Gauge, Wand2, SlidersHorizontal, Activity, Blend,
   Type, LayoutGrid, Circle, Layers, Sparkles, Diamond, Music,
-  AudioLines, ArrowUpCircle, Settings, Film
+  AudioLines, ArrowUpCircle, Settings, Film, Smile, Palette
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const ACCENT = "#9999FF";
 
-export type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale" | "crop" | "keyframes" | "blend" | "scopes" | "masks" | "audiofx" | "motion" | "compositor" | "stabilize";
+export type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale" | "crop" | "keyframes" | "blend" | "scopes" | "masks" | "audiofx" | "motion" | "compositor" | "stabilize" | "stickers" | "chroma";
 
 type ToolDef = {
   id: EditorTool;
@@ -34,6 +34,7 @@ const TOOL_GROUPS: (ToolDef | { id: string; group: "sep" })[] = [
   { id: "motion", icon: LayoutGrid, label: "GFX", group: "compose" },
   { id: "masks", icon: Circle, label: "Mask", group: "compose" },
   { id: "compositor", icon: Layers, label: "PiP", group: "compose" },
+  { id: "stickers", icon: Smile, label: "Stickers", group: "compose" },
   { id: "sep3", group: "sep" },
   { id: "effects", icon: Sparkles, label: "Effects", group: "animate" },
   { id: "transitions", icon: Film, label: "Trans", group: "animate" },
@@ -41,6 +42,7 @@ const TOOL_GROUPS: (ToolDef | { id: string; group: "sep" })[] = [
   { id: "sep4", group: "sep" },
   { id: "audio", icon: Music, label: "Audio", group: "audio" },
   { id: "audiofx", icon: AudioLines, label: "Mix", group: "audio" },
+  { id: "chroma", icon: Palette, label: "Chroma", group: "output" },
   { id: "sep5", group: "sep" },
   { id: "stabilize", icon: Activity, label: "Stabilize", group: "output" },
   { id: "upscale", icon: ArrowUpCircle, label: "4K", group: "output" },

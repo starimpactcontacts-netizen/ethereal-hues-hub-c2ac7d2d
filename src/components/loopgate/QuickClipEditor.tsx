@@ -11,7 +11,7 @@ import {
   Sun, Lightbulb, Sunrise, RectangleHorizontal, RectangleVertical,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
   RotateCw, Maximize, Minimize, Blend, Activity, Eye,
-  Diamond, Layers as LayersIcon, AudioLines
+  Diamond, Layers as LayersIcon, AudioLines, Undo2, Redo2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
@@ -28,6 +28,10 @@ import MaskingPanel, { renderMaskToCanvas, type Mask, type MaskShape, DEFAULT_MA
 import AudioFXPanel, { DEFAULT_AUDIO_FX, type AudioFXState } from "./studio/AudioFXPanel";
 import MotionTemplatesPanel, { MOTION_TEMPLATES, renderMotionTemplate, type AppliedTemplate } from "./studio/MotionTemplates";
 import CompositorPanel, { renderCompositorLayers, DEFAULT_PIP, type CompositorLayer } from "./studio/CompositorPanel";
+import StickerOverlayPanel, { renderStickersToCanvas, type StickerOverlay } from "./studio/StickerOverlayPanel";
+import { TEXT_ANIMATIONS, renderAnimatedText } from "./studio/AnimatedTextPresets";
+import { CHROMA_BACKGROUNDS, renderChromaBackground } from "./studio/ChromaBackgrounds";
+import { useUndoRedo } from "./studio/useUndoRedo";
 import { LUT_PRESETS, applyLUTPreset, type LUT3D } from "@/lib/studioColorScience";
 import { MotionSmoother, estimateMotion, applyStabilization, DEFAULT_STABILIZER, type StabilizerConfig } from "@/lib/studioStabilizer";
 import { Slider } from "@/components/ui/slider";
@@ -45,7 +49,7 @@ import {
 } from "@/lib/studioAdjustments";
 import { SPEED_CURVE_PRESETS, getSpeedAtTime, type SpeedCurve } from "@/lib/studioSpeedCurves";
 
-type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
+type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number; animation?: string };
 // EditorTool type imported from StudioProToolbar
 
 // ─── Crop Presets (v1.5) ───
@@ -245,6 +249,22 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   const [chromaEnabled, setChromaEnabled] = useState(false);
   const [chromaColor, setChromaColor] = useState("#00FF00");
   const [chromaThreshold, setChromaThreshold] = useState(80);
+  const [chromaSoftness, setChromaSoftness] = useState(50);
+  const [chromaSpill, setChromaSpill] = useState(30);
+  const [chromaBgId, setChromaBgId] = useState("transparent");
+
+  // Stickers
+  const [stickerOverlays, setStickerOverlays] = useState<StickerOverlay[]>([]);
+
+  // Text animation
+  const [textAnimation, setTextAnimation] = useState("none");
+
+  // Undo/Redo
+  const undoRedo = useUndoRedo<{ filter: string; effects: string[]; adjustments: AdjustmentValues }>();
+
+  // Draggable text state
+  const [draggingTextId, setDraggingTextId] = useState<string | null>(null);
+  const dragStart = useRef<{ x: number; y: number; origX: number; origY: number } | null>(null);
 
   const hasTriggeredPicker = useRef(false);
 
@@ -444,9 +464,38 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         // Apply overlay
         const overlayPreset = OVERLAY_PRESETS.find(o => o.id === activeOverlayId);
         if (overlayPreset) applyOverlay(ctx, canvas, overlayPreset, overlayOpacity);
-        // Apply chroma key
+        // Apply chroma key with background replacement
         if (chromaEnabled) {
+          // Save keyed frame
+          const frameData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          // Render background first
+          const bg = CHROMA_BACKGROUNDS.find(b => b.id === chromaBgId);
+          if (bg && bg.value !== "transparent") {
+            renderChromaBackground(ctx, canvas, bg);
+          } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+          // Apply chroma key and composite
           applyChromaKey(ctx, canvas, chromaColor, chromaThreshold);
+          // Re-draw the keyed frame on top
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = canvas.height;
+          const tempCtx = tempCanvas.getContext("2d")!;
+          tempCtx.putImageData(frameData, 0, 0);
+          // Apply the key to the temp canvas
+          const tempData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+          const data = tempData.data;
+          const r0 = parseInt(chromaColor.slice(1, 3), 16);
+          const g0 = parseInt(chromaColor.slice(3, 5), 16);
+          const b0 = parseInt(chromaColor.slice(5, 7), 16);
+          for (let i = 0; i < data.length; i += 4) {
+            const dist = Math.sqrt((data[i] - r0) ** 2 + (data[i + 1] - g0) ** 2 + (data[i + 2] - b0) ** 2);
+            if (dist < chromaThreshold) data[i + 3] = 0;
+            else if (dist < chromaThreshold * 1.5) data[i + 3] = Math.round(((dist - chromaThreshold) / (chromaThreshold * 0.5)) * 255);
+          }
+          tempCtx.putImageData(tempData, 0, 0);
+          ctx.drawImage(tempCanvas, 0, 0);
         }
         // Apply masks
         if (masks.length > 0) {
@@ -464,10 +513,25 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             renderMotionTemplate(ctx, canvas, tmpl, at.fieldValues, progress);
           }
         });
-        // Text overlays
+        // Render stickers
+        if (stickerOverlays.length > 0) {
+          renderStickersToCanvas(ctx, canvas, stickerOverlays, vid.currentTime);
+        }
+        // Text overlays with animation support
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
-            try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
+            const animId = overlay.animation || "none";
+            const anim = TEXT_ANIMATIONS.find(a => a.id === animId);
+            if (anim && anim.id !== "none") {
+              const progress = (vid.currentTime - overlay.startTime) / (overlay.endTime - overlay.startTime);
+              const style = TEXT_STYLES[overlay.style];
+              const fontSizeMatch = style?.font?.match(/(\d+)px/);
+              const fontSize = fontSizeMatch ? Math.round(parseInt(fontSizeMatch[1]) * (canvas.width / 1080)) : Math.round(48 * (canvas.width / 1080));
+              const fontFamily = style?.font?.replace(/^.*?(\d+px\s*)/, '') || "sans-serif";
+              renderAnimatedText(ctx, canvas, overlay.text, overlay.x, overlay.y, fontSize, style?.color || "#fff", fontFamily, anim, progress, "shadow", style?.stroke || undefined, style?.stroke ? 3 : undefined);
+            } else {
+              try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
+            }
           }
         });
       }
@@ -475,7 +539,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold, activeLUT, lutIntensity, masks, compositorLayers, appliedTemplates]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold, chromaBgId, activeLUT, lutIntensity, masks, compositorLayers, appliedTemplates, stickerOverlays]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
@@ -497,7 +561,8 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
 
   const addTextOverlay = () => {
     if (!textInput.trim()) return;
-    setTextOverlays(prev => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle, startTime: trimStart, endTime: trimEnd }]);
+    undoRedo.pushSnapshot({ filter: activeFilter.name, effects: activeEffects, adjustments });
+    setTextOverlays(prev => [...prev, { id: crypto.randomUUID(), text: textInput, x: 0.5, y: 0.5, style: textStyle, startTime: trimStart, endTime: trimEnd, animation: textAnimation }]);
     setTextInput(""); toast.success("Text added");
   };
 
@@ -724,8 +789,41 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1.5">
+          {/* Actions — Undo/Redo + Export */}
+          <div className="flex items-center gap-1">
+            {/* Undo/Redo */}
+            <button
+              onClick={() => {
+                const snapshot = undoRedo.undo({ filter: activeFilter.name, effects: activeEffects, adjustments });
+                if (snapshot) {
+                  const f = FILTER_PRESETS.find(fp => fp.name === snapshot.filter);
+                  if (f) setActiveFilter(f);
+                  setActiveEffects(snapshot.effects);
+                  setAdjustments(snapshot.adjustments);
+                  toast("Undo");
+                }
+              }}
+              disabled={!undoRedo.canUndo}
+              className="p-1.5 rounded-lg transition-all active:scale-90 disabled:opacity-20"
+              style={{ background: "rgba(255,255,255,0.04)" }}>
+              <Undo2 className="w-3.5 h-3.5" style={{ color: "#888" }} />
+            </button>
+            <button
+              onClick={() => {
+                const snapshot = undoRedo.redo({ filter: activeFilter.name, effects: activeEffects, adjustments });
+                if (snapshot) {
+                  const f = FILTER_PRESETS.find(fp => fp.name === snapshot.filter);
+                  if (f) setActiveFilter(f);
+                  setActiveEffects(snapshot.effects);
+                  setAdjustments(snapshot.adjustments);
+                  toast("Redo");
+                }
+              }}
+              disabled={!undoRedo.canRedo}
+              className="p-1.5 rounded-lg transition-all active:scale-90 disabled:opacity-20"
+              style={{ background: "rgba(255,255,255,0.04)" }}>
+              <Redo2 className="w-3.5 h-3.5" style={{ color: "#888" }} />
+            </button>
             <StudioSubmitButton />
             {state === "done" ? (
               <button onClick={handleDownload}
@@ -1031,6 +1129,23 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                           {s.label}
                         </button>
                       ))}
+                    </div>
+                    {/* Animation picker */}
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Animation</span>
+                      <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                        {TEXT_ANIMATIONS.map(anim => (
+                          <button key={anim.id} onClick={() => setTextAnimation(anim.id)}
+                            className="px-2.5 py-1.5 rounded-lg flex-shrink-0 text-[8px] font-semibold transition-all"
+                            style={{
+                              background: textAnimation === anim.id ? ACCENT_DIM : "#151515",
+                              color: textAnimation === anim.id ? ACCENT : "#555",
+                              border: textAnimation === anim.id ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                            }}>
+                            {anim.preview} {anim.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <button onClick={addTextOverlay} disabled={!textInput.trim()}
                       className="w-full h-10 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
@@ -1681,6 +1796,119 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                     onSplitLayoutChange={setActiveSplitLayout}
                     onClose={() => setActiveTool(null)}
                   />
+                )}
+
+                {/* ════ STABILIZER ════ */}
+                {/* ════ STICKERS ════ */}
+                {activeTool === "stickers" && (
+                  <StickerOverlayPanel
+                    stickers={stickerOverlays}
+                    currentTime={currentTime}
+                    trimStart={trimStart}
+                    trimEnd={trimEnd}
+                    onAddSticker={(sticker) => {
+                      setStickerOverlays(prev => [...prev, { ...sticker, id: crypto.randomUUID() }]);
+                      toast.success("Sticker added");
+                    }}
+                    onUpdateSticker={(id, updates) => setStickerOverlays(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))}
+                    onDeleteSticker={(id) => setStickerOverlays(prev => prev.filter(s => s.id !== id))}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ CHROMA KEY (enhanced) ════ */}
+                {activeTool === "chroma" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full" style={{ background: chromaColor, border: "2px solid #333" }} />
+                        <span className="text-[11px] font-bold text-white">Chroma Key</span>
+                      </div>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
+                    </div>
+
+                    <button
+                      onClick={() => setChromaEnabled(!chromaEnabled)}
+                      className="w-full py-3 rounded-xl text-[10px] font-bold transition-all"
+                      style={{
+                        background: chromaEnabled ? "rgba(34,204,136,0.15)" : "#111",
+                        color: chromaEnabled ? "#22CC88" : "#666",
+                        border: `1px solid ${chromaEnabled ? "rgba(34,204,136,0.3)" : "#1a1a1a"}`,
+                      }}>
+                      {chromaEnabled ? "✓ Chroma Key ON" : "Enable Chroma Key"}
+                    </button>
+
+                    {chromaEnabled && (
+                      <>
+                        {/* Key color */}
+                        <div className="p-2.5 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                          <span className="text-[9px] uppercase tracking-wider font-bold block mb-2" style={{ color: "#666" }}>Key Color</span>
+                          <div className="flex gap-1.5">
+                            {["#00FF00", "#0000FF", "#FF00FF", "#00FFFF", "#FFFFFF"].map(c => (
+                              <button key={c} onClick={() => setChromaColor(c)}
+                                className="w-8 h-8 rounded-lg transition-all"
+                                style={{
+                                  background: c,
+                                  border: chromaColor === c ? `2px solid ${ACCENT}` : "2px solid #333",
+                                  boxShadow: chromaColor === c ? `0 0 8px ${ACCENT}40` : "none",
+                                }}>
+                                {chromaColor === c && <Check className="w-3 h-3 mx-auto" style={{ color: c === "#FFFFFF" || c === "#00FF00" || c === "#00FFFF" ? "#000" : "#fff" }} />}
+                              </button>
+                            ))}
+                            <label className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer relative overflow-hidden"
+                              style={{ background: chromaColor, border: "2px solid #333" }}>
+                              <span className="text-[8px] font-bold" style={{ color: "#fff", textShadow: "0 1px 2px #000" }}>+</span>
+                              <input type="color" value={chromaColor} onChange={e => setChromaColor(e.target.value)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                            </label>
+                          </div>
+                        </div>
+
+                        {/* Threshold */}
+                        <div className="p-2.5 rounded-xl space-y-2.5" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[9px]" style={{ color: "#888" }}>Threshold</span>
+                              <span className="text-[9px] font-mono" style={{ color: ACCENT }}>{chromaThreshold}</span>
+                            </div>
+                            <Slider value={[chromaThreshold]} min={10} max={200} step={1} onValueChange={([v]) => setChromaThreshold(v)} />
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[9px]" style={{ color: "#888" }}>Edge Softness</span>
+                              <span className="text-[9px] font-mono" style={{ color: ACCENT }}>{chromaSoftness}%</span>
+                            </div>
+                            <Slider value={[chromaSoftness]} min={0} max={100} step={1} onValueChange={([v]) => setChromaSoftness(v)} />
+                          </div>
+                        </div>
+
+                        {/* Background replacement */}
+                        <div className="p-2.5 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                          <span className="text-[9px] uppercase tracking-wider font-bold block mb-2" style={{ color: "#666" }}>Background</span>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {CHROMA_BACKGROUNDS.map(bg => {
+                              const isActive = chromaBgId === bg.id;
+                              const bgStyle = bg.type === "color"
+                                ? (bg.value === "transparent" ? "repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 50% / 12px 12px" : bg.value)
+                                : `linear-gradient(180deg, ${bg.value.split(",").join(", ")})`;
+                              return (
+                                <button key={bg.id} onClick={() => setChromaBgId(bg.id)}
+                                  className="h-10 rounded-lg flex items-center justify-center transition-all relative overflow-hidden"
+                                  style={{
+                                    background: bgStyle,
+                                    border: isActive ? `2px solid ${ACCENT}` : "2px solid #222",
+                                    boxShadow: isActive ? `0 0 8px ${ACCENT}40` : "none",
+                                  }}>
+                                  <span className="text-[6px] font-bold relative z-10" style={{ color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.9)" }}>
+                                    {bg.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
 
                 {/* ════ STABILIZER ════ */}
