@@ -466,14 +466,13 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
             try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
           }
-          }
         });
       }
       animRef.current = requestAnimationFrame(draw);
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold, activeLUT, lutIntensity, masks, compositorLayers, appliedTemplates]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
