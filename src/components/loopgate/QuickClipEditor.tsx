@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
+import AutoEditWizard from "./studio/AutoEditWizard";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
