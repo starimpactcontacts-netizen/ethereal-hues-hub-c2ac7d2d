@@ -333,6 +333,20 @@ export default function LoopyPage() {
   const handleReset = () => {
     setUrl(''); setTitle(''); setNotes('');
     setRating(null); setShowResult(false); setAnimateScores(false);
+    setRevealPhase(0); setDisplayScore(0);
+  };
+
+  const handleShare = async () => {
+    const reaction = GRADE_REACTIONS[rating?.grade || 'C'];
+    const text = `${reaction?.emoji} I got a ${rating?.grade} (${rating?.total}/100) on Loopy AI Rating\n\n"${rating?.vibe_check}"\n\n${reaction?.headline}\n\nRate your edit → loopgate.io/loopy/rate`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `My Loopy Rating: ${rating?.grade}`, text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast.success('Copied to clipboard!');
+      }
+    } catch { /* user cancelled */ }
   };
 
   const gradeScore = rating?.total ?? 0;
