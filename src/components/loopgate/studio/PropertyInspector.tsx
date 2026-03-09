@@ -31,6 +31,9 @@ type ClipInspectorData = {
   speed: number;
   opacity: number;
   scale: number;
+  scaleX: number;
+  scaleY: number;
+  scaleLocked: boolean;
   rotation: number;
   positionX: number;
   positionY: number;
