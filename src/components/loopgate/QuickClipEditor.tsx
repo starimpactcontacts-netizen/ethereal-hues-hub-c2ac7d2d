@@ -461,7 +461,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     setProgress(100); setState("done"); vid.muted = muted; vid.playbackRate = speed;
     canvas.width = vid.videoWidth; canvas.height = vid.videoHeight;
     toast.success("Export complete!");
-  }, [file, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, exportQuality, adjustments]);
+  }, [file, trimStart, trimEnd, computedFilter, textOverlays, audioFile, muted, speed, activeEffects, exportQuality, adjustments, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, rotation, flipH, flipV, cropPreset]);
 
   const handleDownload = () => {
     if (!resultUrl || !file) return;
