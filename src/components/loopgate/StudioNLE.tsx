@@ -1799,6 +1799,83 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   </>
                 )}
 
+                {/* ════════ AI TOOLS ════════ */}
+                {activeToolTab === "ai" && (
+                  <>
+                    <div className="space-y-3">
+                      <p className="text-[10px]" style={{ color: "#888" }}>
+                        AI-powered tools to enhance your editing workflow.
+                      </p>
+
+                      {/* Auto-Clipper */}
+                      <button
+                        onClick={() => setShowAutoClipper(prev => !prev)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all hover:bg-white/5"
+                        style={{
+                          background: showAutoClipper ? ACCENT_DIM : "#151515",
+                          border: showAutoClipper ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
+                          style={{ background: "#1e1e1e", border: `1px solid ${showAutoClipper ? ACCENT_BORDER : "#2a2a2a"}` }}>
+                          <Scissors className="w-4 h-4" style={{ color: showAutoClipper ? ACCENT : "#777" }} />
+                        </div>
+                        <div className="text-left flex-1">
+                          <span className="text-[11px] font-medium block" style={{ color: showAutoClipper ? ACCENT : "#aaa" }}>
+                            Auto-Clipper
+                          </span>
+                          <span className="text-[9px]" style={{ color: "#555" }}>
+                            Detect best moments automatically
+                          </span>
+                        </div>
+                        {showAutoClipper && <Check className="w-3.5 h-3.5" style={{ color: ACCENT }} />}
+                      </button>
+
+                      {/* Song Recommender */}
+                      <button
+                        onClick={() => setShowSongRecommender(prev => !prev)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all hover:bg-white/5"
+                        style={{
+                          background: showSongRecommender ? ACCENT_DIM : "#151515",
+                          border: showSongRecommender ? `1px solid ${ACCENT_BORDER}` : "1px solid #2a2a2a",
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0"
+                          style={{ background: "#1e1e1e", border: `1px solid ${showSongRecommender ? ACCENT_BORDER : "#2a2a2a"}` }}>
+                          <Music className="w-4 h-4" style={{ color: showSongRecommender ? "hsl(280 70% 60%)" : "#777" }} />
+                        </div>
+                        <div className="text-left flex-1">
+                          <span className="text-[11px] font-medium block" style={{ color: showSongRecommender ? ACCENT : "#aaa" }}>
+                            Song Match
+                          </span>
+                          <span className="text-[9px]" style={{ color: "#555" }}>
+                            Find music for your edit
+                          </span>
+                        </div>
+                        {showSongRecommender && <Check className="w-3.5 h-3.5" style={{ color: ACCENT }} />}
+                      </button>
+
+                      {/* Keyframe Presets */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <span className="text-[10px] font-semibold" style={{ color: "#888" }}>Animation Presets</span>
+                        <div className="grid grid-cols-3 gap-1.5 mt-2">
+                          {ANIMATION_PRESETS.slice(0, 9).map(preset => (
+                            <button
+                              key={preset.id}
+                              className="flex flex-col items-center gap-1 py-2 px-1 rounded-lg transition-all hover:bg-white/5"
+                              style={{ border: "1px solid #2a2a2a", background: "#151515" }}
+                              onClick={() => toast.success(`${preset.label} applied`)}
+                            >
+                              <span className="text-base">{preset.icon}</span>
+                              <span className="text-[8px]" style={{ color: "#777" }}>{preset.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 {/* ════════ UPSCALE ════════ */}
                 {activeToolTab === "upscale" && (
                   <>
