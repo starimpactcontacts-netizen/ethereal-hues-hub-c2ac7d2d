@@ -84,6 +84,7 @@ const CAPABILITIES = [
 interface StudioHomeProps {
   onNewProject: () => void;
   onOpenProject: (project: StudioProject) => void;
+  onOpenAutoEdit?: () => void;
 }
 
 export default function StudioHome({ onNewProject, onOpenProject }: StudioHomeProps) {
