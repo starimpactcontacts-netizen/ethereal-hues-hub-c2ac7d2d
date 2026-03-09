@@ -662,61 +662,89 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     setUpscaleState("idle"); setUpscaleProgress(0); setUpscaleDims(null);
   };
 
+  // ─── Viewport Overlays ───
+  const [showGrid, setShowGrid] = useState(false);
+  const [showSafeZones, setShowSafeZones] = useState(false);
+
   // ─── Seamless Import — auto-opens picker, minimal wait state ───
   if (!file) {
     return (
       <div
         className="fixed inset-0 z-[120] flex flex-col items-center justify-center px-6 touch-none overflow-hidden"
-        style={{ background: "#0a0a0a" }}
+        style={{ background: "radial-gradient(ellipse at 50% 30%, #0d0d1a 0%, #050508 100%)" }}
         onClick={openVideoPicker}
       >
-        {/* Back to Loopgate */}
         <button
           onClick={(e) => { e.stopPropagation(); onBack ? onBack() : navigate("/hub"); }}
-          className="absolute top-4 left-4 safe-top p-2 rounded-full transition-all active:scale-95"
-          style={{ background: "rgba(255,255,255,0.06)" }}
+          className="absolute top-4 left-4 safe-top p-2 rounded-xl transition-all active:scale-95"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <ChevronLeft className="w-5 h-5" style={{ color: "#aaa" }} />
+          <ChevronLeft className="w-5 h-5" style={{ color: "#666" }} />
         </button>
 
+        {/* Pro badge */}
+        <div className="absolute top-5 right-5 safe-top flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+          style={{ background: "rgba(153,153,255,0.06)", border: "1px solid rgba(153,153,255,0.12)" }}>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: ACCENT, boxShadow: `0 0 6px ${ACCENT}` }} />
+          <span className="text-[8px] font-black tracking-[0.2em] uppercase" style={{ color: ACCENT }}>STUDIO PRO</span>
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center gap-5"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col items-center gap-6"
           onClick={(e) => e.stopPropagation()}
         >
-          <motion.div
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{ background: `${ACCENT}12`, border: `1px solid ${ACCENT}20` }}
-          >
-            <Film className="w-7 h-7" style={{ color: ACCENT }} />
-          </motion.div>
-          <div className="text-center space-y-1.5">
-            <p className="text-[15px] font-semibold text-white">Select a video</p>
-            <p className="text-[11px]" style={{ color: "#555" }}>to start editing</p>
+          {/* Animated icon */}
+          <div className="relative">
+            <motion.div
+              animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              className="absolute inset-0 rounded-3xl"
+              style={{ background: `radial-gradient(circle, ${ACCENT}15, transparent 70%)`, filter: "blur(20px)" }}
+            />
+            <div className="w-20 h-20 rounded-3xl flex items-center justify-center relative"
+              style={{ background: "linear-gradient(135deg, rgba(153,153,255,0.08), rgba(153,153,255,0.02))", border: "1px solid rgba(153,153,255,0.12)" }}>
+              <Film className="w-8 h-8" style={{ color: ACCENT }} />
+            </div>
           </div>
-          <div className="flex flex-col gap-2.5 mt-3 w-full items-center">
+
+          <div className="text-center space-y-2">
+            <h2 className="text-lg font-black tracking-tight text-white">Loopgate Studio</h2>
+            <p className="text-[11px] max-w-[200px] leading-relaxed" style={{ color: "#555" }}>
+              Professional-grade editing. Zero compromise.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 w-full items-center">
             <button
               onClick={openVideoPicker}
-              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95"
-              style={{ background: ACCENT, color: "#000" }}
+              className="h-12 px-8 rounded-2xl text-[13px] font-bold flex items-center gap-2.5 transition-all active:scale-95 relative overflow-hidden"
+              style={{ background: `linear-gradient(135deg, ${ACCENT}, #7777DD)`, color: "#000", boxShadow: `0 4px 20px ${ACCENT}40` }}
             >
-              <Upload className="w-4 h-4" /> Choose Video
+              <Upload className="w-4 h-4" /> Import Video
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); setAutoEditOpen(true); }}
-              className="h-10 px-6 rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all active:scale-95 border"
-              style={{ background: "rgba(153,153,255,0.08)", color: ACCENT, borderColor: ACCENT_BORDER }}
+              className="h-10 px-6 rounded-xl text-[12px] font-semibold flex items-center gap-2 transition-all active:scale-95"
+              style={{ background: "rgba(255,0,79,0.06)", color: "#FF004F", border: "1px solid rgba(255,0,79,0.15)" }}
             >
-              <Wand2 className="w-4 h-4" /> Loopy Auto-Edit
+              <Wand2 className="w-3.5 h-3.5" /> AI Auto-Edit
             </button>
+          </div>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap justify-center gap-1.5 max-w-[280px]">
+            {["4K Export", "AI Tools", "LUTs", "Keyframes", "Masks", "PiP", "Motion GFX", "Audio FX", "Stabilize"].map(f => (
+              <span key={f} className="px-2 py-0.5 rounded-full text-[7px] font-bold tracking-wider uppercase"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", color: "#444" }}>
+                {f}
+              </span>
+            ))}
           </div>
         </motion.div>
 
-        {/* Auto-Edit Wizard (mobile) */}
         {autoEditOpen && (
           <AutoEditWizard
             onClose={() => setAutoEditOpen(false)}
@@ -738,152 +766,252 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
         className={`flex flex-col touch-none overflow-hidden ${isFullscreen ? "fixed inset-0 z-[120]" : "relative"}`}
         style={{ height: isFullscreen ? "100dvh" : "auto", background: "#0a0a0a" }}>
 
-        {/* ─── Top Bar ─── */}
-        <div className="flex items-center gap-3 px-3 py-2.5 flex-shrink-0 safe-top" style={{ background: "#1a1a1a", borderBottom: "1px solid #2a2a2a" }}>
+        {/* ─── Top Bar — Pro Chrome ─── */}
+        <div className="flex items-center gap-2 px-2 py-2 flex-shrink-0 safe-top"
+          style={{ background: "linear-gradient(180deg, #141418 0%, #111114 100%)", borderBottom: "1px solid #1e1e24" }}>
           <button onClick={() => onBack ? onBack() : navigate("/hub")}
-            className="p-2 rounded-full transition-all hover:bg-white/5">
-            <ChevronLeft className="w-5 h-5" style={{ color: "#aaa" }} />
+            className="p-1.5 rounded-lg transition-all active:scale-90"
+            style={{ background: "rgba(255,255,255,0.04)" }}>
+            <ChevronLeft className="w-4 h-4" style={{ color: "#666" }} />
           </button>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: "#e0e0e0" }}>{file.name}</p>
-            <p className="text-[10px]" style={{ color: "#555" }}>{formatTimecode(trimEnd - trimStart)} clip</p>
+
+          {/* Project info */}
+          <div className="flex-1 min-w-0 flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0"
+              style={{ background: `linear-gradient(135deg, ${ACCENT}15, ${ACCENT}05)`, border: `1px solid ${ACCENT}15` }}>
+              <Film className="w-3 h-3" style={{ color: ACCENT }} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold truncate text-white/90">{file.name.replace(/\.[^/.]+$/, "")}</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[8px] font-mono" style={{ color: "#555" }}>{formatTimecode(trimEnd - trimStart)}</span>
+                <span className="w-0.5 h-0.5 rounded-full" style={{ background: "#333" }} />
+                <span className="text-[8px] font-mono" style={{ color: "#555" }}>{file.name.split('.').pop()?.toUpperCase()}</span>
+              </div>
+            </div>
           </div>
+
+          {/* Actions */}
           <div className="flex items-center gap-1.5">
             <StudioSubmitButton />
             {state === "done" ? (
               <button onClick={handleDownload}
-                className="h-8 px-4 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition-all"
-                style={{ background: ACCENT, color: "#000" }}>
-                <Download className="w-3.5 h-3.5" /> Save
+                className="h-7 px-3.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all active:scale-95"
+                style={{ background: `linear-gradient(135deg, #22C55E, #16A34A)`, color: "#fff", boxShadow: "0 2px 8px rgba(34,197,94,0.3)" }}>
+                <Download className="w-3 h-3" /> Save
               </button>
             ) : (
               <button onClick={startExport} disabled={state === "processing"}
-                className="h-8 px-4 rounded-full text-[11px] font-semibold flex items-center gap-1.5 transition-all disabled:opacity-30"
-                style={{ background: ACCENT, color: "#000" }}>
-                {state === "processing" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Film className="w-3.5 h-3.5" />}
+                className="h-7 px-3.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5 transition-all disabled:opacity-30 active:scale-95"
+                style={{ background: `linear-gradient(135deg, ${ACCENT}, #7777DD)`, color: "#000", boxShadow: `0 2px 8px ${ACCENT}30` }}>
+                {state === "processing" ? <Loader2 className="w-3 h-3 animate-spin" /> : <Film className="w-3 h-3" />}
                 {state === "processing" ? `${progress}%` : "Export"}
               </button>
             )}
           </div>
         </div>
 
-        {/* ─── Video Preview ─── */}
-        <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0" style={{ background: "#000" }}>
+        {/* ─── Video Preview — Pro Viewport ─── */}
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden min-h-0"
+          style={{ background: "radial-gradient(ellipse at center, #0a0a0e 0%, #050507 100%)" }}>
           <video ref={videoRef} src={videoUrl!} className="hidden" playsInline preload="auto" />
-          <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
 
+          {/* Viewport frame */}
+          <div className="relative">
+            <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" style={{ borderRadius: 2 }} />
+
+            {/* Grid overlay */}
+            {showGrid && (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.15 }}>
+                <line x1="33.3%" y1="0" x2="33.3%" y2="100%" stroke="white" strokeWidth="0.5" />
+                <line x1="66.6%" y1="0" x2="66.6%" y2="100%" stroke="white" strokeWidth="0.5" />
+                <line x1="0" y1="33.3%" x2="100%" y2="33.3%" stroke="white" strokeWidth="0.5" />
+                <line x1="0" y1="66.6%" x2="100%" y2="66.6%" stroke="white" strokeWidth="0.5" />
+              </svg>
+            )}
+
+            {/* Safe zones */}
+            {showSafeZones && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute" style={{ inset: "10%", border: "1px dashed rgba(255,255,255,0.1)" }} />
+                <div className="absolute" style={{ inset: "5%", border: "1px dashed rgba(255,0,0,0.15)" }} />
+              </div>
+            )}
+          </div>
+
+          {/* Play overlay */}
           <AnimatePresence>
             {!playing && (
               <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={togglePlay} className="absolute inset-0 flex items-center justify-center">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center"
-                  style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                  <Play className="w-6 h-6 text-white ml-0.5" />
+                <div className="w-14 h-14 rounded-full flex items-center justify-center backdrop-blur-sm"
+                  style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.08)", boxShadow: "0 4px 30px rgba(0,0,0,0.5)" }}>
+                  <Play className="w-6 h-6 text-white/90 ml-0.5" />
                 </div>
               </motion.button>
             )}
           </AnimatePresence>
           {playing && <button onClick={togglePlay} className="absolute inset-0" />}
 
+          {/* Top-left: Active effects chips */}
           {activeEffects.length > 0 && (
             <div className="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[60%]">
               {activeEffects.map(eff => (
-                <span key={eff} className="px-2 py-0.5 rounded text-[8px] font-medium"
-                  style={{ background: "rgba(0,0,0,0.6)", color: ACCENT, border: `1px solid ${ACCENT_BORDER}` }}>
+                <span key={eff} className="px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wider"
+                  style={{ background: "rgba(0,0,0,0.7)", color: ACCENT, border: `1px solid ${ACCENT}20`, backdropFilter: "blur(8px)" }}>
                   {EFFECTS.find(e => e.id === eff)?.label}
                 </span>
               ))}
             </div>
           )}
 
-          {/* Speed / Curve badge */}
-          {(speed !== 1 || activeSpeedCurve) && (
-            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(0,0,0,0.6)", border: `1px solid ${ACCENT_BORDER}` }}>
-              {activeSpeedCurve ? (
-                <>
-                  <Activity className="w-2.5 h-2.5" style={{ color: ACCENT }} />
-                  <span className="text-[9px] font-semibold" style={{ color: ACCENT }}>{activeSpeedCurve.name}</span>
-                </>
-              ) : (
-                <span className="text-[10px] font-semibold" style={{ color: ACCENT }}>{speed}x</span>
-              )}
-            </div>
-          )}
+          {/* Top-right: HUD badges */}
+          <div className="absolute top-2 right-2 flex items-center gap-1.5">
+            {/* Viewport tools */}
+            <button onClick={() => setShowGrid(!showGrid)}
+              className="w-6 h-6 rounded flex items-center justify-center transition-all"
+              style={{ background: showGrid ? "rgba(153,153,255,0.15)" : "rgba(0,0,0,0.4)", border: `1px solid ${showGrid ? ACCENT + "30" : "rgba(255,255,255,0.06)"}` }}>
+              <Grid3x3 className="w-3 h-3" style={{ color: showGrid ? ACCENT : "#555" }} />
+            </button>
+            <button onClick={() => setShowSafeZones(!showSafeZones)}
+              className="w-6 h-6 rounded flex items-center justify-center transition-all"
+              style={{ background: showSafeZones ? "rgba(153,153,255,0.15)" : "rgba(0,0,0,0.4)", border: `1px solid ${showSafeZones ? ACCENT + "30" : "rgba(255,255,255,0.06)"}` }}>
+              <Monitor className="w-3 h-3" style={{ color: showSafeZones ? ACCENT : "#555" }} />
+            </button>
 
-          {/* Crop badge */}
-          {(cropPreset || rotation !== 0 || flipH || flipV) && (
-            <div className="absolute top-2 right-24 px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: "rgba(0,0,0,0.6)", border: `1px solid ${ACCENT_BORDER}` }}>
-              <Crop className="w-2.5 h-2.5" style={{ color: ACCENT }} />
-              <span className="text-[9px] font-semibold" style={{ color: ACCENT }}>
-                {cropPreset || ''}{rotation ? ` ${rotation}°` : ''}{flipH ? ' H' : ''}{flipV ? ' V' : ''}
-              </span>
-            </div>
-          )}
+            {(speed !== 1 || activeSpeedCurve) && (
+              <div className="px-1.5 py-0.5 rounded flex items-center gap-1"
+                style={{ background: "rgba(0,0,0,0.7)", border: `1px solid ${ACCENT}20` }}>
+                {activeSpeedCurve ? (
+                  <>
+                    <Activity className="w-2.5 h-2.5" style={{ color: ACCENT }} />
+                    <span className="text-[8px] font-bold" style={{ color: ACCENT }}>{activeSpeedCurve.name}</span>
+                  </>
+                ) : (
+                  <span className="text-[8px] font-bold" style={{ color: ACCENT }}>{speed}x</span>
+                )}
+              </div>
+            )}
+          </div>
 
+          {/* Mute button */}
           <button onClick={() => setMuted(!muted)}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.1)" }}>
-            {muted ? <VolumeX className="w-4 h-4" style={{ color: "#666" }} /> : <Volume2 className="w-4 h-4" style={{ color: "#888" }} />}
+            className="absolute bottom-2 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+            style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(8px)" }}>
+            {muted ? <VolumeX className="w-3.5 h-3.5" style={{ color: "#555" }} /> : <Volume2 className="w-3.5 h-3.5" style={{ color: "#888" }} />}
           </button>
 
+          {/* Export overlay */}
           {state === "processing" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: "rgba(0,0,0,0.85)" }}>
-              <Loader2 className="w-10 h-10 animate-spin" style={{ color: ACCENT }} />
-              <p className="text-sm font-medium" style={{ color: "#ccc" }}>Exporting {progress}%</p>
-              <div className="w-48 h-1 rounded-full overflow-hidden" style={{ background: "#2a2a2a" }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${progress}%`, background: ACCENT }} />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: "rgba(0,0,0,0.9)", backdropFilter: "blur(20px)" }}>
+              <div className="relative">
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}>
+                  <Loader2 className="w-10 h-10" style={{ color: ACCENT }} />
+                </motion.div>
+                <span className="absolute inset-0 flex items-center justify-center text-[11px] font-black" style={{ color: ACCENT }}>{progress}</span>
+              </div>
+              <p className="text-xs font-medium" style={{ color: "#888" }}>Rendering...</p>
+              <div className="w-48 h-1 rounded-full overflow-hidden" style={{ background: "#1a1a1a" }}>
+                <motion.div className="h-full rounded-full" style={{ width: `${progress}%`, background: `linear-gradient(90deg, ${ACCENT}, #7777DD)` }}
+                  transition={{ duration: 0.3 }} />
               </div>
             </div>
           )}
 
           {state === "done" && (
             <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-              className="absolute bottom-3 left-3 right-3 rounded-xl p-2.5 flex items-center gap-2"
-              style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+              className="absolute bottom-3 left-3 right-3 rounded-xl p-2.5 flex items-center gap-2 backdrop-blur-sm"
+              style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)" }}>
               <Check className="w-4 h-4" style={{ color: "#22c55e" }} />
-              <span className="text-xs font-medium" style={{ color: "#22c55e" }}>Export ready — tap Save</span>
+              <span className="text-[10px] font-semibold" style={{ color: "#22c55e" }}>Export complete — tap Save</span>
             </motion.div>
           )}
         </div>
 
-        {/* ─── Timeline ─── */}
-        <div className="flex-shrink-0" style={{ background: "#1a1a1a", borderTop: "1px solid #2a2a2a" }}>
-          <div className="flex items-center justify-between px-3 pt-2.5 pb-1.5">
-            <span className="text-[10px] font-mono" style={{ color: ACCENT }}>{formatTimecode(currentTime)}</span>
-            <div className="flex items-center gap-3">
-              <button onClick={() => seekTo(trimStart)} className="p-1.5 rounded-full">
-                <SkipBack className="w-4 h-4" style={{ color: "#666" }} />
+        {/* ─── Pro Timeline ─── */}
+        <div className="flex-shrink-0" style={{ background: "#111114", borderTop: "1px solid #1a1a1e" }}>
+          {/* Transport controls */}
+          <div className="flex items-center justify-between px-3 pt-2 pb-1">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-mono font-bold tabular-nums tracking-tight" style={{ color: ACCENT }}>{formatTimecode(currentTime)}</span>
+              <span className="text-[8px]" style={{ color: "#333" }}>/</span>
+              <span className="text-[10px] font-mono tabular-nums tracking-tight" style={{ color: "#444" }}>{formatTimecode(duration)}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => seekTo(trimStart)} className="w-7 h-7 rounded-md flex items-center justify-center transition-all active:scale-90"
+                style={{ background: "rgba(255,255,255,0.03)" }}>
+                <SkipBack className="w-3.5 h-3.5" style={{ color: "#555" }} />
               </button>
               <button onClick={togglePlay}
-                className="w-10 h-10 rounded-full flex items-center justify-center"
-                style={{ border: `1px solid ${ACCENT_BORDER}`, background: ACCENT_DIM }}>
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90"
+                style={{ background: `linear-gradient(135deg, ${ACCENT}15, ${ACCENT}08)`, border: `1px solid ${ACCENT}20`, boxShadow: playing ? `0 0 12px ${ACCENT}15` : "none" }}>
                 {playing ? <Pause className="w-4 h-4" style={{ color: ACCENT }} /> : <Play className="w-4 h-4 ml-0.5" style={{ color: ACCENT }} />}
               </button>
-              <button onClick={() => seekTo(trimEnd)} className="p-1.5 rounded-full">
-                <SkipForward className="w-4 h-4" style={{ color: "#666" }} />
+              <button onClick={() => seekTo(trimEnd)} className="w-7 h-7 rounded-md flex items-center justify-center transition-all active:scale-90"
+                style={{ background: "rgba(255,255,255,0.03)" }}>
+                <SkipForward className="w-3.5 h-3.5" style={{ color: "#555" }} />
               </button>
             </div>
-            <span className="text-[10px] font-mono" style={{ color: "#444" }}>{formatTimecode(trimEnd - trimStart)}</span>
+            <span className="text-[9px] font-mono" style={{ color: "#333" }}>{formatTimecode(trimEnd - trimStart)}</span>
           </div>
 
-          <div className="px-3 pb-2.5">
+          {/* Timeline ruler */}
+          <div className="px-3 pb-0.5">
+            <div className="h-3 relative flex items-end">
+              {Array.from({ length: Math.min(20, Math.ceil(duration)) }).map((_, i) => {
+                const t = (i / Math.min(20, Math.ceil(duration))) * 100;
+                return (
+                  <div key={i} className="absolute bottom-0 flex flex-col items-center" style={{ left: `${t}%` }}>
+                    <span className="text-[5px] font-mono" style={{ color: "#333" }}>{Math.round(i * duration / Math.min(20, Math.ceil(duration)))}s</span>
+                    <div className="w-px h-1" style={{ background: "#2a2a2a" }} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Main timeline track */}
+          <div className="px-3 pb-2">
+            {/* Track header */}
+            <div className="flex items-center gap-1 mb-1">
+              <div className="w-1 h-3 rounded-full" style={{ background: ACCENT }} />
+              <span className="text-[7px] font-bold tracking-wider uppercase" style={{ color: "#444" }}>V1 — Main</span>
+              {audioName && (
+                <>
+                  <span className="mx-1 text-[7px]" style={{ color: "#222" }}>|</span>
+                  <div className="w-1 h-3 rounded-full" style={{ background: "#A855F7" }} />
+                  <span className="text-[7px] font-bold tracking-wider uppercase" style={{ color: "#444" }}>A1</span>
+                </>
+              )}
+            </div>
+
             <div ref={timelineRef} onClick={handleTimelineClick}
-              className="relative h-14 rounded-xl overflow-hidden cursor-pointer"
-              style={{ background: "#111", border: "1px solid #222" }}>
+              className="relative h-16 rounded-xl overflow-hidden cursor-pointer"
+              style={{ background: "#0a0a0d", border: "1px solid #1a1a1e", boxShadow: "inset 0 1px 3px rgba(0,0,0,0.5)" }}>
+              {/* Thumbnail strip */}
               <div className="absolute inset-0 flex">
                 {thumbnails.map((thumb, i) => (
-                  <div key={i} className="flex-1 h-full overflow-hidden opacity-50">
+                  <div key={i} className="flex-1 h-full overflow-hidden" style={{ opacity: 0.4 }}>
                     <img src={thumb} alt="" className="w-full h-full object-cover" />
                   </div>
                 ))}
-                {thumbnails.length === 0 && <div className="flex-1" style={{ background: "#151515" }} />}
+                {thumbnails.length === 0 && (
+                  <div className="flex-1 flex items-center justify-center" style={{ background: "#0d0d10" }}>
+                    <span className="text-[8px] font-bold tracking-wider" style={{ color: "#222" }}>NO MEDIA</span>
+                  </div>
+                )}
               </div>
+
+              {/* Active region highlight */}
               {duration > 0 && (
-                <>
-                  <div className="absolute inset-y-0 left-0 rounded-l-xl" style={{ width: `${(trimStart / duration) * 100}%`, background: "rgba(0,0,0,0.6)" }} />
-                  <div className="absolute inset-y-0 right-0 rounded-r-xl" style={{ width: `${((duration - trimEnd) / duration) * 100}%`, background: "rgba(0,0,0,0.6)" }} />
-                  <div className="absolute inset-y-0 w-2 cursor-col-resize z-10 rounded-l-xl transition-all"
-                    style={{ left: `${(trimStart / duration) * 100}%`, background: ACCENT }}
+                <div className="absolute inset-0">
+                  {/* Inactive regions */}
+                  <div className="absolute inset-y-0 left-0" style={{ width: `${(trimStart / duration) * 100}%`, background: "rgba(0,0,0,0.7)" }} />
+                  <div className="absolute inset-y-0 right-0" style={{ width: `${((duration - trimEnd) / duration) * 100}%`, background: "rgba(0,0,0,0.7)" }} />
+
+                  {/* Trim handles — glowing */}
+                  <div className="absolute inset-y-0 w-1.5 cursor-col-resize z-10 rounded-l"
+                    style={{ left: `${(trimStart / duration) * 100}%`, background: `linear-gradient(180deg, ${ACCENT}, #7777DD)`, boxShadow: `0 0 6px ${ACCENT}40` }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
                       const rect = timelineRef.current!.getBoundingClientRect();
@@ -891,8 +1019,8 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                       const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
                       window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
                     }} />
-                  <div className="absolute inset-y-0 w-2 cursor-col-resize z-10 rounded-r-xl transition-all"
-                    style={{ left: `calc(${(trimEnd / duration) * 100}% - 8px)`, background: ACCENT }}
+                  <div className="absolute inset-y-0 w-1.5 cursor-col-resize z-10 rounded-r"
+                    style={{ left: `calc(${(trimEnd / duration) * 100}% - 6px)`, background: `linear-gradient(180deg, ${ACCENT}, #7777DD)`, boxShadow: `0 0 6px ${ACCENT}40` }}
                     onTouchStart={(e) => {
                       e.stopPropagation();
                       const rect = timelineRef.current!.getBoundingClientRect();
@@ -900,15 +1028,29 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                       const onEnd = () => { window.removeEventListener("touchmove", onMove); window.removeEventListener("touchend", onEnd); };
                       window.addEventListener("touchmove", onMove, { passive: true }); window.addEventListener("touchend", onEnd);
                     }} />
-                  <div className="absolute top-0 bottom-0 w-0.5 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%`, background: "white" }}>
-                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full" style={{ background: "white", boxShadow: "0 0 4px rgba(255,255,255,0.5)" }} />
+
+                  {/* Playhead — premium glow */}
+                  <div className="absolute top-0 bottom-0 z-20 pointer-events-none" style={{ left: `${(currentTime / duration) * 100}%` }}>
+                    <div className="absolute -left-px w-0.5 h-full" style={{ background: "white", boxShadow: "0 0 4px rgba(255,255,255,0.4)" }} />
+                    <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-2 h-2 rounded-sm rotate-45" style={{ background: "white", boxShadow: "0 0 6px rgba(255,255,255,0.5)" }} />
                   </div>
-                </>
+
+                  {/* Timeline markers */}
+                  {timelineMarkers.map(marker => (
+                    <div key={marker.id} className="absolute top-0 w-px z-15 pointer-events-none"
+                      style={{ left: `${(marker.time / duration) * 100}%`, height: "100%", background: marker.color, opacity: 0.6 }}>
+                      <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full" style={{ background: marker.color }} />
+                    </div>
+                  ))}
+                </div>
               )}
+
+              {/* Audio track */}
               {audioName && (
-                <div className="absolute bottom-0 left-0 right-0 h-3 flex items-center px-1.5 rounded-b-xl" style={{ background: "rgba(168,85,247,0.08)", borderTop: "1px solid rgba(168,85,247,0.15)" }}>
-                  <Music className="w-2 h-2 mr-0.5" style={{ color: "rgba(168,85,247,0.4)" }} />
-                  <span className="text-[7px] truncate" style={{ color: "rgba(168,85,247,0.4)" }}>{audioName}</span>
+                <div className="absolute bottom-0 left-0 right-0 h-4 flex items-center px-1.5"
+                  style={{ background: "linear-gradient(180deg, transparent, rgba(168,85,247,0.06))", borderTop: "1px solid rgba(168,85,247,0.1)" }}>
+                  <Music className="w-2 h-2 mr-0.5 flex-shrink-0" style={{ color: "rgba(168,85,247,0.4)" }} />
+                  <span className="text-[6px] truncate font-medium" style={{ color: "rgba(168,85,247,0.4)" }}>{audioName}</span>
                 </div>
               )}
             </div>
@@ -924,7 +1066,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
               exit={{ height: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 400, damping: 35 }}
               className="flex-shrink-0 overflow-hidden"
-              style={{ background: "#1a1a1a", borderTop: "1px solid #2a2a2a" }}
+              style={{ background: "linear-gradient(180deg, #131316 0%, #0e0e11 100%)", borderTop: "1px solid #1a1a1e" }}
             >
               <div className="p-4 max-h-[35vh] overflow-y-auto" style={{ scrollbarWidth: "none" }}>
 
@@ -1765,46 +1907,75 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           )}
         </AnimatePresence>
 
-        {/* ─── Bottom Toolbar ─── */}
-        <div className="flex-shrink-0" style={{ background: "#1a1a1a", borderTop: "1px solid #2a2a2a" }}>
-          <div className="flex items-center justify-center py-1.5 px-2">
-            <div className="flex items-center gap-0.5 rounded-full p-0.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-              {([
-                { id: "ai" as const, icon: Wand2, label: "AI", accent: true },
-                { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
-                { id: "crop" as EditorTool, icon: Crop, label: "Crop" },
-                { id: "scopes" as EditorTool, icon: Activity, label: "Scopes" },
-                { id: "masks" as EditorTool, icon: Circle, label: "Mask" },
-                { id: "compositor" as EditorTool, icon: Layers, label: "PiP" },
-                { id: "motion" as EditorTool, icon: LayoutGrid, label: "GFX" },
-                { id: "audiofx" as EditorTool, icon: AudioLines, label: "AudioFX" },
-                { id: "keyframes" as EditorTool, icon: Diamond, label: "Keys" },
-                { id: "blend" as EditorTool, icon: Blend, label: "Blend" },
-                { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
-                { id: "transitions" as EditorTool, icon: Layers, label: "Trans" },
-                { id: "filters" as EditorTool, icon: Wand2, label: "Filters" },
-                { id: "text" as EditorTool, icon: Type, label: "Text" },
-                { id: "audio" as EditorTool, icon: Music, label: "Audio" },
-                { id: "speed" as EditorTool, icon: Gauge, label: "Speed" },
-                { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Adjust" },
-                { id: "upscale" as EditorTool, icon: ArrowUpCircle, label: "4K" },
-                { id: "export" as EditorTool, icon: Settings, label: "Quality" },
-              ] as const).map(({ id, icon: Icon, label, ...rest }) => (
+        {/* ─── Pro Toolbar ─── */}
+        <div className="flex-shrink-0" style={{ background: "linear-gradient(180deg, #131316 0%, #0e0e11 100%)", borderTop: "1px solid #1a1a1e" }}>
+          <div className="flex items-center py-1 px-1.5 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {/* AI — special treatment */}
+            <button
+              onClick={() => setAiToolsOpen(true)}
+              className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-xl mr-0.5 transition-all active:scale-90 relative"
+              style={{ background: "linear-gradient(135deg, rgba(255,0,79,0.08), rgba(255,0,79,0.03))", border: "1px solid rgba(255,0,79,0.12)" }}>
+              <Wand2 className="w-[16px] h-[16px]" style={{ color: "#FF004F" }} />
+              <span className="text-[6px] font-black tracking-[0.15em] uppercase" style={{ color: "#FF004F" }}>AI</span>
+              <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full" style={{ background: "#FF004F", boxShadow: "0 0 4px #FF004F" }} />
+            </button>
+
+            {/* Separator */}
+            <div className="w-px h-6 mx-1 flex-shrink-0" style={{ background: "#1e1e24" }} />
+
+            {/* Tool groups with separators */}
+            {([
+              // Edit group
+              { id: "trim" as EditorTool, icon: Scissors, label: "Trim", group: "edit" },
+              { id: "crop" as EditorTool, icon: Crop, label: "Crop", group: "edit" },
+              { id: "speed" as EditorTool, icon: Gauge, label: "Speed", group: "edit" },
+              { id: "---1" as EditorTool, icon: null, label: "", group: "sep" },
+              // Color group
+              { id: "filters" as EditorTool, icon: Wand2, label: "Filter", group: "color" },
+              { id: "adjust" as EditorTool, icon: SlidersHorizontal, label: "Grade", group: "color" },
+              { id: "scopes" as EditorTool, icon: Activity, label: "Scopes", group: "color" },
+              { id: "blend" as EditorTool, icon: Blend, label: "Blend", group: "color" },
+              { id: "---2" as EditorTool, icon: null, label: "", group: "sep" },
+              // Compose group
+              { id: "text" as EditorTool, icon: Type, label: "Text", group: "compose" },
+              { id: "motion" as EditorTool, icon: LayoutGrid, label: "GFX", group: "compose" },
+              { id: "masks" as EditorTool, icon: Circle, label: "Mask", group: "compose" },
+              { id: "compositor" as EditorTool, icon: Layers, label: "PiP", group: "compose" },
+              { id: "---3" as EditorTool, icon: null, label: "", group: "sep" },
+              // Animate group
+              { id: "effects" as EditorTool, icon: Sparkles, label: "FX", group: "animate" },
+              { id: "transitions" as EditorTool, icon: Layers, label: "Trans", group: "animate" },
+              { id: "keyframes" as EditorTool, icon: Diamond, label: "Keys", group: "animate" },
+              { id: "---4" as EditorTool, icon: null, label: "", group: "sep" },
+              // Audio group
+              { id: "audio" as EditorTool, icon: Music, label: "Audio", group: "audio" },
+              { id: "audiofx" as EditorTool, icon: AudioLines, label: "FX", group: "audio" },
+              { id: "---5" as EditorTool, icon: null, label: "", group: "sep" },
+              // Output group
+              { id: "stabilize" as EditorTool, icon: Activity, label: "Stab", group: "output" },
+              { id: "upscale" as EditorTool, icon: ArrowUpCircle, label: "4K", group: "output" },
+              { id: "export" as EditorTool, icon: Settings, label: "Export", group: "output" },
+            ] as const).map(({ id, icon: Icon, label, group }) => {
+              if (group === "sep") {
+                return <div key={id} className="w-px h-5 mx-0.5 flex-shrink-0" style={{ background: "#1a1a1e" }} />;
+              }
+              const isActive = activeTool === id;
+              return (
                 <button key={id}
-                  onClick={() => {
-                    if (id === "ai") { setAiToolsOpen(true); return; }
-                    setActiveTool(activeTool === id ? null : id as EditorTool);
-                  }}
-                  className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-150"
+                  onClick={() => setActiveTool(activeTool === id ? null : id as EditorTool)}
+                  className="flex-shrink-0 py-1.5 px-2.5 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-100 active:scale-90 relative"
                   style={{
-                    color: id === "ai" ? "#FF004F" : activeTool === id ? ACCENT : "#666",
-                    background: id === "ai" ? "rgba(255,0,79,0.08)" : activeTool === id ? ACCENT_DIM : "transparent",
+                    color: isActive ? ACCENT : "#555",
+                    background: isActive ? `${ACCENT}10` : "transparent",
                   }}>
-                  <Icon className="w-[18px] h-[18px]" />
-                  <span className="text-[7px] font-semibold tracking-wider uppercase">{label}</span>
+                  {Icon && <Icon className="w-[15px] h-[15px]" />}
+                  <span className="text-[6px] font-bold tracking-[0.1em] uppercase">{label}</span>
+                  {isActive && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 rounded-full" style={{ background: ACCENT, boxShadow: `0 0 4px ${ACCENT}` }} />
+                  )}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
           <div className="safe-bottom" />
         </div>
