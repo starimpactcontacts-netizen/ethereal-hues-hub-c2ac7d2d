@@ -3,18 +3,23 @@ import { useNavigate } from "react-router-dom";
 import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, Check, SkipBack, SkipForward, Scissors, RotateCcw,
-  ChevronLeft, ChevronDown, Sparkles, Volume2, VolumeX, Gauge, Layers,
+  ChevronLeft, ChevronDown, Sparkles, Volume2, VolumeX, Gauge, Layers, Move,
   Wand2, SlidersHorizontal, Settings, ArrowUpCircle, Crop,
   Zap, Vibrate, Search, FlipHorizontal, FlipVertical, Grid3x3, Waves,
   Rainbow, RefreshCw, Paintbrush, Gem, LayoutGrid,
   MonitorPlay, FilmIcon, Circle, Wind, Smartphone, Monitor, Square,
   Sun, Lightbulb, Sunrise, RectangleHorizontal, RectangleVertical,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
-  RotateCw, Maximize, Minimize, Blend, Activity, Eye
+  RotateCw, Maximize, Minimize, Blend, Activity, Eye,
+  Diamond, Layers as LayersIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
 import AutoEditWizard from "./studio/AutoEditWizard";
+import MobileAITools from "./studio/MobileAITools";
+import GestureTimeline from "./studio/GestureTimeline";
+import KeyframeEditor, { interpolateKeyframes, type Keyframe, type KeyframedProperty } from "./studio/KeyframeEditor";
+import BlendModePanel, { BLEND_MODES, OVERLAY_PRESETS, applyOverlay, type BlendMode, type OverlayPreset } from "./studio/BlendModes";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
@@ -31,7 +36,7 @@ import {
 import { SPEED_CURVE_PRESETS, getSpeedAtTime, type SpeedCurve } from "@/lib/studioSpeedCurves";
 
 type TextOverlay = { id: string; text: string; x: number; y: number; style: TextStyleKey; startTime: number; endTime: number };
-type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale" | "crop";
+type EditorTool = "trim" | "filters" | "text" | "audio" | "speed" | "effects" | "transitions" | "adjust" | "export" | "upscale" | "crop" | "keyframes" | "blend";
 
 // ─── Crop Presets (v1.5) ───
 type CropPreset = { id: string; label: string; icon: typeof Monitor; ratio: number; desc: string };
@@ -185,9 +190,65 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   // Speed Curves (v1.5)
   const [activeSpeedCurve, setActiveSpeedCurve] = useState<SpeedCurve | null>(null);
 
+  // Blend & Overlay
+  const [blendMode, setBlendMode] = useState<BlendMode>("source-over");
+  const [activeOverlayId, setActiveOverlayId] = useState("none");
+  const [overlayOpacity, setOverlayOpacity] = useState(0.3);
+
+  // Keyframes
+  const [keyframeData, setKeyframeData] = useState<Record<string, Keyframe[]>>({});
+
+  // Timeline markers & layers
+  const [timelineMarkers, setTimelineMarkers] = useState<{ id: string; time: number; color: string; label: string; type: "cut" | "beat" | "effect" | "caption" }[]>([]);
+
+  // AI Tools overlay
+  const [aiToolsOpen, setAiToolsOpen] = useState(false);
+
+  // Chroma key
+  const [chromaEnabled, setChromaEnabled] = useState(false);
+  const [chromaColor, setChromaColor] = useState("#00FF00");
+  const [chromaThreshold, setChromaThreshold] = useState(80);
+
   const hasTriggeredPicker = useRef(false);
 
   const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
+
+  // Chroma key function
+  const applyChromaKey = useCallback((ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, keyColor: string, threshold: number) => {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    // Parse hex color
+    const r0 = parseInt(keyColor.slice(1, 3), 16);
+    const g0 = parseInt(keyColor.slice(3, 5), 16);
+    const b0 = parseInt(keyColor.slice(5, 7), 16);
+    for (let i = 0; i < data.length; i += 4) {
+      const dist = Math.sqrt(
+        (data[i] - r0) ** 2 + (data[i + 1] - g0) ** 2 + (data[i + 2] - b0) ** 2
+      );
+      if (dist < threshold) {
+        data[i + 3] = 0; // Make transparent
+      } else if (dist < threshold * 1.5) {
+        data[i + 3] = Math.round(((dist - threshold) / (threshold * 0.5)) * 255);
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }, []);
+
+  // Keyframe helpers
+  const addKeyframe = useCallback((propertyId: string, time: number, value: number) => {
+    setKeyframeData(prev => ({
+      ...prev,
+      [propertyId]: [...(prev[propertyId] || []), { id: crypto.randomUUID(), time, value, easing: "ease-out" as const }],
+    }));
+    toast.success(`Keyframe added at ${time.toFixed(1)}s`);
+  }, []);
+
+  const removeKeyframe = useCallback((propertyId: string, keyframeId: string) => {
+    setKeyframeData(prev => ({
+      ...prev,
+      [propertyId]: (prev[propertyId] || []).filter(kf => kf.id !== keyframeId),
+    }));
+  }, []);
 
   const toggleEffect = (effectId: string) => {
     setActiveEffects(prev => prev.includes(effectId) ? prev.filter(e => e !== effectId) : [...prev, effectId]);
@@ -334,6 +395,13 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           applyCanvasAdjustments(ctx, canvas, adjustments);
         }
         activeEffects.forEach(effectId => { try { applyEffect(ctx, canvas, effectId, vid.currentTime); } catch { /* */ } });
+        // Apply overlay
+        const overlayPreset = OVERLAY_PRESETS.find(o => o.id === activeOverlayId);
+        if (overlayPreset) applyOverlay(ctx, canvas, overlayPreset, overlayOpacity);
+        // Apply chroma key
+        if (chromaEnabled) {
+          applyChromaKey(ctx, canvas, chromaColor, chromaThreshold);
+        }
         textOverlays.forEach((overlay) => {
           if (vid.currentTime >= overlay.startTime && vid.currentTime <= overlay.endTime) {
             try { renderTextOverlay(ctx, canvas, overlay.text, overlay.x, overlay.y, overlay.style); } catch { /* */ }
@@ -344,7 +412,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
     };
     draw();
     return () => { running = false; cancelAnimationFrame(animRef.current); };
-  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation]);
+  }, [videoUrl, computedFilter, textOverlays, activeEffects, adjustments, cropPreset, rotation, flipH, flipV, scaleX, scaleY, posX, posY, videoOpacity, freeRotation, activeOverlayId, overlayOpacity, chromaEnabled, chromaColor, chromaThreshold]);
 
   const togglePlay = () => {
     const vid = videoRef.current; if (!vid) return;
@@ -1453,6 +1521,38 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                     <input ref={upscaleInputRef} type="file" accept="video/*" onChange={handleUpscaleFile} className="hidden" />
                   </div>
                 )}
+
+                {/* ════ KEYFRAMES ════ */}
+                {activeTool === "keyframes" && (
+                  <KeyframeEditor
+                    properties={[
+                      { id: "scaleX", label: "Scale X", icon: Maximize, color: "#00D4FF", keyframes: keyframeData["scaleX"] || [], min: 0.1, max: 3, unit: "x", currentValue: scaleX },
+                      { id: "scaleY", label: "Scale Y", icon: Maximize, color: "#00AAFF", keyframes: keyframeData["scaleY"] || [], min: 0.1, max: 3, unit: "x", currentValue: scaleY },
+                      { id: "posX", label: "Position X", icon: Move, color: "#FF6B00", keyframes: keyframeData["posX"] || [], min: 0, max: 1, unit: "", currentValue: posX },
+                      { id: "posY", label: "Position Y", icon: Move, color: "#FF4400", keyframes: keyframeData["posY"] || [], min: 0, max: 1, unit: "", currentValue: posY },
+                      { id: "rotation", label: "Rotation", icon: RotateCw, color: "#AA44FF", keyframes: keyframeData["rotation"] || [], min: -180, max: 180, unit: "°", currentValue: freeRotation },
+                      { id: "opacity", label: "Opacity", icon: Eye, color: "#22CC88", keyframes: keyframeData["opacity"] || [], min: 0, max: 1, unit: "", currentValue: videoOpacity },
+                    ]}
+                    currentTime={currentTime}
+                    duration={duration}
+                    onAddKeyframe={addKeyframe}
+                    onRemoveKeyframe={removeKeyframe}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ BLEND & OVERLAY ════ */}
+                {activeTool === "blend" && (
+                  <BlendModePanel
+                    activeBlendMode={blendMode}
+                    activeOverlay={activeOverlayId}
+                    overlayOpacity={overlayOpacity}
+                    onBlendModeChange={setBlendMode}
+                    onOverlayChange={setActiveOverlayId}
+                    onOverlayOpacityChange={setOverlayOpacity}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
               </div>
             </motion.div>
           )}
@@ -1466,6 +1566,8 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                 { id: "ai" as const, icon: Wand2, label: "AI", accent: true },
                 { id: "trim" as EditorTool, icon: Scissors, label: "Trim" },
                 { id: "crop" as EditorTool, icon: Crop, label: "Crop" },
+                { id: "keyframes" as EditorTool, icon: Diamond, label: "Keys" },
+                { id: "blend" as EditorTool, icon: Blend, label: "Blend" },
                 { id: "effects" as EditorTool, icon: Sparkles, label: "FX" },
                 { id: "transitions" as EditorTool, icon: Layers, label: "Trans" },
                 { id: "filters" as EditorTool, icon: Wand2, label: "Filters" },
@@ -1478,7 +1580,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
               ] as const).map(({ id, icon: Icon, label, ...rest }) => (
                 <button key={id}
                   onClick={() => {
-                    if (id === "ai") { setAutoEditOpen(true); return; }
+                    if (id === "ai") { setAiToolsOpen(true); return; }
                     setActiveTool(activeTool === id ? null : id as EditorTool);
                   }}
                   className="flex-shrink-0 py-2 px-3 flex flex-col items-center gap-0.5 rounded-lg transition-all duration-150"
@@ -1495,7 +1597,75 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           <div className="safe-bottom" />
         </div>
 
-        {/* Auto-Edit Wizard overlay (from toolbar) */}
+        {/* AI Tools overlay */}
+        <AnimatePresence>
+          {aiToolsOpen && (
+            <MobileAITools
+              duration={trimEnd - trimStart}
+              onCaptionsGenerated={(captions) => {
+                // Convert AI captions to text overlays
+                const newOverlays = captions.map((cap) => ({
+                  id: crypto.randomUUID(),
+                  text: cap.text,
+                  x: 0.5,
+                  y: cap.position === "top" ? 0.15 : cap.position === "bottom" ? 0.85 : 0.5,
+                  style: (cap.style || "bold") as TextStyleKey,
+                  startTime: cap.startTime + trimStart,
+                  endTime: cap.endTime + trimStart,
+                }));
+                setTextOverlays(prev => [...prev, ...newOverlays]);
+                // Add markers for captions
+                const newMarkers = captions.map((cap) => ({
+                  id: crypto.randomUUID(),
+                  time: cap.startTime + trimStart,
+                  color: "#00D4FF",
+                  label: cap.text.substring(0, 10),
+                  type: "caption" as const,
+                }));
+                setTimelineMarkers(prev => [...prev, ...newMarkers]);
+                toast.success(`${captions.length} captions applied!`);
+              }}
+              onSmartCutsGenerated={(cuts) => {
+                const newMarkers = cuts.map((cut) => ({
+                  id: crypto.randomUUID(),
+                  time: cut.time,
+                  color: "#FF6B00",
+                  label: cut.type,
+                  type: "cut" as const,
+                }));
+                setTimelineMarkers(prev => [...prev, ...newMarkers]);
+                // Apply suggested effects at cut points
+                cuts.forEach(cut => {
+                  if (cut.effect && cut.effect !== "none" && !activeEffects.includes(cut.effect)) {
+                    setActiveEffects(prev => [...prev, cut.effect!]);
+                  }
+                });
+                toast.success(`${cuts.length} cut markers added!`);
+              }}
+              onEffectsSuggested={(suggestion) => {
+                // Apply filter
+                const filter = FILTER_PRESETS.find(f => f.name === suggestion.filter || f.label.toLowerCase() === suggestion.filter.toLowerCase());
+                if (filter) setActiveFilter(filter);
+                // Apply effects
+                suggestion.effects.forEach(eff => {
+                  if (!activeEffects.includes(eff)) {
+                    setActiveEffects(prev => [...prev, eff]);
+                  }
+                });
+                // Apply speed
+                if (suggestion.speed) setSpeed(suggestion.speed);
+                toast.success(`Applied: ${suggestion.vibe}`);
+              }}
+              onBgRemoveStart={() => {
+                setChromaEnabled(true);
+                toast.success("Chroma key enabled");
+              }}
+              onClose={() => setAiToolsOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Auto-Edit Wizard overlay (from empty state) */}
         {autoEditOpen && (
           <AutoEditWizard
             onClose={() => setAutoEditOpen(false)}
