@@ -1613,6 +1613,153 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                     onClose={() => setActiveTool(null)}
                   />
                 )}
+
+                {/* ════ COLOR SCOPES & LUTs ════ */}
+                {activeTool === "scopes" && (
+                  <ColorScopes
+                    canvasRef={canvasRef}
+                    isPlaying={playing}
+                    activeLUT={activeLUT}
+                    lutIntensity={lutIntensity}
+                    customLUT={customLUT}
+                    onLUTChange={setActiveLUT}
+                    onLUTIntensityChange={setLutIntensity}
+                    onCustomLUTLoad={setCustomLUT}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ MASKING ════ */}
+                {activeTool === "masks" && (
+                  <MaskingPanel
+                    masks={masks}
+                    selectedMaskId={selectedMaskId}
+                    onAddMask={(shape: MaskShape) => {
+                      const newMask: Mask = { ...DEFAULT_MASK, id: crypto.randomUUID(), shape };
+                      setMasks(prev => [...prev, newMask]);
+                      setSelectedMaskId(newMask.id);
+                    }}
+                    onUpdateMask={(id, updates) => setMasks(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m))}
+                    onDeleteMask={(id) => { setMasks(prev => prev.filter(m => m.id !== id)); if (selectedMaskId === id) setSelectedMaskId(null); }}
+                    onSelectMask={setSelectedMaskId}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ AUDIO FX ════ */}
+                {activeTool === "audiofx" && (
+                  <AudioFXPanel
+                    audioFX={audioFX}
+                    onUpdate={setAudioFX}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ MOTION GRAPHICS ════ */}
+                {activeTool === "motion" && (
+                  <MotionTemplatesPanel
+                    appliedTemplates={appliedTemplates}
+                    currentTime={currentTime}
+                    onApplyTemplate={(template, fieldValues, startTime) => {
+                      setAppliedTemplates(prev => [...prev, {
+                        id: crypto.randomUUID(),
+                        templateId: template.id,
+                        startTime,
+                        fieldValues,
+                      }]);
+                      toast.success(`${template.label} added at ${startTime.toFixed(1)}s`);
+                    }}
+                    onRemoveTemplate={(id) => setAppliedTemplates(prev => prev.filter(at => at.id !== id))}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ COMPOSITOR (PiP) ════ */}
+                {activeTool === "compositor" && (
+                  <CompositorPanel
+                    layers={compositorLayers}
+                    selectedLayerId={selectedCompositorLayerId}
+                    activeSplitLayout={activeSplitLayout}
+                    onAddLayer={(file) => {
+                      const url = URL.createObjectURL(file);
+                      const layer: CompositorLayer = {
+                        ...DEFAULT_PIP,
+                        id: crypto.randomUUID(),
+                        videoUrl: url,
+                        fileName: file.name,
+                      };
+                      // Create video element
+                      const vid = document.createElement("video");
+                      vid.src = url;
+                      vid.loop = true;
+                      vid.muted = true;
+                      vid.playsInline = true;
+                      vid.play().catch(() => {});
+                      compositorVideos.current.set(layer.id, vid);
+                      setCompositorLayers(prev => [...prev, layer]);
+                      setSelectedCompositorLayerId(layer.id);
+                      toast.success("PiP layer added");
+                    }}
+                    onUpdateLayer={(id, updates) => setCompositorLayers(prev => prev.map(l => l.id === id ? { ...l, ...updates } : l))}
+                    onDeleteLayer={(id) => {
+                      const vid = compositorVideos.current.get(id);
+                      if (vid) { vid.pause(); vid.src = ""; compositorVideos.current.delete(id); }
+                      setCompositorLayers(prev => prev.filter(l => l.id !== id));
+                      if (selectedCompositorLayerId === id) setSelectedCompositorLayerId(null);
+                    }}
+                    onSelectLayer={setSelectedCompositorLayerId}
+                    onSplitLayoutChange={setActiveSplitLayout}
+                    onClose={() => setActiveTool(null)}
+                  />
+                )}
+
+                {/* ════ STABILIZER ════ */}
+                {activeTool === "stabilize" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4" style={{ color: "#F59E0B" }} />
+                        <span className="text-[11px] font-bold text-white">Stabilization</span>
+                      </div>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
+                    </div>
+                    <button
+                      onClick={() => setStabilizer(prev => ({ ...prev, enabled: !prev.enabled }))}
+                      className="w-full py-3 rounded-xl text-[10px] font-bold transition-all"
+                      style={{
+                        background: stabilizer.enabled ? "rgba(245,158,11,0.15)" : "#111",
+                        color: stabilizer.enabled ? "#F59E0B" : "#666",
+                        border: `1px solid ${stabilizer.enabled ? "rgba(245,158,11,0.3)" : "#1a1a1a"}`,
+                      }}>
+                      {stabilizer.enabled ? "✓ Stabilization ON" : "Enable Stabilization"}
+                    </button>
+                    {stabilizer.enabled && (
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px]" style={{ color: "#555" }}>Smoothing</span>
+                            <span className="text-[9px] font-mono" style={{ color: "#F59E0B" }}>{Math.round(stabilizer.smoothing * 100)}%</span>
+                          </div>
+                          <input type="range" min={10} max={95} value={Math.round(stabilizer.smoothing * 100)}
+                            onChange={(e) => setStabilizer(prev => ({ ...prev, smoothing: Number(e.target.value) / 100 }))}
+                            className="w-full accent-[#F59E0B]" />
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px]" style={{ color: "#555" }}>Crop (for stabilization room)</span>
+                            <span className="text-[9px] font-mono" style={{ color: "#F59E0B" }}>{Math.round(stabilizer.cropAmount * 100)}%</span>
+                          </div>
+                          <input type="range" min={5} max={25} value={Math.round(stabilizer.cropAmount * 100)}
+                            onChange={(e) => setStabilizer(prev => ({ ...prev, cropAmount: Number(e.target.value) / 100 }))}
+                            className="w-full accent-[#F59E0B]" />
+                        </div>
+                        <p className="text-[8px]" style={{ color: "#444" }}>
+                          Higher smoothing = less shake but more crop. Adjust crop to give the stabilizer room to work.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
