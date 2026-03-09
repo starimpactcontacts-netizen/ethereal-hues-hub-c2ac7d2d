@@ -916,26 +916,147 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                   </div>
                 )}
 
-                {/* ════ SPEED ════ */}
+                {/* ════ SPEED + CURVES (v1.5) ════ */}
                 {activeTool === "speed" && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Speed</span>
                       <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {SPEED_OPTIONS.map((s) => (
-                        <button key={s} onClick={() => setSpeed(s)}
-                          className="px-3.5 py-2 text-xs font-semibold rounded-lg transition-all"
-                          style={{
-                            background: speed === s ? ACCENT_DIM : "#151515",
-                            color: speed === s ? ACCENT : "#666",
-                            border: speed === s ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
-                          }}>
-                          {s}x
-                        </button>
-                      ))}
+                    {/* Quick Speed Options */}
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Quick</span>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {SPEED_OPTIONS.map((s) => (
+                          <button key={s} onClick={() => { setSpeed(s); setActiveSpeedCurve(null); }}
+                            className="px-3.5 py-2 text-xs font-semibold rounded-lg transition-all"
+                            style={{
+                              background: speed === s && !activeSpeedCurve ? ACCENT_DIM : "#151515",
+                              color: speed === s && !activeSpeedCurve ? ACCENT : "#666",
+                              border: speed === s && !activeSpeedCurve ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                            }}>
+                            {s}x
+                          </button>
+                        ))}
+                      </div>
                     </div>
+                    {/* Speed Curves */}
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Curves</span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {SPEED_CURVE_PRESETS.filter(c => c.id !== 'linear').map((curve) => {
+                          const isActive = activeSpeedCurve?.id === curve.id;
+                          return (
+                            <button key={curve.id} onClick={() => { setActiveSpeedCurve(isActive ? null : curve); if (!isActive) setSpeed(1); }}
+                              className="py-2.5 px-3 rounded-lg flex items-center gap-2 transition-all text-left"
+                              style={{
+                                background: isActive ? ACCENT_DIM : "#151515",
+                                border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                              }}>
+                              <Activity className="w-3.5 h-3.5 flex-shrink-0" style={{ color: isActive ? ACCENT : "#555" }} />
+                              <span className="text-[10px] font-medium truncate" style={{ color: isActive ? ACCENT : "#888" }}>{curve.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {activeSpeedCurve && (
+                      <div className="rounded-lg p-2.5" style={{ background: "#151515", border: `1px solid ${ACCENT_BORDER}` }}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Activity className="w-3 h-3" style={{ color: ACCENT }} />
+                          <span className="text-[10px] font-semibold" style={{ color: ACCENT }}>{activeSpeedCurve.name}</span>
+                        </div>
+                        <div className="h-10 rounded flex items-end gap-px overflow-hidden" style={{ background: "#0a0a0a" }}>
+                          {Array.from({ length: 20 }).map((_, i) => {
+                            const t = i / 19;
+                            const spd = getSpeedAtTime(activeSpeedCurve, t);
+                            const h = Math.max(4, Math.min(40, (spd / 3) * 40));
+                            return <div key={i} className="flex-1 rounded-t" style={{ height: h, background: ACCENT, opacity: 0.6 + (spd / 5) }} />;
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ════ CROP & TRANSFORM (v1.5) ════ */}
+                {activeTool === "crop" && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Crop & Transform</span>
+                      <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
+                    </div>
+                    {/* Aspect Ratio Presets */}
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Aspect Ratio</span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {CROP_PRESETS.map((preset) => {
+                          const isActive = cropPreset === preset.id;
+                          const IconComp = preset.icon;
+                          return (
+                            <button key={preset.id} onClick={() => setCropPreset(isActive ? null : preset.id)}
+                              className="py-2.5 rounded-lg flex flex-col items-center gap-1 transition-all"
+                              style={{
+                                background: isActive ? ACCENT_DIM : "#151515",
+                                border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                              }}>
+                              <IconComp className="w-4 h-4" style={{ color: isActive ? ACCENT : "#666" }} />
+                              <span className="text-[9px] font-semibold" style={{ color: isActive ? ACCENT : "#888" }}>{preset.label}</span>
+                              <span className="text-[7px]" style={{ color: "#555" }}>{preset.desc}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {/* Rotation */}
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Rotate</span>
+                      <div className="flex gap-1.5">
+                        {[0, 90, 180, 270].map((deg) => (
+                          <button key={deg} onClick={() => setRotation(deg)}
+                            className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                            style={{
+                              background: rotation === deg ? ACCENT_DIM : "#151515",
+                              border: rotation === deg ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                            }}>
+                            <RotateCw className="w-3.5 h-3.5" style={{ color: rotation === deg ? ACCENT : "#666", transform: `rotate(${deg}deg)` }} />
+                            <span className="text-[10px] font-medium" style={{ color: rotation === deg ? ACCENT : "#666" }}>{deg}°</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Flip */}
+                    <div>
+                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Flip</span>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => setFlipH(!flipH)}
+                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                          style={{
+                            background: flipH ? ACCENT_DIM : "#151515",
+                            border: flipH ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                          }}>
+                          <FlipHorizontal className="w-4 h-4" style={{ color: flipH ? ACCENT : "#666" }} />
+                          <span className="text-[10px] font-medium" style={{ color: flipH ? ACCENT : "#666" }}>Horizontal</span>
+                        </button>
+                        <button onClick={() => setFlipV(!flipV)}
+                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                          style={{
+                            background: flipV ? ACCENT_DIM : "#151515",
+                            border: flipV ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                          }}>
+                          <FlipVertical className="w-4 h-4" style={{ color: flipV ? ACCENT : "#666" }} />
+                          <span className="text-[10px] font-medium" style={{ color: flipV ? ACCENT : "#666" }}>Vertical</span>
+                        </button>
+                      </div>
+                    </div>
+                    {/* Reset */}
+                    {(cropPreset || rotation !== 0 || flipH || flipV) && (
+                      <button onClick={() => { setCropPreset(null); setRotation(0); setFlipH(false); setFlipV(false); }}
+                        className="w-full py-2 text-[10px] font-medium rounded-lg"
+                        style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
+                        Reset Transform
+                      </button>
+                    )}
                   </div>
                 )}
 
