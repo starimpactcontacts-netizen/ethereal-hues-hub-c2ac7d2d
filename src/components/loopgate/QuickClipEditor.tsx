@@ -165,6 +165,15 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
   const [upscaleResultExt, setUpscaleResultExt] = useState<"mp4" | "webm">("webm");
   const [upscaleDims, setUpscaleDims] = useState<{ w: number; h: number } | null>(null);
 
+  // Crop & Transform (v1.5)
+  const [cropPreset, setCropPreset] = useState<string | null>(null);
+  const [rotation, setRotation] = useState(0);
+  const [flipH, setFlipH] = useState(false);
+  const [flipV, setFlipV] = useState(false);
+
+  // Speed Curves (v1.5)
+  const [activeSpeedCurve, setActiveSpeedCurve] = useState<SpeedCurve | null>(null);
+
   const hasTriggeredPicker = useRef(false);
 
   const computedFilter = useMemo(() => buildComputedFilter(activeFilter, brightness, contrast, saturation, hueRotate), [activeFilter, brightness, contrast, saturation, hueRotate]);
