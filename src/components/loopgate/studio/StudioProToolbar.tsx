@@ -42,6 +42,7 @@ const TOOL_GROUPS: (ToolDef | { id: string; group: "sep" })[] = [
   { id: "sep4", group: "sep" },
   { id: "audio", icon: Music, label: "Audio", group: "audio" },
   { id: "audiofx", icon: AudioLines, label: "Mix", group: "audio" },
+  { id: "chroma", icon: Palette, label: "Chroma", group: "output" },
   { id: "sep5", group: "sep" },
   { id: "stabilize", icon: Activity, label: "Stabilize", group: "output" },
   { id: "upscale", icon: ArrowUpCircle, label: "4K", group: "output" },
