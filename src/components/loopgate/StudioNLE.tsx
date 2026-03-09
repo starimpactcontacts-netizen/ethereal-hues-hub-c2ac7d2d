@@ -250,6 +250,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [showAutoClipper, setShowAutoClipper] = useState(false);
   const [showSongRecommender, setShowSongRecommender] = useState(false);
 
+  // Pro features state
+  const [speedCurve, setSpeedCurve] = useState<SpeedCurve>(SPEED_CURVE_PRESETS[0]);
+  const [chromaConfig, setChromaConfig] = useState<ChromaKeyConfig>(DEFAULT_CHROMA_CONFIG);
+  const [timelineMarkers, setTimelineMarkers] = useState<TimelineMarker[]>([]);
+  const [isPickingColor, setIsPickingColor] = useState(false);
+
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
     { id: "v1", name: "Video", type: "video", visible: true, locked: false },
