@@ -34,6 +34,7 @@ const TOOL_GROUPS: (ToolDef | { id: string; group: "sep" })[] = [
   { id: "motion", icon: LayoutGrid, label: "GFX", group: "compose" },
   { id: "masks", icon: Circle, label: "Mask", group: "compose" },
   { id: "compositor", icon: Layers, label: "PiP", group: "compose" },
+  { id: "stickers", icon: Smile, label: "Stickers", group: "compose" },
   { id: "sep3", group: "sep" },
   { id: "effects", icon: Sparkles, label: "Effects", group: "animate" },
   { id: "transitions", icon: Film, label: "Trans", group: "animate" },
