@@ -473,7 +473,7 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
   );
 }
 
-// ─── Section Header ────────────────────────────────────────────
+// ─── Section Header — Stake-style ────────────────────────────────────────
 function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", action }: {
   icon: React.ReactNode;
   title: string;
@@ -481,17 +481,21 @@ function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", ac
   badgeColor?: string;
   action?: React.ReactNode;
 }) {
-  // Extract just the text color from badgeColor prop
   const textColor = badgeColor.includes('text-') 
     ? badgeColor.split(' ').find(c => c.startsWith('text-')) || 'text-emerald-400'
     : 'text-emerald-400';
   return (
     <div className="flex items-center justify-between px-4 mb-3">
       <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-[15px] font-extrabold text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
+        <div className="relative">
+          {icon}
+          {badge && (
+            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ boxShadow: '0 0 6px currentColor' }} />
+          )}
+        </div>
+        <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
         {badge && (
-          <span className={`flex items-center gap-1.5 text-[11px] font-semibold ${textColor}`}>
+          <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-current/10 border border-current/20 ${textColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {badge}
           </span>
