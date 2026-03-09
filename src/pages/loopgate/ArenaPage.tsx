@@ -40,6 +40,7 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import EmailNotificationSettings from "@/components/loopgate/EmailNotificationSettings";
 import LiveWinnersTicker from "@/components/loopgate/LiveWinnersTicker";
+import LivePayoutsCarousel from "@/components/loopgate/LivePayoutsCarousel";
 
 interface Event {
   id: string;
@@ -81,44 +82,57 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
   return (
     <motion.button
       whileTap={{ scale: 0.96 }}
+      whileHover={{ y: -4 }}
       onClick={() => navigate(`/mission/${drop.id}`)}
       className="shrink-0 relative w-[280px] h-[380px] overflow-hidden group text-left touch-manipulation"
+      style={{ 
+        boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03)',
+      }}
     >
       {/* Full bleed cover */}
       {drop.poster_url ? (
         <img src={drop.poster_url} alt={drop.song_name} className="absolute inset-0 w-full h-full object-cover scale-[1.02] group-hover:scale-[1.08] transition-transform duration-1000 ease-out" />
       ) : (
-        <div className="absolute inset-0 bg-surface-2" />
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-black to-zinc-950" />
       )}
 
       {/* Cinematic overlays */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 h-[60%] bg-gradient-to-t from-black to-transparent" />
-      <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.06) 3px, rgba(255,255,255,0.06) 4px)' }} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/20" />
+      <div className="absolute bottom-0 left-0 right-0 h-[65%] bg-gradient-to-t from-black to-transparent" />
+      
+      {/* Scanline effect */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.04) 3px, rgba(255,255,255,0.04) 4px)' }} />
+      
+      {/* Top edge glow */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
       {/* Hard border edges */}
-      <div className="absolute inset-0 border-2 border-foreground/[0.06] group-hover:border-red-500/40 transition-colors" />
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-red-500/60 via-red-500 to-red-500/60 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 border border-white/[0.04] group-hover:border-red-500/30 transition-colors duration-500" />
 
       {/* Corner cut decoration */}
-      <div className="absolute bottom-0 right-0 w-6 h-6 bg-background" style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }} />
+      <div className="absolute bottom-0 right-0 w-8 h-8 bg-black" style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }} />
 
       {/* 24H PAY ribbon */}
       {drop.instant_payout && (
-        <div className="absolute top-3 right-0 z-10 bg-red-600 text-white text-[7px] font-black uppercase tracking-wider pl-3 pr-2 py-1">
+        <div className="absolute top-3 right-0 z-10 bg-gradient-to-r from-red-600 to-red-500 text-white text-[7px] font-black uppercase tracking-wider pl-3 pr-2 py-1 shadow-lg shadow-red-900/50">
           24H PAY
         </div>
       )}
 
-      {/* Top left — LIVE badge + Max payout */}
+      {/* Top left — LIVE badge + Max payout with glow */}
       <div className="absolute top-0 left-0 z-10 p-3 flex flex-col gap-2">
-        <div className="flex items-center gap-1.5 bg-black/80 backdrop-blur-sm px-2 py-1 border-l-2 border-emerald-500 w-fit">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-lg shadow-emerald-500/60" />
+        <div className="flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-2.5 py-1.5 border-l-2 border-emerald-500 w-fit shadow-lg shadow-emerald-900/30">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/60" />
           <span className="text-[8px] font-black text-emerald-400 uppercase tracking-[0.25em]">Live Mission</span>
         </div>
         {maxPay > 0 && (
-          <div className="bg-black/70 backdrop-blur-sm px-2 py-1 w-fit">
-            <span className="font-display text-3xl text-emerald-400 leading-none drop-shadow-[0_0_12px_rgba(16,185,129,0.4)]">${maxPay}</span>
+          <div className="bg-black/90 backdrop-blur-md px-3 py-2 w-fit shadow-2xl shadow-emerald-900/40 border border-emerald-500/10">
+            <span className="font-display text-3xl text-emerald-400 leading-none" 
+              style={{ 
+                textShadow: '0 0 20px rgba(52, 211, 153, 0.4), 0 0 40px rgba(52, 211, 153, 0.2)',
+              }}>
+              ${maxPay}
+            </span>
           </div>
         )}
       </div>
@@ -127,39 +141,42 @@ function ArenaMissionCard({ drop }: { drop: ArenaMission }) {
       <div className="absolute bottom-0 left-0 right-0 p-3 pb-4">
         {/* Artist + Song */}
         {drop.artist_name && (
-          <p className="text-[9px] font-black text-foreground/50 uppercase tracking-[0.2em] mb-0.5">{drop.artist_name}</p>
+          <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-0.5">{drop.artist_name}</p>
         )}
-        <h4 className="font-display text-2xl text-foreground leading-none tracking-wider truncate mb-3">{drop.song_name}</h4>
+        <h4 className="font-display text-2xl text-white leading-none tracking-wider truncate mb-3 drop-shadow-2xl">{drop.song_name}</h4>
 
         {/* Rating tiers with QOI scores */}
-        <div className="flex items-stretch gap-[1px] mb-3 bg-black/40 backdrop-blur-sm">
+        <div className="flex items-stretch gap-[1px] mb-3 bg-black/60 backdrop-blur-sm shadow-xl">
           {[
-            { rank: 'S', color: 'text-amber-400 bg-amber-500/25 border-amber-500/50', pay: sRate, qoi: '90+' },
-            { rank: 'A', color: 'text-emerald-400 bg-emerald-500/20 border-emerald-500/40', pay: aRate, qoi: '75+' },
-            { rank: 'B', color: 'text-blue-400 bg-blue-500/20 border-blue-500/40', pay: bRate, qoi: '60+' },
-            { rank: 'C-F', color: 'text-foreground/25 bg-foreground/[0.04] border-foreground/10', pay: 0, qoi: '<60' },
+            { rank: 'S', color: 'text-amber-400 bg-amber-500/20 border-amber-500/40', pay: sRate, qoi: '90+', glow: 'shadow-amber-500/20' },
+            { rank: 'A', color: 'text-emerald-400 bg-emerald-500/15 border-emerald-500/30', pay: aRate, qoi: '75+', glow: 'shadow-emerald-500/15' },
+            { rank: 'B', color: 'text-blue-400 bg-blue-500/15 border-blue-500/30', pay: bRate, qoi: '60+', glow: 'shadow-blue-500/15' },
+            { rank: 'C-F', color: 'text-white/20 bg-white/[0.02] border-white/5', pay: 0, qoi: '<60', glow: '' },
           ].map(tier => (
-            <div key={tier.rank} className={`flex-1 border ${tier.color} py-2 flex flex-col items-center gap-0.5`}>
+            <div key={tier.rank} className={`flex-1 border ${tier.color} ${tier.glow} py-2.5 flex flex-col items-center gap-0.5`}>
               <span className="text-[11px] font-black leading-none">{tier.rank}</span>
-              <span className={`text-[8px] font-black leading-none ${tier.pay > 0 ? 'text-white' : 'text-foreground/15'}`}>
+              <span className={`text-[8px] font-black leading-none ${tier.pay > 0 ? 'text-white' : 'text-white/10'}`}>
                 {tier.pay > 0 ? `$${tier.pay}` : 'IDX'}
               </span>
-              <span className="text-[6px] font-bold text-foreground/20 uppercase">QOI {tier.qoi}</span>
+              <span className="text-[6px] font-bold text-white/15 uppercase">QOI {tier.qoi}</span>
             </div>
           ))}
         </div>
 
-        {/* CTA — Fortnite-style skewed button */}
-        <div className="relative overflow-hidden bg-red-600 group-hover:bg-red-500 active:bg-red-400 transition-colors flex items-center justify-center gap-3 py-4 -mx-3 -mb-4">
-          <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.14] to-transparent pointer-events-none" />
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/20 to-white/5 flex items-center justify-center relative z-10 border border-white/20">
-            <Crosshair className="w-3.5 h-3.5 text-white" />
+        {/* CTA — Fortnite-style skewed button with glow */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-red-600 via-red-500 to-red-600 group-hover:from-red-500 group-hover:via-red-400 group-hover:to-red-500 active:from-red-700 active:via-red-600 active:to-red-700 transition-all flex items-center justify-center gap-3 py-4 -mx-3 -mb-4 shadow-2xl shadow-red-900/60">
+          <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.16] to-transparent pointer-events-none" />
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-white/25 to-white/5 flex items-center justify-center relative z-10 border border-white/20 shadow-lg">
+            <Crosshair className="w-3.5 h-3.5 text-white drop-shadow-lg" />
           </div>
-          <span className="text-[20px] font-bold text-white uppercase tracking-wider relative z-10" style={{ fontFamily: 'Teko, sans-serif' }}>
+          <span className="text-[20px] font-bold text-white uppercase tracking-wider relative z-10 drop-shadow-lg" style={{ fontFamily: 'Teko, sans-serif' }}>
             Enter Mission
           </span>
         </div>
       </div>
+
+      {/* Outer glow on hover */}
+      <div className="absolute -inset-px bg-gradient-to-br from-red-500/0 via-red-500/0 to-red-500/0 group-hover:from-red-500/20 group-hover:via-red-500/10 group-hover:to-red-500/20 transition-all duration-500 -z-10 blur-2xl" />
     </motion.button>
   );
 }
@@ -456,7 +473,7 @@ function Quick1v1Row({ fight, onClick }: { fight: any; onClick: () => void }) {
   );
 }
 
-// ─── Section Header ────────────────────────────────────────────
+// ─── Section Header — Stake-style ────────────────────────────────────────
 function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", action }: {
   icon: React.ReactNode;
   title: string;
@@ -464,17 +481,21 @@ function SectionHeader({ icon, title, badge, badgeColor = "text-emerald-400", ac
   badgeColor?: string;
   action?: React.ReactNode;
 }) {
-  // Extract just the text color from badgeColor prop
   const textColor = badgeColor.includes('text-') 
     ? badgeColor.split(' ').find(c => c.startsWith('text-')) || 'text-emerald-400'
     : 'text-emerald-400';
   return (
     <div className="flex items-center justify-between px-4 mb-3">
       <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-[15px] font-extrabold text-foreground" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
+        <div className="relative">
+          {icon}
+          {badge && (
+            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ boxShadow: '0 0 6px currentColor' }} />
+          )}
+        </div>
+        <span className="text-[15px] font-extrabold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>{title}</span>
         {badge && (
-          <span className={`flex items-center gap-1.5 text-[11px] font-semibold ${textColor}`}>
+          <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 bg-current/10 border border-current/20 ${textColor}`}>
             <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
             {badge}
           </span>
@@ -671,12 +692,15 @@ export default function ArenaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-screen bg-black pb-32">
       <LoopMonster />
 
       {/* ═══ HERO ═══ */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-red-600/6 via-transparent to-transparent" />
+      <div className="relative overflow-hidden border-b border-white/[0.02]">
+        <div className="absolute inset-0 bg-gradient-to-b from-red-950/10 via-transparent to-transparent" />
+        <div className="absolute inset-0" style={{ 
+          backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.03) 0%, transparent 50%)',
+        }} />
 
         <div className="relative px-4 sm:px-6 lg:px-8 pt-3 pb-1 max-w-2xl mx-auto">
           {/* Title row — merged with stats */}
@@ -1016,13 +1040,15 @@ export default function ArenaPage() {
 
           {/* ═══ GAME LOBBY — Dropdown + GO ═══ */}
           <div className="mb-1">
-            <div className="flex gap-0 overflow-hidden border border-border">
+            <div className="flex gap-0 overflow-hidden border border-white/[0.06] shadow-xl shadow-black/60" style={{
+              background: 'linear-gradient(to bottom, rgba(15,15,15,0.95), rgba(5,5,5,0.98))',
+            }}>
               {/* Mode Dropdown */}
               <div className="flex-1 relative">
                 <select
                   value={selectedMode}
                   onChange={(e) => setSelectedMode(e.target.value as typeof selectedMode)}
-                  className="w-full appearance-none bg-surface-1 text-foreground text-[11px] font-black uppercase tracking-wider py-2.5 pl-3 pr-8 cursor-pointer focus:outline-none touch-manipulation"
+                  className="w-full appearance-none bg-transparent text-foreground text-[11px] font-black uppercase tracking-wider py-3 pl-3 pr-8 cursor-pointer focus:outline-none touch-manipulation"
                   style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}
                 >
                   {liveDrops.length > 0 && (
@@ -1036,7 +1062,7 @@ export default function ArenaPage() {
                 <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
               </div>
 
-              {/* GO Button */}
+              {/* GO Button - Stake-style with glow */}
               <motion.button
                 whileTap={isQfSearching ? undefined : { scale: 0.95 }}
                 onClick={() => {
@@ -1050,33 +1076,42 @@ export default function ArenaPage() {
                   }
                 }}
                 disabled={isQfSearching}
-                className="relative overflow-hidden touch-manipulation transition-colors min-h-[46px] px-7 flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-500"
+                className="relative overflow-hidden touch-manipulation transition-all min-h-[52px] px-8 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 hover:from-red-500 hover:via-red-400 hover:to-red-500"
+                style={{
+                  boxShadow: isQfSearching 
+                    ? '0 0 20px rgba(245, 158, 11, 0.3)' 
+                    : '0 0 30px rgba(239, 68, 68, 0.4), 0 0 60px rgba(239, 68, 68, 0.15)',
+                }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
+                <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.12] to-transparent pointer-events-none" />
                 {isQfSearching ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 text-white animate-spin relative z-10" />
-                    <span className="text-[11px] font-black tracking-tight uppercase text-white relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    <Loader2 className="w-4 h-4 text-amber-400 animate-spin relative z-10" />
+                    <span className="text-[13px] font-black tracking-tight uppercase text-amber-400 relative z-10" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                       {Math.floor(qfElapsed / 60)}:{(qfElapsed % 60).toString().padStart(2, '0')}
                     </span>
                   </>
                 ) : qfActiveFight && selectedMode === 'quick' ? (
-                  <span className="text-[14px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
-                    Return
-                  </span>
+                  <>
+                    <Zap className="w-4 h-4 text-white animate-pulse drop-shadow-lg relative z-10" />
+                    <span className="text-[15px] font-black text-white relative z-10 tracking-tight uppercase drop-shadow-lg" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                      Return
+                    </span>
+                  </>
                 ) : (
                   <>
-                    <span className="text-[16px] font-black text-white relative z-10 tracking-tight uppercase" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    <Play className="w-4 h-4 text-white drop-shadow-lg relative z-10" />
+                    <span className="text-[17px] font-black text-white relative z-10 tracking-tight uppercase drop-shadow-lg" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
                       GO
                     </span>
                     {(selectedMode === 'quick' || selectedMode === 'battle') && (
-                      <span className="text-[9px] text-white/40 font-bold relative z-10">+20 IDX</span>
+                      <span className="text-[9px] text-white/50 font-bold relative z-10">+20 IDX</span>
                     )}
                     {selectedMode === 'solo' && (
-                      <span className="text-[9px] text-white/40 font-bold relative z-10">100+ IDX</span>
+                      <span className="text-[9px] text-white/50 font-bold relative z-10">100+ IDX</span>
                     )}
                     {selectedMode === 'drop' && liveDrops.length > 0 && (
-                      <span className="text-[10px] font-bold relative z-10 text-emerald-300">
+                      <span className="text-[10px] font-bold relative z-10 text-emerald-300 drop-shadow">
                         {(liveDrops[0] as any).prize_usd > 0 ? `$${(liveDrops[0] as any).prize_usd}` : 'Earn IDX'}
                       </span>
                     )}
@@ -1085,15 +1120,17 @@ export default function ArenaPage() {
               </motion.button>
             </div>
 
-            {/* Cancel queue */}
+            {/* Cancel queue - Stake-style */}
             {isQfSearching && (
-              <button
+              <motion.button
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
                 onClick={handleCancelQueue}
-                className="w-full flex items-center justify-center gap-1.5 px-4 py-1.5 border border-t-0 border-border bg-surface-1 text-muted-foreground text-[10px] font-bold uppercase tracking-wider hover:text-foreground transition-colors touch-manipulation"
+                className="w-full flex items-center justify-center gap-1.5 px-4 py-2 border border-t-0 border-white/[0.04] bg-black/80 text-muted-foreground text-[10px] font-bold uppercase tracking-wider hover:text-foreground hover:bg-amber-500/10 transition-all touch-manipulation backdrop-blur-sm"
               >
                 <X className="w-3 h-3" />
                 Cancel Search
-              </button>
+              </motion.button>
             )}
           </div>
 
@@ -1136,8 +1173,8 @@ export default function ArenaPage() {
 
           {/* search bar moved to top */}
 
-          {/* ═══ LIVE WINNERS TICKER ═══ */}
-          <LiveWinnersTicker />
+          {/* ═══ LIVE PAYOUTS CAROUSEL ═══ */}
+          <LivePayoutsCarousel />
 
           {/* ═══ MISSIONS CAROUSEL — GET PAID ═══ */}
           <ArenaMissionsCarousel />
