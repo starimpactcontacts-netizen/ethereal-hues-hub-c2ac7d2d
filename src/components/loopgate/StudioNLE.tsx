@@ -46,6 +46,12 @@ import {
   type AdjustmentValues, type AdjustSection,
 } from "@/lib/studioAdjustments";
 import { ANIMATION_PRESETS } from "@/lib/studioKeyframes";
+import { SPEED_CURVE_PRESETS, type SpeedCurve } from "@/lib/studioSpeedCurves";
+import { DEFAULT_CHROMA_CONFIG, type ChromaKeyConfig } from "@/lib/studioChromaKey";
+import { type TimelineMarker } from "@/lib/studioTimeline";
+import SpeedCurvesPanel from "./studio/SpeedCurvesPanel";
+import ChromaKeyPanel from "./studio/ChromaKeyPanel";
+import TimelineMarkersPanel from "./studio/TimelineMarkersPanel";
 
 // ─── Types ───
 type TextOverlay = {
