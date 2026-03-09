@@ -10,7 +10,8 @@ import {
   MonitorPlay, FilmIcon, Circle, Wind, Smartphone, Monitor, Square,
   Sun, Lightbulb, Sunrise, RectangleHorizontal, RectangleVertical,
   ArrowLeft, ArrowRight, ArrowUp, MoveHorizontal,
-  RotateCw, Maximize, Minimize, Blend, Activity, Eye
+  RotateCw, Maximize, Minimize, Blend, Activity, Eye,
+  Diamond, Layers as LayersIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
