@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Upload, Download, Film, Play, Pause, Type, Music, X,
   Loader2, Check, SkipBack, SkipForward, Scissors, RotateCcw,
-  ChevronLeft, ChevronDown, Sparkles, Volume2, VolumeX, Gauge, Layers,
+  ChevronLeft, ChevronDown, Sparkles, Volume2, VolumeX, Gauge, Layers, Move,
   Wand2, SlidersHorizontal, Settings, ArrowUpCircle, Crop,
   Zap, Vibrate, Search, FlipHorizontal, FlipVertical, Grid3x3, Waves,
   Rainbow, RefreshCw, Paintbrush, Gem, LayoutGrid,
