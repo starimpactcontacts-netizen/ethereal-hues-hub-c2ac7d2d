@@ -87,7 +87,7 @@ interface StudioHomeProps {
   onOpenAutoEdit?: () => void;
 }
 
-export default function StudioHome({ onNewProject, onOpenProject }: StudioHomeProps) {
+export default function StudioHome({ onNewProject, onOpenProject, onOpenAutoEdit }: StudioHomeProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [projects, setProjects] = useState<StudioProject[]>([]);
