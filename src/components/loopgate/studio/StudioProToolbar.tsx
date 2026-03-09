@@ -56,7 +56,7 @@ interface StudioProToolbarProps {
   onAIBrainOpen?: () => void;
 }
 
-export default function StudioProToolbar({ activeTool, onToolChange, onAIOpen }: StudioProToolbarProps) {
+export default function StudioProToolbar({ activeTool, onToolChange, onAIOpen, onAIBrainOpen }: StudioProToolbarProps) {
   return (
     <div className="flex-shrink-0" style={{
       background: "linear-gradient(180deg, #111114 0%, #09090c 100%)",
@@ -74,7 +74,6 @@ export default function StudioProToolbar({ activeTool, onToolChange, onAIOpen }:
             boxShadow: "0 0 20px rgba(255,0,79,0.06), inset 0 1px 0 rgba(255,255,255,0.03)",
           }}
         >
-          {/* Animated pulse ring */}
           <motion.div
             animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0, 0.3] }}
             transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
@@ -85,6 +84,30 @@ export default function StudioProToolbar({ activeTool, onToolChange, onAIOpen }:
           <span className="text-[7px] font-black tracking-[0.15em] uppercase" style={{ color: "#FF004F" }}>AI</span>
           <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "#FF004F", boxShadow: "0 0 6px #FF004F" }} />
         </button>
+
+        {/* AI Brain Button */}
+        {onAIBrainOpen && (
+          <button
+            onClick={onAIBrainOpen}
+            className="flex-shrink-0 flex flex-col items-center justify-center gap-1 rounded-2xl transition-all active:scale-90 relative overflow-hidden"
+            style={{
+              width: 56, height: 56,
+              background: "linear-gradient(135deg, rgba(153,153,255,0.12), rgba(100,100,200,0.04))",
+              border: "1px solid rgba(153,153,255,0.18)",
+              boxShadow: "0 0 20px rgba(153,153,255,0.06), inset 0 1px 0 rgba(255,255,255,0.03)",
+            }}
+          >
+            <motion.div
+              animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0, 0.2] }}
+              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              className="absolute inset-0 rounded-2xl"
+              style={{ border: "1px solid rgba(153,153,255,0.15)" }}
+            />
+            <Brain className="w-5 h-5" style={{ color: "#9999FF" }} />
+            <span className="text-[7px] font-black tracking-[0.15em] uppercase" style={{ color: "#9999FF" }}>Brain</span>
+            <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "#9999FF", boxShadow: "0 0 6px #9999FF" }} />
+          </button>
+        )}
 
         {/* Separator */}
         <div className="w-px h-8 mx-0.5 flex-shrink-0 rounded-full" style={{ background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.06), transparent)" }} />
