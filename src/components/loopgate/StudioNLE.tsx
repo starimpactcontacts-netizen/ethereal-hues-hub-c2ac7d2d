@@ -46,6 +46,12 @@ import {
   type AdjustmentValues, type AdjustSection,
 } from "@/lib/studioAdjustments";
 import { ANIMATION_PRESETS } from "@/lib/studioKeyframes";
+import { SPEED_CURVE_PRESETS, type SpeedCurve } from "@/lib/studioSpeedCurves";
+import { DEFAULT_CHROMA_CONFIG, type ChromaKeyConfig } from "@/lib/studioChromaKey";
+import { type TimelineMarker } from "@/lib/studioTimeline";
+import SpeedCurvesPanel from "./studio/SpeedCurvesPanel";
+import ChromaKeyPanel from "./studio/ChromaKeyPanel";
+import TimelineMarkersPanel from "./studio/TimelineMarkersPanel";
 
 // ─── Types ───
 type TextOverlay = {
@@ -243,6 +249,12 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
   const [flipV, setFlipV] = useState(false);
   const [showAutoClipper, setShowAutoClipper] = useState(false);
   const [showSongRecommender, setShowSongRecommender] = useState(false);
+
+  // Pro features state
+  const [speedCurve, setSpeedCurve] = useState<SpeedCurve>(SPEED_CURVE_PRESETS[0]);
+  const [chromaConfig, setChromaConfig] = useState<ChromaKeyConfig>(DEFAULT_CHROMA_CONFIG);
+  const [timelineMarkers, setTimelineMarkers] = useState<TimelineMarker[]>([]);
+  const [isPickingColor, setIsPickingColor] = useState(false);
 
   const activeMedia = useMemo(() => mediaItems.find((m) => m.id === activeMediaId) ?? null, [mediaItems, activeMediaId]);
   const [tracks] = useState<TimelineTrack[]>([
@@ -1807,7 +1819,7 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                   <>
                     <div className="space-y-3">
                       <p className="text-[10px]" style={{ color: "#888" }}>
-                        AI-powered tools to enhance your editing workflow.
+                        AI-powered tools &amp; pro features to enhance your workflow.
                       </p>
 
                       {/* Auto-Clipper */}
@@ -1857,6 +1869,42 @@ export default function StudioNLE({ initialFile, onBack }: StudioNLEProps) {
                         </div>
                         {showSongRecommender && <Check className="w-3.5 h-3.5" style={{ color: ACCENT }} />}
                       </button>
+
+                      {/* ── Speed Curves Panel ── */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <SpeedCurvesPanel
+                          duration={duration}
+                          currentCurve={speedCurve}
+                          onCurveChange={setSpeedCurve}
+                          playheadPosition={duration > 0 ? currentTime / duration : 0}
+                        />
+                      </div>
+
+                      {/* ── Chroma Key Panel ── */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <ChromaKeyPanel
+                          config={chromaConfig}
+                          onConfigChange={setChromaConfig}
+                          onPickColor={() => setIsPickingColor(!isPickingColor)}
+                          isPickingColor={isPickingColor}
+                        />
+                      </div>
+
+                      {/* ── Timeline Markers Panel ── */}
+                      <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
+                        <TimelineMarkersPanel
+                          markers={timelineMarkers}
+                          onAddMarker={(m) => setTimelineMarkers(prev => [...prev, { ...m, id: crypto.randomUUID() }])}
+                          onUpdateMarker={(id, updates) => setTimelineMarkers(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m))}
+                          onDeleteMarker={(id) => setTimelineMarkers(prev => prev.filter(m => m.id !== id))}
+                          onJumpToMarker={(time) => {
+                            const vid = videoRef.current;
+                            if (vid) { vid.currentTime = time; setCurrentTime(time); }
+                          }}
+                          currentTime={currentTime}
+                          duration={duration}
+                        />
+                      </div>
 
                       {/* Keyframe Presets */}
                       <div className="pt-2" style={{ borderTop: "1px solid #222" }}>
