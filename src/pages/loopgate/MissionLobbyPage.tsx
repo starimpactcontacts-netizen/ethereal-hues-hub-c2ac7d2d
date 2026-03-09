@@ -114,13 +114,13 @@ export default function MissionLobbyPage() {
       });
 
       // Find official event for the same artist (prize_usd > 0, live status)
+      // Don't exclude current drop — it might BE the event
       const { data: eventData } = await supabase
         .from('featured_drops')
         .select('id, title, prize_usd, poster_url')
         .eq('artist_id', d.artist_id)
         .gt('prize_usd', 0)
         .in('status', ['live', 'judging'])
-        .neq('id', d.id)
         .order('created_at', { ascending: false })
         .limit(1);
 
