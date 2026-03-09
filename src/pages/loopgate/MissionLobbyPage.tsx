@@ -516,34 +516,32 @@ export default function MissionLobbyPage() {
 
       {/* ═══ HOW IT WORKS ═══ */}
       <div className="px-4 mt-4">
-        <div className="bg-surface-1 border border-border/50 overflow-hidden">
-          <div className="bg-red-500/5 border-b border-red-500/10 px-3 py-2">
-            <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">⚔️ How It Works</span>
-          </div>
-          <div className="p-3 space-y-3">
-            {[
-              { step: '01', icon: Music, label: 'Listen to the track', desc: 'Study the vibe, tempo & mood' },
-              { step: '02', icon: Target, label: 'Create your edit', desc: 'Use any NLE — make it slap' },
-              { step: '03', icon: Send, label: 'Submit your link', desc: 'TikTok, YouTube, or Instagram' },
-              { step: '04', icon: Star, label: 'Get rated & paid', desc: 'QOI score + class rank + payout' },
-              ...(officialEvent ? [{
-                step: '05', icon: Swords, label: 'Auto-enter official event', desc: `Rated C+ or better → enters $${officialEvent.prize_usd} event`
-              }] : []),
-            ].map(({ step, icon: Icon, label, desc }) => (
-              <div key={step} className="flex items-center gap-3">
-                <div className={`w-8 h-8 ${step === '05' ? 'bg-emerald-500/20 border-emerald-500/30' : 'bg-red-500/10 border-red-500/20'} border flex items-center justify-center shrink-0`}>
-                  <span className={`text-[10px] font-black ${step === '05' ? 'text-emerald-400' : 'text-red-400'}`}>{step}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <Icon className={`w-3 h-3 ${step === '05' ? 'text-emerald-400/60' : 'text-foreground/40'}`} />
-                    <span className={`text-xs font-bold ${step === '05' ? 'text-emerald-400' : 'text-foreground'}`}>{label}</span>
-                  </div>
-                  <p className="text-[9px] text-muted-foreground">{desc}</p>
-                </div>
+        <div className="flex items-center gap-2 mb-2.5">
+          <span className="text-[10px] font-black text-destructive/60 uppercase tracking-[0.2em]">⚔️ How It Works</span>
+        </div>
+        <div className="space-y-2.5">
+          {[
+            { step: '01', icon: Music, label: 'Listen to the track', desc: 'Study the vibe, tempo & mood' },
+            { step: '02', icon: Target, label: 'Create your edit', desc: 'Use any NLE — make it slap' },
+            { step: '03', icon: Send, label: 'Submit your link', desc: 'TikTok, YouTube, or Instagram' },
+            { step: '04', icon: Star, label: 'Get rated & paid', desc: 'QOI score + class rank + payout' },
+            ...(officialEvent ? [{
+              step: '05', icon: Swords, label: 'Auto-enter official event', desc: `Rated C+ or better → enters $${officialEvent.prize_usd} event`
+            }] : []),
+          ].map(({ step, icon: Icon, label, desc }) => (
+            <div key={step} className="flex items-center gap-3">
+              <div className={`w-7 h-7 ${step === '05' ? 'bg-status-live/15 border-status-live/20' : 'bg-destructive/8 border-destructive/15'} border rounded-sm flex items-center justify-center shrink-0`}>
+                <span className={`text-[9px] font-black ${step === '05' ? 'text-status-live' : 'text-destructive/70'}`}>{step}</span>
               </div>
-            ))}
-          </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <Icon className={`w-3 h-3 ${step === '05' ? 'text-status-live/60' : 'text-foreground/30'}`} />
+                  <span className={`text-xs font-bold ${step === '05' ? 'text-status-live' : 'text-foreground/80'}`}>{label}</span>
+                </div>
+                <p className="text-[9px] text-muted-foreground">{desc}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
