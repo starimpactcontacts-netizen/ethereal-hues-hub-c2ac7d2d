@@ -31,6 +31,7 @@ import CompositorPanel, { renderCompositorLayers, DEFAULT_PIP, type CompositorLa
 import StickerOverlayPanel, { renderStickersToCanvas, type StickerOverlay } from "./studio/StickerOverlayPanel";
 import { TEXT_ANIMATIONS, renderAnimatedText } from "./studio/AnimatedTextPresets";
 import { CHROMA_BACKGROUNDS, renderChromaBackground } from "./studio/ChromaBackgrounds";
+import StudioAIBrain from "./studio/StudioAIBrain";
 import { useUndoRedo } from "./studio/useUndoRedo";
 import { LUT_PRESETS, applyLUTPreset, type LUT3D } from "@/lib/studioColorScience";
 import { MotionSmoother, estimateMotion, applyStabilization, DEFAULT_STABILIZER, type StabilizerConfig } from "@/lib/studioStabilizer";
@@ -217,6 +218,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
 
   // AI Tools overlay
   const [aiToolsOpen, setAiToolsOpen] = useState(false);
+  const [aiBrainOpen, setAiBrainOpen] = useState(false);
 
   // ═══ NEW PRO TOOLS STATE ═══
   // Color Scopes & LUTs
@@ -1968,6 +1970,7 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
           activeTool={activeTool}
           onToolChange={(tool) => setActiveTool(tool)}
           onAIOpen={() => setAiToolsOpen(true)}
+          onAIBrainOpen={() => setAiBrainOpen(true)}
         />
 
         {/* AI Tools overlay */}
@@ -2037,6 +2040,45 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
             />
           )}
         </AnimatePresence>
+
+        {/* AI Brain — Advanced AI Panel */}
+        <StudioAIBrain
+          open={aiBrainOpen}
+          onClose={() => setAiBrainOpen(false)}
+          editSnapshot={{
+            duration: trimEnd - trimStart,
+            originalDuration: duration,
+            filter: activeFilter.name,
+            effects: activeEffects,
+            speed,
+            textCount: textOverlays.length,
+            transition: activeTransition,
+            hasAdjustments: hasAdjustments(adjustments),
+            cropPreset: cropPreset,
+            keyframeCount: Object.values(keyframeData).flat().length,
+            maskCount: masks.length,
+            blendMode,
+            stickerCount: stickerOverlays.length,
+            hasAudio: !!audioFile,
+            motionTemplates: appliedTemplates.length,
+            chromaEnabled,
+            stabilized: stabilizer.enabled,
+          }}
+          onApplyTrim={(start, end) => {
+            setTrimStart(start);
+            setTrimEnd(end);
+          }}
+          onAddMarkers={(markers) => {
+            const newMarkers = markers.map(m => ({
+              id: crypto.randomUUID(),
+              time: m.time,
+              color: "#FFD700",
+              label: m.label,
+              type: "beat" as const,
+            }));
+            setTimelineMarkers(prev => [...prev, ...newMarkers]);
+          }}
+        />
 
         {/* Auto-Edit Wizard overlay (from empty state) */}
         {autoEditOpen && (
