@@ -50,7 +50,17 @@ export default function LivePayoutsCarousel() {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  if (payouts.length === 0) return null;
+  const DEMO_PAYOUTS: Payout[] = [
+    { id: 'demo-1', username: 'rxflux', avatar_url: null, earned_cents: 500, created_at: new Date(Date.now() - 1000 * 60 * 12).toISOString() },
+    { id: 'demo-2', username: 'cinewave', avatar_url: null, earned_cents: 350, created_at: new Date(Date.now() - 1000 * 60 * 34).toISOString() },
+    { id: 'demo-3', username: 'glitchkid', avatar_url: null, earned_cents: 250, created_at: new Date(Date.now() - 1000 * 60 * 58).toISOString() },
+    { id: 'demo-4', username: 'motionape', avatar_url: null, earned_cents: 500, created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString() },
+    { id: 'demo-5', username: 'vfxqueen', avatar_url: null, earned_cents: 200, created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString() },
+    { id: 'demo-6', username: 'editgod99', avatar_url: null, earned_cents: 350, created_at: new Date(Date.now() - 1000 * 60 * 240).toISOString() },
+  ];
+
+  const displayPayouts = payouts.length > 0 ? payouts : DEMO_PAYOUTS;
+  const isDemo = payouts.length === 0;
 
   return (
     <div className="mb-4">
@@ -65,16 +75,16 @@ export default function LivePayoutsCarousel() {
             Live Payouts
           </span>
           <div className="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-sm">
-            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-wider">Live</span>
+            <span className="text-[8px] font-black text-emerald-400 uppercase tracking-wider">{isDemo ? 'Demo' : 'Live'}</span>
           </div>
         </div>
-        <span className="text-[9px] text-muted-foreground font-medium">{payouts.length} recent</span>
+        <span className="text-[9px] text-muted-foreground font-medium">{displayPayouts.length} recent</span>
       </div>
 
       {/* Horizontal scrolling cards */}
       <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
         <div className="flex gap-2 pb-1">
-          {payouts.map((payout, idx) => (
+          {displayPayouts.map((payout, idx) => (
             <motion.div
               key={payout.id}
               initial={{ opacity: 0, x: -20 }}
@@ -145,14 +155,14 @@ export default function LivePayoutsCarousel() {
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">Total paid:</span>
             <span className="text-emerald-400 font-bold tabular-nums">
-              ${(payouts.reduce((sum, p) => sum + p.earned_cents, 0) / 100).toFixed(2)}
+              ${(displayPayouts.reduce((sum, p) => sum + p.earned_cents, 0) / 100).toFixed(2)}
             </span>
           </div>
           <div className="w-px h-3 bg-border" />
           <div className="flex items-center gap-1">
             <span className="text-muted-foreground">Avg:</span>
             <span className="text-foreground font-bold tabular-nums">
-              ${(payouts.reduce((sum, p) => sum + p.earned_cents, 0) / payouts.length / 100).toFixed(2)}
+              ${(displayPayouts.reduce((sum, p) => sum + p.earned_cents, 0) / displayPayouts.length / 100).toFixed(2)}
             </span>
           </div>
         </div>
