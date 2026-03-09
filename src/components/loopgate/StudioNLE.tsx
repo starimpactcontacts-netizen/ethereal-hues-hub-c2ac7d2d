@@ -98,6 +98,7 @@ const TOOL_TABS: { id: ToolTab; icon: typeof Film; label: string }[] = [
   { id: "transitions", icon: Layers, label: "Transitions" },
   { id: "filters", icon: Wand2, label: "Filters" },
   { id: "adjust", icon: SlidersHorizontal, label: "Adjust" },
+  { id: "ai", icon: Wand2, label: "AI Tools" },
   { id: "upscale", icon: ArrowUpCircle, label: "Upscale" },
   { id: "export", icon: Settings, label: "Export" },
 ];
