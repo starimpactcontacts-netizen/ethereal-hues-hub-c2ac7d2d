@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 import { Music, Sparkles, Play, ExternalLink, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +27,7 @@ export default function SongRecommenderPanel({
   const [recommendations, setRecommendations] = useState<SongRecommendation[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = useCallback(async () => {
     if (!videoRef.current) return;
     
     setIsAnalyzing(true);
@@ -41,9 +41,9 @@ export default function SongRecommenderPanel({
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [videoRef, sceneChanges]);
 
-  const handlePresetSelect = (presetId: string) => {
+  const handlePresetSelect = useCallback((presetId: string) => {
     const preset = QUICK_PRESETS.find(p => p.id === presetId);
     if (!preset || !analysis) return;
     
@@ -53,7 +53,7 @@ export default function SongRecommenderPanel({
       preset.genres as SongGenre[]
     );
     setRecommendations(recs);
-  };
+  }, [analysis]);
 
   const getMoodEmoji = (mood: string) => {
     const emojis: Record<string, string> = {
@@ -77,7 +77,7 @@ export default function SongRecommenderPanel({
     if (videoRef.current && sceneChanges.length > 0) {
       handleAnalyze();
     }
-  }, []);
+  }, [handleAnalyze]);
 
   return (
     <motion.div
