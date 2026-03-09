@@ -525,12 +525,19 @@ export default function IndexPage() {
           
           <div className="flex items-center gap-3">
             <h1 className="font-display text-4xl tracking-wider text-foreground">THE INDEX</h1>
-            <div className="flex items-center gap-1.5 ml-auto">
-              <div className="relative">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                <div className="absolute inset-0 w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
+            {/* Tactical live counter */}
+            <div className="ml-auto flex items-center gap-0 border border-foreground/20 bg-black/60 backdrop-blur-sm">
+              <div className="px-2 py-1 border-r border-foreground/20 flex items-center gap-1.5">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-red-500" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+                  <div className="absolute w-3 h-3 border border-red-500/40 animate-ping" style={{ clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)' }} />
+                </div>
+                <span className="text-[9px] font-black text-red-400 uppercase tracking-widest">SYS</span>
               </div>
-              <span className="text-[10px] text-foreground/60 font-bold tabular-nums">{rankings.length} LIVE</span>
+              <div className="px-2.5 py-1">
+                <span className="text-[10px] font-black text-foreground tabular-nums tracking-wider">{rankings.length}</span>
+                <span className="text-[8px] font-bold text-foreground/40 ml-1 uppercase">ACTIVE</span>
+              </div>
             </div>
           </div>
         </header>
