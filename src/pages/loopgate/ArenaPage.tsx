@@ -1134,6 +1134,76 @@ export default function ArenaPage() {
             )}
           </div>
 
+          {/* ═══ ENTER LOBBY — Big CTA for Battle Royale ═══ */}
+          {liveDrops.length > 0 && (
+            <motion.button
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => navigate(`/drop/${liveDrops[0].id}`)}
+              className="relative w-full overflow-hidden touch-manipulation group mb-3"
+              style={{
+                boxShadow: '0 0 40px rgba(239, 68, 68, 0.25), 0 0 80px rgba(239, 68, 68, 0.1)',
+              }}
+            >
+              {/* Background - poster or gradient */}
+              {(liveDrops[0] as any).poster_url ? (
+                <div 
+                  className="absolute inset-0 bg-cover bg-center scale-[1.05] group-hover:scale-[1.1] transition-transform duration-700"
+                  style={{ backgroundImage: `url(${(liveDrops[0] as any).poster_url})` }}
+                />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-br from-red-950 via-background to-red-950/50" />
+              )}
+              
+              {/* Overlays */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-red-950/60 via-transparent to-red-950/30" />
+              
+              {/* Scanlines */}
+              <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 3px)' }} />
+              
+              {/* Top edge glow */}
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
+              
+              {/* Content */}
+              <div className="relative px-5 py-5 flex items-center gap-4">
+                {/* Left - Live indicator + event info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shadow-lg shadow-red-500/50" />
+                    <span className="text-[10px] font-black text-red-400 uppercase tracking-[0.2em]">Battle Royale Live</span>
+                  </div>
+                  <h3 className="text-[18px] font-black text-white leading-tight truncate tracking-tight" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                    {liveDrops[0].title}
+                  </h3>
+                  {(liveDrops[0] as any).prize_usd > 0 && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <DollarSign className="w-3 h-3 text-emerald-400" />
+                      <span className="text-[13px] font-black text-emerald-400">${(liveDrops[0] as any).prize_usd} Prize Pool</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Right - ENTER LOBBY button */}
+                <div className="shrink-0">
+                  <div className="relative bg-gradient-to-r from-red-600 via-red-500 to-red-600 px-6 py-3 group-hover:from-red-500 group-hover:via-red-400 group-hover:to-red-500 transition-all shadow-xl shadow-red-900/50">
+                    <div className="absolute top-0 left-0 right-0 h-[45%] bg-gradient-to-b from-white/[0.15] to-transparent pointer-events-none" />
+                    <div className="flex items-center gap-2 relative z-10">
+                      <Users className="w-4 h-4 text-white drop-shadow-lg" />
+                      <span className="text-[16px] font-black text-white uppercase tracking-wider drop-shadow-lg" style={{ fontFamily: 'Teko, Inter, system-ui, sans-serif' }}>
+                        Enter Lobby
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          )}
+
           {/* Featured fight promo — inline, only if no live drops */}
           {liveDrops.length === 0 && featuredFight && (
             <motion.button
