@@ -15,6 +15,10 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import StudioSubmitButton from "./StudioSubmitButton";
 import AutoEditWizard from "./studio/AutoEditWizard";
+import MobileAITools from "./studio/MobileAITools";
+import GestureTimeline from "./studio/GestureTimeline";
+import KeyframeEditor, { interpolateKeyframes, type Keyframe, type KeyframedProperty } from "./studio/KeyframeEditor";
+import BlendModePanel, { BLEND_MODES, OVERLAY_PRESETS, applyOverlay, type BlendMode, type OverlayPreset } from "./studio/BlendModes";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 import {
