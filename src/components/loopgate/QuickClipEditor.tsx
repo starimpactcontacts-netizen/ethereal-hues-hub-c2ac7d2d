@@ -1019,14 +1019,180 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                   </div>
                 )}
 
-                {/* ════ CROP & TRANSFORM (v1.5) ════ */}
+                {/* ════ TRANSFORM v2.0 — StretchTok Ready ════ */}
                 {activeTool === "crop" && (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Crop & Transform</span>
+                      <span className="text-[11px] font-semibold" style={{ color: "#e0e0e0" }}>Transform</span>
                       <button onClick={() => setActiveTool(null)} className="text-[10px]" style={{ color: "#555" }}>Done</button>
                     </div>
-                    {/* Aspect Ratio Presets */}
+
+                    {/* ─── SCALE (STRETCH) ─── */}
+                    <div className="p-3 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className="text-[9px] uppercase tracking-wider font-bold" style={{ color: "#666" }}>Scale / Stretch</span>
+                        <button
+                          onClick={() => {
+                            setScaleLocked(!scaleLocked);
+                            if (!scaleLocked) { setScaleY(scaleX); }
+                          }}
+                          className="flex items-center gap-1 px-2 py-0.5 rounded text-[8px] font-bold transition-all"
+                          style={{
+                            color: scaleLocked ? ACCENT : "#555",
+                            background: scaleLocked ? ACCENT_DIM : "transparent",
+                            border: `1px solid ${scaleLocked ? ACCENT_BORDER : "#333"}`,
+                          }}
+                        >
+                          {scaleLocked ? "🔗 Locked" : "🔓 Free"}
+                        </button>
+                      </div>
+
+                      {/* Scale X */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[9px] font-mono font-bold w-3" style={{ color: "#555" }}>X</span>
+                        <Slider
+                          value={[scaleX]}
+                          min={0.1} max={3.0} step={0.01}
+                          onValueChange={([v]) => {
+                            setScaleX(v);
+                            if (scaleLocked) setScaleY(v);
+                          }}
+                          className="flex-1"
+                        />
+                        <span className="text-[10px] font-mono font-bold w-9 text-right" style={{ color: scaleX !== 1 ? ACCENT : "#555" }}>
+                          {scaleX.toFixed(2)}
+                        </span>
+                      </div>
+
+                      {/* Scale Y */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-mono font-bold w-3" style={{ color: "#555" }}>Y</span>
+                        <Slider
+                          value={[scaleY]}
+                          min={0.1} max={3.0} step={0.01}
+                          onValueChange={([v]) => {
+                            setScaleY(v);
+                            if (scaleLocked) setScaleX(v);
+                          }}
+                          className="flex-1"
+                        />
+                        <span className="text-[10px] font-mono font-bold w-9 text-right" style={{ color: scaleY !== 1 ? ACCENT : "#555" }}>
+                          {scaleY.toFixed(2)}
+                        </span>
+                      </div>
+
+                      {/* Quick stretch presets */}
+                      <div className="flex gap-1 mt-2.5">
+                        {[
+                          { label: "1:1", x: 1, y: 1 },
+                          { label: "Tall", x: 0.7, y: 1.3 },
+                          { label: "Wide", x: 1.4, y: 0.8 },
+                          { label: "Stretch", x: 1.5, y: 1.5 },
+                          { label: "Squish", x: 1.8, y: 0.5 },
+                        ].map(p => (
+                          <button key={p.label}
+                            onClick={() => { setScaleX(p.x); setScaleY(p.y); setScaleLocked(false); }}
+                            className="flex-1 py-1.5 rounded text-[8px] font-bold transition-all"
+                            style={{
+                              background: scaleX === p.x && scaleY === p.y ? ACCENT_DIM : "#151515",
+                              border: scaleX === p.x && scaleY === p.y ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                              color: scaleX === p.x && scaleY === p.y ? ACCENT : "#666",
+                            }}
+                          >{p.label}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ─── POSITION ─── */}
+                    <div className="p-3 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                      <span className="text-[9px] uppercase tracking-wider font-bold block mb-2.5" style={{ color: "#666" }}>Position</span>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[9px] font-mono font-bold w-3" style={{ color: "#555" }}>X</span>
+                        <Slider value={[posX]} min={0} max={1} step={0.005}
+                          onValueChange={([v]) => setPosX(v)} className="flex-1" />
+                        <span className="text-[10px] font-mono font-bold w-9 text-right" style={{ color: posX !== 0.5 ? ACCENT : "#555" }}>
+                          {(posX * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-mono font-bold w-3" style={{ color: "#555" }}>Y</span>
+                        <Slider value={[posY]} min={0} max={1} step={0.005}
+                          onValueChange={([v]) => setPosY(v)} className="flex-1" />
+                        <span className="text-[10px] font-mono font-bold w-9 text-right" style={{ color: posY !== 0.5 ? ACCENT : "#555" }}>
+                          {(posY * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                      <button onClick={() => { setPosX(0.5); setPosY(0.5); }}
+                        className="mt-2 w-full py-1.5 rounded text-[8px] font-bold"
+                        style={{ color: "#555", background: "#151515", border: "1px solid #222" }}>
+                        Center
+                      </button>
+                    </div>
+
+                    {/* ─── ROTATION ─── */}
+                    <div className="p-3 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                      <span className="text-[9px] uppercase tracking-wider font-bold block mb-2.5" style={{ color: "#666" }}>Rotation</span>
+                      {/* Free rotation slider */}
+                      <div className="flex items-center gap-2 mb-2.5">
+                        <RotateCw className="w-3 h-3" style={{ color: "#555" }} />
+                        <Slider value={[freeRotation]} min={-180} max={180} step={0.5}
+                          onValueChange={([v]) => setFreeRotation(v)} className="flex-1" />
+                        <span className="text-[10px] font-mono font-bold w-10 text-right" style={{ color: freeRotation !== 0 ? ACCENT : "#555" }}>
+                          {freeRotation.toFixed(1)}°
+                        </span>
+                      </div>
+                      {/* Quick rotation presets */}
+                      <div className="flex gap-1.5">
+                        {[0, 90, 180, 270].map((deg) => (
+                          <button key={deg} onClick={() => setRotation(deg)}
+                            className="flex-1 py-2 rounded-lg flex items-center justify-center gap-1 transition-all"
+                            style={{
+                              background: rotation === deg ? ACCENT_DIM : "#151515",
+                              border: rotation === deg ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                            }}>
+                            <RotateCw className="w-3 h-3" style={{ color: rotation === deg ? ACCENT : "#666", transform: `rotate(${deg}deg)` }} />
+                            <span className="text-[9px] font-medium" style={{ color: rotation === deg ? ACCENT : "#666" }}>{deg}°</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ─── OPACITY ─── */}
+                    <div className="p-3 rounded-xl" style={{ background: "#0D0D0D", border: "1px solid #1A1A1A" }}>
+                      <span className="text-[9px] uppercase tracking-wider font-bold block mb-2.5" style={{ color: "#666" }}>Opacity</span>
+                      <div className="flex items-center gap-2">
+                        <Eye className="w-3 h-3" style={{ color: "#555" }} />
+                        <Slider value={[videoOpacity]} min={0} max={1} step={0.01}
+                          onValueChange={([v]) => setVideoOpacity(v)} className="flex-1" />
+                        <span className="text-[10px] font-mono font-bold w-9 text-right" style={{ color: videoOpacity !== 1 ? ACCENT : "#555" }}>
+                          {(videoOpacity * 100).toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ─── FLIP ─── */}
+                    <div className="flex gap-1.5">
+                      <button onClick={() => setFlipH(!flipH)}
+                        className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                        style={{
+                          background: flipH ? ACCENT_DIM : "#151515",
+                          border: flipH ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                        }}>
+                        <FlipHorizontal className="w-4 h-4" style={{ color: flipH ? ACCENT : "#666" }} />
+                        <span className="text-[10px] font-medium" style={{ color: flipH ? ACCENT : "#666" }}>Flip H</span>
+                      </button>
+                      <button onClick={() => setFlipV(!flipV)}
+                        className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
+                        style={{
+                          background: flipV ? ACCENT_DIM : "#151515",
+                          border: flipV ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
+                        }}>
+                        <FlipVertical className="w-4 h-4" style={{ color: flipV ? ACCENT : "#666" }} />
+                        <span className="text-[10px] font-medium" style={{ color: flipV ? ACCENT : "#666" }}>Flip V</span>
+                      </button>
+                    </div>
+
+                    {/* ─── ASPECT RATIO ─── */}
                     <div>
                       <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Aspect Ratio</span>
                       <div className="grid grid-cols-3 gap-1.5">
@@ -1035,66 +1201,30 @@ export default function QuickClipEditor({ initialFile, onBack }: QuickClipEditor
                           const IconComp = preset.icon;
                           return (
                             <button key={preset.id} onClick={() => setCropPreset(isActive ? null : preset.id)}
-                              className="py-2.5 rounded-lg flex flex-col items-center gap-1 transition-all"
+                              className="py-2 rounded-lg flex flex-col items-center gap-0.5 transition-all"
                               style={{
                                 background: isActive ? ACCENT_DIM : "#151515",
                                 border: isActive ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
                               }}>
-                              <IconComp className="w-4 h-4" style={{ color: isActive ? ACCENT : "#666" }} />
-                              <span className="text-[9px] font-semibold" style={{ color: isActive ? ACCENT : "#888" }}>{preset.label}</span>
+                              <IconComp className="w-3.5 h-3.5" style={{ color: isActive ? ACCENT : "#666" }} />
+                              <span className="text-[8px] font-semibold" style={{ color: isActive ? ACCENT : "#888" }}>{preset.label}</span>
                               <span className="text-[7px]" style={{ color: "#555" }}>{preset.desc}</span>
                             </button>
                           );
                         })}
                       </div>
                     </div>
-                    {/* Rotation */}
-                    <div>
-                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Rotate</span>
-                      <div className="flex gap-1.5">
-                        {[0, 90, 180, 270].map((deg) => (
-                          <button key={deg} onClick={() => setRotation(deg)}
-                            className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
-                            style={{
-                              background: rotation === deg ? ACCENT_DIM : "#151515",
-                              border: rotation === deg ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
-                            }}>
-                            <RotateCw className="w-3.5 h-3.5" style={{ color: rotation === deg ? ACCENT : "#666", transform: `rotate(${deg}deg)` }} />
-                            <span className="text-[10px] font-medium" style={{ color: rotation === deg ? ACCENT : "#666" }}>{deg}°</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    {/* Flip */}
-                    <div>
-                      <span className="text-[9px] uppercase tracking-wider mb-1.5 block" style={{ color: "#555" }}>Flip</span>
-                      <div className="flex gap-1.5">
-                        <button onClick={() => setFlipH(!flipH)}
-                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
-                          style={{
-                            background: flipH ? ACCENT_DIM : "#151515",
-                            border: flipH ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
-                          }}>
-                          <FlipHorizontal className="w-4 h-4" style={{ color: flipH ? ACCENT : "#666" }} />
-                          <span className="text-[10px] font-medium" style={{ color: flipH ? ACCENT : "#666" }}>Horizontal</span>
-                        </button>
-                        <button onClick={() => setFlipV(!flipV)}
-                          className="flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition-all"
-                          style={{
-                            background: flipV ? ACCENT_DIM : "#151515",
-                            border: flipV ? `1px solid ${ACCENT_BORDER}` : "1px solid #222",
-                          }}>
-                          <FlipVertical className="w-4 h-4" style={{ color: flipV ? ACCENT : "#666" }} />
-                          <span className="text-[10px] font-medium" style={{ color: flipV ? ACCENT : "#666" }}>Vertical</span>
-                        </button>
-                      </div>
-                    </div>
-                    {/* Reset */}
-                    {(cropPreset || rotation !== 0 || flipH || flipV) && (
-                      <button onClick={() => { setCropPreset(null); setRotation(0); setFlipH(false); setFlipV(false); }}
+
+                    {/* ─── RESET ALL ─── */}
+                    {(cropPreset || rotation !== 0 || flipH || flipV || scaleX !== 1 || scaleY !== 1 || posX !== 0.5 || posY !== 0.5 || videoOpacity !== 1 || freeRotation !== 0) && (
+                      <button onClick={() => {
+                        setCropPreset(null); setRotation(0); setFlipH(false); setFlipV(false);
+                        setScaleX(1); setScaleY(1); setPosX(0.5); setPosY(0.5);
+                        setVideoOpacity(1); setFreeRotation(0); setScaleLocked(true);
+                      }}
                         className="w-full py-2 text-[10px] font-medium rounded-lg"
                         style={{ color: "#ef4444", border: "1px solid rgba(239,68,68,0.15)" }}>
-                        Reset Transform
+                        Reset All Transforms
                       </button>
                     )}
                   </div>
